@@ -8,19 +8,18 @@ import Loading from '@/components/ui/Loading'
 import { CategoryList } from './CategoryList'
 import { CategoryCreateForm } from './CategoryForm'
 import { CategoryHeaderActions } from './CategoryActions'
+import { CategoryManagerCoreProps } from '@/types/interfaces'
 
-export interface CategoryManagerProps {
-  selectedCategoryId?: number | null
-  onCategorySelect?: (categoryId: number | null) => void
-  showCreateButton?: boolean
-  onCategoryChange?: () => void
+// Interface Segregation 적용: 필요한 기능만 포함하는 간소화된 인터페이스
+export interface CategoryManagerProps extends CategoryManagerCoreProps {
+  // 추가 필수 속성이 있다면 여기에 정의
 }
 
 export function CategoryManagerRefactored({ 
   selectedCategoryId, 
   onCategorySelect, 
   showCreateButton = true,
-  onCategoryChange
+  onContentChange
 }: CategoryManagerProps) {
   const { data: session, status } = useSession()
   const { categories, loading, error, createCategory, updateCategory, deleteCategory } = useCategories()
@@ -35,12 +34,12 @@ export function CategoryManagerRefactored({
     try {
       await createCategory({ name })
       setIsCreating(false)
-      onCategoryChange?.()
+      onContentChange?.()
     } catch (error) {
       // Error is handled by the hook
       throw error
     }
-  }, [createCategory, onCategoryChange])
+  }, [createCategory, onContentChange])
 
   const handleUpdateCategory = useCallback(async (id: number) => {
     if (!editValue.trim()) return
@@ -49,12 +48,12 @@ export function CategoryManagerRefactored({
       await updateCategory(id, { name: editValue.trim() })
       setEditingId(null)
       setEditValue('')
-      onCategoryChange?.()
+      onContentChange?.()
     } catch (error) {
       // Error is handled by the hook
       throw error
     }
-  }, [editValue, updateCategory, onCategoryChange])
+  }, [editValue, updateCategory, onContentChange])
 
   const handleDeleteCategory = useCallback(async (id: number) => {
     try {
@@ -62,12 +61,12 @@ export function CategoryManagerRefactored({
       if (selectedCategoryId === id && onCategorySelect) {
         onCategorySelect(null)
       }
-      onCategoryChange?.()
+      onContentChange?.()
     } catch (error) {
       // Error is handled by the hook
       console.error('Delete category error:', error)
     }
-  }, [deleteCategory, selectedCategoryId, onCategorySelect, onCategoryChange])
+  }, [deleteCategory, selectedCategoryId, onCategorySelect, onContentChange])
 
   const handleStartEdit = useCallback((category: Category) => {
     setEditingId(category.id)

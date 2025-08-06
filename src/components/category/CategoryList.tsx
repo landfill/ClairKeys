@@ -1,31 +1,27 @@
 'use client'
 
 import { Category } from '@/types/category'
+import { 
+  CategoryReadOnlyProps, 
+  CategorySelectableProps, 
+  CategoryEditableProps, 
+  CategoryDeletableProps 
+} from '@/types/interfaces'
 
-export interface CategoryItemProps {
+// Interface Segregation 적용: 각 컴포넌트별 최소 필요 기능만 포함
+export interface CategoryItemProps 
+  extends CategoryEditableProps, 
+          CategoryDeletableProps {
   category: Category
   isSelected: boolean
-  isEditing: boolean
-  editValue: string
   onSelect: (categoryId: number) => void
-  onStartEdit: (category: Category) => void
-  onSaveEdit: (id: number) => void
-  onCancelEdit: () => void
-  onDelete: (id: number) => void
-  onEditValueChange: (value: string) => void
 }
 
-export interface CategoryListProps {
-  categories: Category[]
-  selectedCategoryId?: number | null
-  editingId: number | null
-  editValue: string
-  onCategorySelect: (categoryId: number | null) => void
-  onStartEdit: (category: Category) => void
-  onSaveEdit: (id: number) => void
-  onCancelEdit: () => void
-  onDelete: (id: number) => void
-  onEditValueChange: (value: string) => void
+export interface CategoryListProps 
+  extends CategoryReadOnlyProps,
+          CategorySelectableProps,
+          CategoryEditableProps,
+          CategoryDeletableProps {
 }
 
 function CategoryItem({

@@ -2,18 +2,18 @@
 
 import { SheetMusicWithCategory } from '@/types/sheet-music'
 import Card from '@/components/ui/Card'
+import { 
+  SheetMusicDisplayProps, 
+  SheetMusicInteractiveProps 
+} from '@/types/interfaces'
 
-export interface SheetMusicInfoProps {
-  sheetMusic: SheetMusicWithCategory
-  showMetadata?: boolean
-  showDate?: boolean
-  className?: string
-}
+// Interface Segregation 적용: 표시 관련 기능만 포함
+export interface SheetMusicInfoProps extends SheetMusicDisplayProps {}
 
-export interface SheetMusicCardBaseProps extends SheetMusicInfoProps {
+export interface SheetMusicCardBaseProps 
+  extends SheetMusicInfoProps, 
+          SheetMusicInteractiveProps {
   children?: React.ReactNode
-  onClick?: () => void
-  isHoverable?: boolean
 }
 
 export function SheetMusicInfo({

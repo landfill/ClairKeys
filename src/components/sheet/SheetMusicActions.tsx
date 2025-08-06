@@ -3,18 +3,12 @@
 import Link from 'next/link'
 import { SheetMusicWithCategory } from '@/types/sheet-music'
 import Button from '@/components/ui/Button'
+import { SheetMusicActionableProps } from '@/types/interfaces'
 
-export interface SheetMusicActionsProps {
-  sheetMusic: SheetMusicWithCategory
-  onEdit?: (sheetMusic: SheetMusicWithCategory) => void
-  onDelete?: (sheetMusicId: number) => void
+// Interface Segregation 적용: 액션 관련 기능만 포함
+export interface SheetMusicActionsProps extends SheetMusicActionableProps {
   onMove?: () => void
-  showEdit?: boolean
-  showDelete?: boolean
   showMove?: boolean
-  showPlay?: boolean
-  layout?: 'horizontal' | 'vertical'
-  className?: string
 }
 
 export function SheetMusicActions({

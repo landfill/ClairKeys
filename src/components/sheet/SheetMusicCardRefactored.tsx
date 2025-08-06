@@ -5,21 +5,22 @@ import { Category } from '@/types/category'
 import { SheetMusicCardBase } from './SheetMusicCardBase'
 import { SheetMusicActions } from './SheetMusicActions'
 import { SheetMusicMoveMenu } from './SheetMusicMoveMenu'
+import { 
+  SheetMusicCardCoreProps,
+  SheetMusicActionableProps,
+  SheetMusicMovableProps 
+} from '@/types/interfaces'
 
-export interface SheetMusicCardProps {
-  sheetMusic: SheetMusicWithCategory
+// Interface Segregation 적용: 핵심 기능 + 필요한 기능만 선택적으로 조합
+export interface SheetMusicCardProps 
+  extends SheetMusicCardCoreProps,
+          Partial<SheetMusicActionableProps>,
+          Partial<SheetMusicMovableProps> {
   categories?: Category[]
   onMove?: (sheetMusicId: number, newCategoryId: number | null) => void
-  onEdit?: (sheetMusic: SheetMusicWithCategory) => void
-  onDelete?: (sheetMusicId: number) => void
   showMoveOptions?: boolean
   showEditOptions?: boolean
   showDeleteOptions?: boolean
-  showPlayButton?: boolean
-  showMetadata?: boolean
-  showDate?: boolean
-  layout?: 'card' | 'compact' | 'list'
-  className?: string
 }
 
 export function SheetMusicCardRefactored({

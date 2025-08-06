@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Category } from '@/types/category'
+import { SheetMusicMovableProps } from '@/types/interfaces'
 
 export interface MoveMenuProps {
   categories: Category[]
@@ -123,13 +124,10 @@ export function MoveMenu({
   )
 }
 
-export interface SheetMusicMoveMenuProps {
-  categories: Category[]
-  currentCategoryId: number | null
-  onMove: (categoryId: number | null) => void
+// Interface Segregation 적용: 이동 관련 기능만 포함
+export interface SheetMusicMoveMenuProps extends SheetMusicMovableProps {
   trigger?: React.ReactNode
   buttonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>
-  position?: 'left' | 'right'
 }
 
 export function SheetMusicMoveMenu({
