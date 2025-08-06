@@ -33,6 +33,9 @@ export default function Header() {
                 <Link href="/upload" className="text-gray-700 hover:text-gray-900 transition-colors">
                   업로드
                 </Link>
+                <Link href="/processing" className="text-gray-700 hover:text-gray-900 transition-colors">
+                  처리 상태
+                </Link>
               </>
             )}
             <Link href="/explore" className="text-gray-700 hover:text-gray-900 transition-colors">
@@ -99,6 +102,13 @@ export default function Header() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     업로드
+                  </Link>
+                  <Link
+                    href="/processing"
+                    className="block px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    처리 상태
                   </Link>
                 </>
               )}

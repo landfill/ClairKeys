@@ -51,6 +51,8 @@ model User {
   categories       Category[]
   sheetMusic       SheetMusic[]
   practiceSessions PracticeSession[]
+  processingJobs   ProcessingJob[]
+  notifications    ProcessingNotification[]
 }
 
 model VerificationToken {
@@ -97,4 +99,63 @@ model PracticeSession {
   
   user       User       @relation(fields: [userId], references: [id])
   sheetMusic SheetMusic @relation(fields: [sheetMusicId], references: [id])
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ProcessingStage {
+  UPLOAD
+  PARSING
+  OMR
+  VALIDATION
+  GENERATION
+}
+
+model ProcessingJob {
+  id           String           @id @default(cuid())
+  userId       String
+  fileName     String
+  fileSize     Int
+  status       ProcessingStatus @default(PENDING)
+  currentStage ProcessingStage  @default(UPLOAD)
+  progress     Int              @default(0)
+  metadata     Json
+  result       Json?
+  error        String?
+  retryCount   Int              @default(0)
+  maxRetries   Int              @default(3)
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  
+  user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications ProcessingNotification[]
+  
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ProcessingNotification {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  type      String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  ProcessingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([isRead])
 }

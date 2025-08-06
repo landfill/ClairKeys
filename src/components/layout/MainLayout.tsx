@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react'
 import Sidebar from './Sidebar'
+import ProcessingStatusIndicator from '@/components/processing/ProcessingStatusIndicator'
 
 interface MainLayoutProps {
   children: ReactNode
@@ -24,6 +25,7 @@ export default function MainLayout({
       <main className={`flex-1 ${showSidebar ? 'lg:ml-64' : ''}`}>
         {children}
       </main>
+      <ProcessingStatusIndicator />
     </div>
   )
 }
