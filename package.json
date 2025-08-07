@@ -9,6 +9,9 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
@@ -50,6 +53,8 @@
     "eslint-config-next": "15.4.5",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
+    "playwright": "^1.50.1",
+    "@playwright/test": "^1.50.1",
     "tailwindcss": "^4",
     "tsx": "^4.20.3",
     "typescript": "^5"

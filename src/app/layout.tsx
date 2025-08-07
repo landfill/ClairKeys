@@ -15,6 +15,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#2563eb'
+}
+
 export const metadata: Metadata = {
   title: "ClairKeys - AI 피아노 학습 앱",
   description: "PDF 악보를 업로드하여 피아노 애니메이션으로 학습하는 AI 기반 피아노 앱",
@@ -27,8 +36,6 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false
   },
-  themeColor: "#2563eb",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
   icons: {
     icon: [
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },

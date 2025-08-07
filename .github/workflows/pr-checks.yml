@@ -1,0 +1,372 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.changes.outputs.frontend }}
+      backend: ${{ steps.changes.outputs.backend }}
+      tests: ${{ steps.changes.outputs.tests }}
+      docs: ${{ steps.changes.outputs.docs }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            frontend:
+              - 'src/components/**'
+              - 'src/app/**'
+              - 'src/hooks/**'
+              - 'public/**'
+              - '*.css'
+              - 'tailwind.config.js'
+            backend:
+              - 'src/lib/**'
+              - 'src/services/**'
+              - 'prisma/**'
+              - 'src/app/api/**'
+            tests:
+              - '**/*.test.*'
+              - '**/*.spec.*'
+              - 'jest.config.js'
+              - 'jest.setup.js'
+              - 'playwright.config.ts'
+              - 'e2e/**'
+            docs:
+              - '*.md'
+              - 'docs/**'
+
+  lint-and-type-check:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint -- --format=github
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.tests == 'true'
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: clairkeys_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/clairkeys_test
+      NEXTAUTH_SECRET: test-secret
+      NEXTAUTH_URL: http://localhost:3000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run database migrations
+        run: npx prisma db push
+
+      - name: Run unit tests
+        run: npm run test:coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage
+          flags: unittests
+          name: codecov-pr-${{ github.event.number }}
+
+  test-e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.tests == 'true'
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: clairkeys_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/clairkeys_test
+      NEXTAUTH_SECRET: test-secret
+      NEXTAUTH_URL: http://localhost:3000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run database migrations
+        run: npx prisma db push
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-pr-${{ github.event.number }}
+          path: playwright-report/
+          retention-days: 7
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit
+        run: npm audit --audit-level high
+
+      - name: Run CodeQL analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript,typescript
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Build application
+        run: npm run build
+        env:
+          NEXTAUTH_SECRET: test-secret
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          SUPABASE_URL: https://test.supabase.co
+          SUPABASE_ANON_KEY: test-key
+
+      - name: Check bundle size
+        run: |
+          # Check if bundle size is reasonable
+          if [ -d ".next" ]; then
+            size=$(du -sh .next | cut -f1)
+            echo "Bundle size: $size"
+            # Add bundle size analysis here if needed
+          fi
+
+  accessibility-check:
+    name: Accessibility Check
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          NEXTAUTH_SECRET: test-secret
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          SUPABASE_URL: https://test.supabase.co
+          SUPABASE_ANON_KEY: test-key
+
+      - name: Run accessibility tests
+        run: |
+          # Start the application in background
+          npm start &
+          APP_PID=$!
+          
+          # Wait for app to start
+          sleep 10
+          
+          # Run basic accessibility checks with axe-core
+          npx @axe-core/cli http://localhost:3000 --exit
+          
+          # Kill the app
+          kill $APP_PID
+
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [lint-and-type-check, test-unit, test-e2e, security-scan, build-check]
+    if: always()
+
+    steps:
+      - name: Create PR summary comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const results = {
+              lint: '${{ needs.lint-and-type-check.result }}',
+              unit: '${{ needs.test-unit.result }}',
+              e2e: '${{ needs.test-e2e.result }}',
+              security: '${{ needs.security-scan.result }}',
+              build: '${{ needs.build-check.result }}'
+            };
+            
+            const getEmoji = (result) => {
+              if (result === 'success') return '✅';
+              if (result === 'failure') return '❌';
+              if (result === 'skipped') return '⏭️';
+              return '⏳';
+            };
+            
+            const body = `
+            ## 🔍 PR Check Results
+            
+            | Check | Status | Result |
+            |-------|--------|---------|
+            | Lint & Type Check | ${getEmoji(results.lint)} | ${results.lint} |
+            | Unit Tests | ${getEmoji(results.unit)} | ${results.unit} |
+            | E2E Tests | ${getEmoji(results.e2e)} | ${results.e2e} |
+            | Security Scan | ${getEmoji(results.security)} | ${results.security} |
+            | Build Check | ${getEmoji(results.build)} | ${results.build} |
+            
+            ${Object.values(results).every(r => r === 'success' || r === 'skipped') 
+              ? '🎉 All checks passed! This PR is ready for review.' 
+              : '⚠️ Some checks failed. Please review and fix the issues.'}
+            `;
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # Require all checks to pass for PR to be mergeable
+  all-checks:
+    name: All Checks Complete
+    runs-on: ubuntu-latest
+    needs: [lint-and-type-check, test-unit, test-e2e, security-scan, build-check]
+    if: always()
+
+    steps:
+      - name: Check all results
+        run: |
+          if [[ "${{ needs.lint-and-type-check.result }}" == "failure" || 
+                "${{ needs.test-unit.result }}" == "failure" || 
+                "${{ needs.test-e2e.result }}" == "failure" || 
+                "${{ needs.security-scan.result }}" == "failure" || 
+                "${{ needs.build-check.result }}" == "failure" ]]; then
+            echo "❌ One or more checks failed"
+            exit 1
+          else
+            echo "✅ All checks passed or skipped"
+          fi
