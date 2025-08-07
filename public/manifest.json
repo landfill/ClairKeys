@@ -1,0 +1,194 @@
+{
+  "name": "ClairKeys - AI 피아노 학습 앱",
+  "short_name": "ClairKeys",
+  "description": "PDF 악보를 업로드하여 피아노 애니메이션으로 학습하는 AI 기반 피아노 앱",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "ko-KR",
+  "dir": "ltr",
+  
+  "icons": [
+    {
+      "src": "/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "ClairKeys 대시보드 화면"
+    },
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "모바일 피아노 연주 화면"
+    },
+    {
+      "src": "/screenshots/mobile-2.png",
+      "sizes": "390x844",
+      "type": "image/png", 
+      "platform": "narrow",
+      "label": "악보 업로드 화면"
+    }
+  ],
+  
+  "categories": [
+    "music",
+    "education",
+    "entertainment",
+    "productivity"
+  ],
+  
+  "shortcuts": [
+    {
+      "name": "대시보드",
+      "short_name": "Dashboard",
+      "description": "내 악보 및 연습 현황 확인",
+      "url": "/app/dashboard",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "악보 탐색",
+      "short_name": "Browse",
+      "description": "공개 악보 및 새 악보 찾기",
+      "url": "/app/browse", 
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "연습 모드",
+      "short_name": "Practice",
+      "description": "피아노 연습 시작",
+      "url": "/app/practice",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "업로드",
+      "short_name": "Upload",
+      "description": "새 악보 PDF 업로드",
+      "url": "/app/upload",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  
+  "related_applications": [],
+  "prefer_related_applications": false,
+  
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  
+  "file_handlers": [
+    {
+      "action": "/app/upload",
+      "accept": {
+        "application/pdf": [".pdf"]
+      },
+      "launch_type": "single-client"
+    }
+  ],
+  
+  "protocol_handlers": [
+    {
+      "protocol": "web+clairkeys",
+      "url": "/app/open?url=%s"
+    }
+  ],
+  
+  "share_target": {
+    "action": "/app/upload",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "file",
+          "accept": ["application/pdf", ".pdf"]
+        }
+      ]
+    }
+  }
+}

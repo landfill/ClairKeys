@@ -41,7 +41,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    let deletionResults = []
+    const deletionResults = []
 
     if (type === 'animation' || type === 'all') {
       // Delete animation data file
