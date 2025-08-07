@@ -24,3 +24,79 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Playback Controls 스타일 */
+.playback-controls .slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.playback-controls .slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.playback-controls .slider:focus {
+  outline: none;
+}
+
+.playback-controls .slider::-webkit-slider-track {
+  background: #e5e7eb;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.playback-controls .slider::-moz-range-track {
+  background: #e5e7eb;
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* Practice Mode 스타일 */
+.practice-key-highlight .practice-key-indicator {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.practice-key-highlight .practice-key-indicator:hover {
+  transform: scale(1.05);
+}
+
+/* Key highlight animations */
+@keyframes key-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  }
+}
+
+.practice-key-highlight .animate-glow {
+  animation: key-glow 2s infinite;
+}
+
+/* Progress bar animations */
+@keyframes progress-fill {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: var(--progress-width);
+  }
+}
+
+.practice-progress-animated {
+  animation: progress-fill 0.5s ease-out;
+}

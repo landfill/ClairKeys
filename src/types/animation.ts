@@ -65,16 +65,47 @@ export interface AnimationState {
   /** Playback speed multiplier */
   speed: number
   /** Playback mode */
-  mode: 'listen' | 'follow'
+  mode: 'listen' | 'follow' | 'practice'
   /** Currently active notes */
   activeNotes: Set<string>
   /** Whether animation is ready to play */
   isReady: boolean
+  /** Practice mode specific state */
+  practiceState?: PracticeState
+}
+
+export interface PracticeState {
+  /** Whether practice mode is active */
+  isActive: boolean
+  /** Current step in practice mode */
+  currentStep: number
+  /** Total number of steps */
+  totalSteps: number
+  /** Next note(s) to practice */
+  nextNotes: PianoNote[]
+  /** Whether waiting for user to proceed */
+  isPaused: boolean
+  /** Practice session statistics */
+  sessionStats: PracticeSessionStats
+}
+
+export interface PracticeSessionStats {
+  /** Session start time */
+  startTime: number
+  /** Total practice time in seconds */
+  totalTime: number
+  /** Number of steps completed */
+  stepsCompleted: number
+  /** Current tempo progression */
+  currentTempo: number
+  /** Target tempo */
+  targetTempo: number
 }
 
 export interface AnimationEvent {
   /** Type of animation event */
-  type: 'noteStart' | 'noteEnd' | 'timeUpdate' | 'playStateChange' | 'speedChange'
+  type: 'noteStart' | 'noteEnd' | 'timeUpdate' | 'playStateChange' | 'speedChange' | 
+        'practiceStep' | 'practiceComplete' | 'tempoIncrease'
   /** Timestamp when event occurred */
   timestamp: number
   /** Event-specific data */
@@ -84,6 +115,10 @@ export interface AnimationEvent {
     isPlaying?: boolean
     speed?: number
     velocity?: number
+    step?: number
+    totalSteps?: number
+    nextNotes?: PianoNote[]
+    tempo?: number
   }
 }
 
@@ -132,7 +167,7 @@ export interface AnimationEngine {
   /** Set playback speed */
   setSpeed(speed: number): void
   /** Set playback mode */
-  setMode(mode: 'listen' | 'follow'): void
+  setMode(mode: 'listen' | 'follow' | 'practice'): void
   /** Get current animation state */
   getState(): AnimationState
   /** Get timeline at specific time */
@@ -141,4 +176,20 @@ export interface AnimationEngine {
   on(event: string, callback: (event: AnimationEvent) => void): void
   /** Unsubscribe from animation events */
   off(event: string, callback: (event: AnimationEvent) => void): void
+  
+  // Practice mode methods
+  /** Start practice mode */
+  startPracticeMode(startTempo?: number, targetTempo?: number): void
+  /** Proceed to next step in practice mode */
+  nextPracticeStep(): void
+  /** Get current practice state */
+  getPracticeState(): PracticeState | null
+  /** Set practice tempo progression */
+  setPracticeTempoProgression(enabled: boolean, increment?: number): void
+  /** Set loop section for practice */
+  setLoopSection(startTime: number, endTime: number): void
+  /** Clear loop section */
+  clearLoopSection(): void
+  /** Get current loop section */
+  getLoopSection(): { start: number, end: number } | null
 }

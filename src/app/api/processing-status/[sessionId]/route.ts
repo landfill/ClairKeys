@@ -17,7 +17,7 @@ interface ProcessingStatusResponse {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     // Check authentication
@@ -30,7 +30,7 @@ export async function GET(
       )
     }
 
-    const { sessionId } = params
+    const { sessionId } = await params
     const processingQueue = getProcessingQueueService()
     const jobStatus = await processingQueue.getJobStatus(sessionId, session.user.id)
 
@@ -67,7 +67,7 @@ export async function GET(
 // Server-Sent Events endpoint
 export async function POST(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     // Check authentication
@@ -80,7 +80,7 @@ export async function POST(
       )
     }
 
-    const { sessionId } = params
+    const { sessionId } = await params
     const processingQueue = getProcessingQueueService()
 
     // Create a readable stream for Server-Sent Events

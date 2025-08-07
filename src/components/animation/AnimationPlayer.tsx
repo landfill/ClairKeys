@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Button } from '@/components/ui'
-import { PianoAnimationData } from '@/types/animation'
+import { PlaybackControls } from '@/components/playback'
+import { PracticeGuideControls, PracticeKeyHighlight } from '@/components/practice'
+import { PianoAnimationData, PracticeState } from '@/types/animation'
 import { getAnimationEngine } from '@/services/animationEngine'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
 interface AnimationPlayerProps {
   animationData: PianoAnimationData
@@ -23,9 +25,10 @@ export default function AnimationPlayer({
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0)
-  const [playbackMode, setPlaybackMode] = useState<'listen' | 'follow'>('listen')
+  const [playbackMode, setPlaybackMode] = useState<'listen' | 'follow' | 'practice'>('listen')
   const [activeNotes, setActiveNotes] = useState<Set<string>>(new Set())
   const [isReady, setIsReady] = useState(false)
+  const [practiceState, setPracticeState] = useState<PracticeState | null>(null)
 
   const animationEngineRef = useRef(getAnimationEngine())
 
@@ -75,12 +78,31 @@ export default function AnimationPlayer({
         })
       }
     }
+
+    const handlePracticeStep = (event: any) => {
+      const updatedState = engine.getPracticeState()
+      setPracticeState(updatedState)
+    }
+
+    const handlePracticeComplete = (event: any) => {
+      const updatedState = engine.getPracticeState()
+      setPracticeState(updatedState)
+    }
+
+    const handleTempoIncrease = (event: any) => {
+      const updatedState = engine.getPracticeState()
+      setPracticeState(updatedState)
+      setPlaybackSpeed(event.data.tempo || 1.0)
+    }
     
     engine.on('timeUpdate', handleTimeUpdate)
     engine.on('playStateChange', handlePlayStateChange)
     engine.on('speedChange', handleSpeedChange)
     engine.on('noteStart', handleNoteStart)
     engine.on('noteEnd', handleNoteEnd)
+    engine.on('practiceStep', handlePracticeStep)
+    engine.on('practiceComplete', handlePracticeComplete)
+    engine.on('tempoIncrease', handleTempoIncrease)
     
     // Cleanup
     return () => {
@@ -89,6 +111,9 @@ export default function AnimationPlayer({
       engine.off('speedChange', handleSpeedChange)
       engine.off('noteStart', handleNoteStart)
       engine.off('noteEnd', handleNoteEnd)
+      engine.off('practiceStep', handlePracticeStep)
+      engine.off('practiceComplete', handlePracticeComplete)
+      engine.off('tempoIncrease', handleTempoIncrease)
     }
   }, [animationData, onNotePlay, onNoteStop, onActiveNotesChange])
 
@@ -131,29 +156,79 @@ export default function AnimationPlayer({
     engine.setSpeed(speed)
   }
 
-  const handleModeChange = (mode: 'listen' | 'follow') => {
+  const handleModeChange = (mode: 'listen' | 'follow' | 'practice') => {
     const engine = animationEngineRef.current
     engine.setMode(mode)
     setPlaybackMode(mode)
+    
+    if (mode === 'practice') {
+      setPracticeState(engine.getPracticeState())
+    } else {
+      setPracticeState(null)
+    }
   }
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const clickX = e.clientX - rect.left
-    const percentage = clickX / rect.width
-    const newTime = percentage * animationData.duration
+  // Practice mode handlers
+  const handleStartPractice = (startTempo: number = 0.5, targetTempo: number = 1.0) => {
+    const engine = animationEngineRef.current
+    handleModeChange('practice')
+    engine.startPracticeMode(startTempo, targetTempo)
+    setPracticeState(engine.getPracticeState())
+  }
+
+  const handleNextStep = () => {
+    const engine = animationEngineRef.current
+    engine.nextPracticeStep()
+    setPracticeState(engine.getPracticeState())
+  }
+
+  const handleExitPractice = () => {
+    handleModeChange('listen')
+  }
+
+  const handleToggleTempoProgression = (enabled: boolean, increment: number = 0.1) => {
+    const engine = animationEngineRef.current
+    engine.setPracticeTempoProgression(enabled, increment)
+  }
+
+  // 키보드 단축키 핸들러
+  const handleSpeedIncrease = () => {
+    const newSpeed = Math.min(2.0, playbackSpeed + 0.25)
+    handleSpeedChange(newSpeed)
+  }
+
+  const handleSpeedDecrease = () => {
+    const newSpeed = Math.max(0.25, playbackSpeed - 0.25)
+    handleSpeedChange(newSpeed)
+  }
+
+  const handleToggleMode = () => {
+    const newMode = playbackMode === 'listen' ? 'follow' : 'listen'
+    handleModeChange(newMode)
+  }
+
+  const handleSeekBackward = () => {
+    const newTime = Math.max(0, currentTime - 10)
     handleSeek(newTime)
   }
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
+  const handleSeekForward = () => {
+    const newTime = Math.min(animationData.duration, currentTime + 10)
+    handleSeek(newTime)
   }
 
-  const progressPercentage = animationData.duration > 0 
-    ? (currentTime / animationData.duration) * 100 
-    : 0
+  // 키보드 단축키 등록
+  useKeyboardShortcuts({
+    onTogglePlay: handlePlay,
+    onStop: handleStop,
+    onSeekBackward: handleSeekBackward,
+    onSeekForward: handleSeekForward,
+    onSpeedIncrease: handleSpeedIncrease,
+    onSpeedDecrease: handleSpeedDecrease,
+    onToggleMode: handleToggleMode,
+    enabled: isReady
+  })
+
 
   return (
     <div className={`animation-player bg-white rounded-lg shadow-md p-6 ${className}`}>
@@ -167,94 +242,52 @@ export default function AnimationPlayer({
         </p>
       </div>
 
-      {/* Progress Bar */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(animationData.duration)}</span>
-        </div>
-        <div 
-          className="w-full h-2 bg-gray-200 rounded-full cursor-pointer"
-          onClick={handleProgressClick}
-        >
-          <div
-            className="h-2 bg-blue-600 rounded-full transition-all duration-100"
-            style={{ width: `${progressPercentage}%` }}
+      {/* Controls - Switch based on mode */}
+      {playbackMode === 'practice' ? (
+        <div className="mb-6">
+          <PracticeGuideControls
+            practiceState={practiceState}
+            isReady={isReady}
+            onStartPractice={handleStartPractice}
+            onNextStep={handleNextStep}
+            onExitPractice={handleExitPractice}
+            onToggleTempoProgression={handleToggleTempoProgression}
           />
         </div>
-      </div>
-
-      {/* Controls */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-4">
-          <Button
-            onClick={handlePlay}
-            variant="primary"
-            size="lg"
-            disabled={!isReady}
-          >
-            {isPlaying ? '⏸️' : '▶️'}
-          </Button>
-          
-          <Button
-            onClick={handleStop}
-            variant="outline"
-            size="lg"
-            disabled={!isReady}
-          >
-            ⏹️
-          </Button>
+      ) : (
+        <div className="mb-6">
+          <PlaybackControls
+            isPlaying={isPlaying}
+            isReady={isReady}
+            currentTime={currentTime}
+            duration={animationData.duration}
+            playbackSpeed={playbackSpeed}
+            playbackMode={playbackMode}
+            onPlay={handlePlay}
+            onStop={handleStop}
+            onSeek={handleSeek}
+            onSpeedChange={handleSpeedChange}
+            onModeChange={handleModeChange}
+          />
         </div>
+      )}
 
-        {/* Speed Control */}
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-600">속도:</span>
-          <select
-            value={playbackSpeed}
-            onChange={(e) => handleSpeedChange(parseFloat(e.target.value))}
-            className="px-2 py-1 border border-gray-300 rounded text-sm"
-            disabled={!isReady}
-          >
-            <option value={0.25}>0.25x</option>
-            <option value={0.5}>0.5x</option>
-            <option value={0.75}>0.75x</option>
-            <option value={1.0}>1.0x</option>
-            <option value={1.25}>1.25x</option>
-            <option value={1.5}>1.5x</option>
-            <option value={2.0}>2.0x</option>
-          </select>
+      {/* Practice Key Highlight - Show in practice mode */}
+      {playbackMode === 'practice' && practiceState?.nextNotes && practiceState.nextNotes.length > 0 && (
+        <div className="mb-6">
+          <PracticeKeyHighlight nextNotes={practiceState.nextNotes} />
         </div>
-      </div>
+      )}
 
-      {/* Mode Control */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-600">모드:</span>
-          <select
-            value={playbackMode}
-            onChange={(e) => handleModeChange(e.target.value as 'listen' | 'follow')}
-            className="px-2 py-1 border border-gray-300 rounded text-sm"
-            disabled={!isReady}
-          >
-            <option value="listen">듣기</option>
-            <option value="follow">따라하기</option>
-          </select>
-        </div>
-
-        {/* Active Notes Count */}
-        {activeNotes.size > 0 && (
-          <div className="text-sm text-gray-600">
-            활성 음표: {activeNotes.size}개
+      {/* Active Notes Display - Show in listen/follow modes */}
+      {playbackMode !== 'practice' && activeNotes.size > 0 && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">활성 음표:</span>
+            <span className="text-sm font-medium text-gray-900">
+              {activeNotes.size}개
+            </span>
           </div>
-        )}
-      </div>
-
-      {/* Follow Mode Instructions */}
-      {playbackMode === 'follow' && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
-          <p className="text-sm text-blue-800">
-            따라하기 모드: 피아노 건반을 눌러 연주를 따라해보세요.
-          </p>
         </div>
       )}
 

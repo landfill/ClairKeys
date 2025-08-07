@@ -146,6 +146,19 @@ class ProcessingQueueService {
   }
 
   /**
+   * Get job status for system processes (bypasses user check)
+   */
+  async getJobStatusSystem(sessionId: string): Promise<ProcessingJob | null> {
+    const job = this.jobs.get(sessionId)
+    
+    if (!job) {
+      return null
+    }
+
+    return { ...job } // Return copy
+  }
+
+  /**
    * Cancel a job
    */
   async cancelJob(sessionId: string, userId: string): Promise<boolean> {

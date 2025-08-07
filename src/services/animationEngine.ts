@@ -10,7 +10,9 @@ import {
   AnimationTimeline,
   AnimationEvent,
   AnimationConfig,
-  AnimationEngine as IAnimationEngine
+  AnimationEngine as IAnimationEngine,
+  PracticeState,
+  PracticeSessionStats
 } from '@/types/animation'
 import { getAudioService } from './audioService'
 
@@ -37,6 +39,13 @@ export class AnimationEngine implements IAnimationEngine {
   private pausedTime: number = 0
   private eventListeners: Map<string, Set<(event: AnimationEvent) => void>> = new Map()
   private audioService = getAudioService()
+  
+  // Practice mode specific properties
+  private practiceState: PracticeState | null = null
+  private practiceSteps: PianoNote[][] = []
+  private tempoProgressionEnabled = false
+  private tempoIncrement = 0.1
+  private loopSection: { start: number, end: number } | null = null
 
   /**
    * Load animation data
@@ -183,12 +192,22 @@ export class AnimationEngine implements IAnimationEngine {
   /**
    * Set playback mode
    */
-  setMode(mode: 'listen' | 'follow'): void {
+  setMode(mode: 'listen' | 'follow' | 'practice'): void {
     this.state.mode = mode
     
     // In follow mode, pause until user input
     if (mode === 'follow' && this.state.isPlaying) {
       this.pause()
+    }
+    
+    // In practice mode, stop playback and prepare practice steps
+    if (mode === 'practice') {
+      this.pause()
+      this.preparePracticeSteps()
+    } else {
+      // Exit practice mode
+      this.practiceState = null
+      this.state.practiceState = undefined
     }
   }
 
@@ -321,12 +340,21 @@ export class AnimationEngine implements IAnimationEngine {
     if (!this.animationData || !this.state.isPlaying) return
 
     const elapsed = (Date.now() - this.startTime) / 1000 * this.state.speed
-    const newTime = this.pausedTime + elapsed
+    let newTime = this.pausedTime + elapsed
 
-    // Check if animation finished
-    if (newTime >= this.animationData.duration) {
-      this.stop()
-      return
+    // Handle loop section
+    if (this.loopSection) {
+      if (newTime >= this.loopSection.end) {
+        // Loop back to start
+        this.seekTo(this.loopSection.start)
+        return
+      }
+    } else {
+      // Check if animation finished (no loop)
+      if (newTime >= this.animationData.duration) {
+        this.stop()
+        return
+      }
     }
 
     this.state.currentTime = newTime
@@ -422,6 +450,184 @@ export class AnimationEngine implements IAnimationEngine {
   }
 
   /**
+   * Start practice mode
+   */
+  startPracticeMode(startTempo: number = 0.5, targetTempo: number = 1.0): void {
+    if (!this.animationData) return
+
+    this.practiceState = {
+      isActive: true,
+      currentStep: 0,
+      totalSteps: this.practiceSteps.length,
+      nextNotes: this.practiceSteps[0] || [],
+      isPaused: true,
+      sessionStats: {
+        startTime: Date.now(),
+        totalTime: 0,
+        stepsCompleted: 0,
+        currentTempo: startTempo,
+        targetTempo: targetTempo
+      }
+    }
+
+    this.state.practiceState = this.practiceState
+    this.setSpeed(startTempo)
+    
+    this.emitEvent({
+      type: 'practiceStep',
+      timestamp: Date.now(),
+      data: {
+        step: 0,
+        totalSteps: this.practiceSteps.length,
+        nextNotes: this.practiceSteps[0] || [],
+        tempo: startTempo
+      }
+    })
+  }
+
+  /**
+   * Proceed to next step in practice mode
+   */
+  nextPracticeStep(): void {
+    if (!this.practiceState || !this.animationData) return
+
+    // Update session stats
+    this.practiceState.sessionStats.stepsCompleted++
+    this.practiceState.sessionStats.totalTime = (Date.now() - this.practiceState.sessionStats.startTime) / 1000
+
+    // Move to next step
+    this.practiceState.currentStep++
+
+    if (this.practiceState.currentStep >= this.practiceSteps.length) {
+      // Practice complete
+      this.emitEvent({
+        type: 'practiceComplete',
+        timestamp: Date.now(),
+        data: {
+          step: this.practiceState.currentStep,
+          totalSteps: this.practiceSteps.length
+        }
+      })
+      
+      // Optionally increase tempo and restart
+      if (this.tempoProgressionEnabled && this.practiceState.sessionStats.currentTempo < this.practiceState.sessionStats.targetTempo) {
+        const newTempo = Math.min(
+          this.practiceState.sessionStats.targetTempo,
+          this.practiceState.sessionStats.currentTempo + this.tempoIncrement
+        )
+        this.practiceState.sessionStats.currentTempo = newTempo
+        this.practiceState.currentStep = 0
+        this.practiceState.sessionStats.stepsCompleted = 0
+        this.setSpeed(newTempo)
+        
+        this.emitEvent({
+          type: 'tempoIncrease',
+          timestamp: Date.now(),
+          data: {
+            tempo: newTempo,
+            step: 0,
+            totalSteps: this.practiceSteps.length
+          }
+        })
+      }
+    }
+
+    // Update next notes
+    this.practiceState.nextNotes = this.practiceSteps[this.practiceState.currentStep] || []
+    this.state.practiceState = this.practiceState
+
+    this.emitEvent({
+      type: 'practiceStep',
+      timestamp: Date.now(),
+      data: {
+        step: this.practiceState.currentStep,
+        totalSteps: this.practiceSteps.length,
+        nextNotes: this.practiceState.nextNotes,
+        tempo: this.practiceState.sessionStats.currentTempo
+      }
+    })
+  }
+
+  /**
+   * Get current practice state
+   */
+  getPracticeState(): PracticeState | null {
+    return this.practiceState
+  }
+
+  /**
+   * Set practice tempo progression
+   */
+  setPracticeTempoProgression(enabled: boolean, increment: number = 0.1): void {
+    this.tempoProgressionEnabled = enabled
+    this.tempoIncrement = increment
+  }
+
+  /**
+   * Set loop section for practice
+   */
+  setLoopSection(startTime: number, endTime: number): void {
+    if (!this.animationData) return
+    
+    const clampedStart = Math.max(0, Math.min(startTime, this.animationData.duration))
+    const clampedEnd = Math.max(clampedStart + 1, Math.min(endTime, this.animationData.duration))
+    
+    this.loopSection = {
+      start: clampedStart,
+      end: clampedEnd
+    }
+  }
+
+  /**
+   * Clear loop section
+   */
+  clearLoopSection(): void {
+    this.loopSection = null
+  }
+
+  /**
+   * Get current loop section
+   */
+  getLoopSection(): { start: number, end: number } | null {
+    return this.loopSection
+  }
+
+  /**
+   * Prepare practice steps from animation data
+   */
+  private preparePracticeSteps(): void {
+    if (!this.animationData) return
+
+    this.practiceSteps = []
+    const sortedNotes = [...this.animationData.notes].sort((a, b) => a.startTime - b.startTime)
+    
+    // Group notes by time (allowing for small timing differences)
+    const timeThreshold = 0.1 // 100ms threshold for grouping simultaneous notes
+    let currentGroup: PianoNote[] = []
+    let currentTime = -1
+
+    for (const note of sortedNotes) {
+      if (currentTime < 0 || Math.abs(note.startTime - currentTime) <= timeThreshold) {
+        // Add to current group
+        currentGroup.push(note)
+        if (currentTime < 0) currentTime = note.startTime
+      } else {
+        // Start new group
+        if (currentGroup.length > 0) {
+          this.practiceSteps.push([...currentGroup])
+        }
+        currentGroup = [note]
+        currentTime = note.startTime
+      }
+    }
+
+    // Add final group
+    if (currentGroup.length > 0) {
+      this.practiceSteps.push([...currentGroup])
+    }
+  }
+
+  /**
    * Dispose of resources
    */
   dispose(): void {
@@ -429,6 +635,9 @@ export class AnimationEngine implements IAnimationEngine {
     this.eventListeners.clear()
     this.animationData = null
     this.state.isReady = false
+    this.practiceState = null
+    this.practiceSteps = []
+    this.loopSection = null
   }
 }
 

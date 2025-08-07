@@ -146,8 +146,8 @@ class AsyncUploadProcessor {
       try {
         console.log(`Saving to database for session ${sessionId}`)
 
-        // Find user by session (we need to get this from somewhere)
-        const job = await this.processingQueue.getJobStatus(sessionId, 'system') // We'll need the userId
+        // Find user by session using system method
+        const job = await this.processingQueue.getJobStatusSystem(sessionId)
         if (!job) {
           throw new Error('Job not found for database save')
         }
