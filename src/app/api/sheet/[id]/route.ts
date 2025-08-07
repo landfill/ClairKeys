@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
+import { sheetMusicCache } from '@/services/cacheService'
 
 export async function GET(
   request: NextRequest,
@@ -254,10 +255,33 @@ export async function DELETE(
       )
     }
 
+    // Delete associated files first
+    if (existingSheet.animationDataUrl) {
+      try {
+        // Extract file path from URL for deletion
+        const url = new URL(existingSheet.animationDataUrl)
+        const pathParts = url.pathname.split('/')
+        const fileName = pathParts[pathParts.length - 1]
+        
+        // Delete from file storage
+        const { fileStorageService } = await import('@/services/fileStorageService')
+        await fileStorageService.deleteFile('animation-data', fileName)
+      } catch (fileError) {
+        console.warn('Failed to delete animation data file:', fileError)
+        // Continue with database deletion even if file deletion fails
+      }
+    }
+
     // Delete sheet music (cascade will handle practice sessions)
     await prisma.sheetMusic.delete({
       where: { id: sheetId }
     })
+
+    // Clear relevant caches
+    sheetMusicCache.invalidateUser(existingSheet.userId)
+    if (existingSheet.isPublic) {
+      sheetMusicCache.invalidatePublic()
+    }
 
     return NextResponse.json({
       success: true,

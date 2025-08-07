@@ -6,6 +6,7 @@ import { SheetMusicWithCategory } from '@/types/sheet-music'
 import { Category } from '@/types/category'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
+import { DeleteConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 interface SheetMusicCardProps {
   sheetMusic: SheetMusicWithCategory
@@ -25,6 +26,7 @@ export function SheetMusicCard({
   onDelete
 }: SheetMusicCardProps) {
   const [showMoveMenu, setShowMoveMenu] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const handleMove = (newCategoryId: number | null) => {
     onMove?.(sheetMusic.id, newCategoryId)
@@ -127,14 +129,10 @@ export function SheetMusicCard({
 
           {onDelete && (
             <Button
-              onClick={() => {
-                if (confirm('이 악보를 삭제하시겠습니까?')) {
-                  onDelete(sheetMusic.id)
-                }
-              }}
+              onClick={() => setShowDeleteDialog(true)}
               variant="outline"
               size="sm"
-              className="text-red-600 hover:text-red-700"
+              className="text-red-600 hover:text-red-700 hover:border-red-300"
             >
               삭제
             </Button>
@@ -147,6 +145,20 @@ export function SheetMusicCard({
         <div
           className="fixed inset-0 z-5"
           onClick={() => setShowMoveMenu(false)}
+        />
+      )}
+      
+      {/* Delete confirmation dialog */}
+      {onDelete && (
+        <DeleteConfirmDialog
+          isOpen={showDeleteDialog}
+          onClose={() => setShowDeleteDialog(false)}
+          onConfirm={() => {
+            onDelete(sheetMusic.id)
+            setShowDeleteDialog(false)
+          }}
+          itemName={sheetMusic.title}
+          itemType="악보"
         />
       )}
     </Card>

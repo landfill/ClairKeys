@@ -23,7 +23,7 @@ export function CategorySheetMusicList({
   selectedCategoryId, 
   onSheetMusicMove 
 }: CategorySheetMusicListProps) {
-  const { sheetMusic, loading: sheetMusicLoading, updateSheetMusic, fetchUserSheetMusic } = useSheetMusic()
+  const { sheetMusic, loading: sheetMusicLoading, updateSheetMusic, deleteSheetMusic, fetchUserSheetMusic } = useSheetMusic()
   const { categories, loading: categoriesLoading } = useCategories()
   const [draggedItem, setDraggedItem] = useState<number | null>(null)
   const [dragOverCategory, setDragOverCategory] = useState<number | null>(null)
@@ -118,6 +118,19 @@ export function CategorySheetMusicList({
     setDragOverCategory(null)
   }
 
+  const handleDeleteSheetMusic = async (sheetMusicId: number) => {
+    try {
+      await deleteSheetMusic(sheetMusicId)
+      // Refresh the list after deletion
+      await fetchUserSheetMusic({
+        categoryId: selectedCategoryId || undefined
+      })
+    } catch (error) {
+      console.error('Failed to delete sheet music:', error)
+      alert('악보 삭제 중 오류가 발생했습니다.')
+    }
+  }
+
   const handleMoveSheetMusic = async (sheetMusicId: number, newCategoryId: number | null) => {
     try {
       await updateSheetMusic(sheetMusicId, { categoryId: newCategoryId })
@@ -188,6 +201,7 @@ export function CategorySheetMusicList({
                   showMoveOptions={selectedCategoryId === null}
                   categories={categories}
                   onMove={handleMoveSheetMusic}
+                  onDelete={handleDeleteSheetMusic}
                 />
               </div>
             ))}
