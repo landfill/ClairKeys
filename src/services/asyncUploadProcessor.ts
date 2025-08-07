@@ -1,5 +1,7 @@
 import { getProcessingQueueService, ProcessingMetadata } from './processingQueue'
 import { getPDFParserService } from './pdfParser'
+import { fileStorageService } from './fileStorageService'
+import { sheetMusicCache } from './cacheService'
 import { prisma } from '@/lib/prisma'
 
 class AsyncUploadProcessor {
@@ -169,6 +171,25 @@ class AsyncUploadProcessor {
           }
         }
 
+        // Upload animation data to file storage
+        console.log(`Uploading animation data to storage for session ${sessionId}`)
+        const uploadResult = await fileStorageService.uploadAnimationData(
+          animationData,
+          {
+            name: `${metadata.title}_animation.json`,
+            size: JSON.stringify(animationData).length,
+            type: 'application/json',
+            userId: userId,
+            isPublic: metadata.isPublic
+          }
+        )
+
+        if (!uploadResult.success) {
+          throw new Error(`Failed to upload animation data: ${uploadResult.error}`)
+        }
+
+        console.log(`Animation data uploaded successfully: ${uploadResult.url}`)
+
         const sheetMusic = await prisma.sheetMusic.create({
           data: {
             title: metadata.title,
@@ -176,12 +197,18 @@ class AsyncUploadProcessor {
             categoryId,
             isPublic: metadata.isPublic,
             userId: userId,
-            animationDataUrl: this.pdfParser.serializeAnimationData(animationData),
+            animationDataUrl: uploadResult.url!,
           },
           include: {
             category: true,
           }
         })
+
+        // Invalidate relevant caches
+        sheetMusicCache.invalidateUser(userId)
+        if (metadata.isPublic) {
+          sheetMusicCache.invalidatePublic()
+        }
 
         await this.updateStatus(sessionId, {
           stage: 'generation',
