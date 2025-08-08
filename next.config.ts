@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
   // Experimental features for performance
   experimental: {
     optimizeCss: true,
-    serverComponentsExternalPackages: ['@prisma/client'],
   },
 
   // Image optimization
@@ -40,6 +39,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  // Server external packages (Next.js 15 style)
+  serverExternalPackages: ['tone', 'standardized-audio-context', '@prisma/client'],
 
   // Webpack configuration for performance
   webpack: (config, { buildId, dev, isServer, webpack }) => {
@@ -103,6 +105,28 @@ const nextConfig: NextConfig = {
       config.externals.push('canvas')
     }
 
+    // Audio context resolution for client-side
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        os: false,
+      }
+    }
+
+    // Resolve audio-related module aliases
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@/types/oscillator-node-constructor-factory': false,
+      '@/types/oscillator-node-renderer-factory': false,
+      '@/types/oscillator-node-renderer': false,
+      '@/types/oscillator-node-renderer-factory-factory': false,
+      '@/types/oscillator-type': false,
+      '@/types/output-connection': false,
+      '@/types/over-sample-type': false,
+    }
+
     return config
   },
 
@@ -139,9 +163,9 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Static assets caching
+      // Static assets caching (Next.js 15 compatible)
       {
-        source: '/_next/static/(.*)',
+        source: '/_next/static/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -151,7 +175,7 @@ const nextConfig: NextConfig = {
       },
       // Images caching
       {
-        source: '/_next/image(.*)',
+        source: '/_next/image:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -169,6 +193,46 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Static file extensions (Next.js 15 compatible pattern)
+      {
+        source: '/:path*\\.(ico|png|jpg|jpeg|gif|webp|svg|woff|woff2|ttf|eot|otf)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // API caching - Public sheets
+      {
+        source: '/api/sheet/public',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=300, stale-while-revalidate=600',
+          },
+        ],
+      },
+      // API caching - Categories
+      {
+        source: '/api/categories',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'private, max-age=60, stale-while-revalidate=120',
+          },
+        ],
+      },
+      // API caching - Animation files
+      {
+        source: '/api/files/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'private, max-age=3600, stale-while-revalidate=7200',
+          },
+        ],
+      },
     ]
   },
 
@@ -182,6 +246,17 @@ const nextConfig: NextConfig = {
         source: '/home',
         destination: '/',
         permanent: true,
+      },
+    ]
+  },
+
+  // Rewrites for handling missing files
+  async rewrites() {
+    return [
+      // Handle audio-related type file requests
+      {
+        source: '/src/types/:path*',
+        destination: '/404',
       },
     ]
   },
