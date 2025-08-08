@@ -7,8 +7,12 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useMobileKeyboardSize, useOrientationChange } from '@/hooks/useMobileKeyboardSize'
+import { useFullScreenAPI, useScreenLock } from '@/hooks/useFullScreenAPI'
+import { useMobileKeyboardShortcuts } from '@/hooks/useMobileKeyboardShortcuts'
 import PianoKeyboard from '@/components/piano/PianoKeyboard'
 import MobileTouchOptimizer from '@/components/mobile/MobileTouchOptimizer'
+import LandscapePianoInterface from '@/components/mobile/LandscapePianoInterface'
+import MobileControlPanel from '@/components/mobile/MobileControlPanel'
 
 interface FullScreenPianoProps {
   onKeyPress?: (keyId: string) => void
@@ -17,6 +21,20 @@ interface FullScreenPianoProps {
   pressedKeys?: string[]
   animationActiveKeys?: string[]
   onExitFullScreen?: () => void
+  enableScreenLock?: boolean
+  showKeyLabels?: boolean
+  keyboardLayout?: 'full' | 'compact' | 'landscape' | 'auto'
+  enableLandscapeMode?: boolean
+  enableMobileControls?: boolean
+  enableKeyboardShortcuts?: boolean
+  
+  // Playback controls (optional)
+  isPlaying?: boolean
+  onTogglePlayback?: () => void
+  currentTime?: number
+  totalTime?: number
+  volume?: number
+  onVolumeChange?: (volume: number) => void
 }
 
 export default function FullScreenPiano({
@@ -25,12 +43,24 @@ export default function FullScreenPiano({
   highlightedKeys = [],
   pressedKeys = [],
   animationActiveKeys = [],
-  onExitFullScreen
+  onExitFullScreen,
+  enableScreenLock = true,
+  showKeyLabels = false,
+  keyboardLayout = 'auto',
+  enableLandscapeMode = true,
+  enableMobileControls = true,
+  enableKeyboardShortcuts = true,
+  isPlaying = false,
+  onTogglePlayback,
+  currentTime = 0,
+  totalTime = 0,
+  volume = 0.7,
+  onVolumeChange
 }: FullScreenPianoProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isFullScreen, setIsFullScreen] = useState(false)
-  const [isLandscapeRequired, setIsLandscapeRequired] = useState(false)
   const [rotationPrompt, setRotationPrompt] = useState(false)
+  const [controlsMinimized, setControlsMinimized] = useState(false)
+  const [showKeyLabelsState, setShowKeyLabelsState] = useState(showKeyLabels)
   
   const { 
     screenSize, 
@@ -40,126 +70,117 @@ export default function FullScreenPiano({
     canFitFullKeyboard 
   } = useMobileKeyboardSize()
 
-  // Check if full screen API is supported
-  const isFullScreenSupported = useCallback(() => {
-    return !!(
-      document.fullscreenEnabled ||
-      (document as any).webkitFullscreenEnabled ||
-      (document as any).mozFullScreenEnabled ||
-      (document as any).msFullscreenEnabled
-    )
-  }, [])
-
-  // Enter full screen mode
-  const enterFullScreen = useCallback(async () => {
-    if (!containerRef.current || !isFullScreenSupported()) return
-
-    try {
-      if (containerRef.current.requestFullscreen) {
-        await containerRef.current.requestFullscreen()
-      } else if ((containerRef.current as any).webkitRequestFullscreen) {
-        await (containerRef.current as any).webkitRequestFullscreen()
-      } else if ((containerRef.current as any).mozRequestFullScreen) {
-        await (containerRef.current as any).mozRequestFullScreen()
-      } else if ((containerRef.current as any).msRequestFullscreen) {
-        await (containerRef.current as any).msRequestFullscreen()
-      }
-
-      setIsFullScreen(true)
-
-      // 모바일에서는 가로모드 권장
+  // Enhanced Full Screen API
+  const { 
+    isSupported: isFullScreenSupported, 
+    isFullScreen, 
+    enterFullScreen, 
+    exitFullScreen, 
+    toggleFullScreen 
+  } = useFullScreenAPI({
+    navigationUI: 'hide',
+    onEnter: () => {
       if (isMobileDevice && !isLandscape) {
-        setIsLandscapeRequired(true)
         setRotationPrompt(true)
-        
-        // 3초 후 자동으로 프롬프트 숨김
-        setTimeout(() => setRotationPrompt(false), 3000)
+        setTimeout(() => setRotationPrompt(false), 4000)
       }
-
-    } catch (error) {
-      console.error('Failed to enter fullscreen:', error)
-    }
-  }, [isFullScreenSupported, isMobileDevice, isLandscape])
-
-  // Exit full screen mode
-  const exitFullScreen = useCallback(async () => {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen()
-      } else if ((document as any).webkitFullscreenElement) {
-        await (document as any).webkitExitFullscreen()
-      } else if ((document as any).mozFullScreenElement) {
-        await (document as any).mozCancelFullScreen()
-      } else if ((document as any).msFullscreenElement) {
-        await (document as any).msExitFullscreen()
+      if (enableScreenLock) {
+        requestScreenLock()
       }
-    } catch (error) {
-      console.error('Failed to exit fullscreen:', error)
+    },
+    onExit: () => {
+      setRotationPrompt(false)
+      if (enableScreenLock) {
+        releaseScreenLock()
+      }
+      onExitFullScreen?.()
+    },
+    onError: (error) => {
+      console.error('Fullscreen error:', error)
     }
+  })
 
-    setIsFullScreen(false)
-    setIsLandscapeRequired(false)
-    setRotationPrompt(false)
-    onExitFullScreen?.()
-  }, [onExitFullScreen])
+  // Screen Lock API for mobile devices
+  const { 
+    isLocked: isScreenLocked, 
+    requestScreenLock, 
+    releaseScreenLock 
+  } = useScreenLock()
+  
+  // Mobile keyboard shortcuts
+  useMobileKeyboardShortcuts({
+    playPause: onTogglePlayback,
+    stop: () => onTogglePlayback?.(), // Assuming same handler
+    toggleKeyLabels: () => setShowKeyLabelsState(prev => !prev),
+    toggleFullScreen: () => toggleFullScreen(containerRef.current || undefined),
+    volumeUp: () => onVolumeChange?.(Math.min(1, volume + 0.1)),
+    volumeDown: () => onVolumeChange?.(Math.max(0, volume - 0.1)),
+    mute: () => onVolumeChange?.(volume > 0 ? 0 : 0.7)
+  }, {
+    enabled: enableKeyboardShortcuts && isFullScreen,
+    preventDefault: true,
+    allowInInputs: false
+  })
+
+  // Enhanced fullscreen enter function
+  const handleEnterFullScreen = useCallback(async () => {
+    if (containerRef.current) {
+      await enterFullScreen(containerRef.current)
+    }
+  }, [enterFullScreen])
 
   // Handle orientation changes
   useOrientationChange(useCallback((landscape: boolean) => {
-    if (isFullScreen && isLandscapeRequired && landscape) {
-      setRotationPrompt(false)
-    } else if (isFullScreen && isMobileDevice && !landscape) {
-      setRotationPrompt(true)
-      setTimeout(() => setRotationPrompt(false), 3000)
-    }
-  }, [isFullScreen, isLandscapeRequired, isMobileDevice]))
-
-  // Listen for fullscreen changes
-  useEffect(() => {
-    const handleFullScreenChange = () => {
-      const fullscreenElement = 
-        document.fullscreenElement ||
-        (document as any).webkitFullscreenElement ||
-        (document as any).mozFullScreenElement ||
-        (document as any).msFullscreenElement
-
-      setIsFullScreen(!!fullscreenElement)
-      
-      if (!fullscreenElement) {
-        setIsLandscapeRequired(false)
+    if (isFullScreen && isMobileDevice) {
+      if (!landscape) {
+        setRotationPrompt(true)
+        setTimeout(() => setRotationPrompt(false), 4000)
+      } else {
         setRotationPrompt(false)
-        onExitFullScreen?.()
       }
     }
+  }, [isFullScreen, isMobileDevice]))
 
-    document.addEventListener('fullscreenchange', handleFullScreenChange)
-    document.addEventListener('webkitfullscreenchange', handleFullScreenChange)
-    document.addEventListener('mozfullscreenchange', handleFullScreenChange)
-    document.addEventListener('MSFullscreenChange', handleFullScreenChange)
-
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullScreenChange)
-      document.removeEventListener('webkitfullscreenchange', handleFullScreenChange)
-      document.removeEventListener('mozfullscreenchange', handleFullScreenChange)
-      document.removeEventListener('MSFullscreenChange', handleFullScreenChange)
+  // Determine optimal layout mode
+  const getOptimalLayout = useCallback(() => {
+    if (keyboardLayout !== 'auto') {
+      return keyboardLayout
     }
-  }, [onExitFullScreen])
-
-  // Calculate optimal dimensions for full screen
+    
+    // Auto-detect best layout
+    if (isMobileDevice && isLandscape && enableLandscapeMode) {
+      return 'landscape'
+    } else if (canFitFullKeyboard && isLandscape) {
+      return 'full'
+    } else {
+      return 'compact'
+    }
+  }, [keyboardLayout, isMobileDevice, isLandscape, canFitFullKeyboard, enableLandscapeMode])
+  
+  // Calculate optimal dimensions for full screen with layout support
   const getFullScreenDimensions = useCallback(() => {
     const containerWidth = screenSize.width
-    const availableHeight = screenSize.height - (isFullScreen ? 0 : 120) // 컨트롤 영역 제외
+    const availableHeight = screenSize.height - (isFullScreen ? 48 : 120) // 컨트롤 영역 제외
     
-    if (isMobileDevice && isLandscape) {
+    const effectiveLayout = getOptimalLayout()
+    
+    if (effectiveLayout === 'landscape') {
+      // 가로모드 전용 레이아웃은 별도 컴포넌트에서 처리
+      return { width: containerWidth, height: availableHeight }
+    } else if (isMobileDevice && isLandscape) {
       // 가로모드: 전체 화면 활용
-      return calculateKeyboardDimensions(containerWidth, Math.min(availableHeight * 0.7, 300))
+      const height = effectiveLayout === 'full' ? Math.min(availableHeight * 0.8, 350) : Math.min(availableHeight * 0.7, 300)
+      return calculateKeyboardDimensions(containerWidth, height)
     } else if (isMobileDevice) {
       // 세로모드: 상단에 더 많은 공간 할당
-      return calculateKeyboardDimensions(containerWidth, Math.min(availableHeight * 0.5, 250))
+      const height = effectiveLayout === 'compact' ? Math.min(availableHeight * 0.4, 200) : Math.min(availableHeight * 0.5, 250)
+      return calculateKeyboardDimensions(containerWidth, height)
     } else {
       // 데스크탑/태블릿
-      return calculateKeyboardDimensions(containerWidth, Math.min(availableHeight * 0.6, 350))
+      const height = effectiveLayout === 'full' ? Math.min(availableHeight * 0.7, 400) : Math.min(availableHeight * 0.6, 350)
+      return calculateKeyboardDimensions(containerWidth, height)
     }
-  }, [screenSize, isFullScreen, isMobileDevice, isLandscape, calculateKeyboardDimensions])
+  }, [screenSize, isFullScreen, isMobileDevice, isLandscape, calculateKeyboardDimensions, getOptimalLayout])
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -168,15 +189,17 @@ export default function FullScreenPiano({
         exitFullScreen()
       } else if (event.key === 'F11') {
         event.preventDefault()
-        isFullScreen ? exitFullScreen() : enterFullScreen()
+        toggleFullScreen(containerRef.current || undefined)
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isFullScreen, exitFullScreen, enterFullScreen])
+  }, [isFullScreen, exitFullScreen, toggleFullScreen])
 
   const dimensions = getFullScreenDimensions()
+  const currentLayout = getOptimalLayout()
+  const shouldUseLandscapeInterface = currentLayout === 'landscape' && isFullScreen
 
   return (
     <div
@@ -194,32 +217,62 @@ export default function FullScreenPiano({
       {/* 전체화면 컨트롤 바 */}
       <div className={`control-bar ${
         isFullScreen 
-          ? 'absolute top-0 left-0 right-0 z-10 bg-gray-900 bg-opacity-80' 
+          ? 'absolute top-0 left-0 right-0 z-10 bg-gray-900 bg-opacity-90 backdrop-blur-sm' 
           : 'hidden'
       }`}>
         <div className="flex justify-between items-center px-4 py-2">
           <div className="flex items-center space-x-4">
-            <span className="text-white text-sm">
+            <span className="text-white text-sm font-medium">
               ClairKeys - 전체화면 피아노
             </span>
-            {isLandscapeRequired && !isLandscape && (
+            {isMobileDevice && !isLandscape && enableLandscapeMode && (
               <div className="flex items-center text-amber-400 text-sm">
-                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 mr-2 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm3 5a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm0 4a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z"/>
                 </svg>
-                가로 모드 권장
+                가로모드로 88키 전체 피아노
               </div>
             )}
+            <div className="flex items-center space-x-4">
+              {enableScreenLock && isScreenLocked && (
+                <div className="flex items-center text-green-400 text-sm">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"/>
+                  </svg>
+                  화면 잠금
+                </div>
+              )}
+              
+              {enableKeyboardShortcuts && (
+                <div className="flex items-center text-gray-400 text-sm">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm3 5a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm0 4a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z"/>
+                  </svg>
+                  키보드 단축키 활성
+                </div>
+              )}
+            </div>
           </div>
-          <button
-            onClick={exitFullScreen}
-            className="text-white hover:text-gray-300 p-2"
-            title="전체화면 종료 (Esc)"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
-            </svg>
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => toggleFullScreen(containerRef.current || undefined)}
+              className="text-white hover:text-gray-300 p-2 rounded-md hover:bg-gray-700 transition-colors"
+              title="전체화면 토글 (F11)"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z"/>
+              </svg>
+            </button>
+            <button
+              onClick={exitFullScreen}
+              className="text-white hover:text-gray-300 p-2 rounded-md hover:bg-gray-700 transition-colors"
+              title="전체화면 종료 (Esc)"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -241,55 +294,100 @@ export default function FullScreenPiano({
         </div>
       )}
 
+      {/* 모바일 컨트롤 패널 */}
+      {enableMobileControls && isFullScreen && (
+        <MobileControlPanel
+          isPlaying={isPlaying}
+          onPlay={onTogglePlayback}
+          onPause={onTogglePlayback}
+          onStop={onTogglePlayback}
+          volume={volume}
+          onVolumeChange={onVolumeChange}
+          showKeyLabels={showKeyLabelsState}
+          onToggleKeyLabels={() => setShowKeyLabelsState(prev => !prev)}
+          onExitFullScreen={exitFullScreen}
+          onToggleControls={() => setControlsMinimized(prev => !prev)}
+          currentTime={currentTime}
+          totalTime={totalTime}
+          progress={totalTime > 0 ? currentTime / totalTime : 0}
+          isMinimized={controlsMinimized}
+          position="top"
+          className=""
+        />
+      )}
+      
       {/* 메인 피아노 영역 */}
       <div 
         className={`piano-container flex-1 flex items-center justify-center ${
-          isFullScreen ? 'pt-12' : ''
+          isFullScreen ? (enableMobileControls && !controlsMinimized ? 'pt-20' : 'pt-12') : ''
         }`}
         style={{ 
-          height: isFullScreen ? `calc(100vh - ${isFullScreen ? 48 : 0}px)` : 'auto',
-          overflow: canFitFullKeyboard ? 'hidden' : 'auto'
+          height: isFullScreen 
+            ? `calc(100vh - ${enableMobileControls && !controlsMinimized ? 80 : 48}px)` 
+            : 'auto',
+          overflow: shouldUseLandscapeInterface ? 'hidden' : (canFitFullKeyboard ? 'hidden' : 'auto')
         }}
       >
-        <MobileTouchOptimizer
-          enableHapticFeedback={isMobileDevice}
-          touchSensitivity="medium"
-          preventScrolling={isFullScreen}
-        >
-          <div 
-            className="piano-wrapper"
-            style={{
-              width: canFitFullKeyboard ? '100%' : `${dimensions.width}px`,
-              maxWidth: '100%',
-              transform: `scale(${Math.min(1, screenSize.width / dimensions.width)})`,
-              transformOrigin: 'center center'
-            }}
+        {shouldUseLandscapeInterface ? (
+          // 가로모드 전용 피아노 인터페이스
+          <LandscapePianoInterface
+            onKeyPress={onKeyPress}
+            onKeyRelease={onKeyRelease}
+            highlightedKeys={highlightedKeys}
+            pressedKeys={pressedKeys}
+            animationActiveKeys={animationActiveKeys}
+            showKeyLabels={showKeyLabelsState}
+            enableZoom={true}
+            enableAutoScroll={true}
+            className="w-full h-full"
+          />
+        ) : (
+          // 기존 피아노 인터페이스
+          <MobileTouchOptimizer
+            enableHapticFeedback={isMobileDevice}
+            touchSensitivity="medium"
+            preventScrolling={isFullScreen}
           >
-            <PianoKeyboard
-              onKeyPress={onKeyPress}
-              onKeyRelease={onKeyRelease}
-              highlightedKeys={highlightedKeys}
-              pressedKeys={pressedKeys}
-              animationActiveKeys={animationActiveKeys}
-              height={dimensions.height}
-              className={isFullScreen ? 'fullscreen-piano' : ''}
-            />
-          </div>
-        </MobileTouchOptimizer>
+            <div 
+              className="piano-wrapper"
+              style={{
+                width: canFitFullKeyboard ? '100%' : `${dimensions.width}px`,
+                maxWidth: '100%',
+                transform: `scale(${Math.min(1, screenSize.width / dimensions.width)})`,
+                transformOrigin: 'center center'
+              }}
+            >
+              <PianoKeyboard
+                onKeyPress={onKeyPress}
+                onKeyRelease={onKeyRelease}
+                highlightedKeys={highlightedKeys}
+                pressedKeys={pressedKeys}
+                animationActiveKeys={animationActiveKeys}
+                height={dimensions.height}
+                className={isFullScreen ? 'fullscreen-piano' : ''}
+              />
+            </div>
+          </MobileTouchOptimizer>
+        )}
       </div>
 
       {/* 전체화면 진입 버튼 (일반 모드일 때만 표시) */}
-      {!isFullScreen && isFullScreenSupported() && (
-        <div className="absolute top-2 right-2">
+      {!isFullScreen && isFullScreenSupported && (
+        <div className="absolute top-2 right-2 z-10">
           <button
-            onClick={enterFullScreen}
-            className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg shadow-lg transition-colors"
+            onClick={handleEnterFullScreen}
+            className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl transform hover:scale-105"
             title="전체화면 모드 (F11)"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z"/>
             </svg>
           </button>
+          {isMobileDevice && (
+            <div className="absolute top-full right-0 mt-2 text-xs text-gray-600 text-right whitespace-nowrap">
+              최적화된 연주를 위해<br />전체화면을 권장합니다
+            </div>
+          )}
         </div>
       )}
 
