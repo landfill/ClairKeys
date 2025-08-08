@@ -395,27 +395,6 @@ export default function PianoKeyboard({
     return null
   }
 
-  // Get coordinates from event
-  const getEventCoordinates = (event: React.MouseEvent | React.TouchEvent) => {
-    const canvas = canvasRef.current
-    if (!canvas) return null
-
-    const rect = canvas.getBoundingClientRect()
-    
-    if ('touches' in event) {
-      if (event.touches.length === 0) return null
-      const touch = event.touches[0]
-      return {
-        x: (touch.clientX - rect.left) * (canvasSize.width / rect.width),
-        y: (touch.clientY - rect.top) * (canvasSize.height / rect.height)
-      }
-    } else {
-      return {
-        x: (event.clientX - rect.left) * (canvasSize.width / rect.width),
-        y: (event.clientY - rect.top) * (canvasSize.height / rect.height)
-      }
-    }
-  }
 
   // Throttle event handling for performance
   const eventThrottleRef = useRef<number | null>(null)
