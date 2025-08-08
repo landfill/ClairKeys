@@ -12,6 +12,11 @@ import { Button } from '@/components/ui/Button'
 interface CategorySheetMusicListProps {
   selectedCategoryId?: number | null
   onSheetMusicMove?: (sheetMusicId: number, newCategoryId: number | null) => void
+  onCategoryChange?: () => void
+  onCategorySelect?: (categoryId: number | null) => void
+  searchQuery?: string
+  sortBy?: 'recent' | 'name' | 'created'
+  showCategorySelector?: boolean
 }
 
 interface GroupedSheetMusic {
@@ -21,7 +26,12 @@ interface GroupedSheetMusic {
 
 export function CategorySheetMusicList({ 
   selectedCategoryId, 
-  onSheetMusicMove 
+  onSheetMusicMove,
+  onCategoryChange,
+  onCategorySelect,
+  searchQuery = '',
+  sortBy = 'recent',
+  showCategorySelector = false
 }: CategorySheetMusicListProps) {
   const { sheetMusic, loading: sheetMusicLoading, updateSheetMusic, deleteSheetMusic, fetchUserSheetMusic } = useSheetMusic()
   const { categories, loading: categoriesLoading } = useCategories()
@@ -32,12 +42,39 @@ export function CategorySheetMusicList({
   useEffect(() => {
     const loadSheetMusic = async () => {
       await fetchUserSheetMusic({
-        categoryId: selectedCategoryId || undefined
+        categoryId: selectedCategoryId || undefined,
+        search: searchQuery || undefined
       })
     }
     
     loadSheetMusic()
-  }, [selectedCategoryId, fetchUserSheetMusic])
+  }, [selectedCategoryId, searchQuery, fetchUserSheetMusic])
+
+  // Filter and sort sheet music
+  const filteredAndSortedSheetMusic = sheetMusic
+    .filter(sheet => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        return (
+          sheet.title.toLowerCase().includes(query) ||
+          (sheet.composer && sheet.composer.toLowerCase().includes(query))
+        )
+      }
+      return true
+    })
+    .sort((a, b) => {
+      // Sort logic
+      switch (sortBy) {
+        case 'name':
+          return a.title.localeCompare(b.title)
+        case 'created':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        case 'recent':
+        default:
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      }
+    })
 
   // Group sheet music by category
   const groupedSheetMusic: GroupedSheetMusic[] = []
@@ -49,7 +86,7 @@ export function CategorySheetMusicList({
     const categoriesMap = new Map(categories.map(cat => [cat.id, cat]))
     
     // Add uncategorized sheet music
-    const uncategorizedSheetMusic = sheetMusic.filter(sm => sm.categoryId === null)
+    const uncategorizedSheetMusic = filteredAndSortedSheetMusic.filter(sm => sm.categoryId === null)
     if (uncategorizedSheetMusic.length > 0) {
       groupedSheetMusic.push({
         category: null,
@@ -59,7 +96,7 @@ export function CategorySheetMusicList({
     
     // Add categorized sheet music
     categories.forEach(category => {
-      const categorySheetMusic = sheetMusic.filter(sm => sm.categoryId === category.id)
+      const categorySheetMusic = filteredAndSortedSheetMusic.filter(sm => sm.categoryId === category.id)
       if (categorySheetMusic.length > 0) {
         groupedSheetMusic.push({
           category,
@@ -70,7 +107,7 @@ export function CategorySheetMusicList({
   } else {
     // Show only selected category
     const selectedCategory = categories.find(cat => cat.id === selectedCategoryId)
-    const categorySheetMusic = sheetMusic.filter(sm => sm.categoryId === selectedCategoryId)
+    const categorySheetMusic = filteredAndSortedSheetMusic.filter(sm => sm.categoryId === selectedCategoryId)
     
     if (categorySheetMusic.length > 0 || selectedCategory) {
       groupedSheetMusic.push({
@@ -160,6 +197,48 @@ export function CategorySheetMusicList({
 
   return (
     <div className="space-y-8">
+      {/* Category Selector for Categories Tab */}
+      {showCategorySelector && (
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold mb-4">카테고리 선택</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+            <button
+              onClick={() => onCategorySelect?.(null)}
+              className={`
+                p-3 rounded-lg border-2 transition-colors text-left
+                ${selectedCategoryId === null
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 bg-white hover:bg-gray-50'
+                }
+              `}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">📚</span>
+                <span className="text-sm font-medium">전체</span>
+              </div>
+            </button>
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => onCategorySelect?.(category.id)}
+                className={`
+                  p-3 rounded-lg border-2 transition-colors text-left
+                  ${selectedCategoryId === category.id
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 bg-white hover:bg-gray-50'
+                  }
+                `}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">📁</span>
+                  <span className="text-sm font-medium truncate">{category.name}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {groupedSheetMusic.map((group, index) => (
         <div key={group.category?.id || 'uncategorized'} className="space-y-4">
           {/* Category header */}
@@ -185,7 +264,7 @@ export function CategorySheetMusicList({
           </div>
 
           {/* Sheet music grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
             {group.sheetMusic.map((sheet) => (
               <div
                 key={sheet.id}

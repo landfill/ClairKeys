@@ -173,16 +173,32 @@ export function CategoryManager({
 
       {/* All categories option */}
       <div
-        className={`p-3 rounded-md cursor-pointer transition-colors ${
-          selectedCategoryId === null
-            ? 'bg-blue-100 border-2 border-blue-500'
-            : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-        }`}
+        className={`
+          category-item p-3 rounded-lg cursor-pointer transition-all duration-200 
+          min-h-[44px] flex items-center
+          ${selectedCategoryId === null
+            ? 'bg-blue-50 border-2 border-blue-500 shadow-sm ring-2 ring-blue-200' 
+            : 'bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+          }
+        `}
         onClick={() => onCategorySelect?.(null)}
+        role="button"
+        tabIndex={0}
+        aria-label="전체 악보 보기"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onCategorySelect?.(null)
+          }
+        }}
       >
-        <div className="flex items-center gap-2">
-          <span className="text-lg">📁</span>
-          <span className="font-medium">전체 악보</span>
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 flex items-center justify-center">
+            <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M2 6a2 2 0 012-2h4l2 2h4a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <span className="font-medium text-gray-800">전체 악보</span>
         </div>
       </div>
 
@@ -191,11 +207,14 @@ export function CategoryManager({
         {categories.map((category) => (
           <div
             key={category.id}
-            className={`p-3 rounded-md transition-colors ${
-              selectedCategoryId === category.id
-                ? 'bg-blue-100 border-2 border-blue-500'
-                : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-            }`}
+            className={`
+              category-item p-3 rounded-lg transition-all duration-200 
+              min-h-[44px] flex items-center
+              ${selectedCategoryId === category.id
+                ? 'bg-blue-50 border-2 border-blue-500 shadow-sm ring-2 ring-blue-200'
+                : 'bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+              }
+            `}
           >
             {editingId === category.id ? (
               <div className="space-y-2">
@@ -224,15 +243,28 @@ export function CategoryManager({
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between w-full">
                 <div
-                  className="flex items-center gap-2 flex-1 cursor-pointer"
+                  className="flex items-center gap-3 flex-1 cursor-pointer"
                   onClick={() => onCategorySelect?.(category.id)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${category.name} 카테고리 선택`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onCategorySelect?.(category.id)
+                    }
+                  }}
                 >
-                  <span className="text-lg">📁</span>
-                  <span className="font-medium">{category.name}</span>
+                  <div className="w-6 h-6 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M2 6a2 2 0 012-2h4l2 2h4a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span className="font-medium text-gray-800">{category.name}</span>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-2">
                   <Button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -240,6 +272,7 @@ export function CategoryManager({
                     }}
                     variant="outline"
                     size="sm"
+                    className="min-h-[36px] px-3"
                   >
                     수정
                   </Button>
@@ -250,7 +283,7 @@ export function CategoryManager({
                     }}
                     variant="outline"
                     size="sm"
-                    className="text-red-600 hover:text-red-700"
+                    className="min-h-[36px] px-3 text-red-600 hover:text-red-700 hover:border-red-300"
                   >
                     삭제
                   </Button>

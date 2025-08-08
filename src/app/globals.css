@@ -100,3 +100,66 @@ body {
 .practice-progress-animated {
   animation: progress-fill 0.5s ease-out;
 }
+
+/* Library UI Improvements */
+.category-item {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Focus styles for accessibility */
+.category-item:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for mobile */
+@media (max-width: 1023px) {
+  .sidebar-transition {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .overlay-transition {
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Enhanced responsive grid for sheet music */
+@media (min-width: 1536px) {
+  .sheet-music-grid-enhanced {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+@media (min-width: 1920px) {
+  .sheet-music-grid-enhanced {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+/* Floating Action Button enhancements */
+.fab-button {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fab-button:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
+}
+
+.fab-button:active {
+  transform: translateY(0px) scale(0.95);
+}
+
+/* Tab navigation improvements */
+.tab-navigation {
+  backdrop-filter: blur(10px);
+  background: rgba(243, 244, 246, 0.8);
+}
+
+.tab-navigation button:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
