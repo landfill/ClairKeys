@@ -12,6 +12,8 @@
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "analyze": "ANALYZE=true npm run build",
+    "bundle-analyzer": "npx webpack-bundle-analyzer .next/static/chunks",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { PlaybackControls } from '@/components/playback'
 import { PracticeGuideControls, PracticeKeyHighlight } from '@/components/practice'
 import { PianoAnimationData, PracticeState } from '@/types/animation'
@@ -31,6 +31,13 @@ export default function AnimationPlayer({
   const [practiceState, setPracticeState] = useState<PracticeState | null>(null)
 
   const animationEngineRef = useRef(getAnimationEngine())
+  
+  // Performance optimization: Memoize expensive calculations
+  const memoizedAnimationData = useMemo(() => animationData, [animationData])
+  
+  // Performance optimization: Throttle state updates
+  const updateThrottleRef = useRef<number | null>(null)
+  const THROTTLE_MS = 16 // ~60fps
 
   // Initialize animation engine
   useEffect(() => {
@@ -40,9 +47,14 @@ export default function AnimationPlayer({
     engine.loadAnimation(animationData)
     setIsReady(true)
     
-    // Set up event listeners
+    // Set up event listeners with throttling for performance
     const handleTimeUpdate = (event: any) => {
-      setCurrentTime(event.data.time || 0)
+      if (updateThrottleRef.current) return
+      
+      updateThrottleRef.current = window.setTimeout(() => {
+        setCurrentTime(event.data.time || 0)
+        updateThrottleRef.current = null
+      }, THROTTLE_MS)
     }
     
     const handlePlayStateChange = (event: any) => {
@@ -58,6 +70,9 @@ export default function AnimationPlayer({
       if (note) {
         onNotePlay?.(note)
         setActiveNotes(prev => {
+          // Performance: Only create new Set if note isn't already active
+          if (prev.has(note)) return prev
+          
           const newSet = new Set(prev)
           newSet.add(note)
           onActiveNotesChange?.(newSet)
@@ -71,6 +86,9 @@ export default function AnimationPlayer({
       if (note) {
         onNoteStop?.(note)
         setActiveNotes(prev => {
+          // Performance: Only create new Set if note is actually active
+          if (!prev.has(note)) return prev
+          
           const newSet = new Set(prev)
           newSet.delete(note)
           onActiveNotesChange?.(newSet)
@@ -106,6 +124,13 @@ export default function AnimationPlayer({
     
     // Cleanup
     return () => {
+      // Clear throttle timeout
+      if (updateThrottleRef.current) {
+        clearTimeout(updateThrottleRef.current)
+        updateThrottleRef.current = null
+      }
+      
+      // Remove event listeners
       engine.off('timeUpdate', handleTimeUpdate)
       engine.off('playStateChange', handlePlayStateChange)
       engine.off('speedChange', handleSpeedChange)
@@ -115,7 +140,7 @@ export default function AnimationPlayer({
       engine.off('practiceComplete', handlePracticeComplete)
       engine.off('tempoIncrease', handleTempoIncrease)
     }
-  }, [animationData, onNotePlay, onNoteStop, onActiveNotesChange])
+  }, [memoizedAnimationData, onNotePlay, onNoteStop, onActiveNotesChange])
 
   // Sync local state with engine state
   useEffect(() => {
@@ -130,7 +155,7 @@ export default function AnimationPlayer({
     setIsReady(state.isReady)
   }, [])
 
-  const handlePlay = () => {
+  const handlePlay = useCallback(() => {
     const engine = animationEngineRef.current
     
     if (isPlaying) {
@@ -138,25 +163,25 @@ export default function AnimationPlayer({
     } else {
       engine.play()
     }
-  }
+  }, [isPlaying])
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     const engine = animationEngineRef.current
     engine.stop()
-  }
+  }, [])
 
-  const handleSeek = (newTime: number) => {
+  const handleSeek = useCallback((newTime: number) => {
     const engine = animationEngineRef.current
-    const clampedTime = Math.max(0, Math.min(newTime, animationData.duration))
+    const clampedTime = Math.max(0, Math.min(newTime, memoizedAnimationData.duration))
     engine.seekTo(clampedTime)
-  }
+  }, [memoizedAnimationData.duration])
 
-  const handleSpeedChange = (speed: number) => {
+  const handleSpeedChange = useCallback((speed: number) => {
     const engine = animationEngineRef.current
     engine.setSpeed(speed)
-  }
+  }, [])
 
-  const handleModeChange = (mode: 'listen' | 'follow' | 'practice') => {
+  const handleModeChange = useCallback((mode: 'listen' | 'follow' | 'practice') => {
     const engine = animationEngineRef.current
     engine.setMode(mode)
     setPlaybackMode(mode)
@@ -166,56 +191,56 @@ export default function AnimationPlayer({
     } else {
       setPracticeState(null)
     }
-  }
+  }, [])
 
-  // Practice mode handlers
-  const handleStartPractice = (startTempo: number = 0.5, targetTempo: number = 1.0) => {
+  // Practice mode handlers (optimized with useCallback)
+  const handleStartPractice = useCallback((startTempo: number = 0.5, targetTempo: number = 1.0) => {
     const engine = animationEngineRef.current
     handleModeChange('practice')
     engine.startPracticeMode(startTempo, targetTempo)
     setPracticeState(engine.getPracticeState())
-  }
+  }, [handleModeChange])
 
-  const handleNextStep = () => {
+  const handleNextStep = useCallback(() => {
     const engine = animationEngineRef.current
     engine.nextPracticeStep()
     setPracticeState(engine.getPracticeState())
-  }
+  }, [])
 
-  const handleExitPractice = () => {
+  const handleExitPractice = useCallback(() => {
     handleModeChange('listen')
-  }
+  }, [handleModeChange])
 
-  const handleToggleTempoProgression = (enabled: boolean, increment: number = 0.1) => {
+  const handleToggleTempoProgression = useCallback((enabled: boolean, increment: number = 0.1) => {
     const engine = animationEngineRef.current
     engine.setPracticeTempoProgression(enabled, increment)
-  }
+  }, [])
 
-  // 키보드 단축키 핸들러
-  const handleSpeedIncrease = () => {
+  // 키보드 단축키 핸들러 (최적화)
+  const handleSpeedIncrease = useCallback(() => {
     const newSpeed = Math.min(2.0, playbackSpeed + 0.25)
     handleSpeedChange(newSpeed)
-  }
+  }, [playbackSpeed, handleSpeedChange])
 
-  const handleSpeedDecrease = () => {
+  const handleSpeedDecrease = useCallback(() => {
     const newSpeed = Math.max(0.25, playbackSpeed - 0.25)
     handleSpeedChange(newSpeed)
-  }
+  }, [playbackSpeed, handleSpeedChange])
 
-  const handleToggleMode = () => {
+  const handleToggleMode = useCallback(() => {
     const newMode = playbackMode === 'listen' ? 'follow' : 'listen'
     handleModeChange(newMode)
-  }
+  }, [playbackMode, handleModeChange])
 
-  const handleSeekBackward = () => {
+  const handleSeekBackward = useCallback(() => {
     const newTime = Math.max(0, currentTime - 10)
     handleSeek(newTime)
-  }
+  }, [currentTime, handleSeek])
 
-  const handleSeekForward = () => {
-    const newTime = Math.min(animationData.duration, currentTime + 10)
+  const handleSeekForward = useCallback(() => {
+    const newTime = Math.min(memoizedAnimationData.duration, currentTime + 10)
     handleSeek(newTime)
-  }
+  }, [memoizedAnimationData.duration, currentTime, handleSeek])
 
   // 키보드 단축키 등록
   useKeyboardShortcuts({
@@ -279,26 +304,34 @@ export default function AnimationPlayer({
         </div>
       )}
 
-      {/* Active Notes Display - Show in listen/follow modes */}
-      {playbackMode !== 'practice' && activeNotes.size > 0 && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">활성 음표:</span>
-            <span className="text-sm font-medium text-gray-900">
-              {activeNotes.size}개
-            </span>
+      {/* Active Notes Display - Show in listen/follow modes (memoized) */}
+      {useMemo(() => {
+        if (playbackMode === 'practice' || activeNotes.size === 0) return null
+        
+        return (
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">활성 음표:</span>
+              <span className="text-sm font-medium text-gray-900">
+                {activeNotes.size}개
+              </span>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }, [playbackMode, activeNotes.size])}
 
-      {/* Active Notes Display (for debugging) */}
-      {process.env.NODE_ENV === 'development' && activeNotes.size > 0 && (
-        <div className="mt-4 p-3 bg-gray-50 rounded">
-          <p className="text-sm text-gray-600">
-            Active notes: {Array.from(activeNotes).join(', ')}
-          </p>
-        </div>
-      )}
+      {/* Active Notes Display (for debugging) - memoized */}
+      {useMemo(() => {
+        if (process.env.NODE_ENV !== 'development' || activeNotes.size === 0) return null
+        
+        return (
+          <div className="mt-4 p-3 bg-gray-50 rounded">
+            <p className="text-sm text-gray-600">
+              Active notes: {Array.from(activeNotes).join(', ')}
+            </p>
+          </div>
+        )
+      }, [activeNotes])}
 
       {/* Ready Status */}
       {!isReady && (

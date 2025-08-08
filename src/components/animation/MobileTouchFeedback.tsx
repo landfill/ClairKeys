@@ -48,6 +48,11 @@ export default function MobileTouchFeedback({
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
   const [devicePixelRatio, setDevicePixelRatio] = useState(1)
   const [isMobile, setIsMobile] = useState(false)
+  
+  // Performance optimization: Object pool for touch points
+  const touchPoolRef = useRef<TouchPoint[]>([])
+  const lastUpdateTimeRef = useRef<number>(0)
+  const UPDATE_THROTTLE_MS = 16 // ~60fps
 
   // Detect if device is mobile/touch enabled
   useEffect(() => {

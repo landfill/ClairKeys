@@ -49,6 +49,14 @@ export default function FloatingNotes({
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 400 })
   const [floatingNotes, setFloatingNotes] = useState<FloatingNote[]>([])
   const [devicePixelRatio, setDevicePixelRatio] = useState(1)
+  
+  // Performance optimization: Object pools for reusing FloatingNote objects
+  const notePoolRef = useRef<FloatingNote[]>([])
+  const activeNotesSetRef = useRef<Set<string>>(new Set())
+  
+  // Performance optimization: Throttle canvas updates
+  const lastUpdateTimeRef = useRef<number>(0)
+  const UPDATE_THROTTLE_MS = 16 // ~60fps
 
   // Update canvas size
   const updateCanvasSize = useCallback(() => {
@@ -76,37 +84,69 @@ export default function FloatingNotes({
     }
   }, [updateCanvasSize])
 
-  // Create new floating note
+  // Create new floating note with object pooling
   const createFloatingNote = useCallback((note: string): FloatingNote | null => {
     const keyPosition = keyPositions.get(note)
     if (!keyPosition) return null
 
+    // Try to reuse from pool first
+    let floatingNote = notePoolRef.current.pop()
+    
+    if (!floatingNote) {
+      // Create new if pool is empty
+      floatingNote = {
+        id: '',
+        note: '',
+        x: 0,
+        y: 0,
+        velocity: 0,
+        startTime: 0,
+        color: '',
+        size: 0,
+        rotation: 0,
+        drift: 0
+      }
+    }
+
+    // Initialize/reset properties
     const velocity = Math.random() * 0.5 + 0.5 // 0.5 to 1.0
     const colorIndex = Math.floor(Math.random() * NOTE_COLORS.length)
     const symbolIndex = Math.floor(Math.random() * MUSICAL_SYMBOLS.length)
     
-    return {
-      id: `${note}-${Date.now()}-${Math.random()}`,
-      note: MUSICAL_SYMBOLS[symbolIndex],
-      x: keyPosition.x + keyPosition.width / 2 + (Math.random() - 0.5) * 20,
-      y: keyPosition.y,
-      velocity: velocity,
-      startTime: Date.now(),
-      color: NOTE_COLORS[colorIndex],
-      size: 16 + velocity * 8,
-      rotation: (Math.random() - 0.5) * 45,
-      drift: (Math.random() - 0.5) * 30
-    }
+    floatingNote.id = `${note}-${Date.now()}-${Math.random()}`
+    floatingNote.note = MUSICAL_SYMBOLS[symbolIndex]
+    floatingNote.x = keyPosition.x + keyPosition.width / 2 + (Math.random() - 0.5) * 20
+    floatingNote.y = keyPosition.y
+    floatingNote.velocity = velocity
+    floatingNote.startTime = Date.now()
+    floatingNote.color = NOTE_COLORS[colorIndex]
+    floatingNote.size = 16 + velocity * 8
+    floatingNote.rotation = (Math.random() - 0.5) * 45
+    floatingNote.drift = (Math.random() - 0.5) * 30
+    
+    return floatingNote
   }, [keyPositions])
 
-  // Update floating notes when active notes change
+  // Update floating notes when active notes change (optimized)
   useEffect(() => {
-    const newNotes: FloatingNote[] = []
+    const currentActiveSet = new Set(activeNotes)
+    const previousActiveSet = activeNotesSetRef.current
     
-    activeNotes.forEach(note => {
-      // Check if this note is already floating
+    // Only process new notes (not already active)
+    const newActiveNotes = activeNotes.filter(note => !previousActiveSet.has(note))
+    
+    if (newActiveNotes.length === 0) {
+      activeNotesSetRef.current = currentActiveSet
+      return
+    }
+    
+    const newNotes: FloatingNote[] = []
+    const currentTime = Date.now()
+    
+    newActiveNotes.forEach(note => {
+      // Check if this note is already floating recently
       const existingNote = floatingNotes.find(fn => 
-        fn.note === note && Date.now() - fn.startTime < 200
+        fn.id.startsWith(note) && currentTime - fn.startTime < 200
       )
       
       if (!existingNote) {
@@ -119,12 +159,19 @@ export default function FloatingNotes({
     
     if (newNotes.length > 0) {
       setFloatingNotes(prev => {
+        // Return expired notes to pool
+        const currentTime = Date.now()
+        const expiredNotes = prev.filter(note => currentTime - note.startTime >= noteDuration)
+        notePoolRef.current.push(...expiredNotes.slice(0, 10)) // Limit pool size
+        
         const combined = [...prev, ...newNotes]
-        // Limit total notes
+        // Limit total notes for performance
         return combined.slice(-maxNotes)
       })
     }
-  }, [activeNotes, createFloatingNote, floatingNotes, maxNotes])
+    
+    activeNotesSetRef.current = currentActiveSet
+  }, [activeNotes, createFloatingNote, floatingNotes, maxNotes, noteDuration])
 
   // Draw floating notes
   const drawFloatingNotes = useCallback((ctx: CanvasRenderingContext2D, currentTime: number) => {
@@ -213,10 +260,19 @@ export default function FloatingNotes({
     })
   }, [canvasSize, floatingNotes, noteDuration, noteSpeed, enableParticles])
 
-  // Animation loop
+  // Animation loop with throttling
   const animate = useCallback((currentTime: number) => {
     const canvas = canvasRef.current
     if (!canvas) return
+
+    // Throttle updates for performance
+    if (currentTime - lastUpdateTimeRef.current < UPDATE_THROTTLE_MS) {
+      if (floatingNotes.length > 0) {
+        animationFrameRef.current = requestAnimationFrame(animate)
+      }
+      return
+    }
+    lastUpdateTimeRef.current = currentTime
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return

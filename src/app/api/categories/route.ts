@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
+import { cacheService } from '@/lib/cache'
 
-// GET /api/categories - Get user's categories
+// GET /api/categories - Get user's categories (with caching)
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -18,6 +19,24 @@ export async function GET() {
       )
     }
 
+    const cacheKey = `categories_${session.user.id}`
+    
+    // Try to get from cache first
+    const cachedCategories = await cacheService.get(cacheKey, {
+      ttl: 60 * 1000, // 1 minute cache
+      version: '1.0'
+    })
+    
+    if (cachedCategories) {
+      console.log('Returning cached categories')
+      return NextResponse.json(cachedCategories, {
+        headers: {
+          'X-Cache': 'HIT'
+        }
+      })
+    }
+
+    // Fetch from database
     const categories = await prisma.category.findMany({
       where: {
         userId: session.user.id,
@@ -27,7 +46,17 @@ export async function GET() {
       },
     })
 
-    return NextResponse.json(categories)
+    // Cache the result
+    await cacheService.set(cacheKey, categories, {
+      ttl: 60 * 1000, // 1 minute cache
+      version: '1.0'
+    })
+
+    return NextResponse.json(categories, {
+      headers: {
+        'X-Cache': 'MISS'
+      }
+    })
   } catch (error) {
     console.error('Failed to fetch categories:', error)
     return NextResponse.json(
@@ -85,6 +114,10 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
       },
     })
+
+    // Invalidate cache after creating new category
+    const cacheKey = `categories_${session.user.id}`
+    await cacheService.delete(cacheKey)
 
     return NextResponse.json(category, { status: 201 })
   } catch (error) {
