@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
 import { Button } from '@/components/ui'
 import AuthGuard from '@/components/auth/AuthGuard'
-import { CategorySheetMusicList } from '@/components/category/CategorySheetMusicList'
+import { LibrarySheetMusicList } from '@/components/library/LibrarySheetMusicList'
 
 export default function LibraryPage() {
   const router = useRouter()
@@ -103,15 +103,15 @@ export default function LibraryPage() {
 
           {/* Content Area */}
           <div className="min-h-screen">
-            <CategorySheetMusicList
-              key={`${refreshKey}-${activeTab}-${selectedCategoryId}`}
-              selectedCategoryId={activeTab === 'all' ? null : selectedCategoryId}
-              onSheetMusicMove={handleSheetMusicMove}
-              onCategoryChange={handleCategoryChange}
-              onCategorySelect={handleCategorySelect}
+            <LibrarySheetMusicList
+              selectedCategoryId={activeTab === 'categories' ? selectedCategoryId : null}
               searchQuery={searchQuery}
               sortBy={sortBy}
               showCategorySelector={activeTab === 'categories'}
+              onCategorySelect={handleCategorySelect}
+              onSheetMusicMove={handleSheetMusicMove}
+              onCategoryChange={handleCategoryChange}
+              key={refreshKey}
             />
           </div>
 
