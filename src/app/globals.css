@@ -113,16 +113,7 @@ body {
   outline-offset: 2px;
 }
 
-/* Smooth transitions for mobile */
-@media (max-width: 1023px) {
-  .sidebar-transition {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .overlay-transition {
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-}
+/* 이전 사이드바 관련 CSS 제거됨 */
 
 /* Enhanced responsive grid for sheet music */
 @media (min-width: 1536px) {
