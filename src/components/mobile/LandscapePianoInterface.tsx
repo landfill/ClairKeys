@@ -366,7 +366,7 @@ export default function LandscapePianoInterface({
             enablePinch={enableZoom}
             enableDoubleClick={enableZoom}
             className="w-full h-full"
-          >
+          />
         ) : null}
         
         <MobileTouchOptimizer
