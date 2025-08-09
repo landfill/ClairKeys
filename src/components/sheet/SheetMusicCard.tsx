@@ -42,19 +42,19 @@ export function SheetMusicCard({
   }
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-200">
-      <div className="p-4 space-y-3">
+    <Card className="group hover:shadow-lg transition-shadow duration-200 h-full flex flex-col">
+      <div className="p-4 space-y-3 flex-1 flex flex-col">
         {/* Header with title and composer */}
-        <div className="space-y-1">
-          <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-blue-600 transition-colors">
+        <div className="space-y-1 flex-shrink-0">
+          <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-blue-600 transition-colors min-h-[3.5rem]">
             {sheetMusic.title}
           </h3>
-          <p className="text-gray-600 text-sm">{sheetMusic.composer}</p>
+          <p className="text-gray-600 text-sm truncate">{sheetMusic.composer}</p>
         </div>
 
         {/* Category and visibility info */}
-        <div className="flex items-center gap-2 text-xs">
-          <span className="px-2 py-1 bg-gray-100 rounded-full">
+        <div className="flex items-center gap-2 text-xs flex-shrink-0">
+          <span className="px-2 py-1 bg-gray-100 rounded-full truncate">
             📁 {sheetMusic.category?.name || '미분류'}
           </span>
           <span className={`px-2 py-1 rounded-full ${
@@ -67,12 +67,15 @@ export function SheetMusicCard({
         </div>
 
         {/* Date */}
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 flex-shrink-0">
           {formatDate(sheetMusic.createdAt)}
         </p>
 
+        {/* Spacer to push buttons to bottom */}
+        <div className="flex-1"></div>
+
         {/* Action buttons */}
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2 pt-2 flex-shrink-0">
           <Link href={`/sheet/${sheetMusic.id}`} className="flex-1">
             <Button className="w-full" size="sm">
               연주하기
@@ -84,6 +87,7 @@ export function SheetMusicCard({
               onClick={() => onEdit(sheetMusic)}
               variant="outline"
               size="sm"
+              className="min-w-[3rem]"
             >
               수정
             </Button>
@@ -95,6 +99,7 @@ export function SheetMusicCard({
                 onClick={() => setShowMoveMenu(!showMoveMenu)}
                 variant="outline"
                 size="sm"
+                className="min-w-[3rem]"
               >
                 이동
               </Button>
@@ -132,7 +137,7 @@ export function SheetMusicCard({
               onClick={() => setShowDeleteDialog(true)}
               variant="outline"
               size="sm"
-              className="text-red-600 hover:text-red-700 hover:border-red-300"
+              className="text-red-600 hover:text-red-700 hover:border-red-300 min-w-[3rem]"
             >
               삭제
             </Button>
