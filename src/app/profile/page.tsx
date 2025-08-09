@@ -28,7 +28,7 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <UserProfile />
+        <h1 className="text-4xl font-bold text-center text-gray-900">준비중</h1>
       </div>
     </div>
   )
