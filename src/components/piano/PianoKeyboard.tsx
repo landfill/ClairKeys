@@ -358,7 +358,7 @@ export default function PianoKeyboard({
   // Render canvas
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas || keys.length === 0) return
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -371,8 +371,11 @@ export default function PianoKeyboard({
     
     ctx.scale(devicePixelRatio, devicePixelRatio)
     
+    // Clear canvas
+    ctx.clearRect(0, 0, canvasSize.width, canvasSize.height)
+    
     drawKeys(ctx)
-  }, [canvasSize, devicePixelRatio, drawKeys])
+  }, [canvasSize, devicePixelRatio, drawKeys, keys.length])
 
   // Find key at coordinates
   const findKeyAtPosition = (x: number, y: number): PianoKey | null => {

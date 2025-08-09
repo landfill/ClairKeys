@@ -33,11 +33,15 @@ export default function Home() {
 
       {/* Demo Piano */}
       <section className="py-16 bg-white">
-        <Container size="lg">
+        <Container size="full">
           <h2 className="text-2xl font-bold text-center mb-8">피아노 미리보기</h2>
-          <Card padding="lg" shadow="md">
-            <PianoKeyboard className="w-full" />
-          </Card>
+          <div className="max-w-6xl mx-auto">
+            <Card padding="lg" shadow="md">
+              <div className="w-full overflow-x-auto">
+                <PianoKeyboard className="min-w-[800px] w-full" height={180} />
+              </div>
+            </Card>
+          </div>
         </Container>
       </section>
 

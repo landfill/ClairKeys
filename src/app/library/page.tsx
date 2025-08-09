@@ -43,7 +43,7 @@ export default function LibraryPage() {
           description="업로드한 악보를 관리하고 연습하세요"
         />
         
-        <Container className="py-8">
+        <Container className="py-8" size="full">
           {/* Tab Navigation */}
           <div className="flex space-x-1 mb-8 p-1 tab-navigation rounded-lg max-w-md">
             {tabs.map((tab) => (
