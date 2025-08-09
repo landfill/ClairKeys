@@ -11,6 +11,13 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
   },
+  // Disable caching in development to prevent piano keyboard issues
+  ...(process.env.NODE_ENV === 'development' && {
+    onDemandEntries: {
+      maxInactiveAge: 25 * 1000,
+      pagesBufferLength: 2,
+    },
+  }),
   images: {
     remotePatterns: [
       {
