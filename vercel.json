@@ -95,23 +95,6 @@
       "permanent": false
     }
   ],
-  "env": [
-    "NEXTAUTH_URL",
-    "NEXTAUTH_SECRET",
-    "GOOGLE_CLIENT_ID",
-    "GOOGLE_CLIENT_SECRET",
-    "GITHUB_CLIENT_ID",
-    "GITHUB_CLIENT_SECRET",
-    "DATABASE_URL",
-    "DIRECT_URL",
-    "SUPABASE_URL",
-    "SUPABASE_ANON_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY",
-    "OPENAI_API_KEY",
-    "ANTHROPIC_API_KEY",
-    "NODE_ENV",
-    "ANALYZE"
-  ],
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
