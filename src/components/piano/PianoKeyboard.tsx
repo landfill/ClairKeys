@@ -90,12 +90,18 @@ export default function PianoKeyboard({
 
   // Initialize and handle window resize
   useEffect(() => {
-    updateCanvasSize()
+    // Small delay to ensure container is rendered
+    const timer = setTimeout(() => {
+      updateCanvasSize()
+    }, 50)
     
     const handleResize = () => updateCanvasSize()
     window.addEventListener('resize', handleResize)
     
-    return () => window.removeEventListener('resize', handleResize)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('resize', handleResize)
+    }
   }, [updateCanvasSize])
 
   // Performance optimization: Track dirty keys for selective redraw
@@ -358,7 +364,7 @@ export default function PianoKeyboard({
   // Render canvas
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || keys.length === 0) return
+    if (!canvas) return
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -374,7 +380,10 @@ export default function PianoKeyboard({
     // Clear canvas
     ctx.clearRect(0, 0, canvasSize.width, canvasSize.height)
     
-    drawKeys(ctx)
+    // Only draw keys if they are generated
+    if (keys.length > 0) {
+      drawKeys(ctx)
+    }
   }, [canvasSize, devicePixelRatio, drawKeys, keys.length])
 
   // Find key at coordinates
