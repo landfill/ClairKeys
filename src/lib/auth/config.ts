@@ -26,31 +26,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     signIn: async ({ user, account }) => {
-      if (account && user.email) {
-        try {
-          // 사용자가 이미 존재하는지 확인
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email }
-          })
-
-          if (!existingUser) {
-            // 새 사용자 생성
-            const newUser = await prisma.user.create({
-              data: {
-                email: user.email,
-                name: user.name,
-                image: user.image,
-              }
-            })
-            user.id = newUser.id
-          } else {
-            user.id = existingUser.id
-          }
-        } catch (error) {
-          console.error('Error handling user sign in:', error)
-          return false
-        }
-      }
+      // Temporarily simplified - just allow sign in without DB
       return true
     },
     session: ({ session, token }) => {
@@ -76,5 +52,5 @@ export const authOptions: NextAuthOptions = {
     signIn: '/auth/signin',
     error: '/auth/error',
   },
-  debug: process.env.NODE_ENV === 'development',
+  debug: true, // Temporarily enable debug for production
 }
