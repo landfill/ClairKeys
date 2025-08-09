@@ -30,10 +30,6 @@ export default function UploadPage() {
         <PageHeader
           title="악보 업로드"
           description="PDF 악보를 업로드하여 피아노 애니메이션으로 변환하세요"
-          breadcrumbs={[
-            { label: '홈', href: '/' },
-            { label: '악보 업로드' }
-          ]}
         />
         
         <Container className="py-8" size="lg">

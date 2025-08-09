@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
-import UserProfile from '@/components/auth/UserProfile'
+import ProfileSettings from '@/components/auth/ProfileSettings'
 import Loading from '@/components/ui/Loading'
 
 export default function ProfilePage() {
@@ -28,7 +28,7 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <h1 className="text-4xl font-bold text-center text-gray-900">준비중</h1>
+        <ProfileSettings />
       </div>
     </div>
   )
