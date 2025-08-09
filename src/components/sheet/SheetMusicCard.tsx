@@ -78,7 +78,7 @@ export function SheetMusicCard({
         <div className="flex gap-2 pt-2 flex-shrink-0">
           <Link href={`/sheet/${sheetMusic.id}`} className="flex-1">
             <Button className="w-full" size="sm">
-              연주하기
+              연주
             </Button>
           </Link>
           
@@ -87,7 +87,7 @@ export function SheetMusicCard({
               onClick={() => onEdit(sheetMusic)}
               variant="outline"
               size="sm"
-              className="min-w-[3rem]"
+              className="min-w-[3.5rem] flex-shrink-0"
             >
               수정
             </Button>
@@ -99,7 +99,7 @@ export function SheetMusicCard({
                 onClick={() => setShowMoveMenu(!showMoveMenu)}
                 variant="outline"
                 size="sm"
-                className="min-w-[3rem]"
+                className="min-w-[3.5rem] flex-shrink-0"
               >
                 이동
               </Button>
@@ -137,7 +137,7 @@ export function SheetMusicCard({
               onClick={() => setShowDeleteDialog(true)}
               variant="outline"
               size="sm"
-              className="text-red-600 hover:text-red-700 hover:border-red-300 min-w-[3rem]"
+              className="text-red-600 hover:text-red-700 hover:border-red-300 min-w-[3.5rem] flex-shrink-0"
             >
               삭제
             </Button>

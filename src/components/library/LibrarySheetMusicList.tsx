@@ -130,21 +130,6 @@ export function LibrarySheetMusicList({
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4">카테고리 선택</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-            <button
-              onClick={() => onCategorySelect?.(null)}
-              className={`
-                p-3 rounded-lg border-2 transition-colors text-left
-                ${selectedCategoryId === null
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 bg-white hover:bg-gray-50'
-                }
-              `}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-lg">📚</span>
-                <span className="text-sm font-medium">전체</span>
-              </div>
-            </button>
             {categories.map((category) => (
               <button
                 key={category.id}
