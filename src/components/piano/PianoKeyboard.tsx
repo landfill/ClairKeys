@@ -14,15 +14,26 @@ export default function PianoKeyboard({
   className = '',
   height = 200
 }: PianoKeyboardProps) {
+  const [isClient, setIsClient] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [canvasSize, setCanvasSize] = useState({ width: 800, height })
   const [keys, setKeys] = useState<PianoKey[]>([])
-  const [activeKeys, setActiveKeys] = useState<Set<string>>(new Set())
   const [devicePixelRatio, setDevicePixelRatio] = useState(1)
+  const renderingRef = useRef(false) // 중복 렌더링 방지
+  const initializationRef = useRef(false) // 초기화 상태 추적
+  
+  // React 상태 대신 useRef로 관리하여 리렌더링 방지
+  const activeKeysRef = useRef<Set<string>>(new Set())
+  const [activeKeys, setActiveKeys] = useState<Set<string>>(new Set()) // 외부 props를 위해 유지
 
   // Audio integration
   const { playNote, releaseNote, initializeAudio, isReady } = useAudio()
+
+  // 클라이언트 사이드에서만 렌더링
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Generate 88 piano keys (A0 to C8)
   const generateKeys = useCallback((width: number, height: number): PianoKey[] => {
@@ -77,32 +88,73 @@ export default function PianoKeyboard({
 
   // Handle responsive canvas sizing
   const updateCanvasSize = useCallback(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current || renderingRef.current) {
+      return
+    }
     
     const containerWidth = containerRef.current.clientWidth
     const newWidth = Math.max(containerWidth, 800) // Minimum width for 88 keys
     const ratio = window.devicePixelRatio || 1
     
+    // Prevent unnecessary updates
+    if (canvasSize.width === newWidth && canvasSize.height === height && devicePixelRatio === ratio) {
+      return
+    }
+    
+    renderingRef.current = true
+    
+    // Batch state updates to prevent multiple renders
+    const newKeys = generateKeys(newWidth, height)
+    
     setCanvasSize({ width: newWidth, height })
     setDevicePixelRatio(ratio)
-    setKeys(generateKeys(newWidth, height))
+    setKeys(newKeys)
+    
+    // Mark as initialized after first successful render
+    setTimeout(() => {
+      initializationRef.current = true
+      renderingRef.current = false
+    }, 50)
   }, [height, generateKeys])
 
   // Initialize and handle window resize
   useEffect(() => {
-    // Small delay to ensure container is rendered
-    const timer = setTimeout(() => {
-      updateCanvasSize()
-    }, 50)
+    let mounted = true
     
-    const handleResize = () => updateCanvasSize()
+    // Multiple attempts to ensure container is properly sized
+    const attemptInitialization = (attempt = 1) => {
+      if (!mounted) return
+      
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.clientWidth
+        
+        if (containerWidth > 0) {
+          updateCanvasSize()
+        } else if (attempt < 5) {
+          // Retry if container width is 0
+          setTimeout(() => attemptInitialization(attempt + 1), 100 * attempt)
+        }
+      } else if (attempt < 5) {
+        setTimeout(() => attemptInitialization(attempt + 1), 100 * attempt)
+      }
+    }
+    
+    // Start with immediate attempt and backup timer
+    attemptInitialization(1)
+    
+    const handleResize = () => {
+      if (mounted) {
+        updateCanvasSize()
+      }
+    }
+    
     window.addEventListener('resize', handleResize)
     
     return () => {
-      clearTimeout(timer)
+      mounted = false
       window.removeEventListener('resize', handleResize)
     }
-  }, [updateCanvasSize])
+  }, [updateCanvasSize]) // updateCanvasSize 다시 추가 - 필요함
 
   // Performance optimization: Track dirty keys for selective redraw
   const dirtyKeysRef = useRef<Set<string>>(new Set())
@@ -144,9 +196,11 @@ export default function PianoKeyboard({
     })
   }, [keys])
 
-  // Optimized key drawing with dirty rect technique
+  // Optimized key drawing with dirty rect technique  
   const drawKeys = useCallback((ctx: CanvasRenderingContext2D) => {
     const { width, height } = canvasSize
+    
+    if (keys.length === 0) return
     
     // Check if we need full redraw or can use dirty rect optimization
     const currentState = {
@@ -213,6 +267,7 @@ export default function PianoKeyboard({
       needsFullRedraw = true
     }
     
+    
     if (needsFullRedraw) {
       // Full redraw
       ctx.clearRect(0, 0, width, height)
@@ -254,28 +309,33 @@ export default function PianoKeyboard({
 
   // Draw all keys (used in full redraw)
   const drawAllKeys = useCallback((ctx: CanvasRenderingContext2D) => {
+    
     // Use offscreen canvas for static background if available
     if (staticElementsCachedRef.current && offscreenCanvasRef.current) {
       ctx.drawImage(offscreenCanvasRef.current, 0, 0)
     }
     
+    const whiteKeys = keys.filter(key => !key.isBlack)
+    const blackKeys = keys.filter(key => key.isBlack)
+    
     // Draw white keys with states
-    keys.filter(key => !key.isBlack).forEach(key => {
+    whiteKeys.forEach(key => {
       const keyId = `${key.note}${key.octave}`
       drawSingleKey(ctx, key, keyId, false) // false = don't clear background
     })
     
     // Draw black keys on top
-    keys.filter(key => key.isBlack).forEach(key => {
+    blackKeys.forEach(key => {
       const keyId = `${key.note}${key.octave}`
       drawSingleKey(ctx, key, keyId, true) // true = clear background
     })
+    
   }, [keys])
 
   // Draw single key (optimized for selective updates)
   const drawSingleKey = useCallback((ctx: CanvasRenderingContext2D, key: PianoKey, keyId: string, clearBackground = true) => {
     const isHighlighted = highlightedKeys.includes(keyId)
-    const isPressed = pressedKeys.includes(keyId) || activeKeys.has(keyId)
+    const isPressed = pressedKeys.includes(keyId) || activeKeysRef.current.has(keyId)
     const isAnimationActive = animationActiveKeys.includes(keyId)
     
     // Clear the key area if needed
@@ -361,30 +421,68 @@ export default function PianoKeyboard({
     }
   }, [highlightedKeys, pressedKeys, activeKeys, animationActiveKeys])
 
-  // Render canvas
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    // Set canvas size for high DPI displays
-    canvas.width = canvasSize.width * devicePixelRatio
-    canvas.height = canvasSize.height * devicePixelRatio
-    canvas.style.width = `${canvasSize.width}px`
-    canvas.style.height = `${canvasSize.height}px`
-    
-    ctx.scale(devicePixelRatio, devicePixelRatio)
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvasSize.width, canvasSize.height)
-    
-    // Only draw keys if they are generated
-    if (keys.length > 0) {
-      drawKeys(ctx)
+  // Stable canvas rendering with RAF
+  const drawCanvasRef = useRef<number>()
+  
+  const scheduleCanvasDraw = useCallback(() => {
+    if (drawCanvasRef.current) {
+      cancelAnimationFrame(drawCanvasRef.current)
     }
-  }, [canvasSize, devicePixelRatio, drawKeys, keys.length])
+    
+    drawCanvasRef.current = requestAnimationFrame(() => {
+      const canvas = canvasRef.current
+      if (!canvas || keys.length === 0) {
+        return
+      }
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        return
+      }
+
+      // Prevent rendering if canvas dimensions are invalid
+      if (canvasSize.width <= 0 || canvasSize.height <= 0) {
+        return
+      }
+
+      // Set canvas size for high DPI displays
+      const scaledWidth = canvasSize.width * devicePixelRatio
+      const scaledHeight = canvasSize.height * devicePixelRatio
+      
+      // Only update canvas size if changed
+      if (canvas.width !== scaledWidth || canvas.height !== scaledHeight) {
+        canvas.width = scaledWidth
+        canvas.height = scaledHeight
+        canvas.style.width = `${canvasSize.width}px`
+        canvas.style.height = `${canvasSize.height}px`
+        
+        ctx.scale(devicePixelRatio, devicePixelRatio)
+      }
+      
+      // Clear and draw
+      ctx.clearRect(0, 0, canvasSize.width, canvasSize.height)
+      
+      try {
+        drawKeys(ctx)
+      } catch (error) {
+        console.error('Canvas drawing error:', error)
+      }
+    })
+  }, [canvasSize, devicePixelRatio, keys, drawKeys])
+
+  // Initial canvas setup
+  useEffect(() => {
+    if (keys.length > 0) {
+      scheduleCanvasDraw()
+    }
+  }, [canvasSize, devicePixelRatio, keys, scheduleCanvasDraw])
+  
+  // Key state changes - activeKeys removed to prevent flickering
+  useEffect(() => {
+    if (keys.length > 0) {
+      scheduleCanvasDraw()
+    }
+  }, [highlightedKeys, pressedKeys, animationActiveKeys, scheduleCanvasDraw])
 
   // Find key at coordinates
   const findKeyAtPosition = (x: number, y: number): PianoKey | null => {
@@ -458,6 +556,27 @@ export default function PianoKeyboard({
     }
   }, [canvasSize])
 
+  // Direct canvas update function
+  const updateKeyVisual = useCallback((keyId: string, isPressed: boolean) => {
+    if (!keys.length) return
+    
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const key = keys.find(k => `${k.note}${k.octave}` === keyId)
+    if (!key) return
+
+    // Update visual state immediately without React re-render
+    try {
+      drawSingleKey(ctx, key, keyId, true)
+    } catch (error) {
+      console.error('Error updating key visual:', error)
+    }
+  }, [keys, drawSingleKey])
+
   // Handle key press with throttling
   const handleKeyDown = useCallback(async (event: React.MouseEvent | React.TouchEvent) => {
     event.preventDefault()
@@ -487,8 +606,15 @@ export default function PianoKeyboard({
 
     const keyId = `${key.note}${key.octave}`
     
-    if (!activeKeys.has(keyId)) {
-      setActiveKeys(prev => new Set(prev).add(keyId))
+    if (!activeKeysRef.current.has(keyId)) {
+      // Update ref state (no re-render)
+      activeKeysRef.current.add(keyId)
+      
+      // Update React state for external props (causes re-render but we'll handle it)
+      setActiveKeys(new Set(activeKeysRef.current))
+      
+      // Update visual immediately
+      updateKeyVisual(keyId, true)
       
       // Play audio
       playNote(keyId)
@@ -496,7 +622,7 @@ export default function PianoKeyboard({
       // Call external handler
       onKeyPress?.(keyId)
     }
-  }, [isReady, initializeAudio, getEventCoordinates, findKeyAtPosition, activeKeys, playNote, onKeyPress])
+  }, [isReady, initializeAudio, getEventCoordinates, findKeyAtPosition, playNote, onKeyPress, updateKeyVisual])
 
   // Handle key release with throttling
   const handleKeyUp = useCallback((event: React.MouseEvent | React.TouchEvent) => {
@@ -516,12 +642,15 @@ export default function PianoKeyboard({
 
     const keyId = `${key.note}${key.octave}`
     
-    if (activeKeys.has(keyId)) {
-      setActiveKeys(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(keyId)
-        return newSet
-      })
+    if (activeKeysRef.current.has(keyId)) {
+      // Update ref state (no re-render)
+      activeKeysRef.current.delete(keyId)
+      
+      // Update React state for external props
+      setActiveKeys(new Set(activeKeysRef.current))
+      
+      // Update visual immediately
+      updateKeyVisual(keyId, false)
       
       // Release audio
       releaseNote(keyId)
@@ -529,24 +658,26 @@ export default function PianoKeyboard({
       // Call external handler
       onKeyRelease?.(keyId)
     }
-  }, [getEventCoordinates, findKeyAtPosition, activeKeys, releaseNote, onKeyRelease])
+  }, [getEventCoordinates, findKeyAtPosition, releaseNote, onKeyRelease, updateKeyVisual])
 
   // Handle mouse leave to release all keys (optimized)
   const handleMouseLeave = useCallback(() => {
-    if (activeKeys.size === 0) return
+    if (activeKeysRef.current.size === 0) return
     
     // Batch audio releases for better performance
-    const keysToRelease = Array.from(activeKeys)
+    const keysToRelease = Array.from(activeKeysRef.current)
     
     // Clear active keys immediately
+    activeKeysRef.current.clear()
     setActiveKeys(new Set())
     
-    // Release audio and call handlers
+    // Update visuals and release audio
     keysToRelease.forEach(keyId => {
+      updateKeyVisual(keyId, false)
       releaseNote(keyId)
       onKeyRelease?.(keyId)
     })
-  }, [activeKeys, releaseNote, onKeyRelease])
+  }, [releaseNote, onKeyRelease, updateKeyVisual])
 
   // Handle touch events with optimizations
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
@@ -556,18 +687,20 @@ export default function PianoKeyboard({
   const handleTouchEnd = useCallback((event: React.TouchEvent) => {
     event.preventDefault()
     
-    if (activeKeys.size === 0) return
+    if (activeKeysRef.current.size === 0) return
     
     // For touch end, release all active keys for better UX
-    const keysToRelease = Array.from(activeKeys)
+    const keysToRelease = Array.from(activeKeysRef.current)
+    activeKeysRef.current.clear()
     setActiveKeys(new Set())
     
     // Batch release for performance
     keysToRelease.forEach(keyId => {
+      updateKeyVisual(keyId, false)
       releaseNote(keyId)
       onKeyRelease?.(keyId)
     })
-  }, [activeKeys, releaseNote, onKeyRelease])
+  }, [releaseNote, onKeyRelease, updateKeyVisual])
 
   const handleTouchMove = useCallback((event: React.TouchEvent) => {
     event.preventDefault() // Prevent scrolling
@@ -579,6 +712,11 @@ export default function PianoKeyboard({
   // Cleanup and memory management
   useEffect(() => {
     return () => {
+      // Cancel pending animation frame
+      if (drawCanvasRef.current) {
+        cancelAnimationFrame(drawCanvasRef.current)
+      }
+      
       // Clear event throttle
       if (eventThrottleRef.current) {
         clearTimeout(eventThrottleRef.current)
@@ -609,10 +747,33 @@ export default function PianoKeyboard({
     }
   }, [])
 
+  // 클라이언트에서만 렌더링
+  if (!isClient) {
+    return (
+      <div 
+        className={`piano-keyboard w-full ${className}`}
+        style={{
+          position: 'relative',
+          minHeight: `${height}px`,
+          backgroundColor: '#f8f9fa',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <div className="text-gray-500">Loading piano...</div>
+      </div>
+    )
+  }
+
   return (
     <div 
       ref={containerRef}
       className={`piano-keyboard w-full ${className}`}
+      style={{
+        position: 'relative',
+        minHeight: `${height}px`
+      }}
     >
       <canvas
         ref={canvasRef}

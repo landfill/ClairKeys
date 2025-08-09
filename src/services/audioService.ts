@@ -202,6 +202,16 @@ export class AudioService {
   }
 
   /**
+   * Get audio context state
+   */
+  getContextState(): string {
+    if (!Tone || !Tone.context) {
+      return 'unavailable'
+    }
+    return Tone.context.state
+  }
+
+  /**
    * Dispose of audio resources
    */
   dispose(): void {
