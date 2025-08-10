@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
 import { getPDFParserService } from '@/services/pdfParser'
+import { fileStorageService } from '@/services/fileStorageService'
 
 export async function POST(request: NextRequest) {
   try {
@@ -133,13 +134,46 @@ export async function POST(request: NextRequest) {
     }
     console.log('Animation data validation passed')
 
+    // Upload animation data to storage
+    console.log('Uploading animation data to storage...')
+    console.log('Upload metadata:', {
+      name: `${title.trim()}_animation.json`,
+      size: JSON.stringify(animationData).length,
+      type: 'application/json',
+      userId: session.user.id,
+      isPublic: isPublic
+    })
+    
+    const uploadResult = await fileStorageService.uploadAnimationData(animationData, {
+      name: `${title.trim()}_animation.json`,
+      size: JSON.stringify(animationData).length,
+      type: 'application/json',
+      userId: session.user.id,
+      isPublic: isPublic
+    })
+
+    console.log('Upload result:', uploadResult)
+
+    if (!uploadResult.success || !uploadResult.url) {
+      console.error('Failed to upload animation data:', uploadResult.error)
+      console.error('Upload result details:', JSON.stringify(uploadResult, null, 2))
+      return NextResponse.json(
+        { error: '애니메이션 데이터 저장 중 오류가 발생했습니다.' },
+        { status: 500 }
+      )
+    }
+
+    console.log('Animation data uploaded successfully:', uploadResult.url)
+    console.log('File path:', uploadResult.path)
+
     // Save to database
     console.log('Saving to database with data:', {
       title: title.trim(),
       composer: composer.trim(),
       categoryId,
       isPublic,
-      userId: session.user.id
+      userId: session.user.id,
+      animationDataUrl: uploadResult.url
     })
     
     const sheetMusic = await prisma.sheetMusic.create({
@@ -149,7 +183,7 @@ export async function POST(request: NextRequest) {
         categoryId,
         isPublic,
         userId: session.user.id,
-        animationDataUrl: pdfParser.serializeAnimationData(animationData),
+        animationDataUrl: uploadResult.url,
         // Note: We don't store the original PDF file for copyright protection
       },
       include: {

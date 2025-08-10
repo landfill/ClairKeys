@@ -12,8 +12,8 @@ export default function ExplorePage() {
   const router = useRouter()
 
   const handleSheetMusicClick = (sheetMusic: SheetMusicWithOwner) => {
-    // Navigate to the practice page with the selected sheet music
-    router.push(`/practice/${sheetMusic.id}`)
+    // Navigate to the sheet music page
+    router.push(`/sheet/${sheetMusic.id}`)
   }
 
   const tabs = [

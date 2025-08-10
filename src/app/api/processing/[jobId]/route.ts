@@ -18,7 +18,8 @@ export async function GET(
       )
     }
 
-    const job = await backgroundProcessor.getJobStatus(params.jobId)
+    const resolvedParams = await params
+    const job = await backgroundProcessor.getJobStatus(resolvedParams.jobId)
 
     if (!job) {
       return NextResponse.json(
@@ -76,11 +77,13 @@ export async function PATCH(
     let success = false
     let message = ''
 
+    const resolvedParams = await params
+    
     if (action === 'cancel') {
-      success = await backgroundProcessor.cancelJob(params.jobId, session.user.id)
+      success = await backgroundProcessor.cancelJob(resolvedParams.jobId, session.user.id)
       message = success ? 'Job cancelled successfully' : 'Failed to cancel job'
     } else if (action === 'retry') {
-      success = await backgroundProcessor.retryJob(params.jobId, session.user.id)
+      success = await backgroundProcessor.retryJob(resolvedParams.jobId, session.user.id)
       message = success ? 'Job retry initiated' : 'Failed to retry job'
     }
 

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import PianoKeyboard from '@/components/piano/PianoKeyboard'
+import { useState, useEffect, useMemo } from 'react'
+import SimplePianoKeyboard from '@/components/piano/SimplePianoKeyboard'
 import AudioSettings from '@/components/audio/AudioSettings'
 import { generateTestSequence, noteToKeyNumber, isBlackKey } from '@/utils/piano'
+import { buildKeyLayout } from '@/utils/pianoLayout'
 import { useAudio } from '@/hooks/useAudio'
 
 export default function PianoTest() {
@@ -19,6 +20,34 @@ export default function PianoTest() {
   })
 
   const testSequence = generateTestSequence()
+  
+  // Convert key names to MIDI numbers for SimplePianoKeyboard
+  const convertKeyToMidi = (key: string): number => {
+    try {
+      return noteToKeyNumber(key)
+    } catch (error) {
+      console.error('Error converting key to MIDI:', key, error)
+      return 60 // Default to C4
+    }
+  }
+  
+  // Create piano layout
+  const keyWidth = 24
+  const layout = useMemo(() => buildKeyLayout(keyWidth), [keyWidth])
+  
+  // Convert string arrays to MIDI Sets for SimplePianoKeyboard
+  const activeKeys = useMemo(() => {
+    const midiKeys = new Set<number>()
+    highlightedKeys.forEach(key => {
+      const midi = convertKeyToMidi(key)
+      midiKeys.add(midi)
+    })
+    pressedKeys.forEach(key => {
+      const midi = convertKeyToMidi(key)
+      midiKeys.add(midi)
+    })
+    return midiKeys
+  }, [highlightedKeys, pressedKeys])
 
   const handleKeyPress = (key: string) => {
     console.log('Key pressed:', key)
@@ -175,26 +204,30 @@ export default function PianoTest() {
         
         {/* Desktop Piano */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Desktop Piano (200px height)</h2>
-          <PianoKeyboard
-            onKeyPress={handleKeyPress}
-            onKeyRelease={handleKeyRelease}
-            highlightedKeys={highlightedKeys}
-            pressedKeys={pressedKeys}
-            height={200}
-          />
+          <h2 className="text-xl font-semibold mb-4">Desktop Piano (200px height) - MVP Style</h2>
+          <div className="border rounded" style={{ height: 200, background: '#0f0f10' }}>
+            <SimplePianoKeyboard 
+              layout={layout} 
+              activeKeys={activeKeys}
+            />
+          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Note: MVP-style keyboard is display-only. Use test controls below to trigger notes.
+          </p>
         </div>
 
         {/* Mobile Piano */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Mobile Piano (120px height)</h2>
-          <PianoKeyboard
-            onKeyPress={handleKeyPress}
-            onKeyRelease={handleKeyRelease}
-            highlightedKeys={highlightedKeys}
-            pressedKeys={pressedKeys}
-            height={120}
-          />
+          <h2 className="text-xl font-semibold mb-4">Mobile Piano (120px height) - MVP Style</h2>
+          <div className="border rounded" style={{ height: 120, background: '#0f0f10' }}>
+            <SimplePianoKeyboard 
+              layout={layout} 
+              activeKeys={activeKeys}
+            />
+          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Note: MVP-style keyboard is display-only. Use test controls below to trigger notes.
+          </p>
         </div>
 
         {/* Controls */}
@@ -303,11 +336,11 @@ export default function PianoTest() {
             <div>
               <h3 className="font-semibold mb-2">Interaction:</h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-                <li>Click or tap piano keys to play them with audio</li>
-                <li>Use keyboard shortcuts: a, w, s, e, d, f, t, g, y, h, u, j, k</li>
-                <li>Supports both mouse and touch events</li>
-                <li>Multi-touch support for chords</li>
-                <li>Visual and audio feedback for pressed keys</li>
+                <li>Use the test control buttons above to trigger piano notes</li>
+                <li>MVP-style piano keyboards are display-only (no click interaction)</li>
+                <li>Keyboard shortcuts still work: a, w, s, e, d, f, t, g, y, h, u, j, k</li>
+                <li>Visual feedback shows active keys in real-time</li>
+                <li>Audio plays through the test control buttons</li>
               </ul>
             </div>
             <div>
@@ -320,6 +353,14 @@ export default function PianoTest() {
                 <li>Automatic audio initialization on first interaction</li>
               </ul>
             </div>
+          </div>
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <h3 className="font-semibold mb-2 text-blue-800">MVP Style Changes:</h3>
+            <p className="text-sm text-blue-700">
+              The piano keyboards now use the MVP-style visual design (HTML/CSS based) instead of Canvas. 
+              This provides better performance and consistency with the falling notes player. 
+              Interactive functionality is available through the test control buttons and keyboard shortcuts.
+            </p>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { fileStorageService } from '@/services/fileStorageService'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 
 export async function DELETE(request: NextRequest) {
   try {

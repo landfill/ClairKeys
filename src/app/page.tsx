@@ -1,5 +1,6 @@
 import Link from "next/link";
-import PianoKeyboard from "@/components/piano/PianoKeyboard";
+import SimplePianoKeyboard from "@/components/piano/SimplePianoKeyboard";
+import { buildKeyLayout } from "@/utils/pianoLayout";
 import { Container } from "@/components/layout";
 import { Button, Card } from "@/components/ui";
 
@@ -38,7 +39,12 @@ export default function Home() {
           <div className="max-w-6xl mx-auto">
             <Card padding="lg" shadow="md">
               <div className="w-full overflow-x-auto">
-                <PianoKeyboard className="min-w-[800px] w-full" height={180} />
+                <div className="min-w-[800px] w-full" style={{ height: 180 }}>
+                  <SimplePianoKeyboard 
+                    layout={buildKeyLayout(24)} 
+                    activeKeys={new Set()}
+                  />
+                </div>
               </div>
             </Card>
           </div>

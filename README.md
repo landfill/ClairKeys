@@ -70,29 +70,34 @@ npm install
 
 ### 2. 환경 변수 설정
 
-`.env.example`을 `.env.local`로 복사하고 필요한 값을 설정:
+`.env.example`을 `.env`로 복사하고 필요한 값을 설정:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
 필수 환경 변수:
 ```env
-# Database
-DATABASE_URL="postgresql://..."
-SUPABASE_URL="https://..."
-SUPABASE_ANON_KEY="..."
+# Database - Supabase PostgreSQL
+DATABASE_URL="postgresql://postgres.PROJECT_ID:PASSWORD@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres"
 
-# Authentication
+# NextAuth.js
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key"
-GOOGLE_CLIENT_ID="..."
-GOOGLE_CLIENT_SECRET="..."
-GITHUB_ID="..."
-GITHUB_SECRET="..."
+NEXTAUTH_SECRET="your-nextauth-secret-key"
+
+# OAuth Providers
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+
+# Supabase Storage
+NEXT_PUBLIC_SUPABASE_URL="https://PROJECT_ID.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
 ```
 
-### 3. 데이터베이스 설정
+### 3. 데이터베이스 및 스토리지 설정
 
 ```bash
 # Prisma 클라이언트 생성
@@ -100,6 +105,15 @@ npm run db:generate
 
 # 데이터베이스 스키마 동기화
 npm run db:push
+
+# Supabase Storage 초기화 (버킷 생성)
+npm run init-storage
+
+# 샘플 데이터 생성
+npm run seed
+
+# (선택사항) 데이터 상태 확인
+npm run check-data-status
 
 # (선택사항) Prisma Studio 실행
 npm run db:studio

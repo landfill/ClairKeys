@@ -18,8 +18,10 @@ export async function PATCH(
       )
     }
 
+    // Await params before accessing properties (Next.js 15 requirement)
+    const resolvedParams = await params
     const success = await backgroundProcessor.markNotificationAsRead(
-      params.notificationId,
+      resolvedParams.notificationId,
       session.user.id
     )
 

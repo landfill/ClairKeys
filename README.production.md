@@ -16,9 +16,11 @@ cp .env.example .env.local
 - `DATABASE_URL` - PostgreSQL database connection
 - `NEXTAUTH_URL` - Your production domain
 - `NEXTAUTH_SECRET` - Secure random string
-- `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET`
-- `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET`
-- `SUPABASE_URL` & `SUPABASE_ANON_KEY`
+- `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` - OAuth providers
+- `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET` - OAuth providers
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
 
 ### 2. Database Setup
 ```bash

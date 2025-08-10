@@ -66,7 +66,7 @@ export async function GET(
         title: sheetMusic.title,
         composer: sheetMusic.composer,
         categoryId: sheetMusic.categoryId,
-        category: sheetMusic.category,
+        category: sheetMusic.category?.name || null,
         isPublic: sheetMusic.isPublic,
         createdAt: sheetMusic.createdAt,
         updatedAt: sheetMusic.updatedAt,
@@ -198,7 +198,7 @@ export async function PUT(
         title: updatedSheet.title,
         composer: updatedSheet.composer,
         categoryId: updatedSheet.categoryId,
-        category: updatedSheet.category,
+        category: updatedSheet.category?.name || null,
         isPublic: updatedSheet.isPublic,
         updatedAt: updatedSheet.updatedAt
       }
