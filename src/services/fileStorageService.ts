@@ -39,13 +39,34 @@ export class FileStorageService {
     metadata: FileMetadata
   ): Promise<UploadResult> {
     try {
+      console.log('🔄 Starting animation data upload...')
+      console.log('Metadata received:', {
+        name: metadata.name,
+        userId: metadata.userId,
+        size: metadata.size,
+        type: metadata.type,
+        isPublic: metadata.isPublic
+      })
+
       const fileName = this.generateFileName(metadata.name, metadata.userId, 'animation')
       const filePath = `${metadata.userId}/${fileName}`
+      
+      console.log('📁 Generated file path:', filePath)
+      console.log('📂 Target bucket:', this.ANIMATION_BUCKET)
       
       // Convert data to JSON string
       const jsonData = JSON.stringify(data, null, 2)
       const buffer = Buffer.from(jsonData, 'utf-8')
+      
+      console.log('📊 Data stats:', {
+        jsonLength: jsonData.length,
+        bufferLength: buffer.length,
+        dataKeys: Object.keys(data || {}),
+        hasNotes: Array.isArray(data?.notes),
+        notesCount: Array.isArray(data?.notes) ? data.notes.length : 'N/A'
+      })
 
+      console.log('⬆️ Attempting upload to Supabase...')
       const { data: uploadData, error } = await supabaseServer.storage
         .from(this.ANIMATION_BUCKET)
         .upload(filePath, buffer, {
@@ -55,14 +76,48 @@ export class FileStorageService {
         })
 
       if (error) {
-        console.error('Animation data upload error:', error)
+        console.error('❌ Animation data upload error:', error)
+        console.error('Error details:', {
+          message: error.message,
+          statusCode: error.statusCode,
+          error: error.error
+        })
         return { success: false, error: error.message }
       }
+
+      console.log('✅ Upload successful! Upload data:', uploadData)
 
       // Get public URL if public
       const { data: { publicUrl } } = supabaseServer.storage
         .from(this.ANIMATION_BUCKET)
         .getPublicUrl(filePath)
+
+      console.log('🔗 Generated public URL:', publicUrl)
+
+      // Verify file exists by checking if we can access it
+      try {
+        console.log('🔍 Verifying file upload...')
+        const { data: files, error: listError } = await supabaseServer.storage
+          .from(this.ANIMATION_BUCKET)
+          .list(metadata.userId)
+
+        if (listError) {
+          console.warn('⚠️ Could not verify file upload:', listError.message)
+        } else {
+          const uploadedFile = files?.find(f => f.name === fileName)
+          if (uploadedFile) {
+            console.log('✅ File verification successful:', {
+              name: uploadedFile.name,
+              size: uploadedFile.metadata?.size,
+              lastModified: uploadedFile.updated_at
+            })
+          } else {
+            console.warn('⚠️ File not found in listing after upload')
+          }
+        }
+      } catch (verifyError) {
+        console.warn('⚠️ File verification failed:', verifyError)
+      }
 
       return {
         success: true,
@@ -71,7 +126,8 @@ export class FileStorageService {
       }
 
     } catch (error) {
-      console.error('Upload animation data error:', error)
+      console.error('💥 Upload animation data error:', error)
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace')
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Upload failed' 
@@ -369,7 +425,7 @@ export class FileStorageService {
   async initializeBuckets(): Promise<boolean> {
     try {
       const buckets = [
-        { name: this.ANIMATION_BUCKET, public: false },
+        { name: this.ANIMATION_BUCKET, public: true },
         { name: this.SHEET_MUSIC_BUCKET, public: true },
         { name: this.TEMP_BUCKET, public: false }
       ]

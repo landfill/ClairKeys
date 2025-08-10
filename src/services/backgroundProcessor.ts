@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { getPDFParserService } from './pdfParser'
+import { fileStorageService } from './fileStorageService'
 import { ProcessingStatus, ProcessingStage } from '@prisma/client'
 
 export interface ProcessingJobData {
@@ -117,10 +118,21 @@ class BackgroundProcessor {
         throw new Error('악보 데이터 검증 실패')
       }
 
-      // Stage 4: Animation Data Generation
+      // Stage 4: Animation Data Generation & Storage Upload
       await this.updateJobStatus(jobId, ProcessingStatus.PROCESSING, ProcessingStage.GENERATION, 80)
       
-      const serializedData = pdfParser.serializeAnimationData(animationData)
+      // Upload animation data to storage
+      const uploadResult = await fileStorageService.uploadAnimationData(animationData, {
+        name: `${metadata.title}_animation.json`,
+        size: JSON.stringify(animationData).length,
+        type: 'application/json',
+        userId: userId,
+        isPublic: metadata.isPublic
+      })
+
+      if (!uploadResult.success || !uploadResult.url) {
+        throw new Error(`Failed to upload animation data: ${uploadResult.error}`)
+      }
 
       // Stage 5: Save to database
       await this.updateJobStatus(jobId, ProcessingStatus.PROCESSING, ProcessingStage.GENERATION, 90)
@@ -132,7 +144,7 @@ class BackgroundProcessor {
           categoryId: metadata.categoryId,
           isPublic: metadata.isPublic,
           userId: userId,
-          animationDataUrl: serializedData,
+          animationDataUrl: uploadResult.url,
         },
         include: {
           category: true,

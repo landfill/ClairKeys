@@ -189,6 +189,9 @@ class AsyncUploadProcessor {
         }
 
         console.log(`Animation data uploaded successfully: ${uploadResult.url}`)
+        console.log(`🔍 DEBUG: uploadResult object:`, JSON.stringify(uploadResult, null, 2))
+        console.log(`🔍 DEBUG: uploadResult.url type:`, typeof uploadResult.url)
+        console.log(`🔍 DEBUG: uploadResult.url value:`, uploadResult.url)
 
         const sheetMusic = await prisma.sheetMusic.create({
           data: {
