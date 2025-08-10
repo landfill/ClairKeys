@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "title": "Minimal Sample",
+    "composer": "ClairKeys",
+    "partCount": 2,
+    "measureCount": 2,
+    "duration": 4.0,
+    "totalNotes": 5,
+    "leftHandNotes": 2,
+    "rightHandNotes": 3
+  },
+  "notes": [
+    {
+      "midi": 60,
+      "start": 0,
+      "duration": 1,
+      "hand": "R"
+    },
+    {
+      "midi": 64,
+      "start": 1,
+      "duration": 1,
+      "hand": "R"
+    },
+    {
+      "midi": 67,
+      "start": 2,
+      "duration": 1,
+      "hand": "R"
+    },
+    {
+      "midi": 36,
+      "start": 0,
+      "duration": 2,
+      "hand": "L"
+    },
+    {
+      "midi": 43,
+      "start": 2,
+      "duration": 2,
+      "hand": "L"
+    }
+  ]
+}

@@ -50,13 +50,35 @@ export default function SheetMusicPage() {
         const data = await response.json()
         setSheetMusic(data.sheetMusic)
 
-        // Parse animation data
+        // Load animation data from file storage
         try {
-          const parsedAnimationData = JSON.parse(data.sheetMusic.animationData) as PianoAnimationData
+          const animationResponse = await fetch(`/api/files/animation?sheetMusicId=${id}`)
+          
+          if (!animationResponse.ok) {
+            if (animationResponse.status === 404) {
+              setError('애니메이션 데이터를 찾을 수 없습니다.')
+            } else {
+              setError('애니메이션 데이터를 불러오는 중 오류가 발생했습니다.')
+            }
+            return
+          }
+
+          const animationUrlData = await animationResponse.json()
+          
+          // Fetch the actual animation JSON file
+          const jsonResponse = await fetch(animationUrlData.url)
+          
+          if (!jsonResponse.ok) {
+            setError('애니메이션 파일을 다운로드하는 중 오류가 발생했습니다.')
+            return
+          }
+
+          const parsedAnimationData = await jsonResponse.json() as PianoAnimationData
           setAnimationData(parsedAnimationData)
+          
         } catch (parseError) {
-          console.error('Failed to parse animation data:', parseError)
-          setError('악보 데이터를 파싱하는 중 오류가 발생했습니다.')
+          console.error('Failed to load animation data:', parseError)
+          setError('애니메이션 데이터를 로딩하는 중 오류가 발생했습니다.')
         }
 
       } catch (fetchError) {

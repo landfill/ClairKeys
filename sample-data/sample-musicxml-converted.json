@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "title": "Test Piano Piece",
+    "composer": "Test Composer",
+    "partCount": 1,
+    "measureCount": 3,
+    "duration": 7,
+    "totalNotes": 14,
+    "leftHandNotes": 3,
+    "rightHandNotes": 11
+  },
+  "notes": [
+    {
+      "midi": 72,
+      "start": 0,
+      "duration": 0.5,
+      "hand": "R"
+    },
+    {
+      "midi": 74,
+      "start": 0.5,
+      "duration": 0.5,
+      "hand": "R"
+    },
+    {
+      "midi": 76,
+      "start": 1,
+      "duration": 0.5,
+      "hand": "R"
+    },
+    {
+      "midi": 77,
+      "start": 1.5,
+      "duration": 0.5,
+      "hand": "R"
+    },
+    {
+      "midi": 48,
+      "start": 2,
+      "duration": 1,
+      "hand": "L"
+    },
+    {
+      "midi": 55,
+      "start": 3,
+      "duration": 1,
+      "hand": "L"
+    },
+    {
+      "midi": 72,
+      "start": 4,
+      "duration": 1,
+      "hand": "R"
+    },
+    {
+      "midi": 76,
+      "start": 4,
+      "duration": 1,
+      "hand": "R"
+    },
+    {
+      "midi": 79,
+      "start": 4,
+      "duration": 1,
+      "hand": "R"
+    },
+    {
+      "midi": 66,
+      "start": 5,
+      "duration": 0.25,
+      "hand": "R"
+    },
+    {
+      "midi": 67,
+      "start": 5.25,
+      "duration": 0.25,
+      "hand": "R"
+    },
+    {
+      "midi": 68,
+      "start": 5.5,
+      "duration": 0.25,
+      "hand": "R"
+    },
+    {
+      "midi": 70,
+      "start": 5.75,
+      "duration": 0.25,
+      "hand": "R"
+    },
+    {
+      "midi": 41,
+      "start": 6.5,
+      "duration": 0.5,
+      "hand": "L"
+    }
+  ]
+}

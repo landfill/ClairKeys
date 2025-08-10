@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ClairKeys Music Data Format",
+  "description": "JSON schema for ClairKeys music data converted from MusicXML",
+  "type": "object",
+  "required": ["metadata", "notes"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Metadata about the music piece",
+      "required": ["partCount", "measureCount", "duration", "totalNotes", "leftHandNotes", "rightHandNotes"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title of the music piece"
+        },
+        "composer": {
+          "type": "string", 
+          "description": "Composer of the music piece"
+        },
+        "partCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of parts/instruments in the piece"
+        },
+        "measureCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of measures in the piece"
+        },
+        "duration": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total duration of the piece in seconds"
+        },
+        "totalNotes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of notes in the piece"
+        },
+        "leftHandNotes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of notes assigned to left hand"
+        },
+        "rightHandNotes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of notes assigned to right hand"
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "description": "Array of musical notes",
+      "items": {
+        "type": "object",
+        "required": ["midi", "start", "duration", "hand"],
+        "properties": {
+          "midi": {
+            "type": "integer",
+            "minimum": 21,
+            "maximum": 108,
+            "description": "MIDI note number (21=A0, 108=C8)"
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Start time of the note in seconds"
+          },
+          "duration": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Duration of the note in seconds"
+          },
+          "hand": {
+            "type": "string",
+            "enum": ["L", "R"],
+            "description": "Hand assignment: L for left hand, R for right hand"
+          },
+          "velocity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Note velocity (0-1, optional)"
+          }
+        }
+      }
+    }
+  }
+}

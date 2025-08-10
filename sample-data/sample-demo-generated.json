@@ -1,0 +1,122 @@
+{
+  "metadata": {
+    "title": "Default Demo Song",
+    "composer": "ClairKeys Demo",
+    "partCount": 2,
+    "measureCount": 8,
+    "duration": 7.8,
+    "totalNotes": 18,
+    "leftHandNotes": 8,
+    "rightHandNotes": 10
+  },
+  "notes": [
+    {
+      "midi": 60,
+      "start": 0,
+      "duration": 0.45,
+      "hand": "R"
+    },
+    {
+      "midi": 36,
+      "start": 0,
+      "duration": 0.8,
+      "hand": "L"
+    },
+    {
+      "midi": 64,
+      "start": 0.5,
+      "duration": 0.45,
+      "hand": "R"
+    },
+    {
+      "midi": 67,
+      "start": 1,
+      "duration": 0.45,
+      "hand": "R"
+    },
+    {
+      "midi": 43,
+      "start": 1,
+      "duration": 0.8,
+      "hand": "L"
+    },
+    {
+      "midi": 64,
+      "start": 1,
+      "duration": 0.5,
+      "hand": "R"
+    },
+    {
+      "midi": 67,
+      "start": 1,
+      "duration": 0.5,
+      "hand": "R"
+    },
+    {
+      "midi": 72,
+      "start": 1.5,
+      "duration": 0.45,
+      "hand": "R"
+    },
+    {
+      "midi": 67,
+      "start": 2,
+      "duration": 0.45,
+      "hand": "R"
+    },
+    {
+      "midi": 48,
+      "start": 2,
+      "duration": 0.8,
+      "hand": "L"
+    },
+    {
+      "midi": 64,
+      "start": 2.5,
+      "duration": 0.45,
+      "hand": "R"
+    },
+    {
+      "midi": 60,
+      "start": 3,
+      "duration": 0.45,
+      "hand": "R"
+    },
+    {
+      "midi": 36,
+      "start": 3,
+      "duration": 0.8,
+      "hand": "L"
+    },
+    {
+      "midi": 64,
+      "start": 3.5,
+      "duration": 0.45,
+      "hand": "R"
+    },
+    {
+      "midi": 43,
+      "start": 4,
+      "duration": 0.8,
+      "hand": "L"
+    },
+    {
+      "midi": 48,
+      "start": 5,
+      "duration": 0.8,
+      "hand": "L"
+    },
+    {
+      "midi": 36,
+      "start": 6,
+      "duration": 0.8,
+      "hand": "L"
+    },
+    {
+      "midi": 43,
+      "start": 7,
+      "duration": 0.8,
+      "hand": "L"
+    }
+  ]
+}
