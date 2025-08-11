@@ -73,14 +73,8 @@ export default function FallingNotesPlayer({
 
   return (
     <div className={`w-full max-w-5xl mx-auto ${className}`}>
-      {/* Header */}
+      {/* Usage Instructions */}
       <div className="mb-4">
-        <h2 className="text-xl font-bold mb-1">
-          {animationData.title}
-        </h2>
-        <p className="text-sm text-gray-600 mb-2">
-          {animationData.composer} • {animationData.timeSignature} • {animationData.tempo} BPM
-        </p>
         <p className="text-xs text-gray-500">
           노트의 아랫변이 히트라인(건반 상단)에 닿는 순간이 연주 타이밍입니다.
         </p>

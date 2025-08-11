@@ -165,11 +165,6 @@ export default function SheetMusicPage() {
         <PageHeader
           title={sheetMusic.title}
           description={`${sheetMusic.composer}${sheetMusic.category ? ` • ${sheetMusic.category}` : ''}`}
-          breadcrumbs={[
-            { label: '홈', href: '/' },
-            { label: '라이브러리', href: '/library' },
-            { label: sheetMusic.title }
-          ]}
         />
         
         <Container className="py-8" size="lg">
@@ -183,10 +178,6 @@ export default function SheetMusicPage() {
           <Card padding="lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">악보 정보</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <dt className="text-sm font-medium text-gray-500">곡명</dt>
-                <dd className="text-sm text-gray-900">{sheetMusic.title}</dd>
-              </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">저작자</dt>
                 <dd className="text-sm text-gray-900">{sheetMusic.composer}</dd>

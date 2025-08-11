@@ -366,41 +366,66 @@ export default function LandscapePianoInterface({
             enablePinch={enableZoom}
             enableDoubleClick={enableZoom}
             className="w-full h-full"
-          />
-        ) : null}
-        
-        <MobileTouchOptimizer
-          enableHapticFeedback={isMobileDevice}
-          touchSensitivity="medium"
-          preventScrolling={true}
-        >
-          <div 
-            ref={pianoRef}
-            className="piano-wrapper relative"
-            style={{
-              width: `${pianoConfig.keyboardWidth * zoomLevel}px`,
-              height: `${pianoConfig.keyHeight}px`,
-              transform: `translateX(-${scrollPosition}px)`,
-              transition: isDragging ? 'none' : 'transform 0.3s ease-out'
-            }}
           >
-            <PianoKeyboard
-              onKeyPress={onKeyPress}
-              onKeyRelease={onKeyRelease}
-              highlightedKeys={highlightedKeys}
-              pressedKeys={pressedKeys}
-              animationActiveKeys={animationActiveKeys}
-              height={pianoConfig.keyHeight}
-              keyWidth={pianoConfig.whiteKeyWidth * zoomLevel}
-              showKeyLabels={showKeyLabels}
-              className="landscape-keyboard"
-            />
-          </div>
-        </MobileTouchOptimizer>
-        
-        {enableGestures ? (
+            <MobileTouchOptimizer
+              enableHapticFeedback={isMobileDevice}
+              touchSensitivity="medium"
+              preventScrolling={true}
+            >
+              <div 
+                ref={pianoRef}
+                className="piano-wrapper relative"
+                style={{
+                  width: `${pianoConfig.keyboardWidth * zoomLevel}px`,
+                  height: `${pianoConfig.keyHeight}px`,
+                  transform: `translateX(-${scrollPosition}px)`,
+                  transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+                }}
+              >
+                <PianoKeyboard
+                  onKeyPress={onKeyPress}
+                  onKeyRelease={onKeyRelease}
+                  highlightedKeys={highlightedKeys}
+                  pressedKeys={pressedKeys}
+                  animationActiveKeys={animationActiveKeys}
+                  height={pianoConfig.keyHeight}
+                  keyWidth={pianoConfig.whiteKeyWidth * zoomLevel}
+                  showKeyLabels={showKeyLabels}
+                  className="landscape-keyboard"
+                />
+              </div>
+            </MobileTouchOptimizer>
           </MobileGestures>
-        ) : null}
+        ) : (
+          <MobileTouchOptimizer
+            enableHapticFeedback={isMobileDevice}
+            touchSensitivity="medium"
+            preventScrolling={true}
+          >
+            <div 
+              ref={pianoRef}
+              className="piano-wrapper relative"
+              style={{
+                width: `${pianoConfig.keyboardWidth * zoomLevel}px`,
+                height: `${pianoConfig.keyHeight}px`,
+                transform: `translateX(-${scrollPosition}px)`,
+                transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+              }}
+            >
+              <PianoKeyboard
+                onKeyPress={onKeyPress}
+                onKeyRelease={onKeyRelease}
+                highlightedKeys={highlightedKeys}
+                pressedKeys={pressedKeys}
+                animationActiveKeys={animationActiveKeys}
+                height={pianoConfig.keyHeight}
+                keyWidth={pianoConfig.whiteKeyWidth * zoomLevel}
+                showKeyLabels={showKeyLabels}
+                className="landscape-keyboard"
+              />
+            </div>
+          </MobileTouchOptimizer>
+        )}
       </div>
 
       {/* Scroll Indicator */}
