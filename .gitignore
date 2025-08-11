@@ -45,3 +45,6 @@ next-env.d.ts
 /public/uploads/
 
 .vercel
+
+# MVP 피아노 모듈
+/mvp
