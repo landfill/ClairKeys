@@ -11,7 +11,12 @@
       "Bash(npm run typecheck:*)",
       "Bash(npx tsc:*)",
       "Bash(npm test:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "mcp__playwright-mcp-server__playwright_navigate",
+      "Bash(npx playwright:*)",
+      "Bash(curl:*)",
+      "Bash(timeout 30 npx playwright install chromium)",
+      "Bash(rm:*)"
     ],
     "deny": []
   },

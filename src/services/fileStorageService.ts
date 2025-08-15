@@ -32,6 +32,26 @@ export class FileStorageService {
   }
 
   /**
+   * Extract storage path from public URL
+   */
+  private extractStoragePath(url: string): string | null {
+    try {
+      // URL format: https://domain/storage/v1/object/public/bucket-name/path/to/file
+      const urlObj = new URL(url)
+      const pathParts = urlObj.pathname.split('/')
+      const bucketIndex = pathParts.findIndex(part => part === 'public') + 1
+      if (bucketIndex > 0 && bucketIndex < pathParts.length - 1) {
+        // Skip bucket name, return the rest as file path
+        return pathParts.slice(bucketIndex + 1).join('/')
+      }
+      return null
+    } catch (error) {
+      console.error('Failed to extract storage path from URL:', url, error)
+      return null
+    }
+  }
+
+  /**
    * Upload animation data to storage
    */
   async uploadAnimationData(
@@ -131,6 +151,89 @@ export class FileStorageService {
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Upload failed' 
+      }
+    }
+  }
+
+  /**
+   * Update existing animation data by overwriting the file
+   * More efficient than creating new files - preserves URL and reduces storage usage
+   */
+  async updateExistingAnimationData(
+    existingUrl: string,
+    data: any
+  ): Promise<UploadResult> {
+    try {
+      console.log('🔄 Updating existing animation data...')
+      console.log('📍 Existing URL:', existingUrl)
+
+      // Extract storage path from existing URL
+      const storagePath = this.extractStoragePath(existingUrl)
+      if (!storagePath) {
+        return {
+          success: false,
+          error: 'Could not extract storage path from URL'
+        }
+      }
+
+      console.log('📁 Extracted storage path:', storagePath)
+
+      // Prepare data for upload
+      const jsonData = JSON.stringify(data, null, 2)
+      const buffer = Buffer.from(jsonData, 'utf8')
+
+      console.log('📊 Data to update:', {
+        jsonLength: jsonData.length,
+        bufferLength: buffer.length,
+        path: storagePath
+      })
+
+      // Update the file in place
+      const { data: updateData, error } = await supabaseServer.storage
+        .from(this.ANIMATION_BUCKET)
+        .update(storagePath, buffer, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: 'application/json'
+        })
+
+      if (error) {
+        console.error('❌ Storage update failed:', error)
+        return { 
+          success: false, 
+          error: error.message 
+        }
+      }
+
+      console.log('✅ File updated successfully:', updateData)
+
+      // Verify the update
+      try {
+        console.log('🔍 Verifying file update...')
+        const verifyResponse = await fetch(existingUrl + '?t=' + Date.now()) // Cache bust
+        if (verifyResponse.ok) {
+          const updatedContent = await verifyResponse.json()
+          console.log('✅ File update verified:', {
+            url: existingUrl,
+            notesCount: updatedContent.notes?.length,
+            hasFingerInfo: updatedContent.notes?.some((n: any) => n.finger) || false
+          })
+        }
+      } catch (verifyError) {
+        console.warn('⚠️ File verification failed:', verifyError)
+      }
+
+      return {
+        success: true,
+        url: existingUrl, // Same URL - no DB update needed
+        path: storagePath
+      }
+
+    } catch (error) {
+      console.error('💥 Update animation data error:', error)
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Update failed' 
       }
     }
   }
