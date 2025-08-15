@@ -78,6 +78,7 @@ export function convertToFallingNotes(animationData: PianoAnimationData): Fallin
       start: note.startTime,
       duration: note.duration,
       hand,
+      finger: note.finger as 1 | 2 | 3 | 4 | 5 | undefined,
       velocity: note.velocity
     };
   });
@@ -104,7 +105,8 @@ export function convertFromFallingNotes(
       startTime: fallingNote.start,
       duration: fallingNote.duration,
       velocity: fallingNote.velocity || 0.7,
-      hand
+      hand,
+      finger: fallingNote.finger
     };
   });
 }

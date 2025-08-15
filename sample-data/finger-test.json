@@ -1,0 +1,202 @@
+{
+  "version": "1.0",
+  "title": "Finger Visualization Test",
+  "composer": "ClairKeys",
+  "duration": 8,
+  "tempo": 120,
+  "timeSignature": "4/4",
+  "notes": [
+    {
+      "note": "C4",
+      "startTime": 0,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 1
+    },
+    {
+      "note": "D4",
+      "startTime": 0.5,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 2
+    },
+    {
+      "note": "E4",
+      "startTime": 1,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "F4",
+      "startTime": 1.5,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 1
+    },
+    {
+      "note": "G4",
+      "startTime": 2,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 2
+    },
+    {
+      "note": "A4",
+      "startTime": 2.5,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "B4",
+      "startTime": 3,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 4
+    },
+    {
+      "note": "C5",
+      "startTime": 3.5,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 5
+    },
+    {
+      "note": "C3",
+      "startTime": 0,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "left",
+      "finger": 5
+    },
+    {
+      "note": "G2",
+      "startTime": 1,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "left",
+      "finger": 3
+    },
+    {
+      "note": "A2",
+      "startTime": 2,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "left",
+      "finger": 2
+    },
+    {
+      "note": "F2",
+      "startTime": 3,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "left",
+      "finger": 4
+    },
+    {
+      "note": "C4",
+      "startTime": 4,
+      "duration": 1,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 1
+    },
+    {
+      "note": "E4",
+      "startTime": 4,
+      "duration": 1,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "G4",
+      "startTime": 4,
+      "duration": 1,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 5
+    },
+    {
+      "note": "C3",
+      "startTime": 4,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "left",
+      "finger": 5
+    },
+    {
+      "note": "D4",
+      "startTime": 5,
+      "duration": 0.25,
+      "velocity": 0.9,
+      "hand": "right",
+      "finger": 2
+    },
+    {
+      "note": "F4",
+      "startTime": 5.25,
+      "duration": 0.25,
+      "velocity": 0.9,
+      "hand": "right",
+      "finger": 4
+    },
+    {
+      "note": "A4",
+      "startTime": 5.5,
+      "duration": 0.25,
+      "velocity": 0.9,
+      "hand": "right",
+      "finger": 1
+    },
+    {
+      "note": "D5",
+      "startTime": 5.75,
+      "duration": 0.25,
+      "velocity": 0.9,
+      "hand": "right",
+      "finger": 5
+    },
+    {
+      "note": "F#4",
+      "startTime": 6,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "G#4",
+      "startTime": 6.5,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 4
+    },
+    {
+      "note": "A#4",
+      "startTime": 7,
+      "duration": 0.5,
+      "velocity": 0.8,
+      "hand": "right",
+      "finger": 2
+    }
+  ],
+  "metadata": {
+    "originalFileName": "finger-visualization-test.json",
+    "fileSize": 2048,
+    "processedAt": "2025-08-15T13:07:52.473Z",
+    "pagesProcessed": 1,
+    "staffLinesDetected": 2,
+    "notesDetected": 22
+  }
+}
