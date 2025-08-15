@@ -14,85 +14,99 @@
       "midi": 72,
       "start": 0,
       "duration": 0.5,
-      "hand": "R"
+      "hand": "R",
+      "finger": 4
     },
     {
       "midi": 74,
       "start": 0.5,
       "duration": 0.5,
-      "hand": "R"
+      "hand": "R",
+      "finger": 2
     },
     {
       "midi": 76,
       "start": 1,
       "duration": 0.5,
-      "hand": "R"
+      "hand": "R",
+      "finger": 3
     },
     {
       "midi": 77,
       "start": 1.5,
       "duration": 0.5,
-      "hand": "R"
+      "hand": "R",
+      "finger": 5
     },
     {
       "midi": 48,
       "start": 2,
       "duration": 1,
-      "hand": "L"
+      "hand": "L",
+      "finger": 2
     },
     {
       "midi": 55,
       "start": 3,
       "duration": 1,
-      "hand": "L"
+      "hand": "L",
+      "finger": 1
     },
     {
       "midi": 72,
       "start": 4,
       "duration": 1,
-      "hand": "R"
+      "hand": "R",
+      "finger": 3
     },
     {
       "midi": 76,
       "start": 4,
       "duration": 1,
-      "hand": "R"
+      "hand": "R",
+      "finger": 2
     },
     {
       "midi": 79,
       "start": 4,
       "duration": 1,
-      "hand": "R"
+      "hand": "R",
+      "finger": 5
     },
     {
       "midi": 66,
       "start": 5,
       "duration": 0.25,
-      "hand": "R"
+      "hand": "R",
+      "finger": 2
     },
     {
       "midi": 67,
       "start": 5.25,
       "duration": 0.25,
-      "hand": "R"
+      "hand": "R",
+      "finger": 1
     },
     {
       "midi": 68,
       "start": 5.5,
       "duration": 0.25,
-      "hand": "R"
+      "hand": "R",
+      "finger": 2
     },
     {
       "midi": 70,
       "start": 5.75,
       "duration": 0.25,
-      "hand": "R"
+      "hand": "R",
+      "finger": 4
     },
     {
       "midi": 41,
       "start": 6.5,
       "duration": 0.5,
-      "hand": "L"
+      "hand": "L",
+      "finger": 4
     }
   ]
 }

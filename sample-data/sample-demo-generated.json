@@ -14,109 +14,127 @@
       "midi": 60,
       "start": 0,
       "duration": 0.45,
-      "hand": "R"
+      "hand": "R",
+      "finger": 3
     },
     {
       "midi": 36,
       "start": 0,
       "duration": 0.8,
-      "hand": "L"
+      "hand": "L",
+      "finger": 5
     },
     {
       "midi": 64,
       "start": 0.5,
       "duration": 0.45,
-      "hand": "R"
+      "hand": "R",
+      "finger": 1
     },
     {
       "midi": 67,
       "start": 1,
       "duration": 0.45,
-      "hand": "R"
+      "hand": "R",
+      "finger": 1
     },
     {
       "midi": 43,
       "start": 1,
       "duration": 0.8,
-      "hand": "L"
+      "hand": "L",
+      "finger": 4
     },
     {
       "midi": 64,
       "start": 1,
       "duration": 0.5,
-      "hand": "R"
+      "hand": "R",
+      "finger": 2
     },
     {
       "midi": 67,
       "start": 1,
       "duration": 0.5,
-      "hand": "R"
+      "hand": "R",
+      "finger": 3
     },
     {
       "midi": 72,
       "start": 1.5,
       "duration": 0.45,
-      "hand": "R"
+      "hand": "R",
+      "finger": 3
     },
     {
       "midi": 67,
       "start": 2,
       "duration": 0.45,
-      "hand": "R"
+      "hand": "R",
+      "finger": 1
     },
     {
       "midi": 48,
       "start": 2,
       "duration": 0.8,
-      "hand": "L"
+      "hand": "L",
+      "finger": 3
     },
     {
       "midi": 64,
       "start": 2.5,
       "duration": 0.45,
-      "hand": "R"
+      "hand": "R",
+      "finger": 2
     },
     {
       "midi": 60,
       "start": 3,
       "duration": 0.45,
-      "hand": "R"
+      "hand": "R",
+      "finger": 3
     },
     {
       "midi": 36,
       "start": 3,
       "duration": 0.8,
-      "hand": "L"
+      "hand": "L",
+      "finger": 4
     },
     {
       "midi": 64,
       "start": 3.5,
       "duration": 0.45,
-      "hand": "R"
+      "hand": "R",
+      "finger": 3
     },
     {
       "midi": 43,
       "start": 4,
       "duration": 0.8,
-      "hand": "L"
+      "hand": "L",
+      "finger": 5
     },
     {
       "midi": 48,
       "start": 5,
       "duration": 0.8,
-      "hand": "L"
+      "hand": "L",
+      "finger": 4
     },
     {
       "midi": 36,
       "start": 6,
       "duration": 0.8,
-      "hand": "L"
+      "hand": "L",
+      "finger": 4
     },
     {
       "midi": 43,
       "start": 7,
       "duration": 0.8,
-      "hand": "L"
+      "hand": "L",
+      "finger": 4
     }
   ]
 }

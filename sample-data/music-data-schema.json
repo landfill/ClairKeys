@@ -3,19 +3,29 @@
   "title": "ClairKeys Music Data Format",
   "description": "JSON schema for ClairKeys music data converted from MusicXML",
   "type": "object",
-  "required": ["metadata", "notes"],
+  "required": [
+    "metadata",
+    "notes"
+  ],
   "properties": {
     "metadata": {
       "type": "object",
       "description": "Metadata about the music piece",
-      "required": ["partCount", "measureCount", "duration", "totalNotes", "leftHandNotes", "rightHandNotes"],
+      "required": [
+        "partCount",
+        "measureCount",
+        "duration",
+        "totalNotes",
+        "leftHandNotes",
+        "rightHandNotes"
+      ],
       "properties": {
         "title": {
           "type": "string",
           "description": "Title of the music piece"
         },
         "composer": {
-          "type": "string", 
+          "type": "string",
           "description": "Composer of the music piece"
         },
         "partCount": {
@@ -55,7 +65,12 @@
       "description": "Array of musical notes",
       "items": {
         "type": "object",
-        "required": ["midi", "start", "duration", "hand"],
+        "required": [
+          "midi",
+          "start",
+          "duration",
+          "hand"
+        ],
         "properties": {
           "midi": {
             "type": "integer",
@@ -76,7 +91,10 @@
           },
           "hand": {
             "type": "string",
-            "enum": ["L", "R"],
+            "enum": [
+              "L",
+              "R"
+            ],
             "description": "Hand assignment: L for left hand, R for right hand"
           },
           "velocity": {

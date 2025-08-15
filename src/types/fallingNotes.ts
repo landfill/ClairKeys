@@ -3,6 +3,25 @@
  */
 
 /**
+ * Hand color constants for visual distinction
+ */
+export const HAND_COLORS = {
+  L: '#3b82f6', // Blue for left hand
+  R: '#ef4444', // Red for right hand
+  DEFAULT: '#6b7280' // Gray for unassigned notes
+} as const;
+
+/**
+ * Hand type definition
+ */
+export type Hand = "L" | "R";
+
+/**
+ * Finger number type definition
+ */
+export type Finger = 1 | 2 | 3 | 4 | 5;
+
+/**
  * Represents a musical note for falling notes visualization
  */
 export type FallingNote = {
@@ -13,7 +32,9 @@ export type FallingNote = {
   /** Duration in seconds */
   duration: number;
   /** Hand assignment for piano playing */
-  hand?: "L" | "R";
+  hand?: Hand;
+  /** Finger number (1-5: thumb to pinky) */
+  finger?: Finger;
   /** Note velocity (0-1) */
   velocity?: number;
 };
@@ -56,6 +77,10 @@ export type VisualNote = {
   color: string;
   /** Z-index for layering */
   z: number;
+  /** Finger number for educational display */
+  finger?: Finger;
+  /** Hand assignment for color coding */
+  hand?: Hand;
 };
 
 /**

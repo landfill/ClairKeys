@@ -1,4 +1,5 @@
-import type { FallingNote, VisualNote, KeyLayout } from '@/types/fallingNotes';
+import type { FallingNote, VisualNote, KeyLayout, Hand } from '@/types/fallingNotes';
+import { HAND_COLORS } from '@/types/fallingNotes';
 
 /**
  * Visual Utilities
@@ -47,7 +48,7 @@ export function notesToVisualNotes(
     // Calculate visual properties
     const x = keyPos.x + (keyPos.black ? keyPos.w * 0.2 : 0);
     const width = keyPos.black ? keyPos.w * 0.75 : keyPos.w * 0.92;
-    const color = note.hand === "L" ? "#3b82f6" : "#ef4444"; // Blue for left, red for right
+    const color = getHandColor(note.hand);
     const zIndex = keyPos.black ? 30 : 20; // Black key notes on top
     
     visualNotes.push({
@@ -56,7 +57,9 @@ export function notesToVisualNotes(
       h: Math.max(3, noteHeight), // Minimum height for visibility
       w: width,
       color,
-      z: zIndex
+      z: zIndex,
+      finger: note.finger,
+      hand: note.hand
     });
   }
   
@@ -99,13 +102,31 @@ export function getVisibleNotes(
 }
 
 /**
- * Color constants for hand visualization
+ * Get color for a given hand assignment
  */
-export const HAND_COLORS = {
-  L: "#3b82f6", // Blue for left hand
-  R: "#ef4444", // Red for right hand
-  DEFAULT: "#6b7280" // Gray for unassigned
-} as const;
+export function getHandColor(hand?: Hand): string {
+  if (hand === "L") return HAND_COLORS.L;
+  if (hand === "R") return HAND_COLORS.R;
+  return HAND_COLORS.DEFAULT;
+}
+
+/**
+ * Calculate optimal finger badge position within a note
+ */
+export function getFingerBadgePosition(note: VisualNote): { x: number; y: number; size: number } {
+  const badgeSize = Math.min(16, Math.max(12, note.w * 0.6)); // Responsive size
+  const x = note.x + (note.w - badgeSize) / 2; // Center horizontally
+  const y = note.y + Math.min(8, note.h * 0.2); // Near top of note
+  
+  return { x, y, size: badgeSize };
+}
+
+/**
+ * Check if a finger badge should be displayed based on note size
+ */
+export function shouldShowFingerBadge(note: VisualNote): boolean {
+  return note.w >= 12 && note.h >= 12 && note.finger !== undefined;
+}
 
 /**
  * Z-index constants for layering

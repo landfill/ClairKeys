@@ -14,31 +14,36 @@
       "midi": 60,
       "start": 0,
       "duration": 1,
-      "hand": "R"
+      "hand": "R",
+      "finger": 3
     },
     {
       "midi": 64,
       "start": 1,
       "duration": 1,
-      "hand": "R"
+      "hand": "R",
+      "finger": 1
     },
     {
       "midi": 67,
       "start": 2,
       "duration": 1,
-      "hand": "R"
+      "hand": "R",
+      "finger": 2
     },
     {
       "midi": 36,
       "start": 0,
       "duration": 2,
-      "hand": "L"
+      "hand": "L",
+      "finger": 5
     },
     {
       "midi": 43,
       "start": 2,
       "duration": 2,
-      "hand": "L"
+      "hand": "L",
+      "finger": 4
     }
   ]
 }
