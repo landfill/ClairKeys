@@ -56,14 +56,10 @@ export default function FallingNotes({
                   top: badgePosition.y - visualNote.y,
                   width: badgePosition.size,
                   height: badgePosition.size,
-                  backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                  borderRadius: '50%',
-                  border: '2px solid rgba(255, 255, 255, 0.9)',
-                  fontSize: Math.max(10, badgePosition.size * 0.65),
+                  fontSize: Math.max(12, badgePosition.size * 0.8),
                   fontWeight: 900,
-                  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)',
-                  zIndex: 15,
-                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.4)'
+                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.9)',
+                  zIndex: 15
                 }}
               >
                 {visualNote.finger}
