@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import LogoutButton from './LogoutButton'
 
 interface UserProfileProps {
@@ -16,6 +16,19 @@ export default function UserProfile({
 }: UserProfileProps) {
   const { data: session, status } = useSession()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  // Check admin status when user is logged in
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetch('/api/auth/is-admin')
+        .then(res => res.json())
+        .then(data => setIsAdmin(data.isAdmin))
+        .catch(() => setIsAdmin(false))
+    } else {
+      setIsAdmin(false)
+    }
+  }, [session])
 
   if (status === 'loading') {
     return (
@@ -107,6 +120,16 @@ export default function UserProfile({
             >
               내 악보
             </a>
+            
+            {isAdmin && (
+              <a
+                href="/admin/update-finger-data"
+                className="block px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 font-medium"
+                onClick={() => setIsDropdownOpen(false)}
+              >
+                🛠️ 관리자 도구
+              </a>
+            )}
             
             <div className="border-t">
               <div className="px-4 py-2">

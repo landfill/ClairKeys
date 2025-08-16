@@ -10,12 +10,10 @@ import { fileStorageService } from '@/services/fileStorageService'
  * Requires authentication and admin privileges
  */
 
-// Admin user emails - replace with your admin emails
-const ADMIN_EMAILS = [
-  'demo@clairkeys.com',
-  'letthelightsurroundyou@gmail.com', // Add your email here
-  'admin@clairkeys.com'
-]
+// Get admin emails from environment variable
+function getAdminEmails(): string[] {
+  return process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || []
+}
 
 // Simple fingering assignment logic
 function assignFinger(note: any): number {
@@ -84,7 +82,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!ADMIN_EMAILS.includes(session.user.email)) {
+    if (!getAdminEmails().includes(session.user.email)) {
       console.log(`❌ Forbidden: User ${session.user.email} is not an admin`)
       return NextResponse.json(
         { success: false, error: 'Admin privileges required', message: 'You do not have permission to access this feature' },

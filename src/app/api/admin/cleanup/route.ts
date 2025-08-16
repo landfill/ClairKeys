@@ -5,16 +5,28 @@ import { queryOptimizationService } from '@/services/queryOptimizationService'
 import { fileStorageService } from '@/services/fileStorageService'
 import { cacheService } from '@/services/cacheService'
 
+// Get admin emails from environment variable
+function getAdminEmails(): string[] {
+  return process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || []
+}
+
 // Admin cleanup endpoints
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication and admin privileges
     const session = await getServerSession(authOptions)
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Authentication required' },
         { status: 401 }
+      )
+    }
+
+    if (!getAdminEmails().includes(session.user.email)) {
+      return NextResponse.json(
+        { error: 'Admin privileges required' },
+        { status: 403 }
       )
     }
 
@@ -107,13 +119,20 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication and admin privileges
     const session = await getServerSession(authOptions)
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Authentication required' },
         { status: 401 }
+      )
+    }
+
+    if (!getAdminEmails().includes(session.user.email)) {
+      return NextResponse.json(
+        { error: 'Admin privileges required' },
+        { status: 403 }
       )
     }
 

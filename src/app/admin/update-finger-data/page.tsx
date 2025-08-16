@@ -5,12 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button, Card, Loading } from '@/components/ui'
 
-// Admin user emails - should match the API
-const ADMIN_EMAILS = [
-  'demo@clairkeys.com',
-  'letthelightsurroundyou@gmail.com',
-  'admin@clairkeys.com'
-]
+// Check admin status via API
 
 interface UpdateResult {
   id: string
@@ -37,6 +32,7 @@ export default function UpdateFingerDataPage() {
   const [summary, setSummary] = useState<UpdateSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [accessDenied, setAccessDenied] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   // Check admin permissions
   useEffect(() => {
@@ -47,12 +43,17 @@ export default function UpdateFingerDataPage() {
       return
     }
 
-    if (!ADMIN_EMAILS.includes(session.user.email)) {
-      setAccessDenied(true)
-      return
-    }
-
-    setAccessDenied(false)
+    // Check admin status via API
+    fetch('/api/auth/is-admin')
+      .then(res => res.json())
+      .then(data => {
+        setIsAdmin(data.isAdmin)
+        setAccessDenied(!data.isAdmin)
+      })
+      .catch(() => {
+        setIsAdmin(false)
+        setAccessDenied(true)
+      })
   }, [session, status, router])
 
   const handleUpdate = async () => {
