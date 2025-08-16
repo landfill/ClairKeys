@@ -1,34 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { cacheService } from '@/lib/cache'
 
-// GET /api/sheet/public - Get public sheet music list (with caching)
+// GET /api/sheet/public - Get public sheet music list
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
     const categoryId = searchParams.get('categoryId')
+    const sortBy = searchParams.get('sortBy') || 'newest'
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
-
-    // Create cache key based on query parameters
-    const cacheKey = `public_sheets_${search || 'all'}_${categoryId || 'all'}_${limit}_${offset}`
-    
-    // Try to get from cache first (longer cache for public data)
-    const cachedData = await cacheService.get(cacheKey, {
-      ttl: 5 * 60 * 1000, // 5 minutes cache for public data
-      version: '1.0'
-    })
-    
-    if (cachedData) {
-      console.log('Returning cached public sheets')
-      return NextResponse.json(cachedData, {
-        headers: {
-          'X-Cache': 'HIT',
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
-        }
-      })
-    }
 
     // Build where clause for public sheets only
     const where: any = {
@@ -67,9 +48,7 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        orderBy: {
-          createdAt: 'desc'
-        },
+        orderBy: sortBy === 'newest' ? { createdAt: 'desc' } : { title: 'asc' },
         take: Math.min(limit, 50), // Max 50 items per request
         skip: offset
       }),
@@ -95,16 +74,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Cache the result
-    await cacheService.set(cacheKey, responseData, {
-      ttl: 5 * 60 * 1000, // 5 minutes cache
-      version: '1.0'
-    })
-
     return NextResponse.json(responseData, {
       headers: {
-        'X-Cache': 'MISS',
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
       }
     })
 
