@@ -10,6 +10,7 @@ interface PlaybackControlsProps {
   playbackSpeed: number
   playbackMode: 'listen' | 'follow' | 'practice'
   onPlay: () => void
+  onPause?: () => void
   onStop: () => void
   onSeek: (time: number) => void
   onSpeedChange: (speed: number) => void
@@ -25,6 +26,7 @@ export default function PlaybackControls({
   playbackSpeed,
   playbackMode,
   onPlay,
+  onPause,
   onStop,
   onSeek,
   onSpeedChange,
@@ -71,20 +73,29 @@ export default function PlaybackControls({
       {/* Main Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
+          {/* Play Button */}
           <Button
             onClick={onPlay}
             variant="primary"
             size="lg"
-            disabled={!isReady}
+            disabled={!isReady || isPlaying}
             className="min-w-[60px] h-12"
           >
-            {isPlaying ? (
-              <span className="text-xl">⏸️</span>
-            ) : (
-              <span className="text-xl">▶️</span>
-            )}
+            <span className="text-xl">▶️</span>
           </Button>
           
+          {/* Pause Button */}
+          <Button
+            onClick={onPause || onPlay}
+            variant="outline"
+            size="lg"
+            disabled={!isReady || !isPlaying}
+            className="min-w-[60px] h-12"
+          >
+            <span className="text-xl">⏸️</span>
+          </Button>
+          
+          {/* Stop Button */}
           <Button
             onClick={onStop}
             variant="outline"

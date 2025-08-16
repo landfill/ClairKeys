@@ -50,17 +50,20 @@ export default function FallingNotes({
           >
             {showFingerBadge && badgePosition && visualNote.finger && (
               <div
-                className="absolute flex items-center justify-center font-bold text-white"
+                className="absolute flex items-center justify-center font-black text-white select-none"
                 style={{
                   left: badgePosition.x - visualNote.x,
                   top: badgePosition.y - visualNote.y,
                   width: badgePosition.size,
                   height: badgePosition.size,
-                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.85)',
                   borderRadius: '50%',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  fontSize: Math.max(8, badgePosition.size * 0.6),
-                  zIndex: 10
+                  border: '2px solid rgba(255, 255, 255, 0.9)',
+                  fontSize: Math.max(10, badgePosition.size * 0.65),
+                  fontWeight: 900,
+                  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)',
+                  zIndex: 15,
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.4)'
                 }}
               >
                 {visualNote.finger}

@@ -114,9 +114,9 @@ export function getHandColor(hand?: Hand): string {
  * Calculate optimal finger badge position within a note
  */
 export function getFingerBadgePosition(note: VisualNote): { x: number; y: number; size: number } {
-  const badgeSize = Math.min(16, Math.max(12, note.w * 0.6)); // Responsive size
+  const badgeSize = Math.min(20, Math.max(14, note.w * 0.7)); // Increased size for better visibility
   const x = note.x + (note.w - badgeSize) / 2; // Center horizontally
-  const y = note.y + Math.min(8, note.h * 0.2); // Near top of note
+  const y = note.y + note.h - badgeSize - 4; // Near bottom of note with padding
   
   return { x, y, size: badgeSize };
 }

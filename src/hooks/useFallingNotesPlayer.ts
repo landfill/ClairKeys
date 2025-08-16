@@ -15,7 +15,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
   const [currentTime, setCurrentTime] = useState(0)
   const [tempoScale, setTempoScale] = useState(1.0)
   const [mute, setMute] = useState(false)
-  const [lookAheadSec, setLookAheadSec] = useState(2.5)
+  const [lookAheadSec, setLookAheadSec] = useState(1.5)
 
   // Audio management
   const audioPlayback = useFallingNotesAudio()

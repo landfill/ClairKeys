@@ -89,7 +89,8 @@ export default function FallingNotesPlayer({
           duration={totalLength}
           playbackSpeed={tempoScale}
           playbackMode="listen"
-          onPlay={togglePlayPause}
+          onPlay={play}
+          onPause={pause}
           onStop={stop}
           onSeek={seek}
           onSpeedChange={setTempoScale}

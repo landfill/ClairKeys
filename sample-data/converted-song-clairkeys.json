@@ -1,0 +1,232 @@
+{
+  "version": "1.0",
+  "title": "Converted Melody",
+  "composer": "Unknown Artist",
+  "duration": 27,
+  "tempo": 120,
+  "timeSignature": "4/4",
+  "notes": [
+    {
+      "note": "E5",
+      "startTime": 1,
+      "duration": 2,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 4
+    },
+    {
+      "note": "G5",
+      "startTime": 1,
+      "duration": 2,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 4
+    },
+    {
+      "note": "C5",
+      "startTime": 3,
+      "duration": 3,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "E5",
+      "startTime": 3,
+      "duration": 3,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 4
+    },
+    {
+      "note": "B4",
+      "startTime": 7,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "D5",
+      "startTime": 7,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "C5",
+      "startTime": 8,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "E5",
+      "startTime": 8,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 4
+    },
+    {
+      "note": "B4",
+      "startTime": 9,
+      "duration": 3,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "D5",
+      "startTime": 9,
+      "duration": 3,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "A4",
+      "startTime": 13,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 2
+    },
+    {
+      "note": "C5",
+      "startTime": 13,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "B4",
+      "startTime": 14,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "D5",
+      "startTime": 14,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "G#4",
+      "startTime": 15,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 2
+    },
+    {
+      "note": "B4",
+      "startTime": 15,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "A4",
+      "startTime": 16,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 2
+    },
+    {
+      "note": "C5",
+      "startTime": 16,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "G4",
+      "startTime": 18,
+      "duration": 3,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 2
+    },
+    {
+      "note": "B4",
+      "startTime": 18,
+      "duration": 3,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 3
+    },
+    {
+      "note": "D3",
+      "startTime": 21,
+      "duration": 2,
+      "velocity": 0.7,
+      "hand": "left",
+      "finger": 4
+    },
+    {
+      "note": "F3",
+      "startTime": 21,
+      "duration": 2,
+      "velocity": 0.7,
+      "hand": "left",
+      "finger": 3
+    },
+    {
+      "note": "G2",
+      "startTime": 23,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "left",
+      "finger": 5
+    },
+    {
+      "note": "C6",
+      "startTime": 25,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 5
+    },
+    {
+      "note": "C7",
+      "startTime": 25,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 5
+    },
+    {
+      "note": "D6",
+      "startTime": 26,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 5
+    },
+    {
+      "note": "D7",
+      "startTime": 26,
+      "duration": 1,
+      "velocity": 0.7,
+      "hand": "right",
+      "finger": 5
+    }
+  ],
+  "metadata": {
+    "convertedFrom": "MIDI format",
+    "convertedAt": "2025-08-16T03:15:18.771Z",
+    "totalNotes": 27,
+    "fingeringAdded": true
+  }
+}
