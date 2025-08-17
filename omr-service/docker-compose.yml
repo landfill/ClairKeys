@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  clairkeys-omr:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Allow access to Docker daemon
+      - ./temp:/tmp/processing  # Mount temporary processing directory
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - ENVIRONMENT=development
+      - LOG_LEVEL=INFO
+    networks:
+      - omr-network
+    depends_on:
+      - audiveris
+    restart: unless-stopped
+
+  # Pre-pulled Audiveris service for faster processing
+  audiveris:
+    image: toprock/audiveris
+    command: ["sleep", "infinity"]  # Keep container alive
+    volumes:
+      - audiveris-cache:/cache
+    networks:
+      - omr-network
+
+networks:
+  omr-network:
+    driver: bridge
+
+volumes:
+  audiveris-cache:

@@ -74,6 +74,8 @@ model SheetMusic {
   categoryId       Int?
   isPublic         Boolean           @default(false)
   animationDataUrl String
+  processingStatus String            @default("pending") // pending, processing, completed, failed
+  omrJobId         String?           // OMR service job ID for tracking
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   practiceSessions PracticeSession[]
