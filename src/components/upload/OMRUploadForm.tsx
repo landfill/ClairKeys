@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui'
 import { useCategories } from '@/hooks/useCategories'
 
 interface OMRUploadFormProps {
@@ -19,7 +19,7 @@ interface UploadStatus {
 
 export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploadFormProps) {
   const { data: session } = useSession()
-  const { categories } = useCategories()
+  const { categories = [] } = useCategories()
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [formData, setFormData] = useState({
