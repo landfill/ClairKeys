@@ -11,15 +11,17 @@ export async function GET() {
     
     console.log('Session in categories GET API:', session)
     
-    if (!session?.user?.id) {
-      console.log('No session or user ID found in GET')
+    if (!session?.user) {
+      console.log('No session or user found in GET')
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const cacheKey = `categories_${session.user.id}`
+    // Use OAuth ID as user identifier
+    const userId = session.user.id || session.user.email || 'anonymous'
+    const cacheKey = `categories_${userId}`
     
     // Try to get from cache first
     const cachedCategories = await cacheService.get(cacheKey, {
@@ -39,7 +41,7 @@ export async function GET() {
     // Fetch from database
     const categories = await prisma.category.findMany({
       where: {
-        userId: session.user.id,
+        userId: userId,
       },
       orderBy: {
         name: 'asc',
@@ -74,14 +76,17 @@ export async function POST(request: NextRequest) {
     console.log('Session in categories API:', JSON.stringify(session, null, 2))
     console.log('Auth options:', JSON.stringify(authOptions, null, 2))
     
-    if (!session?.user?.id) {
-      console.log('No session or user ID found')
+    if (!session?.user) {
+      console.log('No session or user found')
       console.log('Session user:', session?.user)
       return NextResponse.json(
         { error: 'Unauthorized - No valid session found' },
         { status: 401 }
       )
     }
+
+    // Use OAuth ID as user identifier
+    const userId = session.user.id || session.user.email || 'anonymous'
 
     const body = await request.json()
     const { name } = body
@@ -96,7 +101,7 @@ export async function POST(request: NextRequest) {
     // Check if category with same name already exists for this user
     const existingCategory = await prisma.category.findFirst({
       where: {
-        userId: session.user.id,
+        userId: userId,
         name: name.trim(),
       },
     })
@@ -111,12 +116,12 @@ export async function POST(request: NextRequest) {
     const category = await prisma.category.create({
       data: {
         name: name.trim(),
-        userId: session.user.id,
+        userId: userId,
       },
     })
 
     // Invalidate cache after creating new category
-    const cacheKey = `categories_${session.user.id}`
+    const cacheKey = `categories_${userId}`
     await cacheService.delete(cacheKey)
 
     return NextResponse.json(category, { status: 201 })

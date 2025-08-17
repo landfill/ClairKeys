@@ -8,17 +8,20 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
+    // Use OAuth ID as user identifier
+    const userId = session.user.id || session.user.email || 'anonymous'
+
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '20')
 
-    const notifications = await backgroundProcessor.getNotifications(session.user.id, limit)
+    const notifications = await backgroundProcessor.getNotifications(userId, limit)
 
     return NextResponse.json({
       success: true,
@@ -39,14 +42,17 @@ export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const count = await backgroundProcessor.markAllNotificationsAsRead(session.user.id)
+    // Use OAuth ID as user identifier
+    const userId = session.user.id || session.user.email || 'anonymous'
+
+    const count = await backgroundProcessor.markAllNotificationsAsRead(userId)
 
     return NextResponse.json({
       success: true,
