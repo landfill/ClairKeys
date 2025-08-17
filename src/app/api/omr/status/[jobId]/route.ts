@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
 
 const OMR_SERVICE_URL = process.env.OMR_SERVICE_URL || 'https://clairkeys-omr.fly.dev'
@@ -12,12 +12,15 @@ export async function GET(
   try {
     // Check authentication
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       )
     }
+
+    // Use OAuth ID as user identifier
+    const userId = session.user.id || session.user.email || 'anonymous'
 
     const { jobId } = params
 
@@ -32,7 +35,7 @@ export async function GET(
     const sheetMusic = await prisma.sheetMusic.findFirst({
       where: {
         omrJobId: jobId,
-        userId: session.user.id // Ensure user can only check their own jobs
+        userId: userId // Ensure user can only check their own jobs
       }
     })
 

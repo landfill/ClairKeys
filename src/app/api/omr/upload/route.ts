@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
 
 const OMR_SERVICE_URL = process.env.OMR_SERVICE_URL || 'https://clairkeys-omr.fly.dev'
@@ -9,12 +9,15 @@ export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       )
     }
+
+    // Use OAuth ID as user identifier
+    const userId = session.user.id || session.user.email || 'anonymous'
 
     // Get form data
     const formData = await request.formData()
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         composer: composer || 'Unknown',
-        userId: session.user.id,
+        userId: userId,
         categoryId: categoryId ? parseInt(categoryId) : null,
         isPublic,
         animationDataUrl: '', // Will be updated when OMR processing completes
@@ -75,7 +78,7 @@ export async function POST(request: NextRequest) {
     omrFormData.append('file', file)
     omrFormData.append('title', title)
     omrFormData.append('composer', composer || 'Unknown')
-    omrFormData.append('user_id', session.user.id)
+    omrFormData.append('user_id', userId)
     omrFormData.append('sheet_music_id', sheetMusic.id.toString())
 
     // Send to OMR service
