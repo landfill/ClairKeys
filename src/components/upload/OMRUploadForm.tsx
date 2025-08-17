@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui'
-import { useCategories } from '@/hooks/useCategories'
+import type { Category } from '@/types/category'
 
 interface OMRUploadFormProps {
   onUploadStart?: (data: { sheetMusicId: number; jobId: string }) => void
@@ -19,13 +19,12 @@ interface UploadStatus {
 
 export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploadFormProps) {
   const { data: session } = useSession()
-  const { categories = [] } = useCategories()
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [formData, setFormData] = useState({
     title: '',
     composer: '',
-    categoryId: '',
+    categoryId: null as number | null,
     isPublic: false
   })
   
@@ -36,36 +35,110 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
     message: ''
   })
 
+  const [categories, setCategories] = useState<Category[]>([])
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false)
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Load user categories
+  useEffect(() => {
+    loadCategories()
+  }, [])
+
+  const loadCategories = async () => {
+    try {
+      setIsLoadingCategories(true)
+      const response = await fetch('/api/categories')
+      if (response.ok) {
+        const data = await response.json()
+        setCategories(data)
+      }
+    } catch (error) {
+      console.error('Failed to load categories:', error)
+    } finally {
+      setIsLoadingCategories(false)
+    }
+  }
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return
+
+    try {
+      setIsCreatingCategory(true)
+      const response = await fetch('/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newCategoryName.trim() }),
+      })
+
+      if (response.ok) {
+        const newCategory = await response.json()
+        setCategories(prev => [...prev, newCategory])
+        setFormData(prev => ({ ...prev, categoryId: newCategory.id }))
+        setNewCategoryName('')
+        setShowNewCategoryInput(false)
+      } else {
+        const error = await response.json()
+        setErrors(prev => ({ ...prev, category: error.message || '카테고리 생성에 실패했습니다.' }))
+      }
+    } catch (error) {
+      setErrors(prev => ({ ...prev, category: '카테고리 생성 중 오류가 발생했습니다.' }))
+    } finally {
+      setIsCreatingCategory(false)
+    }
+  }
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.title.trim()) {
+      newErrors.title = '곡명은 필수 입력 항목입니다.'
+    }
+
+    if (!formData.composer.trim()) {
+      newErrors.composer = '저작자는 필수 입력 항목입니다.'
+    }
+
+    if (!selectedFile) {
+      newErrors.file = 'PDF 파일을 선택해주세요.'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleInputChange = (field: keyof typeof formData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }))
+    }
+  }
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
       if (!file.name.toLowerCase().endsWith('.pdf')) {
-        setUploadStatus({
-          isUploading: false,
-          progress: 0,
-          message: '',
-          error: 'Please select a PDF file'
-        })
+        setErrors(prev => ({ ...prev, file: 'PDF 파일만 업로드 가능합니다.' }))
         return
       }
-      
+
       if (file.size > 50 * 1024 * 1024) { // 50MB limit
-        setUploadStatus({
-          isUploading: false,
-          progress: 0,
-          message: '',
-          error: 'File size must be less than 50MB'
-        })
+        setErrors(prev => ({ ...prev, file: '파일 크기는 50MB 이하여야 합니다.' }))
         return
       }
-      
+
       setSelectedFile(file)
-      setUploadStatus({ isUploading: false, progress: 0, message: '' })
+      setErrors(prev => ({ ...prev, file: '' }))
       
       // Auto-fill title from filename if not already set
       if (!formData.title) {
         const nameWithoutExtension = file.name.replace(/\.pdf$/i, '')
-        setFormData(prev => ({ ...prev, title: nameWithoutExtension }))
+        handleInputChange('title', nameWithoutExtension)
       }
     }
   }
@@ -78,28 +151,12 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
         isUploading: false,
         progress: 0,
         message: '',
-        error: 'Please log in to upload sheet music'
+        error: '로그인이 필요합니다.'
       })
       return
     }
 
-    if (!selectedFile) {
-      setUploadStatus({
-        isUploading: false,
-        progress: 0,
-        message: '',
-        error: 'Please select a PDF file'
-      })
-      return
-    }
-
-    if (!formData.title.trim()) {
-      setUploadStatus({
-        isUploading: false,
-        progress: 0,
-        message: '',
-        error: 'Please enter a title'
-      })
+    if (!validateForm()) {
       return
     }
 
@@ -107,23 +164,23 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
       setUploadStatus({
         isUploading: true,
         progress: 10,
-        message: 'Preparing upload...'
+        message: '업로드 준비 중...'
       })
 
       // Prepare form data
       const uploadFormData = new FormData()
-      uploadFormData.append('file', selectedFile)
+      uploadFormData.append('file', selectedFile!)
       uploadFormData.append('title', formData.title.trim())
-      uploadFormData.append('composer', formData.composer.trim() || 'Unknown')
+      uploadFormData.append('composer', formData.composer.trim())
       if (formData.categoryId) {
-        uploadFormData.append('categoryId', formData.categoryId)
+        uploadFormData.append('categoryId', formData.categoryId.toString())
       }
       uploadFormData.append('isPublic', formData.isPublic.toString())
 
       setUploadStatus({
         isUploading: true,
         progress: 30,
-        message: 'Uploading PDF...'
+        message: 'PDF 업로드 중...'
       })
 
       // Upload to OMR service
@@ -134,18 +191,18 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Upload failed')
+        throw new Error(errorData.error || '업로드에 실패했습니다.')
       }
 
       const result = await response.json()
-
+      
       setUploadStatus({
         isUploading: true,
         progress: 100,
-        message: 'Upload successful! OMR processing started...'
+        message: '업로드 완료! OMR 처리 시작 중...'
       })
 
-      // Call success callback
+      // Call parent handler
       if (onUploadStart) {
         onUploadStart({
           sheetMusicId: result.sheetMusicId,
@@ -154,33 +211,33 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
       }
 
       // Reset form
+      setSelectedFile(null)
       setFormData({
         title: '',
         composer: '',
-        categoryId: '',
+        categoryId: null,
         isPublic: false
       })
-      setSelectedFile(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
       
       setUploadStatus({
         isUploading: false,
         progress: 0,
-        message: 'Upload completed successfully!'
+        message: ''
       })
 
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Upload failed'
-      
+      const errorMessage = error instanceof Error ? error.message : '업로드에 실패했습니다.'
       setUploadStatus({
         isUploading: false,
         progress: 0,
         message: '',
         error: errorMessage
       })
-
+      
       if (onUploadError) {
         onUploadError(errorMessage)
       }
@@ -188,149 +245,233 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-6">Upload Sheet Music (PDF)</h2>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* File Input */}
+    <div className="bg-white rounded-lg shadow-sm border p-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <h3 className="text-lg font-semibold text-gray-900">OMR 악보 업로드</h3>
+
+        {/* File Upload */}
         <div>
-          <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-2">
-            PDF File *
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            PDF 파일 <span className="text-red-500">*</span>
           </label>
-          <input
-            ref={fileInputRef}
-            type="file"
-            id="file"
-            accept=".pdf"
-            onChange={handleFileSelect}
-            disabled={uploadStatus.isUploading}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
-            required
-          />
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+            <div className="space-y-1 text-center">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
+              >
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <div className="flex text-sm text-gray-600">
+                <label
+                  htmlFor="file-upload"
+                  className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                >
+                  <span>파일 선택</span>
+                  <input
+                    id="file-upload"
+                    ref={fileInputRef}
+                    name="file-upload"
+                    type="file"
+                    className="sr-only"
+                    accept=".pdf"
+                    onChange={handleFileSelect}
+                    disabled={uploadStatus.isUploading}
+                  />
+                </label>
+                <p className="pl-1">또는 드래그 앤 드롭</p>
+              </div>
+              <p className="text-xs text-gray-500">PDF 파일만 업로드 가능 (최대 50MB)</p>
+            </div>
+          </div>
           {selectedFile && (
-            <p className="mt-1 text-sm text-gray-600">
-              Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(1)} MB)
+            <p className="mt-2 text-sm text-gray-600">
+              선택된 파일: <span className="font-medium">{selectedFile.name}</span>
             </p>
+          )}
+          {errors.file && (
+            <p className="mt-1 text-sm text-red-600">{errors.file}</p>
           )}
         </div>
 
-        {/* Title */}
+        {/* Title Field */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-            Title *
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            곡명 <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
-            id="title"
             value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            onChange={(e) => handleInputChange('title', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              errors.title ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="곡명을 입력하세요"
             disabled={uploadStatus.isUploading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            placeholder="Enter the title of the piece"
-            required
           />
+          {errors.title && (
+            <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+          )}
         </div>
 
-        {/* Composer */}
+        {/* Composer Field */}
         <div>
-          <label htmlFor="composer" className="block text-sm font-medium text-gray-700 mb-2">
-            Composer
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            저작자 <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
-            id="composer"
             value={formData.composer}
-            onChange={(e) => setFormData(prev => ({ ...prev, composer: e.target.value }))}
+            onChange={(e) => handleInputChange('composer', e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              errors.composer ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="작곡가 또는 저작자를 입력하세요"
             disabled={uploadStatus.isUploading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            placeholder="Enter the composer name (optional)"
           />
+          {errors.composer && (
+            <p className="mt-1 text-sm text-red-600">{errors.composer}</p>
+          )}
         </div>
 
-        {/* Category */}
+        {/* Category Field */}
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-            Category
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            카테고리
           </label>
-          <select
-            id="category"
-            value={formData.categoryId}
-            onChange={(e) => setFormData(prev => ({ ...prev, categoryId: e.target.value }))}
-            disabled={uploadStatus.isUploading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-          >
-            <option value="">Select a category (optional)</option>
-            {categories.map(category => (
-              <option key={category.id} value={category.id.toString()}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Public Toggle */}
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="isPublic"
-            checked={formData.isPublic}
-            onChange={(e) => setFormData(prev => ({ ...prev, isPublic: e.target.checked }))}
-            disabled={uploadStatus.isUploading}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
-          />
-          <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-900">
-            Make this sheet music public (others can discover and use it)
-          </label>
-        </div>
-
-        {/* Progress and Status */}
-        {(uploadStatus.isUploading || uploadStatus.message || uploadStatus.error) && (
-          <div className="mt-4">
-            {uploadStatus.isUploading && (
-              <div className="mb-2">
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
-                  <span>{uploadStatus.message}</span>
-                  <span>{uploadStatus.progress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${uploadStatus.progress}%` }}
-                  />
-                </div>
+          <div className="space-y-2">
+            <select
+              value={formData.categoryId || ''}
+              onChange={(e) => handleInputChange('categoryId', e.target.value ? parseInt(e.target.value) : null)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={uploadStatus.isUploading || isLoadingCategories}
+            >
+              <option value="">카테고리 선택 (선택사항)</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            
+            {/* New Category Creation */}
+            {!showNewCategoryInput ? (
+              <button
+                type="button"
+                onClick={() => setShowNewCategoryInput(true)}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                disabled={uploadStatus.isUploading}
+              >
+                + 새 카테고리 만들기
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="새 카테고리 이름"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={isCreatingCategory}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleCreateCategory}
+                  disabled={!newCategoryName.trim() || isCreatingCategory}
+                >
+                  {isCreatingCategory ? '생성 중...' : '생성'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowNewCategoryInput(false)
+                    setNewCategoryName('')
+                  }}
+                  disabled={isCreatingCategory}
+                >
+                  취소
+                </Button>
               </div>
             )}
             
-            {uploadStatus.message && !uploadStatus.isUploading && (
-              <p className="text-green-600 text-sm">{uploadStatus.message}</p>
+            {errors.category && (
+              <p className="text-sm text-red-600">{errors.category}</p>
             )}
-            
-            {uploadStatus.error && (
-              <p className="text-red-600 text-sm">{uploadStatus.error}</p>
-            )}
+          </div>
+        </div>
+
+        {/* Public/Private Toggle */}
+        <div>
+          <label className="flex items-start">
+            <input
+              type="checkbox"
+              checked={formData.isPublic}
+              onChange={(e) => handleInputChange('isPublic', e.target.checked)}
+              className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              disabled={uploadStatus.isUploading}
+            />
+            <div className="ml-3">
+              <span className="text-sm font-medium text-gray-700">
+                다른 사용자와 공유 (공개 설정)
+              </span>
+              <p className="text-xs text-gray-500 mt-1">
+                공개로 설정하면 다른 사용자들이 이 악보를 검색하고 연주할 수 있습니다.
+              </p>
+            </div>
+          </label>
+        </div>
+
+        {/* Upload Progress */}
+        {uploadStatus.isUploading && (
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-blue-900">{uploadStatus.message}</p>
+              <span className="text-sm text-blue-700">{uploadStatus.progress}%</span>
+            </div>
+            <div className="w-full bg-blue-200 rounded-full h-2">
+              <div
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${uploadStatus.progress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Error Display */}
+        {uploadStatus.error && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <p className="text-sm text-red-800">{uploadStatus.error}</p>
           </div>
         )}
 
         {/* Submit Button */}
-        <Button
-          type="submit"
-          disabled={!selectedFile || !formData.title.trim() || uploadStatus.isUploading}
-          className="w-full"
-        >
-          {uploadStatus.isUploading ? 'Processing...' : 'Upload and Process'}
-        </Button>
+        <div className="flex justify-end pt-4">
+          <Button
+            type="submit"
+            size="lg"
+            disabled={
+              uploadStatus.isUploading ||
+              !formData.title.trim() ||
+              !formData.composer.trim() ||
+              !selectedFile
+            }
+            className="px-8"
+          >
+            {uploadStatus.isUploading ? '업로드 중...' : 'OMR 처리 시작'}
+          </Button>
+        </div>
       </form>
-
-      {/* Help Text */}
-      <div className="mt-6 text-sm text-gray-600">
-        <p className="font-medium mb-2">What happens next:</p>
-        <ol className="list-decimal list-inside space-y-1">
-          <li>Your PDF will be uploaded and processed using optical music recognition (OMR)</li>
-          <li>The system will convert your sheet music into an interactive piano learning experience</li>
-          <li>You'll be able to practice with falling notes, finger numbers, and tempo control</li>
-          <li>Processing typically takes 30-60 seconds depending on the complexity of the score</li>
-        </ol>
-      </div>
     </div>
   )
 }
