@@ -16,8 +16,8 @@ jest.mock('pdfjs-dist/legacy/build/pdf.mjs', () => ({
   }))
 }))
 
-// Mock Canvas
-jest.mock('canvas', () => ({
+// Mock Canvas - Updated for ARM compatibility
+jest.mock('@napi-rs/canvas', () => ({
   createCanvas: jest.fn().mockReturnValue({
     getContext: jest.fn().mockReturnValue({}),
     toBuffer: jest.fn().mockReturnValue(Buffer.from('mock-image-data'))

@@ -5,7 +5,7 @@
 
 const fs = require('fs')
 const path = require('path')
-const { createCanvas } = require('canvas')
+const { createCanvas } = require('@napi-rs/canvas')
 
 // 필요한 아이콘 크기들
 const iconSizes = [72, 96, 128, 144, 152, 192, 384, 512]
