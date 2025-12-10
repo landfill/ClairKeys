@@ -16,14 +16,6 @@ jest.mock('pdfjs-dist/legacy/build/pdf.mjs', () => ({
   }))
 }))
 
-// Mock Canvas
-jest.mock('canvas', () => ({
-  createCanvas: jest.fn().mockReturnValue({
-    getContext: jest.fn().mockReturnValue({}),
-    toBuffer: jest.fn().mockReturnValue(Buffer.from('mock-image-data'))
-  })
-}))
-
 // Mock Jimp - Create a mock that prevents infinite loops in staff detection
 const mockJimpImage = {
   greyscale: jest.fn().mockReturnThis(),
