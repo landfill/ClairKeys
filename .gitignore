@@ -48,3 +48,6 @@ next-env.d.ts
 
 # MVP 피아노 모듈
 /mvp
+
+# Claude Code local settings
+.claude/settings.local.json

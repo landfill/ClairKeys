@@ -100,9 +100,9 @@ const nextConfig: NextConfig = {
       }
     }
 
-    // Handle canvas module for server-side rendering
+    // Handle canvas module for server-side rendering - Updated for ARM compatibility
     if (isServer) {
-      config.externals.push('canvas')
+      config.externals.push('@napi-rs/canvas')
     }
 
     // Audio context resolution for client-side
