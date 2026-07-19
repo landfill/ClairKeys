@@ -3,7 +3,7 @@
 PR URL: https://github.com/landfill/ClairKeys/pull/1
 Branch: `codex/clairkeys-recovery-roadmap`
 Base: `master`
-Last checked: 2026-07-19 13:10 KST
+Last checked: 2026-07-19 13:25 KST
 
 ## CI status
 
@@ -25,6 +25,7 @@ Last checked: 2026-07-19 13:10 KST
 | R5 | Codex | `WORKFLOW.md` | review-log 디렉터리가 materialize되지 않음 | accept | FIXED | 이 파일 `docs/recovery/reviews/PR-1.md` 생성 |
 | R6 | Codex | `ROADMAP.md` | P1-A/P1-B가 별도 PR인데 단계 문서가 하나로 결합됨 | accept | FIXED | P1-A와 P1-B 실행 문서를 분리하고 P1 overview만 공유 |
 | R7 | Codex | `WORKFLOW.md` | base branch를 `main`으로 변경하라는 제안 | reject | REJECTED | local/remote/GitHub default와 PR base 모두 `master`; `main` ref 없음 |
+| R8 | Codex | `ROADMAP.md`, P0-A/P0-D | DOC-0 병합 전인데 후속 단계를 `READY`로 표시함 | accept | FIXED | 두 단계를 `BLOCKED`로 통일하고 PR #1 병합을 blocker로 명시 |
 
 ## Iteration log
 
@@ -66,3 +67,10 @@ Last checked: 2026-07-19 13:10 KST
 - Evidence: `git branch --all`, `git ls-remote --symref origin HEAD`, `gh repo view`, and `gh pr view` all identify `master`; `refs/heads/main` does not exist
 - Changes made: no workflow change; rejection recorded
 - Remaining actionable items: none
+
+### Iteration 6
+
+- Feedback fetched: one Codex comment about phase readiness before DOC-0 merge
+- Changes made: marked P0-A and P0-D `BLOCKED` in the roadmap and phase documents, with PR #1 merge as the blocker
+- Validation: relative Markdown links, BLOCKED-state assertions, staged scope, and whitespace checks passed
+- Remaining actionable items: reviewer re-check after push

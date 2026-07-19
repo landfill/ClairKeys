@@ -1,6 +1,7 @@
 # P0-D — Authentication and Quality Gates
 
-Status: `READY`
+Status: `BLOCKED`
+Blocked by: DOC-0 / PR #1 merge
 
 ## Objective
 

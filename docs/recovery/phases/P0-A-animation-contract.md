@@ -1,6 +1,7 @@
 # P0-A — Animation Contract and Golden Fixtures
 
-Status: `READY`
+Status: `BLOCKED`
+Blocked by: DOC-0 / PR #1 merge
 
 ## Objective
 
