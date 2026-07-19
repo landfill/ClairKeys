@@ -33,6 +33,8 @@ jobs:
               - 'public/**'
               - '*.css'
               - 'tailwind.config.js'
+              # CI config changes must exercise the gated jobs they configure
+              - '.github/workflows/**'
             backend:
               - 'src/lib/**'
               - 'src/services/**'
