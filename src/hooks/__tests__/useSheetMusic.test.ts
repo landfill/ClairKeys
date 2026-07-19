@@ -81,9 +81,10 @@ describe('useSheetMusic Hook', () => {
   })
 
   test('handles fetch error correctly', async () => {
-    const errorMessage = 'Failed to fetch sheet music'
+    const errorMessage = 'Failed to fetch sheet music: Internal Server Error'
     ;(fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
+      statusText: 'Internal Server Error',
       json: async () => ({
         success: false,
         error: errorMessage
@@ -197,12 +198,12 @@ describe('useSheetMusic Hook', () => {
     await act(async () => {
       await result.current.fetchUserSheetMusic({
         categoryId: 1,
-        isPublic: false,
+        public: false,
         search: 'test'
       })
     })
 
-    expect(fetch).toHaveBeenCalledWith('/api/sheet?categoryId=1&isPublic=false&search=test')
+    expect(fetch).toHaveBeenCalledWith('/api/sheet?categoryId=1&search=test&public=false')
   })
 
   test('handles network errors', async () => {

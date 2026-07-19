@@ -7,6 +7,14 @@ import { Category } from '@/types/category'
 jest.mock('@/hooks/useCategories')
 const mockUseCategories = useCategories as jest.MockedFunction<typeof useCategories>
 
+// Mock next-auth session as authenticated
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn(() => ({
+    data: { user: { id: 'user1', name: 'Test User' } },
+    status: 'authenticated',
+  })),
+}))
+
 describe('CategoryManager', () => {
   const mockCategories: Category[] = [
     {
@@ -62,15 +70,15 @@ describe('CategoryManager', () => {
   it('highlights selected category', () => {
     render(<CategoryManager selectedCategoryId={1} />)
 
-    const classicalCategory = screen.getByText('Classical').closest('div')
-    expect(classicalCategory).toHaveClass('bg-blue-100', 'border-blue-500')
+    const classicalCategory = screen.getByText('Classical').closest('.category-item')
+    expect(classicalCategory).toHaveClass('bg-blue-50', 'border-blue-500')
   })
 
   it('highlights "전체 악보" when selectedCategoryId is null', () => {
     render(<CategoryManager selectedCategoryId={null} />)
 
-    const allCategory = screen.getByText('전체 악보').closest('div')
-    expect(allCategory).toHaveClass('bg-blue-100', 'border-blue-500')
+    const allCategory = screen.getByText('전체 악보').closest('.category-item')
+    expect(allCategory).toHaveClass('bg-blue-50', 'border-blue-500')
   })
 
   it('calls onCategorySelect when category is clicked', () => {

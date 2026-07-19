@@ -4,12 +4,12 @@
 import { NextRequest } from 'next/server'
 import { GET, POST } from '../route'
 import { getServerSession } from 'next-auth'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 
 // Mock dependencies
 jest.mock('next-auth')
-jest.mock('@/lib/db', () => ({
-  db: {
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
     sheetMusic: {
       findMany: jest.fn(),
       create: jest.fn(),
@@ -22,7 +22,7 @@ jest.mock('@/lib/db', () => ({
 }))
 
 const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>
-const mockDb = db as jest.Mocked<typeof db>
+const mockDb = prisma as jest.Mocked<typeof prisma>
 
 describe('/api/sheet', () => {
   beforeEach(() => {

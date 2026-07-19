@@ -54,7 +54,7 @@ describe('ConfirmDialog Component', () => {
       />
     )
 
-    fireEvent.click(screen.getByText('확인'))
+    fireEvent.click(screen.getByRole('button', { name: '확인' }))
     expect(mockOnConfirm).toHaveBeenCalledTimes(1)
   })
 
@@ -187,7 +187,8 @@ describe('DeleteConfirmDialog Component', () => {
     )
 
     expect(screen.getByText('삭제 확인')).toBeInTheDocument()
-    expect(screen.getByText(/Test Item.*테스트을\(를\) 삭제하시겠습니까?/)).toBeInTheDocument()
+    expect(screen.getByText('Test Item')).toBeInTheDocument()
+    expect(screen.getByText(/테스트을\(를\) 삭제하시겠습니까/)).toBeInTheDocument()
     expect(screen.getByText('주의: 이 작업은 되돌릴 수 없습니다')).toBeInTheDocument()
     expect(screen.getByText('삭제')).toBeInTheDocument()
     expect(screen.getByText('취소')).toBeInTheDocument()

@@ -91,7 +91,7 @@ describe('FileUpload', () => {
       />
     )
 
-    const fileInput = screen.getByRole('button', { name: '파일 선택' }).parentElement?.querySelector('input[type="file"]')
+    const fileInput = screen.getByRole('button', { name: '파일 선택' }).closest('.border-dashed')?.querySelector('input[type="file"]')
     expect(fileInput).toBeInTheDocument()
 
     const mockFile = createMockFile('test.pdf', 1024 * 1024, 'application/pdf')
@@ -171,7 +171,7 @@ describe('FileUpload', () => {
       />
     )
 
-    const dropzone = screen.getByText('업로드 중...').closest('div')
+    const dropzone = screen.getByText('업로드 중...').closest('.border-dashed')
     expect(dropzone).toHaveClass('cursor-not-allowed')
 
     // File input should be disabled
