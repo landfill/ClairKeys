@@ -8,8 +8,9 @@
 2. `HANDOFF.md`가 지정한 `phases/` 아래의 현재 단계 문서
 3. [브랜치·PR·리뷰 흐름](WORKFLOW.md)
 4. [검증 기준선](BASELINE.md)
-5. [우선순위 로드맵](ROADMAP.md)
-6. [기술 결정 기록](DECISIONS.md)
+5. [Lore 커밋 규약](LORE_COMMIT_PROTOCOL.md)
+6. [우선순위 로드맵](ROADMAP.md)
+7. [기술 결정 기록](DECISIONS.md)
 
 ## 기록 구조
 
@@ -20,6 +21,7 @@ docs/recovery/
 ├── HANDOFF.md                # 현재 세션 상태와 바로 다음 행동
 ├── BASELINE.md               # 최초 분석 및 검증 결과
 ├── WORKFLOW.md               # 브랜치, 커밋, PR, 리뷰 반복 규칙
+├── LORE_COMMIT_PROTOCOL.md   # 커밋 메시지 구조와 검증 필드
 ├── DECISIONS.md              # 변경하지 말아야 할 결정과 근거
 ├── phases/                   # 단계별 범위, 테스트, 완료 조건
 ├── validation/               # 실행한 검증 결과

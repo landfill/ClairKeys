@@ -9,6 +9,7 @@ read AGENTS.md
 → read the current phase document named by HANDOFF.md
 → read docs/recovery/WORKFLOW.md
 → read docs/recovery/BASELINE.md
+→ read docs/recovery/LORE_COMMIT_PROTOCOL.md
 → inspect git branch/status
 → create codex/<phase>-<topic> branch from master
 → write or update phase plan
@@ -31,7 +32,7 @@ read AGENTS.md
 
 - 관련 파일만 명시적으로 stage한다. `git add .`는 사용하지 않는다.
 - 한 커밋은 하나의 결정 또는 검증 가능한 변화만 담는다.
-- Lore Commit Protocol을 사용한다.
+- [`docs/recovery/LORE_COMMIT_PROTOCOL.md`](LORE_COMMIT_PROTOCOL.md)에 정의된 형식과 필수 trailer를 사용한다.
 
 예시:
 

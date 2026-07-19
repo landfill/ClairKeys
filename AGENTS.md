@@ -7,6 +7,7 @@
 3. 현재 작업 단계 문서
 4. `docs/recovery/WORKFLOW.md`
 5. `docs/recovery/BASELINE.md`
+6. `docs/recovery/LORE_COMMIT_PROTOCOL.md`
 
 ## 절대 규칙
 
@@ -16,7 +17,7 @@
 - 한 PR에는 하나의 단계 또는 하나의 명확한 목적만 포함한다.
 - 동작 변경 전 회귀 테스트 또는 재현 fixture를 먼저 추가한다.
 - 구현 완료 주장은 검증 명령과 결과가 기록된 경우에만 한다.
-- 커밋은 저장소 최상위 지침의 Lore Commit Protocol을 따른다.
+- 커밋은 `docs/recovery/LORE_COMMIT_PROTOCOL.md`에 정의된 Lore Commit Protocol을 따른다.
 - PR 생성 후 CI와 리뷰 피드백을 확인하고, 수정·검증·커밋·푸시를 반복한다.
 - 사용자가 명시적으로 지시하지 않는 한 PR을 직접 병합하지 않는다.
 
