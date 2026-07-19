@@ -8,15 +8,17 @@ import { PianoAnimationData, AnimationEvent } from '@/types/animation'
 import { getAudioService } from '../audioService'
 
 // Mock audio service
+const mockAudioServiceInstance = {
+  initialize: jest.fn().mockResolvedValue(undefined),
+  playNote: jest.fn(),
+  releaseNote: jest.fn(),
+  stopAllNotes: jest.fn(),
+  isReady: jest.fn().mockReturnValue(true),
+  dispose: jest.fn()
+}
+
 jest.mock('../audioService', () => ({
-  getAudioService: jest.fn(() => ({
-    initialize: jest.fn().mockResolvedValue(undefined),
-    playNote: jest.fn(),
-    releaseNote: jest.fn(),
-    stopAllNotes: jest.fn(),
-    isReady: jest.fn().mockReturnValue(true),
-    dispose: jest.fn()
-  }))
+  getAudioService: jest.fn(() => mockAudioServiceInstance)
 }))
 
 // Mock timers
@@ -30,6 +32,8 @@ describe('AnimationEngine', () => {
   beforeEach(() => {
     engine = getAnimationEngine()
     mockAudioService = getAudioService()
+    mockAudioService.isReady.mockReturnValue(true)
+    mockAudioService.initialize.mockResolvedValue(undefined)
     
     testAnimationData = {
       version: '1.0',
@@ -129,10 +133,7 @@ describe('AnimationEngine', () => {
 
     it('should stop all active notes when pausing', () => {
       engine.play()
-      
-      // Simulate some active notes
-      const state = engine.getState()
-      state.activeNotes.add('C4')
+      jest.advanceTimersByTime(100)
       
       engine.pause()
       

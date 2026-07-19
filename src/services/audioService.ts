@@ -134,6 +134,33 @@ export class AudioService {
   /**
    * Stop all currently playing notes
    */
+  /**
+   * Enable or disable playback without discarding the configured settings.
+   */
+  setEnabled(enabled: boolean): void {
+    this.settings.enabled = enabled
+    if (!enabled) {
+      this.stopAllNotes()
+    }
+  }
+
+  /**
+   * Play several notes through the same note-level safeguards.
+   */
+  playChord(notes: string[], velocity: number = 0.8, duration?: number): void {
+    notes.forEach(note => this.playNote(note, velocity, duration))
+  }
+
+  /**
+   * Release several notes.
+   */
+  releaseChord(notes: string[]): void {
+    notes.forEach(note => this.releaseNote(note))
+  }
+
+  /**
+   * Stop all currently playing notes
+   */
   stopAllNotes(): void {
     if (!this.isInitialized || !this.synth) {
       return
@@ -198,7 +225,7 @@ export class AudioService {
    * Check if audio service is ready
    */
   isReady(): boolean {
-    return this.isInitialized && this.synth !== null
+    return this.isInitialized && this.synth !== null && this.settings.enabled
   }
 
   /**
@@ -254,7 +281,8 @@ export function getAudioService(): AudioService {
 }
 
 // Convenience function for initializing audio
-export async function initializeAudio(): Promise<void> {
+export async function initializeAudio(): Promise<AudioService> {
   const service = getAudioService()
   await service.initialize()
+  return service
 }

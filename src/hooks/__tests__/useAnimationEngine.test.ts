@@ -8,35 +8,40 @@ import { getAnimationEngine } from '@/services/animationEngine'
 import { PianoAnimationData } from '@/types/animation'
 
 // Mock animation engine
-jest.mock('@/services/animationEngine', () => ({
-  getAnimationEngine: jest.fn(() => ({
-    loadAnimation: jest.fn(),
-    play: jest.fn(),
-    pause: jest.fn(),
-    stop: jest.fn(),
-    seekTo: jest.fn(),
-    setSpeed: jest.fn(),
-    setMode: jest.fn(),
-    processUserInput: jest.fn().mockReturnValue(true),
-    getState: jest.fn(() => ({
-      isPlaying: false,
-      currentTime: 0,
-      speed: 1.0,
-      mode: 'listen',
-      activeNotes: new Set(),
-      isReady: false
-    })),
-    on: jest.fn(),
-    off: jest.fn()
-  }))
-}))
+const defaultEngineState = {
+  isPlaying: false,
+  currentTime: 0,
+  speed: 1.0,
+  mode: 'listen',
+  activeNotes: new Set(),
+  isReady: false
+}
 
+const mockEngineInstance = {
+  loadAnimation: jest.fn(),
+  play: jest.fn(),
+  pause: jest.fn(),
+  stop: jest.fn(),
+  seekTo: jest.fn(),
+  setSpeed: jest.fn(),
+  setMode: jest.fn(),
+  processUserInput: jest.fn().mockReturnValue(true),
+  getState: jest.fn(() => defaultEngineState),
+  on: jest.fn(),
+  off: jest.fn()
+}
+
+jest.mock('@/services/animationEngine', () => ({
+  getAnimationEngine: jest.fn(() => mockEngineInstance)
+}))
 describe('useAnimationEngine', () => {
   let mockEngine: any
   let testAnimationData: PianoAnimationData
 
   beforeEach(() => {
     mockEngine = getAnimationEngine()
+    mockEngine.getState.mockReturnValue(defaultEngineState)
+    mockEngine.processUserInput.mockReturnValue(true)
     
     testAnimationData = {
       version: '1.0',

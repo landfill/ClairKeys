@@ -30,7 +30,7 @@ export interface UseAnimationEngineReturn {
   /** Set playback speed */
   setSpeed: (speed: number) => void
   /** Set playback mode */
-  setMode: (mode: 'listen' | 'follow') => void
+  setMode: (mode: 'listen' | 'follow' | 'practice') => void
   /** Process user input for follow mode */
   processUserInput: (note: string) => boolean
   /** Subscribe to animation events */
@@ -170,7 +170,7 @@ export function useAnimationEngine(options: UseAnimationEngineOptions = {}): Use
     }
   }, [debug])
 
-  const setMode = useCallback((mode: 'listen' | 'follow') => {
+  const setMode = useCallback((mode: 'listen' | 'follow' | 'practice') => {
     engineRef.current.setMode(mode)
     
     if (debug) {

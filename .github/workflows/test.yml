@@ -166,9 +166,12 @@ jobs:
         run: npm ci
 
       - name: Run security audit
-        run: npm audit --audit-level high
+        run: npm audit --audit-level high --json > npm-audit.json
 
-      - name: Run dependency vulnerability check
-        uses: securecodewarrior/github-action-add-sarif@v1
+      - name: Upload security audit report
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          sarif-file: 'results.sarif'
+          name: npm-audit
+          path: npm-audit.json
+          if-no-files-found: error

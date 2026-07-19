@@ -3,7 +3,7 @@
 PR URL: https://github.com/landfill/ClairKeys/pull/4
 Branch: `codex/p0-quality-gates`
 Base: `main`
-State: `DRAFT`
+State: `READY_FOR_REVIEW`
 Last checked: 2026-07-19 KST
 
 ## CI status
@@ -37,3 +37,18 @@ Last checked: 2026-07-19 KST
 - Reproduced two node-environment route suite crashes in shared Jest setup.
 - Guarded browser-only globals.
 - Focused rerun no longer reports `window is not defined`; Prisma client generation is the next gate.
+
+### Iteration 3
+
+- Marked PR #4 ready for review; CodeRabbit and human review feedback are now in scope.
+- Restored audio service methods required by the engine and UI hook.
+- Preserved the terminal playback timestamp instead of rewinding on natural completion.
+- Repaired singleton mocks and pause behavior verification.
+- PASS: focused playback regression run, 3 suites and 63 tests.
+
+### Iteration 4
+
+- Inspected hosted Security Audit failure.
+- Root cause: workflow action preparation referenced missing repository `securecodewarrior/github-action-add-sarif`.
+- Replaced the unavailable action with an always-uploaded npm audit JSON artifact.
+- The actual high-severity dependency baseline remains a separate red gate and is not suppressed.

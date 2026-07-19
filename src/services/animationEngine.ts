@@ -340,7 +340,7 @@ export class AnimationEngine implements IAnimationEngine {
     if (!this.animationData || !this.state.isPlaying) return
 
     const elapsed = (Date.now() - this.startTime) / 1000 * this.state.speed
-    let newTime = this.pausedTime + elapsed
+    const newTime = this.pausedTime + elapsed
 
     // Handle loop section
     if (this.loopSection) {
@@ -352,7 +352,22 @@ export class AnimationEngine implements IAnimationEngine {
     } else {
       // Check if animation finished (no loop)
       if (newTime >= this.animationData.duration) {
-        this.stop()
+        const duration = this.animationData.duration
+        this.state.currentTime = duration
+        this.updateActiveNotes(duration)
+        this.state.isPlaying = false
+        this.pausedTime = duration
+        this.stopAnimationLoop()
+        this.emitEvent({
+          type: 'timeUpdate',
+          timestamp: Date.now(),
+          data: { time: duration }
+        })
+        this.emitEvent({
+          type: 'playStateChange',
+          timestamp: Date.now(),
+          data: { isPlaying: false }
+        })
         return
       }
     }
