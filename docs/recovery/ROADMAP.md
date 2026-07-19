@@ -51,13 +51,20 @@ P0-A와 P0-D는 서로 다른 파일 범위를 갖도록 설계하면 병렬 진
 - 실제 기본 브랜치 `master`와 GitHub Actions 트리거 정렬
 - 상세: [P0-D](phases/P0-D-quality-gates.md)
 
-### P1-A/P1-B: 처리 경로와 운영 안정성
+### P1-A: 업로드 경로 단일화
 
-- 네 가지 업로드 경로를 검증된 OMR 경로로 축소
+- 네 가지 업로드 경로의 요구와 호출자 비교
+- 검증된 실제 OMR 경로를 canonical path로 선택
+- deprecated/demo 경로 격리와 migration
+- 상세: [P1-A](phases/P1-A-upload-pipeline.md)
+
+### P1-B: 영속 작업 큐와 OMR 보안
+
 - 서버 프로세스 메모리에 저장된 파일·작업 상태 제거
 - 재시작·수평 확장 가능한 영속 큐
 - OMR 서비스 인증, 용량 제한, CORS 제한, 소유권 검증
-- 상세: [P1](phases/P1-processing-platform.md)
+- 상세: [P1-B](phases/P1-B-durable-omr.md)
+- 전체 맥락: [P1 overview](phases/P1-processing-platform.md)
 
 ### P2-A: 구조 정리
 

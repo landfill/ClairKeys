@@ -23,6 +23,7 @@ Last checked: 2026-07-19 13:10 KST
 | R3 | CodeRabbit | validation/PR templates, initial baseline | 기존 실패 판정에 명령·시점·증거 요구가 부족함 | accept | FIXED | evidence 필드와 `dbb26ac` 실행 기준 추가 |
 | R4 | CodeRabbit | `HANDOFF_TEMPLATE.md` | 브랜치 placeholder가 허용 형식을 강제하지 않음 | accept | FIXED | `codex/<phase>-<topic>`으로 변경 |
 | R5 | Codex | `WORKFLOW.md` | review-log 디렉터리가 materialize되지 않음 | accept | FIXED | 이 파일 `docs/recovery/reviews/PR-1.md` 생성 |
+| R6 | Codex | `ROADMAP.md` | P1-A/P1-B가 별도 PR인데 단계 문서가 하나로 결합됨 | accept | FIXED | P1-A와 P1-B 실행 문서를 분리하고 P1 overview만 공유 |
 
 ## Iteration log
 
@@ -48,3 +49,11 @@ Last checked: 2026-07-19 13:10 KST
 - Changes made: none; no new inline comments were posted
 - Validation: CodeRabbit PASS, Vercel PASS, Vercel Preview Comments PASS
 - Remaining actionable items: none
+
+### Iteration 4
+
+- Feedback fetched: one follow-up Codex comment on the P1 phase boundary
+- Changes made: split P1-A upload consolidation from P1-B durable queue and security
+- Validation: P1-A/P1-B scope assertions, relative links, and whitespace checks passed
+- Commit: pending
+- Remaining actionable items: commit, push, recheck

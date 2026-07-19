@@ -1,13 +1,15 @@
-# P1 — Processing Platform
+# P1 Processing Platform — Overview
 
-Status: `NOT_STARTED`
+Status: `OVERVIEW`
 Depends on: P0-A, P0-B, P0-C, P0-D
+
+이 문서는 P1 전체 맥락만 제공한다. 실행 범위와 완료 조건은 [P1-A](P1-A-upload-pipeline.md)와 [P1-B](P1-B-durable-omr.md)를 각각 따른다.
 
 ## Objective
 
 중복 업로드 경로를 하나의 검증된 OMR 흐름으로 통합하고 재시작 가능한 처리 플랫폼을 만든다.
 
-## Work stages
+## Shared context
 
 1. 네 업로드 경로의 사용자·운영 요구를 비교하고 canonical path를 선택한다.
 2. deprecated 경로의 호출자를 제거하거나 명시적 demo 기능으로 격리한다.
@@ -17,7 +19,7 @@ Depends on: P0-A, P0-B, P0-C, P0-D
 6. 파일 내용·크기 제한, CORS, storage visibility를 강화한다.
 7. 재시작과 다중 worker 통합 테스트를 추가한다.
 
-## Completion criteria
+## P1 program outcomes (non-executable overview)
 
 - 동일 파일이 의도치 않게 중복 처리되지 않는다.
 - 프로세스 재시작 후 작업 상태를 복구한다.
