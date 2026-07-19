@@ -60,7 +60,9 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage
-          fail_ci_if_error: true
+          # CODECOV_TOKEN is not configured for this repo; don't fail the
+          # test gate on a missing coverage upload (pr-checks.yml does the same)
+          fail_ci_if_error: false
 
   e2e:
     name: E2E Tests
