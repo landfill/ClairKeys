@@ -6,10 +6,9 @@
 import { PrismaClient } from '@prisma/client'
 import { 
   SheetMusicWithCategory,
-  CreateSheetMusicData,
-  UpdateSheetMusicData,
-  SheetMusicQueryParams,
-  PublicSheetMusicQueryParams
+  CreateSheetMusicRequest,
+  UpdateSheetMusicRequest,
+  SearchSheetMusicParams
 } from '@/types/sheet-music'
 import { ISheetMusicRepository } from './interfaces'
 
@@ -27,7 +26,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
     })
   }
 
-  async findMany(params?: SheetMusicQueryParams): Promise<SheetMusicWithCategory[]> {
+  async findMany(params?: SearchSheetMusicParams): Promise<SheetMusicWithCategory[]> {
     const where: any = {}
     
     if (params?.userId) where.userId = params.userId
@@ -51,12 +50,12 @@ export class SheetMusicRepository implements ISheetMusicRepository {
     })
   }
 
-  async create(data: CreateSheetMusicData): Promise<SheetMusicWithCategory> {
+  async create(data: CreateSheetMusicRequest): Promise<SheetMusicWithCategory> {
     return await this.prisma.sheetMusic.create({
       data: {
         title: data.title,
         composer: data.composer,
-        userId: data.userId,
+        userId: data.userId!,
         categoryId: data.categoryId || null,
         isPublic: data.isPublic ?? false,
         animationDataUrl: data.animationDataUrl
@@ -65,7 +64,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
     })
   }
 
-  async update(id: number, data: UpdateSheetMusicData): Promise<SheetMusicWithCategory> {
+  async update(id: number, data: UpdateSheetMusicRequest): Promise<SheetMusicWithCategory> {
     return await this.prisma.sheetMusic.update({
       where: { id },
       data: {
@@ -101,7 +100,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
   // 사용자별 조회
   // ============================================================================
 
-  async findByUserId(userId: string, params?: SheetMusicQueryParams): Promise<SheetMusicWithCategory[]> {
+  async findByUserId(userId: string, params?: SearchSheetMusicParams): Promise<SheetMusicWithCategory[]> {
     return await this.findMany({ ...params, userId })
   }
 
@@ -120,7 +119,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
   // 공개 악보 조회
   // ============================================================================
 
-  async findPublic(params?: PublicSheetMusicQueryParams): Promise<{
+  async findPublic(params?: SearchSheetMusicParams): Promise<{
     sheetMusic: SheetMusicWithCategory[]
     total: number
     hasMore: boolean
@@ -193,7 +192,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
     })
   }
 
-  async searchGeneral(query: string, params?: SheetMusicQueryParams): Promise<SheetMusicWithCategory[]> {
+  async searchGeneral(query: string, params?: SearchSheetMusicParams): Promise<SheetMusicWithCategory[]> {
     return await this.findMany({ ...params, search: query })
   }
 
@@ -375,14 +374,14 @@ export class SheetMusicRepository implements ISheetMusicRepository {
         by: ['categoryId'],
         where: { userId },
         _count: { _all: true },
-        orderBy: { _count: { _all: 'desc' } }
+        orderBy: { _count: { categoryId: 'desc' } }
       })
     ])
 
     const byCategory: Record<string, number> = {}
     for (const stat of categoryStats) {
       const key = stat.categoryId ? `category_${stat.categoryId}` : 'uncategorized'
-      byCategory[key] = stat._count._all
+      byCategory[key] = (stat._count as any)._all
     }
 
     return {

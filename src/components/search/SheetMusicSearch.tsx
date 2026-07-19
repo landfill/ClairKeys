@@ -23,7 +23,7 @@ export default function SheetMusicSearch({
   const [publicFilter, setPublicFilter] = useState<boolean | undefined>(defaultPublicOnly ? true : undefined)
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'composer'>('newest')
 
-  const { data: categories } = useCategories()
+  const { categories } = useCategories()
   
   const {
     data,

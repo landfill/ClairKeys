@@ -110,7 +110,7 @@ export default function MobileGestures({
   
   // Handle touch start
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const touches = extractTouchPoints(e.touches)
+    const touches = extractTouchPoints((e.touches as unknown as TouchList))
     touchesRef.current = touches
     
     clearHoldTimer()
@@ -137,7 +137,7 @@ export default function MobileGestures({
   
   // Handle touch move
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const touches = extractTouchPoints(e.touches)
+    const touches = extractTouchPoints((e.touches as unknown as TouchList))
     
     if (touches.length === 2 && enablePinch && gestureStateRef.current.initialPinchDistance > 0) {
       // Handle pinch gesture
@@ -173,7 +173,7 @@ export default function MobileGestures({
     
     if (initialTouches.length === 1 && !gestureStateRef.current.isHolding) {
       const startTouch = initialTouches[0]
-      const remainingTouches = extractTouchPoints(e.touches)
+      const remainingTouches = extractTouchPoints((e.touches as unknown as TouchList))
       
       if (remainingTouches.length === 0) {
         // Single touch ended
@@ -222,9 +222,9 @@ export default function MobileGestures({
     }
     
     // Check for swipe gesture when all touches end
-    if (e.touches.length === 0 && initialTouches.length === 1 && enableSwipe) {
+    if ((e.touches as unknown as TouchList).length === 0 && initialTouches.length === 1 && enableSwipe) {
       const startTouch = initialTouches[0]
-      const endTouch = Array.from(e.changedTouches).find(t => t.identifier === startTouch.id)
+      const endTouch = Array.from((e.changedTouches as unknown as TouchList)).find(t => t.identifier === startTouch.id)
       
       if (endTouch) {
         const dx = endTouch.clientX - startTouch.x
@@ -254,7 +254,7 @@ export default function MobileGestures({
     }
     
     // Reset pinch state
-    if (e.touches.length < 2) {
+    if ((e.touches as unknown as TouchList).length < 2) {
       gestureStateRef.current.initialPinchDistance = 0
       gestureStateRef.current.lastPinchScale = 1
     }

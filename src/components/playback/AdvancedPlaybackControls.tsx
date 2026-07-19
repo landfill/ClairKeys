@@ -10,12 +10,12 @@ interface AdvancedPlaybackControlsProps {
   currentTime: number
   duration: number
   playbackSpeed: number
-  playbackMode: 'listen' | 'follow'
+  playbackMode: 'listen' | 'follow' | 'practice'
   onPlay: () => void
   onStop: () => void
   onSeek: (time: number) => void
   onSpeedChange: (speed: number) => void
-  onModeChange: (mode: 'listen' | 'follow') => void
+  onModeChange: (mode: 'listen' | 'follow' | 'practice') => void
   // Advanced features
   onLoop?: (enabled: boolean) => void
   onRewind?: () => void

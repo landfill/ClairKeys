@@ -41,21 +41,21 @@ describe('FileStorageService', () => {
         error: null
       }
 
-      ;(fileStorageService.uploadFile as jest.Mock).mockResolvedValueOnce(mockResponse.data.path)
+      ;((fileStorageService as any).uploadFile as jest.Mock).mockResolvedValueOnce(mockResponse.data.path)
 
-      const result = await fileStorageService.uploadFile('test-folder', 'test.pdf', mockFile)
+      const result = await (fileStorageService as any).uploadFile('test-folder', 'test.pdf', mockFile)
 
       expect(result).toBe('test-folder/test.pdf')
-      expect(fileStorageService.uploadFile).toHaveBeenCalledWith('test-folder', 'test.pdf', mockFile)
+      expect((fileStorageService as any).uploadFile).toHaveBeenCalledWith('test-folder', 'test.pdf', mockFile)
     })
 
     test('throws error when upload fails', async () => {
       const mockFile = new File(['test content'], 'test.pdf', { type: 'application/pdf' })
       const errorMessage = 'Upload failed'
 
-      ;(fileStorageService.uploadFile as jest.Mock).mockRejectedValueOnce(new Error(errorMessage))
+      ;((fileStorageService as any).uploadFile as jest.Mock).mockRejectedValueOnce(new Error(errorMessage))
 
-      await expect(fileStorageService.uploadFile('test-folder', 'test.pdf', mockFile))
+      await expect((fileStorageService as any).uploadFile('test-folder', 'test.pdf', mockFile))
         .rejects.toThrow(errorMessage)
     })
 
@@ -65,11 +65,11 @@ describe('FileStorageService', () => {
         type: 'application/pdf' 
       })
 
-      ;(fileStorageService.uploadFile as jest.Mock).mockRejectedValueOnce(
+      ;((fileStorageService as any).uploadFile as jest.Mock).mockRejectedValueOnce(
         new Error('File size exceeds maximum allowed size')
       )
 
-      await expect(fileStorageService.uploadFile('test-folder', 'large.pdf', oversizedFile))
+      await expect((fileStorageService as any).uploadFile('test-folder', 'large.pdf', oversizedFile))
         .rejects.toThrow('File size exceeds maximum allowed size')
     })
   })
@@ -119,12 +119,12 @@ describe('FileStorageService', () => {
     test('generates public URL successfully', async () => {
       const mockUrl = 'https://example.supabase.co/storage/v1/object/public/test-bucket/test-folder/test.pdf'
       
-      ;(fileStorageService.getFileUrl as jest.Mock).mockReturnValueOnce(mockUrl)
+      ;((fileStorageService as any).getFileUrl as jest.Mock).mockReturnValueOnce(mockUrl)
 
-      const result = fileStorageService.getFileUrl('test-folder', 'test.pdf')
+      const result = (fileStorageService as any).getFileUrl('test-folder', 'test.pdf')
 
       expect(result).toBe(mockUrl)
-      expect(fileStorageService.getFileUrl).toHaveBeenCalledWith('test-folder', 'test.pdf')
+      expect((fileStorageService as any).getFileUrl).toHaveBeenCalledWith('test-folder', 'test.pdf')
     })
   })
 
@@ -181,9 +181,9 @@ describe('FileStorageService', () => {
       ]
 
       scenarios.forEach(async ({ error, expectedMessage }) => {
-        ;(fileStorageService.uploadFile as jest.Mock).mockRejectedValueOnce(new Error(error))
+        ;((fileStorageService as any).uploadFile as jest.Mock).mockRejectedValueOnce(new Error(error))
 
-        await expect(fileStorageService.uploadFile('folder', 'file.pdf', new File([''], 'test.pdf')))
+        await expect((fileStorageService as any).uploadFile('folder', 'file.pdf', new File([''], 'test.pdf')))
           .rejects.toThrow(expectedMessage)
       })
     })

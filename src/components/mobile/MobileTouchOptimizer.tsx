@@ -178,18 +178,18 @@ export default function MobileTouchOptimizer({
     
     // Improve responsiveness with CSS properties
     container.style.userSelect = 'none'
-    container.style.webkitUserSelect = 'none'
-    container.style.webkitTouchCallout = 'none'
-    container.style.webkitTapHighlightColor = 'transparent'
+    container.style.webkitUserSelect = 'none';
+    (container.style as any).webkitTouchCallout = 'none';
+    (container.style as any).webkitTapHighlightColor = 'transparent';
 
     return () => {
       // Cleanup styles if component unmounts
       if (container.parentNode) {
         container.style.touchAction = ''
         container.style.userSelect = ''
-        container.style.webkitUserSelect = ''
-        container.style.webkitTouchCallout = ''
-        container.style.webkitTapHighlightColor = ''
+        container.style.webkitUserSelect = '';
+        (container.style as any).webkitTouchCallout = '';
+        (container.style as any).webkitTapHighlightColor = '';
       }
     }
   }, [preventScrolling])

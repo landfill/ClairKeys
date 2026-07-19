@@ -48,10 +48,10 @@ describe('/api/sheet/[id]', () => {
         user: { id: 'user1', name: 'Test User', email: 'test@example.com' },
         category: { id: 1, name: 'Classical' }
       }
-      mockDb.sheetMusic.findUnique.mockResolvedValue(mockSheetMusic as any)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(mockSheetMusic as any)
 
       const request = new NextRequest('http://localhost:3000/api/sheet/1')
-      const response = await GET(request, { params: { id: '1' } })
+      const response = await GET(request, { params: Promise.resolve({ id: '1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -78,10 +78,10 @@ describe('/api/sheet/[id]', () => {
         user: { id: 'user1', name: 'Test User', email: 'test@example.com' },
         category: { id: 1, name: 'Classical' }
       }
-      mockDb.sheetMusic.findUnique.mockResolvedValue(mockSheetMusic as any)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(mockSheetMusic as any)
 
       const request = new NextRequest('http://localhost:3000/api/sheet/1')
-      const response = await GET(request, { params: { id: '1' } })
+      const response = await GET(request, { params: Promise.resolve({ id: '1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -100,10 +100,10 @@ describe('/api/sheet/[id]', () => {
         userId: 'user1',
         isPublic: false
       }
-      mockDb.sheetMusic.findUnique.mockResolvedValue(mockSheetMusic as any)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(mockSheetMusic as any)
 
       const request = new NextRequest('http://localhost:3000/api/sheet/1')
-      const response = await GET(request, { params: { id: '1' } })
+      const response = await GET(request, { params: Promise.resolve({ id: '1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(403)
@@ -115,10 +115,10 @@ describe('/api/sheet/[id]', () => {
         user: { id: 'user1', email: 'test@example.com' }
       }
       mockGetServerSession.mockResolvedValue(mockSession as any)
-      mockDb.sheetMusic.findUnique.mockResolvedValue(null)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(null)
 
       const request = new NextRequest('http://localhost:3000/api/sheet/999')
-      const response = await GET(request, { params: { id: '999' } })
+      const response = await GET(request, { params: Promise.resolve({ id: '999' }) })
       const data = await response.json()
 
       expect(response.status).toBe(404)
@@ -137,7 +137,7 @@ describe('/api/sheet/[id]', () => {
         id: 1,
         userId: 'user1'
       }
-      mockDb.sheetMusic.findUnique.mockResolvedValue(mockExistingSheet as any)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(mockExistingSheet as any)
 
       const mockUpdatedSheet = {
         id: 1,
@@ -148,7 +148,7 @@ describe('/api/sheet/[id]', () => {
         updatedAt: new Date(),
         category: null
       }
-      mockDb.sheetMusic.update.mockResolvedValue(mockUpdatedSheet as any)
+      ;(mockDb.sheetMusic.update as jest.Mock).mockResolvedValue(mockUpdatedSheet as any)
 
       const request = new NextRequest('http://localhost:3000/api/sheet/1', {
         method: 'PUT',
@@ -158,7 +158,7 @@ describe('/api/sheet/[id]', () => {
           isPublic: true
         })
       })
-      const response = await PUT(request, { params: { id: '1' } })
+      const response = await PUT(request, { params: Promise.resolve({ id: '1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -179,7 +179,7 @@ describe('/api/sheet/[id]', () => {
           composer: 'Test Composer'
         })
       })
-      const response = await PUT(request, { params: { id: '1' } })
+      const response = await PUT(request, { params: Promise.resolve({ id: '1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(400)
@@ -196,7 +196,7 @@ describe('/api/sheet/[id]', () => {
         id: 1,
         userId: 'user1'
       }
-      mockDb.sheetMusic.findUnique.mockResolvedValue(mockExistingSheet as any)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(mockExistingSheet as any)
 
       const request = new NextRequest('http://localhost:3000/api/sheet/1', {
         method: 'PUT',
@@ -205,7 +205,7 @@ describe('/api/sheet/[id]', () => {
           composer: 'Updated Composer'
         })
       })
-      const response = await PUT(request, { params: { id: '1' } })
+      const response = await PUT(request, { params: Promise.resolve({ id: '1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(403)
@@ -224,13 +224,13 @@ describe('/api/sheet/[id]', () => {
         id: 1,
         userId: 'user1'
       }
-      mockDb.sheetMusic.findUnique.mockResolvedValue(mockExistingSheet as any)
-      mockDb.sheetMusic.delete.mockResolvedValue(mockExistingSheet as any)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(mockExistingSheet as any)
+      ;(mockDb.sheetMusic.delete as jest.Mock).mockResolvedValue(mockExistingSheet as any)
 
       const request = new NextRequest('http://localhost:3000/api/sheet/1', {
         method: 'DELETE'
       })
-      const response = await DELETE(request, { params: { id: '1' } })
+      const response = await DELETE(request, { params: Promise.resolve({ id: '1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -248,12 +248,12 @@ describe('/api/sheet/[id]', () => {
         id: 1,
         userId: 'user1'
       }
-      mockDb.sheetMusic.findUnique.mockResolvedValue(mockExistingSheet as any)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(mockExistingSheet as any)
 
       const request = new NextRequest('http://localhost:3000/api/sheet/1', {
         method: 'DELETE'
       })
-      const response = await DELETE(request, { params: { id: '1' } })
+      const response = await DELETE(request, { params: Promise.resolve({ id: '1' }) })
       const data = await response.json()
 
       expect(response.status).toBe(403)

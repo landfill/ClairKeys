@@ -40,7 +40,7 @@ export default function EnhancedPianoKeyboard({
 }: EnhancedPianoKeyboardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number>(0)
   
   const [canvasSize, setCanvasSize] = useState({ width: 800, height })
   const [keys, setKeys] = useState<PianoKey[]>([])

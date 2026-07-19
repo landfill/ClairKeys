@@ -9,6 +9,7 @@ import { SheetMusicActionableProps } from '@/types/interfaces'
 export interface SheetMusicActionsProps extends SheetMusicActionableProps {
   onMove?: () => void
   showMove?: boolean
+  className?: string
 }
 
 export function SheetMusicActions({

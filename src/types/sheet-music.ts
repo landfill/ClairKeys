@@ -25,6 +25,7 @@ export interface SheetMusicWithOwner extends SheetMusicWithCategory {
 }
 
 export interface CreateSheetMusicRequest {
+  userId?: string;
   title: string
   composer: string
   categoryId?: number
@@ -67,6 +68,7 @@ export interface SheetMusicResponse {
 }
 
 export interface SearchSheetMusicParams {
+  userId?: string;
   search?: string
   categoryId?: number
   isPublic?: boolean

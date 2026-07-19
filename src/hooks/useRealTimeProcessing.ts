@@ -80,9 +80,7 @@ export function useRealTimeProcessing(
     cleanup()
 
     try {
-      const eventSource = new EventSource(`/api/processing-status/${sessionId}`, {
-        method: 'POST'
-      })
+      const eventSource = new EventSource(`/api/processing-status/${sessionId}`)
 
       eventSource.onopen = () => {
         console.log(`SSE connected for session: ${sessionId}`)

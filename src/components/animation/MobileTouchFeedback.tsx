@@ -42,7 +42,7 @@ export default function MobileTouchFeedback({
 }: MobileTouchFeedbackProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number>(0)
   
   const [touchPoints, setTouchPoints] = useState<TouchPoint[]>([])
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
@@ -278,7 +278,7 @@ export default function MobileTouchFeedback({
     if (hasActiveTouches) {
       animationFrameRef.current = requestAnimationFrame(animate)
     } else {
-      animationFrameRef.current = undefined
+      animationFrameRef.current = 0
     }
   }, [drawTouchFeedback, enableVisualFeedback])
 
@@ -368,8 +368,8 @@ export function useMobileTouchOptimization() {
     // Prevent default touch behaviors
     element.style.touchAction = 'none'
     element.style.userSelect = 'none'
-    element.style.webkitUserSelect = 'none'
-    element.style.webkitTouchCallout = 'none'
+    element.style.webkitUserSelect = 'none';
+    (element.style as any).webkitTouchCallout = 'none'
     
     // Add mobile-specific event listeners
     const preventDefaultTouch = (e: Event) => e.preventDefault()

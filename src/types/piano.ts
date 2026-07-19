@@ -32,4 +32,6 @@ export interface PianoKeyboardProps {
   animationActiveKeys?: string[]
   className?: string
   height?: number
+  keyWidth?: number
+  showKeyLabels?: boolean
 }

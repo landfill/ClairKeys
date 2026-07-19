@@ -10,7 +10,7 @@ export { SheetMusicActions, QuickActions, BulkActions } from './SheetMusicAction
 export { SheetMusicMoveMenu, MoveMenu } from './SheetMusicMoveMenu'
 
 // Types
-export type { SheetMusicCardProps } from './SheetMusicCard'
+export type { SheetMusicCardProps } from './SheetMusicCardRefactored'
 export type { SheetMusicInfoProps, SheetMusicCardBaseProps } from './SheetMusicCardBase'
 export type { SheetMusicActionsProps, QuickActionsProps, BulkActionsProps } from './SheetMusicActions'
 export type { SheetMusicMoveMenuProps, MoveMenuProps } from './SheetMusicMoveMenu'

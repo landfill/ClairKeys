@@ -141,7 +141,7 @@ describe('PDFParserService', () => {
           staffLinesDetected: 5,
           notesDetected: 1
         }
-      } as PianoAnimationData
+      } as unknown as PianoAnimationData
 
       expect(pdfParser.validateAnimationData(invalidData)).toBe(false)
     })
@@ -276,7 +276,10 @@ describe('PDFParserService', () => {
           metadata: {
             originalFileName: 'test.pdf',
             fileSize: 1024,
-            processedAt: new Date().toISOString()
+            processedAt: new Date().toISOString(),
+            pagesProcessed: 1,
+            staffLinesDetected: 0,
+            notesDetected: 0
           }
         }
         
@@ -299,7 +302,10 @@ describe('PDFParserService', () => {
           metadata: {
             originalFileName: 'test.pdf',
             fileSize: 1024,
-            processedAt: new Date().toISOString()
+            processedAt: new Date().toISOString(),
+            pagesProcessed: 1,
+            staffLinesDetected: 0,
+            notesDetected: 0
           }
         }
         

@@ -131,7 +131,7 @@ export interface SheetMusicMoveMenuProps extends SheetMusicMovableProps {
 }
 
 export function SheetMusicMoveMenu({
-  categories,
+  categories = [],
   currentCategoryId,
   onMove,
   trigger,

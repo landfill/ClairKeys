@@ -64,7 +64,7 @@ export async function DELETE(request: NextRequest) {
           }
         } catch (error) {
           console.error('Failed to delete animation file:', error)
-          deletionResults.push({ type: 'animation', success: false, error: error.message })
+          deletionResults.push({ type: 'animation', success: false, error: (error as Error).message })
         }
       }
     }

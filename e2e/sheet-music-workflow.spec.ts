@@ -45,7 +45,7 @@ test.describe('Sheet Music Workflow', () => {
       // Move sheet to category
       const sheetCard = page.locator('[data-testid="sheet-card"]').filter({ hasText: 'Test Piano Piece' })
       await sheetCard.locator('[data-testid="move-sheet-button"]').click()
-      await page.click('[data-testid="category-option"]', { hasText: 'Classical Test' })
+      await page.locator('[data-testid="category-option"]', { hasText: 'Classical Test' }).click()
       
       // Verify categorization
       await expect(page.locator('text=Classical Test')).toBeVisible()

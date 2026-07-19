@@ -1,6 +1,9 @@
 // Note: Canvas and Jimp imports are kept for future OMR implementation
 // Currently using enhanced demo data generation for system stability
 
+import { Jimp } from 'jimp';
+type JimpType = any;
+
 export interface PianoNote {
   note: string // e.g., 'C4', 'D#5'
   startTime: number // seconds
@@ -106,7 +109,7 @@ export class PDFParserService {
   /**
    * Detect horizontal staff lines in the image
    */
-  private detectStaffLines(image: Jimp): StaffLine[] {
+  private detectStaffLines(image: JimpType): StaffLine[] {
     const staffLines: StaffLine[] = []
     const width = image.bitmap.width
     const height = image.bitmap.height
@@ -119,7 +122,7 @@ export class PDFParserService {
       
       for (let x = 0; x < width; x++) {
         const pixelColor = image.getPixelColor(x, y)
-        const pixel = Jimp.intToRGBA(pixelColor)
+        const pixel = (Jimp as any).intToRGBA(pixelColor)
         const brightness = (pixel.r + pixel.g + pixel.b) / 3
         
         // Consider dark pixels as potential line pixels
@@ -164,14 +167,14 @@ export class PDFParserService {
   /**
    * Check if a horizontal line is actually a staff line
    */
-  private isStaffLine(image: Jimp, startX: number, endX: number, y: number): boolean {
+  private isStaffLine(image: JimpType, startX: number, endX: number, y: number): boolean {
     // Check if the line is consistent across its length
     let darkPixels = 0
     const totalPixels = endX - startX + 1
     
     for (let x = startX; x <= endX; x++) {
       const pixelColor = image.getPixelColor(x, y)
-      const pixel = Jimp.intToRGBA(pixelColor)
+      const pixel = (Jimp as any).intToRGBA(pixelColor)
       const brightness = (pixel.r + pixel.g + pixel.b) / 3
       if (brightness < 128) {
         darkPixels++
@@ -208,7 +211,7 @@ export class PDFParserService {
   /**
    * Detect note heads in the image based on staff line positions
    */
-  private detectNotes(image: Jimp, staffLines: StaffLine[]): DetectedNote[] {
+  private detectNotes(image: JimpType, staffLines: StaffLine[]): DetectedNote[] {
     const notes: DetectedNote[] = []
     
     if (staffLines.length === 0) {
@@ -253,7 +256,7 @@ export class PDFParserService {
   /**
    * Check if a position contains a note head
    */
-  private isNoteHead(image: Jimp, centerX: number, centerY: number): boolean {
+  private isNoteHead(image: JimpType, centerX: number, centerY: number): boolean {
     const radius = 8
     let darkPixels = 0
     let totalPixels = 0
@@ -269,7 +272,7 @@ export class PDFParserService {
           if (x >= 0 && x < image.bitmap.width && y >= 0 && y < image.bitmap.height) {
             totalPixels++
             const pixelColor = image.getPixelColor(x, y)
-            const pixel = Jimp.intToRGBA(pixelColor)
+            const pixel = (Jimp as any).intToRGBA(pixelColor)
             const brightness = (pixel.r + pixel.g + pixel.b) / 3
             
             if (brightness < 128) {
@@ -329,7 +332,7 @@ export class PDFParserService {
   /**
    * Determine note type (whole, half, quarter) based on visual characteristics
    */
-  private determineNoteType(image: Jimp, x: number, y: number): 'quarter' | 'half' | 'whole' {
+  private determineNoteType(image: JimpType, x: number, y: number): 'quarter' | 'half' | 'whole' {
     // For now, default to quarter notes
     // In a more sophisticated implementation, this would analyze the note's visual features
     return 'quarter'

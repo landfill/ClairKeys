@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { SheetMusicWithCategory } from '@/types/sheet-music'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
 
 interface SheetMusicListProps {
   sheetMusic: SheetMusicWithCategory[]

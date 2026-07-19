@@ -9,12 +9,17 @@ import {
 } from '@/types/interfaces'
 
 // Interface Segregation 적용: 각 컴포넌트별 최소 필요 기능만 포함
-export interface CategoryItemProps 
-  extends CategoryEditableProps, 
-          CategoryDeletableProps {
+export interface CategoryItemProps {
   category: Category
   isSelected: boolean
+  isEditing: boolean
+  editValue: string
   onSelect: (categoryId: number) => void
+  onStartEdit: (category: Category) => void
+  onSaveEdit: (id: number) => void
+  onCancelEdit: () => void
+  onDelete: (id: number) => void
+  onEditValueChange: (value: string) => void
 }
 
 export interface CategoryListProps 
@@ -140,7 +145,7 @@ export function CategoryList({
             ? 'bg-blue-100 border-2 border-blue-500'
             : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
         }`}
-        onClick={() => onCategorySelect(null)}
+        onClick={() => onCategorySelect?.(null)}
       >
         <div className="flex items-center gap-2">
           <span className="text-lg" role="img" aria-label="all files">📁</span>
@@ -155,13 +160,13 @@ export function CategoryList({
           category={category}
           isSelected={selectedCategoryId === category.id}
           isEditing={editingId === category.id}
-          editValue={editValue}
-          onSelect={onCategorySelect}
-          onStartEdit={onStartEdit}
-          onSaveEdit={onSaveEdit}
-          onCancelEdit={onCancelEdit}
-          onDelete={onDelete}
-          onEditValueChange={onEditValueChange}
+          editValue={editValue || ''}
+          onSelect={(id) => onCategorySelect?.(id)}
+          onStartEdit={(c) => onStartEdit?.(c)}
+          onSaveEdit={(id) => onSaveEdit?.(id)}
+          onCancelEdit={() => onCancelEdit?.()}
+          onDelete={(id) => onDelete?.(id)}
+          onEditValueChange={(val) => onEditValueChange?.(val)}
         />
       ))}
 

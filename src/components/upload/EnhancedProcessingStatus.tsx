@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState, useRef } from 'react'
-import { ProcessingStage } from '@/types/sheet-music'
+type ProcessingStage = 'upload' | 'parsing' | 'omr' | 'validation' | 'generation';
 
 interface ProcessingAnimation {
   particles: Array<{
@@ -87,7 +87,7 @@ export default function EnhancedProcessingStatus({
   theme = 'music'
 }: EnhancedProcessingStatusProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number | undefined>(undefined)
   const [animation, setAnimation] = useState<ProcessingAnimation>({
     particles: [],
     wave: { amplitude: 10, frequency: 0.02, phase: 0 }

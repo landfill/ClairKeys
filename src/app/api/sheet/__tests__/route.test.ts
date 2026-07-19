@@ -58,7 +58,7 @@ describe('/api/sheet', () => {
           category: { id: 1, name: 'Classical' }
         }
       ]
-      mockDb.sheetMusic.findMany.mockResolvedValue(mockSheetMusic as any)
+      ;(mockDb.sheetMusic.findMany as jest.Mock).mockResolvedValue(mockSheetMusic as any)
 
       const request = new NextRequest('http://localhost:3000/api/sheet')
       const response = await GET(request)
@@ -75,7 +75,7 @@ describe('/api/sheet', () => {
         user: { id: 'user1', email: 'test@example.com' }
       }
       mockGetServerSession.mockResolvedValue(mockSession as any)
-      mockDb.sheetMusic.findMany.mockResolvedValue([])
+      ;(mockDb.sheetMusic.findMany as jest.Mock).mockResolvedValue([])
 
       const request = new NextRequest('http://localhost:3000/api/sheet?categoryId=1')
       await GET(request)
@@ -104,7 +104,7 @@ describe('/api/sheet', () => {
         user: { id: 'user1', email: 'test@example.com' }
       }
       mockGetServerSession.mockResolvedValue(mockSession as any)
-      mockDb.sheetMusic.findMany.mockResolvedValue([])
+      ;(mockDb.sheetMusic.findMany as jest.Mock).mockResolvedValue([])
 
       const request = new NextRequest('http://localhost:3000/api/sheet?search=beethoven')
       await GET(request)
@@ -190,7 +190,7 @@ describe('/api/sheet', () => {
         updatedAt: new Date(),
         category: null
       }
-      mockDb.sheetMusic.create.mockResolvedValue(mockCreatedSheet as any)
+      ;(mockDb.sheetMusic.create as jest.Mock).mockResolvedValue(mockCreatedSheet as any)
 
       const request = new NextRequest('http://localhost:3000/api/sheet', {
         method: 'POST',
@@ -213,7 +213,7 @@ describe('/api/sheet', () => {
         user: { id: 'user1', email: 'test@example.com' }
       }
       mockGetServerSession.mockResolvedValue(mockSession as any)
-      mockDb.category.findFirst.mockResolvedValue(null)
+      ;(mockDb.category.findFirst as jest.Mock).mockResolvedValue(null)
 
       const request = new NextRequest('http://localhost:3000/api/sheet', {
         method: 'POST',

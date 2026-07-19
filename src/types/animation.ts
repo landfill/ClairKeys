@@ -41,6 +41,11 @@ export interface PianoAnimationData {
     extractedText?: string
     keySignature?: string
     difficulty?: 'beginner' | 'intermediate' | 'advanced'
+    pagesProcessed?: number
+    staffLinesDetected?: number
+    notesDetected?: number
+    fingeringAdded?: boolean
+    fingeringAddedAt?: string
   }
 }
 
