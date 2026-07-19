@@ -30,8 +30,16 @@ PR: https://github.com/landfill/ClairKeys/pull/1
 
 ## Completion criteria
 
+### Documentation gate
+
 - 모든 상대 Markdown 링크가 유효하다.
 - 현재 단계 ID와 문서 경로가 `docs/recovery/HANDOFF.md`에 명시된다.
 - staged/committed 범위가 사용자 기존 변경을 제외한다.
 - PR이 생성되고 모든 actionable review가 기록·반영된다.
-- 필수 검사가 성공하고 사용자 병합 승인만 남는다.
+- 문서 PR에 적용되는 필수 검사가 성공하고 PR #1이 병합된다.
+
+PR #1의 병합이 DOC-0의 `DONE` 전환을 확정하는 사건이다. 브랜치에서 `IN_REVIEW`인 상태를 병합 전에 `DONE`으로 미리 바꾸지 않는다.
+
+### Deferred application quality gates
+
+TypeScript, ESLint, Jest와 GitHub Actions branch filter의 기준선 실패는 `docs/recovery/BASELINE.md`에 증거와 함께 보존하며 P0-D가 소유한다. 이 실패는 DOC-0 문서 체계의 완료 조건과 구분하지만, 해결 전까지 애플리케이션 전체 검증 성공으로 표현하거나 후속 단계에서 누락할 수 없다.

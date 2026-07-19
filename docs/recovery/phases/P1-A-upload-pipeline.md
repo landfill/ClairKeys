@@ -34,4 +34,5 @@ Depends on: P0-A, P0-B, P0-C, P0-D
 - 운영 업로드가 하나의 API와 상태 계약을 사용한다.
 - demo 결과가 실제 OMR 성공으로 저장되지 않는다.
 - 기존 사용자 데이터와 지원 클라이언트 migration이 검증된다.
+- 기존 업로드 endpoint의 호출자가 0임을 검색·통합 테스트로 확인하고 endpoint를 제거하거나, 필요한 호환 경로는 canonical API와 명시적으로 격리했음을 검증한다.
 - P1-B가 사용할 queue/auth 경계가 문서화된다.

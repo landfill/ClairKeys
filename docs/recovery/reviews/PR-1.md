@@ -29,6 +29,11 @@ Last checked: 2026-07-19 13:36 KST
 | R9 | Codex | `AGENTS.md` | Lore Commit Protocol을 강제하지만 저장소 내 정의가 없음 | accept | FIXED | `docs/recovery/LORE_COMMIT_PROTOCOL.md`에 형식·필수 규칙·예시를 정의하고 진입 문서에서 연결 |
 | R10 | Codex | `P2-A-architecture-cleanup.md` | 비실행 overview인 `P1`을 선행조건으로 사용해 판정이 모호함 | accept | FIXED | 실행 가능한 단계 ID `P1-A, P1-B`를 명시 |
 | R11 | Codex | `AGENTS.md` | 존재하지 않는 `5db44d4` 커밋이 Lore 규약을 위반했다는 제안 | reject | REJECTED | local 전체 이력과 GitHub PR 8개 커밋에 SHA가 없고, 실제 8개 커밋 모두 필수 trailer 보유 |
+| R12 | Codex | `PR-1.md` | 최신 헤드의 리뷰 증거 없이 병합 준비 상태를 선언함 | accept | IN_PROGRESS | `0240a96` CodeRabbit 재리뷰 완료 후 새 피드백 R13-R16 수집·반영 중 |
+| R13 | CodeRabbit | `LORE_COMMIT_PROTOCOL.md` | body와 trailer 사이 빈 줄이 canonical 형식에 없음 | reject | REJECTED | `0240a96` 원문 10행 body, 11행 빈 줄, 12행 `Constraint`로 이미 충족 |
+| R14 | CodeRabbit | `DOC-0`, `HANDOFF.md` | 문서 완료 gate와 애플리케이션 품질 공백의 상태 계약이 모호함 | accept | FIXED | DOC-0 문서 gate와 P0-D 소유 품질 gate를 분리하고 병합을 DONE 사건으로 정의 |
+| R15 | CodeRabbit | `P1-A-upload-pipeline.md` | deprecated 경로 제거·격리가 완료 조건에 없음 | accept | FIXED | 호출자 0·제거 또는 canonical 경로 격리 검증을 완료 조건에 추가 |
+| R16 | CodeRabbit | `P1-B-durable-omr.md` | 파일·CORS·storage·상태 전이 검증이 완료 조건에 누락됨 | accept | FIXED | 경계·권한·재시작/다중 worker 검증 조건 추가 |
 
 ## Iteration log
 
@@ -92,4 +97,12 @@ Last checked: 2026-07-19 13:36 KST
 - Changes made: replaced the P2-A overview dependency with `P1-A, P1-B`
 - Decision: rejected the commit-history comment because `5db44d4` exists in neither local history nor the GitHub PR commit list; all actual PR commits contain required trailers
 - Validation: roadmap dependency consistency, PR commit trailer audit, staged scope, and whitespace checks passed
-- Remaining actionable items: post-push checks; explicit user merge approval remains
+- Remaining actionable items: completed in iteration 9
+
+### Iteration 9
+
+- Feedback fetched: final-head Codex evidence comment and four CodeRabbit findings from run `1feb1968-6962-444b-8ac9-2d5038c81d27`
+- Changes made: separated DOC-0 documentation completion from deferred P0-D quality gates; strengthened P1-A and P1-B completion criteria
+- Decision: rejected the Lore blank-line finding after verifying the required empty line already exists in `0240a96`
+- Validation: Markdown links, DOC-0 gate ownership, P1 completion-contract assertions, Lore source line audit, staged scope, and whitespace checks passed
+- Remaining actionable items: final-head checks and review evidence recording
