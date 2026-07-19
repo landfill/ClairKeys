@@ -21,7 +21,7 @@ Last updated: 2026-07-19 KST
   - `src/services/__tests__/animationEngine.test.ts`
   - `src/hooks/__tests__/useAnimationEngine.test.ts`
 - 오디오 활성화, 코드 재생/해제, 곡 종료 시각 보존, practice 모드 계약을 복구했다.
-- `Security Audit`의 즉시 실패 원인은 삭제된 `securecodewarrior/github-action-add-sarif@v1` 참조였다. 표준 JSON 아티팩트 업로드로 교체했고, 현재 lockfile의 로컬 audit은 0건으로 통과했다.
+- `Security Audit` 워크플로 구성 오류를 복구했다. 호스팅 기준 35건/고위험 9건을 동일 메이저 패치로 4건/고위험 0건까지 줄였으며, 새 CI 재검증이 필요하다.
 - 전체 TypeScript 검사는 현재 기준선 규모 때문에 제한 시간 내 완료되지 않았다. 변경 파일의 집중 Jest 검증은 통과했다.
 
 ## Next actions
@@ -31,7 +31,7 @@ Last updated: 2026-07-19 KST
 3. Unit Tests의 다음 실패 묶음을 고립해 수정한다.
 4. TypeScript 오류를 route params, Prisma, 컴포넌트 계약 순으로 줄인다.
 5. ESLint 오류를 파일 범위별로 제거한다.
-6. 새 CI에서 security audit 아티팩트와 0건 결과를 재확인한다.
+6. 새 CI에서 security audit 고위험 0건과 4개 중간 위험 잔존을 재확인한다.
 
 ## Existing user-owned working tree changes
 

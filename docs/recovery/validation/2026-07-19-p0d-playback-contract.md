@@ -23,7 +23,7 @@
 | Focused Jest run for audio service, animation engine and hook | PASS — 3 suites, 63 tests |
 | `git diff --check` | PASS |
 | Full `npx tsc --noEmit` | INCONCLUSIVE — project-wide baseline exceeded the local execution window |
-| `npm audit --audit-level high --json` | PASS — 0 vulnerabilities |
+| `npm audit --audit-level high --json` | SUPERSEDED — local cache result was stale; see security dependency record |
 
 ## CI follow-up
 

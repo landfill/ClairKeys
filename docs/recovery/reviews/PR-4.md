@@ -15,7 +15,7 @@ Last checked: 2026-07-19 KST
 | Vercel | PENDING | initial preview deployment |
 | CodeRabbit | RATE_LIMITED | ready-for-review run deferred for about 55 minutes |
 | Lint / TypeScript / Jest | EXPECTED_BASELINE_FAILURE | reproduced locally and assigned to remaining P0-D iterations |
-| Security Audit | PASS_LOCAL / CI_PENDING | synchronized lock reports 0 vulnerabilities; workflow repair pushed |
+| Security Audit | PASS_LOCAL / CI_RERUN_REQUIRED | 0 high after non-breaking dependency updates; 4 moderate tracked |
 
 ## Review items
 
@@ -58,6 +58,14 @@ Last checked: 2026-07-19 KST
 ### Iteration 5
 
 - Accepted Gemini review feedback and added `npm >=10.0.0` to package and lock metadata.
-- PASS: `npm audit --audit-level high --json` reports zero vulnerabilities on the synchronized lock.
+- The local zero result was stale; hosted artifact reported 35 vulnerabilities including 9 high.
 - Accepted CodeRabbit pre-merge feedback and expanded the PR body to the full repository template.
 - CodeRabbit detailed review is rate-limited; retry is expected after its stated cooldown.
+
+### Iteration 6
+
+- Downloaded and inspected the hosted `npm-audit` artifact from run `29684725397`.
+- Updated Next.js, Prisma, Jimp and UUID within their current major versions.
+- Reduced the current audit from 35 total / 9 high to 4 total / 0 high.
+- Rejected npm force-fix because it proposes breaking downgrades to Next 9 and NextAuth 3.
+- PASS: patched dependency set retains 63/63 focused playback regression tests.
