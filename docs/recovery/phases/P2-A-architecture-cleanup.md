@@ -1,7 +1,7 @@
 # P2-A — Architecture Cleanup
 
 Status: `NOT_STARTED`
-Depends on: P1
+Depends on: P1-A, P1-B
 
 ## Objective
 

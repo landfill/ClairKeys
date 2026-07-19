@@ -27,6 +27,8 @@ Last checked: 2026-07-19 13:36 KST
 | R7 | Codex | `WORKFLOW.md` | base branch를 `main`으로 변경하라는 제안 | reject | REJECTED | local/remote/GitHub default와 PR base 모두 `master`; `main` ref 없음 |
 | R8 | Codex | `ROADMAP.md`, P0-A/P0-D | DOC-0 병합 전인데 후속 단계를 `READY`로 표시함 | accept | FIXED | 두 단계를 `BLOCKED`로 통일하고 PR #1 병합을 blocker로 명시 |
 | R9 | Codex | `AGENTS.md` | Lore Commit Protocol을 강제하지만 저장소 내 정의가 없음 | accept | FIXED | `docs/recovery/LORE_COMMIT_PROTOCOL.md`에 형식·필수 규칙·예시를 정의하고 진입 문서에서 연결 |
+| R10 | Codex | `P2-A-architecture-cleanup.md` | 비실행 overview인 `P1`을 선행조건으로 사용해 판정이 모호함 | accept | FIXED | 실행 가능한 단계 ID `P1-A, P1-B`를 명시 |
+| R11 | Codex | `AGENTS.md` | 존재하지 않는 `5db44d4` 커밋이 Lore 규약을 위반했다는 제안 | reject | REJECTED | local 전체 이력과 GitHub PR 8개 커밋에 SHA가 없고, 실제 8개 커밋 모두 필수 trailer 보유 |
 
 ## Iteration log
 
@@ -82,4 +84,12 @@ Last checked: 2026-07-19 13:36 KST
 - Changes made: added the canonical protocol and linked it from AGENTS, README, and WORKFLOW
 - Validation: relative Markdown links, entry-document links, required Lore fields, staged scope, and whitespace checks passed
 - Post-push checks: CodeRabbit, Vercel, and Vercel Preview Comments passed on `1c690c2`
-- Remaining actionable items: none; explicit user merge approval remains
+- Remaining actionable items: completed in iteration 8
+
+### Iteration 8
+
+- Feedback fetched: two Codex comments about the P2-A prerequisite and an alleged noncompliant commit
+- Changes made: replaced the P2-A overview dependency with `P1-A, P1-B`
+- Decision: rejected the commit-history comment because `5db44d4` exists in neither local history nor the GitHub PR commit list; all actual PR commits contain required trailers
+- Validation: roadmap dependency consistency, PR commit trailer audit, staged scope, and whitespace checks passed
+- Remaining actionable items: post-push checks; explicit user merge approval remains
