@@ -1,7 +1,7 @@
 # Handoff — <phase>/<topic>
 
 Last updated: YYYY-MM-DD
-Branch: `codex/...`
+Branch: `codex/<phase>-<topic>`
 PR: #<number or none>
 Status: `IN_PROGRESS|IN_REVIEW|BLOCKED`
 

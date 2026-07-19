@@ -5,11 +5,11 @@
 ## 읽기 순서
 
 1. [현재 핸드오프](HANDOFF.md)
-2. [우선순위 로드맵](ROADMAP.md)
-3. [검증 기준선](BASELINE.md)
-4. [브랜치·PR·리뷰 흐름](WORKFLOW.md)
-5. [기술 결정 기록](DECISIONS.md)
-6. `phases/` 아래의 현재 단계 문서
+2. `HANDOFF.md`가 지정한 `phases/` 아래의 현재 단계 문서
+3. [브랜치·PR·리뷰 흐름](WORKFLOW.md)
+4. [검증 기준선](BASELINE.md)
+5. [우선순위 로드맵](ROADMAP.md)
+6. [기술 결정 기록](DECISIONS.md)
 
 ## 기록 구조
 

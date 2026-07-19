@@ -28,7 +28,8 @@
 ## Baseline difference
 
 - Fixed failures:
-- Remaining known failures:
+- Remaining known failures (each item must link to a validation/baseline record):
+- Evidence records:
 - New failures:
 
 ## Risks and rollback

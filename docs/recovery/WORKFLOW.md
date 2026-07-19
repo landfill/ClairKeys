@@ -4,7 +4,11 @@
 
 ```text
 read AGENTS.md
-→ read HANDOFF.md and current phase
+→ read docs/recovery/README.md
+→ read docs/recovery/HANDOFF.md
+→ read the current phase document named by HANDOFF.md
+→ read docs/recovery/WORKFLOW.md
+→ read docs/recovery/BASELINE.md
 → inspect git branch/status
 → create codex/<phase>-<topic> branch from master
 → write or update phase plan
@@ -20,8 +24,8 @@ read AGENTS.md
 2. 실패하는 검증 결과를 기록한다.
 3. 하나의 원인 또는 계약을 수정한다.
 4. 좁은 테스트에서 전체 검증 순으로 실행한다.
-5. `validation/YYYY-MM-DD-<phase>-<slug>.md`를 작성한다.
-6. `HANDOFF.md`와 단계 상태를 갱신한다.
+5. `docs/recovery/validation/YYYY-MM-DD-<phase>-<slug>.md`를 작성한다.
+6. `docs/recovery/HANDOFF.md`와 단계 상태를 갱신한다.
 
 ## 3. 커밋
 
@@ -51,7 +55,7 @@ Not-tested: Full Audiveris output corpus
 - PR base는 실제 기본 브랜치인 `master`를 사용한다.
 - 초안 PR로 시작하고 검증 결과가 준비되면 ready 상태로 전환한다.
 - PR 본문에는 목적, 범위, 제외 범위, 위험, 검증, baseline 차이, rollback 방법을 포함한다.
-- PR 번호가 생기면 즉시 `reviews/PR-<number>.md`를 생성한다.
+- PR 번호가 생기면 즉시 `docs/recovery/reviews/PR-<number>.md`를 생성한다.
 
 ## 5. 리뷰·CI 반복
 
@@ -79,7 +83,7 @@ fetch PR checks and unresolved comments
 - 필수 CI가 모두 성공하거나 저장소 기준선상 불가능한 이유와 후속 단계가 명시됨
 - 해결되지 않은 actionable review가 없음
 - 새 실패가 없음
-- review log와 `HANDOFF.md`가 최신임
+- review log와 `docs/recovery/HANDOFF.md`가 최신임
 
 ## 6. 병합 정책
 

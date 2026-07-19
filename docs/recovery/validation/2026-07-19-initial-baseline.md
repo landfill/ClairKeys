@@ -20,9 +20,10 @@ Environment: Windows, Node.js workspace environment
 
 ## Baseline comparison
 
+- Comparison basis: 문서 변경 전 HEAD `dbb26ac`에서 표의 명령을 실행한 결과이며, 이 PR의 최초 커밋 `fc8dc10`보다 앞선 관찰이다.
 - Fixed failures: 없음. 이 기록은 변경 전 기준선이다.
-- Remaining pre-existing failures: TypeScript, ESLint, Jest.
-- New failures: 없음.
+- Remaining pre-existing failures: TypeScript, ESLint, Jest. 위 명령과 2026-07-19 관찰 결과가 근거다.
+- New failures: 최초 기준선이므로 분류 대상이 아니다. 이후 validation 기록은 이 문서와 비교한다.
 
 ## Gaps and risks
 

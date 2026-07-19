@@ -4,25 +4,27 @@ Last updated: 2026-07-19
 
 ## Current state
 
-- Program status: `IN_PROGRESS`
-- Current phase: 문서·핸드오프 체계 초기화
+- Program status: `IN_REVIEW`
+- Current phase: `DOC-0` — 문서·핸드오프 체계 초기화 PR 리뷰
+- Current phase document: `docs/recovery/phases/DOC-0-recovery-bootstrap.md`
 - Working branch: `codex/clairkeys-recovery-roadmap`
 - Base branch: `master`
-- Current objective: 복구 로드맵과 세션 간 기록 체계를 별도 PR로 제공
+- Pull request: https://github.com/landfill/ClairKeys/pull/1
+- Current objective: PR #1의 CI와 리뷰 피드백을 확인하고 필요한 수정을 반복
 
 ## Next action
 
-1. 이 문서 체계의 링크와 Git 변경 범위를 검증한다.
-2. 문서 관련 파일만 선별 커밋한다.
-3. 브랜치를 origin에 push하고 `master` 대상 PR을 생성한다.
-4. PR CI와 리뷰 피드백을 `reviews/PR-<number>.md`에 기록한다.
-5. 리뷰가 완료되면 P0-A와 P0-D를 별도 브랜치에서 시작한다.
+1. PR #1의 CodeRabbit 리뷰와 Vercel 검사를 다시 조회한다.
+2. actionable feedback을 `docs/recovery/reviews/PR-1.md`에 분류한다.
+3. 필요한 수정마다 문서 검증, 커밋, push를 반복한다.
+4. 리뷰와 필수 검사가 완료되면 사용자에게 병합 승인을 요청한다.
+5. 병합 후 P0-A와 P0-D를 별도 브랜치에서 시작한다.
 
 ## Known blockers
 
-- 2026-07-19 현재 `gh auth status`에서 GitHub 토큰이 유효하지 않다고 보고한다.
-- 현재 실행 환경의 네트워크 프록시도 GitHub API 연결을 차단했다.
-- 인증이 복구되기 전에는 push/PR 생성/리뷰 조회가 완료되지 않을 수 있다.
+- CodeRabbit review: pending
+- Vercel deployment check: pending
+- 실제 CI workflow가 `main/develop`만 대상으로 하므로 `master` 대상 PR에서 실행되지 않고 있다.
 
 ## Existing user-owned working tree changes
 

@@ -24,7 +24,7 @@
 
 1. `git branch --show-current`와 `git status --short`를 확인한다.
 2. 기본 브랜치라면 코드를 수정하기 전에 작업 브랜치를 만든다.
-3. `HANDOFF.md`에서 `Current phase`, `Next action`, `Known blockers`를 확인한다.
+3. `docs/recovery/HANDOFF.md`에서 `Current phase`, `Next action`, `Known blockers`를 확인한다.
 4. 현재 단계 문서의 진입 조건과 완료 조건을 확인한다.
 5. 작업 계획을 세우고 범위를 벗어나는 문제는 새 단계 후보로 기록한다.
 
@@ -32,8 +32,8 @@
 
 1. 단계별 필수 검증을 실행한다.
 2. 결과를 `docs/recovery/validation/`에 기록한다.
-3. `HANDOFF.md`를 실제 현재 상태로 갱신한다.
-4. 결정이 바뀌었다면 `DECISIONS.md`에 추가한다.
+3. `docs/recovery/HANDOFF.md`를 실제 현재 상태로 갱신한다.
+4. 결정이 바뀌었다면 `docs/recovery/DECISIONS.md`에 추가한다.
 5. 관련 파일만 선별해 커밋한다.
 6. PR이 있다면 `docs/recovery/reviews/PR-<number>.md`를 갱신한다.
 

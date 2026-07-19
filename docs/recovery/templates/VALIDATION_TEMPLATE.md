@@ -17,6 +17,9 @@ Environment: `<OS/runtime/services>`
 
 - Fixed failures:
 - Remaining pre-existing failures:
+  - Baseline command:
+  - Observed at (commit/CI/date):
+  - Evidence record:
 - New failures:
 
 ## Manual checks
