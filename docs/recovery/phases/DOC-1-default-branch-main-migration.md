@@ -2,7 +2,7 @@
 
 Status: `IN_PROGRESS`
 Branch: `codex/default-branch-main-migration`
-PR: pending
+PR: https://github.com/landfill/ClairKeys/pull/2
 
 ## Objective
 

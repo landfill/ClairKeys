@@ -2,6 +2,7 @@
 
 - Date/time: 2026-07-19 KST
 - Phase: DOC-1
+- Pull request: https://github.com/landfill/ClairKeys/pull/2
 - Branch: `codex/default-branch-main-migration`
 - Baseline commit: `6174ed088edc5d488c1bc9e16078bbee5081db97`
 

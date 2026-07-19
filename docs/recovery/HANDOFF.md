@@ -9,7 +9,7 @@ Last updated: 2026-07-19
 - Current phase document: `docs/recovery/phases/DOC-1-default-branch-main-migration.md`
 - Working branch: `codex/default-branch-main-migration`
 - Base branch: `master` (DOC-1 완료 시 `main`으로 rename)
-- Pull request: pending
+- Pull request: https://github.com/landfill/ClairKeys/pull/2
 - Current objective: 운영 문서와 검증 계약을 `main` 기준으로 준비한 뒤 PR 병합과 GitHub branch rename을 원자적으로 완료
 
 ## Next action
