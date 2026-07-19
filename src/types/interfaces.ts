@@ -139,7 +139,7 @@ export interface SheetMusicActionableProps
 /**
  * SheetMusic 이동 관련 인터페이스
  */
-export interface SheetMusicMovableProps extends MovableProps<number | null> {
+export interface SheetMusicMovableProps extends Omit<MovableProps<number | null>, 'onMove'> {
   categories?: Category[]
   currentCategoryId: number | null
   onMove: (categoryId: number | null) => void
@@ -197,7 +197,8 @@ export interface SheetMusicCardCoreProps
  */
 export interface SheetMusicCardFullProps 
   extends SheetMusicCardCoreProps,
-          SheetMusicActionableProps,
-          SheetMusicMovableProps,
+          Omit<SheetMusicActionableProps, 'layout'>,
+          Omit<SheetMusicMovableProps, 'onMove'>,
           SheetMusicInteractiveProps {
+  onMove?: (sheetMusicId: number, newCategoryId: number | null) => void
 }

@@ -44,7 +44,7 @@ export default function FloatingNotes({
 }: FloatingNotesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const animationFrameRef = useRef<number>()
+  const animationFrameRef = useRef<number>(0)
   
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 400 })
   const [floatingNotes, setFloatingNotes] = useState<FloatingNote[]>([])

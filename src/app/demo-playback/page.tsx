@@ -7,13 +7,12 @@ import { AnimationPlayer } from '@/components/animation'
 
 // 테스트용 애니메이션 데이터
 const testAnimationData: PianoAnimationData = {
-  id: 'test-1',
+  version: '1.0',
   title: '테스트 곡',
   composer: '작곡가',
   duration: 120, // 2분
   tempo: 120,
   timeSignature: '4/4',
-  keySignature: 'C',
   notes: [
     { note: 'C4', startTime: 0, duration: 1, velocity: 0.8 },
     { note: 'D4', startTime: 1, duration: 1, velocity: 0.7 },
@@ -21,7 +20,11 @@ const testAnimationData: PianoAnimationData = {
     { note: 'F4', startTime: 3, duration: 2, velocity: 0.8 },
     { note: 'G4', startTime: 5, duration: 1, velocity: 0.6 },
   ],
-  measures: []
+  metadata: {
+    originalFileName: 'test.pdf',
+    fileSize: 1024,
+    processedAt: new Date().toISOString()
+  }
 }
 
 export default function PlaybackDemoPage() {
@@ -114,7 +117,7 @@ export default function PlaybackDemoPage() {
               onStop={handleStop}
               onSeek={handleSeek}
               onSpeedChange={handleSpeedChange}
-              onModeChange={handleModeChange}
+              onModeChange={handleModeChange as any}
             />
 
             {/* 기능 설명 */}
@@ -149,7 +152,7 @@ export default function PlaybackDemoPage() {
               onStop={handleStop}
               onSeek={handleSeek}
               onSpeedChange={handleSpeedChange}
-              onModeChange={handleModeChange}
+              onModeChange={handleModeChange as any}
               onLoop={setIsLooping}
               isLooping={isLooping}
             />

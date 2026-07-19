@@ -12,7 +12,7 @@ interface PushNotificationsProps {
   onSubscriptionChange?: (isSubscribed: boolean) => void
 }
 
-interface NotificationPermission {
+interface PushPermissionState {
   state: 'default' | 'granted' | 'denied'
   canRequest: boolean
 }
@@ -21,7 +21,7 @@ export default function PushNotifications({
   className = '',
   onSubscriptionChange
 }: PushNotificationsProps) {
-  const [permission, setPermission] = useState<NotificationPermission>({
+  const [permission, setPermission] = useState<PushPermissionState>({
     state: 'default',
     canRequest: true
   })
@@ -393,7 +393,7 @@ function urlBase64ToUint8Array(base64String: string) {
 // Hook for using push notifications
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false)
-  const [permission, setPermission] = useState<NotificationPermission>('default')
+  const [permission, setPermission] = useState<globalThis.NotificationPermission>('default')
   const [isSubscribed, setIsSubscribed] = useState(false)
 
   useEffect(() => {
@@ -404,7 +404,7 @@ export function usePushNotifications() {
       setIsSupported(supported)
       
       if (supported) {
-        setPermission(Notification.permission)
+        setPermission(Notification.permission as globalThis.NotificationPermission)
       }
     }
 
@@ -414,7 +414,7 @@ export function usePushNotifications() {
   const requestPermission = useCallback(async () => {
     if (permission === 'default') {
       const result = await Notification.requestPermission()
-      setPermission(result)
+      setPermission(result as globalThis.NotificationPermission)
       return result === 'granted'
     }
     return permission === 'granted'

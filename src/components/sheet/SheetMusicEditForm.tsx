@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { SheetMusicWithCategory, UpdateSheetMusicRequest } from '@/types/sheet-music'
-import { Button } from '@/components/ui/Button'
+import Button from '@/components/ui/Button'
 
 interface Category {
   id: number

@@ -13,7 +13,8 @@ export default function PianoKeyboard({
   animationActiveKeys = [],
   className = '',
   height = 200,
-  keyWidth
+  keyWidth,
+  showKeyLabels = false
 }: PianoKeyboardProps) {
   const [isClient, setIsClient] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -67,7 +68,7 @@ export default function PianoKeyboard({
         const x = (whiteKeyIndex - 1) * whiteKeyWidth + whiteKeyWidth + blackKeyOffset * whiteKeyWidth - blackKeyWidth / 2
         
         keys.push({
-          id: keyNumber,
+          keyNumber,
           note,
           octave: parseInt(octave),
           x,
@@ -79,7 +80,7 @@ export default function PianoKeyboard({
       } else {
         // White key
         keys.push({
-          id: keyNumber,
+          keyNumber,
           note,
           octave: parseInt(octave),
           x: whiteKeyIndex * whiteKeyWidth,

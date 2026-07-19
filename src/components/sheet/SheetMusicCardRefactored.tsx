@@ -14,13 +14,14 @@ import {
 // Interface Segregation 적용: 핵심 기능 + 필요한 기능만 선택적으로 조합
 export interface SheetMusicCardProps 
   extends SheetMusicCardCoreProps,
-          Partial<SheetMusicActionableProps>,
-          Partial<SheetMusicMovableProps> {
+          Partial<Omit<SheetMusicActionableProps, 'layout' | 'sheetMusic'>>,
+          Partial<Omit<SheetMusicMovableProps, 'onMove'>> {
   categories?: Category[]
   onMove?: (sheetMusicId: number, newCategoryId: number | null) => void
   showMoveOptions?: boolean
   showEditOptions?: boolean
   showDeleteOptions?: boolean
+  showPlayButton?: boolean
 }
 
 export function SheetMusicCardRefactored({

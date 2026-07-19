@@ -98,8 +98,8 @@ export class FileStorageService {
         console.error('❌ Animation data upload error:', error)
         console.error('Error details:', {
           message: error.message,
-          statusCode: error.statusCode,
-          error: error.error
+          statusCode: (error as any).statusCode,
+          error: (error as any).error
         })
         return { success: false, error: error.message }
       }

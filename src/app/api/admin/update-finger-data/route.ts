@@ -110,7 +110,14 @@ export async function POST(request: NextRequest) {
     const results = []
 
     for (const sheet of allSheetMusic) {
-      const result = {
+      const result: {
+        id: number
+        title: string
+        composer: string
+        status: string
+        error: string | null
+        fingersAdded: number
+      } = {
         id: sheet.id,
         title: sheet.title,
         composer: sheet.composer,
@@ -195,7 +202,7 @@ export async function POST(request: NextRequest) {
     console.log('🎉 Finger data update completed!')
     console.log('📊 Summary:', summary)
 
-    return NextResponse.json({
+    return NextResponse.json<any>({
       success: true,
       message: 'Finger data update completed',
       summary,

@@ -1,6 +1,6 @@
 'use client'
 
-import { getCLS, getFCP, getFID, getLCP, getTTFB, Metric } from 'web-vitals'
+import { onCLS, onFCP, onINP, onLCP, onTTFB, Metric } from 'web-vitals'
 
 interface PerformanceMetric {
   name: string
@@ -30,7 +30,7 @@ class PerformanceMonitor {
   // Performance thresholds (in milliseconds)
   private thresholds = {
     LCP: { good: 2500, poor: 4000 },
-    FID: { good: 100, poor: 300 },
+    INP: { good: 200, poor: 500 },
     CLS: { good: 0.1, poor: 0.25 },
     FCP: { good: 1800, poor: 3000 },
     TTFB: { good: 800, poor: 1800 }
@@ -52,11 +52,11 @@ class PerformanceMonitor {
 
   private initializeWebVitals() {
     // Measure Core Web Vitals
-    getCLS(this.onMetric.bind(this), { reportAllChanges: false })
-    getFID(this.onMetric.bind(this))
-    getFCP(this.onMetric.bind(this))
-    getLCP(this.onMetric.bind(this), { reportAllChanges: false })
-    getTTFB(this.onMetric.bind(this))
+    onCLS(this.onMetric.bind(this), { reportAllChanges: false })
+    onINP(this.onMetric.bind(this))
+    onFCP(this.onMetric.bind(this))
+    onLCP(this.onMetric.bind(this), { reportAllChanges: false })
+    onTTFB(this.onMetric.bind(this))
   }
 
   private onMetric(metric: Metric) {

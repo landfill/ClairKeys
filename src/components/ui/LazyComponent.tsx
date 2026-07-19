@@ -28,13 +28,13 @@ export function LazyWrapper({
  */
 export function createLazyComponent<T extends ComponentType<any>>(
   importFunc: () => Promise<{ default: T }>,
-  fallback?: React.ComponentType
+  Fallback?: React.ComponentType
 ): React.ComponentType<React.ComponentProps<T>> {
   const LazyComponent = lazy(importFunc)
   
   return function WrappedLazyComponent(props: React.ComponentProps<T>) {
     return (
-      <Suspense fallback={fallback ? <fallback /> : <Loading />}>
+      <Suspense fallback={Fallback ? <Fallback /> : <Loading />}>
         <LazyComponent {...props} />
       </Suspense>
     )
@@ -71,7 +71,7 @@ export const LazyAdvancedPlaybackControls = createLazyComponent(
 )
 
 export const LazyCategoryManager = createLazyComponent(
-  () => import('@/components/category/CategoryManager')
+  () => import("@/components/category/CategoryManager") as unknown as Promise<{ default: React.ComponentType<any> }>
 )
 
 /**
@@ -87,7 +87,7 @@ interface ConditionalLazyProps {
 export function ConditionalLazy({ 
   condition, 
   component, 
-  fallback = Loading,
+  fallback: Fallback = Loading,
   props = {} 
 }: ConditionalLazyProps) {
   if (!condition) return null
@@ -95,7 +95,7 @@ export function ConditionalLazy({
   const LazyComponent = lazy(component)
   
   return (
-    <Suspense fallback={<fallback />}>
+    <Suspense fallback={<Fallback />}>
       <LazyComponent {...props} />
     </Suspense>
   )
@@ -114,7 +114,7 @@ interface ViewportLazyProps {
 
 export function ViewportLazy({
   component,
-  fallback = Loading,
+  fallback: Fallback = Loading,
   threshold = 0.1,
   rootMargin = '100px',
   props = {}
@@ -148,7 +148,7 @@ export function ViewportLazy({
   
   return (
     <div ref={ref}>
-      <Suspense fallback={<fallback />}>
+      <Suspense fallback={<Fallback />}>
         <LazyComponent {...props} />
       </Suspense>
     </div>

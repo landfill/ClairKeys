@@ -7,7 +7,7 @@ import { useSheetMusic } from '@/hooks/useSheetMusic'
 import { useCategories } from '@/hooks/useCategories'
 import { SheetMusicCard } from '@/components/sheet/SheetMusicCard'
 import Loading from '@/components/ui/Loading'
-import { Button } from '@/components/ui/Button'
+import Button from '@/components/ui/Button'
 
 interface CategorySheetMusicListProps {
   selectedCategoryId?: number | null

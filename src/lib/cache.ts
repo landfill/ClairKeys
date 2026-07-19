@@ -50,7 +50,7 @@ class CacheService {
             item = parsed.compressed ? this.decompress(parsed) : parsed
             
             // Also store in memory for faster access
-            if (this.memoryCache.size < this.MAX_MEMORY_ITEMS) {
+            if (item && this.memoryCache.size < this.MAX_MEMORY_ITEMS) {
               this.memoryCache.set(key, item)
             }
           } catch (e) {
@@ -60,25 +60,25 @@ class CacheService {
         }
       }
 
-      if (!item) return null
+      if (!item) return null as any
 
       // Check if expired
       const now = Date.now()
       if (now > item.timestamp + item.ttl) {
         this.delete(key, { storage })
-        return null
+        return null as any
       }
 
       // Check version mismatch
       if (options.version && item.version !== options.version) {
         this.delete(key, { storage })
-        return null
+        return null as any
       }
 
       return item.data
     } catch (error) {
       console.warn('Cache get error:', error)
-      return null
+      return null as any
     }
   }
 
@@ -106,7 +106,9 @@ class CacheService {
         // Implement LRU eviction if memory cache is full
         if (this.memoryCache.size >= this.MAX_MEMORY_ITEMS) {
           const oldestKey = this.memoryCache.keys().next().value
-          this.memoryCache.delete(oldestKey)
+          if (oldestKey !== undefined) {
+            this.memoryCache.delete(oldestKey)
+          }
         }
         
         this.memoryCache.set(key, item)

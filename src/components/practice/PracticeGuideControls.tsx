@@ -35,11 +35,11 @@ export default function PracticeGuideControls({
   }
 
   const getStepProgress = (): number => {
-    if (!practiceState || practiceState.totalSteps === 0) return 0
-    return (practiceState.currentStep / practiceState.totalSteps) * 100
+    if (!practiceState || practiceState?.totalSteps === 0) return 0
+    return (practiceState?.currentStep / practiceState?.totalSteps) * 100
   }
 
-  if (!isActive) {
+  if (!practiceState || !practiceState.isActive) {
     // Practice setup screen
     return (
       <div className={`practice-guide-controls bg-blue-50 rounded-lg border border-blue-200 p-6 ${className}`}>

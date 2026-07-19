@@ -6,10 +6,9 @@
 import { Category, CategoryWithSheetMusic } from '@/types/category'
 import { 
   SheetMusicWithCategory, 
-  CreateSheetMusicData,
-  UpdateSheetMusicData,
-  SheetMusicQueryParams,
-  PublicSheetMusicQueryParams 
+  CreateSheetMusicRequest,
+  UpdateSheetMusicRequest,
+  SearchSheetMusicParams
 } from '@/types/sheet-music'
 
 // ============================================================================
@@ -59,17 +58,17 @@ export interface ICategoryRepository extends IBaseRepository<Category> {
 export interface ISheetMusicRepository extends IBaseRepository<SheetMusicWithCategory> {
   // 기본 CRUD
   findById(id: number): Promise<SheetMusicWithCategory | null>
-  findMany(params?: SheetMusicQueryParams): Promise<SheetMusicWithCategory[]>
-  create(data: CreateSheetMusicData): Promise<SheetMusicWithCategory>
-  update(id: number, data: UpdateSheetMusicData): Promise<SheetMusicWithCategory>
+  findMany(params?: SearchSheetMusicParams): Promise<SheetMusicWithCategory[]>
+  create(data: CreateSheetMusicRequest): Promise<SheetMusicWithCategory>
+  update(id: number, data: UpdateSheetMusicRequest): Promise<SheetMusicWithCategory>
   delete(id: number): Promise<void>
   
   // 사용자별 조회
-  findByUserId(userId: string, params?: SheetMusicQueryParams): Promise<SheetMusicWithCategory[]>
+  findByUserId(userId: string, params?: SearchSheetMusicParams): Promise<SheetMusicWithCategory[]>
   findByCategoryId(categoryId: number, userId?: string): Promise<SheetMusicWithCategory[]>
   
   // 공개 악보 조회
-  findPublic(params?: PublicSheetMusicQueryParams): Promise<{
+  findPublic(params?: SearchSheetMusicParams): Promise<{
     sheetMusic: SheetMusicWithCategory[]
     total: number
     hasMore: boolean
@@ -78,7 +77,7 @@ export interface ISheetMusicRepository extends IBaseRepository<SheetMusicWithCat
   // 검색 기능
   searchByTitle(query: string, userId?: string, isPublic?: boolean): Promise<SheetMusicWithCategory[]>
   searchByComposer(query: string, userId?: string, isPublic?: boolean): Promise<SheetMusicWithCategory[]>
-  searchGeneral(query: string, params?: SheetMusicQueryParams): Promise<SheetMusicWithCategory[]>
+  searchGeneral(query: string, params?: SearchSheetMusicParams): Promise<SheetMusicWithCategory[]>
   
   // 통계 및 집계
   countByUserId(userId: string): Promise<number>

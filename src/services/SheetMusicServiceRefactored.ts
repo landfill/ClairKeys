@@ -5,10 +5,9 @@
 
 import { 
   SheetMusicWithCategory,
-  CreateSheetMusicData,
-  UpdateSheetMusicData,
-  SheetMusicQueryParams,
-  PublicSheetMusicQueryParams
+  CreateSheetMusicRequest,
+  UpdateSheetMusicRequest,
+  SearchSheetMusicParams
 } from '@/types/sheet-music'
 import { ISheetMusicRepository, ICategoryRepository, IUnitOfWork } from '@/repositories/interfaces'
 import { getRepositoryFactory, getUnitOfWork } from '@/repositories/RepositoryFactory'
@@ -16,14 +15,14 @@ import { getRepositoryFactory, getUnitOfWork } from '@/repositories/RepositoryFa
 export interface ISheetMusicService {
   // 기본 CRUD
   getSheetMusic(id: number, userId?: string): Promise<SheetMusicWithCategory>
-  getUserSheetMusic(userId: string, params?: SheetMusicQueryParams): Promise<SheetMusicWithCategory[]>
-  getPublicSheetMusic(params?: PublicSheetMusicQueryParams): Promise<{
+  getUserSheetMusic(userId: string, params?: SearchSheetMusicParams): Promise<SheetMusicWithCategory[]>
+  getPublicSheetMusic(params?: SearchSheetMusicParams): Promise<{
     sheetMusic: SheetMusicWithCategory[]
     total: number
     hasMore: boolean
   }>
-  createSheetMusic(data: CreateSheetMusicData): Promise<SheetMusicWithCategory>
-  updateSheetMusic(id: number, data: UpdateSheetMusicData, userId: string): Promise<SheetMusicWithCategory>
+  createSheetMusic(data: CreateSheetMusicRequest): Promise<SheetMusicWithCategory>
+  updateSheetMusic(id: number, data: UpdateSheetMusicRequest, userId: string): Promise<SheetMusicWithCategory>
   deleteSheetMusic(id: number, userId: string): Promise<void>
   
   // 비즈니스 로직
@@ -74,11 +73,11 @@ export class SheetMusicServiceRefactored implements ISheetMusicService {
     return sheetMusic
   }
 
-  async getUserSheetMusic(userId: string, params?: SheetMusicQueryParams): Promise<SheetMusicWithCategory[]> {
+  async getUserSheetMusic(userId: string, params?: SearchSheetMusicParams): Promise<SheetMusicWithCategory[]> {
     return await this.sheetMusicRepository.findByUserId(userId, params)
   }
 
-  async getPublicSheetMusic(params?: PublicSheetMusicQueryParams): Promise<{
+  async getPublicSheetMusic(params?: SearchSheetMusicParams): Promise<{
     sheetMusic: SheetMusicWithCategory[]
     total: number
     hasMore: boolean
@@ -86,19 +85,19 @@ export class SheetMusicServiceRefactored implements ISheetMusicService {
     return await this.sheetMusicRepository.findPublic(params)
   }
 
-  async createSheetMusic(data: CreateSheetMusicData): Promise<SheetMusicWithCategory> {
+  async createSheetMusic(data: CreateSheetMusicRequest): Promise<SheetMusicWithCategory> {
     // 비즈니스 규칙 검증
-    await this.validateCreateSheetMusicData(data)
+    await this.validateCreateSheetMusicRequest(data)
 
     return await this.sheetMusicRepository.create(data)
   }
 
-  async updateSheetMusic(id: number, data: UpdateSheetMusicData, userId: string): Promise<SheetMusicWithCategory> {
+  async updateSheetMusic(id: number, data: UpdateSheetMusicRequest, userId: string): Promise<SheetMusicWithCategory> {
     // 소유권 검증
     await this.validateSheetMusicOwnership(id, userId)
     
     // 비즈니스 규칙 검증
-    await this.validateUpdateSheetMusicData(data, userId)
+    await this.validateUpdateSheetMusicRequest(data, userId)
 
     return await this.sheetMusicRepository.update(id, data)
   }
@@ -179,22 +178,22 @@ export class SheetMusicServiceRefactored implements ISheetMusicService {
     uncategorized: number
     byCategory: Record<string, number>
   }> {
-    return await this.sheetMusicRepository.getUserSheetMusicStats(userId)
+    return await (this.sheetMusicRepository as any).getUserSheetMusicStats(userId)
   }
 
   async getRecentSheetMusic(userId: string, limit: number = 10): Promise<SheetMusicWithCategory[]> {
-    return await this.sheetMusicRepository.getRecentSheetMusic(userId, limit)
+    return await (this.sheetMusicRepository as any).getRecentSheetMusic(userId, limit)
   }
 
   async getPopularPublicSheetMusic(limit: number = 20): Promise<SheetMusicWithCategory[]> {
-    return await this.sheetMusicRepository.getPopularPublicSheetMusic(limit)
+    return await (this.sheetMusicRepository as any).getPopularPublicSheetMusic(limit)
   }
 
   // ============================================================================
   // 데이터 검증 메서드
   // ============================================================================
 
-  private async validateCreateSheetMusicData(data: CreateSheetMusicData): Promise<void> {
+  private async validateCreateSheetMusicRequest(data: CreateSheetMusicRequest): Promise<void> {
     // 제목 검증
     if (!data.title?.trim()) {
       throw new Error('Sheet music title is required')
@@ -213,7 +212,7 @@ export class SheetMusicServiceRefactored implements ISheetMusicService {
 
     // 카테고리 검증
     if (data.categoryId) {
-      await this.validateCategoryOwnership(data.categoryId, data.userId)
+      await this.validateCategoryOwnership(data.categoryId, data.userId!)
     }
 
     // 애니메이션 데이터 URL 검증
@@ -222,7 +221,7 @@ export class SheetMusicServiceRefactored implements ISheetMusicService {
     }
   }
 
-  private async validateUpdateSheetMusicData(data: UpdateSheetMusicData, userId: string): Promise<void> {
+  private async validateUpdateSheetMusicRequest(data: UpdateSheetMusicRequest, userId: string): Promise<void> {
     // 제목 검증
     if (data.title !== undefined) {
       if (!data.title?.trim()) {
@@ -285,11 +284,11 @@ export class SheetMusicServiceRefactored implements ISheetMusicService {
       throw new Error('Cannot clone private sheet music')
     }
 
-    const cloneData: CreateSheetMusicData = {
+    const cloneData: CreateSheetMusicRequest = {
       title: options?.newTitle || `${sourceSheetMusic.title} (Copy)`,
       composer: sourceSheetMusic.composer,
       userId,
-      categoryId: options?.categoryId || null,
+      categoryId: options?.categoryId ?? undefined,
       isPublic: options?.makePrivate === true ? false : sourceSheetMusic.isPublic,
       animationDataUrl: sourceSheetMusic.animationDataUrl
     }

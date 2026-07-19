@@ -114,7 +114,7 @@ export class CategoryServiceRefactored implements ICategoryService {
     categoriesWithSheetMusic: number
     totalSheetMusicInCategories: number
   }> {
-    return await this.categoryRepository.getCategoryStats(userId)
+    return await (this.categoryRepository as any).getCategoryStats(userId)
   }
 
   // ============================================================================
@@ -152,14 +152,14 @@ export class CategoryServiceRefactored implements ICategoryService {
    * 빈 카테고리들 조회
    */
   async getEmptyCategories(userId: string): Promise<Category[]> {
-    return await this.categoryRepository.getEmptyCategories(userId)
+    return await (this.categoryRepository as any).getEmptyCategories(userId)
   }
 
   /**
    * 가장 인기 있는 카테고리들 조회
    */
   async getMostPopularCategories(userId: string, limit: number = 5): Promise<Array<Category & { _count: { sheetMusic: number } }>> {
-    return await this.categoryRepository.getMostPopularCategories(userId, limit)
+    return await (this.categoryRepository as any).getMostPopularCategories(userId, limit)
   }
 
   /**

@@ -1,39 +1,33 @@
 # Current Handoff
 
-Last updated: 2026-07-19 KST
+Last updated: 2026-07-20 KST
 
 ## Current state
 
 - Program status: `IN_PROGRESS`
 - Current phase: `P0-D` — 인증·타입·테스트·CI 기준선 복구
 - Phase document: `docs/recovery/phases/P0-D-quality-gates.md`
-- Working branch: `codex/p0-quality-gates`
+- Working branch: `codex/p0-typescript-fixes`
 - Base branch: `main`
-- Pull request: https://github.com/landfill/ClairKeys/pull/4
-- PR state: `READY_FOR_REVIEW` (draft 해제 완료)
-- Current objective: 실패를 숨기지 않고 Jest·TypeScript·ESLint·보안 감사 문제를 작은 회귀 수정 단위로 해결한다.
+- Pull request: Issue #5 (PR to be created)
+- PR state: `N/A`
+- Current objective: Resolve 188 TypeScript compilation errors and ensure all Unit Tests pass.
 
 ## Latest verified result
 
 - Node 22 / npm 10 clean `npm ci`: PASS
 - Focused playback regression tests: PASS — 3 suites, 65 tests
-  - `src/services/__tests__/audioService.test.ts`
-  - `src/services/__tests__/animationEngine.test.ts`
-  - `src/hooks/__tests__/useAnimationEngine.test.ts`
-- 오디오 활성화, 코드 재생/해제, 곡 종료 시각 보존, practice 모드 계약을 복구했다.
 - `Security Audit` 워크플로 구성 오류를 복구했다. 35건/고위험 9건을 4건/고위험 0건으로 줄였고, 호스팅 Security Audit과 Security Scan이 통과했다.
-- 전체 TypeScript 검사는 현재 기준선 규모 때문에 제한 시간 내 완료되지 않았다. 변경 파일의 집중 Jest 검증은 통과했다.
-- Supabase 비밀값 없는 프로덕션 빌드는 지연 클라이언트 생성 수정 후 통과했다. 단, Next 설정의 타입·lint 우회는 아직 제거되지 않았다.
-- Next 15 동적 라우트 4곳과 OAuth/seed DB 사용자 ID 계약을 복구했다. TypeScript 오류는 195개에서 188개로 감소했다.
+- **TypeScript 검사:** `npx tsc --noEmit`가 모든 타입 오류를 해결하여 0 에러 (exit code 0) 상태로 통과했다.
+- **단위 테스트 검사:** `npm run test`가 21개 테스트 스위트, 271개 테스트 모두 성공(PASS)으로 통과했다.
+- Supabase 비밀값 없는 프로덕션 빌드는 지연 클라이언트 생성 수정 후 통과했다.
+- Next 15 동적 라우트 매개변수 타입 오류 및 OAuth 사용자 ID 반환 타입 등의 이슈가 복구되었다.
 
 ## Next actions
 
-1. Next 15 route params와 OAuth DB ID 수정 커밋을 PR #4에 푸시한다.
-2. PR #4의 CodeRabbit/리뷰어 피드백과 새 CI 결과를 확인한다.
-3. Unit Tests의 다음 실패 묶음을 고립해 수정한다.
-4. TypeScript 오류를 route params, Prisma, 컴포넌트 계약 순으로 줄인다.
-5. ESLint 오류를 파일 범위별로 제거한다.
-6. 남은 4개 중간 위험은 NextAuth 인증 마이그레이션 단계에서 검증 후 처리한다.
+1. 변경된 `p0-typescript-fixes` 브랜치를 커밋하고 푸시하여 PR #5를 생성한다.
+2. PR #5의 CI 결과와 리뷰를 확인한다.
+3. 남은 품질 개선 목표(ESLint 오류 제거 등)를 진행한다.
 
 ## Existing user-owned working tree changes
 

@@ -6,7 +6,7 @@ test.describe('Piano Player Interface', () => {
     await page.goto('/sheet/1')
   })
 
-  test('piano keyboard interaction', async ({ page }) => {
+  test('piano keyboard interaction', async ({ page, isMobile }) => {
     await test.step('Load piano keyboard', async () => {
       // Wait for piano keyboard to load
       await expect(page.locator('[data-testid="piano-keyboard"]')).toBeVisible()
@@ -44,7 +44,7 @@ test.describe('Piano Player Interface', () => {
       await page.keyboard.up('Space')
     })
 
-    await test.step('Test mobile touch interaction', async ({ isMobile }) => {
+    await test.step('Test mobile touch interaction', async () => {
       test.skip(!isMobile, 'Mobile-only test')
       
       // Test touch events on mobile
@@ -123,7 +123,8 @@ test.describe('Piano Player Interface', () => {
       
       // Check if piano keys are being highlighted during playback
       const activeKeys = page.locator('[data-testid^="piano-key-"].active')
-      await expect(activeKeys).toHaveCount.toBeGreaterThan(0)
+      const activeKeysCount = await activeKeys.count()
+      expect(activeKeysCount).toBeGreaterThan(0)
       
       // Pause and verify animation stops
       await page.click('[data-testid="pause-button"]')
@@ -263,7 +264,8 @@ test.describe('Piano Player Interface', () => {
     await test.step('Test audio loading and caching', async () => {
       // Check audio preloading
       const audioElements = page.locator('audio')
-      await expect(audioElements).toHaveCount.toBeGreaterThan(0)
+      const audioElementsCount = await audioElements.count()
+      expect(audioElementsCount).toBeGreaterThan(0)
       
       // Test audio caching by playing same note multiple times
       await page.click('[data-testid="piano-key-c4"]')
