@@ -1,7 +1,6 @@
 # P0-D — Authentication and Quality Gates
 
-Status: `BLOCKED`
-Blocked by: DOC-1 default-branch migration
+Status: `READY`
 
 ## Objective
 
@@ -9,13 +8,15 @@ Blocked by: DOC-1 default-branch migration
 
 ## Work stages
 
-1. `User.id` 생성 정책과 OAuth account 연결을 테스트로 고정한다.
-2. 신규·기존 사용자 로그인 실패 경로를 수정한다.
-3. Jest environment, TextEncoder, Testing Library 의존성 문제를 해결한다.
-4. Next.js 15 route params와 주요 컴포넌트 계약 오류를 해결한다.
-5. lint 오류를 범위별로 제거한다.
-6. `ignoreBuildErrors`와 `ignoreDuringBuilds`를 제거한다.
-7. `main` 대상 GitHub Actions 실행, branch protection과 필수 체크 연결을 검증한다.
+1. `package.json`과 `package-lock.json`을 동기화해 `npm ci`를 복구한다.
+2. Actions와 Vercel의 Node 버전을 패키지 엔진 요구와 일치시킨다.
+3. `User.id` 생성 정책과 OAuth account 연결을 테스트로 고정한다.
+4. 신규·기존 사용자 로그인 실패 경로를 수정한다.
+5. Jest environment, TextEncoder, Testing Library 의존성 문제를 해결한다.
+6. Next.js 15 route params와 주요 컴포넌트 계약 오류를 해결한다.
+7. lint 오류를 범위별로 제거한다.
+8. `ignoreBuildErrors`와 `ignoreDuringBuilds`를 제거한다.
+9. `main` 대상 GitHub Actions 실행, branch protection과 필수 체크 연결을 검증한다.
 
 ## Completion criteria
 

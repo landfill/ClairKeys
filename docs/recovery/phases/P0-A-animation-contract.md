@@ -1,7 +1,6 @@
 # P0-A — Animation Contract and Golden Fixtures
 
-Status: `BLOCKED`
-Blocked by: DOC-1 default-branch migration
+Status: `READY`
 
 ## Objective
 

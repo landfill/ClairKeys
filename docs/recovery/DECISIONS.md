@@ -41,7 +41,7 @@
 ## D-006: 기본 브랜치를 `main`으로 통일한다
 
 - Date: 2026-07-19
-- Status: Accepted; effective when DOC-1 completes
+- Status: Accepted; effective 2026-07-19
 - Decision: GitHub 기본 브랜치, 로컬 추적 브랜치, 신규 PR base와 운영 문서는 `main`을 사용한다.
 - Reason: GitHub Actions가 이미 `main/develop`을 대상으로 하므로 실제 기본 브랜치 `master`와의 불일치를 제거한다.
 - Constraint: PR #1의 기준선·리뷰 로그에 기록된 `master`는 역사적 사실이므로 소급 수정하지 않는다.
