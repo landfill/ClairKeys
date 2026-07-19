@@ -11,7 +11,7 @@ read AGENTS.md
 → read docs/recovery/BASELINE.md
 → read docs/recovery/LORE_COMMIT_PROTOCOL.md
 → inspect git branch/status
-→ create codex/<phase>-<topic> branch from master
+→ create codex/<phase>-<topic> branch from main
 → write or update phase plan
 ```
 
@@ -53,7 +53,7 @@ Not-tested: Full Audiveris output corpus
 
 ## 4. PR 생성
 
-- PR base는 실제 기본 브랜치인 `master`를 사용한다.
+- PR base는 실제 기본 브랜치인 `main`을 사용한다.
 - 초안 PR로 시작하고 검증 결과가 준비되면 ready 상태로 전환한다.
 - PR 본문에는 목적, 범위, 제외 범위, 위험, 검증, baseline 차이, rollback 방법을 포함한다.
 - PR 번호가 생기면 즉시 `docs/recovery/reviews/PR-<number>.md`를 생성한다.
@@ -90,8 +90,8 @@ fetch PR checks and unresolved comments
 
 - 코드 에이전트는 사용자의 명시적 지시 없이 병합하지 않는다.
 - 병합 후에만 단계 상태를 `DONE`으로 바꾼다.
-- 병합 직후 다음 단계는 최신 `master`에서 새 브랜치를 만든다.
+- 병합 직후 다음 단계는 최신 `main`에서 새 브랜치를 만든다.
 
-## Current repository caveat
+## Default branch invariant
 
-현재 GitHub Actions는 대부분 `main/develop`을 대상으로 하지만 실제 기본 브랜치는 `master`다. P0-D에서 정렬하기 전까지 PR 생성 시 workflow가 실행되지 않을 수 있으므로 수동 검증 결과를 반드시 남긴다.
+DOC-1 완료 후 GitHub default branch, `origin/HEAD`, 로컬 추적 브랜치와 신규 PR base는 모두 `main`이어야 한다. 과거 clone은 GitHub 안내에 따라 로컬 브랜치 이름과 upstream을 갱신하고, Actions·배포·ruleset에서 남은 `master` 참조가 없는지 확인한다.

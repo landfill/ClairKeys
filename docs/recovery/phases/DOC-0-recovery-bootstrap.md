@@ -1,8 +1,9 @@
 # DOC-0 — Recovery Documentation Bootstrap
 
-Status: `IN_REVIEW`
+Status: `DONE`
 Branch: `codex/clairkeys-recovery-roadmap`
 PR: https://github.com/landfill/ClairKeys/pull/1
+Completed by merge commit: `6174ed088edc5d488c1bc9e16078bbee5081db97`
 
 ## Objective
 
