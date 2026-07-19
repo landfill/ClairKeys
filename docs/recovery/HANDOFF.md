@@ -7,9 +7,9 @@ Last updated: 2026-07-19
 - Program status: `READY`
 - Current phase: `DOC-1` — 완료
 - Current phase document: `docs/recovery/phases/DOC-1-default-branch-main-migration.md`
-- Working branch: `codex/doc1-main-migration-closeout`
+- Working branch: 없음; 다음 단계는 `main`에서 새 전용 브랜치 생성
 - Base branch: `main`
-- Pull request: DOC-1 구현 PR https://github.com/landfill/ClairKeys/pull/2; 마감 PR은 이 브랜치에서 생성
+- Pull request: DOC-1 구현 PR https://github.com/landfill/ClairKeys/pull/2; 마감 PR https://github.com/landfill/ClairKeys/pull/3
 - Current objective: DOC-1 마감 증거를 병합하고 P0-A/P0-D 착수 가능 상태를 인계
 
 ## Next action
