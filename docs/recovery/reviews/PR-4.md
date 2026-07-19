@@ -84,3 +84,12 @@ Last checked: 2026-07-19 KST
 - Added least-privilege permissions to the security job and removed explicit `any` from the affected test mocks and audio service types.
 - PASS: focused ESLint has zero findings; focused Jest has 65/65 passing tests.
 - PASS: hosted Security Audit and Security Scan in runs `29684986127` and `29684986103`.
+
+### Iteration 8
+
+- Hosted lint/type stopped before TypeScript because ESLint 9 no longer provides the requested `github` formatter.
+- Hosted build failed while collecting route data because Supabase secrets were validated at module import.
+- Replaced eager privileged client creation with a cached runtime getter and removed the unsupported formatter.
+- PASS: file-storage focused suite, 13/13 tests.
+- PASS: environment-variable-free production build compiles and generates all 41 static pages.
+- REMAINS: Next build still reports the pre-existing type/lint bypass configuration.

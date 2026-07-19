@@ -1,5 +1,4 @@
-import { supabaseServer } from '@/lib/supabase/server'
-import { supabase } from '@/lib/supabase/client'
+import { getSupabaseServer } from '@/lib/supabase/server'
 
 export interface UploadResult {
   success: boolean
@@ -87,7 +86,7 @@ export class FileStorageService {
       })
 
       console.log('⬆️ Attempting upload to Supabase...')
-      const { data: uploadData, error } = await supabaseServer.storage
+      const { data: uploadData, error } = await getSupabaseServer().storage
         .from(this.ANIMATION_BUCKET)
         .upload(filePath, buffer, {
           contentType: 'application/json',
@@ -108,7 +107,7 @@ export class FileStorageService {
       console.log('✅ Upload successful! Upload data:', uploadData)
 
       // Get public URL if public
-      const { data: { publicUrl } } = supabaseServer.storage
+      const { data: { publicUrl } } = getSupabaseServer().storage
         .from(this.ANIMATION_BUCKET)
         .getPublicUrl(filePath)
 
@@ -117,7 +116,7 @@ export class FileStorageService {
       // Verify file exists by checking if we can access it
       try {
         console.log('🔍 Verifying file upload...')
-        const { data: files, error: listError } = await supabaseServer.storage
+        const { data: files, error: listError } = await getSupabaseServer().storage
           .from(this.ANIMATION_BUCKET)
           .list(metadata.userId)
 
@@ -189,7 +188,7 @@ export class FileStorageService {
       })
 
       // Update the file in place
-      const { data: updateData, error } = await supabaseServer.storage
+      const { data: updateData, error } = await getSupabaseServer().storage
         .from(this.ANIMATION_BUCKET)
         .update(storagePath, buffer, {
           cacheControl: '3600',
@@ -249,7 +248,7 @@ export class FileStorageService {
       const fileName = this.generateFileName(metadata.name, metadata.userId, 'sheet')
       const filePath = `${metadata.userId}/${fileName}`
 
-      const { data: uploadData, error } = await supabaseServer.storage
+      const { data: uploadData, error } = await getSupabaseServer().storage
         .from(this.SHEET_MUSIC_BUCKET)
         .upload(filePath, fileBuffer, {
           contentType: metadata.type,
@@ -293,7 +292,7 @@ export class FileStorageService {
       const fileName = this.generateFileName(metadata.name, metadata.userId, 'temp')
       const filePath = `${metadata.userId}/${Date.now()}_${fileName}`
 
-      const { data: uploadData, error } = await supabaseServer.storage
+      const { data: uploadData, error } = await getSupabaseServer().storage
         .from(this.TEMP_BUCKET)
         .upload(filePath, fileBuffer, {
           contentType: metadata.type,
@@ -328,7 +327,7 @@ export class FileStorageService {
    */
   async downloadFile(bucket: string, filePath: string): Promise<Buffer | null> {
     try {
-      const { data, error } = await supabaseServer.storage
+      const { data, error } = await getSupabaseServer().storage
         .from(bucket)
         .download(filePath)
 
@@ -350,7 +349,7 @@ export class FileStorageService {
    */
   async deleteFile(bucket: string, filePath: string): Promise<boolean> {
     try {
-      const { error } = await supabaseServer.storage
+      const { error } = await getSupabaseServer().storage
         .from(bucket)
         .remove([filePath])
 
@@ -375,7 +374,7 @@ export class FileStorageService {
     failed: string[]
   }> {
     try {
-      const { data, error } = await supabaseServer.storage
+      const { data, error } = await getSupabaseServer().storage
         .from(bucket)
         .remove(filePaths)
 
@@ -402,7 +401,7 @@ export class FileStorageService {
    * Get public URL for a file
    */
   getPublicUrl(bucket: string, filePath: string): string {
-    const { data } = supabaseServer.storage
+    const { data } = getSupabaseServer().storage
       .from(bucket)
       .getPublicUrl(filePath)
     
@@ -414,7 +413,7 @@ export class FileStorageService {
    */
   async getSignedUrl(bucket: string, filePath: string, expiresIn: number = 3600): Promise<string> {
     try {
-      const { data, error } = await supabaseServer.storage
+      const { data, error } = await getSupabaseServer().storage
         .from(bucket)
         .createSignedUrl(filePath, expiresIn)
 
@@ -436,7 +435,7 @@ export class FileStorageService {
    */
   async listFiles(bucket: string, path: string = ''): Promise<any[]> {
     try {
-      const { data, error } = await supabaseServer.storage
+      const { data, error } = await getSupabaseServer().storage
         .from(bucket)
         .list(path)
 
@@ -458,7 +457,7 @@ export class FileStorageService {
    */
   async getFileInfo(bucket: string, filePath: string): Promise<any | null> {
     try {
-      const { data, error } = await supabaseServer.storage
+      const { data, error } = await getSupabaseServer().storage
         .from(bucket)
         .list('', {
           limit: 1,
@@ -534,7 +533,7 @@ export class FileStorageService {
       ]
 
       for (const bucket of buckets) {
-        const { error } = await supabaseServer.storage.createBucket(bucket.name, {
+        const { error } = await getSupabaseServer().storage.createBucket(bucket.name, {
           public: bucket.public,
           allowedMimeTypes: bucket.name === this.ANIMATION_BUCKET ? 
             ['application/json'] : 

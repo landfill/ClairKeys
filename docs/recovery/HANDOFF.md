@@ -23,10 +23,11 @@ Last updated: 2026-07-19 KST
 - 오디오 활성화, 코드 재생/해제, 곡 종료 시각 보존, practice 모드 계약을 복구했다.
 - `Security Audit` 워크플로 구성 오류를 복구했다. 35건/고위험 9건을 4건/고위험 0건으로 줄였고, 호스팅 Security Audit과 Security Scan이 통과했다.
 - 전체 TypeScript 검사는 현재 기준선 규모 때문에 제한 시간 내 완료되지 않았다. 변경 파일의 집중 Jest 검증은 통과했다.
+- Supabase 비밀값 없는 프로덕션 빌드는 지연 클라이언트 생성 수정 후 통과했다. 단, Next 설정의 타입·lint 우회는 아직 제거되지 않았다.
 
 ## Next actions
 
-1. 현재 재생·오디오 회귀 수정과 CI 보안 워크플로 수정을 커밋하고 PR #4에 푸시한다.
+1. Supabase import 안전성과 ESLint formatter 수정 커밋을 PR #4에 푸시한다.
 2. PR #4의 CodeRabbit/리뷰어 피드백과 새 CI 결과를 확인한다.
 3. Unit Tests의 다음 실패 묶음을 고립해 수정한다.
 4. TypeScript 오류를 route params, Prisma, 컴포넌트 계약 순으로 줄인다.
