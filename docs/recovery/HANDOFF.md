@@ -11,12 +11,14 @@ Last updated: 2026-07-19
 - Base branch: `main`
 - Pull request: DOC-1 구현 PR https://github.com/landfill/ClairKeys/pull/2; 마감 PR https://github.com/landfill/ClairKeys/pull/3
 - Current objective: DOC-1 마감 증거를 병합하고 P0-A/P0-D 착수 가능 상태를 인계
+- Transition gate: PR #3이 `MERGED`로 확인되기 전에는 P0-A와 P0-D를 `BLOCKED`로 취급
 
 ## Next action
 
-1. CI 자체를 먼저 복구하려면 `main`에서 `codex/p0-quality-gates`를 만들고 P0-D를 시작한다.
-2. 제품 핵심 정확도를 병렬로 진행하려면 `main`에서 `codex/p0-animation-contract`를 만들고 P0-A를 시작한다.
-3. 각 단계는 전용 phase 문서의 완료 조건과 `WORKFLOW.md`를 따라 별도 PR로 진행한다.
+1. PR #3이 `MERGED`이고 로컬 `main`이 최신 `origin/main`과 일치하는지 먼저 확인한다.
+2. CI 자체를 먼저 복구하려면 `main`에서 `codex/p0-quality-gates`를 만들고 P0-D를 시작한다.
+3. 제품 핵심 정확도를 병렬로 진행하려면 `main`에서 `codex/p0-animation-contract`를 만들고 P0-A를 시작한다.
+4. 각 단계는 전용 phase 문서의 완료 조건과 `WORKFLOW.md`를 따라 별도 PR로 진행한다.
 
 ## Known blockers
 

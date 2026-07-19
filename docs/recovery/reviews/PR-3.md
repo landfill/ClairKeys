@@ -29,6 +29,7 @@ Last checked: 2026-07-19 16:51 KST
 | R5 | Gemini | require an explicit root Node engine declaration in P0-D | accept | FIXED | P0-D stage 2 now requires `package.json#engines.node` |
 | R6 | Gemini | make the lock mismatch concrete for the handoff | accept with correction | FIXED | documented the confirmed root lock metadata omission without claiming the module tree is absent |
 | R7 | Codex | DONE must not unblock dependents before the closeout PR merges | accept | FIXED | documented atomic merge effectiveness in DOC-1 and WORKFLOW |
+| R8 | Codex | HANDOFF next actions still appeared executable before merge | accept | FIXED | added an explicit MERGED gate before either dependent branch may start |
 
 ## Iteration log
 
@@ -39,7 +40,7 @@ Last checked: 2026-07-19 16:51 KST
 - Baseline failures: PR Checks and Tests stopped at `npm ci`; Node engine warnings confirm the runtime mismatch.
 - Decision: do not mix dependency/runtime repair into a documentation-only DOC-1 closeout.
 - Validation: recovery Markdown links, state markers, heading structure, staged scope and whitespace checks passed.
-- Remaining actionable DOC-1 items: none.
+- Remaining actionable DOC-1 items: completed in iteration 2.
 - Follow-up owner: P0-D.
 
 ### Iteration 2
@@ -48,4 +49,11 @@ Last checked: 2026-07-19 16:51 KST
 - Changes made: restored heading spacing; required a root Node engine declaration; identified the root lock metadata omission; made DOC-1 `DONE` effective only at PR #3 merge.
 - Decision: the closeout PR may carry the terminal state, but dependent branches remain blocked until that state lands on `main`.
 - Validation: exact lockfile evidence, Markdown heading structure, state-transition wording, staged scope and whitespace checks.
+- Remaining actionable DOC-1 items: completed in iteration 3.
+
+### Iteration 3
+
+- Feedback fetched: one Codex comment that HANDOFF still appeared to authorize dependent work before merge.
+- Changes made: made PR #3 `MERGED` verification the first next action and explicitly retained P0-A/P0-D blocking until then.
+- Validation: handoff gate and merge-time workflow semantics agree.
 - Remaining actionable DOC-1 items: none.
