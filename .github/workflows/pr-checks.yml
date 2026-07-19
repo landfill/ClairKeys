@@ -286,18 +286,26 @@ jobs:
           SUPABASE_URL: https://test.supabase.co
           SUPABASE_ANON_KEY: test-key
 
+      - name: Install matching Chrome and ChromeDriver
+        run: npx browser-driver-manager install chrome
+
       - name: Run accessibility tests
         run: |
           # Start the application in background
           npm start &
           APP_PID=$!
-          
+
           # Wait for app to start
           sleep 10
-          
+
+          # Use the Chrome/ChromeDriver pair installed by browser-driver-manager
+          source ~/.browser-driver-manager/.env
+
           # Run basic accessibility checks with axe-core
-          npx @axe-core/cli http://localhost:3000 --exit
-          
+          npx @axe-core/cli http://localhost:3000 --exit \
+            --chrome-path "$CHROME_TEST_PATH" \
+            --chromedriver-path "$CHROMEDRIVER_TEST_PATH"
+
           # Kill the app
           kill $APP_PID
 
