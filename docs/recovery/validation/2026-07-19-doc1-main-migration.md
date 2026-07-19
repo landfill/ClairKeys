@@ -39,7 +39,18 @@ This migration changes branch identity and recovery documentation only. It does 
 - PASS: GitHub Actions workflow branch filters contain no `master` target.
 - PASS: migration staged scope excludes all existing user-owned changes.
 - NOT RUN: application tests, typecheck and lint; this documentation/branch-identity migration changes no runtime code and preserves existing failures.
+
 ## Transition exception assertion
 
 - PASS: DOC-1 explicitly branches from and targets `master` before `main` exists.
 - PASS: all post-DOC-1 branch creation and PR-base instructions use `main`.
+
+## Post-migration result
+
+- PASS: GitHub default branch is `main`.
+- PASS: remote symbolic HEAD is `refs/heads/main`.
+- PASS: local `main` tracks `origin/main` at `643ce71fc37edcd1f48ddf7c376b37736578b6c8`.
+- PASS: no active local or remote `master` branch ref remains.
+- PASS: `main` triggered Tests run [29678521399](https://github.com/landfill/ClairKeys/actions/runs/29678521399) and Deploy run [29678521408](https://github.com/landfill/ClairKeys/actions/runs/29678521408).
+- EXPECTED BASELINE FAILURE: both workflows stop at dependency installation because `package.json` and `package-lock.json` are out of sync; Actions also uses Node 18 while several packages require Node 20 or newer. P0-D owns both gaps.
+- PASS: all pre-existing user-owned working tree changes remain present and excluded from DOC-1 commits.

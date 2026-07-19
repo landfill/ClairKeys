@@ -4,28 +4,28 @@ Last updated: 2026-07-19
 
 ## Current state
 
-- Program status: `IN_PROGRESS`
-- Current phase: `DOC-1` — 기본 브랜치 `master`에서 `main`으로 전환
+- Program status: `READY`
+- Current phase: `DOC-1` — 완료
 - Current phase document: `docs/recovery/phases/DOC-1-default-branch-main-migration.md`
-- Working branch: `codex/default-branch-main-migration`
-- Base branch: `master` (DOC-1 완료 시 `main`으로 rename)
-- Pull request: https://github.com/landfill/ClairKeys/pull/2
-- Current objective: 운영 문서와 검증 계약을 `main` 기준으로 준비한 뒤 PR 병합과 GitHub branch rename을 원자적으로 완료
+- Working branch: 없음; 다음 단계는 `main`에서 새 전용 브랜치 생성
+- Base branch: `main`
+- Pull request: DOC-1 구현 PR https://github.com/landfill/ClairKeys/pull/2; 마감 PR https://github.com/landfill/ClairKeys/pull/3
+- Current objective: DOC-1 마감 증거를 병합하고 P0-A/P0-D 착수 가능 상태를 인계
+- Transition gate: PR #3이 `MERGED`로 확인되기 전에는 P0-A와 P0-D를 `BLOCKED`로 취급
 
 ## Next action
 
-1. migration 문서 변경을 검증·커밋하고 `master` 대상 PR을 생성한다.
-2. PR 리뷰와 체크를 해결한 뒤 사용자 승인 범위 안에서 병합한다.
-3. GitHub 기본 브랜치를 `master`에서 `main`으로 rename한다.
-4. 로컬 브랜치와 `origin/HEAD` 추적을 `main`으로 갱신하고 `master` 잔여 ref를 확인한다.
-5. 새 `main`에서 P0-A 또는 P0-D 전용 브랜치를 시작하며 ROADMAP 상태를 `READY`로 갱신한다.
+1. PR #3이 `MERGED`이고 로컬 `main`이 최신 `origin/main`과 일치하는지 먼저 확인한다.
+2. CI 자체를 먼저 복구하려면 `main`에서 `codex/p0-quality-gates`를 만들고 P0-D를 시작한다.
+3. 제품 핵심 정확도를 병렬로 진행하려면 `main`에서 `codex/p0-animation-contract`를 만들고 P0-A를 시작한다.
+4. 각 단계는 전용 phase 문서의 완료 조건과 `WORKFLOW.md`를 따라 별도 PR로 진행한다.
 
 ## Known blockers
 
-- Merge gate: migration PR의 actionable review와 필수 체크가 모두 완료되어야 한다.
-- Rename gate: GitHub 기본 브랜치와 원격 HEAD가 `main`으로 확인되기 전에는 DOC-1을 `DONE`으로 취급하지 않는다.
-- Application quality gaps: TypeScript, ESLint, Jest 기준선 실패는 P0-D가 소유하며 이번 branch rename 작업의 성공으로 간주하지 않는다.
-- Required authority: 기본 브랜치 rename 및 migration PR 병합 지시 수신 완료
+- DOC-1 blocker: 없음. GitHub 기본 브랜치, 원격 HEAD와 로컬 추적 브랜치가 모두 `main`이다.
+- P0-D immediate blocker: `npm ci`가 `package.json`/`package-lock.json` 불일치로 실패한다. 예를 들어 루트 lock metadata에는 `package.json`의 `@napi-rs/canvas`가 누락되어 있다.
+- P0-D compatibility blocker: Actions의 Node 18과 일부 패키지의 Node 20 이상 요구가 불일치한다.
+- Application quality gaps: TypeScript, ESLint, Jest 기존 기준선 실패도 P0-D가 소유한다.
 
 ## Existing user-owned working tree changes
 
