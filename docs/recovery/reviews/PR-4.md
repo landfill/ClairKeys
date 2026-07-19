@@ -93,3 +93,12 @@ Last checked: 2026-07-19 KST
 - PASS: file-storage focused suite, 13/13 tests.
 - PASS: environment-variable-free production build compiles and generates all 41 static pages.
 - REMAINS: Next build still reports the pre-existing type/lint bypass configuration.
+
+### Iteration 9
+
+- Collected the full local TypeScript baseline after the formatter gate was removed.
+- Updated four remaining dynamic routes to Next.js 15 Promise params.
+- Repaired required OAuth/seed database user IDs and provider-account upsert behavior.
+- Replaced Tone private voice mutation with the public typed `set()` API.
+- Reduced TypeScript errors from 195 to 188 with zero changed-file type errors.
+- PASS: changed-file ESLint, 65 playback tests and production build.

@@ -4,6 +4,7 @@ import { PDFParserService, PianoAnimationData } from '../src/services/pdfParser'
 import { convertMusicDataToPianoAnimation, validateMusicData } from '../src/services/musicDataConverter'
 import * as fs from 'fs'
 import * as path from 'path'
+import { randomUUID } from 'node:crypto'
 
 const prisma = new PrismaClient()
 const pdfParser = new PDFParserService()
@@ -16,6 +17,7 @@ async function main() {
     where: { email: 'demo@clairkeys.com' },
     update: {},
     create: {
+      id: randomUUID(),
       email: 'demo@clairkeys.com',
       name: 'Demo User',
       image: null,
@@ -87,7 +89,7 @@ async function main() {
         const sampleFileName = `${sheetMusic.title.toLowerCase().replace(/\s+/g, '-')}.json`
         const sampleFilePath = path.join(process.cwd(), 'sample-data', sampleFileName)
         
-        let animationData: PianoAnimationData
+        let animationData: PianoAnimationData | null = null
         
         if (fs.existsSync(sampleFilePath)) {
           // Load real sample data
@@ -119,7 +121,8 @@ async function main() {
           animationData = await pdfParser.parsePDF(demoBuffer, {
             title: sheetMusic.title,
             composer: sheetMusic.composer,
-            originalFileName: `${sheetMusic.title.toLowerCase().replace(/\s+/g, '-')}.pdf`
+            originalFileName: `${sheetMusic.title.toLowerCase().replace(/\s+/g, '-')}.pdf`,
+            fileSize: demoBuffer.length
           })
         }
 
@@ -136,7 +139,7 @@ async function main() {
           }
         )
 
-        if (uploadResult.success) {
+        if (uploadResult.success && uploadResult.url) {
           // Create sheet music entry with uploaded animation data URL
           await prisma.sheetMusic.create({
             data: {

@@ -1,12 +1,10 @@
 import { NextAuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import GitHubProvider from 'next-auth/providers/github'
-import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from '@/lib/prisma'
+import { randomUUID } from 'node:crypto'
 
 export const authOptions: NextAuthOptions = {
-  // 임시로 PrismaAdapter 비활성화하여 JWT 기반 인증 사용
-  // adapter: PrismaAdapter(prisma),
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -25,50 +23,61 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    signIn: async ({ user, account, profile }) => {
+    signIn: async ({ user, account }) => {
       try {
         if (account && user.email) {
-          // Find existing user by email
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email }
+          const dbUser = await prisma.user.upsert({
+            where: { email: user.email },
+            update: {
+              name: user.name || undefined,
+              image: user.image || undefined
+            },
+            create: {
+              id: randomUUID(),
+              name: user.name || null,
+              email: user.email,
+              image: user.image || null,
+              emailVerified: new Date()
+            }
           })
 
-          if (existingUser) {
-            // Store the actual database user ID in the token
-            account.databaseUserId = existingUser.id
-          } else {
-            // Create new user if doesn't exist
-            const newUser = await prisma.user.create({
-              data: {
-                name: user.name || null,
-                email: user.email,
-                image: user.image || null,
-                emailVerified: new Date(),
-              }
-            })
-            account.databaseUserId = newUser.id
-            
-            // Create associated account record
-            await prisma.account.create({
-              data: {
-                userId: newUser.id,
-                type: account.type,
+          await prisma.account.upsert({
+            where: {
+              provider_providerAccountId: {
                 provider: account.provider,
-                providerAccountId: account.providerAccountId,
-                access_token: account.access_token,
-                expires_at: account.expires_at,
-                token_type: account.token_type,
-                scope: account.scope,
-                id_token: account.id_token,
+                providerAccountId: account.providerAccountId
               }
-            })
-          }
+            },
+            update: {
+              userId: dbUser.id,
+              refresh_token: account.refresh_token,
+              access_token: account.access_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              session_state: account.session_state
+            },
+            create: {
+              userId: dbUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              refresh_token: account.refresh_token,
+              access_token: account.access_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              session_state: account.session_state
+            }
+          })
         }
         return true
       } catch (error) {
         console.error('Sign in callback error:', error)
-        // Allow sign in even if DB operation fails
-        return true
+        // Reject sign-in when the database identity cannot be established.
+        return false
       }
     },
     session: async ({ session, token }) => {
@@ -87,7 +96,7 @@ export const authOptions: NextAuthOptions = {
         }
       }
       
-      if (session.user && token.databaseUserId) {
+      if (session.user && typeof token.databaseUserId === 'string') {
         session.user.id = token.databaseUserId
       } else if (session.user && token.sub) {
         session.user.id = token.sub
@@ -110,11 +119,8 @@ export const authOptions: NextAuthOptions = {
         }
       }
       
-      // Store database user ID in token
-      if (account && account.databaseUserId) {
-        token.databaseUserId = account.databaseUserId
-        token.sub = account.databaseUserId
-      } else if (user) {
+      // The database lookup above is authoritative for OAuth users.
+      if (!account && user && typeof token.databaseUserId !== 'string') {
         token.sub = user.id
       }
       // OAuth 계정 정보를 토큰에 저장
@@ -129,5 +135,5 @@ export const authOptions: NextAuthOptions = {
     signIn: '/auth/signin',
     error: '/auth/error',
   },
-  debug: true, // Temporarily enable debug for production
+  debug: process.env.NODE_ENV === 'development'
 }

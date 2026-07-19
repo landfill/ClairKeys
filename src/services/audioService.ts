@@ -190,20 +190,19 @@ export class AudioService {
         this.reverb.wet.value = newSettings.reverb
       }
 
-      // Update envelope settings
-      if (this.synth && this.synth.voices) {
-        this.synth.voices.forEach(voice => {
-          if (newSettings.attack !== undefined) {
-            voice.envelope.attack = newSettings.attack
-          }
-          if (newSettings.decay !== undefined) {
-            voice.envelope.decay = newSettings.decay
-          }
-          if (newSettings.sustain !== undefined) {
-            voice.envelope.sustain = newSettings.sustain
-          }
-          if (newSettings.release !== undefined) {
-            voice.envelope.release = newSettings.release
+      // Apply the envelope to the dummy voice and every allocated voice.
+      if (this.synth && (
+        newSettings.attack !== undefined ||
+        newSettings.decay !== undefined ||
+        newSettings.sustain !== undefined ||
+        newSettings.release !== undefined
+      )) {
+        this.synth.set({
+          envelope: {
+            attack: this.settings.attack,
+            decay: this.settings.decay,
+            sustain: this.settings.sustain,
+            release: this.settings.release
           }
         })
       }

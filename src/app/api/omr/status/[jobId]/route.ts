@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
 
 const OMR_SERVICE_URL = process.env.OMR_SERVICE_URL || 'https://clairkeys-omr.fly.dev'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
     // Check authentication
@@ -22,7 +23,7 @@ export async function GET(
     // Use OAuth ID as user identifier
     const userId = session.user.id || session.user.email || 'anonymous'
 
-    const { jobId } = params
+    const { jobId } = await params
 
     if (!jobId) {
       return NextResponse.json(
@@ -66,7 +67,7 @@ export async function GET(
     const omrStatus = await statusResponse.json()
 
     // Update database based on OMR status
-    let updateData: any = {
+    const updateData: Prisma.SheetMusicUpdateInput = {
       updatedAt: new Date()
     }
 
@@ -134,7 +135,7 @@ export async function GET(
     return NextResponse.json(
       { 
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined
       },
       { status: 500 }
     )
