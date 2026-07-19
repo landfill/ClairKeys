@@ -9,7 +9,7 @@ Last updated: 2026-07-19
 - Current phase document: `docs/recovery/phases/P0-D-quality-gates.md`
 - Working branch: `codex/p0-quality-gates`
 - Base branch: `main`
-- Pull request: 아직 생성 전
+- Pull request: https://github.com/landfill/ClairKeys/pull/4 (draft)
 - Current objective: 설치 기준선 복구를 커밋한 뒤 Jest·TypeScript·ESLint 실패를 작은 수정 묶음으로 해결
 
 ## Next action

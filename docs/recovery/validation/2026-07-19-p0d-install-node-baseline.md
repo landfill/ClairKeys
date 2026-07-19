@@ -25,3 +25,9 @@
 - npm audit reports 35 vulnerabilities: 1 low, 25 moderate and 9 high. No automatic force upgrade was applied.
 - The machine has another lockfile at `C:\Users\surro\package-lock.json`; Next warns about workspace-root inference. This repository change does not delete user files outside the project.
 - Application quality checks remain red and must not be hidden by disabling rules or build checks.
+## Jest environment iteration
+
+- Guarded browser-only `navigator.serviceWorker` and `window.matchMedia` mocks in `jest.setup.js`.
+- PASS: the two `@jest-environment node` route suites no longer fail on `window is not defined`.
+- NEXT FAILURE: both suites now reach application imports and require a generated Prisma client.
+- LOCAL LIMITATION: Prisma Windows engine download timed out; GitHub Actions runs `prisma generate` before tests and will provide authoritative verification.
