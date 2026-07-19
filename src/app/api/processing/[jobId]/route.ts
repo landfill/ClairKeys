@@ -6,7 +6,7 @@ import backgroundProcessor from '@/services/backgroundProcessor'
 // Get specific job status
 export async function GET(
   request: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -53,7 +53,7 @@ export async function GET(
 // Cancel or retry job
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)

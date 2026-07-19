@@ -4,9 +4,10 @@
  */
 
 import { noteToFrequency } from '@/utils/piano'
+import type { PolySynth, Reverb, Volume } from 'tone'
 
 // Tone.js를 동적으로 import하여 서버 사이드 렌더링 문제 방지
-let Tone: any = null
+let Tone: typeof import('tone') | null = null
 
 export interface AudioSettings {
   volume: number // 0-1
@@ -19,9 +20,9 @@ export interface AudioSettings {
 }
 
 export class AudioService {
-  private synth: any = null
-  private reverb: any = null
-  private volume: any = null
+  private synth: PolySynth | null = null
+  private reverb: Reverb | null = null
+  private volume: Volume | null = null
   private isInitialized = false
   private settings: AudioSettings = {
     volume: 0.7,
@@ -132,6 +133,30 @@ export class AudioService {
   }
 
   /**
+   * Enable or disable playback without discarding the configured settings.
+   */
+  setEnabled(enabled: boolean): void {
+    this.settings.enabled = enabled
+    if (!enabled) {
+      this.stopAllNotes()
+    }
+  }
+
+  /**
+   * Play several notes through the same note-level safeguards.
+   */
+  playChord(notes: string[], velocity: number = 0.8, duration?: number): void {
+    notes.forEach(note => this.playNote(note, velocity, duration))
+  }
+
+  /**
+   * Release several notes.
+   */
+  releaseChord(notes: string[]): void {
+    notes.forEach(note => this.releaseNote(note))
+  }
+
+  /**
    * Stop all currently playing notes
    */
   stopAllNotes(): void {
@@ -165,20 +190,19 @@ export class AudioService {
         this.reverb.wet.value = newSettings.reverb
       }
 
-      // Update envelope settings
-      if (this.synth && this.synth.voices) {
-        this.synth.voices.forEach((voice: any) => {
-          if (newSettings.attack !== undefined) {
-            voice.envelope.attack = newSettings.attack
-          }
-          if (newSettings.decay !== undefined) {
-            voice.envelope.decay = newSettings.decay
-          }
-          if (newSettings.sustain !== undefined) {
-            voice.envelope.sustain = newSettings.sustain
-          }
-          if (newSettings.release !== undefined) {
-            voice.envelope.release = newSettings.release
+      // Apply the envelope to the dummy voice and every allocated voice.
+      if (this.synth && (
+        newSettings.attack !== undefined ||
+        newSettings.decay !== undefined ||
+        newSettings.sustain !== undefined ||
+        newSettings.release !== undefined
+      )) {
+        this.synth.set({
+          envelope: {
+            attack: this.settings.attack,
+            decay: this.settings.decay,
+            sustain: this.settings.sustain,
+            release: this.settings.release
           }
         })
       }
@@ -254,7 +278,8 @@ export function getAudioService(): AudioService {
 }
 
 // Convenience function for initializing audio
-export async function initializeAudio(): Promise<void> {
+export async function initializeAudio(): Promise<AudioService> {
   const service = getAudioService()
   await service.initialize()
+  return service
 }

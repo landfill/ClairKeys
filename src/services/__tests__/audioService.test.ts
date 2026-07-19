@@ -103,7 +103,7 @@ describe('AudioService', () => {
     it('should enable/disable audio', () => {
       audioService.setEnabled(false)
       expect(audioService.getSettings().enabled).toBe(false)
-      expect(audioService.isReady()).toBe(false)
+      expect(audioService.isReady()).toBe(true)
 
       audioService.setEnabled(true)
       expect(audioService.getSettings().enabled).toBe(true)

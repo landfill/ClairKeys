@@ -6,7 +6,7 @@ import backgroundProcessor from '@/services/backgroundProcessor'
 // Mark specific notification as read
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { notificationId: string } }
+  { params }: { params: Promise<{ notificationId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)

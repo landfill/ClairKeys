@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useCategories, useCategory } from '../useCategories'
 import { CategoryService } from '@/services/categoryService'
+import { cacheService } from '@/lib/cache'
 import { Category, CategoryWithSheetMusic } from '@/types/category'
 
 // Mock the CategoryService
@@ -8,8 +9,10 @@ jest.mock('@/services/categoryService')
 const mockCategoryService = CategoryService as jest.Mocked<typeof CategoryService>
 
 describe('useCategories', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks()
+    // useCategories caches results in the shared memory cache — reset between tests
+    await cacheService.clear('memory')
   })
 
   it('should fetch categories on mount', async () => {
@@ -61,7 +64,9 @@ describe('useCategories', () => {
       createdAt: new Date('2024-01-01'),
     }
 
-    mockCategoryService.getCategories.mockResolvedValue(mockCategories)
+    mockCategoryService.getCategories
+      .mockResolvedValueOnce(mockCategories)
+      .mockResolvedValue([newCategory])
     mockCategoryService.createCategory.mockResolvedValue(newCategory)
 
     const { result } = renderHook(() => useCategories())
@@ -75,7 +80,9 @@ describe('useCategories', () => {
       expect(created).toEqual(newCategory)
     })
 
-    expect(result.current.categories).toContain(newCategory)
+    await waitFor(() => {
+      expect(result.current.categories).toContainEqual(newCategory)
+    })
     expect(mockCategoryService.createCategory).toHaveBeenCalledWith({ name: 'Jazz' })
   })
 
@@ -94,7 +101,8 @@ describe('useCategories', () => {
       await expect(result.current.createCategory({ name: 'Jazz' })).rejects.toThrow(errorMessage)
     })
 
-    expect(result.current.error).toBe(errorMessage)
+    // Mutation errors are thrown to the caller; the hook's error state only tracks fetches
+    expect(result.current.error).toBeNull()
   })
 
   it('should update category successfully', async () => {
@@ -109,7 +117,9 @@ describe('useCategories', () => {
       name: 'Classical Music',
     }
 
-    mockCategoryService.getCategories.mockResolvedValue([originalCategory])
+    mockCategoryService.getCategories
+      .mockResolvedValueOnce([originalCategory])
+      .mockResolvedValue([updatedCategory])
     mockCategoryService.updateCategory.mockResolvedValue(updatedCategory)
 
     const { result } = renderHook(() => useCategories())
@@ -123,7 +133,9 @@ describe('useCategories', () => {
       expect(updated).toEqual(updatedCategory)
     })
 
-    expect(result.current.categories[0]).toEqual(updatedCategory)
+    await waitFor(() => {
+      expect(result.current.categories[0]).toEqual(updatedCategory)
+    })
     expect(mockCategoryService.updateCategory).toHaveBeenCalledWith(1, { name: 'Classical Music' })
   })
 
@@ -135,7 +147,9 @@ describe('useCategories', () => {
       createdAt: new Date('2024-01-01'),
     }
 
-    mockCategoryService.getCategories.mockResolvedValue([category])
+    mockCategoryService.getCategories
+      .mockResolvedValueOnce([category])
+      .mockResolvedValue([])
     mockCategoryService.deleteCategory.mockResolvedValue()
 
     const { result } = renderHook(() => useCategories())
@@ -144,13 +158,15 @@ describe('useCategories', () => {
       expect(result.current.loading).toBe(false)
     })
 
-    expect(result.current.categories).toContain(category)
+    expect(result.current.categories).toContainEqual(category)
 
     await act(async () => {
       await result.current.deleteCategory(1)
     })
 
-    expect(result.current.categories).not.toContain(category)
+    await waitFor(() => {
+      expect(result.current.categories).not.toContainEqual(category)
+    })
     expect(mockCategoryService.deleteCategory).toHaveBeenCalledWith(1)
   })
 })

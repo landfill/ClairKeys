@@ -40,7 +40,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -60,7 +60,9 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage
-          fail_ci_if_error: true
+          # CODECOV_TOKEN is not configured for this repo; don't fail the
+          # test gate on a missing coverage upload (pr-checks.yml does the same)
+          fail_ci_if_error: false
 
   e2e:
     name: E2E Tests
@@ -96,7 +98,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -136,7 +138,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -151,6 +153,8 @@ jobs:
   security:
     name: Security Audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -159,16 +163,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run security audit
-        run: npm audit --audit-level high
+        run: npm audit --audit-level high --json > npm-audit.json
 
-      - name: Run dependency vulnerability check
-        uses: securecodewarrior/github-action-add-sarif@v1
+      - name: Upload security audit report
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          sarif-file: 'results.sarif'
+          name: npm-audit
+          path: npm-audit.json
+          if-no-files-found: error

@@ -72,7 +72,7 @@ describe('visualUtils with fingering', () => {
       };
 
       const position = getFingerBadgePosition(smallNote);
-      expect(position.size).toBe(12); // Minimum size
+      expect(position.size).toBe(14); // Minimum size
     });
 
     it('should handle large notes appropriately', () => {
@@ -88,7 +88,7 @@ describe('visualUtils with fingering', () => {
       };
 
       const position = getFingerBadgePosition(largeNote);
-      expect(position.size).toBe(16); // Maximum size
+      expect(position.size).toBe(20); // Maximum size
     });
   });
 

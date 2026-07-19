@@ -1,53 +1,57 @@
 # Current Handoff
 
-Last updated: 2026-07-19
+Last updated: 2026-07-19 KST
 
 ## Current state
 
-- Program status: `READY`
-- Current phase: `DOC-1` — 완료
-- Current phase document: `docs/recovery/phases/DOC-1-default-branch-main-migration.md`
-- Working branch: 없음; 다음 단계는 `main`에서 새 전용 브랜치 생성
+- Program status: `IN_PROGRESS`
+- Current phase: `P0-D` — 인증·타입·테스트·CI 기준선 복구
+- Phase document: `docs/recovery/phases/P0-D-quality-gates.md`
+- Working branch: `codex/p0-quality-gates`
 - Base branch: `main`
-- Pull request: DOC-1 구현 PR https://github.com/landfill/ClairKeys/pull/2; 마감 PR https://github.com/landfill/ClairKeys/pull/3
-- Current objective: DOC-1 마감 증거를 병합하고 P0-A/P0-D 착수 가능 상태를 인계
-- Transition gate: PR #3이 `MERGED`로 확인되기 전에는 P0-A와 P0-D를 `BLOCKED`로 취급
+- Pull request: https://github.com/landfill/ClairKeys/pull/4
+- PR state: `READY_FOR_REVIEW` (draft 해제 완료)
+- Current objective: 실패를 숨기지 않고 Jest·TypeScript·ESLint·보안 감사 문제를 작은 회귀 수정 단위로 해결한다.
 
-## Next action
+## Latest verified result
 
-1. PR #3이 `MERGED`이고 로컬 `main`이 최신 `origin/main`과 일치하는지 먼저 확인한다.
-2. CI 자체를 먼저 복구하려면 `main`에서 `codex/p0-quality-gates`를 만들고 P0-D를 시작한다.
-3. 제품 핵심 정확도를 병렬로 진행하려면 `main`에서 `codex/p0-animation-contract`를 만들고 P0-A를 시작한다.
-4. 각 단계는 전용 phase 문서의 완료 조건과 `WORKFLOW.md`를 따라 별도 PR로 진행한다.
+- Node 22 / npm 10 clean `npm ci`: PASS
+- Focused playback regression tests: PASS — 3 suites, 65 tests
+  - `src/services/__tests__/audioService.test.ts`
+  - `src/services/__tests__/animationEngine.test.ts`
+  - `src/hooks/__tests__/useAnimationEngine.test.ts`
+- 오디오 활성화, 코드 재생/해제, 곡 종료 시각 보존, practice 모드 계약을 복구했다.
+- `Security Audit` 워크플로 구성 오류를 복구했다. 35건/고위험 9건을 4건/고위험 0건으로 줄였고, 호스팅 Security Audit과 Security Scan이 통과했다.
+- 전체 TypeScript 검사는 현재 기준선 규모 때문에 제한 시간 내 완료되지 않았다. 변경 파일의 집중 Jest 검증은 통과했다.
+- Supabase 비밀값 없는 프로덕션 빌드는 지연 클라이언트 생성 수정 후 통과했다. 단, Next 설정의 타입·lint 우회는 아직 제거되지 않았다.
+- Next 15 동적 라우트 4곳과 OAuth/seed DB 사용자 ID 계약을 복구했다. TypeScript 오류는 195개에서 188개로 감소했다.
 
-## Known blockers
+## Next actions
 
-- DOC-1 blocker: 없음. GitHub 기본 브랜치, 원격 HEAD와 로컬 추적 브랜치가 모두 `main`이다.
-- P0-D immediate blocker: `npm ci`가 `package.json`/`package-lock.json` 불일치로 실패한다. 예를 들어 루트 lock metadata에는 `package.json`의 `@napi-rs/canvas`가 누락되어 있다.
-- P0-D compatibility blocker: Actions의 Node 18과 일부 패키지의 Node 20 이상 요구가 불일치한다.
-- Application quality gaps: TypeScript, ESLint, Jest 기존 기준선 실패도 P0-D가 소유한다.
+1. Next 15 route params와 OAuth DB ID 수정 커밋을 PR #4에 푸시한다.
+2. PR #4의 CodeRabbit/리뷰어 피드백과 새 CI 결과를 확인한다.
+3. Unit Tests의 다음 실패 묶음을 고립해 수정한다.
+4. TypeScript 오류를 route params, Prisma, 컴포넌트 계약 순으로 줄인다.
+5. ESLint 오류를 파일 범위별로 제거한다.
+6. 남은 4개 중간 위험은 NextAuth 인증 마이그레이션 단계에서 검증 후 처리한다.
 
 ## Existing user-owned working tree changes
 
-다음 변경은 이 문서 작업 이전부터 존재하며 이번 커밋에 포함하면 안 된다.
+아래 파일은 이번 PR 작업 이전부터 존재한 사용자 변경이며, 명시적으로 제외한다.
 
 - `.claude/settings.local.json`
 - `.claude/settings.json`
 - `prisma/schema.prisma`
 - `.omx/`
-- 기존 `docs/.bkit-memory.json`
-- 기존 `docs/.pdca-status.json`
+- `docs/.bkit-memory.json`
+- `docs/.pdca-status.json`
 
-## Baseline summary
+## Product-critical follow-up order
 
-- 프로덕션 빌드: 성공하지만 타입 검사와 린트를 설정으로 생략
-- Jest: 134 passed, 13 failed
-- TypeScript: 실패
-- ESLint: 실패
-- 주요 제품 결함: 변환 포맷 불일치, 잘못된 MusicXML 시간 계산, 잘못된 양손 판정, 10초 이후 오디오 미스케줄 가능성
+P0-D와 독립 파일 범위로 진행 가능한 다음 핵심 작업은 다음 순서를 유지한다.
 
-세부 근거는 [BASELINE.md](BASELINE.md)를 참조한다.
+1. P0-A: canonical animation contract와 양손·다성부 golden fixture
+2. P0-B: MusicXML 박자/voice/staff/backup 변환 정확도
+3. P0-C: AudioContext 기준 시계와 애니메이션 동기화
 
-## Update rule
-
-새 세션은 실제 로컬·원격·GitHub 기본 브랜치 상태를 확인한 뒤 이 문서를 신뢰한다. branch rename 후 첫 단계 브랜치에서 `Base branch`, 현재 단계와 ROADMAP 상태를 갱신한다.
+새 세션은 `docs/recovery/ROADMAP.md`, 현재 phase 문서, 이 HANDOFF, `docs/recovery/reviews/PR-4.md` 순서로 읽는다.

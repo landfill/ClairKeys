@@ -5,10 +5,19 @@ import { useBackgroundProcessing } from '../useBackgroundProcessing'
 const mockFetch = jest.fn()
 global.fetch = mockFetch as any
 
+// The hook fetches jobs and notifications on mount, so tests use a
+// URL-aware default implementation instead of queued one-shot mocks
+const okJson = (body: object) => Promise.resolve({ ok: true, json: async () => body })
+
 describe('useBackgroundProcessing', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.useFakeTimers()
+    mockFetch.mockImplementation((url: string) =>
+      String(url).startsWith('/api/notifications')
+        ? okJson({ notifications: [] })
+        : okJson({ jobs: [] })
+    )
   })
 
   afterEach(() => {
@@ -28,10 +37,11 @@ describe('useBackgroundProcessing', () => {
         },
       ]
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ jobs: mockJobs }),
-      })
+      mockFetch.mockImplementation((url: string) =>
+        String(url).startsWith('/api/processing')
+          ? okJson({ jobs: mockJobs })
+          : okJson({ notifications: [] })
+      )
 
       const { result } = renderHook(() => useBackgroundProcessing())
 
@@ -46,10 +56,11 @@ describe('useBackgroundProcessing', () => {
     })
 
     it('should handle fetch jobs error', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-      })
+      mockFetch.mockImplementation((url: string) =>
+        String(url).startsWith('/api/processing')
+          ? Promise.resolve({ ok: false, status: 500 })
+          : okJson({ notifications: [] })
+      )
 
       const { result } = renderHook(() => useBackgroundProcessing())
 
@@ -75,10 +86,11 @@ describe('useBackgroundProcessing', () => {
         },
       ]
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ notifications: mockNotifications }),
-      })
+      mockFetch.mockImplementation((url: string) =>
+        String(url).startsWith('/api/notifications')
+          ? okJson({ notifications: mockNotifications })
+          : okJson({ jobs: [] })
+      )
 
       const { result } = renderHook(() => useBackgroundProcessing())
 
@@ -105,20 +117,14 @@ describe('useBackgroundProcessing', () => {
         message: '파일이 백그라운드에서 처리됩니다.',
       }
 
-      // Mock successful job creation
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResult,
-      })
-
-      // Mock fetchJobs and fetchNotifications calls
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ jobs: [] }),
-      })
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ notifications: [] }),
+      // Job creation POST succeeds; refresh fetches return empty lists
+      mockFetch.mockImplementation((url: string, options?: RequestInit) => {
+        if (String(url) === '/api/processing' && options?.method === 'POST') {
+          return okJson(mockResult)
+        }
+        return String(url).startsWith('/api/notifications')
+          ? okJson({ notifications: [] })
+          : okJson({ jobs: [] })
       })
 
       const { result } = renderHook(() => useBackgroundProcessing())
@@ -165,10 +171,13 @@ describe('useBackgroundProcessing', () => {
         isPublic: false,
       }
 
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        json: async () => ({ error: 'File too large' }),
+      mockFetch.mockImplementation((url: string, options?: RequestInit) => {
+        if (String(url) === '/api/processing' && options?.method === 'POST') {
+          return Promise.resolve({ ok: false, status: 400, json: async () => ({ error: 'File too large' }) })
+        }
+        return String(url).startsWith('/api/notifications')
+          ? okJson({ notifications: [] })
+          : okJson({ jobs: [] })
       })
 
       const { result } = renderHook(() => useBackgroundProcessing())

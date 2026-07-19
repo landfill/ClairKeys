@@ -5,7 +5,7 @@ import { getProcessingQueueService } from '@/services/processingQueue'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     // Check authentication
@@ -18,7 +18,7 @@ export async function POST(
       )
     }
 
-    const { sessionId } = params
+    const { sessionId } = await params
     const processingQueue = getProcessingQueueService()
 
     // Cancel the job

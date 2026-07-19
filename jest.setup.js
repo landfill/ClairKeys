@@ -86,18 +86,19 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }))
 
-// Mock Service Worker
-Object.defineProperty(navigator, 'serviceWorker', {
-  value: {
-    register: jest.fn(() => Promise.resolve()),
-    ready: Promise.resolve({
-      unregister: jest.fn(() => Promise.resolve(true))
-    }),
-    getRegistration: jest.fn(() => Promise.resolve(undefined))
-  },
-  configurable: true
-})
-
+// Mock Service Worker only in browser-like test environments
+if (typeof navigator !== 'undefined') {
+  Object.defineProperty(navigator, 'serviceWorker', {
+    value: {
+      register: jest.fn(() => Promise.resolve()),
+      ready: Promise.resolve({
+        unregister: jest.fn(() => Promise.resolve(true))
+      }),
+      getRegistration: jest.fn(() => Promise.resolve(undefined))
+    },
+    configurable: true
+  })
+}
 // Mock File API
 global.File = class File {
   constructor(chunks, filename, options) {
@@ -117,21 +118,22 @@ Object.defineProperty(global, 'crypto', {
   }
 })
 
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(),
-    removeListener: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-})
-
+// Mock matchMedia only when a DOM environment provides window
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  })
+}
 // Clean up after each test
 afterEach(() => {
   jest.clearAllMocks()
