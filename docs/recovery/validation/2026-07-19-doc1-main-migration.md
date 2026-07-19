@@ -38,3 +38,7 @@ This migration changes branch identity and recovery documentation only. It does 
 - PASS: GitHub Actions workflow branch filters contain no `master` target.
 - PASS: migration staged scope excludes all existing user-owned changes.
 - NOT RUN: application tests, typecheck and lint; this documentation/branch-identity migration changes no runtime code and preserves existing failures.
+## Transition exception assertion
+
+- PASS: DOC-1 explicitly branches from and targets `master` before `main` exists.
+- PASS: all post-DOC-1 branch creation and PR-base instructions use `main`.

@@ -2,6 +2,8 @@
 
 ## 1. 작업 시작
 
+DOC-1은 `main` 생성 전 기본 브랜치 rename을 준비하므로 `master`에서 분기하고 PR base도 `master`를 사용하는 일회성 예외다. 아래 일반 규칙은 DOC-1 병합과 GitHub branch rename이 완료된 뒤 적용한다.
+
 ```text
 read AGENTS.md
 → read docs/recovery/README.md
@@ -54,6 +56,7 @@ Not-tested: Full Audiveris output corpus
 ## 4. PR 생성
 
 - PR base는 실제 기본 브랜치인 `main`을 사용한다.
+- DOC-1 migration PR만 rename 전 실제 기본 브랜치인 `master`를 base로 사용한다.
 - 초안 PR로 시작하고 검증 결과가 준비되면 ready 상태로 전환한다.
 - PR 본문에는 목적, 범위, 제외 범위, 위험, 검증, baseline 차이, rollback 방법을 포함한다.
 - PR 번호가 생기면 즉시 `docs/recovery/reviews/PR-<number>.md`를 생성한다.
