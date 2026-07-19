@@ -19,6 +19,8 @@ Last checked: 2026-07-19 KST
 | ID | Source | File/line | Summary | Decision | Status | Commit/evidence |
 |---|---|---|---|---|---|---|
 | R1 | Codex | `WORKFLOW.md` | `main` 일반 규칙이 rename 전 DOC-1 PR에도 적용되어 실행 불가 | accept | FIXED | DOC-1의 `master` branch/base 일회성 예외를 명시 |
+| R2 | Gemini | `DECISIONS.md` | D-006 heading 앞 빈 줄 누락 | accept | FIXED | Markdown block separation 추가 |
+| R3 | Gemini | DOC-1 validation | Pre-PR validation heading 앞 빈 줄 누락 | accept | FIXED | Markdown block separation 추가 |
 
 ## Iteration log
 
@@ -34,5 +36,12 @@ Last checked: 2026-07-19 KST
 - Feedback fetched: one Codex comment about the pre-rename DOC-1 base exception
 - Changes made: documented DOC-1 as the only `master` branch/PR-base exception before the rename; retained `main` as the post-migration invariant
 - Validation: workflow exception and main invariant assertions, staged scope, and whitespace checks passed
+- Commit: pending
+- Remaining actionable items: completed in iteration 3
+### Iteration 3
+
+- Feedback fetched: two Gemini Markdown formatting comments
+- Changes made: inserted required blank lines before D-006 and Pre-PR validation headings
+- Validation: heading separation assertions, staged scope, and whitespace checks passed
 - Commit: pending
 - Remaining actionable items: post-push checks and reviewer re-check

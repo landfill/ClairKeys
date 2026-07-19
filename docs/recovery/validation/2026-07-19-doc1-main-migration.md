@@ -29,6 +29,7 @@
 ## Scope statement
 
 This migration changes branch identity and recovery documentation only. It does not resolve or reclassify the application test, type, lint, conversion, or playback baseline failures.
+
 ## Pre-PR validation result
 
 - PASS: all relative recovery Markdown links resolve.
