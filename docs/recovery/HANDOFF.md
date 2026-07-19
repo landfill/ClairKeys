@@ -4,27 +4,26 @@ Last updated: 2026-07-19
 
 ## Current state
 
-- Program status: `READY`
-- Current phase: `DOC-1` — 완료
-- Current phase document: `docs/recovery/phases/DOC-1-default-branch-main-migration.md`
-- Working branch: 없음; 다음 단계는 `main`에서 새 전용 브랜치 생성
+- Program status: `IN_PROGRESS`
+- Current phase: `P0-D` — CI 설치·Node 기준선 복구 후 품질 실패 분리
+- Current phase document: `docs/recovery/phases/P0-D-quality-gates.md`
+- Working branch: `codex/p0-quality-gates`
 - Base branch: `main`
-- Pull request: DOC-1 구현 PR https://github.com/landfill/ClairKeys/pull/2; 마감 PR https://github.com/landfill/ClairKeys/pull/3
-- Current objective: DOC-1 마감 증거를 병합하고 P0-A/P0-D 착수 가능 상태를 인계
-- Transition gate: PR #3이 `MERGED`로 확인되기 전에는 P0-A와 P0-D를 `BLOCKED`로 취급
+- Pull request: 아직 생성 전
+- Current objective: 설치 기준선 복구를 커밋한 뒤 Jest·TypeScript·ESLint 실패를 작은 수정 묶음으로 해결
 
 ## Next action
 
-1. PR #3이 `MERGED`이고 로컬 `main`이 최신 `origin/main`과 일치하는지 먼저 확인한다.
-2. CI 자체를 먼저 복구하려면 `main`에서 `codex/p0-quality-gates`를 만들고 P0-D를 시작한다.
-3. 제품 핵심 정확도를 병렬로 진행하려면 `main`에서 `codex/p0-animation-contract`를 만들고 P0-A를 시작한다.
-4. 각 단계는 전용 phase 문서의 완료 조건과 `WORKFLOW.md`를 따라 별도 PR로 진행한다.
-
+1. Node 22와 동기화된 lockfile 변경을 독립 커밋한다.
+2. Jest 환경 실패와 애니메이션/오디오 계약 실패를 분리해 회귀 테스트부터 복구한다.
+3. Next.js route params와 Prisma 생성 타입을 우선으로 TypeScript 오류를 줄인다.
+4. lint 오류는 타입 계약 수정 뒤 범위별로 제거한다.
+5. 각 반복의 결과를 validation과 PR review log에 기록한다.
 ## Known blockers
 
 - DOC-1 blocker: 없음. GitHub 기본 브랜치, 원격 HEAD와 로컬 추적 브랜치가 모두 `main`이다.
-- P0-D immediate blocker: `npm ci`가 `package.json`/`package-lock.json` 불일치로 실패한다. 예를 들어 루트 lock metadata에는 `package.json`의 `@napi-rs/canvas`가 누락되어 있다.
-- P0-D compatibility blocker: Actions의 Node 18과 일부 패키지의 Node 20 이상 요구가 불일치한다.
+- P0-D install baseline: 해결됨. Node 22에서 clean `npm ci`가 통과한다.
+- P0-D compatibility baseline: 해결됨. 루트 엔진과 Actions를 Node 22로 통일했다.
 - Application quality gaps: TypeScript, ESLint, Jest 기존 기준선 실패도 P0-D가 소유한다.
 
 ## Existing user-owned working tree changes

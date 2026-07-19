@@ -1,6 +1,6 @@
 # P0-D — Authentication and Quality Gates
 
-Status: `READY`
+Status: `IN_PROGRESS`
 
 ## Objective
 
@@ -24,3 +24,10 @@ Status: `READY`
 - lint, typecheck, unit test, build가 우회 없이 통과한다.
 - CI가 `main` 대상 PR에서 실행되고 필수 체크로 연결된다.
 - 기존 실패를 무시 목록 확대나 검사 비활성화로 숨기지 않는다.
+## Progress
+
+- DONE: root dependency metadata and `package-lock.json` are synchronized.
+- DONE: root `engines.node` and every GitHub Actions setup use Node 22.
+- PASS: clean `npm ci` completes on Node 22.18.0 / npm 10.9.3.
+- NEXT: repair Jest environment/contracts, then TypeScript and ESLint failures in focused slices.
+- BASELINE: Jest 7/21 suites pass and 183/252 tests pass; TypeScript and ESLint still fail on pre-existing contract drift.
