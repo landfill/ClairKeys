@@ -26,7 +26,7 @@
 ## D-004: 단계별 브랜치와 PR을 사용한다
 
 - Date: 2026-07-19
-- Status: Accepted
+- Status: Superseded by D-006
 - Decision: 로드맵의 각 단계는 `master`에서 분기한 별도 `codex/` 브랜치와 PR을 사용한다.
 - Reason: 변경 범위와 리뷰 증거를 작게 유지하고 새 세션에서 안전하게 이어가기 위함이다.
 - Directive: 여러 단계를 한 PR에 합치지 않는다.
@@ -37,3 +37,12 @@
 - Status: Accepted
 - Decision: 구현·자가 검증·PR 생성·리뷰 대응은 자동 진행하지만 병합은 사용자 지시를 기다린다.
 - Reason: 병합은 기본 브랜치와 배포에 영향을 주는 최종 승인 행위다.
+
+## D-006: 기본 브랜치를 `main`으로 통일한다
+
+- Date: 2026-07-19
+- Status: Accepted; effective when DOC-1 completes
+- Decision: GitHub 기본 브랜치, 로컬 추적 브랜치, 신규 PR base와 운영 문서는 `main`을 사용한다.
+- Reason: GitHub Actions가 이미 `main/develop`을 대상으로 하므로 실제 기본 브랜치 `master`와의 불일치를 제거한다.
+- Constraint: PR #1의 기준선·리뷰 로그에 기록된 `master`는 역사적 사실이므로 소급 수정하지 않는다.
+- Directive: DOC-1 완료 후 `master`에서 새 작업 브랜치를 만들거나 PR base로 사용하지 않는다.
