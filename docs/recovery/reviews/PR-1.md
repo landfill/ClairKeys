@@ -3,7 +3,7 @@
 PR URL: https://github.com/landfill/ClairKeys/pull/1
 Branch: `codex/clairkeys-recovery-roadmap`
 Base: `master`
-Last checked: 2026-07-19 13:03 KST
+Last checked: 2026-07-19 13:10 KST
 
 ## CI status
 
@@ -31,13 +31,20 @@ Last checked: 2026-07-19 13:03 KST
 - Feedback fetched: Vercel bot status and CodeRabbit processing notice
 - Changes made: review log created; handoff moved to `IN_REVIEW`
 - Validation: initial document links and staged scope passed
-- Commit: pending review-response commit
-- Remaining actionable items: validate changes, commit, push, recheck follow-up review
+- Commit: `5250346` review-response commit
+- Remaining actionable items: completed in iteration 2
 
 ### Iteration 2
 
 - Feedback fetched: 13 inline comments from Gemini, Codex, and CodeRabbit
 - Changes made: grouped into R1-R5 and addressed with minimal documentation changes
-- Validation: pending
-- Commit: pending
-- Remaining actionable items: run link/scope/whitespace validation and push
+- Validation: Markdown links, required-file assertions, staged scope, and whitespace checks passed
+- Commit: `5250346`
+- Remaining actionable items: none
+
+### Iteration 3
+
+- Feedback fetched: follow-up CodeRabbit and Vercel checks after `5250346`
+- Changes made: none; no new inline comments were posted
+- Validation: CodeRabbit PASS, Vercel PASS, Vercel Preview Comments PASS
+- Remaining actionable items: none

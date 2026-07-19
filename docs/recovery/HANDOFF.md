@@ -10,21 +10,20 @@ Last updated: 2026-07-19
 - Working branch: `codex/clairkeys-recovery-roadmap`
 - Base branch: `master`
 - Pull request: https://github.com/landfill/ClairKeys/pull/1
-- Current objective: PR #1의 CI와 리뷰 피드백을 확인하고 필요한 수정을 반복
+- Current objective: PR #1의 검증과 actionable review가 완료되어 사용자 병합 승인 대기
 
 ## Next action
 
-1. PR #1의 CodeRabbit 리뷰와 Vercel 검사를 다시 조회한다.
-2. actionable feedback을 `docs/recovery/reviews/PR-1.md`에 분류한다.
-3. 필요한 수정마다 문서 검증, 커밋, push를 반복한다.
-4. 리뷰와 필수 검사가 완료되면 사용자에게 병합 승인을 요청한다.
-5. 병합 후 P0-A와 P0-D를 별도 브랜치에서 시작한다.
+1. 사용자에게 PR #1 병합 승인을 요청한다.
+2. 승인 후 PR을 병합하고 `DOC-0` 상태를 `DONE`으로 기록한다.
+3. 최신 `master`에서 P0-A와 P0-D를 각각 별도 브랜치로 시작한다.
 
 ## Known blockers
 
-- CodeRabbit review: pending
-- Vercel deployment check: pending
-- 실제 CI workflow가 `main/develop`만 대상으로 하므로 `master` 대상 PR에서 실행되지 않고 있다.
+- Actionable review: 없음
+- Vercel and CodeRabbit checks: pass
+- Coverage gap: 실제 CI workflow가 `main/develop`만 대상으로 하므로 `master` 대상 PR에서 실행되지 않았다. P0-D에서 수정한다.
+- Required authority: 사용자 병합 승인
 
 ## Existing user-owned working tree changes
 
