@@ -13,15 +13,17 @@ Last checked: 2026-07-19 KST
 | Detect changes | PASS | PR Checks run `29680648796` |
 | Clean dependency install | PASS_LOCAL | `npm ci` completed on Node 22 |
 | Vercel | PENDING | initial preview deployment |
-| CodeRabbit | SKIPPED_DRAFT | review will be requested when ready |
+| CodeRabbit | RATE_LIMITED | ready-for-review run deferred for about 55 minutes |
 | Lint / TypeScript / Jest | EXPECTED_BASELINE_FAILURE | reproduced locally and assigned to remaining P0-D iterations |
-| Security Audit | INVESTIGATING | initial job failed; failed-job log will be inspected |
+| Security Audit | PASS_LOCAL / CI_PENDING | synchronized lock reports 0 vulnerabilities; workflow repair pushed |
 
 ## Review items
 
 | ID | Source | Summary | Decision | Status | Evidence |
 |---|---|---|---|---|---|
 | R1 | Self-review | node-environment route tests execute browser-only setup mocks | accept | FIXED | guarded navigator and window mocks; failure advances to Prisma initialization |
+| R2 | Gemini Code Assist | declare minimum npm version with the Node engine contract | accept | FIXED | `npm >=10.0.0` added and lock synchronized |
+| R3 | CodeRabbit pre-merge | PR body omits required template sections | accept | FIXED | purpose, phase, scope, validation, baseline, risk and checklist added |
 
 ## Iteration log
 
@@ -51,4 +53,11 @@ Last checked: 2026-07-19 KST
 - Inspected hosted Security Audit failure.
 - Root cause: workflow action preparation referenced missing repository `securecodewarrior/github-action-add-sarif`.
 - Replaced the unavailable action with an always-uploaded npm audit JSON artifact.
-- The actual high-severity dependency baseline remains a separate red gate and is not suppressed.
+- The audit still runs as a red gate; the synchronized lock currently reports zero vulnerabilities.
+
+### Iteration 5
+
+- Accepted Gemini review feedback and added `npm >=10.0.0` to package and lock metadata.
+- PASS: `npm audit --audit-level high --json` reports zero vulnerabilities on the synchronized lock.
+- Accepted CodeRabbit pre-merge feedback and expanded the PR body to the full repository template.
+- CodeRabbit detailed review is rate-limited; retry is expected after its stated cooldown.

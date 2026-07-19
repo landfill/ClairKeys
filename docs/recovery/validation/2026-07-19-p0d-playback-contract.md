@@ -23,7 +23,13 @@
 | Focused Jest run for audio service, animation engine and hook | PASS — 3 suites, 63 tests |
 | `git diff --check` | PASS |
 | Full `npx tsc --noEmit` | INCONCLUSIVE — project-wide baseline exceeded the local execution window |
+| `npm audit --audit-level high --json` | PASS — 0 vulnerabilities |
 
 ## CI follow-up
 
 GitHub Security Audit failed during action preparation because `securecodewarrior/github-action-add-sarif@v1` no longer resolves. The workflow now records `npm audit --json` output and uploads it through `actions/upload-artifact@v4`, allowing the actual dependency audit result to surface.
+
+## Review follow-up
+
+- Gemini feedback accepted: package and lock metadata now require npm 10 or newer.
+- CodeRabbit description feedback accepted: PR #4 now follows every section of the repository PR template.
