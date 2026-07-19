@@ -24,6 +24,7 @@ Last checked: 2026-07-19 13:10 KST
 | R4 | CodeRabbit | `HANDOFF_TEMPLATE.md` | 브랜치 placeholder가 허용 형식을 강제하지 않음 | accept | FIXED | `codex/<phase>-<topic>`으로 변경 |
 | R5 | Codex | `WORKFLOW.md` | review-log 디렉터리가 materialize되지 않음 | accept | FIXED | 이 파일 `docs/recovery/reviews/PR-1.md` 생성 |
 | R6 | Codex | `ROADMAP.md` | P1-A/P1-B가 별도 PR인데 단계 문서가 하나로 결합됨 | accept | FIXED | P1-A와 P1-B 실행 문서를 분리하고 P1 overview만 공유 |
+| R7 | Codex | `WORKFLOW.md` | base branch를 `main`으로 변경하라는 제안 | reject | REJECTED | local/remote/GitHub default와 PR base 모두 `master`; `main` ref 없음 |
 
 ## Iteration log
 
@@ -55,5 +56,13 @@ Last checked: 2026-07-19 13:10 KST
 - Feedback fetched: one follow-up Codex comment on the P1 phase boundary
 - Changes made: split P1-A upload consolidation from P1-B durable queue and security
 - Validation: P1-A/P1-B scope assertions, relative links, and whitespace checks passed
-- Commit: pending
-- Remaining actionable items: commit, push, recheck
+- Commit: `e4f1713`
+- Remaining actionable items: none
+
+### Iteration 5
+
+- Feedback fetched: one Codex suggestion to change the base branch to `main`
+- Decision: rejected after repository-state verification
+- Evidence: `git branch --all`, `git ls-remote --symref origin HEAD`, `gh repo view`, and `gh pr view` all identify `master`; `refs/heads/main` does not exist
+- Changes made: no workflow change; rejection recorded
+- Remaining actionable items: none
