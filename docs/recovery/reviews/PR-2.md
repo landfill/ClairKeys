@@ -3,15 +3,15 @@
 PR URL: https://github.com/landfill/ClairKeys/pull/2
 Branch: `codex/default-branch-main-migration`
 Base: `master` (rename target: `main`)
-Last checked: 2026-07-19 KST
+Last checked: 2026-07-19 16:32 KST
 
 ## CI status
 
 | Check | Status | Last evidence |
 |---|---|---|
-| Vercel Preview Comments | PASS | GitHub check on `f6d5c3e` |
-| Vercel deployment | PASS | preview deployment completed |
-| CodeRabbit | PASS_WITH_LIMIT | status passed; full run `9826e36c-5139-40e3-88c1-750a52538593` rate-limited |
+| Vercel Preview Comments | PASS | GitHub check on `995fca8` |
+| Vercel deployment | PASS | `995fca8` preview deployment completed |
+| CodeRabbit | PASS_WITH_LIMIT | status passed; latest full run `d3888fa7-4b39-417f-85cd-dace084e69d2` rate-limited |
 | Repository GitHub Actions | EXPECTED_NOT_TRIGGERED | pre-rename PR base is `master`; workflows target `main/develop` |
 
 ## Review items
@@ -29,19 +29,30 @@ Last checked: 2026-07-19 KST
 - Feedback fetched: PR created; reviewer and deployment checks pending
 - Changes made: bound PR #2 URL into HANDOFF and DOC-1
 - Validation: Markdown links, migration invariants, staged scope and whitespace checks passed
-- Commit: pending
+- Commit: `f6d5c3e`
 - Remaining actionable items: completed in iteration 2
+
 ### Iteration 2
 
 - Feedback fetched: one Codex comment about the pre-rename DOC-1 base exception
 - Changes made: documented DOC-1 as the only `master` branch/PR-base exception before the rename; retained `main` as the post-migration invariant
 - Validation: workflow exception and main invariant assertions, staged scope, and whitespace checks passed
-- Commit: pending
+- Commit: `3a54e39`
 - Remaining actionable items: completed in iteration 3
+
 ### Iteration 3
 
 - Feedback fetched: two Gemini Markdown formatting comments
 - Changes made: inserted required blank lines before D-006 and Pre-PR validation headings
 - Validation: heading separation assertions, staged scope, and whitespace checks passed
-- Commit: pending
-- Remaining actionable items: post-push checks and reviewer re-check
+- Commit: `995fca8`
+- Remaining actionable items: completed in iteration 4
+
+### Iteration 4
+
+- Feedback fetched: no new inline comments after `995fca8`
+- Checks: Vercel, Vercel Preview Comments and CodeRabbit status context passed
+- Limitation: CodeRabbit full review run `d3888fa7-4b39-417f-85cd-dace084e69d2` was rate-limited; Codex and Gemini findings were reproduced, fixed and answered
+- Validation: final Markdown links, migration invariants, branch exception, staged scope and whitespace checks passed
+- Remaining actionable items: none; user authorized PR merge and default-branch rename
+- Finalization note: the next commit changes only this evidence log
