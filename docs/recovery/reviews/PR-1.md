@@ -3,7 +3,7 @@
 PR URL: https://github.com/landfill/ClairKeys/pull/1
 Branch: `codex/clairkeys-recovery-roadmap`
 Base: `master`
-Last checked: 2026-07-19 13:25 KST
+Last checked: 2026-07-19 13:36 KST
 
 ## CI status
 
@@ -11,7 +11,7 @@ Last checked: 2026-07-19 13:25 KST
 |---|---|---|
 | Vercel Preview Comments | PASS | GitHub status rollup |
 | Vercel deployment | PASS | Preview deployment completed |
-| CodeRabbit | PASS | Review run `7501ddef-5e62-4939-af11-21d1a422b5a6` completed |
+| CodeRabbit | PASS | latest head `1c690c2` review completed |
 | Repository GitHub Actions | NOT_TRIGGERED | workflows currently target `main/develop`, base is `master` |
 
 ## Review items
@@ -81,4 +81,5 @@ Last checked: 2026-07-19 13:25 KST
 - Feedback fetched: one Codex comment about the missing in-repository Lore Commit Protocol definition
 - Changes made: added the canonical protocol and linked it from AGENTS, README, and WORKFLOW
 - Validation: relative Markdown links, entry-document links, required Lore fields, staged scope, and whitespace checks passed
-- Remaining actionable items: reviewer re-check after push
+- Post-push checks: CodeRabbit, Vercel, and Vercel Preview Comments passed on `1c690c2`
+- Remaining actionable items: none; explicit user merge approval remains
