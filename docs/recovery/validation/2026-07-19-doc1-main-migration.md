@@ -44,6 +44,7 @@ This migration changes branch identity and recovery documentation only. It does 
 
 - PASS: DOC-1 explicitly branches from and targets `master` before `main` exists.
 - PASS: all post-DOC-1 branch creation and PR-base instructions use `main`.
+
 ## Post-migration result
 
 - PASS: GitHub default branch is `main`.

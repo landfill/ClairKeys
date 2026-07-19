@@ -21,7 +21,7 @@ Last updated: 2026-07-19
 ## Known blockers
 
 - DOC-1 blocker: 없음. GitHub 기본 브랜치, 원격 HEAD와 로컬 추적 브랜치가 모두 `main`이다.
-- P0-D immediate blocker: `npm ci`가 `package.json`/`package-lock.json` 불일치로 실패한다.
+- P0-D immediate blocker: `npm ci`가 `package.json`/`package-lock.json` 불일치로 실패한다. 예를 들어 루트 lock metadata에는 `package.json`의 `@napi-rs/canvas`가 누락되어 있다.
 - P0-D compatibility blocker: Actions의 Node 18과 일부 패키지의 Node 20 이상 요구가 불일치한다.
 - Application quality gaps: TypeScript, ESLint, Jest 기존 기준선 실패도 P0-D가 소유한다.
 

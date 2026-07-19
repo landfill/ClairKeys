@@ -25,6 +25,10 @@ Last checked: 2026-07-19 16:51 KST
 | R1 | CodeRabbit | Full review unavailable because the account review limit was reached | document | CLOSED | status context passed; no inline or actionable comment |
 | R2 | Self-review | Handoff and P0-D headings were malformed during the first local edit | accept | FIXED | state-marker scan and heading inspection passed before first push |
 | R3 | CI | lockfile is out of sync and workflows use Node 18 while dependencies require Node 20+ | defer to P0-D | TRACKED | P0-D work stages 1–2 and DOC-1 validation record |
+| R4 | Gemini | missing blank line before Post-migration heading | accept | FIXED | Markdown heading separation restored |
+| R5 | Gemini | require an explicit root Node engine declaration in P0-D | accept | FIXED | P0-D stage 2 now requires `package.json#engines.node` |
+| R6 | Gemini | make the lock mismatch concrete for the handoff | accept with correction | FIXED | documented the confirmed root lock metadata omission without claiming the module tree is absent |
+| R7 | Codex | DONE must not unblock dependents before the closeout PR merges | accept | FIXED | documented atomic merge effectiveness in DOC-1 and WORKFLOW |
 
 ## Iteration log
 
@@ -37,3 +41,11 @@ Last checked: 2026-07-19 16:51 KST
 - Validation: recovery Markdown links, state markers, heading structure, staged scope and whitespace checks passed.
 - Remaining actionable DOC-1 items: none.
 - Follow-up owner: P0-D.
+
+### Iteration 2
+
+- Feedback fetched: three Gemini documentation suggestions and one Codex phase-transition concern.
+- Changes made: restored heading spacing; required a root Node engine declaration; identified the root lock metadata omission; made DOC-1 `DONE` effective only at PR #3 merge.
+- Decision: the closeout PR may carry the terminal state, but dependent branches remain blocked until that state lands on `main`.
+- Validation: exact lockfile evidence, Markdown heading structure, state-transition wording, staged scope and whitespace checks.
+- Remaining actionable DOC-1 items: none.

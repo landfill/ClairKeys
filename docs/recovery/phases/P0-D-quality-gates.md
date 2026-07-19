@@ -9,7 +9,7 @@ Status: `READY`
 ## Work stages
 
 1. `package.json`과 `package-lock.json`을 동기화해 `npm ci`를 복구한다.
-2. Actions와 Vercel의 Node 버전을 패키지 엔진 요구와 일치시킨다.
+2. Actions와 Vercel의 Node 버전을 패키지 엔진 요구와 일치시키고, 루트 `package.json`에 `engines.node`을 명시한다.
 3. `User.id` 생성 정책과 OAuth account 연결을 테스트로 고정한다.
 4. 신규·기존 사용자 로그인 실패 경로를 수정한다.
 5. Jest environment, TextEncoder, Testing Library 의존성 문제를 해결한다.

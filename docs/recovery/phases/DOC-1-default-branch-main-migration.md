@@ -1,6 +1,7 @@
 # DOC-1 — Default Branch Migration to main
 
 Status: `DONE`
+Effective event: PR #3 merge into `main`
 Branch: `codex/default-branch-main-migration`
 PR: https://github.com/landfill/ClairKeys/pull/2
 
@@ -47,3 +48,4 @@ GitHub branch rename 완료가 DOC-1의 `DONE` 전환 사건이다. 다음 phase
 - 로컬 `main`이 `origin/main`의 같은 commit을 추적하며 활성 `master` ref는 제거되었다.
 - `main` push가 Actions를 기동했으며, 기존 의존성 잠금 및 Node 버전 문제는 P0-D로 인계했다.
 - 기존 사용자 미커밋 변경은 그대로 보존했다.
+- 이 브랜치의 `DONE` 표시는 예정된 원자적 전환이며, PR #3 병합 전에는 후속 단계 브랜치 생성에 효력이 없다.
