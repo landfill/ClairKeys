@@ -4,11 +4,10 @@
  */
 
 import { AnimationEngine, getAnimationEngine } from '../animationEngine'
-import { PianoAnimationData, AnimationEvent } from '@/types/animation'
-import { getAudioService } from '../audioService'
+import { PianoAnimationData } from '@/types/animation'
 
 // Mock audio service
-const mockAudioServiceInstance = {
+const mockAudioService = {
   initialize: jest.fn().mockResolvedValue(undefined),
   playNote: jest.fn(),
   releaseNote: jest.fn(),
@@ -18,7 +17,7 @@ const mockAudioServiceInstance = {
 }
 
 jest.mock('../audioService', () => ({
-  getAudioService: jest.fn(() => mockAudioServiceInstance)
+  getAudioService: jest.fn(() => mockAudioService)
 }))
 
 // Mock timers
@@ -26,12 +25,10 @@ jest.useFakeTimers()
 
 describe('AnimationEngine', () => {
   let engine: AnimationEngine
-  let mockAudioService: any
   let testAnimationData: PianoAnimationData
 
   beforeEach(() => {
     engine = getAnimationEngine()
-    mockAudioService = getAudioService()
     mockAudioService.isReady.mockReturnValue(true)
     mockAudioService.initialize.mockResolvedValue(undefined)
     
@@ -337,6 +334,30 @@ describe('AnimationEngine', () => {
       const state = engine.getState()
       expect(state.isPlaying).toBe(false)
       expect(state.currentTime).toBe(10) // duration
+    })
+
+    it('should restart from the beginning when replaying a completed animation', () => {
+      engine.play()
+      jest.advanceTimersByTime(11000)
+
+      engine.play()
+
+      expect(engine.getState().isPlaying).toBe(true)
+      expect(engine.getState().currentTime).toBe(0)
+
+      jest.advanceTimersByTime(100)
+      expect(mockAudioService.playNote).toHaveBeenLastCalledWith('C4', 0.8)
+    })
+
+    it('should release notes that extend beyond the animation duration', () => {
+      testAnimationData.notes[0].duration = 20
+      engine.loadAnimation(testAnimationData)
+      engine.play()
+
+      jest.advanceTimersByTime(11000)
+
+      expect(mockAudioService.releaseNote).toHaveBeenCalledWith('C4')
+      expect(engine.getState().activeNotes.size).toBe(0)
     })
 
     it('should play and release notes at correct times', () => {

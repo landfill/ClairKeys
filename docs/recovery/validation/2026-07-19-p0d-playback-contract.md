@@ -20,7 +20,7 @@
 
 | Command | Result |
 |---|---|
-| Focused Jest run for audio service, animation engine and hook | PASS — 3 suites, 63 tests |
+| Focused Jest run for audio service, animation engine and hook | PASS — 3 suites, 65 tests |
 | `git diff --check` | PASS |
 | Full `npx tsc --noEmit` | INCONCLUSIVE — project-wide baseline exceeded the local execution window |
 | `npm audit --audit-level high --json` | SUPERSEDED — local cache result was stale; see security dependency record |
@@ -33,3 +33,10 @@ GitHub Security Audit failed during action preparation because `securecodewarrio
 
 - Gemini feedback accepted: package and lock metadata now require npm 10 or newer.
 - CodeRabbit description feedback accepted: PR #4 now follows every section of the repository PR template.
+
+## Review regression iteration
+
+- Completed playback retains the terminal timestamp, while a subsequent Play resets to zero and starts normally.
+- Natural completion releases notes whose malformed metadata extends beyond the score duration.
+- Audio readiness remains true while muted, preventing redundant initialization attempts.
+- Focused ESLint: PASS with zero warnings or errors.

@@ -15,7 +15,7 @@ Last checked: 2026-07-19 KST
 | Vercel | PENDING | initial preview deployment |
 | CodeRabbit | RATE_LIMITED | ready-for-review run deferred for about 55 minutes |
 | Lint / TypeScript / Jest | EXPECTED_BASELINE_FAILURE | reproduced locally and assigned to remaining P0-D iterations |
-| Security Audit | PASS_LOCAL / CI_RERUN_REQUIRED | 0 high after non-breaking dependency updates; 4 moderate tracked |
+| Security Audit | PASS | run `29684986127`; 0 high/critical, report artifact uploaded |
 
 ## Review items
 
@@ -24,6 +24,12 @@ Last checked: 2026-07-19 KST
 | R1 | Self-review | node-environment route tests execute browser-only setup mocks | accept | FIXED | guarded navigator and window mocks; failure advances to Prisma initialization |
 | R2 | Gemini Code Assist | declare minimum npm version with the Node engine contract | accept | FIXED | `npm >=10.0.0` added and lock synchronized |
 | R3 | CodeRabbit pre-merge | PR body omits required template sections | accept | FIXED | purpose, phase, scope, validation, baseline, risk and checklist added |
+| R4 | Codex review | completed animation cannot replay from the Play button | accept | FIXED | replay at duration resets the playback base to zero |
+| R5 | CodeRabbit | completion can leave notes active past metadata duration | accept | FIXED | completion delegates active-note release and state transition to `pause()` |
+| R6 | CodeRabbit | `isReady()` conflates initialization with mute state | accept | FIXED | readiness now reports engine initialization only |
+| R7 | CodeRabbit nitpick | security job relies on default token permissions | accept | FIXED | explicit `contents: read` permission |
+| R8 | CodeRabbit nitpick | test engine mock uses explicit `any` | accept | FIXED | stable mock constant removes the explicit `any` |
+| R9 | CodeRabbit pre-merge | generic docstring coverage warning | decline | NO_CHANGE | public additions are documented; annotating Jest mock callbacks would add noise and the check is non-blocking |
 
 ## Iteration log
 
@@ -69,3 +75,12 @@ Last checked: 2026-07-19 KST
 - Reduced the current audit from 35 total / 9 high to 4 total / 0 high.
 - Rejected npm force-fix because it proposes breaking downgrades to Next 9 and NextAuth 3.
 - PASS: patched dependency set retains 63/63 focused playback regression tests.
+
+### Iteration 7
+
+- Processed unresolved review threads with thread-level resolution state.
+- Added completed-score replay and overlong-note release regression coverage.
+- Separated audio initialization readiness from user mute state.
+- Added least-privilege permissions to the security job and removed explicit `any` from the affected test mocks and audio service types.
+- PASS: focused ESLint has zero findings; focused Jest has 65/65 passing tests.
+- PASS: hosted Security Audit and Security Scan in runs `29684986127` and `29684986103`.

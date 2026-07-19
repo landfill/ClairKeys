@@ -11,8 +11,7 @@ import {
   AnimationEvent,
   AnimationConfig,
   AnimationEngine as IAnimationEngine,
-  PracticeState,
-  PracticeSessionStats
+  PracticeState
 } from '@/types/animation'
 import { getAudioService } from './audioService'
 
@@ -74,6 +73,16 @@ export class AnimationEngine implements IAnimationEngine {
     }
 
     if (this.state.isPlaying) return
+
+    if (this.state.currentTime >= this.animationData.duration) {
+      this.state.currentTime = 0
+      this.pausedTime = 0
+      this.emitEvent({
+        type: 'timeUpdate',
+        timestamp: Date.now(),
+        data: { time: 0 }
+      })
+    }
 
     this.state.isPlaying = true
     this.startTime = Date.now()
@@ -354,20 +363,12 @@ export class AnimationEngine implements IAnimationEngine {
       if (newTime >= this.animationData.duration) {
         const duration = this.animationData.duration
         this.state.currentTime = duration
-        this.updateActiveNotes(duration)
-        this.state.isPlaying = false
-        this.pausedTime = duration
-        this.stopAnimationLoop()
         this.emitEvent({
           type: 'timeUpdate',
           timestamp: Date.now(),
           data: { time: duration }
         })
-        this.emitEvent({
-          type: 'playStateChange',
-          timestamp: Date.now(),
-          data: { isPlaying: false }
-        })
+        this.pause()
         return
       }
     }

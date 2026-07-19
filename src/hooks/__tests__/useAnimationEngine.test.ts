@@ -4,7 +4,6 @@
 
 import { renderHook, act } from '@testing-library/react'
 import { useAnimationEngine } from '../useAnimationEngine'
-import { getAnimationEngine } from '@/services/animationEngine'
 import { PianoAnimationData } from '@/types/animation'
 
 // Mock animation engine
@@ -17,7 +16,7 @@ const defaultEngineState = {
   isReady: false
 }
 
-const mockEngineInstance = {
+const mockEngine = {
   loadAnimation: jest.fn(),
   play: jest.fn(),
   pause: jest.fn(),
@@ -32,14 +31,13 @@ const mockEngineInstance = {
 }
 
 jest.mock('@/services/animationEngine', () => ({
-  getAnimationEngine: jest.fn(() => mockEngineInstance)
+  getAnimationEngine: jest.fn(() => mockEngine)
 }))
+
 describe('useAnimationEngine', () => {
-  let mockEngine: any
   let testAnimationData: PianoAnimationData
 
   beforeEach(() => {
-    mockEngine = getAnimationEngine()
     mockEngine.getState.mockReturnValue(defaultEngineState)
     mockEngine.processUserInput.mockReturnValue(true)
     

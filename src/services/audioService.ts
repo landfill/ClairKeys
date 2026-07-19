@@ -4,9 +4,10 @@
  */
 
 import { noteToFrequency } from '@/utils/piano'
+import type { PolySynth, Reverb, Volume } from 'tone'
 
 // Tone.js를 동적으로 import하여 서버 사이드 렌더링 문제 방지
-let Tone: any = null
+let Tone: typeof import('tone') | null = null
 
 export interface AudioSettings {
   volume: number // 0-1
@@ -19,9 +20,9 @@ export interface AudioSettings {
 }
 
 export class AudioService {
-  private synth: any = null
-  private reverb: any = null
-  private volume: any = null
+  private synth: PolySynth | null = null
+  private reverb: Reverb | null = null
+  private volume: Volume | null = null
   private isInitialized = false
   private settings: AudioSettings = {
     volume: 0.7,
@@ -132,9 +133,6 @@ export class AudioService {
   }
 
   /**
-   * Stop all currently playing notes
-   */
-  /**
    * Enable or disable playback without discarding the configured settings.
    */
   setEnabled(enabled: boolean): void {
@@ -194,7 +192,7 @@ export class AudioService {
 
       // Update envelope settings
       if (this.synth && this.synth.voices) {
-        this.synth.voices.forEach((voice: any) => {
+        this.synth.voices.forEach(voice => {
           if (newSettings.attack !== undefined) {
             voice.envelope.attack = newSettings.attack
           }
@@ -225,7 +223,7 @@ export class AudioService {
    * Check if audio service is ready
    */
   isReady(): boolean {
-    return this.isInitialized && this.synth !== null && this.settings.enabled
+    return this.isInitialized && this.synth !== null
   }
 
   /**
