@@ -27,6 +27,7 @@ Captured: 2026-07-20 KST
 - `git diff --check`: PASS.
 - P0-D state scan: HANDOFF, phase document, and ROADMAP all report `IN_PROGRESS`.
 - Stale-state scan: no remaining `READY_FOR_MERGE` or pending “merge PR #12” instruction in the synchronized P0-D records.
+- Durable-action scan: HANDOFF does not leave PR #13 publication or review as a post-merge next action; issue #9 is first.
 
 ## Not tested
 

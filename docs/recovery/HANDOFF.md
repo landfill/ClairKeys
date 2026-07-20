@@ -27,11 +27,10 @@ Last updated: 2026-07-20 KST
 
 ## Next actions
 
-1. Monitor PR #13 checks and review feedback; merge only after explicit user authorization.
-2. Configure `main` branch protection and required-check wiring to resolve issue #9 and finish P0-D.
-3. Confirm issue #7 against the merged PR #12 evidence and close it as completed.
-4. Triage the failed post-merge database migration and production deployment jobs in a separate GitHub issue.
-5. After P0-D closes, continue with the product-critical P0-A/P0-B/P0-C sequence.
+1. Configure `main` branch protection and required-check wiring to resolve issue #9 and finish P0-D.
+2. Confirm issue #7 against the merged PR #12 evidence and close it as completed.
+3. Triage the failed post-merge database migration and production deployment jobs in a separate GitHub issue.
+4. After P0-D closes, continue with the product-critical P0-A/P0-B/P0-C sequence.
 
 ## Existing user-owned working tree changes
 
