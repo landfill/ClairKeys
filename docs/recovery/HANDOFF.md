@@ -8,7 +8,7 @@ Last updated: 2026-07-20 KST
 - Current phase: `P0-A` — 애니메이션 계약과 golden fixture 확립 (P0-D is `DONE`; P0-A is the next `READY` phase per `docs/recovery/ROADMAP.md`)
 - Phase document: `docs/recovery/phases/P0-A-animation-contract.md`
 - Base branch: `main`
-- Handoff delivery: PR pending from `codex/p0d-merge-cleanup`; this section is updated with the PR number once opened
+- Handoff delivery: [PR #16](https://github.com/landfill/ClairKeys/pull/16) from `codex/p0d-merge-cleanup`; consult GitHub and `docs/recovery/reviews/PR-16.md` for its live review state
 - Completed pull request: [#14](https://github.com/landfill/ClairKeys/pull/14) — `MERGED` at `05c70df` (P0-D handoff closeout); [#15](https://github.com/landfill/ClairKeys/pull/15) — `MERGED` at `992615f` (agent contract consolidation, `CLAUDE.md` reduced to a pointer at `AGENTS.md`)
 - Superseded pull request: [#11](https://github.com/landfill/ClairKeys/pull/11) — `CLOSED`
 - Current objective: start P0-A on a fresh `codex/p0-animation-contract` branch; P0-D no longer blocks it.
@@ -54,4 +54,4 @@ P0-A는 파일 범위가 겹치지 않으면 P0-D와 병렬로 시작할 수 있
 2. P0-B: MusicXML 박자/voice/staff/backup 변환 정확도
 3. P0-C: AudioContext 기준 시계와 애니메이션 동기화
 
-새 세션은 `docs/recovery/ROADMAP.md`, 현재 phase 문서(`P0-A-animation-contract.md`), 이 HANDOFF 순서로 읽는다. P0-D는 `DONE`이며 PR #14·#15 모두 병합되어 이 섹션의 "Handoff delivery"가 다음 PR로 갱신되기 전까지는 별도로 확인할 live PR이 없다. `docs/recovery/reviews/PR-12.md`, `PR-14.md`, `PR-15.md`는 품질 게이트·규약 복구의 역사적 근거로만 참조한다.
+새 세션은 `docs/recovery/ROADMAP.md`, 현재 phase 문서(`P0-A-animation-contract.md`), 이 HANDOFF, `docs/recovery/reviews/PR-16.md` 순서로 읽고 GitHub에서 PR #16의 live state를 확인한다. P0-D는 `DONE`이며 PR #14·#15는 이미 병합됐다. PR #16이 이미 병합됐다면 P0-A를 다음 작업으로 진행한다. `docs/recovery/reviews/PR-12.md`, `PR-14.md`, `PR-15.md`는 품질 게이트·규약 복구의 역사적 근거로만 참조한다.
