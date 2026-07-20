@@ -5,32 +5,28 @@ Last updated: 2026-07-20 KST
 ## Current state
 
 - Program status: `IN_PROGRESS`
-- Current phase: `P0-D` — 인증·타입·테스트·CI 기준선 복구
-- Phase document: `docs/recovery/phases/P0-D-quality-gates.md`
+- Current phase: `P0-A` — 애니메이션 계약과 golden fixture 확립 (P0-D is `DONE`; P0-A is the next `READY` phase per `docs/recovery/ROADMAP.md`)
+- Phase document: `docs/recovery/phases/P0-A-animation-contract.md`
 - Base branch: `main`
-- Handoff delivery: [PR #13](https://github.com/landfill/ClairKeys/pull/13) from `codex/p0d-handoff-sync`; consult GitHub and `docs/recovery/reviews/PR-13.md` for its live review state
-- Completed pull request: [#12](https://github.com/landfill/ClairKeys/pull/12) — `MERGED` at `271f4c6`
+- Handoff delivery: [PR #14](https://github.com/landfill/ClairKeys/pull/14) from `codex/p0d-handoff-closeout`; consult GitHub and `docs/recovery/reviews/PR-14.md` for its live review state
+- Completed pull request: [#12](https://github.com/landfill/ClairKeys/pull/12) — `MERGED` at `271f4c6` (P0-D quality gates)
 - Superseded pull request: [#11](https://github.com/landfill/ClairKeys/pull/11) — `CLOSED`
-- Current objective: finish P0-D by configuring `main` branch protection and required checks in issue #9.
+- Current objective: start P0-A on a fresh `codex/p0-animation-contract` branch; P0-D no longer blocks it.
 
 ## Latest verified result
 
-- PR #12 merged into `main` on 2026-07-20 at 13:28 KST. Its final head was `5d7afc3`; the merge commit is `271f4c6`.
-- PR #11 was closed as superseded after its accessibility changes were included in PR #12.
-- PR #12 final-head checks passed: lint, type, unit, build, accessibility, both E2E jobs, security audit/scan, CodeQL, Vercel, `All Checks Complete`, and `PR Summary`.
-- The Playwright suite now has 15 real cross-browser public-application smoke checks. The PR jobs completed in under three minutes, and the `main` merge commit's `E2E Tests` check passed.
-- GitHub still reports issues [#7](https://github.com/landfill/ClairKeys/issues/7) and [#9](https://github.com/landfill/ClairKeys/issues/9) as open. Issue #7's implementation and runtime completion criteria are satisfied by PR #12 and need administrative closure.
-- The `main` branch-protection endpoint returns `404 Branch not protected`. Required-check enforcement is therefore not configured, so P0-D is not complete.
-- On merge commit `271f4c6`, `Build application`, `E2E Tests`, `Test before deploy`, `Run Tests`, `Lint`, and `Security Audit` passed. `Run database migrations`, `Deploy to production`, and `Notify deployment status` failed and require separate deployment triage; they must not be represented as green.
-- Local production build remains externally blocked when `next/font` cannot reach Google Fonts; hosted CI remains the build authority for the quality-gate iteration.
-- PR #13 also carries the repository-wide lifecycle rule that PRs start review-ready, `main` merges require explicit user approval, merged work branches are cleaned up, and all handoff evidence remains under the project path.
+- P0-D is `DONE`. `docs/recovery/phases/P0-D-quality-gates.md` records all four completion criteria met.
+- Issue [#7](https://github.com/landfill/ClairKeys/issues/7) is `CLOSED`: PR #12 replaced the aspirational `piano-player.spec.ts`/`sheet-music-workflow.spec.ts` (dashboard/auth fixtures absent from the product) with `e2e/application-smoke.spec.ts`, 15 cross-browser public-route smoke checks. The `E2E Tests` check passed both on PR #12's own merge commit `271f4c6` and on current `main` HEAD `5ec5e84` (PR #13's merge commit).
+- Issue [#9](https://github.com/landfill/ClairKeys/issues/9) is `CLOSED`: `main` branch protection is configured with required status checks `Lint`, `Security Audit`, `Run Tests`, `E2E Tests` (`strict: false`, `enforce_admins: false`). `gh api repos/landfill/ClairKeys/branches/main/protection` confirms this (previously `404 Branch not protected`). The agent's write attempt was blocked by the local auto-mode classifier as a repository-admin action; the user applied the payload directly via `gh api -X PUT`.
+- Whether to additionally require pull requests / forbid direct pushes to `main` (issue #9's fourth checklist item) remains an explicit open decision, not yet made.
+- On `main` HEAD `5ec5e84` (PR #13's merge commit, distinct from PR #12's `271f4c6`), `Build application`, `E2E Tests`, `Test before deploy`, `Run Tests`, `Lint`, and `Security Audit` passed. `Run database migrations`, `Deploy to production`, and `Notify deployment status` failed and still have no dedicated GitHub issue.
+- Full evidence: `docs/recovery/validation/2026-07-20-p0d-branch-protection-and-issue-closeout.md`.
 
 ## Next actions
 
-1. Configure `main` branch protection and required-check wiring to resolve issue #9 and finish P0-D.
-2. If issue #9 is blocked on GitHub administration and file scopes remain separate, start P0-A from the latest `main` in parallel with P0-D.
-3. Confirm issue #7 against the merged PR #12 evidence and close it as completed.
-4. Triage the failed post-merge database migration and production deployment jobs in a separate GitHub issue.
+1. Start P0-A (`docs/recovery/phases/P0-A-animation-contract.md`) on a new `codex/p0-animation-contract` branch from the latest `main`.
+2. Open a dedicated GitHub issue for the post-merge `Run database migrations` / `Deploy to production` / `Notify deployment status` failures observed on `5ec5e84`.
+3. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
 
 ## Existing user-owned working tree changes
 
@@ -57,4 +53,4 @@ P0-A는 파일 범위가 겹치지 않으면 P0-D와 병렬로 시작할 수 있
 2. P0-B: MusicXML 박자/voice/staff/backup 변환 정확도
 3. P0-C: AudioContext 기준 시계와 애니메이션 동기화
 
-새 세션은 `docs/recovery/ROADMAP.md`, 현재 phase 문서, 이 HANDOFF, `docs/recovery/reviews/PR-13.md` 순서로 읽고 GitHub에서 PR #13의 live state를 확인한다. PR #13이 이미 병합됐다면 issue #9를 P0-D의 우선 작업으로 진행하되, GitHub 관리 권한이 blocker이고 파일 범위가 겹치지 않으면 P0-A를 병렬 시작할 수 있다. `docs/recovery/reviews/PR-12.md`는 품질 게이트 복구의 역사적 근거로만 참조한다.
+새 세션은 `docs/recovery/ROADMAP.md`, 현재 phase 문서(`P0-A-animation-contract.md`), 이 HANDOFF, `docs/recovery/reviews/PR-14.md` 순서로 읽고 GitHub에서 PR #14의 live state를 확인한다. P0-D는 `DONE`이므로 더 이상 선행 조건이 아니며, `docs/recovery/reviews/PR-12.md`는 품질 게이트 복구의 역사적 근거로만 참조한다.
