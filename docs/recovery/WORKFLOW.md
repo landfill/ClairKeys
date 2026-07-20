@@ -5,7 +5,8 @@
 DOC-1은 `main` 생성 전 기본 브랜치 rename을 준비하므로 `master`에서 분기하고 PR base도 `master`를 사용하는 일회성 예외다. 아래 일반 규칙은 DOC-1 병합과 GitHub branch rename이 완료된 뒤 적용한다.
 
 ```text
-read AGENTS.md
+git fetch origin, git pull --ff-only if main is behind origin/main
+→ read AGENTS.md
 → read docs/recovery/README.md
 → read docs/recovery/HANDOFF.md
 → read the current phase document named by HANDOFF.md
