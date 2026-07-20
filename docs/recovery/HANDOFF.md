@@ -28,9 +28,9 @@ Last updated: 2026-07-20 KST
 ## Next actions
 
 1. Configure `main` branch protection and required-check wiring to resolve issue #9 and finish P0-D.
-2. Confirm issue #7 against the merged PR #12 evidence and close it as completed.
-3. Triage the failed post-merge database migration and production deployment jobs in a separate GitHub issue.
-4. After P0-D closes, continue with the product-critical P0-A/P0-B/P0-C sequence.
+2. If issue #9 is blocked on GitHub administration and file scopes remain separate, start P0-A from the latest `main` in parallel with P0-D.
+3. Confirm issue #7 against the merged PR #12 evidence and close it as completed.
+4. Triage the failed post-merge database migration and production deployment jobs in a separate GitHub issue.
 
 ## Existing user-owned working tree changes
 
@@ -51,10 +51,10 @@ Last updated: 2026-07-20 KST
 
 ## Product-critical follow-up order
 
-P0-D 이후 핵심 제품 작업은 다음 순서를 유지한다.
+P0-A는 파일 범위가 겹치지 않으면 P0-D와 병렬로 시작할 수 있다. 이후 핵심 제품 작업은 다음 의존 순서를 유지한다.
 
 1. P0-A: canonical animation contract와 양손·다성부 golden fixture
 2. P0-B: MusicXML 박자/voice/staff/backup 변환 정확도
 3. P0-C: AudioContext 기준 시계와 애니메이션 동기화
 
-새 세션은 `docs/recovery/ROADMAP.md`, 현재 phase 문서, 이 HANDOFF, `docs/recovery/reviews/PR-13.md` 순서로 읽고 GitHub에서 PR #13의 live state를 확인한다. PR #13이 이미 병합됐다면 issue #9를 다음 작업으로 진행하며, `docs/recovery/reviews/PR-12.md`는 품질 게이트 복구의 역사적 근거로만 참조한다.
+새 세션은 `docs/recovery/ROADMAP.md`, 현재 phase 문서, 이 HANDOFF, `docs/recovery/reviews/PR-13.md` 순서로 읽고 GitHub에서 PR #13의 live state를 확인한다. PR #13이 이미 병합됐다면 issue #9를 P0-D의 우선 작업으로 진행하되, GitHub 관리 권한이 blocker이고 파일 범위가 겹치지 않으면 P0-A를 병렬 시작할 수 있다. `docs/recovery/reviews/PR-12.md`는 품질 게이트 복구의 역사적 근거로만 참조한다.
