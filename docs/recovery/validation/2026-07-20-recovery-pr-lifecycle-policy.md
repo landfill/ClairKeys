@@ -20,7 +20,7 @@ Captured: 2026-07-20 KST
 
 - Draft-policy scan: no instruction remains to create or start with a Draft PR in the active project contract or workflow.
 - Merge-policy scan: AGENTS and WORKFLOW both require explicit user approval for the target PR.
-- Cleanup-policy scan: both documents require remote and local work-branch cleanup after verified merge, with safety stops for user changes or unique commits.
+- Cleanup-policy scan: both documents require fetching remote refs and proving that local and remote work-branch tips are included in updated `main` before either deletion, with safety stops for user changes or unique commits on either tip.
 - Handoff-location scan: canonical and supporting handoff artifacts are restricted to paths under `docs/recovery/`.
 - `git diff --check`: PASS.
 

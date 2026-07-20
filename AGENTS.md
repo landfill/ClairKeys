@@ -34,7 +34,7 @@
 4. PR 번호를 `docs/recovery/HANDOFF.md`와 `docs/recovery/reviews/PR-<number>.md`에 기록하고, CI·리뷰 수정마다 프로젝트 내부 기록을 갱신한다.
 5. 모든 필수 체크와 actionable review를 처리한 뒤에도 사용자의 명시적 병합 승인을 기다린다.
 6. 승인을 받으면 PR을 병합하고 `main`의 반영 커밋·체크를 확인한다.
-7. 병합된 원격 작업 브랜치를 삭제하고, 로컬에서 `main`으로 이동한 뒤 로컬 작업 브랜치도 삭제한다. 사용자 소유 미커밋 변경이나 미푸시 고유 커밋이 있으면 삭제하지 않고 HANDOFF에 blocker로 기록한다.
+7. 원격 ref를 fetch한 뒤 최신 `main`에 로컬·원격 작업 브랜치 tip이 모두 포함됐는지 확인한다. 사용자 소유 미커밋 변경이나 어느 tip에든 고유 커밋이 있으면 어떤 브랜치도 삭제하지 않고 HANDOFF에 blocker로 기록한다. 두 tip이 모두 병합된 경우에만 원격 작업 브랜치를 삭제하고, 로컬에서 `main`으로 이동한 뒤 로컬 작업 브랜치도 삭제한다.
 8. 병합 결과와 다음 단계를 프로젝트 내부 HANDOFF·phase·validation·review 기록에 남긴 뒤 다음 단계용 새 브랜치를 만든다.
 
 HANDOFF의 canonical entrypoint는 `docs/recovery/HANDOFF.md`다. 세부 근거는 `docs/recovery/phases/`, `docs/recovery/validation/`, `docs/recovery/reviews/`, `docs/recovery/DECISIONS.md`에 둔다. PR이 병합되면 stale해질 `OPEN`, `READY_FOR_REVIEW`, 작업 브랜치 같은 transient 상태는 durable HANDOFF에 고정하지 않고 PR review log와 GitHub live state로 확인한다.
