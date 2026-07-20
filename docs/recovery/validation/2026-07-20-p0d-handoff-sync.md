@@ -23,6 +23,7 @@ Captured: 2026-07-20 KST
 
 - `git rev-parse --short main`: `271f4c6`.
 - `git rev-parse --short origin/main`: `271f4c6`.
+- Review-ready PR #13 targets `main` from `codex/p0d-handoff-sync` and contains only this bounded documentation synchronization.
 - `git diff --check`: PASS.
 - P0-D state scan: HANDOFF, phase document, and ROADMAP all report `IN_PROGRESS`.
 - Stale-state scan: no remaining `READY_FOR_MERGE` or pending “merge PR #12” instruction in the synchronized P0-D records.

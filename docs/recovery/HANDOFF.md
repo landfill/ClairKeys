@@ -9,10 +9,10 @@ Last updated: 2026-07-20 KST
 - Phase document: `docs/recovery/phases/P0-D-quality-gates.md`
 - Working branch: `codex/p0d-handoff-sync`
 - Base branch: `main`
-- Current pull request: none; this documentation sync has not been published yet
+- Current pull request: [#13](https://github.com/landfill/ClairKeys/pull/13) — `OPEN`, `READY_FOR_REVIEW`, `MERGEABLE`
 - Completed pull request: [#12](https://github.com/landfill/ClairKeys/pull/12) — `MERGED` at `271f4c6`
 - Superseded pull request: [#11](https://github.com/landfill/ClairKeys/pull/11) — `CLOSED`
-- Current objective: synchronize the recovery records with live GitHub state, then finish P0-D by configuring `main` branch protection and required checks in issue #9.
+- Current objective: review and land the documentation-only handoff synchronization in PR #13, then finish P0-D by configuring `main` branch protection and required checks in issue #9.
 
 ## Latest verified result
 
@@ -27,7 +27,7 @@ Last updated: 2026-07-20 KST
 
 ## Next actions
 
-1. Publish this documentation-only handoff synchronization through a PR against `main`; merge only after explicit user authorization.
+1. Monitor PR #13 checks and review feedback; merge only after explicit user authorization.
 2. Configure `main` branch protection and required-check wiring to resolve issue #9 and finish P0-D.
 3. Confirm issue #7 against the merged PR #12 evidence and close it as completed.
 4. Triage the failed post-merge database migration and production deployment jobs in a separate GitHub issue.
