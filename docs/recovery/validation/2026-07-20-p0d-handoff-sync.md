@@ -29,6 +29,7 @@ Captured: 2026-07-20 KST
 - Stale-state scan: no remaining `READY_FOR_MERGE` or pending “merge PR #12” instruction in the synchronized P0-D records.
 - Durable-action scan: HANDOFF does not leave PR #13 publication or review as a post-merge next action; issue #9 is first.
 - Durable-objective scan: HANDOFF names issue #9 rather than PR #13 review or merge as the current objective.
+- PR #13 hosted checks on review-objective head `d82dfc2`: lint, type, tests, security audit, E2E, Vercel, CodeRabbit status, `All Checks Complete`, and `PR Summary` passed.
 
 ## Not tested
 
