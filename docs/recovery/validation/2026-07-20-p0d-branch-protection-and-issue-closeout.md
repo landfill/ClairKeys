@@ -13,7 +13,7 @@ Environment: `gh CLI against github.com/landfill/ClairKeys`
 
 | Command | Result | Evidence |
 |---|---|---|
-| `gh api repos/landfill/ClairKeys/commits/5ec5e84.../check-runs` | PASS | `Lint`, `Security Audit`, `Run Tests`, `E2E Tests`, `Build application`, `Test before deploy` all `success` on the `main` merge commit |
+| `gh api repos/landfill/ClairKeys/commits/5ec5e84/check-runs` | PASS | `Lint`, `Security Audit`, `Run Tests`, `E2E Tests`, `Build application`, `Test before deploy` all `success` on `main` HEAD (PR #13's merge commit, not PR #12's `271f4c6`) |
 | `grep -rn "isMobile\|hasText" e2e/` | PASS | no matches; the specs that used the removed APIs (`piano-player.spec.ts`, `sheet-music-workflow.spec.ts`) no longer exist |
 | `git log --diff-filter=D -- e2e/piano-player.spec.ts e2e/sheet-music-workflow.spec.ts` | PASS | both files were removed in `fc0df1f`, replaced by `e2e/application-smoke.spec.ts` (15 cross-browser smoke checks) |
 | `gh api repos/landfill/ClairKeys/branches/main/protection` (before) | FAIL (expected) | `404 Branch not protected` |
@@ -28,8 +28,8 @@ Environment: `gh CLI against github.com/landfill/ClairKeys`
   - Issue #9: `main` merges can no longer land while `Lint`, `Security Audit`, `Run Tests`, or `E2E Tests` are red, closing the gap that allowed PR #4 to merge with a red CI.
 - Remaining pre-existing failures:
   - `main` merge commit's `Run database migrations`, `Deploy to production`, `Notify deployment status` jobs still fail.
-    - Baseline command: `gh api repos/landfill/ClairKeys/commits/5ec5e84.../check-runs`
-    - Observed at (commit/CI/date): `5ec5e84`, 2026-07-20
+    - Baseline command: `gh api repos/landfill/ClairKeys/commits/5ec5e84/check-runs`
+    - Observed at (commit/CI/date): `5ec5e84` (`main` HEAD, PR #13's merge commit), 2026-07-20
     - Evidence record: this file; no dedicated GitHub issue exists yet
 - New failures: none observed.
 
