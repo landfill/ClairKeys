@@ -30,6 +30,8 @@ Captured: 2026-07-20 KST
 - Durable-action scan: HANDOFF does not leave PR #13 publication or review as a post-merge next action; issue #9 is first.
 - Durable-objective scan: HANDOFF names issue #9 rather than PR #13 review or merge as the current objective.
 - PR #13 hosted checks on review-objective head `d82dfc2`: lint, type, tests, security audit, E2E, Vercel, CodeRabbit status, `All Checks Complete`, and `PR Summary` passed.
+- PR-state durability scan: HANDOFF records PR #13 as delivery provenance without duplicating transient `OPEN`, draft/review, mergeability, or working-branch state.
+- Startup scan: new sessions read PR-13.md, verify PR #13 live state on GitHub, and proceed to issue #9 when it is merged.
 
 ## Not tested
 

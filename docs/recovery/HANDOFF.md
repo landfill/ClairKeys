@@ -7,9 +7,8 @@ Last updated: 2026-07-20 KST
 - Program status: `IN_PROGRESS`
 - Current phase: `P0-D` — 인증·타입·테스트·CI 기준선 복구
 - Phase document: `docs/recovery/phases/P0-D-quality-gates.md`
-- Working branch: `codex/p0d-handoff-sync`
 - Base branch: `main`
-- Current pull request: [#13](https://github.com/landfill/ClairKeys/pull/13) — `OPEN`, `READY_FOR_REVIEW`, `MERGEABLE`
+- Handoff delivery: [PR #13](https://github.com/landfill/ClairKeys/pull/13) from `codex/p0d-handoff-sync`; consult GitHub and `docs/recovery/reviews/PR-13.md` for its live review state
 - Completed pull request: [#12](https://github.com/landfill/ClairKeys/pull/12) — `MERGED` at `271f4c6`
 - Superseded pull request: [#11](https://github.com/landfill/ClairKeys/pull/11) — `CLOSED`
 - Current objective: finish P0-D by configuring `main` branch protection and required checks in issue #9.
@@ -57,4 +56,4 @@ P0-D 이후 핵심 제품 작업은 다음 순서를 유지한다.
 2. P0-B: MusicXML 박자/voice/staff/backup 변환 정확도
 3. P0-C: AudioContext 기준 시계와 애니메이션 동기화
 
-새 세션은 `docs/recovery/ROADMAP.md`, 현재 phase 문서, 이 HANDOFF, `docs/recovery/reviews/PR-12.md` 순서로 읽는다.
+새 세션은 `docs/recovery/ROADMAP.md`, 현재 phase 문서, 이 HANDOFF, `docs/recovery/reviews/PR-13.md` 순서로 읽고 GitHub에서 PR #13의 live state를 확인한다. PR #13이 이미 병합됐다면 issue #9를 다음 작업으로 진행하며, `docs/recovery/reviews/PR-12.md`는 품질 게이트 복구의 역사적 근거로만 참조한다.
