@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-07-20 KST
+Last updated: 2026-07-21 KST
 
 ## Current state
 
@@ -31,6 +31,7 @@ Last updated: 2026-07-20 KST
 
 1. Start P0-A (`docs/recovery/phases/P0-A-animation-contract.md`) on a new `codex/p0-animation-contract` branch from the latest `main`.
 2. Open a dedicated GitHub issue for the post-merge `Run database migrations` / `Deploy to production` / `Notify deployment status` failures.
+3. Fix issue [#18](https://github.com/landfill/ClairKeys/issues/18) (audio stops after ~10s on long scores). This is P0-C Work stages 1–3, filed 2026-07-21 from a user report on `/sheet/2`. P0-C is planned to depend on P0-A/P0-B, so starting it early requires a `docs/recovery/DECISIONS.md` entry recording the dependency-order deviation, committed in the same branch/PR as the fix.
 3. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
 
 ## Existing user-owned working tree changes
