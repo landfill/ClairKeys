@@ -27,3 +27,17 @@ describe('PR accessibility workflow', () => {
     expect(accessibilityJob).toContain("grep -q '<main'")
   })
 })
+
+describe('PR summary workflow', () => {
+  const workflow = readFileSync(
+    join(process.cwd(), '.github/workflows/pr-checks.yml'),
+    'utf8'
+  )
+  const summaryJob = workflow
+    .split(/^  pr-summary:\s*$/m)[1]
+    .split(/^  all-checks:\s*$/m)[0]
+
+  it('can publish its summary comment', () => {
+    expect(summaryJob).toMatch(/permissions:\n      issues: write/)
+  })
+})
