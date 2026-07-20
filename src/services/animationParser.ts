@@ -188,9 +188,9 @@ export class AnimationParserService implements AnimationParser {
         try {
           const note: PianoNote = {
             note: this.normalizeNoteName(rawNote.note ?? rawNote.pitch ?? ''),
-            startTime: Math.max(0, parseFloat(String(rawNote.startTime ?? rawNote.time ?? 0))),
-            duration: Math.max(0.1, parseFloat(String(rawNote.duration ?? 0.5))),
-            velocity: Math.max(0, Math.min(1, parseFloat(String(rawNote.velocity ?? 0.8)))),
+            startTime: Math.max(0, this.parseFiniteNumber(rawNote.startTime ?? rawNote.time, 0)),
+            duration: Math.max(0.1, this.parseFiniteNumber(rawNote.duration, 0.5)),
+            velocity: Math.max(0, Math.min(1, this.parseFiniteNumber(rawNote.velocity, 0.8))),
             finger: rawNote.finger ? parseInt(String(rawNote.finger)) : undefined,
             hand: rawNote.hand === 'left' || rawNote.hand === 'right' ? rawNote.hand : undefined
           }
@@ -226,6 +226,11 @@ export class AnimationParserService implements AnimationParser {
         difficulty: rawData.difficulty
       }
     }
+  }
+
+  private parseFiniteNumber(value: string | number | undefined, fallback: number): number {
+    const parsed = Number.parseFloat(String(value ?? fallback))
+    return Number.isFinite(parsed) ? parsed : fallback
   }
 
   /**

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 export interface ProcessingJob {
   id: string
@@ -55,7 +55,8 @@ export function useBackgroundProcessing() {
     error: null
   })
 
-  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null)
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [isPolling, setIsPolling] = useState(false)
 
   // Fetch processing jobs
   const fetchJobs = useCallback(async (limit = 10) => {
@@ -309,15 +310,16 @@ export function useBackgroundProcessing() {
 
   // Stop polling
   const stopPolling = useCallback(() => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval)
-      setPollingInterval(null)
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current)
+      pollingIntervalRef.current = null
+      setIsPolling(false)
     }
-  }, [pollingInterval])
+  }, [])
 
   // Start polling for active jobs
   const startPolling = useCallback(() => {
-    if (pollingInterval) return
+    if (pollingIntervalRef.current) return
 
     const interval = setInterval(async () => {
       const jobs = await fetchJobs()
@@ -332,8 +334,9 @@ export function useBackgroundProcessing() {
       await fetchNotifications()
     }, 2000) // Poll every 2 seconds
 
-    setPollingInterval(interval)
-  }, [pollingInterval, fetchJobs, fetchNotifications, stopPolling])
+    pollingIntervalRef.current = interval
+    setIsPolling(true)
+  }, [fetchJobs, fetchNotifications, stopPolling])
 
   // Auto-start polling when there are active jobs
   useEffect(() => {
@@ -341,21 +344,22 @@ export function useBackgroundProcessing() {
       job.status === 'PENDING' || job.status === 'PROCESSING'
     )
 
-    if (hasActiveJobs && !pollingInterval) {
+    if (hasActiveJobs && !isPolling) {
       startPolling()
-    } else if (!hasActiveJobs && pollingInterval) {
+    } else if (!hasActiveJobs && isPolling) {
       stopPolling()
     }
-  }, [state.jobs, pollingInterval, startPolling, stopPolling])
+  }, [state.jobs, isPolling, startPolling, stopPolling])
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (pollingInterval) {
-        clearInterval(pollingInterval)
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+        pollingIntervalRef.current = null
       }
     }
-  }, [pollingInterval])
+  }, [])
 
   // Initial data fetch
   useEffect(() => {
@@ -375,6 +379,6 @@ export function useBackgroundProcessing() {
     markAllNotificationsAsRead,
     startPolling,
     stopPolling,
-    isPolling: !!pollingInterval
+    isPolling
   }
 }

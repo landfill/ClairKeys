@@ -5,7 +5,7 @@
  * Features: animated progress bars, particle effects, smooth transitions, and dynamic themes
  */
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 type ProcessingStage = 'upload' | 'parsing' | 'omr' | 'validation' | 'generation';
 
 interface ProcessingAnimation {
@@ -88,12 +88,14 @@ export default function EnhancedProcessingStatus({
 }: EnhancedProcessingStatusProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationFrameRef = useRef<number | undefined>(undefined)
-  const [animation, setAnimation] = useState<ProcessingAnimation>({
+  const animationRef = useRef<ProcessingAnimation>({
     particles: [],
     wave: { amplitude: 10, frequency: 0.02, phase: 0 }
   })
 
   const config = STAGE_CONFIG[stage]
+  const frameValuesRef = useRef({ config, progress, theme })
+  frameValuesRef.current = { config, progress, theme }
   const remainingTime = Math.max(0, estimatedTime - elapsedTime)
 
   // Initialize particles
@@ -114,10 +116,10 @@ export default function EnhancedProcessingStatus({
       life: Math.random() * 100 + 50
     }))
 
-    setAnimation(prev => ({
-      ...prev,
+    animationRef.current = {
+      ...animationRef.current,
       particles: newParticles
-    }))
+    }
   }, [stage, enableAnimations, theme, config])
 
   // Animation loop
@@ -132,17 +134,17 @@ export default function EnhancedProcessingStatus({
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Update wave phase
-      setAnimation(prev => ({
-        ...prev,
-        wave: {
-          ...prev.wave,
-          phase: prev.wave.phase + 0.05
-        }
-      }))
-
       // Draw wave background
       drawWave(ctx, canvas.width, canvas.height)
+
+      // Update wave phase for the next frame
+      animationRef.current = {
+        ...animationRef.current,
+        wave: {
+          ...animationRef.current.wave,
+          phase: animationRef.current.wave.phase + 0.05
+        }
+      }
 
       // Update and draw particles
       updateAndDrawParticles(ctx, canvas.width, canvas.height)
@@ -159,17 +161,17 @@ export default function EnhancedProcessingStatus({
     }
     // drawWave/updateAndDrawParticles are intentionally excluded: they're recreated
     // every render, and listing them here would restart the rAF loop on each render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enableAnimations])
 
   const drawWave = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    const { amplitude, frequency, phase } = animation.wave
+    const { amplitude, frequency, phase } = animationRef.current.wave
+    const { config: currentConfig, progress: currentProgress } = frameValuesRef.current
     
     ctx.beginPath()
     ctx.moveTo(0, height / 2)
     
     for (let x = 0; x <= width; x++) {
-      const y = height / 2 + Math.sin(x * frequency + phase) * amplitude * (progress / 100)
+      const y = height / 2 + Math.sin(x * frequency + phase) * amplitude * (currentProgress / 100)
       ctx.lineTo(x, y)
     }
     
@@ -178,19 +180,20 @@ export default function EnhancedProcessingStatus({
     ctx.closePath()
     
     const gradient = ctx.createLinearGradient(0, 0, 0, height)
-    gradient.addColorStop(0, `${config.color}20`)
-    gradient.addColorStop(1, `${config.color}05`)
+    gradient.addColorStop(0, `${currentConfig.color}20`)
+    gradient.addColorStop(1, `${currentConfig.color}05`)
     
     ctx.fillStyle = gradient
     ctx.fill()
   }
 
   const updateAndDrawParticles = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    const particleSymbols = theme === 'music' ? MUSICAL_PARTICLES : TECH_PARTICLES
-    
-    setAnimation(prev => ({
-      ...prev,
-      particles: prev.particles.map(particle => {
+    const { progress: currentProgress, theme: currentTheme } = frameValuesRef.current
+    const particleSymbols = currentTheme === 'music' ? MUSICAL_PARTICLES : TECH_PARTICLES
+
+    animationRef.current = {
+      ...animationRef.current,
+      particles: animationRef.current.particles.map(particle => {
         // Update position
         let newX = particle.x + particle.vx
         let newY = particle.y + particle.vy
@@ -209,10 +212,10 @@ export default function EnhancedProcessingStatus({
 
         // Draw particle
         ctx.save()
-        ctx.globalAlpha = particle.opacity * (progress / 100)
+        ctx.globalAlpha = particle.opacity * (currentProgress / 100)
         ctx.fillStyle = particle.color
         
-        if (theme === 'music') {
+        if (currentTheme === 'music') {
           ctx.font = `${particle.size * 3}px serif`
           ctx.textAlign = 'center'
           ctx.fillText(
@@ -237,7 +240,7 @@ export default function EnhancedProcessingStatus({
           life: particle.life - 1
         }
       }).filter(particle => particle.life > 0)
-    }))
+    }
   }
 
   const formatTime = (seconds: number): string => {

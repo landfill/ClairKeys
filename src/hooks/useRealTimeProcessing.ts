@@ -67,7 +67,12 @@ export function useRealTimeProcessing(
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null)
   const currentSessionRef = useRef<string | null>(null)
   const reconnectAttemptsRef = useRef(0)
+  const callbacksRef = useRef({ onComplete, onError, onStageChange })
   const maxReconnectAttempts = 5
+
+  useEffect(() => {
+    callbacksRef.current = { onComplete, onError, onStageChange }
+  }, [onComplete, onError, onStageChange])
 
   // Cleanup function
   const cleanup = useCallback(() => {
@@ -119,21 +124,21 @@ export function useRealTimeProcessing(
 
         setStatus(prevStatus => {
           if (!prevStatus || prevStatus.stage !== newStatus.stage) {
-            onStageChange?.(newStatus.stage)
+            callbacksRef.current.onStageChange?.(newStatus.stage)
           }
           return newStatus
         })
 
         // Handle completion
         if (data.completed && data.result) {
-          onComplete?.(data.result)
+          callbacksRef.current.onComplete?.(data.result)
           cleanup()
           return
         }
 
         // Handle error
         if (data.error) {
-          onError?.(data.error)
+          callbacksRef.current.onError?.(data.error)
           cleanup()
           return
         }
@@ -149,7 +154,7 @@ export function useRealTimeProcessing(
 
     // Setup interval
     pollTimerRef.current = setInterval(poll, pollInterval)
-  }, [cleanup, onComplete, onError, onStageChange, pollInterval])
+  }, [cleanup, pollInterval])
 
   // Setup Server-Sent Events connection
   const setupSSEConnection = useCallback((sessionId: string) => {
@@ -192,20 +197,20 @@ export function useRealTimeProcessing(
             setStatus(prevStatus => {
               // Only call onStageChange if stage actually changed
               if (!prevStatus || prevStatus.stage !== newStatus.stage) {
-                onStageChange?.(newStatus.stage)
+                callbacksRef.current.onStageChange?.(newStatus.stage)
               }
               return newStatus
             })
 
             // Handle completion
             if (data.completed && data.result) {
-              onComplete?.(data.result)
+              callbacksRef.current.onComplete?.(data.result)
               cleanup()
             }
 
             // Handle error
             if (data.error) {
-              onError?.(data.error)
+              callbacksRef.current.onError?.(data.error)
               cleanup()
             }
           }
@@ -213,7 +218,7 @@ export function useRealTimeProcessing(
           if (data.type === 'error') {
             console.error('SSE error:', data.message)
             setError(data.message)
-            onError?.(data.message)
+            callbacksRef.current.onError?.(data.message)
             cleanup()
           }
 
@@ -252,7 +257,7 @@ export function useRealTimeProcessing(
       // Fallback to polling
       setupPolling(sessionId)
     }
-  }, [cleanup, onComplete, onError, onStageChange, setupPolling])
+  }, [cleanup, setupPolling])
 
   // Start processing
   const startProcessing = useCallback(async (file: File, metadata: UploadMetadata) => {
@@ -292,10 +297,10 @@ export function useRealTimeProcessing(
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to start processing'
       setError(errorMessage)
-      onError?.(errorMessage)
+      callbacksRef.current.onError?.(errorMessage)
       throw error
     }
-  }, [setupSSEConnection, cleanup, onError])
+  }, [setupSSEConnection, cleanup])
 
   // Cancel processing
   const cancelProcessing = useCallback(async () => {

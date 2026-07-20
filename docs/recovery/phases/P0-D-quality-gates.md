@@ -29,5 +29,7 @@ Status: `IN_PROGRESS`
 - DONE: root dependency metadata and `package-lock.json` are synchronized.
 - DONE: root `engines.node` and every GitHub Actions setup use Node 22.
 - PASS: clean `npm ci` completes on Node 22.18.0 / npm 10.9.3.
-- NEXT: repair Jest environment/contracts, then TypeScript and ESLint failures in focused slices.
-- BASELINE: Jest 7/21 suites pass and 183/252 tests pass; TypeScript and ESLint still fail on pre-existing contract drift.
+- DONE: Jest environment/contracts and TypeScript failures are repaired.
+- PASS: ESLint reports zero warnings and zero errors.
+- PASS: TypeScript reports zero errors and Jest passes 24 suites / 276 tests.
+- IN_REVIEW: PR #12 reviewer regressions are fixed locally; hosted checks and refreshed thread state remain.

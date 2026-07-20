@@ -4,14 +4,14 @@ Last updated: 2026-07-20 KST
 
 ## Current state
 
-- Program status: `IN_PROGRESS`
+- Program status: `IN_REVIEW`
 - Current phase: `P0-D` — 인증·타입·테스트·CI 기준선 복구
 - Phase document: `docs/recovery/phases/P0-D-quality-gates.md`
-- Working branch: `codex/p0-typescript-fixes`
+- Working branch: `fix/lint-gate`
 - Base branch: `main`
-- Pull request: Issue #5 (PR to be created)
-- PR state: `N/A`
-- Current objective: Resolve 188 TypeScript compilation errors and ensure all Unit Tests pass.
+- Pull request: [#12](https://github.com/landfill/ClairKeys/pull/12)
+- PR state: `OPEN`
+- Current objective: Keep the zero-warning lint gate while resolving all actionable PR #12 review feedback.
 
 ## Latest verified result
 
@@ -20,14 +20,18 @@ Last updated: 2026-07-20 KST
 - `Security Audit` 워크플로 구성 오류를 복구했다. 35건/고위험 9건을 4건/고위험 0건으로 줄였고, 호스팅 Security Audit과 Security Scan이 통과했다.
 - **TypeScript 검사:** `npx tsc --noEmit`가 모든 타입 오류를 해결하여 0 에러 (exit code 0) 상태로 통과했다.
 - **단위 테스트 검사:** `npm run test`가 21개 테스트 스위트, 271개 테스트 모두 성공(PASS)으로 통과했다.
+- PR #12 review regression tests: PASS — 5 suites, 37 tests.
+- Current full Jest suite: PASS — 24 suites, 276 tests.
+- Current ESLint and TypeScript checks: PASS — zero lint findings and zero type errors.
+- Local production build retry is externally blocked because `next/font` cannot reach Google Fonts; hosted CI remains the build authority for this iteration.
 - Supabase 비밀값 없는 프로덕션 빌드는 지연 클라이언트 생성 수정 후 통과했다.
 - Next 15 동적 라우트 매개변수 타입 오류 및 OAuth 사용자 ID 반환 타입 등의 이슈가 복구되었다.
 
 ## Next actions
 
-1. 변경된 `p0-typescript-fixes` 브랜치를 커밋하고 푸시하여 PR #5를 생성한다.
-2. PR #5의 CI 결과와 리뷰를 확인한다.
-3. 남은 품질 개선 목표(ESLint 오류 제거 등)를 진행한다.
+1. Push the PR #12 review-fix commit and inspect the new hosted checks.
+2. Refresh unresolved review threads and confirm the five fixed threads are outdated or resolved.
+3. Address any new actionable review or CI failure before merge handoff.
 
 ## Existing user-owned working tree changes
 

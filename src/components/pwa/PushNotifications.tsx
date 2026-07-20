@@ -394,7 +394,7 @@ function urlBase64ToUint8Array(base64String: string) {
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false)
   const [permission, setPermission] = useState<globalThis.NotificationPermission>('default')
-  const [isSubscribed] = useState(false)
+  const [isSubscribed, setIsSubscribed] = useState(false)
 
   useEffect(() => {
     const checkSupport = () => {
@@ -410,6 +410,37 @@ export function usePushNotifications() {
 
     checkSupport()
   }, [])
+
+  useEffect(() => {
+    let isActive = true
+
+    const checkSubscription = async () => {
+      if (!isSupported || permission !== 'granted') {
+        setIsSubscribed(false)
+        return
+      }
+
+      try {
+        const registration = await navigator.serviceWorker.ready
+        const subscription = await registration.pushManager.getSubscription()
+
+        if (isActive) {
+          setIsSubscribed(subscription !== null)
+        }
+      } catch (error) {
+        console.error('Failed to check push subscription status:', error)
+        if (isActive) {
+          setIsSubscribed(false)
+        }
+      }
+    }
+
+    void checkSubscription()
+
+    return () => {
+      isActive = false
+    }
+  }, [isSupported, permission])
 
   const requestPermission = useCallback(async () => {
     if (permission === 'default') {
