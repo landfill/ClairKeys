@@ -1,0 +1,42 @@
+# Validation — P0-D Handoff Synchronization
+
+Captured: 2026-07-20 KST
+
+## Scope
+
+- Synchronize recovery records after PR #12 merged and PR #11 closed.
+- Preserve P0-D as incomplete while `main` remains unprotected.
+- Record issue #7 as implementation-complete but still open, and issue #9 as the active P0-D blocker.
+- Separate the failed post-merge deployment jobs from the green PR quality-gate evidence.
+- Preserve ROADMAP's P0-A/P0-D parallel-start allowance when file scopes remain separate.
+
+## Live GitHub evidence
+
+- PR #12: `MERGED`; final head `5d7afc3`; merge commit `271f4c6`.
+- PR #11: `CLOSED`, not merged, superseded by PR #12.
+- Open issues: #7 and #9.
+- `GET /repos/landfill/ClairKeys/branches/main/protection`: `404 Branch not protected`.
+- PR #12 final head: lint, type, unit, build, accessibility, E2E, security, CodeQL, Vercel, and aggregate checks passed.
+- Merge commit `271f4c6`: application build, E2E, pre-deploy test, unit, lint, and security audit passed.
+- Merge commit `271f4c6`: database migration, production deployment, and deployment notification failed.
+
+## Repository validation
+
+- `git rev-parse --short main`: `271f4c6`.
+- `git rev-parse --short origin/main`: `271f4c6`.
+- Review-ready PR #13 targets `main` from `codex/p0d-handoff-sync` and contains only this bounded documentation synchronization.
+- `git diff --check`: PASS.
+- P0-D state scan: HANDOFF, phase document, and ROADMAP all report `IN_PROGRESS`.
+- Stale-state scan: no remaining `READY_FOR_MERGE` or pending “merge PR #12” instruction in the synchronized P0-D records.
+- Durable-action scan: HANDOFF does not leave PR #13 publication or review as a post-merge next action; issue #9 is first.
+- Durable-objective scan: HANDOFF names issue #9 rather than PR #13 review or merge as the current objective.
+- PR #13 hosted checks on review-objective head `d82dfc2`: lint, type, tests, security audit, E2E, Vercel, CodeRabbit status, `All Checks Complete`, and `PR Summary` passed.
+- PR-state durability scan: HANDOFF records PR #13 as delivery provenance without duplicating transient `OPEN`, draft/review, mergeability, or working-branch state.
+- Startup scan: new sessions read PR-13.md, verify PR #13 live state on GitHub, and proceed to issue #9 when it is merged.
+- Dependency scan: ROADMAP marks P0-A `READY` with only DOC-1 as a prerequisite and allows P0-A/P0-D parallel work; HANDOFF now preserves that allowance while issue #9 remains the first P0-D action.
+- PR #13 hosted checks on lifecycle-policy head `9b61329`: lint, type check, tests, security audit, independent E2E in 2m51s, Vercel, CodeRabbit status, `All Checks Complete`, and `PR Summary` passed; docs-only matrix jobs skipped by change detection.
+
+## Not tested
+
+- No application code changed and application suites were not run locally; hosted lint, typecheck, unit, security, and independent E2E checks passed.
+- Deployment-job failures were recorded but not diagnosed in this documentation-only change.

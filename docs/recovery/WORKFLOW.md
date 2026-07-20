@@ -29,6 +29,7 @@ read AGENTS.md
 4. 좁은 테스트에서 전체 검증 순으로 실행한다.
 5. `docs/recovery/validation/YYYY-MM-DD-<phase>-<slug>.md`를 작성한다.
 6. `docs/recovery/HANDOFF.md`와 단계 상태를 갱신한다.
+7. 단계 완료 시점의 다음 행동과 blocker가 프로젝트 내부 HANDOFF에 남아 있는지 확인한다.
 
 ## 3. 커밋
 
@@ -57,7 +58,7 @@ Not-tested: Full Audiveris output corpus
 
 - PR base는 실제 기본 브랜치인 `main`을 사용한다.
 - DOC-1 migration PR만 rename 전 실제 기본 브랜치인 `master`를 base로 사용한다.
-- 초안 PR로 시작하고 검증 결과가 준비되면 ready 상태로 전환한다.
+- PR은 처음부터 review-ready 상태로 생성한다. Draft PR은 사용하지 않으며, 실수로 Draft가 생성되면 즉시 ready for review로 전환한다.
 - PR 본문에는 목적, 범위, 제외 범위, 위험, 검증, baseline 차이, rollback 방법을 포함한다.
 - PR 번호가 생기면 즉시 `docs/recovery/reviews/PR-<number>.md`를 생성한다.
 
@@ -91,10 +92,23 @@ fetch PR checks and unresolved comments
 
 ## 6. 병합 정책
 
-- 코드 에이전트는 사용자의 명시적 지시 없이 병합하지 않는다.
+- 코드 에이전트는 대상 PR에 대한 사용자의 명시적 승인 없이 `main`에 병합하지 않는다. PR 생성, ready 전환, 초록 CI, 승인 리뷰 또는 이전 단계의 일반 지시는 병합 승인으로 해석하지 않는다.
+- 병합 승인 후에도 현재 head의 필수 CI, unresolved actionable review, mergeability를 다시 확인한 뒤 병합한다.
 - 병합 후에만 단계 상태를 `DONE`으로 바꾼다. 단, 마감 PR이 상태 변경 자체를 운반할 때는 `DONE`을 병합 예정 상태로 기록하고 해당 표시는 `main` 병합 순간에만 효력이 생긴다.
 - 마감 PR이 열려 있는 동안에는 `DONE` 예정 표시만으로 의존 단계 브랜치를 시작하지 않는다.
-- 병합 직후 다음 단계는 최신 `main`에서 새 브랜치를 만든다.
+- 병합 직후 원격 `main`에 병합 커밋이 반영됐는지 확인하고 최신 `main`으로 이동한다.
+- 삭제 전에 원격 ref를 fetch하고 최신 `main`에 로컬 작업 브랜치 tip과 원격 작업 브랜치 tip이 모두 포함됐는지 확인한다. 어느 한쪽에라도 고유 커밋이 있거나 사용자 소유 미커밋 변경이 있으면 원격·로컬 브랜치를 모두 보존하고 프로젝트 HANDOFF에 blocker로 기록한다.
+- 두 tip이 모두 병합된 경우에만 원격 작업 브랜치를 삭제한 뒤 로컬 작업 브랜치도 삭제한다.
+- 병합 결과와 다음 행동은 프로젝트 내부 HANDOFF·phase·validation·review 기록에 반영한다. 병합 이후에만 확정 가능한 SHA나 상태는 다음 단계 또는 전용 handoff-sync 브랜치의 첫 커밋으로 기록한다.
+- 다음 단계는 최신 `main`에서 새 `codex/<phase>-<topic>` 브랜치를 만든다.
+
+## 7. HANDOFF 저장 위치
+
+- canonical HANDOFF는 `docs/recovery/HANDOFF.md`다.
+- 단계 범위와 완료 조건은 `docs/recovery/phases/`, 실행 증거는 `docs/recovery/validation/`, PR 피드백은 `docs/recovery/reviews/`, 변경된 결정은 `docs/recovery/DECISIONS.md`에 저장한다.
+- 채팅 메시지, `/tmp`, 홈 디렉터리, 외부 메모 또는 도구 내부 상태는 보조 정보일 뿐이며 단독 인계 수단이 될 수 없다.
+- 각 단계의 커밋, PR, 리뷰 수정, 병합, 브랜치 정리 결과는 다음 세션이 프로젝트 파일만 읽고 복원할 수 있도록 기록한다.
+- durable HANDOFF에는 병합 순간 stale해지는 PR `OPEN`/ready 상태나 현재 작업 브랜치를 고정하지 않는다. transient 상태는 `reviews/PR-<number>.md`와 GitHub live state에서 확인한다.
 
 ## Default branch invariant
 
