@@ -29,10 +29,14 @@ git fetch origin, then if main is behind origin/main: git pull --ff-only (if on 
 3. 하나의 원인 또는 계약을 수정한다.
 4. 좁은 테스트에서 전체 검증 순으로 실행한다.
 5. `docs/recovery/validation/YYYY-MM-DD-<phase>-<slug>.md`를 작성한다.
-6. `docs/recovery/HANDOFF.md`와 단계 상태를 갱신한다.
+6. `docs/recovery/HANDOFF.md`와 단계 상태(`docs/recovery/phases/*.md`)를 갱신한다.
 7. 단계 완료 시점의 다음 행동과 blocker가 프로젝트 내부 HANDOFF에 남아 있는지 확인한다.
 
+5·6·7단계의 문서 갱신은 코드 작업 브랜치의 커밋이 아니다 — `main`에 직접 커밋한다 (AGENTS.md "핸드오프 문서는 즉시 `main` 커밋" 참조). 코드 작업 브랜치에는 1~4단계, 즉 코드와 테스트 변경만 남는다.
+
 ## 3. 커밋
+
+이 절은 코드 작업 브랜치의 커밋에 적용한다. `docs/recovery/HANDOFF.md`, phase 상태, `validation/`, `reviews/` 같은 핸드오프 문서는 브랜치 없이 `main`에 직접 커밋하며(AGENTS.md 참조), 아래 stage·Lore 형식 규칙은 그 커밋에도 동일하게 적용한다.
 
 - 관련 파일만 명시적으로 stage한다. `git add .`는 사용하지 않는다.
 - 한 커밋은 하나의 결정 또는 검증 가능한 변화만 담는다.
@@ -61,7 +65,7 @@ Not-tested: Full Audiveris output corpus
 - DOC-1 migration PR만 rename 전 실제 기본 브랜치인 `master`를 base로 사용한다.
 - PR은 처음부터 review-ready 상태로 생성한다. Draft PR은 사용하지 않으며, 실수로 Draft가 생성되면 즉시 ready for review로 전환한다.
 - PR 본문에는 목적, 범위, 제외 범위, 위험, 검증, baseline 차이, rollback 방법을 포함한다.
-- PR 번호가 생기면 즉시 `docs/recovery/reviews/PR-<number>.md`를 생성한다.
+- PR 번호가 생기면 즉시 `docs/recovery/reviews/PR-<number>.md`를 생성한다 — 이 파일도 핸드오프 문서이므로 PR 브랜치가 아니라 `main`에 직접 커밋한다.
 
 ## 5. 리뷰·CI 반복
 
@@ -71,8 +75,11 @@ fetch PR checks and unresolved comments
 → reproduce actionable feedback
 → make smallest fix
 → run focused and required verification
-→ update review log and handoff
-→ commit and push
+→ commit and push the fix to the PR branch
+→ before committing the review log: git fetch origin, fast-forward local main if behind (AGENTS.md 0번 규칙과 동일)
+→ stage only the review log (and HANDOFF, if it changed); confirm with git status --short that no code or contract file is staged
+→ commit and push directly to main
+→ query gh api .../commits/<sha>/check-runs and record the result in the next handoff commit if anything failed
 → repeat until clean
 ```
 
@@ -100,8 +107,8 @@ fetch PR checks and unresolved comments
 - 병합 직후 원격 `main`에 병합 커밋이 반영됐는지 확인하고 최신 `main`으로 이동한다.
 - 삭제 전에 원격 ref를 fetch하고 최신 `main`에 로컬 작업 브랜치 tip과 원격 작업 브랜치 tip이 모두 포함됐는지 확인한다. 어느 한쪽에라도 고유 커밋이 있거나 사용자 소유 미커밋 변경이 있으면 원격·로컬 브랜치를 모두 보존하고 프로젝트 HANDOFF에 blocker로 기록한다.
 - 두 tip이 모두 병합된 경우에만 원격 작업 브랜치를 삭제한 뒤 로컬 작업 브랜치도 삭제한다.
-- 병합 결과와 다음 행동은 프로젝트 내부 HANDOFF·phase·validation·review 기록에 반영한다. 병합 이후에만 확정 가능한 SHA나 상태는 다음 단계 또는 전용 handoff-sync 브랜치의 첫 커밋으로 기록한다.
-- 다음 단계는 최신 `main`에서 새 `codex/<phase>-<topic>` 브랜치를 만든다.
+- 병합 결과와 다음 행동은 HANDOFF·phase·validation·review 기록에 반영한다. 병합 이후에만 확정 가능한 SHA나 상태를 포함해, 이 기록은 `main`에 직접 커밋한다 — 이것만을 위한 별도 handoff-sync 브랜치나 PR을 만들지 않는다.
+- 다음 단계에 코드 작업이 필요하면 최신 `main`에서 새 `codex/<phase>-<topic>` 브랜치를 만든다.
 
 ## 7. HANDOFF 저장 위치
 
@@ -110,6 +117,7 @@ fetch PR checks and unresolved comments
 - 채팅 메시지, `/tmp`, 홈 디렉터리, 외부 메모 또는 도구 내부 상태는 보조 정보일 뿐이며 단독 인계 수단이 될 수 없다.
 - 각 단계의 커밋, PR, 리뷰 수정, 병합, 브랜치 정리 결과는 다음 세션이 프로젝트 파일만 읽고 복원할 수 있도록 기록한다.
 - durable HANDOFF에는 병합 순간 stale해지는 PR `OPEN`/ready 상태나 현재 작업 브랜치를 고정하지 않는다. transient 상태는 `reviews/PR-<number>.md`와 GitHub live state에서 확인한다.
+- `HANDOFF.md`, `phases/*.md`의 `Status`·`Progress`, `validation/`, `reviews/`, `ROADMAP.md`의 상태 칼럼은 PR·리뷰 대상이 아니라 `main`에 즉시 커밋하는 대상이다. `DECISIONS.md`의 신규 항목은 예외가 아니다 — 결정을 기록하는 행위 자체가 판단이므로, 그 결정이 뒤따르는 코드·규약·계획 변경과 같은 브랜치·PR에서 함께 커밋한다. AGENTS.md "핸드오프 문서는 즉시 `main` 커밋" 절이 정의를 갖는 canonical 위치이며, 이 문서는 그 목록을 따른다.
 
 ## Default branch invariant
 
