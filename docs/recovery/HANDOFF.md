@@ -11,7 +11,7 @@ Last updated: 2026-07-20 KST
 - Base branch: `main`
 - Pull request: [#12](https://github.com/landfill/ClairKeys/pull/12)
 - PR state: `OPEN`
-- Current objective: Keep the zero-warning lint gate while resolving all actionable PR #12 review feedback.
+- Current objective: Finish hosted validation for the combined lint, accessibility, and executable E2E quality-gate fixes on PR #12.
 
 ## Latest verified result
 
@@ -21,17 +21,19 @@ Last updated: 2026-07-20 KST
 - **TypeScript 검사:** `npx tsc --noEmit`가 모든 타입 오류를 해결하여 0 에러 (exit code 0) 상태로 통과했다.
 - **단위 테스트 검사:** `npm run test`가 21개 테스트 스위트, 271개 테스트 모두 성공(PASS)으로 통과했다.
 - PR #12 review regression tests: PASS — 7 suites, 8 tests.
-- Current full Jest suite: PASS — 29 suites, 282 tests; process exits normally without `--forceExit`.
+- Current full Jest suite: PASS — 32 suites, 288 tests; process exits normally without `--forceExit`.
 - Current ESLint and TypeScript checks: PASS — zero lint findings and zero type errors.
+- Hosted PR #12 accessibility, build, lint, type, unit, security, CodeQL, CodeRabbit, and Vercel checks: PASS on commit `61ea62d`.
+- The non-executable Playwright suite targeted a missing `/dashboard` route and absent test IDs, expanding to 50 serial CI tests with retries. It is replaced by 15 real cross-browser public-application smoke checks; hosted E2E validation is pending the new head.
 - Local production build retry is externally blocked because `next/font` cannot reach Google Fonts; hosted CI remains the build authority for this iteration.
 - Supabase 비밀값 없는 프로덕션 빌드는 지연 클라이언트 생성 수정 후 통과했다.
 - Next 15 동적 라우트 매개변수 타입 오류 및 OAuth 사용자 ID 반환 타입 등의 이슈가 복구되었다.
 
 ## Next actions
 
-1. Commit and push the second PR #12 review-fix batch, then inspect the new hosted checks.
-2. Refresh and resolve the verified PR #12 review threads.
-3. Update PR #11 on its own branch for pinned browser tooling, runtime auth environment, and real accessibility validation.
+1. Commit and push the executable Playwright smoke suite, then inspect both hosted E2E jobs.
+2. Refresh PR #12 review threads and confirm no new actionable feedback.
+3. Treat PR #12 as the combined merge candidate; PR #11 remains superseded by the same accessibility fix plus the required lint baseline.
 4. Address any new actionable review or CI failure before merge handoff.
 
 ## Existing user-owned working tree changes

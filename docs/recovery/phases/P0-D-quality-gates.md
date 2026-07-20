@@ -31,5 +31,6 @@ Status: `IN_PROGRESS`
 - PASS: clean `npm ci` completes on Node 22.18.0 / npm 10.9.3.
 - DONE: Jest environment/contracts and TypeScript failures are repaired.
 - PASS: ESLint reports zero warnings and zero errors.
-- PASS: TypeScript reports zero errors and Jest passes 29 suites / 282 tests.
-- IN_REVIEW: PR #12 reviewer regressions and the Jest open-handle leak are fixed locally; hosted checks and refreshed thread state remain.
+- PASS: TypeScript reports zero errors and Jest passes 32 suites / 288 tests.
+- PASS: PR #12 hosted accessibility, build, lint, type, unit, security, CodeQL, and deployment checks pass on the combined quality-gate head.
+- IN_REVIEW: the stale Playwright specification has been replaced by 15 executable cross-browser smoke checks; hosted E2E and refreshed review-thread state remain.
