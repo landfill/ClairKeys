@@ -6,7 +6,8 @@ test.describe('Public application smoke checks', () => {
 
     expect(response?.ok()).toBe(true)
     await expect(page).toHaveTitle(/ClairKeys/)
-    await expect(page.locator('main')).toHaveCount(1)
+    const main = page.getByRole('main')
+    await expect(main).toHaveCount(1)
     await expect(
       page.getByRole('heading', {
         level: 1,
@@ -18,7 +19,7 @@ test.describe('Public application smoke checks', () => {
       '/upload'
     )
     await expect(
-      page.getByRole('link', { name: '공개 악보 탐색' })
+      main.getByRole('link', { name: '공개 악보 탐색' })
     ).toHaveAttribute('href', '/explore')
   })
 
@@ -35,7 +36,10 @@ test.describe('Public application smoke checks', () => {
 
   test('opens the public sheet-music explorer', async ({ page }) => {
     await page.goto('/')
-    await page.getByRole('link', { name: '공개 악보 탐색' }).click()
+    await page
+      .getByRole('main')
+      .getByRole('link', { name: '공개 악보 탐색' })
+      .click()
 
     await expect(page).toHaveURL(/\/explore$/)
     await expect(
