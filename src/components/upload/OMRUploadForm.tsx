@@ -111,7 +111,7 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
     return Object.keys(newErrors).length === 0
   }
 
-  const handleInputChange = (field: keyof typeof formData, value: any) => {
+  const handleInputChange = (field: keyof typeof formData, value: string | number | boolean | null) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error when user starts typing
     if (errors[field]) {

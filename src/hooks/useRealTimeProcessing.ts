@@ -23,11 +23,18 @@ export interface ProcessingStatus {
   error?: string
   completed: boolean
   cancelled: boolean
-  result?: any
+  result?: unknown
+}
+
+export interface UploadMetadata {
+  title: string
+  composer: string
+  categoryId?: number | null
+  isPublic: boolean
 }
 
 export interface UseRealTimeProcessingOptions {
-  onComplete?: (result: any) => void
+  onComplete?: (result: unknown) => void
   onError?: (error: string) => void
   onStageChange?: (stage: ProcessingStage) => void
   pollInterval?: number // Fallback polling interval in ms
@@ -37,7 +44,7 @@ export interface UseRealTimeProcessingReturn {
   status: ProcessingStatus | null
   isConnected: boolean
   error: string | null
-  startProcessing: (file: File, metadata: any) => Promise<void>
+  startProcessing: (file: File, metadata: UploadMetadata) => Promise<void>
   cancelProcessing: () => Promise<void>
   reconnect: () => void
 }
@@ -248,7 +255,7 @@ export function useRealTimeProcessing(
   }, [cleanup, onComplete, onError, onStageChange, pollInterval])
 
   // Start processing
-  const startProcessing = useCallback(async (file: File, metadata: any) => {
+  const startProcessing = useCallback(async (file: File, metadata: UploadMetadata) => {
     try {
       setError(null)
       setStatus(null)

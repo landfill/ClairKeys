@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 // GET /api/sheet - Get user's sheet music list
 export async function GET(request: NextRequest) {
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     const isPublic = searchParams.get('public')
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.SheetMusicWhereInput = {
       userId: session.user.id
     }
 

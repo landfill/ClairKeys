@@ -58,7 +58,7 @@ export default function PracticeGuideControls({
               <h4 className="font-medium text-gray-900 mb-2">연습 방법</h4>
               <ul className="text-gray-600 space-y-1">
                 <li>• 강조된 건반을 실제 피아노에서 연주</li>
-                <li>• 연주 후 "다음 단계" 버튼 클릭</li>
+                <li>• 연주 후 &quot;다음 단계&quot; 버튼 클릭</li>
                 <li>• 천천히 시작해서 점점 빨라집니다</li>
               </ul>
             </div>

@@ -109,7 +109,7 @@ export default function SheetMusicMetadataForm({
     }
   }
 
-  const handleInputChange = (field: keyof SheetMusicFormData, value: any) => {
+  const handleInputChange = (field: keyof SheetMusicFormData, value: SheetMusicFormData[keyof SheetMusicFormData]) => {
     onChange({ ...formData, [field]: value })
     // Clear error when user starts typing
     if (errors[field]) {

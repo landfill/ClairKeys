@@ -2,7 +2,9 @@
 // Currently using enhanced demo data generation for system stability
 
 import { Jimp } from 'jimp';
-type JimpType = any;
+type JimpType = Awaited<ReturnType<typeof Jimp.read>>;
+
+const jimpUtils = Jimp as unknown as { intToRGBA: (color: number) => { r: number; g: number; b: number; a: number } };
 
 export interface PianoNote {
   note: string // e.g., 'C4', 'D#5'
@@ -122,7 +124,7 @@ export class PDFParserService {
       
       for (let x = 0; x < width; x++) {
         const pixelColor = image.getPixelColor(x, y)
-        const pixel = (Jimp as any).intToRGBA(pixelColor)
+        const pixel = jimpUtils.intToRGBA(pixelColor)
         const brightness = (pixel.r + pixel.g + pixel.b) / 3
         
         // Consider dark pixels as potential line pixels
@@ -174,7 +176,7 @@ export class PDFParserService {
     
     for (let x = startX; x <= endX; x++) {
       const pixelColor = image.getPixelColor(x, y)
-      const pixel = (Jimp as any).intToRGBA(pixelColor)
+      const pixel = jimpUtils.intToRGBA(pixelColor)
       const brightness = (pixel.r + pixel.g + pixel.b) / 3
       if (brightness < 128) {
         darkPixels++
@@ -272,7 +274,7 @@ export class PDFParserService {
           if (x >= 0 && x < image.bitmap.width && y >= 0 && y < image.bitmap.height) {
             totalPixels++
             const pixelColor = image.getPixelColor(x, y)
-            const pixel = (Jimp as any).intToRGBA(pixelColor)
+            const pixel = jimpUtils.intToRGBA(pixelColor)
             const brightness = (pixel.r + pixel.g + pixel.b) / 3
             
             if (brightness < 128) {

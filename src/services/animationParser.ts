@@ -11,6 +11,32 @@ import {
 } from '@/types/animation'
 import { noteToKeyNumber } from '@/utils/piano'
 
+// Loose shapes accepted from external/legacy animation JSON before normalization
+interface RawMusicNote {
+  note?: string
+  pitch?: string
+  startTime?: string | number
+  time?: string | number
+  duration?: string | number
+  velocity?: string | number
+  finger?: string | number
+  hand?: string
+}
+
+interface RawMusicData {
+  title?: string
+  composer?: string
+  duration?: number
+  tempo?: number
+  timeSignature?: string
+  notes?: RawMusicNote[]
+  originalFileName?: string
+  fileSize?: number
+  extractedText?: string
+  keySignature?: string
+  difficulty?: 'beginner' | 'intermediate' | 'advanced'
+}
+
 export class AnimationParserService implements AnimationParser {
   private static readonly CURRENT_VERSION = '1.0'
   private static readonly MIN_TEMPO = 40
@@ -21,7 +47,7 @@ export class AnimationParserService implements AnimationParser {
   /**
    * Parse raw data into PianoAnimationData
    */
-  async parse(data: any): Promise<PianoAnimationData> {
+  async parse(data: unknown): Promise<PianoAnimationData> {
     try {
       // If data is already a valid PianoAnimationData object, validate and return
       if (this.isAnimationDataLike(data)) {
@@ -152,7 +178,7 @@ export class AnimationParserService implements AnimationParser {
   /**
    * Convert raw music data to PianoAnimationData
    */
-  private convertRawMusicData(rawData: any): PianoAnimationData {
+  private convertRawMusicData(rawData: RawMusicData): PianoAnimationData {
     const notes: PianoNote[] = []
     let maxTime = 0
 
@@ -161,11 +187,11 @@ export class AnimationParserService implements AnimationParser {
       for (const rawNote of rawData.notes) {
         try {
           const note: PianoNote = {
-            note: this.normalizeNoteName(rawNote.note || rawNote.pitch),
-            startTime: Math.max(0, parseFloat(rawNote.startTime || rawNote.time || 0)),
-            duration: Math.max(0.1, parseFloat(rawNote.duration || 0.5)),
-            velocity: Math.max(0, Math.min(1, parseFloat(rawNote.velocity || 0.8))),
-            finger: rawNote.finger ? parseInt(rawNote.finger) : undefined,
+            note: this.normalizeNoteName(rawNote.note ?? rawNote.pitch ?? ''),
+            startTime: Math.max(0, parseFloat(String(rawNote.startTime ?? rawNote.time ?? 0))),
+            duration: Math.max(0.1, parseFloat(String(rawNote.duration ?? 0.5))),
+            velocity: Math.max(0, Math.min(1, parseFloat(String(rawNote.velocity ?? 0.8)))),
+            finger: rawNote.finger ? parseInt(String(rawNote.finger)) : undefined,
             hand: rawNote.hand === 'left' || rawNote.hand === 'right' ? rawNote.hand : undefined
           }
 
@@ -278,22 +304,24 @@ export class AnimationParserService implements AnimationParser {
   /**
    * Check if data looks like PianoAnimationData
    */
-  private isAnimationDataLike(data: any): boolean {
-    return data && 
-           typeof data === 'object' &&
-           typeof data.title === 'string' &&
-           typeof data.composer === 'string' &&
-           typeof data.duration === 'number' &&
-           Array.isArray(data.notes)
+  private isAnimationDataLike(data: unknown): data is PianoAnimationData {
+    const d = data as Record<string, unknown> | null
+    return !!d &&
+           typeof d === 'object' &&
+           typeof d.title === 'string' &&
+           typeof d.composer === 'string' &&
+           typeof d.duration === 'number' &&
+           Array.isArray(d.notes)
   }
 
   /**
    * Check if data is raw music data that can be converted
    */
-  private isRawMusicData(data: any): boolean {
-    return data && 
-           typeof data === 'object' &&
-           (data.title || data.composer || Array.isArray(data.notes))
+  private isRawMusicData(data: unknown): data is RawMusicData {
+    const d = data as Record<string, unknown> | null
+    return !!d &&
+           typeof d === 'object' &&
+           !!(d.title || d.composer || Array.isArray(d.notes))
   }
 
   /**

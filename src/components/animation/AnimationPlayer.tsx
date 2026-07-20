@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { PlaybackControls } from '@/components/playback'
 import { PracticeGuideControls, PracticeKeyHighlight } from '@/components/practice'
-import { PianoAnimationData, PracticeState } from '@/types/animation'
+import { AnimationEvent, PianoAnimationData, PracticeState } from '@/types/animation'
 import { getAnimationEngine } from '@/services/animationEngine'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
@@ -48,7 +48,7 @@ export default function AnimationPlayer({
     setIsReady(true)
     
     // Set up event listeners with throttling for performance
-    const handleTimeUpdate = (event: any) => {
+    const handleTimeUpdate = (event: AnimationEvent) => {
       if (updateThrottleRef.current) return
       
       updateThrottleRef.current = window.setTimeout(() => {
@@ -57,15 +57,15 @@ export default function AnimationPlayer({
       }, THROTTLE_MS)
     }
     
-    const handlePlayStateChange = (event: any) => {
+    const handlePlayStateChange = (event: AnimationEvent) => {
       setIsPlaying(event.data.isPlaying || false)
     }
     
-    const handleSpeedChange = (event: any) => {
+    const handleSpeedChange = (event: AnimationEvent) => {
       setPlaybackSpeed(event.data.speed || 1.0)
     }
     
-    const handleNoteStart = (event: any) => {
+    const handleNoteStart = (event: AnimationEvent) => {
       const note = event.data.note
       if (note) {
         onNotePlay?.(note)
@@ -81,7 +81,7 @@ export default function AnimationPlayer({
       }
     }
     
-    const handleNoteEnd = (event: any) => {
+    const handleNoteEnd = (event: AnimationEvent) => {
       const note = event.data.note
       if (note) {
         onNoteStop?.(note)
@@ -97,17 +97,17 @@ export default function AnimationPlayer({
       }
     }
 
-    const handlePracticeStep = (event: any) => {
+    const handlePracticeStep = () => {
       const updatedState = engine.getPracticeState()
       setPracticeState(updatedState)
     }
 
-    const handlePracticeComplete = (event: any) => {
+    const handlePracticeComplete = () => {
       const updatedState = engine.getPracticeState()
       setPracticeState(updatedState)
     }
 
-    const handleTempoIncrease = (event: any) => {
+    const handleTempoIncrease = (event: AnimationEvent) => {
       const updatedState = engine.getPracticeState()
       setPracticeState(updatedState)
       setPlaybackSpeed(event.data.tempo || 1.0)

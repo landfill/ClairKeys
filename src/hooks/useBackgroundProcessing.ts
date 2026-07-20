@@ -15,7 +15,7 @@ export interface ProcessingJob {
     categoryId?: number | null
     isPublic: boolean
   }
-  result?: any
+  result?: unknown
   error?: string
   retryCount: number
   maxRetries: number

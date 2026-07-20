@@ -15,8 +15,16 @@ function getAdminEmails(): string[] {
   return process.env.ADMIN_EMAILS?.split(',').map(email => email.trim()) || []
 }
 
+// Animation JSON note entry; extra fields pass through untouched
+interface AnimationNote {
+  note?: string
+  hand?: string
+  finger?: number
+  [key: string]: unknown
+}
+
 // Simple fingering assignment logic
-function assignFinger(note: any): number {
+function assignFinger(note: AnimationNote): number {
   const isBlackKey = ['C#', 'D#', 'F#', 'G#', 'A#'].some(bKey => note.note?.includes(bKey));
   
   if (note.hand === 'left') {
@@ -44,8 +52,8 @@ function assignFinger(note: any): number {
 }
 
 // Add finger information to animation data
-function addFingeringToAnimationData(animationData: any) {
-  const notes = animationData.notes.map((note: any) => {
+function addFingeringToAnimationData<T extends { notes: AnimationNote[]; metadata?: Record<string, unknown> }>(animationData: T) {
+  const notes = animationData.notes.map((note: AnimationNote) => {
     // Skip if already has finger info
     if (note.finger) return note;
     
@@ -151,7 +159,7 @@ export async function POST(request: NextRequest) {
         console.log(`📊 Current data has ${currentData.notes.length} notes`)
 
         // Check if already has finger info
-        const hasFingerInfo = currentData.notes.some((note: any) => note.finger)
+        const hasFingerInfo = currentData.notes.some((note: AnimationNote) => note.finger)
         if (hasFingerInfo) {
           result.status = 'already_updated'
           result.error = 'Already has finger information'
@@ -164,7 +172,7 @@ export async function POST(request: NextRequest) {
         const updatedData = addFingeringToAnimationData(currentData)
 
         // Count fingers added
-        result.fingersAdded = updatedData.notes.filter((note: any) => note.finger).length
+        result.fingersAdded = updatedData.notes.filter((note: AnimationNote) => note.finger).length
 
         // Update existing file (overwrite approach)
         console.log('📤 Updating existing animation data file...')
@@ -202,7 +210,7 @@ export async function POST(request: NextRequest) {
     console.log('🎉 Finger data update completed!')
     console.log('📊 Summary:', summary)
 
-    return NextResponse.json<any>({
+    return NextResponse.json({
       success: true,
       message: 'Finger data update completed',
       summary,

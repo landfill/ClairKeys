@@ -105,10 +105,15 @@ export default function MobileTouchFeedback({
       navigator.vibrate(patterns[intensity])
     }
 
-    // Try iOS haptic feedback
-    if ('ontouchstart' in window && (window as any).DeviceMotionEvent) {
+    // Try iOS haptic feedback (non-standard, injected by some WebView wrappers)
+    const hapticWindow = window as Window & {
+      DeviceMotionEvent?: unknown
+      TapticEngine?: { impact: (type: string) => void }
+      Haptic?: { impact: (type: string) => void }
+    }
+    if ('ontouchstart' in window && hapticWindow.DeviceMotionEvent) {
       try {
-        const HapticFeedback = (window as any).TapticEngine || (window as any).Haptic
+        const HapticFeedback = hapticWindow.TapticEngine || hapticWindow.Haptic
         if (HapticFeedback) {
           const types = {
             light: 'impactLight',
@@ -154,7 +159,7 @@ export default function MobileTouchFeedback({
       const touch = event.touches[i]
       const x = touch.clientX - rect.left
       const y = touch.clientY - rect.top
-      const pressure = (touch as any).force || 0.5
+      const pressure = (touch as Touch & { force?: number }).force || 0.5
       
       const touchPoint = createTouchPoint(x, y, pressure)
       newTouchPoints.push(touchPoint)
@@ -369,7 +374,7 @@ export function useMobileTouchOptimization() {
     element.style.touchAction = 'none'
     element.style.userSelect = 'none'
     element.style.webkitUserSelect = 'none';
-    (element.style as any).webkitTouchCallout = 'none'
+    (element.style as CSSStyleDeclaration & { webkitTouchCallout?: string }).webkitTouchCallout = 'none'
     
     // Add mobile-specific event listeners
     const preventDefaultTouch = (e: Event) => e.preventDefault()

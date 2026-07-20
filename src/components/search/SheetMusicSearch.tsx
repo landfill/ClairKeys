@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui'
 import { useSheetMusicSearch } from '@/hooks/useSheetMusicSearch'
+import { SheetMusicWithOwner } from '@/types/sheet-music'
 import { useCategories } from '@/hooks/useCategories'
 
 interface SheetMusicSearchProps {
-  onResultClick?: (sheetMusic: any) => void
+  onResultClick?: (sheetMusic: SheetMusicWithOwner) => void
   showFilters?: boolean
   defaultPublicOnly?: boolean
   className?: string
@@ -143,7 +144,7 @@ export default function SheetMusicSearch({
                 </label>
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'title' | 'composer')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="newest">최신순</option>

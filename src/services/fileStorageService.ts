@@ -1,4 +1,5 @@
 import { getSupabaseServer } from '@/lib/supabase/server'
+import type { FileObject } from '@supabase/storage-js'
 
 export interface UploadResult {
   success: boolean
@@ -54,7 +55,7 @@ export class FileStorageService {
    * Upload animation data to storage
    */
   async uploadAnimationData(
-    data: any,
+    data: unknown,
     metadata: FileMetadata
   ): Promise<UploadResult> {
     try {
@@ -77,12 +78,13 @@ export class FileStorageService {
       const jsonData = JSON.stringify(data, null, 2)
       const buffer = Buffer.from(jsonData, 'utf-8')
       
+      const dataObj = (data ?? {}) as Record<string, unknown>
       console.log('📊 Data stats:', {
         jsonLength: jsonData.length,
         bufferLength: buffer.length,
-        dataKeys: Object.keys(data || {}),
-        hasNotes: Array.isArray(data?.notes),
-        notesCount: Array.isArray(data?.notes) ? data.notes.length : 'N/A'
+        dataKeys: Object.keys(dataObj),
+        hasNotes: Array.isArray(dataObj.notes),
+        notesCount: Array.isArray(dataObj.notes) ? dataObj.notes.length : 'N/A'
       })
 
       console.log('⬆️ Attempting upload to Supabase...')
@@ -98,8 +100,8 @@ export class FileStorageService {
         console.error('❌ Animation data upload error:', error)
         console.error('Error details:', {
           message: error.message,
-          statusCode: (error as any).statusCode,
-          error: (error as any).error
+          statusCode: (error as { statusCode?: number }).statusCode,
+          error: (error as { error?: string }).error
         })
         return { success: false, error: error.message }
       }
@@ -160,7 +162,7 @@ export class FileStorageService {
    */
   async updateExistingAnimationData(
     existingUrl: string,
-    data: any
+    data: unknown
   ): Promise<UploadResult> {
     try {
       console.log('🔄 Updating existing animation data...')
@@ -215,7 +217,7 @@ export class FileStorageService {
           console.log('✅ File update verified:', {
             url: existingUrl,
             notesCount: updatedContent.notes?.length,
-            hasFingerInfo: updatedContent.notes?.some((n: any) => n.finger) || false
+            hasFingerInfo: updatedContent.notes?.some((n: { finger?: number }) => n.finger) || false
           })
         }
       } catch (verifyError) {
@@ -433,7 +435,7 @@ export class FileStorageService {
   /**
    * List files in a bucket path
    */
-  async listFiles(bucket: string, path: string = ''): Promise<any[]> {
+  async listFiles(bucket: string, path: string = ''): Promise<FileObject[]> {
     try {
       const { data, error } = await getSupabaseServer().storage
         .from(bucket)
@@ -455,7 +457,7 @@ export class FileStorageService {
   /**
    * Get file info
    */
-  async getFileInfo(bucket: string, filePath: string): Promise<any | null> {
+  async getFileInfo(bucket: string, filePath: string): Promise<FileObject | null> {
     try {
       const { data, error } = await getSupabaseServer().storage
         .from(bucket)

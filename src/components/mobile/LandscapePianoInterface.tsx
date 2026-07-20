@@ -148,7 +148,7 @@ export default function LandscapePianoInterface({
   }, [])
   
   // Handle gesture-based controls
-  const handleGesture = useCallback((gesture: any) => {
+  const handleGesture = useCallback((gesture: { type: string; scale?: number; direction?: string }) => {
     if (!enableGestures) return
     
     switch (gesture.type) {

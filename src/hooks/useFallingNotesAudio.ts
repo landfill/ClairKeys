@@ -32,7 +32,7 @@ export function useFallingNotesAudio() {
   const initializeAudio = useCallback(() => {
     if (!audioContextRef.current) {
       // Create audio context with compatibility
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+      const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
       audioContextRef.current = new AudioContextClass()
       
       // Create master gain node

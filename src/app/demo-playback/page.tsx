@@ -34,7 +34,7 @@ export default function PlaybackDemoPage() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0)
-  const [playbackMode, setPlaybackMode] = useState<'listen' | 'follow'>('listen')
+  const [playbackMode, setPlaybackMode] = useState<'listen' | 'follow' | 'practice'>('listen')
   const [isLooping, setIsLooping] = useState(false)
 
   const handlePlay = () => {
@@ -58,7 +58,7 @@ export default function PlaybackDemoPage() {
     console.log('Speed changed to:', speed)
   }
 
-  const handleModeChange = (mode: 'listen' | 'follow') => {
+  const handleModeChange = (mode: 'listen' | 'follow' | 'practice') => {
     setPlaybackMode(mode)
     console.log('Mode changed to:', mode)
   }
@@ -84,7 +84,7 @@ export default function PlaybackDemoPage() {
           ].map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setCurrentTab(key as any)}
+              onClick={() => setCurrentTab(key as 'basic' | 'advanced' | 'integrated')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 currentTab === key
                   ? 'border-blue-500 text-blue-600'
@@ -117,7 +117,7 @@ export default function PlaybackDemoPage() {
               onStop={handleStop}
               onSeek={handleSeek}
               onSpeedChange={handleSpeedChange}
-              onModeChange={handleModeChange as any}
+              onModeChange={handleModeChange}
             />
 
             {/* 기능 설명 */}
@@ -152,7 +152,7 @@ export default function PlaybackDemoPage() {
               onStop={handleStop}
               onSeek={handleSeek}
               onSpeedChange={handleSpeedChange}
-              onModeChange={handleModeChange as any}
+              onModeChange={handleModeChange}
               onLoop={setIsLooping}
               isLooping={isLooping}
             />

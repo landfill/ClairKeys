@@ -12,7 +12,7 @@ export interface UploadState {
 export interface FileUploadOptions {
   maxSizeBytes?: number
   acceptedTypes?: string[]
-  onSuccess?: (result: any) => void
+  onSuccess?: (result: unknown) => void
   onError?: (error: string) => void
 }
 

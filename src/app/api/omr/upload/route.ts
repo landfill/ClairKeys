@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json<any>({
+    return NextResponse.json({
       success: true,
       sheetMusicId: sheetMusic.id,
       jobId: omrResult.job_id,

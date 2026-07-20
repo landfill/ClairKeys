@@ -12,7 +12,7 @@ interface ProcessingStatusResponse {
   startTime: number
   error?: string
   completed?: boolean
-  result?: any
+  result?: unknown
 }
 
 export async function GET(

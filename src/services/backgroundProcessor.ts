@@ -19,7 +19,7 @@ export interface ProcessingJobData {
 
 export interface ProcessingResult {
   sheetMusicId?: number
-  animationData?: any
+  animationData?: unknown
   error?: string
 }
 
@@ -289,7 +289,7 @@ class BackgroundProcessor {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
-  async getJobStatus(jobId: string): Promise<any> {
+  async getJobStatus(jobId: string) {
     return await prisma.processingJob.findUnique({
       where: { id: jobId },
       include: {
@@ -301,7 +301,7 @@ class BackgroundProcessor {
     })
   }
 
-  async getUserJobs(userId: string, limit = 10): Promise<any[]> {
+  async getUserJobs(userId: string, limit = 10) {
     return await prisma.processingJob.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -379,7 +379,7 @@ class BackgroundProcessor {
     return true
   }
 
-  async getNotifications(userId: string, limit = 20): Promise<any[]> {
+  async getNotifications(userId: string, limit = 20) {
     return await prisma.processingNotification.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },

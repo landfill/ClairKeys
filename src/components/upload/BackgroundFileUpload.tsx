@@ -59,7 +59,7 @@ export default function BackgroundFileUpload() {
     }))
   }, [])
 
-  const handleMetadataChange = useCallback((metadata: any) => {
+  const handleMetadataChange = useCallback((metadata: Partial<BackgroundUploadState['metadata']>) => {
     setState(prev => ({
       ...prev,
       metadata: {

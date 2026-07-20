@@ -19,8 +19,13 @@ interface CacheOptions {
   compress?: boolean // Compress large data
 }
 
+// Shape persisted to browser storage; `data` becomes a JSON string when compressed
+interface StoredCacheItem<T> extends CacheItem<T> {
+  compressed?: boolean
+}
+
 class CacheService {
-  private memoryCache = new Map<string, CacheItem<any>>()
+  private memoryCache = new Map<string, CacheItem<unknown>>()
   private readonly DEFAULT_TTL = 5 * 60 * 1000 // 5 minutes
   private readonly MAX_MEMORY_ITEMS = 100
   private readonly COMPRESSION_THRESHOLD = 10000 // 10KB
@@ -36,7 +41,7 @@ class CacheService {
 
       // Try memory cache first (fastest)
       if (storage === 'memory' || storage === 'localStorage' || storage === 'sessionStorage') {
-        item = this.memoryCache.get(key) || null
+        item = (this.memoryCache.get(key) as CacheItem<T> | undefined) || null
       }
 
       // Try browser storage if not in memory
@@ -60,25 +65,25 @@ class CacheService {
         }
       }
 
-      if (!item) return null as any
+      if (!item) return null
 
       // Check if expired
       const now = Date.now()
       if (now > item.timestamp + item.ttl) {
         this.delete(key, { storage })
-        return null as any
+        return null
       }
 
       // Check version mismatch
       if (options.version && item.version !== options.version) {
         this.delete(key, { storage })
-        return null as any
+        return null
       }
 
       return item.data
     } catch (error) {
       console.warn('Cache get error:', error)
-      return null as any
+      return null
     }
   }
 
@@ -119,7 +124,7 @@ class CacheService {
         const storageObj = storage === 'localStorage' ? localStorage : sessionStorage
         
         try {
-          let dataToStore = item
+          let dataToStore: StoredCacheItem<unknown> = item
           const serialized = JSON.stringify(item)
           
           // Compress if data is large
@@ -253,7 +258,7 @@ class CacheService {
   /**
    * Compress data (simple implementation)
    */
-  private compress<T>(item: CacheItem<T>): any {
+  private compress<T>(item: CacheItem<T>): StoredCacheItem<unknown> {
     try {
       // Simple compression by removing whitespace from JSON
       const compressed = JSON.stringify(item).replace(/\s+/g, '')
@@ -270,19 +275,19 @@ class CacheService {
   /**
    * Decompress data
    */
-  private decompress<T>(compressedItem: any): CacheItem<T> {
+  private decompress<T>(compressedItem: StoredCacheItem<unknown>): CacheItem<T> {
     try {
       if (compressedItem.compressed) {
-        const decompressed = JSON.parse(compressedItem.data)
+        const decompressed = JSON.parse(compressedItem.data as string)
         return {
           ...compressedItem,
           data: decompressed,
           compressed: false
-        }
+        } as CacheItem<T>
       }
-      return compressedItem
+      return compressedItem as CacheItem<T>
     } catch (e) {
-      return compressedItem
+      return compressedItem as CacheItem<T>
     }
   }
 }
@@ -293,7 +298,7 @@ export const cacheService = new CacheService()
 /**
  * Cache decorator for functions
  */
-export function cached<T extends (...args: any[]) => Promise<any>>(
+export function cached<T extends (...args: never[]) => Promise<unknown>>(
   fn: T,
   options: CacheOptions & { keyGenerator?: (...args: Parameters<T>) => string } = {}
 ): T {

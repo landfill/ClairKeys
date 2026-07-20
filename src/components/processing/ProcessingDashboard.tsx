@@ -213,7 +213,7 @@ export default function ProcessingDashboard() {
                     )}
 
                     {/* Success Result */}
-                    {job.status === 'COMPLETED' && job.result?.sheetMusic && (
+                    {job.status === 'COMPLETED' && (job.result as { sheetMusic?: { id: number } } | undefined)?.sheetMusic && (
                       <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                         <p className="text-green-800 text-sm">
                           ✅ 처리가 완료되었습니다!
@@ -223,7 +223,7 @@ export default function ProcessingDashboard() {
                           size="sm"
                           className="mt-2"
                           onClick={() => {
-                            window.location.href = `/sheet/${job.result.sheetMusic.id}`
+                            window.location.href = `/sheet/${(job.result as { sheetMusic: { id: number } }).sheetMusic.id}`
                           }}
                         >
                           악보 보기

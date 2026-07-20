@@ -117,9 +117,9 @@ export class PrismaUnitOfWork implements IUnitOfWork {
     : never {
     switch (repositoryName) {
       case 'categoryRepository':
-        return this.categoryRepository as any
+        return this.categoryRepository as never
       case 'sheetMusicRepository':
-        return this.sheetMusicRepository as any
+        return this.sheetMusicRepository as never
       default:
         throw new Error(`Unknown repository: ${String(repositoryName)}`)
     }

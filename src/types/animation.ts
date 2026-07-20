@@ -149,7 +149,7 @@ export interface ValidationResult {
 
 export interface AnimationParser {
   /** Parse raw data into PianoAnimationData */
-  parse(data: any): Promise<PianoAnimationData>
+  parse(data: unknown): Promise<PianoAnimationData>
   /** Validate animation data */
   validate(data: PianoAnimationData): ValidationResult
   /** Serialize animation data to string */

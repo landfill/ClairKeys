@@ -83,11 +83,11 @@ export default function PracticeDemoPage() {
       <div className="mb-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
         <h3 className="text-lg font-medium text-yellow-900 mb-2">📝 사용 방법</h3>
         <ol className="text-yellow-800 space-y-1 text-sm pl-4">
-          <li>1. 모드 선택에서 "📚 연습 가이드" 선택</li>
+          <li>1. 모드 선택에서 &quot;📚 연습 가이드&quot; 선택</li>
           <li>2. 시작 속도와 목표 속도 설정</li>
-          <li>3. "🎹 연습 시작" 버튼 클릭</li>
+          <li>3. &quot;🎹 연습 시작&quot; 버튼 클릭</li>
           <li>4. 강조된 건반을 실제 피아노에서 연주</li>
-          <li>5. 연주 후 "다음 단계 →" 버튼 클릭</li>
+          <li>5. 연주 후 &quot;다음 단계 →&quot; 버튼 클릭</li>
           <li>6. 모든 단계 완료 시 속도가 자동으로 증가</li>
         </ol>
       </div>

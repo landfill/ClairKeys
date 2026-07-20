@@ -3,7 +3,7 @@
  * Repository 패턴을 통한 데이터 접근 계층 구현
  */
 
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { 
   SheetMusicWithCategory,
   CreateSheetMusicRequest,
@@ -27,7 +27,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
   }
 
   async findMany(params?: SearchSheetMusicParams): Promise<SheetMusicWithCategory[]> {
-    const where: any = {}
+    const where: Prisma.SheetMusicWhereInput = {}
     
     if (params?.userId) where.userId = params.userId
     if (params?.categoryId !== undefined) {
@@ -92,7 +92,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
 
   async count(params?: Record<string, unknown>): Promise<number> {
     return await this.prisma.sheetMusic.count({
-      where: params as any
+      where: params as Prisma.SheetMusicWhereInput
     })
   }
 
@@ -105,7 +105,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
   }
 
   async findByCategoryId(categoryId: number, userId?: string): Promise<SheetMusicWithCategory[]> {
-    const where: any = { categoryId }
+    const where: Prisma.SheetMusicWhereInput = { categoryId }
     if (userId) where.userId = userId
 
     return await this.prisma.sheetMusic.findMany({
@@ -124,7 +124,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
     total: number
     hasMore: boolean
   }> {
-    const where: any = { isPublic: true }
+    const where: Prisma.SheetMusicWhereInput = { isPublic: true }
     
     if (params?.search) {
       where.OR = [
@@ -163,7 +163,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
   // ============================================================================
 
   async searchByTitle(query: string, userId?: string, isPublic?: boolean): Promise<SheetMusicWithCategory[]> {
-    const where: any = {
+    const where: Prisma.SheetMusicWhereInput = {
       title: { contains: query, mode: 'insensitive' }
     }
     
@@ -178,7 +178,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
   }
 
   async searchByComposer(query: string, userId?: string, isPublic?: boolean): Promise<SheetMusicWithCategory[]> {
-    const where: any = {
+    const where: Prisma.SheetMusicWhereInput = {
       composer: { contains: query, mode: 'insensitive' }
     }
     
@@ -381,7 +381,7 @@ export class SheetMusicRepository implements ISheetMusicRepository {
     const byCategory: Record<string, number> = {}
     for (const stat of categoryStats) {
       const key = stat.categoryId ? `category_${stat.categoryId}` : 'uncategorized'
-      byCategory[key] = (stat._count as any)._all
+      byCategory[key] = (stat._count as { _all: number })._all
     }
 
     return {
