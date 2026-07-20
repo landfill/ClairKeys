@@ -111,7 +111,7 @@ export function useMobileKeyboardSize() {
 
   // Responsive breakpoints
   const getResponsiveConfig = useCallback(() => {
-    const { isMobile, isTablet, isDesktop, isLandscape } = screenSize
+    const { isMobile, isTablet, isLandscape } = screenSize
 
     if (isMobile) {
       return {
@@ -233,22 +233,4 @@ export function useOrientationChange(callback: (isLandscape: boolean) => void) {
       window.removeEventListener('resize', handleOrientationChange)
     }
   }, [callback])
-}
-
-// Hook for viewport meta tag optimization
-export function useViewportOptimization() {
-  useEffect(() => {
-    const viewport = document.querySelector('meta[name="viewport"]') as HTMLMetaElement
-    
-    if (viewport) {
-      const originalContent = viewport.content
-      
-      // 모바일 최적화 viewport 설정
-      viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
-      
-      return () => {
-        viewport.content = originalContent
-      }
-    }
-  }, [])
 }

@@ -49,7 +49,7 @@ export default function MobileTouchOptimizer({
         const vibrationIntensity = intensity || getHapticIntensity()
         navigator.vibrate(vibrationIntensity)
       }
-    } catch (error) {
+    } catch {
       // Haptic feedback not supported or failed
       console.log('Haptic feedback not supported')
     }
@@ -179,8 +179,12 @@ export default function MobileTouchOptimizer({
     // Improve responsiveness with CSS properties
     container.style.userSelect = 'none'
     container.style.webkitUserSelect = 'none';
-    (container.style as any).webkitTouchCallout = 'none';
-    (container.style as any).webkitTapHighlightColor = 'transparent';
+    const vendorStyle = container.style as CSSStyleDeclaration & {
+      webkitTouchCallout?: string
+      webkitTapHighlightColor?: string
+    }
+    vendorStyle.webkitTouchCallout = 'none'
+    vendorStyle.webkitTapHighlightColor = 'transparent'
 
     return () => {
       // Cleanup styles if component unmounts
@@ -188,32 +192,11 @@ export default function MobileTouchOptimizer({
         container.style.touchAction = ''
         container.style.userSelect = ''
         container.style.webkitUserSelect = '';
-        (container.style as any).webkitTouchCallout = '';
-        (container.style as any).webkitTapHighlightColor = '';
+        vendorStyle.webkitTouchCallout = ''
+        vendorStyle.webkitTapHighlightColor = ''
       }
     }
   }, [preventScrolling])
-
-  // Add meta viewport optimization for mobile
-  useEffect(() => {
-    // Ensure viewport is optimized for touch
-    let viewportMeta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement
-    
-    if (!viewportMeta) {
-      viewportMeta = document.createElement('meta')
-      viewportMeta.name = 'viewport'
-      document.head.appendChild(viewportMeta)
-    }
-
-    const originalContent = viewportMeta.content
-    viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui'
-
-    return () => {
-      if (viewportMeta && originalContent) {
-        viewportMeta.content = originalContent
-      }
-    }
-  }, [])
 
   return (
     <div
@@ -261,7 +244,7 @@ export function useMobileTouchOptimization(options: {
         const defaultIntensity = sensitivity === 'low' ? 10 : sensitivity === 'high' ? 50 : 25
         navigator.vibrate(intensity || defaultIntensity)
       }
-    } catch (error) {
+    } catch {
       // Haptic feedback not supported
     }
   }, [hapticFeedback, sensitivity])

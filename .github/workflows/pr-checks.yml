@@ -267,6 +267,13 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
 
+    env:
+      NEXTAUTH_SECRET: test-secret
+      NEXTAUTH_URL: http://127.0.0.1:3000/
+      DATABASE_URL: postgresql://test:test@localhost:5432/test
+      SUPABASE_URL: https://test.supabase.co
+      SUPABASE_ANON_KEY: test-key
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -282,34 +289,47 @@ jobs:
 
       - name: Build application
         run: npm run build
-        env:
-          NEXTAUTH_SECRET: test-secret
-          DATABASE_URL: postgresql://test:test@localhost:5432/test
-          SUPABASE_URL: https://test.supabase.co
-          SUPABASE_ANON_KEY: test-key
 
       - name: Install matching Chrome and ChromeDriver
-        run: npx browser-driver-manager install chrome
+        run: npx --yes browser-driver-manager@2.0.1 install chrome
 
       - name: Run accessibility tests
         run: |
-          # Start the application in background
-          npm start &
-          APP_PID=$!
-
-          # Wait for app to start
-          sleep 10
-
-          # Use the Chrome/ChromeDriver pair installed by browser-driver-manager
+          set -euo pipefail
           source ~/.browser-driver-manager/.env
 
-          # Run basic accessibility checks with axe-core
-          npx @axe-core/cli http://localhost:3000 --exit \
+          APP_LOG="$RUNNER_TEMP/clairkeys-accessibility.log"
+          APP_HTML="$RUNNER_TEMP/clairkeys-home.html"
+          npm start >"$APP_LOG" 2>&1 &
+          APP_PID=$!
+          trap 'kill "$APP_PID" 2>/dev/null || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error --output "$APP_HTML" "$NEXTAUTH_URL"; then
+              break
+            fi
+
+            if ! kill -0 "$APP_PID" 2>/dev/null; then
+              cat "$APP_LOG"
+              exit 1
+            fi
+
+            sleep 1
+          done
+
+          if [ ! -s "$APP_HTML" ]; then
+            cat "$APP_LOG"
+            exit 1
+          fi
+
+          if ! grep -q '<main' "$APP_HTML"; then
+            cat "$APP_HTML"
+            exit 1
+          fi
+
+          npx --yes @axe-core/cli@4.12.1 "$NEXTAUTH_URL" --exit \
             --chrome-path "$CHROME_TEST_PATH" \
             --chromedriver-path "$CHROMEDRIVER_TEST_PATH"
-
-          # Kill the app
-          kill $APP_PID
 
   pr-summary:
     name: PR Summary
