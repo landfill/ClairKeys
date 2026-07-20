@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
-import { Button } from '@/components/ui'
 import AuthGuard from '@/components/auth/AuthGuard'
 import { LibrarySheetMusicList } from '@/components/library/LibrarySheetMusicList'
 
@@ -22,7 +21,7 @@ export default function LibraryPage() {
     }
   }
 
-  const handleSheetMusicMove = (sheetMusicId: number, newCategoryId: number | null) => {
+  const handleSheetMusicMove = (_sheetMusicId: number, _newCategoryId: number | null) => {
     setRefreshKey(prev => prev + 1)
   }
 

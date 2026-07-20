@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { sheetMusicCache } from '@/services/cacheService'
 
 export async function GET(
@@ -163,7 +164,7 @@ export async function PUT(
     }
 
     // Update sheet music
-    const updateData: any = {}
+    const updateData: Prisma.SheetMusicUncheckedUpdateInput = {}
     
     if (title !== undefined) {
       updateData.title = title.trim()

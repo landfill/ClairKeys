@@ -1,18 +1,5 @@
 import { fileStorageService } from '@/services/fileStorageService'
 
-// Mock Supabase client
-const mockSupabaseClient = {
-  storage: {
-    from: jest.fn(() => ({
-      upload: jest.fn(),
-      download: jest.fn(),
-      remove: jest.fn(),
-      getPublicUrl: jest.fn(),
-      list: jest.fn()
-    }))
-  }
-}
-
 // Mock the Supabase client creation
 jest.mock('@/services/fileStorageService', () => {
   const originalModule = jest.requireActual('@/services/fileStorageService')
@@ -157,7 +144,6 @@ describe('FileStorageService', () => {
       const validTypes = ['application/pdf', 'image/jpeg', 'image/png']
       
       validTypes.forEach(type => {
-        const file = new File(['content'], 'test.file', { type })
         // This would be called internally by uploadFile
         expect(type).toMatch(/^(application\/pdf|image\/(jpeg|png))$/)
       })

@@ -85,7 +85,7 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
         const error = await response.json()
         setErrors(prev => ({ ...prev, category: error.message || '카테고리 생성에 실패했습니다.' }))
       }
-    } catch (error) {
+    } catch {
       setErrors(prev => ({ ...prev, category: '카테고리 생성 중 오류가 발생했습니다.' }))
     } finally {
       setIsCreatingCategory(false)
@@ -111,7 +111,7 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
     return Object.keys(newErrors).length === 0
   }
 
-  const handleInputChange = (field: keyof typeof formData, value: any) => {
+  const handleInputChange = (field: keyof typeof formData, value: string | number | boolean | null) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error when user starts typing
     if (errors[field]) {

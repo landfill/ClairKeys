@@ -10,6 +10,7 @@ import {
   SearchSheetMusicParams
 } from '@/types/sheet-music'
 import { ISheetMusicRepository, ICategoryRepository, IUnitOfWork } from '@/repositories/interfaces'
+import { SheetMusicRepository } from '@/repositories/SheetMusicRepository'
 import { getRepositoryFactory, getUnitOfWork } from '@/repositories/RepositoryFactory'
 
 export interface ISheetMusicService {
@@ -178,15 +179,15 @@ export class SheetMusicServiceRefactored implements ISheetMusicService {
     uncategorized: number
     byCategory: Record<string, number>
   }> {
-    return await (this.sheetMusicRepository as any).getUserSheetMusicStats(userId)
+    return await (this.sheetMusicRepository as SheetMusicRepository).getUserSheetMusicStats(userId)
   }
 
   async getRecentSheetMusic(userId: string, limit: number = 10): Promise<SheetMusicWithCategory[]> {
-    return await (this.sheetMusicRepository as any).getRecentSheetMusic(userId, limit)
+    return await (this.sheetMusicRepository as SheetMusicRepository).getRecentSheetMusic(userId, limit)
   }
 
   async getPopularPublicSheetMusic(limit: number = 20): Promise<SheetMusicWithCategory[]> {
-    return await (this.sheetMusicRepository as any).getPopularPublicSheetMusic(limit)
+    return await (this.sheetMusicRepository as SheetMusicRepository).getPopularPublicSheetMusic(limit)
   }
 
   // ============================================================================

@@ -63,11 +63,9 @@ export default function LandscapePianoInterface({
   const [dragStartX, setDragStartX] = useState(0)
   const [dragStartScroll, setDragStartScroll] = useState(0)
   
-  const { 
-    screenSize, 
-    isMobileDevice, 
-    isLandscape,
-    canFitFullKeyboard 
+  const {
+    screenSize,
+    isMobileDevice
   } = useMobileKeyboardSize()
 
   // Calculate optimal dimensions for landscape mode
@@ -148,7 +146,7 @@ export default function LandscapePianoInterface({
   }, [])
   
   // Handle gesture-based controls
-  const handleGesture = useCallback((gesture: any) => {
+  const handleGesture = useCallback((gesture: { type: string; scale?: number; direction?: string }) => {
     if (!enableGestures) return
     
     switch (gesture.type) {

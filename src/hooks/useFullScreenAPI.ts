@@ -18,6 +18,25 @@ interface FullScreenOptions {
   onError?: (error: Error) => void
 }
 
+// Vendor-prefixed fullscreen APIs for Safari/Firefox/IE compatibility
+interface VendorDocument extends Document {
+  webkitFullscreenEnabled?: boolean
+  mozFullScreenEnabled?: boolean
+  msFullscreenEnabled?: boolean
+  webkitFullscreenElement?: Element | null
+  mozFullScreenElement?: Element | null
+  msFullscreenElement?: Element | null
+  webkitExitFullscreen?: () => Promise<void>
+  mozCancelFullScreen?: () => Promise<void>
+  msExitFullscreen?: () => Promise<void>
+}
+
+interface VendorHTMLElement extends HTMLElement {
+  webkitRequestFullscreen?: () => Promise<void>
+  mozRequestFullScreen?: () => Promise<void>
+  msRequestFullscreen?: () => Promise<void>
+}
+
 /**
  * Full Screen API Hook with cross-browser support
  * 모든 주요 브라우저에서 전체화면 API를 일관된 방식으로 사용할 수 있는 훅
@@ -37,21 +56,23 @@ export function useFullScreenAPI(options: FullScreenOptions = {}): FullScreenAPI
   const checkSupport = useCallback(() => {
     if (typeof document === 'undefined') return false
     
+    const doc = document as VendorDocument
     return !!(
-      document.fullscreenEnabled ||
-      (document as any).webkitFullscreenEnabled ||
-      (document as any).mozFullScreenEnabled ||
-      (document as any).msFullscreenEnabled
+      doc.fullscreenEnabled ||
+      doc.webkitFullscreenEnabled ||
+      doc.mozFullScreenEnabled ||
+      doc.msFullscreenEnabled
     )
   }, [])
 
   // Get current fullscreen element with cross-browser support
   const getFullScreenElement = useCallback(() => {
+    const doc = document as VendorDocument
     return (
-      document.fullscreenElement ||
-      (document as any).webkitFullscreenElement ||
-      (document as any).mozFullScreenElement ||
-      (document as any).msFullscreenElement
+      doc.fullscreenElement ||
+      doc.webkitFullscreenElement ||
+      doc.mozFullScreenElement ||
+      doc.msFullscreenElement
     )
   }, [])
 
@@ -65,16 +86,17 @@ export function useFullScreenAPI(options: FullScreenOptions = {}): FullScreenAPI
     }
 
     try {
-      if (targetElement.requestFullscreen) {
-        await targetElement.requestFullscreen({
+      const vendorElement = targetElement as VendorHTMLElement
+      if (vendorElement.requestFullscreen) {
+        await vendorElement.requestFullscreen({
           navigationUI: optionsRef.current.navigationUI || 'auto'
         } as FullscreenOptions)
-      } else if ((targetElement as any).webkitRequestFullscreen) {
-        await (targetElement as any).webkitRequestFullscreen()
-      } else if ((targetElement as any).mozRequestFullScreen) {
-        await (targetElement as any).mozRequestFullScreen()
-      } else if ((targetElement as any).msRequestFullscreen) {
-        await (targetElement as any).msRequestFullscreen()
+      } else if (vendorElement.webkitRequestFullscreen) {
+        await vendorElement.webkitRequestFullscreen()
+      } else if (vendorElement.mozRequestFullScreen) {
+        await vendorElement.mozRequestFullScreen()
+      } else if (vendorElement.msRequestFullscreen) {
+        await vendorElement.msRequestFullscreen()
       } else {
         throw new Error('No fullscreen method available')
       }
@@ -93,14 +115,15 @@ export function useFullScreenAPI(options: FullScreenOptions = {}): FullScreenAPI
     }
 
     try {
-      if (document.exitFullscreen) {
-        await document.exitFullscreen()
-      } else if ((document as any).webkitExitFullscreen) {
-        await (document as any).webkitExitFullscreen()
-      } else if ((document as any).mozCancelFullScreen) {
-        await (document as any).mozCancelFullScreen()
-      } else if ((document as any).msExitFullscreen) {
-        await (document as any).msExitFullscreen()
+      const doc = document as VendorDocument
+      if (doc.exitFullscreen) {
+        await doc.exitFullscreen()
+      } else if (doc.webkitExitFullscreen) {
+        await doc.webkitExitFullscreen()
+      } else if (doc.mozCancelFullScreen) {
+        await doc.mozCancelFullScreen()
+      } else if (doc.msExitFullscreen) {
+        await doc.msExitFullscreen()
       } else {
         throw new Error('No exit fullscreen method available')
       }
@@ -151,7 +174,7 @@ export function useFullScreenAPI(options: FullScreenOptions = {}): FullScreenAPI
       }
     }
 
-    const handleFullScreenError = (event: Event) => {
+    const handleFullScreenError = (_event: Event) => {
       optionsRef.current.onError?.(new Error('Fullscreen request failed'))
     }
 
@@ -207,7 +230,7 @@ export function useFullScreenAPI(options: FullScreenOptions = {}): FullScreenAPI
  */
 export function useScreenLock() {
   const [isLocked, setIsLocked] = useState(false)
-  const wakeLockRef = useRef<any>(null)
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
   const requestScreenLock = useCallback(async (): Promise<boolean> => {
     if (!('wakeLock' in navigator)) {
@@ -216,7 +239,7 @@ export function useScreenLock() {
     }
 
     try {
-      wakeLockRef.current = await (navigator as any).wakeLock.request('screen')
+      wakeLockRef.current = await navigator.wakeLock.request('screen')
       setIsLocked(true)
       
       wakeLockRef.current.addEventListener('release', () => {

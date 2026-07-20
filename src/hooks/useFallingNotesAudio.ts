@@ -32,7 +32,7 @@ export function useFallingNotesAudio() {
   const initializeAudio = useCallback(() => {
     if (!audioContextRef.current) {
       // Create audio context with compatibility
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
+      const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
       audioContextRef.current = new AudioContextClass()
       
       // Create master gain node
@@ -304,7 +304,7 @@ function stopAudioNodes(nodes: AudioNodes[]) {
       
       // Stop oscillator after fade out
       osc.stop(now + 0.02)
-    } catch (error) {
+    } catch {
       // Ignore errors for already stopped nodes
     }
   }

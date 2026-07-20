@@ -33,14 +33,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { action, options = {} } = body
 
-    let result: any = {}
+    let result: unknown = {}
 
     switch (action) {
       case 'cleanup-old-data':
         // Clean up old database records
         result = await queryOptimizationService.cleanupOldData({
           olderThanDays: options.olderThanDays || 30,
-          batchSize: options.batchSize || 100,
           dryRun: options.dryRun || false
         })
         break
@@ -204,9 +203,9 @@ export async function GET(request: NextRequest) {
  * Generate maintenance recommendations
  */
 function generateMaintenanceRecommendations(
-  queryStats: Map<string, any>,
-  cacheStats: any,
-  cleanupData: any
+  queryStats: Map<string, { averageTime: number; errorRate: number }>,
+  cacheStats: { hitRate: number; size: number; maxSize: number },
+  cleanupData: { processingJobs: number; notifications: number }
 ): string[] {
   const recommendations: string[] = []
 
@@ -251,7 +250,7 @@ function generateMaintenanceRecommendations(
 async function checkDatabaseHealth(): Promise<{
   status: 'healthy' | 'degraded' | 'unhealthy'
   responseTime: number
-  details: any
+  details: Record<string, unknown>
 }> {
   try {
     const startTime = Date.now()
@@ -289,7 +288,7 @@ async function checkDatabaseHealth(): Promise<{
  */
 async function checkStorageHealth(): Promise<{
   status: 'healthy' | 'degraded' | 'unhealthy'
-  details: any
+  details: Record<string, unknown>
 }> {
   try {
     // Test storage connectivity by listing files

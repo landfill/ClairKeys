@@ -1,6 +1,5 @@
 'use client'
 
-import { SheetMusicWithCategory } from '@/types/sheet-music'
 import { Category } from '@/types/category'
 import { SheetMusicCardBase } from './SheetMusicCardBase'
 import { SheetMusicActions } from './SheetMusicActions'

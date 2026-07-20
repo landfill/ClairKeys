@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Mark all notifications as read
-export async function PATCH(request: NextRequest) {
+export async function PATCH() {
   try {
     const session = await getServerSession(authOptions)
     

@@ -23,7 +23,7 @@ export interface BackgroundUploadState {
 
 export default function BackgroundFileUpload() {
   const { createBackgroundJob } = useBackgroundProcessing()
-  const { categories } = useCategories()
+  useCategories()
 
   const [state, setState] = useState<BackgroundUploadState>({
     selectedFile: null,
@@ -59,7 +59,7 @@ export default function BackgroundFileUpload() {
     }))
   }, [])
 
-  const handleMetadataChange = useCallback((metadata: any) => {
+  const handleMetadataChange = useCallback((metadata: Partial<BackgroundUploadState['metadata']>) => {
     setState(prev => ({
       ...prev,
       metadata: {

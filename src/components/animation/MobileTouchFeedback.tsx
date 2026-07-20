@@ -34,7 +34,7 @@ export default function MobileTouchFeedback({
   className = '',
   enableHaptics = true,
   enableVisualFeedback = true,
-  touchColor = '#4caf50',
+  touchColor: _touchColor = '#4caf50',
   maxTouchPoints = 10,
   feedbackDuration = 600,
   hapticIntensity = 'medium',
@@ -49,11 +49,6 @@ export default function MobileTouchFeedback({
   const [devicePixelRatio, setDevicePixelRatio] = useState(1)
   const [isMobile, setIsMobile] = useState(false)
   
-  // Performance optimization: Object pool for touch points
-  const touchPoolRef = useRef<TouchPoint[]>([])
-  const lastUpdateTimeRef = useRef<number>(0)
-  const UPDATE_THROTTLE_MS = 16 // ~60fps
-
   // Detect if device is mobile/touch enabled
   useEffect(() => {
     const checkMobile = () => {
@@ -105,10 +100,15 @@ export default function MobileTouchFeedback({
       navigator.vibrate(patterns[intensity])
     }
 
-    // Try iOS haptic feedback
-    if ('ontouchstart' in window && (window as any).DeviceMotionEvent) {
+    // Try iOS haptic feedback (non-standard, injected by some WebView wrappers)
+    const hapticWindow = window as Window & {
+      DeviceMotionEvent?: unknown
+      TapticEngine?: { impact: (type: string) => void }
+      Haptic?: { impact: (type: string) => void }
+    }
+    if ('ontouchstart' in window && hapticWindow.DeviceMotionEvent) {
       try {
-        const HapticFeedback = (window as any).TapticEngine || (window as any).Haptic
+        const HapticFeedback = hapticWindow.TapticEngine || hapticWindow.Haptic
         if (HapticFeedback) {
           const types = {
             light: 'impactLight',
@@ -117,7 +117,7 @@ export default function MobileTouchFeedback({
           }
           HapticFeedback.impact(types[intensity])
         }
-      } catch (e) {
+      } catch {
         // Ignore haptic errors
       }
     }
@@ -139,6 +139,87 @@ export default function MobileTouchFeedback({
     }
   }, [])
 
+  // Draw touch feedback
+  const drawTouchFeedback = useCallback((ctx: CanvasRenderingContext2D, currentTime: number) => {
+    const { width, height } = canvasSize
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height)
+
+    // Filter active touch points
+    const activeTouchPoints = touchPoints.filter(point => {
+      return currentTime - point.startTime < feedbackDuration
+    })
+
+    // Remove expired touch points
+    if (activeTouchPoints.length !== touchPoints.length) {
+      setTouchPoints(activeTouchPoints)
+    }
+
+    // Draw each touch point
+    activeTouchPoints.forEach(point => {
+      const elapsed = currentTime - point.startTime
+      const progress = elapsed / feedbackDuration
+
+      // Calculate ripple effect
+      const maxRadius = point.size * 2
+      const currentRadius = maxRadius * progress
+      const opacity = (1 - progress) * 0.8
+
+      // Draw ripple
+      const gradient = ctx.createRadialGradient(
+        point.x, point.y, 0,
+        point.x, point.y, currentRadius
+      )
+      gradient.addColorStop(0, `${point.color}80`)
+      gradient.addColorStop(0.7, `${point.color}40`)
+      gradient.addColorStop(1, `${point.color}00`)
+
+      ctx.fillStyle = gradient
+      ctx.beginPath()
+      ctx.arc(point.x, point.y, currentRadius, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Draw center dot
+      if (progress < 0.3) {
+        ctx.fillStyle = `${point.color}${Math.floor((1 - progress / 0.3) * 255).toString(16).padStart(2, '0')}`
+        ctx.beginPath()
+        ctx.arc(point.x, point.y, point.size * (1 - progress), 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // Draw pressure indicator (mobile only)
+      if (isMobile && point.pressure > 0.3) {
+        const pressureRadius = point.size * 0.5 * point.pressure
+        const pressureOpacity = Math.floor(opacity * 255).toString(16).padStart(2, '0')
+
+        ctx.fillStyle = `#ffffff${pressureOpacity}`
+        ctx.beginPath()
+        ctx.arc(point.x, point.y, pressureRadius, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    })
+
+    return activeTouchPoints.length > 0
+  }, [canvasSize, touchPoints, feedbackDuration, isMobile])
+
+  // Animation loop
+  const animate = useCallback((currentTime: number) => {
+    if (!canvasRef.current || !enableVisualFeedback) return
+
+    const ctx = canvasRef.current.getContext('2d')
+    if (!ctx) return
+
+    const hasActiveTouches = drawTouchFeedback(ctx, currentTime)
+
+    // Continue animation if there are active touches
+    if (hasActiveTouches) {
+      animationFrameRef.current = requestAnimationFrame(animate)
+    } else {
+      animationFrameRef.current = 0
+    }
+  }, [drawTouchFeedback, enableVisualFeedback])
+
   // Handle touch events
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     if (!enableVisualFeedback && !enableHaptics) return
@@ -154,7 +235,7 @@ export default function MobileTouchFeedback({
       const touch = event.touches[i]
       const x = touch.clientX - rect.left
       const y = touch.clientY - rect.top
-      const pressure = (touch as any).force || 0.5
+      const pressure = (touch as Touch & { force?: number }).force || 0.5
       
       const touchPoint = createTouchPoint(x, y, pressure)
       newTouchPoints.push(touchPoint)
@@ -175,7 +256,7 @@ export default function MobileTouchFeedback({
     if (!animationFrameRef.current) {
       animationFrameRef.current = requestAnimationFrame(animate)
     }
-  }, [enableVisualFeedback, enableHaptics, createTouchPoint, triggerHapticFeedback, hapticIntensity, onTouch, maxTouchPoints])
+  }, [enableVisualFeedback, enableHaptics, createTouchPoint, triggerHapticFeedback, hapticIntensity, onTouch, maxTouchPoints, animate])
 
   // Handle mouse events (for desktop testing)
   const handleMouseDown = useCallback((event: React.MouseEvent) => {
@@ -199,88 +280,7 @@ export default function MobileTouchFeedback({
     if (!animationFrameRef.current) {
       animationFrameRef.current = requestAnimationFrame(animate)
     }
-  }, [enableVisualFeedback, isMobile, createTouchPoint, onTouch, maxTouchPoints])
-
-  // Draw touch feedback
-  const drawTouchFeedback = useCallback((ctx: CanvasRenderingContext2D, currentTime: number) => {
-    const { width, height } = canvasSize
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height)
-    
-    // Filter active touch points
-    const activeTouchPoints = touchPoints.filter(point => {
-      return currentTime - point.startTime < feedbackDuration
-    })
-    
-    // Remove expired touch points
-    if (activeTouchPoints.length !== touchPoints.length) {
-      setTouchPoints(activeTouchPoints)
-    }
-    
-    // Draw each touch point
-    activeTouchPoints.forEach(point => {
-      const elapsed = currentTime - point.startTime
-      const progress = elapsed / feedbackDuration
-      
-      // Calculate ripple effect
-      const maxRadius = point.size * 2
-      const currentRadius = maxRadius * progress
-      const opacity = (1 - progress) * 0.8
-      
-      // Draw ripple
-      const gradient = ctx.createRadialGradient(
-        point.x, point.y, 0,
-        point.x, point.y, currentRadius
-      )
-      gradient.addColorStop(0, `${point.color}80`)
-      gradient.addColorStop(0.7, `${point.color}40`)
-      gradient.addColorStop(1, `${point.color}00`)
-      
-      ctx.fillStyle = gradient
-      ctx.beginPath()
-      ctx.arc(point.x, point.y, currentRadius, 0, Math.PI * 2)
-      ctx.fill()
-      
-      // Draw center dot
-      if (progress < 0.3) {
-        ctx.fillStyle = `${point.color}${Math.floor((1 - progress / 0.3) * 255).toString(16).padStart(2, '0')}`
-        ctx.beginPath()
-        ctx.arc(point.x, point.y, point.size * (1 - progress), 0, Math.PI * 2)
-        ctx.fill()
-      }
-      
-      // Draw pressure indicator (mobile only)
-      if (isMobile && point.pressure > 0.3) {
-        const pressureRadius = point.size * 0.5 * point.pressure
-        const pressureOpacity = Math.floor(opacity * 255).toString(16).padStart(2, '0')
-        
-        ctx.fillStyle = `#ffffff${pressureOpacity}`
-        ctx.beginPath()
-        ctx.arc(point.x, point.y, pressureRadius, 0, Math.PI * 2)
-        ctx.fill()
-      }
-    })
-    
-    return activeTouchPoints.length > 0
-  }, [canvasSize, touchPoints, feedbackDuration, isMobile])
-
-  // Animation loop
-  const animate = useCallback((currentTime: number) => {
-    if (!canvasRef.current || !enableVisualFeedback) return
-
-    const ctx = canvasRef.current.getContext('2d')
-    if (!ctx) return
-
-    const hasActiveTouches = drawTouchFeedback(ctx, currentTime)
-    
-    // Continue animation if there are active touches
-    if (hasActiveTouches) {
-      animationFrameRef.current = requestAnimationFrame(animate)
-    } else {
-      animationFrameRef.current = 0
-    }
-  }, [drawTouchFeedback, enableVisualFeedback])
+  }, [enableVisualFeedback, isMobile, createTouchPoint, onTouch, maxTouchPoints, animate])
 
   // Setup canvas
   useEffect(() => {
@@ -369,7 +369,7 @@ export function useMobileTouchOptimization() {
     element.style.touchAction = 'none'
     element.style.userSelect = 'none'
     element.style.webkitUserSelect = 'none';
-    (element.style as any).webkitTouchCallout = 'none'
+    (element.style as CSSStyleDeclaration & { webkitTouchCallout?: string }).webkitTouchCallout = 'none'
     
     // Add mobile-specific event listeners
     const preventDefaultTouch = (e: Event) => e.preventDefault()

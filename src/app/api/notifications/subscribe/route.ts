@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 }
 
 // 구독 상태 조회
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     

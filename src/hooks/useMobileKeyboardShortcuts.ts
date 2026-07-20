@@ -34,28 +34,42 @@ interface ShortcutConfig {
   allowInInputs?: boolean
 }
 
+const DEFAULT_SHORTCUT_CONFIG: Required<ShortcutConfig> = {
+  enabled: true,
+  preventDefault: true,
+  allowInInputs: false
+}
+
 /**
  * Mobile Keyboard Shortcuts Hook
  * 모바일 기기의 외장 키보드 또는 물리적 버튼을 위한 키보드 단축키
  */
 export function useMobileKeyboardShortcuts(
   shortcuts: KeyboardShortcuts,
-  config: ShortcutConfig = {}
+  config: ShortcutConfig = DEFAULT_SHORTCUT_CONFIG
 ) {
   const {
-    enabled = true,
-    preventDefault = true,
-    allowInInputs = false
+    enabled = DEFAULT_SHORTCUT_CONFIG.enabled,
+    preventDefault = DEFAULT_SHORTCUT_CONFIG.preventDefault,
+    allowInInputs = DEFAULT_SHORTCUT_CONFIG.allowInInputs
   } = config
   
   const shortcutsRef = useRef(shortcuts)
-  const configRef = useRef(config)
+  const configRef = useRef<ShortcutConfig>({
+    enabled,
+    preventDefault,
+    allowInInputs
+  })
   
   // Update refs when props change
   useEffect(() => {
     shortcutsRef.current = shortcuts
-    configRef.current = config
-  }, [shortcuts, config])
+    configRef.current = {
+      enabled,
+      preventDefault,
+      allowInInputs
+    }
+  }, [shortcuts, enabled, preventDefault, allowInInputs])
   
   // Check if we should ignore the event
   const shouldIgnoreEvent = useCallback((event: KeyboardEvent): boolean => {
@@ -79,7 +93,7 @@ export function useMobileKeyboardShortcuts(
       return
     }
     
-    const { key, code, metaKey, ctrlKey, shiftKey, altKey } = event
+    const { key, metaKey, ctrlKey, shiftKey, altKey } = event
     const currentShortcuts = shortcutsRef.current
     const currentConfig = configRef.current
     let handled = false
@@ -171,7 +185,6 @@ export function useMobileKeyboardShortcuts(
     
     // Number keys for quick volume
     else if (/^[0-9]$/.test(key)) {
-      const volume = parseInt(key) / 10
       // This would need to be handled by the parent component
       // We just prevent default here
       if (altKey) {

@@ -13,8 +13,8 @@ export default function PianoKeyboard({
   animationActiveKeys = [],
   className = '',
   height = 200,
-  keyWidth,
-  showKeyLabels = false
+  keyWidth: _keyWidth,
+  showKeyLabels: _showKeyLabels = false
 }: PianoKeyboardProps) {
   const [isClient, setIsClient] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -26,23 +26,9 @@ export default function PianoKeyboard({
 
   const { playNote, releaseNote, initializeAudio, isReady } = useAudio()
 
-  // Client-side only rendering with cache busting
+  // Client-side only rendering
   useEffect(() => {
     setIsClient(true)
-    // Force re-render to bust any caching issues
-    const timer = setTimeout(() => {
-      if (canvasRef.current && keys.length > 0) {
-        // Call drawKeys directly without dependency
-        const canvas = canvasRef.current
-        const ctx = canvas.getContext('2d')
-        if (ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height)
-          // Simple redraw trigger
-          window.dispatchEvent(new Event('resize'))
-        }
-      }
-    }, 100)
-    return () => clearTimeout(timer)
   }, [])
 
   // Generate piano keys
@@ -241,7 +227,7 @@ export default function PianoKeyboard({
       
       drawKeys()
     }
-  }, [keys, onKeyPress, onKeyRelease, playNote, releaseNote, drawKeys])
+  }, [keys, onKeyPress, onKeyRelease, playNote, releaseNote, drawKeys, initializeAudio])
 
   // Canvas setup
   useEffect(() => {

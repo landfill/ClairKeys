@@ -6,7 +6,7 @@
  * Features: 스와이프, 핀치줌, 터치 피드백, 제스처 인식
  */
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 
 interface TouchPoint {
   x: number
@@ -79,14 +79,6 @@ export default function MobileGestures({
     const dx = touch1.x - touch2.x
     const dy = touch1.y - touch2.y
     return Math.sqrt(dx * dx + dy * dy)
-  }, [])
-  
-  // Get touch center point for pinch gesture
-  const getTouchCenter = useCallback((touch1: TouchPoint, touch2: TouchPoint): { x: number; y: number } => {
-    return {
-      x: (touch1.x + touch2.x) / 2,
-      y: (touch1.y + touch2.y) / 2
-    }
   }, [])
   
   // Convert touch event to touch points

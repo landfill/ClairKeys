@@ -334,7 +334,7 @@ export default function FloatingNotes({
  */
 export function useFloatingNotes(
   pianoKeys: Array<{ note: string; octave: number; x: number; y: number; width: number; height: number }>,
-  activeNotes: string[]
+  _activeNotes: string[]
 ) {
   const [keyPositions, setKeyPositions] = useState<Map<string, { x: number; y: number; width: number; height: number }>>(new Map())
 

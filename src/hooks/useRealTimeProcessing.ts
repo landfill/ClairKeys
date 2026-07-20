@@ -23,11 +23,18 @@ export interface ProcessingStatus {
   error?: string
   completed: boolean
   cancelled: boolean
-  result?: any
+  result?: unknown
+}
+
+export interface UploadMetadata {
+  title: string
+  composer: string
+  categoryId?: number | null
+  isPublic: boolean
 }
 
 export interface UseRealTimeProcessingOptions {
-  onComplete?: (result: any) => void
+  onComplete?: (result: unknown) => void
   onError?: (error: string) => void
   onStageChange?: (stage: ProcessingStage) => void
   pollInterval?: number // Fallback polling interval in ms
@@ -37,7 +44,7 @@ export interface UseRealTimeProcessingReturn {
   status: ProcessingStatus | null
   isConnected: boolean
   error: string | null
-  startProcessing: (file: File, metadata: any) => Promise<void>
+  startProcessing: (file: File, metadata: UploadMetadata) => Promise<void>
   cancelProcessing: () => Promise<void>
   reconnect: () => void
 }
@@ -60,7 +67,12 @@ export function useRealTimeProcessing(
   const pollTimerRef = useRef<NodeJS.Timeout | null>(null)
   const currentSessionRef = useRef<string | null>(null)
   const reconnectAttemptsRef = useRef(0)
+  const callbacksRef = useRef({ onComplete, onError, onStageChange })
   const maxReconnectAttempts = 5
+
+  useEffect(() => {
+    callbacksRef.current = { onComplete, onError, onStageChange }
+  }, [onComplete, onError, onStageChange])
 
   // Cleanup function
   const cleanup = useCallback(() => {
@@ -74,6 +86,75 @@ export function useRealTimeProcessing(
     }
     setIsConnected(false)
   }, [])
+
+  // Fallback polling mechanism
+  const setupPolling = useCallback((sessionId: string) => {
+    cleanup()
+
+    console.log(`Setting up polling for session: ${sessionId}`)
+    setError('실시간 연결 실패 - 폴링으로 전환')
+
+    const poll = async () => {
+      try {
+        const response = await fetch(`/api/processing-status/${sessionId}`)
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.log('Session not found, stopping polling')
+            cleanup()
+            return
+          }
+          throw new Error(`HTTP ${response.status}`)
+        }
+
+        const data = await response.json()
+        const newStatus: ProcessingStatus = {
+          sessionId: data.sessionId,
+          stage: data.stage,
+          progress: data.progress,
+          message: data.message,
+          estimatedTime: data.estimatedTime,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          error: data.error,
+          completed: data.completed || false,
+          cancelled: data.cancelled || false,
+          result: data.result
+        }
+
+        setStatus(prevStatus => {
+          if (!prevStatus || prevStatus.stage !== newStatus.stage) {
+            callbacksRef.current.onStageChange?.(newStatus.stage)
+          }
+          return newStatus
+        })
+
+        // Handle completion
+        if (data.completed && data.result) {
+          callbacksRef.current.onComplete?.(data.result)
+          cleanup()
+          return
+        }
+
+        // Handle error
+        if (data.error) {
+          callbacksRef.current.onError?.(data.error)
+          cleanup()
+          return
+        }
+
+      } catch (pollError) {
+        console.error('Polling error:', pollError)
+        setError(`연결 오류: ${pollError instanceof Error ? pollError.message : 'Unknown error'}`)
+      }
+    }
+
+    // Initial poll
+    poll()
+
+    // Setup interval
+    pollTimerRef.current = setInterval(poll, pollInterval)
+  }, [cleanup, pollInterval])
 
   // Setup Server-Sent Events connection
   const setupSSEConnection = useCallback((sessionId: string) => {
@@ -116,20 +197,20 @@ export function useRealTimeProcessing(
             setStatus(prevStatus => {
               // Only call onStageChange if stage actually changed
               if (!prevStatus || prevStatus.stage !== newStatus.stage) {
-                onStageChange?.(newStatus.stage)
+                callbacksRef.current.onStageChange?.(newStatus.stage)
               }
               return newStatus
             })
 
             // Handle completion
             if (data.completed && data.result) {
-              onComplete?.(data.result)
+              callbacksRef.current.onComplete?.(data.result)
               cleanup()
             }
 
             // Handle error
             if (data.error) {
-              onError?.(data.error)
+              callbacksRef.current.onError?.(data.error)
               cleanup()
             }
           }
@@ -137,7 +218,7 @@ export function useRealTimeProcessing(
           if (data.type === 'error') {
             console.error('SSE error:', data.message)
             setError(data.message)
-            onError?.(data.message)
+            callbacksRef.current.onError?.(data.message)
             cleanup()
           }
 
@@ -176,79 +257,10 @@ export function useRealTimeProcessing(
       // Fallback to polling
       setupPolling(sessionId)
     }
-  }, [cleanup, onComplete, onError, onStageChange])
-
-  // Fallback polling mechanism
-  const setupPolling = useCallback((sessionId: string) => {
-    cleanup()
-
-    console.log(`Setting up polling for session: ${sessionId}`)
-    setError('실시간 연결 실패 - 폴링으로 전환')
-
-    const poll = async () => {
-      try {
-        const response = await fetch(`/api/processing-status/${sessionId}`)
-        
-        if (!response.ok) {
-          if (response.status === 404) {
-            console.log('Session not found, stopping polling')
-            cleanup()
-            return
-          }
-          throw new Error(`HTTP ${response.status}`)
-        }
-
-        const data = await response.json()
-        const newStatus: ProcessingStatus = {
-          sessionId: data.sessionId,
-          stage: data.stage,
-          progress: data.progress,
-          message: data.message,
-          estimatedTime: data.estimatedTime,
-          startTime: data.startTime,
-          endTime: data.endTime,
-          error: data.error,
-          completed: data.completed || false,
-          cancelled: data.cancelled || false,
-          result: data.result
-        }
-
-        setStatus(prevStatus => {
-          if (!prevStatus || prevStatus.stage !== newStatus.stage) {
-            onStageChange?.(newStatus.stage)
-          }
-          return newStatus
-        })
-
-        // Handle completion
-        if (data.completed && data.result) {
-          onComplete?.(data.result)
-          cleanup()
-          return
-        }
-
-        // Handle error
-        if (data.error) {
-          onError?.(data.error)
-          cleanup()
-          return
-        }
-
-      } catch (pollError) {
-        console.error('Polling error:', pollError)
-        setError(`연결 오류: ${pollError instanceof Error ? pollError.message : 'Unknown error'}`)
-      }
-    }
-
-    // Initial poll
-    poll()
-
-    // Setup interval
-    pollTimerRef.current = setInterval(poll, pollInterval)
-  }, [cleanup, onComplete, onError, onStageChange, pollInterval])
+  }, [cleanup, setupPolling])
 
   // Start processing
-  const startProcessing = useCallback(async (file: File, metadata: any) => {
+  const startProcessing = useCallback(async (file: File, metadata: UploadMetadata) => {
     try {
       setError(null)
       setStatus(null)
@@ -285,10 +297,10 @@ export function useRealTimeProcessing(
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to start processing'
       setError(errorMessage)
-      onError?.(errorMessage)
+      callbacksRef.current.onError?.(errorMessage)
       throw error
     }
-  }, [setupSSEConnection, cleanup, onError])
+  }, [setupSSEConnection, cleanup])
 
   // Cancel processing
   const cancelProcessing = useCallback(async () => {

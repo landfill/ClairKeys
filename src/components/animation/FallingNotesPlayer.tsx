@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useRef } from 'react'
-import type { FallingNote } from '@/types/fallingNotes'
+import React, { useState, useEffect, useMemo } from 'react'
 import type { PianoAnimationData } from '@/types/animation'
 import { buildKeyLayout } from '@/utils/pianoLayout'
 import { convertToFallingNotes } from '@/utils/dataConverter'
@@ -30,17 +29,13 @@ export default function FallingNotesPlayer({
     isPlaying,
     currentTime,
     tempoScale,
-    mute,
     lookAheadSec,
     totalLength,
     play,
     pause,
     stop,
     seek,
-    setTempoScale,
-    setMute,
-    setLookAheadSec,
-    togglePlayPause
+    setTempoScale
   } = useFallingNotesPlayer(notes)
 
   // Constants

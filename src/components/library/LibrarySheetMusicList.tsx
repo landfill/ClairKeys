@@ -1,8 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { SheetMusicWithCategory } from '@/types/sheet-music'
-import { Category } from '@/types/category'
+import { useEffect } from 'react'
 import { useSheetMusic } from '@/hooks/useSheetMusic'
 import { useCategories } from '@/hooks/useCategories'
 import { SheetMusicCard } from '@/components/sheet/SheetMusicCard'
@@ -25,7 +23,7 @@ export function LibrarySheetMusicList({
   showCategorySelector = false,
   onCategorySelect,
   onSheetMusicMove,
-  onCategoryChange
+  onCategoryChange: _onCategoryChange
 }: LibrarySheetMusicListProps) {
   const { sheetMusic, loading: sheetMusicLoading, fetchUserSheetMusic, updateSheetMusic, deleteSheetMusic } = useSheetMusic()
   const { categories, loading: categoriesLoading } = useCategories()

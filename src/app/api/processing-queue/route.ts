@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { getProcessingQueueService } from '@/services/processingQueue'
 
 // Get user's processing jobs
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check authentication
     const session = await getServerSession(authOptions)
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Get queue statistics (admin only, for now just return basic stats)
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Check authentication
     const session = await getServerSession(authOptions)

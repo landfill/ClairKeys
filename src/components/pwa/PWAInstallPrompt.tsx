@@ -60,10 +60,10 @@ export default function PWAInstallPrompt({
   useEffect(() => {
     // PWA로 실행 중인지 확인
     const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
-                              (navigator as any).standalone ||
+                              (navigator as Navigator & { standalone?: boolean }).standalone ||
                               document.referrer.includes('android-app://')
 
-    setIsInstalled(isInStandaloneMode)
+    setIsInstalled(!!isInStandaloneMode)
   }, [])
 
   // BeforeInstallPrompt 이벤트 리스너
@@ -149,11 +149,11 @@ export default function PWAInstallPrompt({
         </li>
         <li className="flex items-start">
           <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-500 text-white rounded-full text-xs mr-2 mt-0.5">2</span>
-          <span>"홈 화면에 추가" 옵션을 선택하세요</span>
+          <span>&quot;홈 화면에 추가&quot; 옵션을 선택하세요</span>
         </li>
         <li className="flex items-start">
           <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-500 text-white rounded-full text-xs mr-2 mt-0.5">3</span>
-          <span>"추가" 버튼을 탭하여 완료하세요</span>
+          <span>&quot;추가&quot; 버튼을 탭하여 완료하세요</span>
         </li>
       </ol>
     </div>
@@ -170,11 +170,11 @@ export default function PWAInstallPrompt({
         </li>
         <li className="flex items-start">
           <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-500 text-white rounded-full text-xs mr-2 mt-0.5">2</span>
-          <span>"앱 설치" 또는 "홈 화면에 추가" 옵션을 선택하세요</span>
+          <span>&quot;앱 설치&quot; 또는 &quot;홈 화면에 추가&quot; 옵션을 선택하세요</span>
         </li>
         <li className="flex items-start">
           <span className="inline-flex items-center justify-center w-5 h-5 bg-blue-500 text-white rounded-full text-xs mr-2 mt-0.5">3</span>
-          <span>"설치" 버튼을 탭하여 완료하세요</span>
+          <span>&quot;설치&quot; 버튼을 탭하여 완료하세요</span>
         </li>
       </ol>
     </div>
@@ -316,9 +316,9 @@ export function usePWAStatus() {
     // PWA 설치 상태 확인
     const checkInstallStatus = () => {
       const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
-                                (navigator as any).standalone ||
+                                (navigator as Navigator & { standalone?: boolean }).standalone ||
                                 document.referrer.includes('android-app://')
-      setIsInstalled(isInStandaloneMode)
+      setIsInstalled(!!isInStandaloneMode)
     }
 
     // 온라인/오프라인 상태 확인

@@ -265,6 +265,13 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
 
+    env:
+      NEXTAUTH_SECRET: test-secret
+      NEXTAUTH_URL: http://127.0.0.1:3000/
+      DATABASE_URL: postgresql://test:test@localhost:5432/test
+      SUPABASE_URL: https://test.supabase.co
+      SUPABASE_ANON_KEY: test-key
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -280,26 +287,47 @@ jobs:
 
       - name: Build application
         run: npm run build
-        env:
-          NEXTAUTH_SECRET: test-secret
-          DATABASE_URL: postgresql://test:test@localhost:5432/test
-          SUPABASE_URL: https://test.supabase.co
-          SUPABASE_ANON_KEY: test-key
+
+      - name: Install matching Chrome and ChromeDriver
+        run: npx --yes browser-driver-manager@2.0.1 install chrome
 
       - name: Run accessibility tests
         run: |
-          # Start the application in background
-          npm start &
+          set -euo pipefail
+          source ~/.browser-driver-manager/.env
+
+          APP_LOG="$RUNNER_TEMP/clairkeys-accessibility.log"
+          APP_HTML="$RUNNER_TEMP/clairkeys-home.html"
+          npm start >"$APP_LOG" 2>&1 &
           APP_PID=$!
-          
-          # Wait for app to start
-          sleep 10
-          
-          # Run basic accessibility checks with axe-core
-          npx @axe-core/cli http://localhost:3000 --exit
-          
-          # Kill the app
-          kill $APP_PID
+          trap 'kill "$APP_PID" 2>/dev/null || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error --output "$APP_HTML" "$NEXTAUTH_URL"; then
+              break
+            fi
+
+            if ! kill -0 "$APP_PID" 2>/dev/null; then
+              cat "$APP_LOG"
+              exit 1
+            fi
+
+            sleep 1
+          done
+
+          if [ ! -s "$APP_HTML" ]; then
+            cat "$APP_LOG"
+            exit 1
+          fi
+
+          if ! grep -q '<main' "$APP_HTML"; then
+            cat "$APP_HTML"
+            exit 1
+          fi
+
+          npx --yes @axe-core/cli@4.12.1 "$NEXTAUTH_URL" --exit \
+            --chrome-path "$CHROME_TEST_PATH" \
+            --chromedriver-path "$CHROMEDRIVER_TEST_PATH"
 
   pr-summary:
     name: PR Summary
@@ -308,7 +336,7 @@ jobs:
     if: always()
 
     steps:
-      - name: Create PR summary comment
+      - name: Create PR check summary
         uses: actions/github-script@v7
         with:
           script: |
@@ -327,28 +355,30 @@ jobs:
               return '⏳';
             };
             
-            const body = `
-            ## 🔍 PR Check Results
-            
-            | Check | Status | Result |
-            |-------|--------|---------|
-            | Lint & Type Check | ${getEmoji(results.lint)} | ${results.lint} |
-            | Unit Tests | ${getEmoji(results.unit)} | ${results.unit} |
-            | E2E Tests | ${getEmoji(results.e2e)} | ${results.e2e} |
-            | Security Scan | ${getEmoji(results.security)} | ${results.security} |
-            | Build Check | ${getEmoji(results.build)} | ${results.build} |
-            
-            ${Object.values(results).every(r => r === 'success' || r === 'skipped') 
-              ? '🎉 All checks passed! This PR is ready for review.' 
-              : '⚠️ Some checks failed. Please review and fix the issues.'}
-            `;
-            
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
+            const allPassed = Object.values(results).every(
+              result => result === 'success' || result === 'skipped'
+            );
+
+            await core.summary
+              .addHeading('🔍 PR Check Results', 2)
+              .addTable([
+                [
+                  { data: 'Check', header: true },
+                  { data: 'Status', header: true },
+                  { data: 'Result', header: true }
+                ],
+                ['Lint & Type Check', getEmoji(results.lint), results.lint],
+                ['Unit Tests', getEmoji(results.unit), results.unit],
+                ['E2E Tests', getEmoji(results.e2e), results.e2e],
+                ['Security Scan', getEmoji(results.security), results.security],
+                ['Build Check', getEmoji(results.build), results.build]
+              ])
+              .addRaw(
+                allPassed
+                  ? '🎉 All checks passed! This PR is ready for review.'
+                  : '⚠️ Some checks failed. Please review and fix the issues.'
+              )
+              .write();
 
   # Require all checks to pass for PR to be mergeable
   all-checks:

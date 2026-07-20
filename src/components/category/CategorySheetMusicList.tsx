@@ -7,7 +7,6 @@ import { useSheetMusic } from '@/hooks/useSheetMusic'
 import { useCategories } from '@/hooks/useCategories'
 import { SheetMusicCard } from '@/components/sheet/SheetMusicCard'
 import Loading from '@/components/ui/Loading'
-import Button from '@/components/ui/Button'
 
 interface CategorySheetMusicListProps {
   selectedCategoryId?: number | null
@@ -25,9 +24,9 @@ interface GroupedSheetMusic {
 }
 
 export function CategorySheetMusicList({ 
-  selectedCategoryId, 
+  selectedCategoryId,
   onSheetMusicMove,
-  onCategoryChange,
+  onCategoryChange: _onCategoryChange,
   onCategorySelect,
   searchQuery = '',
   sortBy = 'recent',
@@ -83,8 +82,7 @@ export function CategorySheetMusicList({
   
   if (selectedCategoryId === null) {
     // Show all categories with their sheet music
-    const categoriesMap = new Map(categories.map(cat => [cat.id, cat]))
-    
+
     // Add uncategorized sheet music
     const uncategorizedSheetMusic = filteredAndSortedSheetMusic.filter(sm => sm.categoryId === null)
     if (uncategorizedSheetMusic.length > 0) {
@@ -239,7 +237,7 @@ export function CategorySheetMusicList({
         </div>
       )}
 
-      {groupedSheetMusic.map((group, index) => (
+      {groupedSheetMusic.map((group) => (
         <div key={group.category?.id || 'uncategorized'} className="space-y-4">
           {/* Category header */}
           <div

@@ -11,9 +11,7 @@ import { CategoryHeaderActions } from './CategoryActions'
 import { CategoryManagerCoreProps } from '@/types/interfaces'
 
 // Interface Segregation 적용: 필요한 기능만 포함하는 간소화된 인터페이스
-export interface CategoryManagerProps extends CategoryManagerCoreProps {
-  // 추가 필수 속성이 있다면 여기에 정의
-}
+export type CategoryManagerProps = CategoryManagerCoreProps
 
 export function CategoryManagerRefactored({ 
   selectedCategoryId, 

@@ -1,6 +1,6 @@
 # P0-D — Authentication and Quality Gates
 
-Status: `IN_PROGRESS`
+Status: `IN_REVIEW`
 
 ## Objective
 
@@ -29,5 +29,10 @@ Status: `IN_PROGRESS`
 - DONE: root dependency metadata and `package-lock.json` are synchronized.
 - DONE: root `engines.node` and every GitHub Actions setup use Node 22.
 - PASS: clean `npm ci` completes on Node 22.18.0 / npm 10.9.3.
-- NEXT: repair Jest environment/contracts, then TypeScript and ESLint failures in focused slices.
-- BASELINE: Jest 7/21 suites pass and 183/252 tests pass; TypeScript and ESLint still fail on pre-existing contract drift.
+- DONE: Jest environment/contracts and TypeScript failures are repaired.
+- PASS: ESLint reports zero warnings and zero errors.
+- PASS: TypeScript reports zero errors and Jest passes 32 suites / 288 tests.
+- PASS: PR #12 hosted accessibility, build, lint, type, unit, security, CodeQL, and deployment checks pass on the combined quality-gate head.
+- PASS: the stale Playwright specification is replaced by 15 executable cross-browser smoke checks; both hosted E2E jobs pass.
+- READY_FOR_MERGE: PR #12 is `CLEAN` and every hosted check passes on commit `d42a99e`.
+- REMAINING: merge PR #12 with explicit authorization, then verify `main` branch protection and required-check wiring.

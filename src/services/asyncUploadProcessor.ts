@@ -1,4 +1,4 @@
-import { getProcessingQueueService, ProcessingMetadata } from './processingQueue'
+import { getProcessingQueueService, ProcessingJob, ProcessingMetadata, ProcessingStage } from './processingQueue'
 import { getPDFParserService } from './pdfParser'
 import { fileStorageService } from './fileStorageService'
 import { sheetMusicCache } from './cacheService'
@@ -259,7 +259,7 @@ class AsyncUploadProcessor {
   /**
    * Update processing status
    */
-  private async updateStatus(sessionId: string, updates: any): Promise<void> {
+  private async updateStatus(sessionId: string, updates: Partial<Pick<ProcessingJob, 'stage' | 'progress' | 'message' | 'estimatedTime' | 'error' | 'completed' | 'result'>>): Promise<void> {
     try {
       await this.processingQueue.updateJobStatus(sessionId, updates)
     } catch (error) {
@@ -272,7 +272,7 @@ class AsyncUploadProcessor {
    */
   private async simulateProgress(
     sessionId: string,
-    stage: string,
+    stage: ProcessingStage,
     totalTime: number,
     milestones: Array<{ progress: number; message: string }>
   ): Promise<void> {

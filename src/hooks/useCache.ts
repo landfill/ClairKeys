@@ -286,9 +286,11 @@ export function usePrefetch() {
   return { prefetch }
 }
 
-export default {
+const cacheHooks = {
   useCachedFetch,
   useCache,
   useCacheStats,
   usePrefetch
 }
+
+export default cacheHooks

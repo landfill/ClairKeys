@@ -21,7 +21,7 @@ interface JobStatus {
   status: 'pending' | 'processing' | 'completed' | 'failed'
   progress: number
   message: string
-  sheetMusic?: any
+  sheetMusic?: { id: number; title?: string; [key: string]: unknown }
   error?: string
   lastChecked: number
 }
@@ -213,7 +213,7 @@ export default function OMRProcessingStatus({
                   {status.status === 'completed' && status.sheetMusic && (
                     <div className="mt-3">
                       <Button
-                        onClick={() => handleViewSheet(status.sheetMusic.id)}
+                        onClick={() => handleViewSheet(status.sheetMusic!.id)}
                         className="bg-green-600 hover:bg-green-700"
                       >
                         View & Practice 🎹

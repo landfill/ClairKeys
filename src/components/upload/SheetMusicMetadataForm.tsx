@@ -80,7 +80,7 @@ export default function SheetMusicMetadataForm({
         const error = await response.json()
         setErrors(prev => ({ ...prev, category: error.message || '카테고리 생성에 실패했습니다.' }))
       }
-    } catch (error) {
+    } catch {
       setErrors(prev => ({ ...prev, category: '카테고리 생성 중 오류가 발생했습니다.' }))
     } finally {
       setIsCreatingCategory(false)
@@ -109,7 +109,7 @@ export default function SheetMusicMetadataForm({
     }
   }
 
-  const handleInputChange = (field: keyof SheetMusicFormData, value: any) => {
+  const handleInputChange = (field: keyof SheetMusicFormData, value: SheetMusicFormData[keyof SheetMusicFormData]) => {
     onChange({ ...formData, [field]: value })
     // Clear error when user starts typing
     if (errors[field]) {

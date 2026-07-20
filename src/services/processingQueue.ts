@@ -23,7 +23,7 @@ export interface ProcessingJob {
   error?: string
   completed: boolean
   cancelled: boolean
-  result?: any
+  result?: unknown
   metadata: {
     filename: string
     fileSize: number

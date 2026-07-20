@@ -56,9 +56,7 @@ export default function AnimationDemoPage() {
     seekTo,
     setSpeed,
     setMode,
-    processUserInput,
-    addEventListener,
-    removeEventListener
+    processUserInput
   } = useAnimationEngine({ debug: true })
 
   // Load sample animation on mount

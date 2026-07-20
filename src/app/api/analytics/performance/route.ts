@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     const startTime = now - timeRangeMs
 
     // Filter data
-    let filteredData = performanceData.filter(record => 
+    const filteredData = performanceData.filter(record => 
       record.timestamp >= startTime && 
       (!userId || record.userId === userId)
     )
@@ -132,7 +132,7 @@ export async function GET(request: NextRequest) {
         count: data.count
       }
       return acc
-    }, {} as Record<string, any>)
+    }, {} as Record<string, { average: number; median: number; p95: number; min: number; max: number; count: number }>)
 
     // Collect alerts
     const alerts = filteredData.flatMap(record => 
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function calculatePerformanceScore(stats: Record<string, any>): number {
+function calculatePerformanceScore(stats: Record<string, { average: number }>): number {
   const weights = {
     LCP: 0.3,
     FID: 0.3,

@@ -28,7 +28,7 @@ export interface SelectableProps<T = number | null> {
 /**
  * 편집 가능한 아이템에 대한 인터페이스
  */
-export interface EditableProps<T = any> {
+export interface EditableProps<T = unknown> {
   onEdit?: (item: T) => void
   showEdit?: boolean
 }

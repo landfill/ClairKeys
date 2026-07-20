@@ -1,6 +1,5 @@
 'use client'
 
-import { SheetMusicWithCategory } from '@/types/sheet-music'
 import Card from '@/components/ui/Card'
 import { 
   SheetMusicDisplayProps, 
@@ -8,7 +7,7 @@ import {
 } from '@/types/interfaces'
 
 // Interface Segregation 적용: 표시 관련 기능만 포함
-export interface SheetMusicInfoProps extends SheetMusicDisplayProps {}
+export type SheetMusicInfoProps = SheetMusicDisplayProps
 
 export interface SheetMusicCardBaseProps 
   extends SheetMusicInfoProps, 

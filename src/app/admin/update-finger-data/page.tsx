@@ -32,7 +32,6 @@ export default function UpdateFingerDataPage() {
   const [summary, setSummary] = useState<UpdateSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [accessDenied, setAccessDenied] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
 
   // Check admin permissions
   useEffect(() => {
@@ -47,11 +46,9 @@ export default function UpdateFingerDataPage() {
     fetch('/api/auth/is-admin')
       .then(res => res.json())
       .then(data => {
-        setIsAdmin(data.isAdmin)
         setAccessDenied(!data.isAdmin)
       })
       .catch(() => {
-        setIsAdmin(false)
         setAccessDenied(true)
       })
   }, [session, status, router])

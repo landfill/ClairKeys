@@ -42,16 +42,37 @@ export default function PushNotifications({
     checkSupport()
   }, [])
 
+  // 구독 상태 확인
+  const checkSubscriptionStatus = useCallback(async () => {
+    try {
+      const registration = await navigator.serviceWorker.ready
+      const subscription = await registration.pushManager.getSubscription()
+
+      const subscribed = !!subscription
+      setIsSubscribed(subscribed)
+      onSubscriptionChange?.(subscribed)
+
+      return subscribed
+    } catch (error) {
+      console.error('Failed to check subscription status:', error)
+      return false
+    }
+  }, [onSubscriptionChange])
+
   // 현재 권한 상태 확인
   useEffect(() => {
     const checkPermission = async () => {
       if (!isSupported) return
 
       const currentPermission = Notification.permission
-      
-      setPermission({
-        state: currentPermission,
-        canRequest: currentPermission === 'default'
+
+      setPermission(previous => {
+        const canRequest = currentPermission === 'default'
+        if (previous.state === currentPermission && previous.canRequest === canRequest) {
+          return previous
+        }
+
+        return { state: currentPermission, canRequest }
       })
 
       // 현재 구독 상태 확인
@@ -61,24 +82,7 @@ export default function PushNotifications({
     }
 
     checkPermission()
-  }, [isSupported])
-
-  // 구독 상태 확인
-  const checkSubscriptionStatus = useCallback(async () => {
-    try {
-      const registration = await navigator.serviceWorker.ready
-      const subscription = await registration.pushManager.getSubscription()
-      
-      const subscribed = !!subscription
-      setIsSubscribed(subscribed)
-      onSubscriptionChange?.(subscribed)
-      
-      return subscribed
-    } catch (error) {
-      console.error('Failed to check subscription status:', error)
-      return false
-    }
-  }, [onSubscriptionChange])
+  }, [isSupported, checkSubscriptionStatus])
 
   // 권한 요청
   const requestPermission = useCallback(async () => {
@@ -101,6 +105,20 @@ export default function PushNotifications({
       setIsLoading(false)
     }
   }, [isSupported, permission.state])
+
+  // 테스트 알림 표시
+  const showTestNotification = useCallback((title: string, body: string) => {
+    if (permission.state === 'granted') {
+      new Notification(title, {
+        body,
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        tag: 'clairkeys-test',
+        requireInteraction: false,
+        silent: false
+      })
+    }
+  }, [permission.state])
 
   // 푸시 알림 구독
   const subscribeToPush = useCallback(async () => {
@@ -149,7 +167,7 @@ export default function PushNotifications({
     } finally {
       setIsLoading(false)
     }
-  }, [isSupported, permission.state, onSubscriptionChange])
+  }, [isSupported, permission.state, onSubscriptionChange, showTestNotification])
 
   // 푸시 알림 구독 해제
   const unsubscribeFromPush = useCallback(async () => {
@@ -185,20 +203,6 @@ export default function PushNotifications({
       setIsLoading(false)
     }
   }, [onSubscriptionChange])
-
-  // 테스트 알림 표시
-  const showTestNotification = useCallback((title: string, body: string) => {
-    if (permission.state === 'granted') {
-      new Notification(title, {
-        body,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        tag: 'clairkeys-test',
-        requireInteraction: false,
-        silent: false
-      })
-    }
-  }, [permission.state])
 
   // 알림 테스트
   const testNotification = useCallback(() => {
@@ -398,7 +402,7 @@ export function usePushNotifications() {
 
   useEffect(() => {
     const checkSupport = () => {
-      const supported = 'serviceWorker' in navigator && 
+      const supported = 'serviceWorker' in navigator &&
                        'PushManager' in window && 
                        'Notification' in window
       setIsSupported(supported)
@@ -410,6 +414,37 @@ export function usePushNotifications() {
 
     checkSupport()
   }, [])
+
+  useEffect(() => {
+    let isActive = true
+
+    const checkSubscription = async () => {
+      if (!isSupported || permission !== 'granted') {
+        setIsSubscribed(false)
+        return
+      }
+
+      try {
+        const registration = await navigator.serviceWorker.ready
+        const subscription = await registration.pushManager.getSubscription()
+
+        if (isActive) {
+          setIsSubscribed(subscription !== null)
+        }
+      } catch (error) {
+        console.error('Failed to check push subscription status:', error)
+        if (isActive) {
+          setIsSubscribed(false)
+        }
+      }
+    }
+
+    void checkSubscription()
+
+    return () => {
+      isActive = false
+    }
+  }, [isSupported, permission])
 
   const requestPermission = useCallback(async () => {
     if (permission === 'default') {

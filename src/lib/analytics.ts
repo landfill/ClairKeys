@@ -131,7 +131,7 @@ class PerformanceMonitor {
         })
 
         observer.observe({ entryTypes: ['navigation', 'resource'] })
-      } catch (e) {
+      } catch {
         console.warn('PerformanceObserver not fully supported')
       }
     }
@@ -190,7 +190,7 @@ class PerformanceMonitor {
       }
       
       localStorage.setItem('performance-metrics', JSON.stringify(metrics))
-    } catch (e) {
+    } catch {
       console.warn('Failed to persist performance metric')
     }
   }

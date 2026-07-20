@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export interface QueryStats {
   totalQueries: number
@@ -17,7 +18,7 @@ export interface OptimizationResult {
 
 export class QueryOptimizationService {
   private static instance: QueryOptimizationService
-  private queryCache = new Map<string, { data: any; timestamp: number; ttl: number }>()
+  private queryCache = new Map<string, { data: unknown; timestamp: number; ttl: number }>()
   private queryStats = new Map<string, { count: number; totalTime: number; errors: number }>()
   
   static getInstance(): QueryOptimizationService {
@@ -45,7 +46,7 @@ export class QueryOptimizationService {
     
     try {
       // Build optimized where clause
-      const where: any = {}
+      const where: Prisma.SheetMusicWhereInput = {}
       
       if (options.userId !== undefined) {
         where.userId = options.userId
@@ -68,7 +69,7 @@ export class QueryOptimizationService {
       }
 
       // Build optimized order by
-      const orderBy: any = {}
+      const orderBy: Prisma.SheetMusicOrderByWithRelationInput = {}
       switch (options.orderBy) {
         case 'newest':
           orderBy.createdAt = 'desc'
@@ -87,7 +88,7 @@ export class QueryOptimizationService {
       }
 
       // Build include clause for relations
-      const include: any = {}
+      const include: Prisma.SheetMusicInclude = {}
       if (options.includeOwner) {
         include.user = {
           select: { id: true, name: true, email: true }
@@ -141,14 +142,14 @@ export class QueryOptimizationService {
     const startTime = Date.now()
     
     try {
-      let orderBy: any = { createdAt: 'desc' } // Default newest
+      let orderBy: Prisma.SheetMusicOrderByWithRelationInput = { createdAt: 'desc' } // Default newest
       
       if (options.sortBy === 'popular') {
         // TODO: Add popularity field or calculate based on practice sessions
         orderBy = { createdAt: 'desc' } // Fallback for now
       }
 
-      const where: any = { isPublic: true }
+      const where: Prisma.SheetMusicWhereInput = { isPublic: true }
       
       if (options.categoryId) {
         where.categoryId = options.categoryId
@@ -202,7 +203,7 @@ export class QueryOptimizationService {
     const startTime = Date.now()
     
     try {
-      const baseWhere: any = {}
+      const baseWhere: Prisma.SheetMusicWhereInput = {}
       
       if (options.userId) {
         baseWhere.userId = options.userId
@@ -213,7 +214,7 @@ export class QueryOptimizationService {
       }
 
       // Main search query
-      const searchWhere = options.search ? {
+      const searchWhere: Prisma.SheetMusicWhereInput = options.search ? {
         ...baseWhere,
         OR: [
           { title: { contains: options.search, mode: 'insensitive' } },
@@ -297,7 +298,7 @@ export class QueryOptimizationService {
    */
   async batchUpdateSheetMusic(updates: Array<{
     id: number
-    data: any
+    data: Prisma.SheetMusicUpdateInput
     userId: string
   }>) {
     const startTime = Date.now()
@@ -355,12 +356,10 @@ export class QueryOptimizationService {
    */
   async cleanupOldData(options: {
     olderThanDays: number
-    batchSize?: number
     dryRun?: boolean
   }) {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - options.olderThanDays)
-    const batchSize = options.batchSize || 100
 
     const results = {
       processingJobs: 0,
@@ -425,16 +424,16 @@ export class QueryOptimizationService {
   /**
    * Cache management
    */
-  private getFromCache(key: string): any | null {
+  private getFromCache<T = unknown>(key: string): T | null {
     const cached = this.queryCache.get(key)
     if (cached && Date.now() < cached.timestamp + cached.ttl * 1000) {
-      return cached.data
+      return cached.data as T
     }
     this.queryCache.delete(key)
     return null
   }
 
-  private setCache(key: string, data: any, ttlSeconds: number = 300) {
+  private setCache(key: string, data: unknown, ttlSeconds: number = 300) {
     this.queryCache.set(key, {
       data,
       timestamp: Date.now(),

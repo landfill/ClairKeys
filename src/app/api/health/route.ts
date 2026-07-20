@@ -52,7 +52,7 @@ export async function GET() {
       } else {
         healthStatus.checks.performance = 'healthy'
       }
-    } catch (error) {
+    } catch {
       healthStatus.checks.performance = 'unknown'
     }
 

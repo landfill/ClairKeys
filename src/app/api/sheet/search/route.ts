@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') as 'asc' | 'desc' || 'desc'
     
     // Build where clause
-    const where: any = {}
+    const where: Prisma.SheetMusicWhereInput = {}
     
     // Public/Private filter
     if (isPublic === 'true') {
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     
     // Text search
     if (search && search.trim()) {
-      const searchCondition = {
+      const searchCondition: Prisma.SheetMusicWhereInput = {
         OR: [
           { title: { contains: search.trim(), mode: 'insensitive' } },
           { composer: { contains: search.trim(), mode: 'insensitive' } }
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
       const catId = parseInt(categoryId)
       if (!isNaN(catId)) {
         if (where.AND) {
-          where.AND.push({ categoryId: catId })
+          ;(where.AND as Prisma.SheetMusicWhereInput[]).push({ categoryId: catId })
         } else {
           where.categoryId = catId
         }
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Sort configuration
-    let orderBy: any = { createdAt: 'desc' } // default
+    let orderBy: Prisma.SheetMusicOrderByWithRelationInput = { createdAt: 'desc' } // default
     switch (sortBy) {
       case 'oldest':
         orderBy = { createdAt: 'asc' }

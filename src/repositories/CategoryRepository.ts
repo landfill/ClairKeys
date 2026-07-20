@@ -3,7 +3,7 @@
  * Repository 패턴을 통한 데이터 접근 계층 구현
  */
 
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { Category, CategoryWithSheetMusic } from '@/types/category'
 import { ICategoryRepository } from './interfaces'
 
@@ -63,7 +63,7 @@ export class CategoryRepository implements ICategoryRepository {
 
   async count(params?: Record<string, unknown>): Promise<number> {
     return await this.prisma.category.count({
-      where: params as any
+      where: params as Prisma.CategoryWhereInput
     })
   }
 
@@ -127,8 +127,7 @@ export class CategoryRepository implements ICategoryRepository {
     return category?.userId === userId
   }
 
-  async canDeleteCategory(categoryId: number): Promise<boolean> {
-    const sheetMusicCount = await this.countSheetMusicInCategory(categoryId)
+  async canDeleteCategory(_categoryId: number): Promise<boolean> {
     // 비즈니스 규칙: 악보가 있어도 삭제 가능 (미분류로 이동)
     return true
   }
@@ -187,7 +186,7 @@ export class CategoryRepository implements ICategoryRepository {
         }
       },
       take: limit
-    }) as any
+    }) as unknown as Array<Category & { _count: { sheetMusic: number } }>
   }
 
   /**

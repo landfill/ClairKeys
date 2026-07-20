@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { animationData, sheetMusicId, metadata } = body
+    const { animationData, sheetMusicId } = body
 
     if (!animationData || !sheetMusicId) {
       return NextResponse.json(
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
     let validUrl
     try {
       validUrl = new URL(sheetMusic.animationDataUrl)
-    } catch (error) {
+    } catch {
       console.error(`Invalid URL format for sheet music ID ${sheetMusicId}:`, sheetMusic.animationDataUrl)
       return NextResponse.json(
         { error: 'Animation data URL is invalid. Please contact support.' },

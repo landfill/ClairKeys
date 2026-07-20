@@ -3,7 +3,7 @@
  */
 
 import { AnimationParserService, getAnimationParserService } from '../animationParser'
-import { PianoAnimationData, PianoNote } from '@/types/animation'
+import { PianoAnimationData } from '@/types/animation'
 
 describe('AnimationParserService', () => {
   let parser: AnimationParserService
@@ -228,6 +228,42 @@ describe('AnimationParserService', () => {
       expect(result.notes).toHaveLength(2)
       expect(result.notes[0].note).toBe('C4')
       expect(result.notes[1].note).toBe('E4')
+    })
+
+    it('should keep parsed note numbers finite when raw values are empty strings', async () => {
+      const rawData = {
+        title: 'Empty Numeric Values',
+        notes: [
+          { note: 'C4', startTime: '', duration: '', velocity: '' },
+          { note: 'D4', startTime: 0, duration: 0, velocity: 0 },
+          { note: 'E4', startTime: 'Infinity', duration: 'NaN', velocity: 'Infinity' }
+        ],
+        originalFileName: 'empty-values.pdf',
+        fileSize: 128
+      }
+
+      const result = await parser.parse(rawData)
+
+      expect(result.notes[0]).toMatchObject({
+        startTime: 0,
+        duration: 0.5,
+        velocity: 0.8
+      })
+      expect(result.notes[1]).toMatchObject({
+        startTime: 0,
+        duration: 0.1,
+        velocity: 0
+      })
+      expect(result.notes[2]).toMatchObject({
+        startTime: 0,
+        duration: 0.5,
+        velocity: 0.8
+      })
+      expect(result.notes.every(note =>
+        Number.isFinite(note.startTime) &&
+        Number.isFinite(note.duration) &&
+        Number.isFinite(note.velocity)
+      )).toBe(true)
     })
 
     it('should reject unsupported data format', async () => {

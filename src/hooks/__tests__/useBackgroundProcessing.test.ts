@@ -297,6 +297,33 @@ describe('useBackgroundProcessing', () => {
   })
 
   describe('polling', () => {
+    it('keeps polling controls stable across the interval lifecycle', async () => {
+      const { result } = renderHook(() => useBackgroundProcessing())
+
+      await act(async () => {
+        await Promise.resolve()
+        await Promise.resolve()
+      })
+
+      const initialStartPolling = result.current.startPolling
+      const initialStopPolling = result.current.stopPolling
+
+      act(() => {
+        result.current.startPolling()
+      })
+
+      expect(result.current.startPolling).toBe(initialStartPolling)
+      expect(result.current.stopPolling).toBe(initialStopPolling)
+
+      act(() => {
+        result.current.stopPolling()
+      })
+
+      expect(result.current.isPolling).toBe(false)
+      expect(result.current.startPolling).toBe(initialStartPolling)
+      expect(result.current.stopPolling).toBe(initialStopPolling)
+    })
+
     it('should start polling when there are active jobs', async () => {
       const mockJobsWithActive = [
         {

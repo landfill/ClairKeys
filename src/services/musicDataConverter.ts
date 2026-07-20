@@ -77,10 +77,11 @@ export function convertMusicDataToPianoAnimation(
 /**
  * Validate MusicData format
  */
-export function validateMusicData(data: any): data is MusicData {
-  if (!data || typeof data !== 'object') {
+export function validateMusicData(raw: unknown): raw is MusicData {
+  if (!raw || typeof raw !== 'object') {
     return false
   }
+  const data = raw as MusicData
 
   // Check metadata
   if (!data.metadata || typeof data.metadata !== 'object') {

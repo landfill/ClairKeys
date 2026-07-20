@@ -2,7 +2,9 @@
 // Currently using enhanced demo data generation for system stability
 
 import { Jimp } from 'jimp';
-type JimpType = any;
+type JimpType = Awaited<ReturnType<typeof Jimp.read>>;
+
+const jimpUtils = Jimp as unknown as { intToRGBA: (color: number) => { r: number; g: number; b: number; a: number } };
 
 export interface PianoNote {
   note: string // e.g., 'C4', 'D#5'
@@ -122,7 +124,7 @@ export class PDFParserService {
       
       for (let x = 0; x < width; x++) {
         const pixelColor = image.getPixelColor(x, y)
-        const pixel = (Jimp as any).intToRGBA(pixelColor)
+        const pixel = jimpUtils.intToRGBA(pixelColor)
         const brightness = (pixel.r + pixel.g + pixel.b) / 3
         
         // Consider dark pixels as potential line pixels
@@ -174,7 +176,7 @@ export class PDFParserService {
     
     for (let x = startX; x <= endX; x++) {
       const pixelColor = image.getPixelColor(x, y)
-      const pixel = (Jimp as any).intToRGBA(pixelColor)
+      const pixel = jimpUtils.intToRGBA(pixelColor)
       const brightness = (pixel.r + pixel.g + pixel.b) / 3
       if (brightness < 128) {
         darkPixels++
@@ -219,9 +221,8 @@ export class PDFParserService {
       return notes
     }
     
-    const width = image.bitmap.width
     const height = image.bitmap.height
-    
+
     // Define search areas around staff lines
     const searchRadius = 20 // Search 20 pixels above and below each staff line
     
@@ -272,7 +273,7 @@ export class PDFParserService {
           if (x >= 0 && x < image.bitmap.width && y >= 0 && y < image.bitmap.height) {
             totalPixels++
             const pixelColor = image.getPixelColor(x, y)
-            const pixel = (Jimp as any).intToRGBA(pixelColor)
+            const pixel = jimpUtils.intToRGBA(pixelColor)
             const brightness = (pixel.r + pixel.g + pixel.b) / 3
             
             if (brightness < 128) {
@@ -332,7 +333,7 @@ export class PDFParserService {
   /**
    * Determine note type (whole, half, quarter) based on visual characteristics
    */
-  private determineNoteType(image: JimpType, x: number, y: number): 'quarter' | 'half' | 'whole' {
+  private determineNoteType(_image: JimpType, _x: number, _y: number): 'quarter' | 'half' | 'whole' {
     // For now, default to quarter notes
     // In a more sophisticated implementation, this would analyze the note's visual features
     return 'quarter'
@@ -629,7 +630,7 @@ export class PDFParserService {
       }
 
       return true
-    } catch (error) {
+    } catch {
       return false
     }
   }
@@ -661,7 +662,7 @@ export class PDFParserService {
       }
 
       return data
-    } catch (error) {
+    } catch {
       throw new Error('Failed to parse animation data')
     }
   }

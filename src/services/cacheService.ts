@@ -17,7 +17,7 @@ interface CacheStats {
 
 export class CacheService {
   private static instance: CacheService
-  private cache = new Map<string, CacheEntry<any>>()
+  private cache = new Map<string, CacheEntry<unknown>>()
   private stats: CacheStats = {
     hits: 0,
     misses: 0,
@@ -35,6 +35,7 @@ export class CacheService {
     this.cleanupInterval = setInterval(() => {
       this.cleanup()
     }, 5 * 60 * 1000)
+    this.cleanupInterval.unref?.()
   }
 
   static getInstance(maxSize?: number): CacheService {
@@ -71,7 +72,7 @@ export class CacheService {
     this.stats.hits++
     this.updateHitRate()
     
-    return entry.data
+    return entry.data as T
   }
 
   /**
@@ -161,7 +162,7 @@ export class CacheService {
   /**
    * Memoize function with caching
    */
-  memoize<Args extends any[], Return>(
+  memoize<Args extends unknown[], Return>(
     fn: (...args: Args) => Promise<Return>,
     options: {
       keyGenerator?: (...args: Args) => string
@@ -325,71 +326,71 @@ export class SheetMusicCache {
   /**
    * Cache public sheet music
    */
-  setPublicSheets(data: any, ttl: number = 300) {
+  setPublicSheets<T>(data: T, ttl: number = 300) {
     this.cache.set(SheetMusicCache.KEYS.PUBLIC_SHEETS, data, {
       ttl,
       tags: ['public', 'sheets']
     })
   }
 
-  getPublicSheets(): any {
-    return this.cache.get(SheetMusicCache.KEYS.PUBLIC_SHEETS)
+  getPublicSheets<T = unknown>(): T | null {
+    return this.cache.get<T>(SheetMusicCache.KEYS.PUBLIC_SHEETS)
   }
 
   /**
    * Cache user sheet music
    */
-  setUserSheets(userId: string, data: any, ttl: number = 600) {
+  setUserSheets<T>(userId: string, data: T, ttl: number = 600) {
     this.cache.set(SheetMusicCache.KEYS.USER_SHEETS(userId), data, {
       ttl,
       tags: ['user', `user_${userId}`, 'sheets']
     })
   }
 
-  getUserSheets(userId: string): any {
-    return this.cache.get(SheetMusicCache.KEYS.USER_SHEETS(userId))
+  getUserSheets<T = unknown>(userId: string): T | null {
+    return this.cache.get<T>(SheetMusicCache.KEYS.USER_SHEETS(userId))
   }
 
   /**
    * Cache search results
    */
-  setSearchResults(query: string, data: any, ttl: number = 180) {
+  setSearchResults<T>(query: string, data: T, ttl: number = 180) {
     this.cache.set(SheetMusicCache.KEYS.SEARCH_RESULTS(query), data, {
       ttl,
       tags: ['search', 'sheets']
     })
   }
 
-  getSearchResults(query: string): any {
-    return this.cache.get(SheetMusicCache.KEYS.SEARCH_RESULTS(query))
+  getSearchResults<T = unknown>(query: string): T | null {
+    return this.cache.get<T>(SheetMusicCache.KEYS.SEARCH_RESULTS(query))
   }
 
   /**
    * Cache sheet music detail
    */
-  setSheetDetail(id: number, data: any, ttl: number = 900) {
+  setSheetDetail<T>(id: number, data: T, ttl: number = 900) {
     this.cache.set(SheetMusicCache.KEYS.SHEET_DETAIL(id), data, {
       ttl,
       tags: ['sheet', `sheet_${id}`]
     })
   }
 
-  getSheetDetail(id: number): any {
-    return this.cache.get(SheetMusicCache.KEYS.SHEET_DETAIL(id))
+  getSheetDetail<T = unknown>(id: number): T | null {
+    return this.cache.get<T>(SheetMusicCache.KEYS.SHEET_DETAIL(id))
   }
 
   /**
    * Cache animation data
    */
-  setAnimationData(id: number, data: any, ttl: number = 3600) {
+  setAnimationData<T>(id: number, data: T, ttl: number = 3600) {
     this.cache.set(SheetMusicCache.KEYS.ANIMATION_DATA(id), data, {
       ttl,
       tags: ['animation', `sheet_${id}`]
     })
   }
 
-  getAnimationData(id: number): any {
-    return this.cache.get(SheetMusicCache.KEYS.ANIMATION_DATA(id))
+  getAnimationData<T = unknown>(id: number): T | null {
+    return this.cache.get<T>(SheetMusicCache.KEYS.ANIMATION_DATA(id))
   }
 
   /**

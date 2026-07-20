@@ -52,7 +52,7 @@ export default function MobileControlPanel({
   showKeyLabels = false,
   onToggleKeyLabels,
   onExitFullScreen,
-  onToggleControls,
+  onToggleControls: _onToggleControls,
   currentTime = 0,
   totalTime = 0,
   progress = 0,

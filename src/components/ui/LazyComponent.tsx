@@ -26,6 +26,7 @@ export function LazyWrapper({
 /**
  * 동적 import를 위한 헬퍼 함수
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic constraint; `never` breaks JSX/lazy() assignability
 export function createLazyComponent<T extends ComponentType<any>>(
   importFunc: () => Promise<{ default: T }>,
   Fallback?: React.ComponentType
@@ -71,7 +72,7 @@ export const LazyAdvancedPlaybackControls = createLazyComponent(
 )
 
 export const LazyCategoryManager = createLazyComponent(
-  () => import("@/components/category/CategoryManager") as unknown as Promise<{ default: React.ComponentType<any> }>
+  () => import("@/components/category/CategoryManager") as unknown as Promise<{ default: React.ComponentType<Record<string, unknown>> }>
 )
 
 /**
@@ -79,9 +80,9 @@ export const LazyCategoryManager = createLazyComponent(
  */
 interface ConditionalLazyProps {
   condition: boolean
-  component: () => Promise<{ default: ComponentType<any> }>
+  component: () => Promise<{ default: ComponentType<Record<string, unknown>> }>
   fallback?: React.ComponentType
-  props?: any
+  props?: Record<string, unknown>
 }
 
 export function ConditionalLazy({ 
@@ -105,11 +106,11 @@ export function ConditionalLazy({
  * 뷰포트에 진입했을 때만 로드하는 컴포넌트
  */
 interface ViewportLazyProps {
-  component: () => Promise<{ default: ComponentType<any> }>
+  component: () => Promise<{ default: ComponentType<Record<string, unknown>> }>
   fallback?: React.ComponentType
   threshold?: number
   rootMargin?: string
-  props?: any
+  props?: Record<string, unknown>
 }
 
 export function ViewportLazy({

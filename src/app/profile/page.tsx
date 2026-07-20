@@ -6,7 +6,7 @@ import ProfileSettings from '@/components/auth/ProfileSettings'
 import Loading from '@/components/ui/Loading'
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
 
   if (status === 'loading') {
     return <Loading />

@@ -40,7 +40,7 @@ export interface UseAnimationEngineReturn {
 }
 
 export function useAnimationEngine(options: UseAnimationEngineOptions = {}): UseAnimationEngineReturn {
-  const { autoInitAudio = true, debug = false } = options
+  const { autoInitAudio: _autoInitAudio = true, debug = false } = options
   
   const [state, setState] = useState<AnimationState>({
     isPlaying: false,

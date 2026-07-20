@@ -36,7 +36,7 @@ export function CategoryManager({
       setNewCategoryName('')
       setIsCreating(false)
       onCategoryChange?.()
-    } catch (error) {
+    } catch {
       // Error is handled by the hook
     }
   }
@@ -49,7 +49,7 @@ export function CategoryManager({
       setEditingId(null)
       setEditCategoryName('')
       onCategoryChange?.()
-    } catch (error) {
+    } catch {
       // Error is handled by the hook
     }
   }
@@ -65,7 +65,7 @@ export function CategoryManager({
         onCategorySelect(null)
       }
       onCategoryChange?.()
-    } catch (error) {
+    } catch {
       // Error is handled by the hook
     }
   }
