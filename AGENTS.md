@@ -54,6 +54,8 @@
 
 주의: 이 예외는 검증 기록의 오류를 리뷰가 잡아줄 기회도 함께 없앤다 — 실제로 이 저장소에서 PR 리뷰가 검증 기록의 잘못된 명령어·모호한 커밋 해시를 잡아낸 적이 있다. 즉시 커밋하기 전에 스스로 한 번 더 확인한다.
 
+주의 2: `main` branch protection의 required status check(이슈 #9)는 PR 머지 버튼만 막을 뿐, 이 절이 허용하는 직접 push는 막지 못한다. GitHub은 이런 직접 push를 "Bypassed rule violations"로 기록한다(실제로 이 규칙을 추가한 직후 `docs/recovery/HANDOFF.md`/`reviews/PR-17.md` 직접 커밋에서 확인됨). CI가 사전에 그 커밋을 검증하지 않았다는 뜻이므로, push 직후 `gh api repos/<owner>/<repo>/commits/<sha>/check-runs`로 최소한 사후 확인은 한다.
+
 ## 단계별 전달·병합 수명주기
 
 각 작업 단계는 아래 순서를 끝까지 따른다.
