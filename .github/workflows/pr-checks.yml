@@ -334,11 +334,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [lint-and-type-check, test-unit, test-e2e, security-scan, build-check]
     if: always()
-    permissions:
-      issues: write
 
     steps:
-      - name: Create PR summary comment
+      - name: Create PR check summary
         uses: actions/github-script@v7
         with:
           script: |
@@ -357,28 +355,30 @@ jobs:
               return '⏳';
             };
             
-            const body = `
-            ## 🔍 PR Check Results
-            
-            | Check | Status | Result |
-            |-------|--------|---------|
-            | Lint & Type Check | ${getEmoji(results.lint)} | ${results.lint} |
-            | Unit Tests | ${getEmoji(results.unit)} | ${results.unit} |
-            | E2E Tests | ${getEmoji(results.e2e)} | ${results.e2e} |
-            | Security Scan | ${getEmoji(results.security)} | ${results.security} |
-            | Build Check | ${getEmoji(results.build)} | ${results.build} |
-            
-            ${Object.values(results).every(r => r === 'success' || r === 'skipped') 
-              ? '🎉 All checks passed! This PR is ready for review.' 
-              : '⚠️ Some checks failed. Please review and fix the issues.'}
-            `;
-            
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
+            const allPassed = Object.values(results).every(
+              result => result === 'success' || result === 'skipped'
+            );
+
+            await core.summary
+              .addHeading('🔍 PR Check Results', 2)
+              .addTable([
+                [
+                  { data: 'Check', header: true },
+                  { data: 'Status', header: true },
+                  { data: 'Result', header: true }
+                ],
+                ['Lint & Type Check', getEmoji(results.lint), results.lint],
+                ['Unit Tests', getEmoji(results.unit), results.unit],
+                ['E2E Tests', getEmoji(results.e2e), results.e2e],
+                ['Security Scan', getEmoji(results.security), results.security],
+                ['Build Check', getEmoji(results.build), results.build]
+              ])
+              .addRaw(
+                allPassed
+                  ? '🎉 All checks passed! This PR is ready for review.'
+                  : '⚠️ Some checks failed. Please review and fix the issues.'
+              )
+              .write();
 
   # Require all checks to pass for PR to be mergeable
   all-checks:

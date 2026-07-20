@@ -37,7 +37,9 @@ describe('PR summary workflow', () => {
     .split(/^  pr-summary:\s*$/m)[1]
     .split(/^  all-checks:\s*$/m)[0]
 
-  it('can publish its summary comment', () => {
-    expect(summaryJob).toMatch(/permissions:\n      issues: write/)
+  it('publishes a job summary without repository write access', () => {
+    expect(summaryJob).toContain('core.summary')
+    expect(summaryJob).not.toContain('issues.createComment')
+    expect(summaryJob).not.toMatch(/permissions:\n      issues: write/)
   })
 })
