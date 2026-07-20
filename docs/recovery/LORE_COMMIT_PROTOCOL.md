@@ -32,6 +32,8 @@ Related: <관련 PR, 이슈, 결정 문서>
 
 `Constraint`, `Rejected`, `Reversibility`, `Directive`, `Related`는 해당 정보가 있을 때 사용한다. 사실이 아닌 trailer를 채우기 위해 내용을 만들지 않는다.
 
+8. 위에 정의된 key 외의 trailer는 추가하지 않는다. 특히 에이전트 서명이나 세션 링크(`Co-Authored-By:`, `Claude-Session:` 등 도구 기본값)는 넣지 않는다.
+
 ## 예시
 
 ```text
