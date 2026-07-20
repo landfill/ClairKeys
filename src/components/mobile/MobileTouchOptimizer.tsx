@@ -179,7 +179,10 @@ export default function MobileTouchOptimizer({
     // Improve responsiveness with CSS properties
     container.style.userSelect = 'none'
     container.style.webkitUserSelect = 'none';
-    const vendorStyle = container.style as CSSStyleDeclaration & { webkitTouchCallout?: string; webkitTapHighlightColor?: string }
+    const vendorStyle = container.style as CSSStyleDeclaration & {
+      webkitTouchCallout?: string
+      webkitTapHighlightColor?: string
+    }
     vendorStyle.webkitTouchCallout = 'none'
     vendorStyle.webkitTapHighlightColor = 'transparent'
 
@@ -194,27 +197,6 @@ export default function MobileTouchOptimizer({
       }
     }
   }, [preventScrolling])
-
-  // Add meta viewport optimization for mobile
-  useEffect(() => {
-    // Ensure viewport is optimized for touch
-    let viewportMeta = document.querySelector('meta[name="viewport"]') as HTMLMetaElement
-    
-    if (!viewportMeta) {
-      viewportMeta = document.createElement('meta')
-      viewportMeta.name = 'viewport'
-      document.head.appendChild(viewportMeta)
-    }
-
-    const originalContent = viewportMeta.content
-    viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui'
-
-    return () => {
-      if (viewportMeta && originalContent) {
-        viewportMeta.content = originalContent
-      }
-    }
-  }, [])
 
   return (
     <div
