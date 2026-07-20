@@ -10,8 +10,8 @@ Last updated: 2026-07-20 KST
 - Working branch: `fix/lint-gate`
 - Base branch: `main`
 - Pull request: [#12](https://github.com/landfill/ClairKeys/pull/12)
-- PR state: `OPEN`
-- Current objective: Finish hosted validation for the combined lint, accessibility, and executable E2E quality-gate fixes on PR #12.
+- PR state: `OPEN`, `CLEAN`, `MERGEABLE`
+- Current objective: Hand off the fully green combined quality-gate PR #12 for an explicit merge decision.
 
 ## Latest verified result
 
@@ -23,18 +23,18 @@ Last updated: 2026-07-20 KST
 - PR #12 review regression tests: PASS — 7 suites, 8 tests.
 - Current full Jest suite: PASS — 32 suites, 288 tests; process exits normally without `--forceExit`.
 - Current ESLint and TypeScript checks: PASS — zero lint findings and zero type errors.
-- Hosted PR #12 accessibility, build, lint, type, unit, security, CodeQL, CodeRabbit, and Vercel checks: PASS on commit `61ea62d`.
-- The non-executable Playwright suite targeted a missing `/dashboard` route and absent test IDs, expanding to 50 serial CI tests with retries. It is replaced by 15 real cross-browser public-application smoke checks; hosted E2E validation is pending the new head.
+- Hosted PR #12 checks: PASS on commit `d42a99e` — lint, type, unit, build, accessibility, both E2E jobs, security audit/scan, CodeQL, CodeRabbit, Vercel, `All Checks Complete`, and `PR Summary`.
+- The non-executable Playwright suite targeted a missing `/dashboard` route and absent test IDs, expanding to 50 serial CI tests with retries. It is replaced by 15 real cross-browser public-application smoke checks; both hosted E2E jobs pass in under three minutes.
 - Local production build retry is externally blocked because `next/font` cannot reach Google Fonts; hosted CI remains the build authority for this iteration.
 - Supabase 비밀값 없는 프로덕션 빌드는 지연 클라이언트 생성 수정 후 통과했다.
 - Next 15 동적 라우트 매개변수 타입 오류 및 OAuth 사용자 ID 반환 타입 등의 이슈가 복구되었다.
 
 ## Next actions
 
-1. Commit and push the executable Playwright smoke suite, then inspect both hosted E2E jobs.
-2. Refresh PR #12 review threads and confirm no new actionable feedback.
-3. Treat PR #12 as the combined merge candidate; PR #11 remains superseded by the same accessibility fix plus the required lint baseline.
-4. Address any new actionable review or CI failure before merge handoff.
+1. Merge PR #12 only after explicit user authorization.
+2. After PR #12 merges, close PR #11 as superseded; its accessibility changes are already included in #12.
+3. Verify `main` branch protection and required-check wiring to finish P0-D.
+4. Continue with the product-critical P0-A/P0-B/P0-C sequence.
 
 ## Existing user-owned working tree changes
 

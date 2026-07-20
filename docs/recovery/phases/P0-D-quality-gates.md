@@ -1,6 +1,6 @@
 # P0-D — Authentication and Quality Gates
 
-Status: `IN_PROGRESS`
+Status: `IN_REVIEW`
 
 ## Objective
 
@@ -33,4 +33,6 @@ Status: `IN_PROGRESS`
 - PASS: ESLint reports zero warnings and zero errors.
 - PASS: TypeScript reports zero errors and Jest passes 32 suites / 288 tests.
 - PASS: PR #12 hosted accessibility, build, lint, type, unit, security, CodeQL, and deployment checks pass on the combined quality-gate head.
-- IN_REVIEW: the stale Playwright specification has been replaced by 15 executable cross-browser smoke checks; hosted E2E and refreshed review-thread state remain.
+- PASS: the stale Playwright specification is replaced by 15 executable cross-browser smoke checks; both hosted E2E jobs pass.
+- READY_FOR_MERGE: PR #12 is `CLEAN` and every hosted check passes on commit `d42a99e`.
+- REMAINING: merge PR #12 with explicit authorization, then verify `main` branch protection and required-check wiring.
