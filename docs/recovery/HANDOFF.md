@@ -23,6 +23,7 @@ Last updated: 2026-07-20 KST
 - The `main` branch-protection endpoint returns `404 Branch not protected`. Required-check enforcement is therefore not configured, so P0-D is not complete.
 - On merge commit `271f4c6`, `Build application`, `E2E Tests`, `Test before deploy`, `Run Tests`, `Lint`, and `Security Audit` passed. `Run database migrations`, `Deploy to production`, and `Notify deployment status` failed and require separate deployment triage; they must not be represented as green.
 - Local production build remains externally blocked when `next/font` cannot reach Google Fonts; hosted CI remains the build authority for the quality-gate iteration.
+- PR #13 also carries the repository-wide lifecycle rule that PRs start review-ready, `main` merges require explicit user approval, merged work branches are cleaned up, and all handoff evidence remains under the project path.
 
 ## Next actions
 
