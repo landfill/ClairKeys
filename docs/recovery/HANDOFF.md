@@ -8,7 +8,7 @@ Last updated: 2026-07-20 KST
 - Current phase: `P0-A` — 애니메이션 계약과 golden fixture 확립 (P0-D is `DONE`; P0-A is the next `READY` phase per `docs/recovery/ROADMAP.md`)
 - Phase document: `docs/recovery/phases/P0-A-animation-contract.md`
 - Base branch: `main`
-- Handoff delivery: [PR #16](https://github.com/landfill/ClairKeys/pull/16) from `codex/p0d-merge-cleanup`; consult GitHub and `docs/recovery/reviews/PR-16.md` for its live review state
+- Handoff delivery: [PR #17](https://github.com/landfill/ClairKeys/pull/17) from `codex/p0d-handoff-direct-merge-policy`; consult GitHub and `docs/recovery/reviews/PR-17.md` for its live review state. PR #17 changes the contract itself (handoff documents now commit directly to `main`, no PR) — see `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋".
 - Completed pull requests:
   - [#14](https://github.com/landfill/ClairKeys/pull/14) — `MERGED` at `05c70df` (P0-D handoff closeout)
   - [#15](https://github.com/landfill/ClairKeys/pull/15) — `MERGED` at `992615f` (agent contract consolidation, `CLAUDE.md` reduced to a pointer at `AGENTS.md`)
