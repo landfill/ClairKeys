@@ -58,7 +58,7 @@ class CacheService {
             if (item && this.memoryCache.size < this.MAX_MEMORY_ITEMS) {
               this.memoryCache.set(key, item)
             }
-          } catch (e) {
+          } catch {
             // Invalid cache data, remove it
             storageObj.removeItem(`cache_${key}`)
           }
@@ -133,7 +133,7 @@ class CacheService {
           }
           
           storageObj.setItem(`cache_${key}`, JSON.stringify(dataToStore))
-        } catch (e) {
+        } catch {
           // Storage quota exceeded, try to clear old items
           this.clearExpired(storage)
           
@@ -221,7 +221,7 @@ class CacheService {
                 storageObj.removeItem(key)
               }
             }
-          } catch (e) {
+          } catch {
             // Invalid data, remove it
             storageObj.removeItem(key)
           }
@@ -243,7 +243,7 @@ class CacheService {
       try {
         const keys = Object.keys(localStorage).filter(key => key.startsWith('cache_'))
         browserStorageSize = keys.length
-      } catch (e) {
+      } catch {
         // Ignore
       }
     }
@@ -267,7 +267,7 @@ class CacheService {
         data: compressed,
         compressed: true
       }
-    } catch (e) {
+    } catch {
       return item
     }
   }
@@ -286,7 +286,7 @@ class CacheService {
         } as CacheItem<T>
       }
       return compressedItem as CacheItem<T>
-    } catch (e) {
+    } catch {
       return compressedItem as CacheItem<T>
     }
   }

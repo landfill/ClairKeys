@@ -304,7 +304,7 @@ function stopAudioNodes(nodes: AudioNodes[]) {
       
       // Stop oscillator after fade out
       osc.stop(now + 0.02)
-    } catch (error) {
+    } catch {
       // Ignore errors for already stopped nodes
     }
   }

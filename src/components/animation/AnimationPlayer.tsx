@@ -44,7 +44,7 @@ export default function AnimationPlayer({
     const engine = animationEngineRef.current
     
     // Load animation data
-    engine.loadAnimation(animationData)
+    engine.loadAnimation(memoizedAnimationData)
     setIsReady(true)
     
     // Set up event listeners with throttling for performance

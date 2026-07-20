@@ -58,12 +58,6 @@ export default function PublicToggle({
     }
   }
 
-  const sizeClasses = {
-    sm: 'px-2 py-1 text-xs',
-    md: 'px-3 py-2 text-sm',
-    lg: 'px-4 py-2 text-base'
-  }
-
   return (
     <div className={`public-toggle ${className}`}>
       <div className="flex items-center space-x-2">
@@ -166,7 +160,7 @@ export function BulkPublicToggle({
           } else {
             newResults.push({ id, success: false })
           }
-        } catch (err) {
+        } catch {
           newResults.push({ id, success: false })
         }
       }

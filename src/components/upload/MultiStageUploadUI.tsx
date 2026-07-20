@@ -42,14 +42,6 @@ const STAGE_LABELS = {
   error: '오류'
 } as const
 
-const STAGE_ESTIMATED_TIMES = {
-  upload: 5,      // 5초
-  parsing: 15,    // 15초
-  omr: 45,        // 45초 (가장 오래 걸림)
-  validation: 10, // 10초
-  generation: 20, // 20초
-} as const
-
 export default function MultiStageUploadUI({
   onUploadComplete,
   onError,

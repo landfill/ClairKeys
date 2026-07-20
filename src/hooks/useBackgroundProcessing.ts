@@ -307,13 +307,21 @@ export function useBackgroundProcessing() {
     }
   }, [])
 
+  // Stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingInterval) {
+      clearInterval(pollingInterval)
+      setPollingInterval(null)
+    }
+  }, [pollingInterval])
+
   // Start polling for active jobs
   const startPolling = useCallback(() => {
     if (pollingInterval) return
 
     const interval = setInterval(async () => {
       const jobs = await fetchJobs()
-      const hasActiveJobs = jobs.some((job: ProcessingJob) => 
+      const hasActiveJobs = jobs.some((job: ProcessingJob) =>
         job.status === 'PENDING' || job.status === 'PROCESSING'
       )
 
@@ -325,15 +333,7 @@ export function useBackgroundProcessing() {
     }, 2000) // Poll every 2 seconds
 
     setPollingInterval(interval)
-  }, [pollingInterval, fetchJobs, fetchNotifications])
-
-  // Stop polling
-  const stopPolling = useCallback(() => {
-    if (pollingInterval) {
-      clearInterval(pollingInterval)
-      setPollingInterval(null)
-    }
-  }, [pollingInterval])
+  }, [pollingInterval, fetchJobs, fetchNotifications, stopPolling])
 
   // Auto-start polling when there are active jobs
   useEffect(() => {

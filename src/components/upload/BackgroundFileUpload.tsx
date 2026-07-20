@@ -23,7 +23,7 @@ export interface BackgroundUploadState {
 
 export default function BackgroundFileUpload() {
   const { createBackgroundJob } = useBackgroundProcessing()
-  const { categories } = useCategories()
+  useCategories()
 
   const [state, setState] = useState<BackgroundUploadState>({
     selectedFile: null,

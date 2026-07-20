@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Category, CategoryWithSheetMusic, CreateCategoryRequest, UpdateCategoryRequest } from '@/types/category'
 import { CategoryService } from '@/services/categoryService'
 import { useCachedFetch } from '@/hooks/useCache'
@@ -72,7 +72,7 @@ export function useCategory(id: number) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchCategory = async () => {
+  const fetchCategory = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -83,13 +83,13 @@ export function useCategory(id: number) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
 
   useEffect(() => {
     if (id) {
       fetchCategory()
     }
-  }, [id])
+  }, [id, fetchCategory])
 
   return {
     category,

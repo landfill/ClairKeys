@@ -92,7 +92,7 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
     
     try {
       setLoading(true)
-      const moreData = await search({ ...params, offset: nextOffset })
+      await search({ ...params, offset: nextOffset })
       
       // This won't work as intended since search() updates state
       // We need to handle this differently

@@ -3,19 +3,19 @@
 import { useState, useEffect, useMemo } from 'react'
 import SimplePianoKeyboard from '@/components/piano/SimplePianoKeyboard'
 import AudioSettings from '@/components/audio/AudioSettings'
-import { generateTestSequence, noteToKeyNumber, isBlackKey } from '@/utils/piano'
+import { generateTestSequence, noteToKeyNumber } from '@/utils/piano'
 import { buildKeyLayout } from '@/utils/pianoLayout'
 import { useAudio } from '@/hooks/useAudio'
 
 export default function PianoTest() {
   const [pressedKeys, setPressedKeys] = useState<string[]>([])
   const [highlightedKeys, setHighlightedKeys] = useState<string[]>([])
-  const [lastPressed, setLastPressed] = useState<string>('')
+  const [lastPressed] = useState<string>('')
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentSequenceIndex, setCurrentSequenceIndex] = useState(0)
   const [showAudioSettings, setShowAudioSettings] = useState(false)
 
-  const { playNote, releaseNote, isReady, isInitialized, contextState } = useAudio({
+  const { playNote, isReady, isInitialized, contextState } = useAudio({
     enableKeyboardShortcuts: true
   })
 
@@ -48,26 +48,6 @@ export default function PianoTest() {
     })
     return midiKeys
   }, [highlightedKeys, pressedKeys])
-
-  const handleKeyPress = (key: string) => {
-    console.log('Key pressed:', key)
-    setLastPressed(key)
-    setPressedKeys(prev => [...prev, key])
-    
-    // Show key info
-    try {
-      const keyNumber = noteToKeyNumber(key)
-      const isBlack = isBlackKey(key)
-      console.log(`Key ${key}: Number ${keyNumber}, ${isBlack ? 'Black' : 'White'} key`)
-    } catch (error) {
-      console.error('Error getting key info:', error)
-    }
-  }
-
-  const handleKeyRelease = (key: string) => {
-    console.log('Key released:', key)
-    setPressedKeys(prev => prev.filter(k => k !== key))
-  }
 
   const playSequence = () => {
     if (isPlaying) {

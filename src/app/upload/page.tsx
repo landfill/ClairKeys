@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
-import { Card, Button } from '@/components/ui'
+import { Card } from '@/components/ui'
 import AuthGuard from '@/components/auth/AuthGuard'
 import { MultiStageUploadUI } from '@/components/upload'
 import BackgroundFileUpload from '@/components/upload/BackgroundFileUpload'

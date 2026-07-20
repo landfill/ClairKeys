@@ -361,7 +361,6 @@ export class QueryOptimizationService {
   }) {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - options.olderThanDays)
-    const batchSize = options.batchSize || 100
 
     const results = {
       processingJobs: 0,

@@ -22,8 +22,6 @@ export default function PracticeGuideControls({
   onToggleTempoProgression,
   className = ''
 }: PracticeGuideControlsProps) {
-  const isActive = practiceState?.isActive || false
-
   const formatNotes = (notes: PianoNote[]): string => {
     return notes.map(note => note.note).join(', ')
   }

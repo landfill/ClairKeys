@@ -49,7 +49,7 @@ export default function MobileTouchOptimizer({
         const vibrationIntensity = intensity || getHapticIntensity()
         navigator.vibrate(vibrationIntensity)
       }
-    } catch (error) {
+    } catch {
       // Haptic feedback not supported or failed
       console.log('Haptic feedback not supported')
     }
@@ -262,7 +262,7 @@ export function useMobileTouchOptimization(options: {
         const defaultIntensity = sensitivity === 'low' ? 10 : sensitivity === 'high' ? 50 : 25
         navigator.vibrate(intensity || defaultIntensity)
       }
-    } catch (error) {
+    } catch {
       // Haptic feedback not supported
     }
   }, [hapticFeedback, sensitivity])

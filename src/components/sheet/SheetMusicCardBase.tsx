@@ -1,6 +1,5 @@
 'use client'
 
-import { SheetMusicWithCategory } from '@/types/sheet-music'
 import Card from '@/components/ui/Card'
 import { 
   SheetMusicDisplayProps, 

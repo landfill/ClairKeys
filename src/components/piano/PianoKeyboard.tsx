@@ -13,8 +13,8 @@ export default function PianoKeyboard({
   animationActiveKeys = [],
   className = '',
   height = 200,
-  keyWidth,
-  showKeyLabels = false
+  keyWidth: _keyWidth,
+  showKeyLabels: _showKeyLabels = false
 }: PianoKeyboardProps) {
   const [isClient, setIsClient] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -43,6 +43,8 @@ export default function PianoKeyboard({
       }
     }, 100)
     return () => clearTimeout(timer)
+    // Mount-only cache-busting nudge; must not re-fire when `keys` populates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Generate piano keys
@@ -241,7 +243,7 @@ export default function PianoKeyboard({
       
       drawKeys()
     }
-  }, [keys, onKeyPress, onKeyRelease, playNote, releaseNote, drawKeys])
+  }, [keys, onKeyPress, onKeyRelease, playNote, releaseNote, drawKeys, initializeAudio])
 
   // Canvas setup
   useEffect(() => {

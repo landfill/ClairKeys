@@ -89,7 +89,7 @@ export function convertToFallingNotes(animationData: PianoAnimationData): Fallin
  */
 export function convertFromFallingNotes(
   fallingNotes: FallingNote[],
-  metadata?: { title?: string; composer?: string; duration?: number; tempo?: number; timeSignature?: string }
+  _metadata?: { title?: string; composer?: string; duration?: number; tempo?: number; timeSignature?: string }
 ): PianoNote[] {
   return fallingNotes.map(fallingNote => {
     // Convert MIDI to note name

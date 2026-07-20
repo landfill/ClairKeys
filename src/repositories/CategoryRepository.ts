@@ -127,8 +127,7 @@ export class CategoryRepository implements ICategoryRepository {
     return category?.userId === userId
   }
 
-  async canDeleteCategory(categoryId: number): Promise<boolean> {
-    const sheetMusicCount = await this.countSheetMusicInCategory(categoryId)
+  async canDeleteCategory(_categoryId: number): Promise<boolean> {
     // 비즈니스 규칙: 악보가 있어도 삭제 가능 (미분류로 이동)
     return true
   }

@@ -100,7 +100,6 @@ export default function EnhancedProcessingStatus({
   useEffect(() => {
     if (!enableAnimations) return
 
-    const particleSymbols = theme === 'music' ? MUSICAL_PARTICLES : TECH_PARTICLES
     const particleCount = config.particles.count
 
     const newParticles = Array.from({ length: particleCount }, (_, i) => ({
@@ -158,6 +157,9 @@ export default function EnhancedProcessingStatus({
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
+    // drawWave/updateAndDrawParticles are intentionally excluded: they're recreated
+    // every render, and listing them here would restart the rAF loop on each render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enableAnimations])
 
   const drawWave = (ctx: CanvasRenderingContext2D, width: number, height: number) => {

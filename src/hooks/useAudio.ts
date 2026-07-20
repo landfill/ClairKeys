@@ -178,10 +178,11 @@ export function useAudio(options: UseAudioOptions = {}): UseAudioReturn {
 
   // Cleanup on unmount
   useEffect(() => {
+    const service = audioService.current
     return () => {
       // Don't dispose the service as it's a singleton
       // Just stop all notes
-      audioService.current.stopAllNotes()
+      service.stopAllNotes()
     }
   }, [])
 

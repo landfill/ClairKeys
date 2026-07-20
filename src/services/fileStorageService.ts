@@ -250,7 +250,7 @@ export class FileStorageService {
       const fileName = this.generateFileName(metadata.name, metadata.userId, 'sheet')
       const filePath = `${metadata.userId}/${fileName}`
 
-      const { data: uploadData, error } = await getSupabaseServer().storage
+      const { error } = await getSupabaseServer().storage
         .from(this.SHEET_MUSIC_BUCKET)
         .upload(filePath, fileBuffer, {
           contentType: metadata.type,
@@ -294,7 +294,7 @@ export class FileStorageService {
       const fileName = this.generateFileName(metadata.name, metadata.userId, 'temp')
       const filePath = `${metadata.userId}/${Date.now()}_${fileName}`
 
-      const { data: uploadData, error } = await getSupabaseServer().storage
+      const { error } = await getSupabaseServer().storage
         .from(this.TEMP_BUCKET)
         .upload(filePath, fileBuffer, {
           contentType: metadata.type,

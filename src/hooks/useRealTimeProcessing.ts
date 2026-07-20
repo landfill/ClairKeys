@@ -82,6 +82,75 @@ export function useRealTimeProcessing(
     setIsConnected(false)
   }, [])
 
+  // Fallback polling mechanism
+  const setupPolling = useCallback((sessionId: string) => {
+    cleanup()
+
+    console.log(`Setting up polling for session: ${sessionId}`)
+    setError('실시간 연결 실패 - 폴링으로 전환')
+
+    const poll = async () => {
+      try {
+        const response = await fetch(`/api/processing-status/${sessionId}`)
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.log('Session not found, stopping polling')
+            cleanup()
+            return
+          }
+          throw new Error(`HTTP ${response.status}`)
+        }
+
+        const data = await response.json()
+        const newStatus: ProcessingStatus = {
+          sessionId: data.sessionId,
+          stage: data.stage,
+          progress: data.progress,
+          message: data.message,
+          estimatedTime: data.estimatedTime,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          error: data.error,
+          completed: data.completed || false,
+          cancelled: data.cancelled || false,
+          result: data.result
+        }
+
+        setStatus(prevStatus => {
+          if (!prevStatus || prevStatus.stage !== newStatus.stage) {
+            onStageChange?.(newStatus.stage)
+          }
+          return newStatus
+        })
+
+        // Handle completion
+        if (data.completed && data.result) {
+          onComplete?.(data.result)
+          cleanup()
+          return
+        }
+
+        // Handle error
+        if (data.error) {
+          onError?.(data.error)
+          cleanup()
+          return
+        }
+
+      } catch (pollError) {
+        console.error('Polling error:', pollError)
+        setError(`연결 오류: ${pollError instanceof Error ? pollError.message : 'Unknown error'}`)
+      }
+    }
+
+    // Initial poll
+    poll()
+
+    // Setup interval
+    pollTimerRef.current = setInterval(poll, pollInterval)
+  }, [cleanup, onComplete, onError, onStageChange, pollInterval])
+
   // Setup Server-Sent Events connection
   const setupSSEConnection = useCallback((sessionId: string) => {
     cleanup()
@@ -183,76 +252,7 @@ export function useRealTimeProcessing(
       // Fallback to polling
       setupPolling(sessionId)
     }
-  }, [cleanup, onComplete, onError, onStageChange])
-
-  // Fallback polling mechanism
-  const setupPolling = useCallback((sessionId: string) => {
-    cleanup()
-
-    console.log(`Setting up polling for session: ${sessionId}`)
-    setError('실시간 연결 실패 - 폴링으로 전환')
-
-    const poll = async () => {
-      try {
-        const response = await fetch(`/api/processing-status/${sessionId}`)
-        
-        if (!response.ok) {
-          if (response.status === 404) {
-            console.log('Session not found, stopping polling')
-            cleanup()
-            return
-          }
-          throw new Error(`HTTP ${response.status}`)
-        }
-
-        const data = await response.json()
-        const newStatus: ProcessingStatus = {
-          sessionId: data.sessionId,
-          stage: data.stage,
-          progress: data.progress,
-          message: data.message,
-          estimatedTime: data.estimatedTime,
-          startTime: data.startTime,
-          endTime: data.endTime,
-          error: data.error,
-          completed: data.completed || false,
-          cancelled: data.cancelled || false,
-          result: data.result
-        }
-
-        setStatus(prevStatus => {
-          if (!prevStatus || prevStatus.stage !== newStatus.stage) {
-            onStageChange?.(newStatus.stage)
-          }
-          return newStatus
-        })
-
-        // Handle completion
-        if (data.completed && data.result) {
-          onComplete?.(data.result)
-          cleanup()
-          return
-        }
-
-        // Handle error
-        if (data.error) {
-          onError?.(data.error)
-          cleanup()
-          return
-        }
-
-      } catch (pollError) {
-        console.error('Polling error:', pollError)
-        setError(`연결 오류: ${pollError instanceof Error ? pollError.message : 'Unknown error'}`)
-      }
-    }
-
-    // Initial poll
-    poll()
-
-    // Setup interval
-    pollTimerRef.current = setInterval(poll, pollInterval)
-  }, [cleanup, onComplete, onError, onStageChange, pollInterval])
+  }, [cleanup, onComplete, onError, onStageChange, setupPolling])
 
   // Start processing
   const startProcessing = useCallback(async (file: File, metadata: UploadMetadata) => {

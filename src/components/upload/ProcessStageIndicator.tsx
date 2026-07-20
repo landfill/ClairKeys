@@ -63,10 +63,9 @@ export function ProcessStageIndicator({
     }
   }
 
-  const getConnectorClasses = (fromStage: UploadStage, toStage: UploadStage) => {
+  const getConnectorClasses = (fromStage: UploadStage, _toStage: UploadStage) => {
     const fromStatus = getStageStatus(fromStage)
-    const toStatus = getStageStatus(toStage)
-    
+
     if (fromStatus === 'completed' || fromStatus === 'current') {
       return "h-1 bg-gradient-to-r from-green-500 to-blue-500"
     } else {

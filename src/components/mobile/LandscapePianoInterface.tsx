@@ -63,11 +63,9 @@ export default function LandscapePianoInterface({
   const [dragStartX, setDragStartX] = useState(0)
   const [dragStartScroll, setDragStartScroll] = useState(0)
   
-  const { 
-    screenSize, 
-    isMobileDevice, 
-    isLandscape,
-    canFitFullKeyboard 
+  const {
+    screenSize,
+    isMobileDevice
   } = useMobileKeyboardSize()
 
   // Calculate optimal dimensions for landscape mode

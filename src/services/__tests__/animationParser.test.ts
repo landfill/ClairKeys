@@ -3,7 +3,7 @@
  */
 
 import { AnimationParserService, getAnimationParserService } from '../animationParser'
-import { PianoAnimationData, PianoNote } from '@/types/animation'
+import { PianoAnimationData } from '@/types/animation'
 
 describe('AnimationParserService', () => {
   let parser: AnimationParserService

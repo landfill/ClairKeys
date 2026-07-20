@@ -43,9 +43,7 @@ export function useMobileKeyboardShortcuts(
   config: ShortcutConfig = {}
 ) {
   const {
-    enabled = true,
-    preventDefault = true,
-    allowInInputs = false
+    enabled = true
   } = config
   
   const shortcutsRef = useRef(shortcuts)
@@ -79,7 +77,7 @@ export function useMobileKeyboardShortcuts(
       return
     }
     
-    const { key, code, metaKey, ctrlKey, shiftKey, altKey } = event
+    const { key, metaKey, ctrlKey, shiftKey, altKey } = event
     const currentShortcuts = shortcutsRef.current
     const currentConfig = configRef.current
     let handled = false
@@ -171,7 +169,6 @@ export function useMobileKeyboardShortcuts(
     
     // Number keys for quick volume
     else if (/^[0-9]$/.test(key)) {
-      const volume = parseInt(key) / 10
       // This would need to be handled by the parent component
       // We just prevent default here
       if (altKey) {

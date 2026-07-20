@@ -16,24 +16,6 @@ const HAND_RANGES = {
 } as const;
 
 /**
- * Finger assignment patterns for different hand positions
- */
-const FINGER_PATTERNS = {
-  LEFT_HAND: {
-    // Common left hand fingering patterns (bass clef)
-    LOW_RANGE: [5, 4, 3, 2, 1], // Lower notes: pinky to thumb
-    MID_RANGE: [4, 3, 2, 1, 2], // Middle range: more thumb usage
-    HIGH_RANGE: [3, 2, 1, 2, 3], // Higher notes in left hand
-  },
-  RIGHT_HAND: {
-    // Common right hand fingering patterns (treble clef)
-    LOW_RANGE: [1, 2, 3, 4, 5], // Lower notes: thumb to pinky
-    MID_RANGE: [1, 2, 3, 1, 2], // Middle range: frequent thumb usage
-    HIGH_RANGE: [2, 3, 4, 5, 4], // Higher notes: avoid thumb on black keys
-  },
-} as const;
-
-/**
  * Assign hand based on MIDI note number and musical context
  */
 export function assignHand(midi: number, context?: { prevHand?: Hand; chordNotes?: number[] }): Hand {

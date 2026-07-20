@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -77,7 +77,7 @@ function addFingeringToAnimationData<T extends { notes: AnimationNote[]; metadat
   };
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Check authentication and admin privileges
     const session = await getServerSession(authOptions)

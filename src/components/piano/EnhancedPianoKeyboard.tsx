@@ -134,7 +134,7 @@ export default function EnhancedPianoKeyboard({
   }, [updateCanvasSize])
 
   // Create gradient for 3D effect
-  const createKeyGradient = (
+  const createKeyGradient = useCallback((
     ctx: CanvasRenderingContext2D,
     x: number, y: number, width: number, height: number,
     isBlack: boolean, isPressed: boolean, velocity: number = 0.8
@@ -166,7 +166,7 @@ export default function EnhancedPianoKeyboard({
     }
     
     return gradient
-  }
+  }, [velocityBasedColors])
 
   // Draw ripple effect
   const drawRipple = (
@@ -194,7 +194,7 @@ export default function EnhancedPianoKeyboard({
     
     // Draw ripple effects first (behind keys)
     if (rippleEffects) {
-      animationState.rippleEffects.forEach((ripple, keyId) => {
+      animationState.rippleEffects.forEach((ripple, _keyId) => {
         const elapsed = currentTime - ripple.startTime
         const duration = 800 // ms
         if (elapsed < duration) {
@@ -306,10 +306,10 @@ export default function EnhancedPianoKeyboard({
         ctx.shadowBlur = 0
       }
     })
-  }, [canvasSize, keys, highlightedKeys, pressedKeys, animationActiveKeys, animationState, rippleEffects, smoothTransitions, keyPressDepth, glowIntensity, velocityBasedColors])
+  }, [canvasSize, keys, highlightedKeys, pressedKeys, animationActiveKeys, animationState, rippleEffects, smoothTransitions, keyPressDepth, glowIntensity, createKeyGradient])
 
   // Animation loop
-  const animate = useCallback((currentTime: number) => {
+  const animate = useCallback((_currentTime: number) => {
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -497,7 +497,7 @@ export default function EnhancedPianoKeyboard({
     handleKeyDown(event)
   }
 
-  const handleTouchEnd = (event: React.TouchEvent) => {
+  const handleTouchEnd = () => {
     // For touch end, release all keys
     animationState.pressedKeys.forEach((_, keyId) => {
       releaseNote(keyId)

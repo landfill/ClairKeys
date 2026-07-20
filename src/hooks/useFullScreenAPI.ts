@@ -174,7 +174,7 @@ export function useFullScreenAPI(options: FullScreenOptions = {}): FullScreenAPI
       }
     }
 
-    const handleFullScreenError = (event: Event) => {
+    const handleFullScreenError = (_event: Event) => {
       optionsRef.current.onError?.(new Error('Fullscreen request failed'))
     }
 

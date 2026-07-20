@@ -111,7 +111,7 @@ export function useMobileKeyboardSize() {
 
   // Responsive breakpoints
   const getResponsiveConfig = useCallback(() => {
-    const { isMobile, isTablet, isDesktop, isLandscape } = screenSize
+    const { isMobile, isTablet, isLandscape } = screenSize
 
     if (isMobile) {
       return {
