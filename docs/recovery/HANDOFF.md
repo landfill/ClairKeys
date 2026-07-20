@@ -9,7 +9,9 @@ Last updated: 2026-07-20 KST
 - Phase document: `docs/recovery/phases/P0-A-animation-contract.md`
 - Base branch: `main`
 - Handoff delivery: [PR #16](https://github.com/landfill/ClairKeys/pull/16) from `codex/p0d-merge-cleanup`; consult GitHub and `docs/recovery/reviews/PR-16.md` for its live review state
-- Completed pull request: [#14](https://github.com/landfill/ClairKeys/pull/14) — `MERGED` at `05c70df` (P0-D handoff closeout); [#15](https://github.com/landfill/ClairKeys/pull/15) — `MERGED` at `992615f` (agent contract consolidation, `CLAUDE.md` reduced to a pointer at `AGENTS.md`)
+- Completed pull requests:
+  - [#14](https://github.com/landfill/ClairKeys/pull/14) — `MERGED` at `05c70df` (P0-D handoff closeout)
+  - [#15](https://github.com/landfill/ClairKeys/pull/15) — `MERGED` at `992615f` (agent contract consolidation, `CLAUDE.md` reduced to a pointer at `AGENTS.md`)
 - Superseded pull request: [#11](https://github.com/landfill/ClairKeys/pull/11) — `CLOSED`
 - Current objective: start P0-A on a fresh `codex/p0-animation-contract` branch; P0-D no longer blocks it.
 
