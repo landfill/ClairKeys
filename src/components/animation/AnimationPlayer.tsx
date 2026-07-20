@@ -50,9 +50,10 @@ export default function AnimationPlayer({
     // Set up event listeners with throttling for performance
     const handleTimeUpdate = (event: AnimationEvent) => {
       if (updateThrottleRef.current) return
-      
+
+      const newTime = event.data.time || 0
       updateThrottleRef.current = window.setTimeout(() => {
-        setCurrentTime(event.data.time || 0)
+        setCurrentTime(newTime)
         updateThrottleRef.current = null
       }, THROTTLE_MS)
     }

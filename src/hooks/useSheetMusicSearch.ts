@@ -21,7 +21,7 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
 
   // Debounced search function
   const search = useCallback(
-    async (searchParams: SearchSheetMusicParams) => {
+    async (searchParams: SearchSheetMusicParams, append = false) => {
       setLoading(true)
       setError(null)
 
@@ -43,7 +43,14 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
         }
 
         const result: SearchSheetMusicResponse = await response.json()
-        setData(result)
+        setData(previous => {
+          if (!append || !previous) return result
+
+          return {
+            ...result,
+            sheetMusic: [...previous.sheetMusic, ...result.sheetMusic]
+          }
+        })
         
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Search failed'
@@ -89,28 +96,7 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
     if (!data || !data.pagination.hasMore || loading) return
 
     const nextOffset = data.pagination.offset + data.pagination.limit
-    
-    try {
-      setLoading(true)
-      await search({ ...params, offset: nextOffset })
-      
-      // This won't work as intended since search() updates state
-      // We need to handle this differently
-      setData(prevData => {
-        if (!prevData) return data
-        
-        return {
-          ...data,
-          sheetMusic: [...prevData.sheetMusic, ...data.sheetMusic],
-          pagination: data.pagination
-        }
-      })
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load more')
-    } finally {
-      setLoading(false)
-    }
+    await search({ ...params, offset: nextOffset }, true)
   }, [data, params, search, loading])
 
   return {

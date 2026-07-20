@@ -217,7 +217,9 @@ export class FileStorageService {
           console.log('✅ File update verified:', {
             url: existingUrl,
             notesCount: updatedContent.notes?.length,
-            hasFingerInfo: updatedContent.notes?.some((n: { finger?: number }) => n.finger) || false
+            hasFingerInfo: updatedContent.notes?.some(
+              (note: { finger?: number }) => note.finger !== undefined
+            ) || false
           })
         }
       } catch (verifyError) {

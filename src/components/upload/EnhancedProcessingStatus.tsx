@@ -95,7 +95,9 @@ export default function EnhancedProcessingStatus({
 
   const config = STAGE_CONFIG[stage]
   const frameValuesRef = useRef({ config, progress, theme })
-  frameValuesRef.current = { config, progress, theme }
+  useEffect(() => {
+    frameValuesRef.current = { config, progress, theme }
+  }, [config, progress, theme])
   const remainingTime = Math.max(0, estimatedTime - elapsedTime)
 
   // Initialize particles

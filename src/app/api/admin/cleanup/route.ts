@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
         // Clean up old database records
         result = await queryOptimizationService.cleanupOldData({
           olderThanDays: options.olderThanDays || 30,
-          batchSize: options.batchSize || 100,
           dryRun: options.dryRun || false
         })
         break

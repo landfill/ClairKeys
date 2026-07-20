@@ -66,9 +66,13 @@ export default function PushNotifications({
 
       const currentPermission = Notification.permission
 
-      setPermission({
-        state: currentPermission,
-        canRequest: currentPermission === 'default'
+      setPermission(previous => {
+        const canRequest = currentPermission === 'default'
+        if (previous.state === currentPermission && previous.canRequest === canRequest) {
+          return previous
+        }
+
+        return { state: currentPermission, canRequest }
       })
 
       // 현재 구독 상태 확인

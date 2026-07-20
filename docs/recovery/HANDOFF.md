@@ -20,8 +20,8 @@ Last updated: 2026-07-20 KST
 - `Security Audit` 워크플로 구성 오류를 복구했다. 35건/고위험 9건을 4건/고위험 0건으로 줄였고, 호스팅 Security Audit과 Security Scan이 통과했다.
 - **TypeScript 검사:** `npx tsc --noEmit`가 모든 타입 오류를 해결하여 0 에러 (exit code 0) 상태로 통과했다.
 - **단위 테스트 검사:** `npm run test`가 21개 테스트 스위트, 271개 테스트 모두 성공(PASS)으로 통과했다.
-- PR #12 review regression tests: PASS — 5 suites, 37 tests.
-- Current full Jest suite: PASS — 24 suites, 276 tests.
+- PR #12 review regression tests: PASS — 7 suites, 8 tests.
+- Current full Jest suite: PASS — 29 suites, 282 tests; process exits normally without `--forceExit`.
 - Current ESLint and TypeScript checks: PASS — zero lint findings and zero type errors.
 - Local production build retry is externally blocked because `next/font` cannot reach Google Fonts; hosted CI remains the build authority for this iteration.
 - Supabase 비밀값 없는 프로덕션 빌드는 지연 클라이언트 생성 수정 후 통과했다.
@@ -29,9 +29,10 @@ Last updated: 2026-07-20 KST
 
 ## Next actions
 
-1. Push the PR #12 review-fix commit and inspect the new hosted checks.
-2. Refresh unresolved review threads and confirm the five fixed threads are outdated or resolved.
-3. Address any new actionable review or CI failure before merge handoff.
+1. Commit and push the second PR #12 review-fix batch, then inspect the new hosted checks.
+2. Refresh and resolve the verified PR #12 review threads.
+3. Update PR #11 on its own branch for pinned browser tooling, runtime auth environment, and real accessibility validation.
+4. Address any new actionable review or CI failure before merge handoff.
 
 ## Existing user-owned working tree changes
 
@@ -43,6 +44,11 @@ Last updated: 2026-07-20 KST
 - `.omx/`
 - `docs/.bkit-memory.json`
 - `docs/.pdca-status.json`
+- `fix_api_tests.js`
+- `fix_semicolons.js`
+- `fix_ts_errors_batch_*.js`
+- `src/components/performance/`
+- `ts_errors*.log`
 
 ## Product-critical follow-up order
 

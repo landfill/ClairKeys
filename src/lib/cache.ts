@@ -260,8 +260,7 @@ class CacheService {
    */
   private compress<T>(item: CacheItem<T>): StoredCacheItem<unknown> {
     try {
-      // Simple compression by removing whitespace from JSON
-      const compressed = JSON.stringify(item).replace(/\s+/g, '')
+      const compressed = JSON.stringify(item.data)
       return {
         ...item,
         data: compressed,

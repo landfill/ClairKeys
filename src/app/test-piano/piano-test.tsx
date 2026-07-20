@@ -10,7 +10,6 @@ import { useAudio } from '@/hooks/useAudio'
 export default function PianoTest() {
   const [pressedKeys, setPressedKeys] = useState<string[]>([])
   const [highlightedKeys, setHighlightedKeys] = useState<string[]>([])
-  const [lastPressed] = useState<string>('')
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentSequenceIndex, setCurrentSequenceIndex] = useState(0)
   const [showAudioSettings, setShowAudioSettings] = useState(false)
@@ -281,13 +280,7 @@ export default function PianoTest() {
         {/* Status Display */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Status</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-            <div>
-              <h3 className="font-semibold mb-2">Last Pressed:</h3>
-              <p className="bg-gray-100 p-3 rounded font-mono">
-                {lastPressed || 'None'}
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
               <h3 className="font-semibold mb-2">Currently Pressed:</h3>
               <p className="bg-gray-100 p-3 rounded font-mono">

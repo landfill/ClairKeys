@@ -356,7 +356,6 @@ export class QueryOptimizationService {
    */
   async cleanupOldData(options: {
     olderThanDays: number
-    batchSize?: number
     dryRun?: boolean
   }) {
     const cutoffDate = new Date()
