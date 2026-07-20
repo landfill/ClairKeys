@@ -76,7 +76,10 @@ fetch PR checks and unresolved comments
 → make smallest fix
 → run focused and required verification
 → commit and push the fix to the PR branch
-→ commit the updated review log (and HANDOFF, if it changed) directly to main
+→ before committing the review log: git fetch origin, fast-forward local main if behind (AGENTS.md 0번 규칙과 동일)
+→ stage only the review log (and HANDOFF, if it changed); confirm with git status --short that no code or contract file is staged
+→ commit and push directly to main
+→ query gh api .../commits/<sha>/check-runs and record the result in the next handoff commit if anything failed
 → repeat until clean
 ```
 
@@ -114,7 +117,7 @@ fetch PR checks and unresolved comments
 - 채팅 메시지, `/tmp`, 홈 디렉터리, 외부 메모 또는 도구 내부 상태는 보조 정보일 뿐이며 단독 인계 수단이 될 수 없다.
 - 각 단계의 커밋, PR, 리뷰 수정, 병합, 브랜치 정리 결과는 다음 세션이 프로젝트 파일만 읽고 복원할 수 있도록 기록한다.
 - durable HANDOFF에는 병합 순간 stale해지는 PR `OPEN`/ready 상태나 현재 작업 브랜치를 고정하지 않는다. transient 상태는 `reviews/PR-<number>.md`와 GitHub live state에서 확인한다.
-- 이 절에서 언급한 모든 문서(`HANDOFF.md`, `phases/`, `validation/`, `reviews/`, `ROADMAP.md`의 상태 칼럼, `DECISIONS.md`의 신규 항목)는 PR·리뷰 대상이 아니라 `main`에 즉시 커밋하는 대상이다. AGENTS.md "핸드오프 문서는 즉시 `main` 커밋" 절이 정의를 갖는 canonical 위치이며, 이 문서는 그 목록을 따른다.
+- `HANDOFF.md`, `phases/*.md`의 `Status`·`Progress`, `validation/`, `reviews/`, `ROADMAP.md`의 상태 칼럼은 PR·리뷰 대상이 아니라 `main`에 즉시 커밋하는 대상이다. `DECISIONS.md`의 신규 항목은 예외가 아니다 — 결정을 기록하는 행위 자체가 판단이므로, 그 결정이 뒤따르는 코드·규약·계획 변경과 같은 브랜치·PR에서 함께 커밋한다. AGENTS.md "핸드오프 문서는 즉시 `main` 커밋" 절이 정의를 갖는 canonical 위치이며, 이 문서는 그 목록을 따른다.
 
 ## Default branch invariant
 

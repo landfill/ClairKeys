@@ -42,15 +42,22 @@
 - `docs/recovery/validation/*.md` (신규 검증 기록)
 - `docs/recovery/reviews/*.md` (PR 리뷰 로그)
 - `docs/recovery/ROADMAP.md`의 상태(`상태` 칼럼) 갱신
-- `docs/recovery/DECISIONS.md`의 신규 결정 항목
 
 다음은 예외가 아니다 — 여전히 브랜치·PR·리뷰·명시적 병합 승인 절차를 따른다:
 
 - 애플리케이션 코드 전체
 - 규약·프로토콜 자체를 바꾸는 문서: `AGENTS.md`, `docs/recovery/WORKFLOW.md`, `docs/recovery/LORE_COMMIT_PROTOCOL.md`, `docs/recovery/BASELINE.md`, `docs/recovery/README.md`
 - 계획 자체를 바꾸는 것: `docs/recovery/ROADMAP.md`의 단계 구성·선행조건 변경, `docs/recovery/phases/*.md`의 `Objective`·`Work stages`·`Completion criteria` 변경
+- `docs/recovery/DECISIONS.md`의 신규 항목 — 결정을 기록하는 행위 자체가 판단이므로 예외가 아니다. 해당 결정이 뒤따르는 동작·규약·계획 변경과 같은 브랜치·PR에서 함께 커밋한다
 
-구분 기준: 상태 기록은 검토가 아니라 사실 확인의 문제이고, 이걸 PR로 돌리면 "PR이 자신의 병합 사실을 기록하는 PR을 또 만드는" 자기참조 루프가 생긴다. 코드와 규약·계획은 실제 판단이 필요하므로 리뷰·승인의 가치가 있다.
+구분 기준: 상태 기록은 검토가 아니라 사실 확인의 문제이고, 이걸 PR로 돌리면 "PR이 자신의 병합 사실을 기록하는 PR을 또 만드는" 자기참조 루프가 생긴다. 코드와 규약·계획·결정은 실제 판단이 필요하므로 리뷰·승인의 가치가 있다.
+
+직접 커밋 절차 (매번):
+
+1. `git fetch origin` 후 로컬 `main`이 뒤처져 있으면 동기화한다(0번 원격 동기화 규칙과 동일한 방법). 다른 세션·에이전트가 그 사이 같은 핸드오프 문서에 직접 커밋했을 수 있다.
+2. 관련 파일만 명시적으로 stage하고 `git status --short`로 확인한다. 코드나 규약 파일이 섞여 들어가지 않았는지 반드시 확인한다.
+3. Lore 형식으로 커밋하고 `main`에 push한다.
+4. push 직후 `gh api repos/<owner>/<repo>/commits/<sha>/check-runs`로 required check 결과를 확인하고, 실패가 있으면 즉시 다음 핸드오프 커밋에 기록한다 (주의 2).
 
 주의: 이 예외는 검증 기록의 오류를 리뷰가 잡아줄 기회도 함께 없앤다 — 실제로 이 저장소에서 PR 리뷰가 검증 기록의 잘못된 명령어·모호한 커밋 해시를 잡아낸 적이 있다. 즉시 커밋하기 전에 스스로 한 번 더 확인한다.
 
