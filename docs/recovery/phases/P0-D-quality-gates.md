@@ -1,6 +1,6 @@
 # P0-D — Authentication and Quality Gates
 
-Status: `IN_PROGRESS`
+Status: `DONE`
 
 ## Objective
 
@@ -37,7 +37,9 @@ Status: `IN_PROGRESS`
 - MERGED: PR #12 merged into `main` at merge commit `271f4c6`; its final head was `5d7afc3`.
 - PASS: PR #12 final-head lint, type, unit, build, accessibility, E2E, security, CodeQL, deployment-preview, and aggregate checks passed.
 - PASS: the `main` merge commit's application build, E2E, pre-deploy test, unit, lint, and security-audit checks passed.
-- OPEN: issue #7 remains open even though PR #12 satisfies its Playwright compilation, hosted E2E, and runtime criteria.
-- FAIL: GitHub reports `404 Branch not protected` for `main`; issue #9 and required-check enforcement remain open.
-- OBSERVED: the merge commit's database-migration, production-deploy, and deployment-notification jobs failed and require separate triage.
-- REMAINING: configure `main` branch protection and required-check wiring, close issue #7 with the merged evidence, and record the deployment failure separately.
+- CLOSED: issue #7 closed with a comment citing PR #12's spec replacement and the passing `E2E Tests` check on merge commit `5ec5e84`.
+- DONE: `main` branch protection is configured with required status checks `Lint`, `Security Audit`, `Run Tests`, `E2E Tests` (`strict: false`, `enforce_admins: false`); `gh api repos/landfill/ClairKeys/branches/main/protection` no longer returns `404` and lists all four contexts.
+- CLOSED: issue #9 closed with a comment recording the applied configuration and the still-open decision on whether to require pull requests / forbid direct pushes.
+- OBSERVED: the merge commit's database-migration, production-deploy, and deployment-notification jobs failed and still require separate triage; no GitHub issue exists for this yet.
+- ALL completion criteria met: OAuth `User.id` generation is fixed, lint/typecheck/unit/build pass without bypass, and CI required checks are wired to `main`.
+- REMAINING (outside P0-D scope): open a dedicated issue for the post-merge deployment failures observed on `5ec5e84`.
