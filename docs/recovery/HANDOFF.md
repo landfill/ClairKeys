@@ -9,9 +9,9 @@ Last updated: 2026-07-21 KST
 - Phase document: `docs/recovery/phases/P0-A-animation-contract.md`
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull request:
-  - [#21](https://github.com/landfill/ClairKeys/pull/21) — `OPEN`, branch `codex/docs-hosting-decision-draft`, base `main`. Docs-only: adds `DECISIONS.md` D-008 (Status `Proposed`) comparing OMR hosting Fly.io-reuse vs Google Cloud Run. On the PR track because `DECISIONS.md` new entries are not a direct-`main` exception. Review log: `docs/recovery/reviews/PR-21.md`.
+- Open pull request: none.
 - Completed pull requests:
+  - [#21](https://github.com/landfill/ClairKeys/pull/21) — `MERGED` at `3349fd3` (docs-only: `DECISIONS.md` D-008 `Proposed`, OMR hosting Fly.io-reuse vs Cloud Run. CodeRabbit C1–C7 accuracy fixes resolved — notably C3: the deployed service does not silently emit demo output; on a Docker-less host the OMR job **fails**. Work branch deleted after tip confirmed in `main`)
   - [#19](https://github.com/landfill/ClairKeys/pull/19) — `MERGED` at `47e30af` (issue #18: one-shot 10s-capped audio scheduler → rolling look-ahead scheduler; P0-C Work stages 1–3. CodeRabbit R1–R3 resolved; work branch deleted after both tips confirmed in `main`)
   - [#14](https://github.com/landfill/ClairKeys/pull/14) — `MERGED` at `05c70df` (P0-D handoff closeout)
   - [#15](https://github.com/landfill/ClairKeys/pull/15) — `MERGED` at `992615f` (agent contract consolidation, `CLAUDE.md` reduced to a pointer at `AGENTS.md`)
@@ -35,7 +35,8 @@ Last updated: 2026-07-21 KST
 1. Start P0-A (`docs/recovery/phases/P0-A-animation-contract.md`) on a new `codex/p0-animation-contract` branch from the latest `main`.
 2. Open a dedicated GitHub issue for the post-merge `Run database migrations` / `Deploy to production` / `Notify deployment status` failures.
 3. P0-C Work stages 4 (visual/key-activation share the same clock) and 5 (long-run drift measurement) remain; they still depend on P0-A/P0-B. Also still unverified: live browser playback of `/sheet/2` confirming issue #18's fix end-to-end.
-4. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
+4. Open GitHub issues for the OMR pipeline demo/failure defects surfaced this session: (a) TS demo stub — filed as [#20](https://github.com/landfill/ClairKeys/issues/20); (b) **not yet filed** — the server-side container defect: `omr-service/Dockerfile.audiveris` installs no JRE/Audiveris and `app.py` selects `audiveris_docker` at import time, so on a Docker-less host the OMR job **fails** (not demo — corrected via PR #21 review C3). See D-008 for the analysis. Hosting choice (D-008) stays `Proposed`, deferred to P0-B maturity.
+5. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
 
 ## Existing user-owned working tree changes
 
