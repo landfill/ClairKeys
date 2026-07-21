@@ -153,7 +153,9 @@ export function useFallingNotesAudio() {
         const sustainLevel = 0.6
         const releaseTime = 0.3
 
-        const velocity = note.velocity || 0.7
+        // Nullish (not `||`) so an explicit velocity of 0 stays silent rather
+        // than snapping to the default 0.7 — the canonical contract allows 0.
+        const velocity = note.velocity ?? 0.7
         const peakGain = velocity * 0.3
 
         // Attack
