@@ -9,7 +9,8 @@ Last updated: 2026-07-21 KST
 - Phase document: `docs/recovery/phases/P0-A-animation-contract.md`
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull request: none.
+- Open pull request:
+  - [#23](https://github.com/landfill/ClairKeys/pull/23) — `OPEN`, branch `codex/p0-animation-contract`, base `main`. **P0-A**: canonical MIDI animation contract + legacy-tolerant validator (`normalizeAnimationData`), 7-case golden corpus (`fixtures/animation-contract/`) + `compareAnimationData`, render-path wiring (replaced the `sheet/[id]/page.tsx` `as` cast), and `converter.py` emitting `version`. All four P0-A completion criteria met; 136 tests pass. Decision D-009 rides the branch. Review log: `docs/recovery/reviews/PR-23.md`.
 - Completed pull requests:
   - [#21](https://github.com/landfill/ClairKeys/pull/21) — `MERGED` at `3349fd3` (docs-only: `DECISIONS.md` D-008 `Proposed`, OMR hosting Fly.io-reuse vs Cloud Run. CodeRabbit C1–C7 accuracy fixes resolved — notably C3: the deployed service does not silently emit demo output; on a Docker-less host the OMR job **fails**. Work branch deleted after tip confirmed in `main`)
   - [#19](https://github.com/landfill/ClairKeys/pull/19) — `MERGED` at `47e30af` (issue #18: one-shot 10s-capped audio scheduler → rolling look-ahead scheduler; P0-C Work stages 1–3. CodeRabbit R1–R3 resolved; work branch deleted after both tips confirmed in `main`)
