@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "title": "Multi-voice",
+  "composer": "P0-A Fixtures",
+  "duration": 2.0,
+  "tempo": 60,
+  "timeSignature": "2/4",
+  "keySignature": "C",
+  "notes": [
+    { "midi": 72, "start": 0.0, "duration": 2.0, "hand": "R", "voice": 1, "staff": 1 },
+    { "midi": 64, "start": 0.0, "duration": 1.0, "hand": "R", "voice": 2, "staff": 1 },
+    { "midi": 65, "start": 1.0, "duration": 1.0, "hand": "R", "voice": 2, "staff": 1 }
+  ]
+}

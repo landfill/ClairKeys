@@ -3,8 +3,10 @@
 import React from 'react'
 import FallingNotesPlayer from '@/components/animation/FallingNotesPlayer'
 import type { PianoAnimationData } from '@/types/animation'
+import { normalizeAnimationData } from '@/utils/animationContract'
 
-// Test data with finger information
+// Test data authored in the legacy Shape A (string pitch / startTime / left|right);
+// normalized to the canonical contract before use, exercising that path too.
 const testData: PianoAnimationData = {
   version: '1.0',
   title: 'Finger Visualization Test',
@@ -39,6 +41,10 @@ const testData: PianoAnimationData = {
     notesDetected: 11
   }
 }
+
+// Normalize once at module scope — testData is static, so there is no need to
+// re-run the validator on every render.
+const canonicalTestData = normalizeAnimationData(testData)
 
 export default function TestFingerPage() {
   return (
@@ -79,8 +85,8 @@ export default function TestFingerPage() {
           </div>
         </div>
         
-        <FallingNotesPlayer 
-          animationData={testData}
+        <FallingNotesPlayer
+          animationData={canonicalTestData}
           className="bg-white rounded-lg shadow-lg"
         />
         

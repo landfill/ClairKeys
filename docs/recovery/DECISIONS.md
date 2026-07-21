@@ -88,3 +88,18 @@
   - 호스트를 Fly에서 바꾸면 **완료 조건**에 다음을 포함한다: `src/app/api/omr/upload/route.ts`·`src/app/api/omr/status/[jobId]/route.ts`의 기본 `OMR_SERVICE_URL`(현재 `https://clairkeys-omr.fly.dev`)을 새 호스트로 갱신하고, `/process`·`/status/:jobId` 엔드포인트와 `job_id`·결과 필드 계약이 새 호스트에서 동일하게 동작하는지 검증한다. 환경변수를 갱신하지 않으면 애플리케이션은 계속 Fly로 요청한다.
   - 이 항목을 Accepted로 승격할 때 선택한 호스트와 근거(비용·노력 실측)를 함께 기록한다.
 - Related: 이슈 [#20](https://github.com/landfill/ClairKeys/issues/20)(TS 데모 스텁 `pdfParser.ts` 정리), 서버측 컨테이너 결함(Docker-in-Docker 의존·Dockerfile Audiveris/JVM 미설치·512MB 부족 → Docker 없는 호스트에서 job 실패, 별도 이슈 등록 예정), D-001, D-002, `docs/recovery/phases/P0-B-musicxml-converter.md`
+
+## D-009: canonical 애니메이션 계약은 MIDI 계열로 통일하고 legacy Shape A는 정규화로 흡수한다
+
+- Date: 2026-07-21
+- Status: Accepted
+- Context: `docs/recovery/validation/2026-07-21-p0a-animation-shape-audit.md`가 음표 데이터 shape 4종 공존과 플레이어 경계의 무검증 `as` 캐스트를 확인했다. 실제 OMR 출력(Shape C: `midi`/`start`/`R`/`L`)은 현재 `convertToFallingNotes`(Shape A: `note:"C4"`/`startTime`/`left|right` 기대)로 렌더링되지 않고 모든 음표가 middle C로 무너진다.
+- Decision:
+  - canonical 음표는 **MIDI 계열**: `{ midi, start, duration, hand:"L"|"R", velocity?, finger?:1..5, voice?, staff? }`. 문서는 `version` 필드를 가진 봉투(`CanonicalAnimationData`)로 감싼다. 근거: 4개 shape 중 3개(converter.py·FallingNote·MusicData)가 이미 MIDI 계열이며, Shape A(문자열 pitch)는 데모 `pdfParser.ts`와 lossy 변환이 유지하는 outlier다.
+  - `voice`·`staff`는 현재 모든 shape에 없으므로 **신규 추가**한다. P0-B가 이를 채워 hand 배정이 `converter.py`의 `part_idx==0 ? R : L` 휴리스틱에서 벗어나게 한다.
+  - **기존 저장 악보(Shape A)가 존재하므로 legacy 호환은 필수**다. `normalizeAnimationData`(`src/utils/animationContract.ts`)가 canonical·Shape A·converter.py shape를 모두 받아 canonical로 정규화한다. malformed 입력은 조용한 fallback(middle C) 없이 `AnimationContractError`로 명시적 실패한다 — 이는 D-001("fallback은 명시적 실패/demo 상태") 정신과 일치한다.
+- Directive:
+  - 플레이어 경계(`src/app/sheet/[id]/page.tsx`)의 `as PianoAnimationData` 캐스트는 이 validator 호출로 대체한다.
+  - Shape A(`note:"C4"`/`startTime`/`left|right`)를 저장 계약으로 되살리지 않는다. 신규 저장은 canonical로 쓰고, Shape A는 읽기 시 정규화로만 흡수한다.
+  - legacy→canonical 마이그레이션 경로는 golden fixture로 회귀 검증한다(P0-A 완료 조건).
+- Related: D-002, D-001, 이슈 #20, `docs/recovery/phases/P0-A-animation-contract.md`, `docs/recovery/validation/2026-07-21-p0a-animation-shape-audit.md`
