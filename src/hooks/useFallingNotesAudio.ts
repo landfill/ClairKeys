@@ -175,7 +175,10 @@ export function useFallingNotesAudio() {
         nodes.osc.stop(endTime + releaseTime)
 
         nodes.end = endTime + releaseTime
-        activeEndsRef.current.push(endTime)
+        // Count the voice as active through its release tail (nodes.end), not
+        // just to endTime — the oscillator is still sounding during release, so
+        // pruning at endTime would let more than VOICE_LIMIT voices overlap.
+        activeEndsRef.current.push(nodes.end)
         scheduledNodesRef.current.push(nodes)
       } catch (error) {
         console.warn('Failed to schedule note:', error)
