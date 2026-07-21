@@ -9,15 +9,15 @@ Last updated: 2026-07-21 KST
 - Phase document: `docs/recovery/phases/P0-A-animation-contract.md`
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull request:
-  - [#19](https://github.com/landfill/ClairKeys/pull/19) — `OPEN`, branch `codex/p0-c-audio-lookahead-scheduler`, base `main`. Fixes issue [#18](https://github.com/landfill/ClairKeys/issues/18): replaces the one-shot 10s-capped audio scheduler with a rolling look-ahead scheduler (P0-C Work stages 1–3). Awaiting CI + user merge approval. Live PR state / review log: `docs/recovery/reviews/PR-19.md`.
+- Open pull request: none.
 - Completed pull requests:
+  - [#19](https://github.com/landfill/ClairKeys/pull/19) — `MERGED` at `47e30af` (issue #18: one-shot 10s-capped audio scheduler → rolling look-ahead scheduler; P0-C Work stages 1–3. CodeRabbit R1–R3 resolved; work branch deleted after both tips confirmed in `main`)
   - [#14](https://github.com/landfill/ClairKeys/pull/14) — `MERGED` at `05c70df` (P0-D handoff closeout)
   - [#15](https://github.com/landfill/ClairKeys/pull/15) — `MERGED` at `992615f` (agent contract consolidation, `CLAUDE.md` reduced to a pointer at `AGENTS.md`)
   - [#16](https://github.com/landfill/ClairKeys/pull/16) — `MERGED` at `32b5739` (recorded PR #14/#15 merge results; last PR of its kind — see #17)
   - [#17](https://github.com/landfill/ClairKeys/pull/17) — `MERGED` at `a78d0f2` (handoff documents now commit directly to `main`, ending the self-referential "PR records that a PR merged" pattern PR #16 exemplified)
 - Superseded pull request: [#11](https://github.com/landfill/ClairKeys/pull/11) — `CLOSED`
-- Current objective: start P0-A on a fresh `codex/p0-animation-contract` branch; P0-D no longer blocks it.
+- Current objective: start P0-A on a fresh `codex/p0-animation-contract` branch; P0-D no longer blocks it. Issue #18 (P0-C stages 1–3) landed via PR #19; P0-C stages 4–5 remain and still depend on P0-A/P0-B.
 
 ## Latest verified result
 
@@ -31,9 +31,9 @@ Last updated: 2026-07-21 KST
 
 ## Next actions
 
-1. Land PR [#19](https://github.com/landfill/ClairKeys/pull/19) (issue #18 audio scheduler fix): monitor CI, process any review feedback, then wait for the user's explicit merge approval. The dependency-order deviation is recorded as D-007 in `docs/recovery/DECISIONS.md` (committed on the PR branch with the fix, per `AGENTS.md`). Scope is P0-C Work stages 1–3; stages 4–5 remain.
-2. Start P0-A (`docs/recovery/phases/P0-A-animation-contract.md`) on a new `codex/p0-animation-contract` branch from the latest `main`.
-3. Open a dedicated GitHub issue for the post-merge `Run database migrations` / `Deploy to production` / `Notify deployment status` failures.
+1. Start P0-A (`docs/recovery/phases/P0-A-animation-contract.md`) on a new `codex/p0-animation-contract` branch from the latest `main`.
+2. Open a dedicated GitHub issue for the post-merge `Run database migrations` / `Deploy to production` / `Notify deployment status` failures.
+3. P0-C Work stages 4 (visual/key-activation share the same clock) and 5 (long-run drift measurement) remain; they still depend on P0-A/P0-B. Also still unverified: live browser playback of `/sheet/2` confirming issue #18's fix end-to-end.
 4. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
 
 ## Existing user-owned working tree changes
