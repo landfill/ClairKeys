@@ -113,15 +113,38 @@ describe('compareAnimationData', () => {
     expect(result.diffs.some((d) => d.field === 'start')).toBe(true)
   })
 
-  it('flags a wrong pitch (the old middle-C collapse would surface here)', () => {
-    const expected = loadExpected('01-monophonic')
+  it('flags the middle-C collapse as missing expected pitches + extra notes', () => {
+    const expected = loadExpected('01-monophonic') // 60, 62, 64, 65
     const actual: CanonicalAnimationData = {
       ...expected,
       notes: expected.notes.map((n) => ({ ...n, midi: 60 })), // everything collapsed to middle C
     }
     const result = compareAnimationData(actual, expected)
     expect(result.match).toBe(false)
-    expect(result.diffs.filter((d) => d.field === 'midi').length).toBeGreaterThan(0)
+    // 60 matches; 62/64/65 have no pitch partner → missing; extra 60s remain.
+    expect(result.diffs.some((d) => d.field === 'missing')).toBe(true)
+    expect(result.diffs.some((d) => d.field === 'extra')).toBe(true)
+  })
+
+  it('matches by pitch+timing, so a missing middle note does not cascade', () => {
+    const expected = loadExpected('01-monophonic') // 4 notes
+    const actual: CanonicalAnimationData = {
+      ...expected,
+      notes: expected.notes.filter((_, i) => i !== 1), // drop the 2nd note
+    }
+    const result = compareAnimationData(actual, expected)
+    // Exactly one missing, no false diffs on the surrounding notes.
+    expect(result.diffs.filter((d) => d.field === 'missing')).toHaveLength(1)
+    expect(result.diffs.filter((d) => d.field !== 'missing')).toHaveLength(0)
+  })
+
+  it('does not mispair equal-onset chord notes reordered in the actual', () => {
+    const expected = loadExpected('02-chord') // three notes share start 0
+    const actual: CanonicalAnimationData = {
+      ...expected,
+      notes: [...expected.notes].reverse(), // same notes, different order
+    }
+    expect(compareAnimationData(actual, expected).match).toBe(true)
   })
 
   it('flags a wrong hand assignment', () => {

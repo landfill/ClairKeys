@@ -41,57 +41,103 @@ export interface ComparisonResult {
   diffs: NoteDiff[]
 }
 
-function sortNotes(notes: CanonicalNote[]): CanonicalNote[] {
-  return [...notes].sort(
-    (a, b) =>
-      a.start - b.start ||
-      a.midi - b.midi ||
-      (a.hand ?? '').localeCompare(b.hand ?? '')
-  )
+function sameOrNull<T>(a: T | undefined, b: T | undefined): boolean {
+  return (a ?? null) === (b ?? null)
 }
 
 /**
- * Compare two canonical documents note-by-note. Returns a structured result;
- * `match` is true only when counts agree and every note matches within tolerance.
+ * Find the best unmatched actual note for an expected note.
+ *
+ * Candidates must share the exact `midi`. When `requireTolerance` is set they
+ * must also fall within the timing tolerance (pass 1 — clean matches). Among
+ * candidates, the one matching the most of {hand, voice, staff} wins, then the
+ * closest onset — so a chord's same-pitch notes are not mispaired across voices
+ * and small onset jitter does not swap them.
+ */
+function findMatch(
+  expectedNote: CanonicalNote,
+  actualNotes: CanonicalNote[],
+  used: Set<number>,
+  tolerance: CompareTolerance,
+  requireTolerance: boolean
+): number {
+  let best = -1
+  let bestScore = Number.POSITIVE_INFINITY
+
+  for (let j = 0; j < actualNotes.length; j++) {
+    if (used.has(j)) continue
+    const a = actualNotes[j]
+    if (a.midi !== expectedNote.midi) continue
+
+    const onsetDelta = Math.abs(a.start - expectedNote.start)
+    if (requireTolerance) {
+      if (onsetDelta > tolerance.onsetSec) continue
+      if (Math.abs(a.duration - expectedNote.duration) > tolerance.durationSec) continue
+    }
+
+    // Prefer exact hand/voice/staff, then the nearest onset.
+    const fieldMisses =
+      (sameOrNull(a.hand, expectedNote.hand) ? 0 : 1) +
+      (sameOrNull(a.voice, expectedNote.voice) ? 0 : 1) +
+      (sameOrNull(a.staff, expectedNote.staff) ? 0 : 1)
+    const score = fieldMisses * 1_000_000 + onsetDelta
+    if (score < bestScore) {
+      bestScore = score
+      best = j
+    }
+  }
+
+  return best
+}
+
+/**
+ * Compare two canonical documents with tolerance-aware note matching. `match` is
+ * true only when every expected note finds a partner within tolerance, no fields
+ * differ, and there are no extra notes.
+ *
+ * Notes are matched by pitch + timing (not by array position), so a missing or
+ * extra note does not cascade into every following note being reported wrong,
+ * and equal-onset chord notes are paired by their exact fields rather than input
+ * order. An expected note with the right pitch but out-of-tolerance timing is
+ * still matched (pass 2) and its timing reported as a diff; a pitch with no
+ * partner is reported `missing`.
  */
 export function compareAnimationData(
   actual: CanonicalAnimationData,
   expected: CanonicalAnimationData,
   tolerance: CompareTolerance = DEFAULT_TOLERANCE
 ): ComparisonResult {
-  const exp = sortNotes(expected.notes)
-  const act = sortNotes(actual.notes)
+  const exp = expected.notes
+  const act = actual.notes
+  const used = new Set<number>()
   const diffs: NoteDiff[] = []
 
-  const common = Math.min(exp.length, act.length)
-  for (let i = 0; i < common; i++) {
+  for (let i = 0; i < exp.length; i++) {
     const e = exp[i]
-    const a = act[i]
+    // Pass 1: a clean match within tolerance. Pass 2: same pitch, any timing.
+    let j = findMatch(e, act, used, tolerance, true)
+    if (j === -1) j = findMatch(e, act, used, tolerance, false)
 
-    if (e.midi !== a.midi) diffs.push({ index: i, field: 'midi', expected: e.midi, actual: a.midi })
+    if (j === -1) {
+      diffs.push({ index: i, field: 'missing', expected: e, actual: null })
+      continue
+    }
+
+    used.add(j)
+    const a = act[j]
     if (Math.abs(e.start - a.start) > tolerance.onsetSec) {
       diffs.push({ index: i, field: 'start', expected: e.start, actual: a.start })
     }
     if (Math.abs(e.duration - a.duration) > tolerance.durationSec) {
       diffs.push({ index: i, field: 'duration', expected: e.duration, actual: a.duration })
     }
-    if ((e.hand ?? null) !== (a.hand ?? null)) {
-      diffs.push({ index: i, field: 'hand', expected: e.hand ?? null, actual: a.hand ?? null })
-    }
-    if ((e.voice ?? null) !== (a.voice ?? null)) {
-      diffs.push({ index: i, field: 'voice', expected: e.voice ?? null, actual: a.voice ?? null })
-    }
-    if ((e.staff ?? null) !== (a.staff ?? null)) {
-      diffs.push({ index: i, field: 'staff', expected: e.staff ?? null, actual: a.staff ?? null })
-    }
+    if (!sameOrNull(e.hand, a.hand)) diffs.push({ index: i, field: 'hand', expected: e.hand ?? null, actual: a.hand ?? null })
+    if (!sameOrNull(e.voice, a.voice)) diffs.push({ index: i, field: 'voice', expected: e.voice ?? null, actual: a.voice ?? null })
+    if (!sameOrNull(e.staff, a.staff)) diffs.push({ index: i, field: 'staff', expected: e.staff ?? null, actual: a.staff ?? null })
   }
 
-  // Report length mismatches as missing/extra notes.
-  for (let i = common; i < exp.length; i++) {
-    diffs.push({ index: i, field: 'missing', expected: exp[i], actual: null })
-  }
-  for (let i = common; i < act.length; i++) {
-    diffs.push({ index: i, field: 'extra', expected: null, actual: act[i] })
+  for (let j = 0; j < act.length; j++) {
+    if (!used.has(j)) diffs.push({ index: j, field: 'extra', expected: null, actual: act[j] })
   }
 
   return {

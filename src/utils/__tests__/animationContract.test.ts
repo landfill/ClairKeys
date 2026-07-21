@@ -165,6 +165,17 @@ describe('normalizeAnimationData — field guards (PR #23 review)', () => {
     expect(out.notes[0].staff).toBeUndefined()
   })
 
+  it('rejects an unknown declared contract version but allows a missing one', () => {
+    // Declared future version → reject (would otherwise render with v1 semantics).
+    expect(() => normalizeAnimationData({ version: '2.0', notes: [{ midi: 60, start: 0, duration: 1 }] })).toThrow(
+      /unsupported animation contract version/
+    )
+    // Missing version → allowed (legacy / converter.py), filled with current.
+    expect(normalizeAnimationData({ notes: [{ midi: 60, start: 0, duration: 1 }] }).version).toBe(
+      ANIMATION_CONTRACT_VERSION
+    )
+  })
+
   it('falls back to a default tempo when tempo <= 0', () => {
     expect(normalizeAnimationData({ tempo: 0, notes: [{ midi: 60, start: 0, duration: 1 }] }).tempo).toBe(120)
     expect(normalizeAnimationData({ tempo: -60, notes: [{ midi: 60, start: 0, duration: 1 }] }).tempo).toBe(120)

@@ -163,6 +163,17 @@ export function normalizeAnimationData(raw: unknown): CanonicalAnimationData {
     throw new AnimationContractError('animation data is missing a `notes` array')
   }
 
+  // The version envelope only protects against breaking changes if an unknown
+  // *declared* version is rejected rather than rendered with v1 semantics. A
+  // missing version is allowed (legacy Shape A / converter.py shape) and filled
+  // with the current version below.
+  const declaredVersion = pickString(raw.version)
+  if (declaredVersion && declaredVersion !== ANIMATION_CONTRACT_VERSION) {
+    throw new AnimationContractError(
+      `unsupported animation contract version ${JSON.stringify(declaredVersion)} (supported: ${ANIMATION_CONTRACT_VERSION})`
+    )
+  }
+
   const notes = raw.notes.map((n, i) => normalizeNote(n, i))
 
   // Shape C keeps title/composer/keySignature under `metadata`; fall back to it.
