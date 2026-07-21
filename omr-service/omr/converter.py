@@ -57,8 +57,14 @@ class MusicXMLToClairKeysConverter:
             notes = self._extract_notes(root)
             logger.info(f"Extracted {len(notes)} notes")
             
-            # Build ClairKeys animation data structure
+            # Build ClairKeys animation data structure.
+            # Emit the canonical contract shape explicitly (version + top-level
+            # title/composer) rather than relying on the TS validator's tolerance
+            # for the old metadata-nested layout. See P0-A / D-009.
             animation_data = {
+                "version": "1.0",
+                "title": metadata.get("title", "Untitled"),
+                "composer": metadata.get("composer", "Unknown"),
                 "metadata": metadata,
                 "notes": notes,
                 "duration": self._calculate_duration(notes),

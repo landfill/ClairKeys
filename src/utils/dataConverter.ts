@@ -1,5 +1,6 @@
 import type { PianoAnimationData, PianoNote } from '@/types/animation'
 import type { FallingNote } from '@/types/fallingNotes'
+import type { CanonicalAnimationData } from '@/types/animationContract'
 
 /**
  * Data Converter Utilities
@@ -82,6 +83,25 @@ export function convertToFallingNotes(animationData: PianoAnimationData): Fallin
       velocity: note.velocity
     };
   });
+}
+
+/**
+ * Convert a canonical animation document to the player's FallingNote array.
+ *
+ * The canonical note shape (MIDI family, per D-009) is already FallingNote-shaped
+ * — this is a near-identity map, dropping only `voice`/`staff` which the player
+ * does not consume. Prefer this over `convertToFallingNotes` (which parses the
+ * legacy string-pitch Shape A) once data has been through `normalizeAnimationData`.
+ */
+export function canonicalToFallingNotes(data: CanonicalAnimationData): FallingNote[] {
+  return data.notes.map((note) => ({
+    midi: note.midi,
+    start: note.start,
+    duration: note.duration,
+    hand: note.hand,
+    finger: note.finger,
+    velocity: note.velocity,
+  }));
 }
 
 /**

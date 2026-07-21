@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import type { PianoAnimationData } from '@/types/animation'
+import type { CanonicalAnimationData } from '@/types/animationContract'
 import { buildKeyLayout } from '@/utils/pianoLayout'
-import { convertToFallingNotes } from '@/utils/dataConverter'
+import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
@@ -18,11 +18,11 @@ export default function FallingNotesPlayer({
   animationData,
   className = ''
 }: {
-  animationData: PianoAnimationData
+  animationData: CanonicalAnimationData
   className?: string
 }) {
-  // Convert animation data to falling notes format
-  const notes = useMemo(() => convertToFallingNotes(animationData), [animationData])
+  // Convert canonical animation data to falling notes format
+  const notes = useMemo(() => canonicalToFallingNotes(animationData), [animationData])
   
   // Use falling notes player hook for audio-visual synchronization
   const {

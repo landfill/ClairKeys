@@ -6,7 +6,8 @@ import { MainLayout, PageHeader, Container } from '@/components/layout'
 import { Card, Loading } from '@/components/ui'
 import AuthGuard from '@/components/auth/AuthGuard'
 import FallingNotesPlayer from '@/components/animation/FallingNotesPlayer'
-import { PianoAnimationData } from '@/services/pdfParser'
+import type { CanonicalAnimationData } from '@/types/animationContract'
+import { normalizeAnimationData, AnimationContractError } from '@/utils/animationContract'
 
 interface SheetMusic {
   id: string
@@ -23,7 +24,7 @@ export default function SheetMusicPage() {
   const id = params.id as string
 
   const [sheetMusic, setSheetMusic] = useState<SheetMusic | null>(null)
-  const [animationData, setAnimationData] = useState<PianoAnimationData | null>(null)
+  const [animationData, setAnimationData] = useState<CanonicalAnimationData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -97,12 +98,18 @@ export default function SheetMusicPage() {
           }
 
           try {
-            const parsedAnimationData = JSON.parse(responseText) as PianoAnimationData
-            console.log(`✅ Successfully parsed animation data`, parsedAnimationData)
+            // Validate + normalize against the canonical contract instead of an
+            // unchecked `as` cast. Accepts canonical, legacy Shape A, and
+            // converter.py-style JSON; throws AnimationContractError otherwise.
+            const parsedAnimationData = normalizeAnimationData(JSON.parse(responseText))
+            console.log(`✅ Successfully validated animation data`, parsedAnimationData)
             setAnimationData(parsedAnimationData)
           } catch (jsonError) {
-            console.error('❌ Failed to parse animation JSON:', jsonError)
-            console.error('❌ Response text that failed to parse:', responseText)
+            if (jsonError instanceof AnimationContractError) {
+              console.error('❌ Animation data failed contract validation:', jsonError.message)
+            } else {
+              console.error('❌ Failed to parse animation JSON:', jsonError)
+            }
             setError('애니메이션 데이터 형식이 올바르지 않습니다.')
             return
           }
