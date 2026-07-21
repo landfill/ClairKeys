@@ -1,7 +1,7 @@
 # P0-C — Playback Synchronization
 
-Status: `NOT_STARTED`
-Depends on: P0-A, P0-B
+Status: `IN_REVIEW` (Work stages 1–3 only, via PR #19; stages 4–5 `NOT_STARTED`)
+Depends on: P0-A, P0-B (Work stages 1–3 started early per D-007 — issue #18 is a live playback defect independent of the animation contract)
 
 ## Objective
 
