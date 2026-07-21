@@ -1,6 +1,6 @@
 # P0-A — Animation Contract and Golden Fixtures
 
-Status: `IN_PROGRESS` (branch `codex/p0-animation-contract`; canonical contract + validator landed, golden fixtures + render-path wiring remaining)
+Status: `DONE` (PR #23 merged at `d59ea9d`; all four completion criteria met — see `docs/recovery/reviews/PR-23.md`)
 
 ## Objective
 
