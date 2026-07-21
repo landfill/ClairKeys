@@ -5,7 +5,7 @@ Last updated: 2026-07-21 KST
 ## Current state
 
 - Program status: `IN_PROGRESS`
-- Current phase: `P0-A` — 애니메이션 계약과 golden fixture 확립 (P0-D is `DONE`; P0-A is the next `READY` phase per `docs/recovery/ROADMAP.md`)
+- Current phase: `P0-A` — 애니메이션 계약과 golden fixture 확립. `IN_PROGRESS` on branch `codex/p0-animation-contract` (not yet a PR). Landed so far (commit `83a5e28`): canonical MIDI contract (`src/types/animationContract.ts`), legacy-tolerant runtime validator/normalizer (`src/utils/animationContract.ts`, 12 tests), and decision D-009. Evidence: `docs/recovery/validation/2026-07-21-p0a-animation-shape-audit.md` (four divergent shapes + unchecked `as` cast confirmed). **Remaining for P0-A**: 7 golden MusicXML/expected-JSON fixtures + comparison tooling; wire the validator into `sheet/[id]/page.tsx` (replace the `as PianoAnimationData` cast); emit `version` explicitly from `converter.py`. Then open the P0-A PR.
 - Phase document: `docs/recovery/phases/P0-A-animation-contract.md`
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
