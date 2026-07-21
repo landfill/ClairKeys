@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<score-partwise version="3.1">
+  <work><work-title>Tempo change</work-title></work>
+  <identification><creator type="composer">P0-A Fixtures</creator></identification>
+  <part-list>
+    <score-part id="P1"><part-name>Piano</part-name></score-part>
+  </part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes>
+        <divisions>12</divisions>
+        <key><fifths>0</fifths></key>
+        <time><beats>2</beats><beat-type>4</beat-type></time>
+        <clef number="1"><sign>G</sign><line>2</line></clef>
+      </attributes>
+      <direction placement="above">
+        <direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>60</per-minute></metronome></direction-type>
+        <sound tempo="60"/>
+      </direction>
+      <note><pitch><step>C</step><octave>4</octave></pitch><duration>12</duration><voice>1</voice><type>quarter</type><staff>1</staff></note>
+      <note><pitch><step>D</step><octave>4</octave></pitch><duration>12</duration><voice>1</voice><type>quarter</type><staff>1</staff></note>
+    </measure>
+    <measure number="2">
+      <direction placement="above">
+        <direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>120</per-minute></metronome></direction-type>
+        <sound tempo="120"/>
+      </direction>
+      <note><pitch><step>E</step><octave>4</octave></pitch><duration>12</duration><voice>1</voice><type>quarter</type><staff>1</staff></note>
+      <note><pitch><step>F</step><octave>4</octave></pitch><duration>12</duration><voice>1</voice><type>quarter</type><staff>1</staff></note>
+    </measure>
+  </part>
+</score-partwise>

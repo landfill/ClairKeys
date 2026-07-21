@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "title": "Triplet and dotted",
+  "composer": "P0-A Fixtures",
+  "duration": 4.0,
+  "tempo": 60,
+  "timeSignature": "4/4",
+  "keySignature": "C",
+  "notes": [
+    { "midi": 60, "start": 0.0, "duration": 1.5, "hand": "R", "voice": 1, "staff": 1 },
+    { "midi": 62, "start": 1.5, "duration": 0.5, "hand": "R", "voice": 1, "staff": 1 },
+    { "midi": 64, "start": 2.0, "duration": 0.3333, "hand": "R", "voice": 1, "staff": 1 },
+    { "midi": 65, "start": 2.3333, "duration": 0.3333, "hand": "R", "voice": 1, "staff": 1 },
+    { "midi": 67, "start": 2.6667, "duration": 0.3333, "hand": "R", "voice": 1, "staff": 1 },
+    { "midi": 69, "start": 3.0, "duration": 1.0, "hand": "R", "voice": 1, "staff": 1 }
+  ]
+}
