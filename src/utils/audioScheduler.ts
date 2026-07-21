@@ -18,8 +18,16 @@ import type { FallingNote } from '@/types/fallingNotes'
  * could not be tested in isolation.
  */
 
-/** Real seconds of audio kept scheduled ahead of the playhead. */
-export const SCHEDULE_AHEAD_SEC = 0.5
+/**
+ * Real seconds of audio kept scheduled ahead of the playhead.
+ *
+ * Sized above the ~1000ms floor browsers impose on `setInterval` in background
+ * tabs: with a smaller look-ahead a throttled tick would let the queue drain and
+ * the audio would stutter. 1.5s leaves a buffer even when ticks are delayed to
+ * once per second. `stopAudio` flushes all scheduled nodes, so a larger buffer
+ * has no cost on seek/pause/tempo/mute changes.
+ */
+export const SCHEDULE_AHEAD_SEC = 1.5
 
 /** How often the rolling scheduler tops up the queue, in milliseconds. */
 export const TICK_MS = 100
@@ -72,15 +80,23 @@ export function selectNotesInWindow(
  * cursor. The look-ahead is scaled by tempo so a faster playback rate keeps the
  * same amount of *real* audio queued. Returns `null` when the cursor already
  * covers the look-ahead horizon, so the caller can skip an empty pass.
+ *
+ * If a tick is delayed past the look-ahead (main-thread stall or background-tab
+ * throttling), the playhead can advance beyond the cursor. Scheduling the whole
+ * stale `[cursor, songNow)` range would clamp every overdue note to "now" and
+ * fire them in one audible burst, so `from` is clamped forward to the current
+ * playhead — the missed range is dropped. `skippedStale` reports this so the
+ * caller can re-articulate a note still sounding at the new playhead.
  */
 export function nextScheduleWindow(
   songNowSec: number,
   cursorSec: number,
   tempoScale: number,
   scheduleAheadSec: number = SCHEDULE_AHEAD_SEC
-): { from: number; to: number; cursor: number } | null {
+): { from: number; to: number; cursor: number; skippedStale: boolean } | null {
   const target = songNowSec + scheduleAheadSec * Math.max(tempoScale, 0)
-  if (target <= cursorSec) return null
+  const from = Math.max(cursorSec, songNowSec)
+  if (target <= from) return null
 
-  return { from: cursorSec, to: target, cursor: target }
+  return { from, to: target, cursor: target, skippedStale: from > cursorSec }
 }

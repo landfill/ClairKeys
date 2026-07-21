@@ -142,4 +142,21 @@ describe('nextScheduleWindow', () => {
     // Cursor is far ahead of where the look-ahead would reach.
     expect(nextScheduleWindow(10, 20, 1)).toBeNull()
   })
+
+  it('does not flag a normal (caught-up) tick as stale', () => {
+    // Cursor is ahead of the playhead, as it is during steady playback.
+    const win = nextScheduleWindow(10, 11, 1)!
+    expect(win.skippedStale).toBe(false)
+    expect(win.from).toBe(11)
+  })
+
+  it('drops the overdue range when a delayed tick falls behind the playhead', () => {
+    // Tick delayed: playhead at 10s but only scheduled up to 8s. The stale
+    // [8, 10) range must be skipped (from clamps to 10), not scheduled as a
+    // burst, and the caller is told so it can re-articulate a sounding note.
+    const win = nextScheduleWindow(10, 8, 1)!
+    expect(win.from).toBe(10)
+    expect(win.skippedStale).toBe(true)
+    expect(win.to).toBeCloseTo(10 + SCHEDULE_AHEAD_SEC)
+  })
 })

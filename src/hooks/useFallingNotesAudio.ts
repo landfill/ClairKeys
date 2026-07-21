@@ -212,7 +212,9 @@ export function useFallingNotesAudio() {
     const win = nextScheduleWindow(songNow, scheduleCursorRef.current, tempoScale)
     if (!win) return
 
-    scheduleWindow(win.from, win.to, false)
+    // On a delayed tick the window skips the overdue range; re-articulate a note
+    // still sounding at the new playhead instead of dropping it silently.
+    scheduleWindow(win.from, win.to, win.skippedStale)
     scheduleCursorRef.current = win.cursor
   }, [scheduleWindow])
 
