@@ -9,7 +9,8 @@ Last updated: 2026-07-21 KST
 - Phase document: `docs/recovery/phases/P0-A-animation-contract.md`
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull request: none.
+- Open pull request:
+  - [#21](https://github.com/landfill/ClairKeys/pull/21) — `OPEN`, branch `codex/docs-hosting-decision-draft`, base `main`. Docs-only: adds `DECISIONS.md` D-008 (Status `Proposed`) comparing OMR hosting Fly.io-reuse vs Google Cloud Run. On the PR track because `DECISIONS.md` new entries are not a direct-`main` exception. Review log: `docs/recovery/reviews/PR-21.md`.
 - Completed pull requests:
   - [#19](https://github.com/landfill/ClairKeys/pull/19) — `MERGED` at `47e30af` (issue #18: one-shot 10s-capped audio scheduler → rolling look-ahead scheduler; P0-C Work stages 1–3. CodeRabbit R1–R3 resolved; work branch deleted after both tips confirmed in `main`)
   - [#14](https://github.com/landfill/ClairKeys/pull/14) — `MERGED` at `05c70df` (P0-D handoff closeout)
