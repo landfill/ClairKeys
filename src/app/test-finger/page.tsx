@@ -42,6 +42,10 @@ const testData: PianoAnimationData = {
   }
 }
 
+// Normalize once at module scope — testData is static, so there is no need to
+// re-run the validator on every render.
+const canonicalTestData = normalizeAnimationData(testData)
+
 export default function TestFingerPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
@@ -82,7 +86,7 @@ export default function TestFingerPage() {
         </div>
         
         <FallingNotesPlayer
-          animationData={normalizeAnimationData(testData)}
+          animationData={canonicalTestData}
           className="bg-white rounded-lg shadow-lg"
         />
         

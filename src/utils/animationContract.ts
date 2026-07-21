@@ -65,9 +65,12 @@ function normalizeHand(raw: unknown): CanonicalHand | undefined {
 }
 
 function normalizeFinger(raw: unknown): CanonicalFinger | undefined {
-  const n = typeof raw === 'string' ? Number.parseInt(raw, 10) : raw
-  if (typeof n === 'number' && Number.isInteger(n) && n >= 1 && n <= 5) {
-    return n as CanonicalFinger
+  if (typeof raw === 'number' && Number.isInteger(raw) && raw >= 1 && raw <= 5) {
+    return raw as CanonicalFinger
+  }
+  // Strings must be an exact integer 1–5 — "3.5" is not a valid finger.
+  if (typeof raw === 'string' && /^[1-5]$/.test(raw.trim())) {
+    return Number.parseInt(raw, 10) as CanonicalFinger
   }
   return undefined
 }
@@ -126,11 +129,15 @@ function normalizeNote(raw: unknown, index: number): CanonicalNote {
 
   const hand = normalizeHand(raw.hand)
   if (hand) note.hand = hand
-  if (typeof raw.velocity === 'number' && Number.isFinite(raw.velocity)) note.velocity = raw.velocity
+  // Velocity is spec'd 0–1; clamp rather than reject (loudness is non-critical).
+  if (typeof raw.velocity === 'number' && Number.isFinite(raw.velocity)) {
+    note.velocity = Math.max(0, Math.min(1, raw.velocity))
+  }
   const finger = normalizeFinger(raw.finger)
   if (finger) note.finger = finger
-  if (typeof raw.voice === 'number' && Number.isInteger(raw.voice)) note.voice = raw.voice
-  if (typeof raw.staff === 'number' && Number.isInteger(raw.staff)) note.staff = raw.staff
+  // voice/staff are 1-based; ignore 0 or negative.
+  if (typeof raw.voice === 'number' && Number.isInteger(raw.voice) && raw.voice >= 1) note.voice = raw.voice
+  if (typeof raw.staff === 'number' && Number.isInteger(raw.staff) && raw.staff >= 1) note.staff = raw.staff
 
   return note
 }
@@ -167,11 +174,13 @@ export function normalizeAnimationData(raw: unknown): CanonicalAnimationData {
   const keySignature = pickString(raw.keySignature, meta.keySignature)
 
   const duration =
-    typeof raw.duration === 'number' && Number.isFinite(raw.duration)
+    typeof raw.duration === 'number' && Number.isFinite(raw.duration) && raw.duration >= 0
       ? raw.duration
       : notes.reduce((max, n) => Math.max(max, n.start + n.duration), 0)
 
-  const tempo = typeof raw.tempo === 'number' && Number.isFinite(raw.tempo) ? raw.tempo : 120
+  // Guard against tempo <= 0 (division-by-zero for any BPM-based timing).
+  const tempo =
+    typeof raw.tempo === 'number' && Number.isFinite(raw.tempo) && raw.tempo > 0 ? raw.tempo : 120
 
   const result: CanonicalAnimationData = {
     version: pickString(raw.version) ?? ANIMATION_CONTRACT_VERSION,

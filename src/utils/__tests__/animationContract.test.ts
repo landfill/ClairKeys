@@ -142,6 +142,40 @@ describe('normalizeAnimationData — defaults', () => {
   })
 })
 
+describe('normalizeAnimationData — field guards (PR #23 review)', () => {
+  it('clamps velocity into 0–1', () => {
+    const out = normalizeAnimationData({
+      notes: [
+        { midi: 60, start: 0, duration: 1, velocity: 5 },
+        { midi: 62, start: 1, duration: 1, velocity: -2 },
+      ],
+    })
+    expect(out.notes[0].velocity).toBe(1)
+    expect(out.notes[1].velocity).toBe(0)
+  })
+
+  it('rejects a non-integer finger string like "3.5"', () => {
+    const out = normalizeAnimationData({ notes: [{ midi: 60, start: 0, duration: 1, finger: '3.5' }] })
+    expect(out.notes[0].finger).toBeUndefined()
+  })
+
+  it('ignores voice/staff below 1', () => {
+    const out = normalizeAnimationData({ notes: [{ midi: 60, start: 0, duration: 1, voice: 0, staff: -1 }] })
+    expect(out.notes[0].voice).toBeUndefined()
+    expect(out.notes[0].staff).toBeUndefined()
+  })
+
+  it('falls back to a default tempo when tempo <= 0', () => {
+    expect(normalizeAnimationData({ tempo: 0, notes: [{ midi: 60, start: 0, duration: 1 }] }).tempo).toBe(120)
+    expect(normalizeAnimationData({ tempo: -60, notes: [{ midi: 60, start: 0, duration: 1 }] }).tempo).toBe(120)
+  })
+
+  it('derives duration from notes when the given duration is negative', () => {
+    const out = normalizeAnimationData({ duration: -5, notes: [{ midi: 60, start: 1, duration: 0.5 }] })
+    expect(out.duration).toBeCloseTo(1.5)
+  })
+})
+
 describe('isValidAnimationData', () => {
   it('is true for canonical and false for malformed', () => {
     expect(isValidAnimationData({ notes: [{ midi: 60, start: 0, duration: 1 }] })).toBe(true)
