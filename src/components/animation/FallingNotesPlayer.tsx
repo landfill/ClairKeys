@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import { buildKeyLayout } from '@/utils/pianoLayout'
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
@@ -8,6 +8,7 @@ import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { PlaybackControls } from '@/components/playback'
+import { getActiveNotes } from '@/utils/visualUtils'
 
 /**
  * Falling Notes Player - MVP Style Piano Visualization
@@ -43,21 +44,15 @@ export default function FallingNotesPlayer({
   const keyWidth = 24
   const keyboardHeight = 120
   
-  // Animation state
-  const [activeKeys, setActiveKeys] = useState<Set<number>>(new Set())
-  
   // Calculate derived values
   const layout = useMemo(() => buildKeyLayout(keyWidth), [keyWidth])
   const height = Math.round(lookAheadSec * pxPerSec)
-  
-  // Update active keys based on current time
-  useEffect(() => {
-    const currentActiveNotes = notes.filter(note => 
-      note.start <= currentTime && 
-      currentTime <= note.start + note.duration
-    )
-    const newActiveKeys = new Set(currentActiveNotes.map(note => note.midi))
-    setActiveKeys(newActiveKeys)
+
+  // Derive key activation synchronously from the exact playhead passed to the
+  // falling-note visualization. An effect would leave the keyboard one render
+  // behind whenever the AudioContext clock advances.
+  const activeKeys = useMemo(() => {
+    return new Set(getActiveNotes(notes, currentTime).map(note => note.midi))
   }, [notes, currentTime])
   
   // Playback control handlers
