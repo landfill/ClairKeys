@@ -1,11 +1,19 @@
 # P0-C — Playback Synchronization
 
-Status: `IN_PROGRESS` (Work stages 1–3 DONE via PR #19, merged at `47e30af`; stages 4–5 `NOT_STARTED`)
+Status: `IN_REVIEW` (Work stages 1–3 DONE via PR #19, merged at `47e30af`; stages 4–5 implemented in PR #26 at `e175314`, merge pending)
 Depends on: P0-A, P0-B (Work stages 1–3 landed early per D-007 — issue #18 is a live playback defect independent of the animation contract; stages 4–5 still depend on P0-A/P0-B)
 
 ## Objective
 
 canonical timeline의 음표와 falling-note 시각화가 짧은 곡과 긴 곡 모두에서 같은 AudioContext 시계를 따른다.
+
+## Progress
+
+- Stages 1–3: `DONE` on `main` via PR #19.
+- Stage 4: implemented in PR #26. Audio scheduling and visual playhead use one bidirectional AudioContext/score-time anchor; active piano keys are derived synchronously from the same render playhead.
+- Stage 5: implemented in PR #26. 60 FPS simulations for 1 minute and 5 minutes at 0.5x/1x/2x enforce measured drift below 1 ms.
+- AudioContext unavailable, suspended/resume failure, and stale pending-resume cancellation have regression coverage.
+- PR #26 is not merged; this phase is not `DONE`. Authenticated live `/sheet/2` playback also remains unverified.
 
 ## Work stages
 
