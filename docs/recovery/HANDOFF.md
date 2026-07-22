@@ -9,7 +9,7 @@ Last updated: 2026-07-22 KST
 - Phase document: `docs/recovery/phases/P0-C-playback-sync.md` (`IN_REVIEW`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull request: [#26](https://github.com/landfill/ClairKeys/pull/26) — `OPEN`, review-ready (non-draft), branch `codex/p0-playback-sync-stages-4-5`, head `e175314`. Checks were in progress at the 2026-07-22 initial review-log snapshot.
+- Open pull request: [#26](https://github.com/landfill/ClairKeys/pull/26) — `OPEN`, review-ready (non-draft), branch `codex/p0-playback-sync-stages-4-5`, head `e175314`. All CI/Vercel checks are green; GitHub REST reports `mergeable=true`, `mergeable_state=clean`; inline comments and submitted reviews are both empty. Awaiting the user's explicit merge approval.
 - Completed pull requests:
   - [#24](https://github.com/landfill/ClairKeys/pull/24) — `MERGED` at `a63d51f` (**P0-B** `DONE`: `converter.py` rewritten — seconds-based onset accumulation, per-measure backup/chord cursor, `<tie>` duration merge, staff-based hands; `omr/cli.py` seam + Jest corpus gate `converterCorpus.test.ts` scoring the converter via `compareAnimationData`. CodeRabbit's 3 findings fixed in `1e902a4` — cross-barline tie (part-scope `open_ties`, fixture 09), multi-part global tempo timeline (fixture 08), test subprocess timeout/maxBuffer. 9-fixture corpus green on CI. Both branch tips confirmed in `main`; remote+local branches deleted. Review log: `docs/recovery/reviews/PR-24.md`)
   - [#25](https://github.com/landfill/ClairKeys/pull/25) — `MERGED` at `83de264` (dependency-only: pins `sharp >=0.35.0` via npm `overrides`, clearing the high libvips advisories, GHSA-f88m-g3jw-g9cj, that turned `Security Audit` red for every PR; `next` dropped high→moderate. No CodeRabbit findings. Merged first so #24 re-ran against a green audit baseline. Branch deleted after tip confirmed in `main`. Review log: `docs/recovery/reviews/PR-25.md`)
@@ -21,11 +21,12 @@ Last updated: 2026-07-22 KST
   - [#16](https://github.com/landfill/ClairKeys/pull/16) — `MERGED` at `32b5739` (recorded PR #14/#15 merge results; last PR of its kind — see #17)
   - [#17](https://github.com/landfill/ClairKeys/pull/17) — `MERGED` at `a78d0f2` (handoff documents now commit directly to `main`, ending the self-referential "PR records that a PR merged" pattern PR #16 exemplified)
 - Superseded pull request: [#11](https://github.com/landfill/ClairKeys/pull/11) — `CLOSED`
-- Current objective: finish PR #26's CI/review loop, obtain explicit merge approval, then merge and close P0-C. The implementation shares one AudioContext score-time anchor across scheduling and visuals, derives key activation in the same render, and gates 1-minute/5-minute drift below 1 ms.
+- Current objective: obtain the user's explicit merge approval for clean PR #26, then re-check live state, merge, clean branch refs, and close P0-C. The implementation shares one AudioContext score-time anchor across scheduling and visuals, derives key activation in the same render, and gates 1-minute/5-minute drift below 1 ms.
 
 ## Latest verified result
 
 - PR #26 local verification on `e175314`: 39 Jest suites / 362 tests passed; `npx tsc --noEmit`, repository lint, and production build passed; Chromium + Mobile Chrome Playwright smoke checks passed 6/6. Firefox/WebKit local projects could not run because their Playwright browser binaries are not installed. Authenticated live `/sheet/2` playback remains unverified. Full evidence: `docs/recovery/validation/2026-07-22-p0c-shared-clock-and-drift.md`; review log: `docs/recovery/reviews/PR-26.md`.
+- PR #26 CI verification on `e175314`: `Run Tests`, both `E2E Tests`, `Lint`, `Lint and Type Check`, `Unit Tests`, `Security Audit`, `Security Scan`, `Build Check`, `Accessibility Check`, `CodeQL`, `All Checks Complete`, PR summary, and Vercel all passed. No actionable GitHub review was present at the final 2026-07-22 check.
 - P0-D is `DONE`. `docs/recovery/phases/P0-D-quality-gates.md` records all four completion criteria met.
 - Issue [#7](https://github.com/landfill/ClairKeys/issues/7) is `CLOSED`: PR #12 replaced the aspirational `piano-player.spec.ts`/`sheet-music-workflow.spec.ts` (dashboard/auth fixtures absent from the product) with `e2e/application-smoke.spec.ts`, 15 cross-browser public-route smoke checks. The `E2E Tests` check has passed on every subsequent `main` HEAD checked, including PR #12's own merge commit `271f4c6`.
 - Issue [#9](https://github.com/landfill/ClairKeys/issues/9) is `CLOSED`: `main` branch protection is configured with required status checks `Lint`, `Security Audit`, `Run Tests`, `E2E Tests` (`strict: false`, `enforce_admins: false`). `gh api repos/landfill/ClairKeys/branches/main/protection` confirms this (previously `404 Branch not protected`). The agent's write attempt was blocked by the local auto-mode classifier as a repository-admin action; the user applied the payload directly via `gh api -X PUT`.
@@ -36,8 +37,8 @@ Last updated: 2026-07-22 KST
 
 ## Next actions
 
-1. Monitor PR #26 required checks and review feedback. Reproduce and fix every actionable item, rerun focused/full gates, and update `docs/recovery/reviews/PR-26.md` directly on `main` after each review wave.
-2. When PR #26 is green and has no actionable review, wait for the user's explicit merge approval. After approval, re-check live state, merge, verify `main`, clean both work-branch refs only after tip containment is proven, then mark P0-C `DONE` in the direct-to-`main` handoff records.
+1. Wait for the user's explicit merge approval for PR #26. Do not infer approval from green CI, clean mergeability, or the absence of review comments.
+2. After approval, re-check PR #26 head/checks/reviews/mergeability, merge, verify `main`, clean both work-branch refs only after tip containment is proven, then mark P0-C `DONE` in the direct-to-`main` handoff records.
 3. Still unverified: authenticated live browser playback of `/sheet/2`, including issue #18's >10-second audio fix end-to-end. Local Chromium public-route smoke checks passed, but they do not exercise this authenticated score.
 4. Open a dedicated GitHub issue for the post-merge `Run database migrations` / `Deploy to production` / `Notify deployment status` failures.
 5. P0-B leftovers remain non-blocking: cross-staff/missing-hand fallback is corpus-covered but not separately documented; ties spanning >2 measures and same-measure conflicting per-part tempos are untested (see `docs/recovery/reviews/PR-24.md`).
