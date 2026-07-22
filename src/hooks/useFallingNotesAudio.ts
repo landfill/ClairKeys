@@ -9,6 +9,11 @@ import {
   TICK_MS,
   VOICE_LIMIT,
 } from '@/utils/audioScheduler'
+import {
+  audioTimeAtSongTime,
+  songTimeAtAudioTime,
+  type PlaybackClockAnchor,
+} from '@/utils/playbackClock'
 
 /**
  * Audio nodes for a single note
@@ -40,6 +45,7 @@ export function useFallingNotesAudio() {
   const offsetSecRef = useRef(0)
   const tempoScaleRef = useRef(1)
   const isPlayingRef = useRef(false)
+  const playbackGenerationRef = useRef(0)
 
   // Rolling-scheduler state, all reset on every startAudio.
   const notesRef = useRef<FallingNote[]>([])
@@ -51,16 +57,28 @@ export function useFallingNotesAudio() {
   /**
    * Initialize audio context
    */
-  const initializeAudio = useCallback(() => {
-    if (!audioContextRef.current) {
-      // Create audio context with compatibility
-      const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+  const initializeAudio = useCallback((): boolean => {
+    if (audioContextRef.current) return true
+
+    // Create audio context with compatibility. Some browsers and test/webview
+    // environments expose neither constructor; playback must stay stopped
+    // instead of throwing after the UI has already entered its playing state.
+    const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+    if (!AudioContextClass) return false
+
+    try {
       audioContextRef.current = new AudioContextClass()
 
       // Create master gain node
       masterGainRef.current = audioContextRef.current.createGain()
       masterGainRef.current.gain.value = 0.1 // Reasonable volume level
       masterGainRef.current.connect(audioContextRef.current.destination)
+      return true
+    } catch (error) {
+      console.warn('Web Audio initialization failed:', error)
+      audioContextRef.current = null
+      masterGainRef.current = null
+      return false
     }
   }, [])
 
@@ -119,6 +137,11 @@ export function useFallingNotesAudio() {
     const tempoScale = tempoScaleRef.current
     const offsetSec = offsetSecRef.current
     const now = audioContext.currentTime
+    const clock: PlaybackClockAnchor = {
+      audioTimeSec: baseAudioTime,
+      songTimeSec: offsetSec,
+      tempoScale,
+    }
 
     // Drop voices that have already finished so the polyphony count reflects
     // only notes still sounding, across the whole song rather than one window.
@@ -130,8 +153,8 @@ export function useFallingNotesAudio() {
 
     for (const note of notes) {
       // Map song time to AudioContext time through the single shared anchor.
-      const startTime = baseAudioTime + (note.start - offsetSec) / tempoScale
-      const endTime = baseAudioTime + (note.start + note.duration - offsetSec) / tempoScale
+      const startTime = audioTimeAtSongTime(clock, note.start)
+      const endTime = audioTimeAtSongTime(clock, note.start + note.duration)
 
       // A note captured by includeSounding may start slightly in the past;
       // clamp it just ahead of now so it still articulates without an error.
@@ -211,8 +234,11 @@ export function useFallingNotesAudio() {
     if (!audioContext || baseAudioTime === null || !isPlayingRef.current) return
 
     const tempoScale = tempoScaleRef.current
-    const songNow = offsetSecRef.current +
-      Math.max(0, audioContext.currentTime - baseAudioTime) * tempoScale
+    const songNow = songTimeAtAudioTime({
+      audioTimeSec: baseAudioTime,
+      songTimeSec: offsetSecRef.current,
+      tempoScale,
+    }, audioContext.currentTime)
 
     const win = nextScheduleWindow(songNow, scheduleCursorRef.current, tempoScale)
     if (!win) return
@@ -230,21 +256,45 @@ export function useFallingNotesAudio() {
    * and timer are torn down and a fresh anchor is established, so no stale
    * future node can double-fire and the cursor restarts from the new position.
    */
-  const startAudio = useCallback((
+  const startAudio = useCallback(async (
     notes: FallingNote[],
     offsetSec: number,
     tempoScale: number,
     mute: boolean
-  ) => {
-    initializeAudio()
+  ): Promise<boolean> => {
+    if (!initializeAudio()) return false
 
-    if (!audioContextRef.current || !masterGainRef.current) return
+    const audioContext = audioContextRef.current
+    if (!audioContext || !masterGainRef.current) return false
+
+    // Invalidate any older start request before awaiting `resume()`. This also
+    // prevents a delayed resume from restarting playback after stop/unmount or
+    // after a newer seek/tempo request has taken ownership of the clock.
+    const generation = ++playbackGenerationRef.current
 
     // Tear down any currently playing audio and its timer.
     stopTick()
     stopAudioNodes(scheduledNodesRef.current)
     scheduledNodesRef.current = []
     activeEndsRef.current = []
+    isPlayingRef.current = false
+    baseAudioTimeRef.current = null
+
+    // A suspended AudioContext is not a usable clock. Await the browser's
+    // user-gesture-gated resume result and report failure to the player instead
+    // of entering a visual-only "playing" state with a frozen playhead.
+    if (audioContext.state === 'suspended') {
+      try {
+        await audioContext.resume()
+      } catch (error) {
+        console.warn('AudioContext resume failed:', error)
+        return false
+      }
+    }
+
+    if (generation !== playbackGenerationRef.current || audioContext.state !== 'running') {
+      return false
+    }
 
     // Store current state
     notesRef.current = notes
@@ -252,14 +302,9 @@ export function useFallingNotesAudio() {
     tempoScaleRef.current = tempoScale
     isPlayingRef.current = true
 
-    // Resume audio context if suspended (required by some browsers)
-    if (audioContextRef.current.state === 'suspended') {
-      audioContextRef.current.resume()
-    }
-
     // Establish the single timing anchor: songTime `offsetSec` maps to this
     // AudioContext time. A small lead keeps the first notes just in the future.
-    const baseAudioTime = audioContextRef.current.currentTime + 0.05
+    const baseAudioTime = audioContext.currentTime + 0.05
     baseAudioTimeRef.current = baseAudioTime
     offsetSecRef.current = offsetSec
     scheduleCursorRef.current = offsetSec
@@ -275,12 +320,15 @@ export function useFallingNotesAudio() {
     if (!mute) {
       tickRef.current = setInterval(tick, TICK_MS)
     }
+
+    return true
   }, [initializeAudio, stopTick, scheduleWindow, tick])
 
   /**
    * Stop all audio playback
    */
   const stopAudio = useCallback(() => {
+    playbackGenerationRef.current += 1
     isPlayingRef.current = false
     stopTick()
     stopAudioNodes(scheduledNodesRef.current)
@@ -292,15 +340,16 @@ export function useFallingNotesAudio() {
   /**
    * Get current playback time with precise synchronization
    */
-  const getCurrentTime = useCallback((tempoScale: number): number => {
+  const getCurrentTime = useCallback((): number => {
     const context = audioContextRef.current
     const baseTime = baseAudioTimeRef.current
 
     if (context && baseTime !== null && isPlayingRef.current) {
-      // High-precision timing using AudioContext.currentTime
-      const audioElapsed = Math.max(0, context.currentTime - baseTime)
-      const scaledElapsed = audioElapsed * tempoScale
-      return offsetSecRef.current + scaledElapsed
+      return songTimeAtAudioTime({
+        audioTimeSec: baseTime,
+        songTimeSec: offsetSecRef.current,
+        tempoScale: tempoScaleRef.current,
+      }, context.currentTime)
     }
 
     return offsetSecRef.current
