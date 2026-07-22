@@ -11,7 +11,7 @@ Last updated: 2026-07-22 KST
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
 - Open pull request: none.
 - Completed pull requests:
-  - [#26](https://github.com/landfill/ClairKeys/pull/26) — `MERGED` at `157c3b4` (**P0-C** `DONE`: one AudioContext/score-time anchor for audio scheduling and visuals, same-render key activation, unavailable/suspended/stale-start lifecycle handling, and 1-minute/5-minute drift gates below 1 ms. Post-merge Tests run `29898010765` passed all jobs. Both work-branch tips are contained in `main`; deletion is deferred because user-owned untracked files remain. Review log: `docs/recovery/reviews/PR-26.md`)
+  - [#26](https://github.com/landfill/ClairKeys/pull/26) — `MERGED` at `157c3b4` (**P0-C** `DONE`: one AudioContext/score-time anchor for audio scheduling and visuals, same-render key activation, unavailable/suspended/stale-start lifecycle handling, and 1-minute/5-minute drift gates below 1 ms. Post-merge Tests run `29898010765` passed all jobs. Both work-branch tips were confirmed in `main`, then the local and remote branches were deleted after the user authorized removal of obsolete untracked artifacts. Review log: `docs/recovery/reviews/PR-26.md`)
   - [#24](https://github.com/landfill/ClairKeys/pull/24) — `MERGED` at `a63d51f` (**P0-B** `DONE`: `converter.py` rewritten — seconds-based onset accumulation, per-measure backup/chord cursor, `<tie>` duration merge, staff-based hands; `omr/cli.py` seam + Jest corpus gate `converterCorpus.test.ts` scoring the converter via `compareAnimationData`. CodeRabbit's 3 findings fixed in `1e902a4` — cross-barline tie (part-scope `open_ties`, fixture 09), multi-part global tempo timeline (fixture 08), test subprocess timeout/maxBuffer. 9-fixture corpus green on CI. Both branch tips confirmed in `main`; remote+local branches deleted. Review log: `docs/recovery/reviews/PR-24.md`)
   - [#25](https://github.com/landfill/ClairKeys/pull/25) — `MERGED` at `83de264` (dependency-only: pins `sharp >=0.35.0` via npm `overrides`, clearing the high libvips advisories, GHSA-f88m-g3jw-g9cj, that turned `Security Audit` red for every PR; `next` dropped high→moderate. No CodeRabbit findings. Merged first so #24 re-ran against a green audit baseline. Branch deleted after tip confirmed in `main`. Review log: `docs/recovery/reviews/PR-25.md`)
   - [#23](https://github.com/landfill/ClairKeys/pull/23) — `MERGED` at `d59ea9d` (**P0-A** `DONE`: canonical MIDI animation contract + legacy-tolerant validator, 7-case golden corpus + `compareAnimationData`, render-path wiring replacing the `as` cast, `converter.py` emits `version`. Three review waves (14 findings) handled incl. two by-design rejects keeping fixtures as ground truth; D-009 recorded. Work branch deleted after tip confirmed in `main`)
@@ -35,33 +35,19 @@ Last updated: 2026-07-22 KST
 - PR #14 (P0-D closeout docs) and PR #15 (agent contract consolidation: sibling-project practices adopted into `AGENTS.md`/`WORKFLOW.md`/`LORE_COMMIT_PROTOCOL.md`, `CLAUDE.md` reduced to a pointer) were both merged with the user's explicit approval, checked out clean at merge time, and had their remote/local work branches deleted only after confirming both tips were included in updated `main`.
 - Full evidence: `docs/recovery/validation/2026-07-20-p0d-branch-protection-and-issue-closeout.md`; PR review logs at `docs/recovery/reviews/PR-14.md` and `docs/recovery/reviews/PR-15.md`.
 - OBSERVED (pre-existing, unrelated to P0-C): [Deploy run 29898010779](https://github.com/landfill/ClairKeys/actions/runs/29898010779) on merge commit `157c3b4` passed pre-deploy tests and build, then failed in `Deploy to production` because `vercel-token` was not supplied, in `Run database migrations` because `DATABASE_URL` was empty (Prisma `P1012`), and consequently in `Notify deployment status` because its failure branch exits 1. These failures predate P0-C and still have no dedicated GitHub issue.
-- CLEANUP BLOCKER: local and remote `codex/p0-playback-sync-stages-4-5` tips are fully contained in `main`, but both refs were retained because the worktree has pre-existing user-owned untracked files (`fix_*.js`, `src/components/performance/`, `test-results/`, and `ts_errors*.log`). Do not delete either branch until those files are resolved or explicitly cleared by the user.
+- CLEANUP COMPLETE: the user authorized deletion after confirming the untracked `fix_*.js` scripts, `ts_errors*.log`, disabled performance components, and Playwright `.last-run.json` were unreferenced local artifacts. All 16 files and their now-empty directories were removed. Local and remote `codex/p0-playback-sync-stages-4-5` refs were then deleted after both tips were re-confirmed in `main`; `git status --short` is clean.
 
 ## Next actions
 
 1. Verify authenticated live browser playback of `/sheet/2`, including issue #18's >10-second audio fix end-to-end. Local Chromium public-route smoke checks passed, but they do not exercise this authenticated score.
 2. Open a dedicated GitHub issue for the post-merge `Run database migrations` / `Deploy to production` / `Notify deployment status` failures, using run `29898010779` as current evidence.
 3. P0-B leftovers remain non-blocking: cross-staff/missing-hand fallback is corpus-covered but not separately documented; ties spanning >2 measures and same-measure conflicting per-part tempos are untested (see `docs/recovery/reviews/PR-24.md`).
-4. Resolve or explicitly clear the user-owned untracked worktree files before deleting the retained local and remote P0-C work branches.
-5. OMR pipeline defects remain filed and deferred: issue #20 (TS demo stub) and issue #22 (server-side Docker-in-Docker/Audiveris runtime defect). Hosting choice D-008 remains `Proposed`.
-6. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
+4. OMR pipeline defects remain filed and deferred: issue #20 (TS demo stub) and issue #22 (server-side Docker-in-Docker/Audiveris runtime defect). Hosting choice D-008 remains `Proposed`.
+5. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
 
-## Existing user-owned working tree changes
+## Local worktree state
 
-아래 파일은 이번 문서 현행화 이전부터 존재한 사용자 변경이며, 명시적으로 제외한다.
-
-- `.claude/settings.local.json`
-- `.claude/settings.json`
-- `prisma/schema.prisma`
-- `.omx/`
-- `docs/.bkit-memory.json`
-- `docs/.pdca-status.json`
-- `fix_api_tests.js`
-- `fix_semicolons.js`
-- `fix_ts_errors_batch_*.js`
-- `src/components/performance/`
-- `test-results/`
-- `ts_errors*.log`
+`git status --short` is clean. `.omx/` remains an ignored local runtime directory; tracked `.claude/settings.local.json` and `prisma/schema.prisma` are unchanged. Previously listed `.claude/settings.json`, `docs/.bkit-memory.json`, and `docs/.pdca-status.json` do not exist in this checkout.
 
 ## Product-critical follow-up order
 
