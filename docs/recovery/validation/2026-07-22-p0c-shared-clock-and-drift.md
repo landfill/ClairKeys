@@ -61,3 +61,10 @@ Both were fixed with awaited state verification plus a playback generation token
 - Firefox, WebKit, and Mobile Safari local Playwright projects were not runnable because their browser binaries are not installed. The attempted full run had 6 Chromium-family passes and 9 environment failures for missing executables.
 - `/sheet/2` authenticated live playback remains unverified because it requires runtime authentication and database data. The public smoke suite does not exercise that score.
 - The local E2E server logs a handled `DATABASE_URL`-missing error on the public sheet API; the six selected smoke checks still passed. No database value was invented for this validation.
+
+## Post-merge verification
+
+- PR #26 merged with the user's explicit approval at `157c3b41a997652da8b3fe91495440d36635ee19`; merge parent `e175314` is an ancestor of both local and remote `main`.
+- [Tests run 29898010765](https://github.com/landfill/ClairKeys/actions/runs/29898010765) passed `Run Tests`, `Lint`/TypeScript, `Security Audit`, and `E2E Tests` on the merge commit.
+- [Deploy run 29898010779](https://github.com/landfill/ClairKeys/actions/runs/29898010779) passed pre-deploy tests and the production build, then repeated the known unrelated failures in `Deploy to production`, `Run database migrations`, and `Notify deployment status`.
+- Work-branch deletion was deferred because pre-existing user-owned untracked files remain in the worktree; no user file was modified or removed.
