@@ -1,15 +1,17 @@
 # Current Handoff
 
-Last updated: 2026-07-21 KST
+Last updated: 2026-07-22 KST
 
 ## Current state
 
 - Program status: `IN_PROGRESS`
-- Current phase: `P0-B` — MusicXML 변환 정확도 재구현 (`docs/recovery/phases/P0-B-musicxml-converter.md`). P0-A is `DONE` (PR #23 merged); P0-B depends on P0-A and is now `READY`. Measure `omr-service/omr/converter.py` output against the golden corpus (`fixtures/animation-contract/`) with `compareAnimationData`; the known bugs to fix are the ones the fixtures already encode as correct: `<divisions>`-based tick→seconds (converter currently does `duration / 4.0`), `<chord>`/`<rest>`/`<tie>`/`<time-modification>`/`<backup>` handling, and staff-based hand assignment (currently `part_idx == 0 ? R : L`).
-- Phase document: `docs/recovery/phases/P0-A-animation-contract.md`
+- Current phase: `P0-B` — MusicXML 변환 정확도 재구현 (`docs/recovery/phases/P0-B-musicxml-converter.md`), now `IN_PROGRESS` with **PR [#24](https://github.com/landfill/ClairKeys/pull/24) OPEN** (review-ready). The converter rewrite is done and the accuracy gate is green: all 7 golden fixtures match within the 10 ms tolerance. Awaiting hosted CI, CodeRabbit review, and the user's explicit merge approval.
+- Phase document: `docs/recovery/phases/P0-B-musicxml-converter.md`
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull request: none.
+- Open pull requests:
+  - [#24](https://github.com/landfill/ClairKeys/pull/24) — `codex/p0-musicxml-converter` (P0-B). Two commits: `55acbb6` regression-first gate (`omr/cli.py` + `converterCorpus.test.ts`, red on 7/7), `d1a74b6` converter rewrite (seconds-based onset, backup/chord cursor, tie merge, staff-based hands). Review log: `docs/recovery/reviews/PR-24.md`. Blocked only by the repo-wide `Security Audit` red, which #25 fixes.
+  - [#25](https://github.com/landfill/ClairKeys/pull/25) — `codex/chore-sharp-advisory` (dependency-only). Pins `sharp >=0.35.0` via npm `overrides` to clear the high libvips advisories that turned `Security Audit` red for every PR. Verified locally: `npm audit --audit-level high` exits 0, `npm run build` succeeds. Review log: `docs/recovery/reviews/PR-25.md`.
 - Completed pull requests:
   - [#23](https://github.com/landfill/ClairKeys/pull/23) — `MERGED` at `d59ea9d` (**P0-A** `DONE`: canonical MIDI animation contract + legacy-tolerant validator, 7-case golden corpus + `compareAnimationData`, render-path wiring replacing the `as` cast, `converter.py` emits `version`. Three review waves (14 findings) handled incl. two by-design rejects keeping fixtures as ground truth; D-009 recorded. Work branch deleted after tip confirmed in `main`)
   - [#21](https://github.com/landfill/ClairKeys/pull/21) — `MERGED` at `3349fd3` (docs-only: `DECISIONS.md` D-008 `Proposed`, OMR hosting Fly.io-reuse vs Cloud Run. CodeRabbit C1–C7 accuracy fixes resolved — notably C3: the deployed service does not silently emit demo output; on a Docker-less host the OMR job **fails**. Work branch deleted after tip confirmed in `main`)
@@ -19,7 +21,7 @@ Last updated: 2026-07-21 KST
   - [#16](https://github.com/landfill/ClairKeys/pull/16) — `MERGED` at `32b5739` (recorded PR #14/#15 merge results; last PR of its kind — see #17)
   - [#17](https://github.com/landfill/ClairKeys/pull/17) — `MERGED` at `a78d0f2` (handoff documents now commit directly to `main`, ending the self-referential "PR records that a PR merged" pattern PR #16 exemplified)
 - Superseded pull request: [#11](https://github.com/landfill/ClairKeys/pull/11) — `CLOSED`
-- Current objective: start P0-A on a fresh `codex/p0-animation-contract` branch; P0-D no longer blocks it. Issue #18 (P0-C stages 1–3) landed via PR #19; P0-C stages 4–5 remain and still depend on P0-A/P0-B.
+- Current objective: land P0-B via PR #24. The converter now matches the golden corpus; next is CI/review handling and, on explicit approval, merge. P0-C stages 4–5 remain and depend on P0-A/P0-B (P0-B nearly complete).
 
 ## Latest verified result
 
@@ -33,7 +35,10 @@ Last updated: 2026-07-21 KST
 
 ## Next actions
 
-1. Start P0-B (`docs/recovery/phases/P0-B-musicxml-converter.md`) on a new `codex/p0-musicxml-converter` branch from the latest `main`. Score `converter.py` against `fixtures/animation-contract/` with `compareAnimationData` (regression-first), then fix `<divisions>` tick→seconds, chord/rest/tie/tuplet/backup handling, and staff-based hands until the corpus matches within tolerance. P0-A's contract, validator, corpus, and comparison tool are the ready-made yardstick.
+1. Merge order for the two open PRs (both await the user's explicit approval):
+   - **#25 first** (`sharp` override) so `Security Audit` returns green as the baseline. Verified locally to fix the gate; watch that `Security Audit` passes on #25 itself.
+   - Then **#24** (P0-B). Its own gates are green (`Run Tests` pass — the converter accuracy suite runs on CI; Lint/type-check pass); it was blocked only by the repo-wide audit red that #25 clears. After #25 merges, #24 may need a re-run/rebase to pick up the green audit baseline.
+   On approval of #24, merge, confirm `main` reflects both branch tips, delete remote+local `codex/p0-musicxml-converter`, and flip the P0-B phase Status to `DONE`. Remaining phase Work stage 5 (cross-staff / missing-hand fallback beyond staff→hand) and stage 6 (accuracy report) are corpus-covered but not separately documented. Handle any CodeRabbit findings on either PR (update the matching `reviews/PR-*.md`).
 2. Open a dedicated GitHub issue for the post-merge `Run database migrations` / `Deploy to production` / `Notify deployment status` failures.
 3. P0-C Work stages 4 (visual/key-activation share the same clock) and 5 (long-run drift measurement) remain; they still depend on P0-A/P0-B. Also still unverified: live browser playback of `/sheet/2` confirming issue #18's fix end-to-end.
 4. OMR pipeline demo/failure defects surfaced this session are now both filed and **deferred to post-P0-B** (not on the current critical path — the roadmap runs on fixtures, not live OMR): (a) TS demo stub — [#20](https://github.com/landfill/ClairKeys/issues/20); (b) server-side container defect — [#22](https://github.com/landfill/ClairKeys/issues/22): `omr-service/Dockerfile.audiveris` installs no JRE/Audiveris and `app.py` selects `audiveris_docker` at import time, so on a Docker-less host the OMR job **fails** (not demo — corrected via PR #21 review C3). Analysis in D-008. Hosting choice (D-008) stays `Proposed`, deferred to P0-B maturity.

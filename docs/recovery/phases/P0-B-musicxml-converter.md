@@ -1,7 +1,11 @@
 # P0-B — MusicXML Converter Correctness
 
-Status: `NOT_STARTED`
+Status: `IN_PROGRESS`
 Depends on: P0-A
+
+## Progress
+
+- 2026-07-22: PR [#24](https://github.com/landfill/ClairKeys/pull/24) OPEN (`codex/p0-musicxml-converter`). `converter.py` rewritten; the accuracy gate (`src/utils/__tests__/converterCorpus.test.ts` via `omr/cli.py`) is green on all 7 golden fixtures within the 10 ms tolerance. All five Completion criteria met against the corpus (see `docs/recovery/reviews/PR-24.md`). Awaiting CI, review, and explicit merge approval. Work stages 1–4 and 6 (corpus accuracy) are covered; stage 5 (cross-staff / missing-hand fallback) is implemented as staff→hand with part-index fallback but not exercised by a dedicated fixture.
 
 ## Objective
 
