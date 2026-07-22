@@ -117,13 +117,21 @@ class MusicXMLToClairKeysConverter:
         """
         notes: List[Dict[str, Any]] = []
         parts = root.findall('.//part')
+        # Tempo is a score-wide property in MusicXML: a <sound tempo> / <per-minute>
+        # in one part (conventionally the first) governs playback for every part at
+        # that measure position. Build one measure-indexed timeline from all parts so
+        # a tempo change declared in one part re-scales the others' timing too.
+        tempo_timeline = self._build_tempo_timeline(parts, self._extract_tempo(root))
 
         for part_idx, part in enumerate(parts):
             divisions = 1
-            tempo = self._extract_tempo(root)  # initial; overridden per measure below
             measure_start_sec = 0.0
+            # Tie state must persist across measure boundaries — a note tied into the
+            # next measure has to merge with the note that opened the tie — so
+            # open_ties lives at part scope, not per measure.
+            open_ties: Dict[Any, Dict[str, Any]] = {}  # (midi, voice) -> tie-open note
 
-            for measure in part.findall('measure'):
+            for measure_idx, measure in enumerate(part.findall('measure')):
                 attributes = measure.find('attributes')
                 if attributes is not None:
                     div_elem = attributes.find('divisions')
@@ -135,15 +143,12 @@ class MusicXMLToClairKeysConverter:
                 if divisions <= 0:
                     divisions = 1
 
-                measure_tempo = self._find_tempo(measure)
-                if measure_tempo is not None and measure_tempo > 0:
-                    tempo = measure_tempo
+                tempo = tempo_timeline[measure_idx] if measure_idx < len(tempo_timeline) else self._extract_tempo(root)
                 sec_per_tick = (60.0 / tempo) / divisions if tempo > 0 else 0.0
 
                 cursor_sec = 0.0        # seconds offset from measure_start_sec
                 measure_max_sec = 0.0   # furthest point reached (measure length)
                 last_onset_sec = 0.0    # onset of the last non-chord note (chords share it)
-                open_ties: Dict[Any, Dict[str, Any]] = {}  # (midi, voice) -> tie-open note
 
                 for elem in list(measure):
                     tag = elem.tag
@@ -294,6 +299,28 @@ class MusicXMLToClairKeysConverter:
                 pass
         return None
 
+    def _build_tempo_timeline(self, parts: List[ET.Element], initial_tempo: float) -> List[float]:
+        """Build a measure-indexed tempo (BPM) timeline shared across all parts.
+
+        For each measure position, the first tempo declared by any part (scanning
+        parts in document order) wins and carries forward until the next change.
+        This mirrors MusicXML's convention that a tempo direction in one part is a
+        global playback change, so parts that carry no tempo of their own still get
+        re-scaled at a measure where another part changed tempo.
+        """
+        max_measures = max((len(part.findall('measure')) for part in parts), default=0)
+        timeline: List[float] = []
+        current = initial_tempo
+        for i in range(max_measures):
+            for part in parts:
+                measures = part.findall('measure')
+                if i < len(measures):
+                    measure_tempo = self._find_tempo(measures[i])
+                    if measure_tempo is not None and measure_tempo > 0:
+                        current = measure_tempo
+                        break
+            timeline.append(current)
+        return timeline
 
     def _note_to_midi(self, step: str, octave: int, alter: int = 0) -> Optional[int]:
         """Convert note name to MIDI number"""

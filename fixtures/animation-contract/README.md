@@ -41,6 +41,8 @@ quarter = 1.5s, an eighth = 0.5s, a triplet eighth (three in one beat) = 1/3s.
 | `05-multivoice` | 한 staff 내 다성부 | `<backup>` + `<voice>` overlapping in one staff |
 | `06-triplet-dotted` | 셋잇단음표·점음표 | `<time-modification>` triplet, dotted duration |
 | `07-tempo-change` | 템포/박자표 변경 | mid-piece tempo change re-scales seconds |
+| `08-multipart-tempo` | 멀티파트 전역 템포 | tempo declared in one part re-scales all parts at that measure (added in P0-B) |
+| `09-tie-across-barline` | 마디 넘는 붙임줄 | `<tie>` spanning a measure boundary merges into one sustained note (added in P0-B) |
 
 ## Comparison
 

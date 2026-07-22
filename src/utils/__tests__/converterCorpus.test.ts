@@ -45,6 +45,10 @@ function runConverter(dir: string): CanonicalAnimationData {
     cwd: OMR_DIR,
     encoding: 'utf-8',
     stdio: ['ignore', 'pipe', 'pipe'],
+    // Cap runtime so a hung converter fails the test instead of blocking CI, and
+    // raise maxBuffer above the 1 MB default for large corpora.
+    timeout: 30_000,
+    maxBuffer: 32 * 1024 * 1024,
   })
   return normalizeAnimationData(JSON.parse(stdout))
 }
