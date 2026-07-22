@@ -106,91 +106,195 @@ class MusicXMLToClairKeysConverter:
         return metadata
     
     def _extract_notes(self, root: ET.Element) -> List[Dict[str, Any]]:
-        """Extract notes from MusicXML and convert to ClairKeys format"""
-        notes = []
-        current_time = 0.0
-        
-        # Find all parts (typically separate hands/voices)
+        """Extract notes from MusicXML into canonical timed notes.
+
+        Timing is accumulated in *seconds*, not divisions, because tempo can
+        change between measures and each change re-scales tick->second. Within a
+        measure a cursor tracks the seconds offset so `<backup>`/`<forward>` and
+        `<chord>` place notes at the right onset; `<tie>` merges durations instead
+        of emitting a second note. Hand comes from `<staff>` (1->R, 2->L), falling
+        back to the part index only when no staff is given.
+        """
+        notes: List[Dict[str, Any]] = []
         parts = root.findall('.//part')
-        
+
         for part_idx, part in enumerate(parts):
-            part_time = 0.0
-            
-            # Determine hand assignment (simple heuristic)
-            hand = "R" if part_idx == 0 else "L"  # First part = right hand, second = left hand
-            
-            # Find all measures in this part
-            measures = part.findall('measure')
-            
-            for measure in measures:
-                measure_time = part_time
-                
-                # Find all notes in this measure
-                note_elements = measure.findall('note')
-                
-                for note_elem in note_elements:
-                    note_data = self._parse_note_element(note_elem, measure_time, hand)
-                    if note_data:
-                        notes.append(note_data)
-                        measure_time = note_data['start'] + note_data['duration']
-                
-                part_time = measure_time
-        
-        # Sort notes by start time
-        notes.sort(key=lambda n: n['start'])
-        
+            divisions = 1
+            tempo = self._extract_tempo(root)  # initial; overridden per measure below
+            measure_start_sec = 0.0
+
+            for measure in part.findall('measure'):
+                attributes = measure.find('attributes')
+                if attributes is not None:
+                    div_elem = attributes.find('divisions')
+                    if div_elem is not None and div_elem.text:
+                        try:
+                            divisions = int(div_elem.text)
+                        except ValueError:
+                            pass
+                if divisions <= 0:
+                    divisions = 1
+
+                measure_tempo = self._find_tempo(measure)
+                if measure_tempo is not None and measure_tempo > 0:
+                    tempo = measure_tempo
+                sec_per_tick = (60.0 / tempo) / divisions if tempo > 0 else 0.0
+
+                cursor_sec = 0.0        # seconds offset from measure_start_sec
+                measure_max_sec = 0.0   # furthest point reached (measure length)
+                last_onset_sec = 0.0    # onset of the last non-chord note (chords share it)
+                open_ties: Dict[Any, Dict[str, Any]] = {}  # (midi, voice) -> tie-open note
+
+                for elem in list(measure):
+                    tag = elem.tag
+                    if tag == 'backup':
+                        cursor_sec = max(0.0, cursor_sec - self._duration_ticks(elem) * sec_per_tick)
+                        continue
+                    if tag == 'forward':
+                        cursor_sec += self._duration_ticks(elem) * sec_per_tick
+                        measure_max_sec = max(measure_max_sec, cursor_sec)
+                        continue
+                    if tag != 'note':
+                        continue
+
+                    dur_sec = self._duration_ticks(elem) * sec_per_tick
+                    is_chord = elem.find('chord') is not None
+                    onset_sec = last_onset_sec if is_chord else cursor_sec
+                    end_sec = onset_sec + dur_sec
+
+                    # Rests and unpitched/unparseable notes advance time but emit nothing.
+                    parsed = None if elem.find('rest') is not None else self._parse_pitch(elem)
+                    if parsed is not None:
+                        midi_num, voice, staff = parsed
+                        tie_start, tie_stop = self._tie_flags(elem)
+                        key = (midi_num, voice)
+                        if tie_stop and key in open_ties:
+                            started = open_ties[key]
+                            started['duration'] = round(started['duration'] + dur_sec, 6)
+                            if not tie_start:
+                                del open_ties[key]
+                        else:
+                            note: Dict[str, Any] = {
+                                "midi": midi_num,
+                                "start": round(measure_start_sec + onset_sec, 6),
+                                "duration": round(dur_sec, 6),
+                                "hand": self._hand_for(staff, part_idx),
+                                "finger": self._fingering(elem),
+                            }
+                            if voice is not None:
+                                note["voice"] = voice
+                            if staff is not None:
+                                note["staff"] = staff
+                            notes.append(note)
+                            if tie_start:
+                                open_ties[key] = note
+
+                    if not is_chord:
+                        cursor_sec = end_sec
+                        last_onset_sec = onset_sec
+                    measure_max_sec = max(measure_max_sec, end_sec)
+
+                measure_start_sec += measure_max_sec
+
+        notes.sort(key=lambda n: (n['start'], n['midi']))
         return notes
-    
-    def _parse_note_element(self, note_elem: ET.Element, current_time: float, hand: str) -> Optional[Dict[str, Any]]:
-        """Parse individual note element"""
-        try:
-            # Skip rests
-            if note_elem.find('rest') is not None:
-                # Still need to advance time for rests
-                duration_elem = note_elem.find('duration')
-                if duration_elem is not None:
-                    duration = float(duration_elem.text) / 4.0  # Convert to seconds (assuming quarter note = 1 second)
-                return None
-            
-            # Get pitch information
-            pitch_elem = note_elem.find('pitch')
-            if pitch_elem is None:
-                return None
-            
-            step = pitch_elem.find('step').text
-            octave = int(pitch_elem.find('octave').text)
-            alter = pitch_elem.find('alter')
-            alter_value = int(alter.text) if alter is not None else 0
-            
-            # Convert to MIDI note number
-            midi_num = self._note_to_midi(step, octave, alter_value)
-            if midi_num is None:
-                return None
-            
-            # Get duration
-            duration_elem = note_elem.find('duration')
-            duration = float(duration_elem.text) / 4.0 if duration_elem is not None else 0.5  # Default to quarter note
-            
-            # Get fingering if available
-            fingering_elem = note_elem.find('.//fingering')
-            finger = int(fingering_elem.text) if fingering_elem is not None and fingering_elem.text.isdigit() else None
-            
-            # Ensure finger is within valid range (1-5)
-            if finger is not None and (finger < 1 or finger > 5):
-                finger = None
-            
-            return {
-                "midi": midi_num,
-                "start": current_time,
-                "duration": duration,
-                "hand": hand,
-                "finger": finger
-            }
-            
-        except Exception as e:
-            logger.warning(f"Error parsing note element: {str(e)}")
+
+    def _duration_ticks(self, elem: ET.Element) -> int:
+        """Read a `<duration>` child as an integer tick count (0 if absent)."""
+        dur_elem = elem.find('duration')
+        if dur_elem is not None and dur_elem.text:
+            try:
+                return int(dur_elem.text)
+            except ValueError:
+                try:
+                    return int(float(dur_elem.text))
+                except ValueError:
+                    return 0
+        return 0
+
+    def _parse_pitch(self, note_elem: ET.Element) -> Optional[tuple]:
+        """Return (midi, voice, staff) for a pitched note, or None if unpitched."""
+        pitch_elem = note_elem.find('pitch')
+        if pitch_elem is None:
             return None
-    
+        step_elem = pitch_elem.find('step')
+        octave_elem = pitch_elem.find('octave')
+        if step_elem is None or not step_elem.text or octave_elem is None or not octave_elem.text:
+            return None
+        try:
+            octave = int(octave_elem.text)
+        except ValueError:
+            return None
+        alter_elem = pitch_elem.find('alter')
+        alter_value = 0
+        if alter_elem is not None and alter_elem.text:
+            try:
+                alter_value = int(alter_elem.text)
+            except ValueError:
+                alter_value = 0
+
+        midi_num = self._note_to_midi(step_elem.text, octave, alter_value)
+        if midi_num is None:
+            return None
+
+        voice = self._int_child(note_elem, 'voice')
+        staff = self._int_child(note_elem, 'staff')
+        return midi_num, voice, staff
+
+    @staticmethod
+    def _int_child(elem: ET.Element, tag: str) -> Optional[int]:
+        child = elem.find(tag)
+        if child is not None and child.text and child.text.strip().isdigit():
+            return int(child.text.strip())
+        return None
+
+    def _hand_for(self, staff: Optional[int], part_idx: int) -> str:
+        """Assign hand from staff (1->R, >=2->L); fall back to part index."""
+        if staff == 1:
+            return "R"
+        if staff is not None and staff >= 2:
+            return "L"
+        return "R" if part_idx == 0 else "L"
+
+    @staticmethod
+    def _tie_flags(note_elem: ET.Element) -> tuple:
+        """Return (tie_start, tie_stop) from the sounding `<tie>` elements."""
+        tie_start = tie_stop = False
+        for tie in note_elem.findall('tie'):
+            tie_type = tie.get('type')
+            if tie_type == 'start':
+                tie_start = True
+            elif tie_type == 'stop':
+                tie_stop = True
+        return tie_start, tie_stop
+
+    @staticmethod
+    def _fingering(note_elem: ET.Element) -> Optional[int]:
+        """Read a fingering 1-5, or None."""
+        fingering_elem = note_elem.find('.//fingering')
+        if fingering_elem is not None and fingering_elem.text and fingering_elem.text.strip().isdigit():
+            finger = int(fingering_elem.text.strip())
+            if 1 <= finger <= 5:
+                return finger
+        return None
+
+    def _find_tempo(self, measure: ET.Element) -> Optional[float]:
+        """Find a tempo (BPM) declared in this measure, or None."""
+        sound = measure.find('.//sound[@tempo]')
+        if sound is not None:
+            try:
+                return float(sound.get('tempo'))
+            except (TypeError, ValueError):
+                pass
+        per_minute = measure.find('.//per-minute')
+        if per_minute is not None and per_minute.text:
+            try:
+                return float(per_minute.text)
+            except ValueError:
+                pass
+        return None
+
+
     def _note_to_midi(self, step: str, octave: int, alter: int = 0) -> Optional[int]:
         """Convert note name to MIDI number"""
         try:
