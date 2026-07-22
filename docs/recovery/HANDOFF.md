@@ -33,7 +33,7 @@ Last updated: 2026-07-22 KST
 - Whether to additionally require pull requests / forbid direct pushes to `main` (issue #9's fourth checklist item) remains an explicit open decision, not yet made.
 - PR #14 (P0-D closeout docs) and PR #15 (agent contract consolidation: sibling-project practices adopted into `AGENTS.md`/`WORKFLOW.md`/`LORE_COMMIT_PROTOCOL.md`, `CLAUDE.md` reduced to a pointer) were both merged with the user's explicit approval, checked out clean at merge time, and had their remote/local work branches deleted only after confirming both tips were included in updated `main`.
 - Full evidence: `docs/recovery/validation/2026-07-20-p0d-branch-protection-and-issue-closeout.md`; PR review logs at `docs/recovery/reviews/PR-14.md` and `docs/recovery/reviews/PR-15.md`.
-- OBSERVED (pre-existing, unrelated to this session's changes): the merge commit's `Run database migrations`, `Deploy to production`, and `Notify deployment status` jobs have been failing since before this session and still have no dedicated GitHub issue.
+- OBSERVED (pre-existing, unrelated to P0-C): post-push verification for handoff commit `3d35513` passed all jobs in [Tests run 29889125369](https://github.com/landfill/ClairKeys/actions/runs/29889125369), including E2E. [Deploy run 29889125398](https://github.com/landfill/ClairKeys/actions/runs/29889125398) failed in `Deploy to production` because `vercel-token` was not supplied, in `Run database migrations` because `DATABASE_URL` was empty (Prisma `P1012`), and consequently in `Notify deployment status` because its failure branch exits 1. These deployment failures predate this session and still have no dedicated GitHub issue.
 
 ## Next actions
 
