@@ -54,3 +54,7 @@ next-env.d.ts
 
 # local agent/hook runtime state
 /.omx/
+
+# Python bytecode cache (omr-service)
+__pycache__/
+*.pyc
