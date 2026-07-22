@@ -32,6 +32,9 @@
     "update-bucket-config": "tsx scripts/update-bucket-config.js",
     "recreate-bucket": "tsx scripts/recreate-bucket.js"
   },
+  "overrides": {
+    "sharp": ">=0.35.0"
+  },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.76",
     "@next-auth/prisma-adapter": "^1.0.7",
