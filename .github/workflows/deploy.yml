@@ -1,4 +1,13 @@
-name: Deploy
+# Post-merge validation for `main`.
+#
+# This workflow does NOT deploy. Deployment is handled solely by the Vercel Git
+# integration. It previously carried `Deploy to production`, `Run database migrations`,
+# `Post-deploy health check`, and `Notify deployment status` jobs, none of which ever
+# succeeded: the repository has no secrets configured, so the Vercel action received an
+# empty token and Prisma received an empty DATABASE_URL. They were removed in issue #28.
+# A workflow named `Deploy` that only runs tests is worse than none -- it reads as
+# evidence that a merge shipped.
+name: Post-merge checks
 
 on:
   push:
@@ -7,7 +16,7 @@ on:
 
 jobs:
   test:
-    name: Test before deploy
+    name: Post-merge tests
     runs-on: ubuntu-latest
     
     services:
@@ -59,7 +68,7 @@ jobs:
         run: npx tsc --noEmit
 
   build:
-    name: Build application
+    name: Post-merge build
     runs-on: ubuntu-latest
     needs: test
 
@@ -96,106 +105,3 @@ jobs:
             public/
             package*.json
           retention-days: 1
-
-  deploy:
-    name: Deploy to production
-    runs-on: ubuntu-latest
-    needs: [test, build]
-    environment: production
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-files
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          github-comment: true
-
-  database-migrate:
-    name: Run database migrations
-    runs-on: ubuntu-latest
-    needs: [test, build]
-    environment: production
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate Prisma client
-        run: npx prisma generate
-
-      - name: Run database migrations
-        run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-  health-check:
-    name: Post-deploy health check
-    runs-on: ubuntu-latest
-    needs: [deploy, database-migrate]
-
-    steps:
-      - name: Wait for deployment
-        run: sleep 30
-
-      - name: Health check
-        run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://clairkeys.vercel.app/api/health)
-          if [ $response -eq 200 ]; then
-            echo "✅ Health check passed"
-          else
-            echo "❌ Health check failed with status: $response"
-            exit 1
-          fi
-
-      - name: Test critical endpoints
-        run: |
-          # Test homepage
-          curl -f https://clairkeys.vercel.app/ || exit 1
-          
-          # Test API health
-          curl -f https://clairkeys.vercel.app/api/health || exit 1
-          
-          # Test auth pages
-          curl -f https://clairkeys.vercel.app/auth/signin || exit 1
-          
-          echo "✅ All critical endpoints are responding"
-
-  notify:
-    name: Notify deployment status
-    runs-on: ubuntu-latest
-    needs: [deploy, database-migrate, health-check]
-    if: always()
-
-    steps:
-      - name: Notify success
-        if: needs.deploy.result == 'success' && needs.database-migrate.result == 'success' && needs.health-check.result == 'success'
-        run: |
-          echo "🎉 Deployment successful!"
-          # Add Slack/Discord notification here if needed
-
-      - name: Notify failure
-        if: needs.deploy.result == 'failure' || needs.database-migrate.result == 'failure' || needs.health-check.result == 'failure'
-        run: |
-          echo "❌ Deployment failed!"
-          # Add Slack/Discord notification here if needed
-          exit 1
