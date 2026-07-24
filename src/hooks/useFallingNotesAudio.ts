@@ -14,6 +14,11 @@ import {
   songTimeAtAudioTime,
   type PlaybackClockAnchor,
 } from '@/utils/playbackClock'
+import {
+  harmonicAmplitudes,
+  timbreCutoffHz,
+  envelopeBreakpoints,
+} from '@/utils/pianoTimbre'
 
 /**
  * Audio nodes for a single note
@@ -83,7 +88,14 @@ export function useFallingNotesAudio() {
   }, [])
 
   /**
-   * Create audio nodes for a single note
+   * Create audio nodes for a single note.
+   *
+   * The oscillator carries a harmonic spectrum from `@/utils/pianoTimbre` rather
+   * than a bare sine. A sine has one partial, which left the lowpass with
+   * nothing to remove and left bass notes with no pitch definition — the "low
+   * notes sound like bass noise" report. Partials are supplied as a
+   * `PeriodicWave` so the whole spectrum still costs one oscillator, which
+   * matters because `VOICE_LIMIT` caps concurrent voices, not partials.
    */
   const createNoteAudio = useCallback((
     midi: number,
@@ -94,17 +106,35 @@ export function useFallingNotesAudio() {
     const gainNode = audioContext.createGain()
     const lowPassFilter = audioContext.createBiquadFilter()
 
-    // Configure oscillator
     const frequency = midiToFreq(midi)
-    oscillator.type = 'sine'
     oscillator.frequency.value = frequency
 
-    // Configure filter for more realistic piano sound
+    // `createPeriodicWave` takes cosine/sine coefficients indexed by harmonic,
+    // with index 0 the DC term, which must stay 0 to avoid a constant offset.
+    const amplitudes = harmonicAmplitudes(midi)
+    const real = new Float32Array(amplitudes.length + 1)
+    const imag = new Float32Array(amplitudes.length + 1)
+    for (let n = 0; n < amplitudes.length; n++) {
+      imag[n + 1] = amplitudes[n]
+    }
+
+    try {
+      // Already normalised in pianoTimbre, so skip the browser's own pass —
+      // normalising twice would undo the deliberate bass/treble weighting.
+      oscillator.setPeriodicWave(
+        audioContext.createPeriodicWave(real, imag, { disableNormalization: true })
+      )
+    } catch (error) {
+      // Test doubles and older engines may not implement PeriodicWave. Falling
+      // back to a sine is the pre-existing timbre, not a new failure mode.
+      console.warn('PeriodicWave unavailable, falling back to sine:', error)
+      oscillator.type = 'sine'
+    }
+
     lowPassFilter.type = 'lowpass'
-    lowPassFilter.frequency.value = frequency * 4
+    lowPassFilter.frequency.value = timbreCutoffHz(midi)
     lowPassFilter.Q.value = 1
 
-    // Configure gain for ADSR envelope
     gainNode.gain.value = 0
 
     // Connect nodes: oscillator -> filter -> gain -> master
@@ -170,36 +200,39 @@ export function useFallingNotesAudio() {
       try {
         const nodes = createNoteAudio(note.midi, audioContext, masterGain)
 
-        // Configure ADSR envelope
-        const attackTime = 0.02
-        const decayTime = 0.1
-        const sustainLevel = 0.6
-        const releaseTime = 0.3
-
         // Nullish (not `||`) so an explicit velocity of 0 stays silent rather
         // than snapping to the default 0.7 — the canonical contract allows 0.
         const velocity = note.velocity ?? 0.7
-        const peakGain = velocity * 0.3
+        const envelope = envelopeBreakpoints(velocity, endTime - clampedStart)
 
-        // Attack
+        // A struck string only loses energy after the hammer, so the note decays
+        // across its whole length instead of holding a plateau. The decay is
+        // exponential rather than linear because that is how the ear reads a
+        // piano's fade; `setTargetAtTime` cannot be used here since it never
+        // exactly reaches its target and would leave the release starting from
+        // an unknown level.
+        const attackEnd = clampedStart + envelope.attackSec
         nodes.gain.gain.setValueAtTime(0, clampedStart)
-        nodes.gain.gain.linearRampToValueAtTime(peakGain, clampedStart + attackTime)
+        nodes.gain.gain.linearRampToValueAtTime(envelope.peak, attackEnd)
 
-        // Decay to sustain
-        nodes.gain.gain.linearRampToValueAtTime(
-          peakGain * sustainLevel,
-          clampedStart + attackTime + decayTime
-        )
+        // exponentialRamp cannot pass through or land on zero.
+        const decayFloor = Math.max(envelope.sustain, 1e-4)
+        if (envelope.peak > 0) {
+          nodes.gain.gain.exponentialRampToValueAtTime(
+            decayFloor,
+            Math.max(attackEnd + 0.001, endTime)
+          )
+        }
 
         // Release
-        nodes.gain.gain.setValueAtTime(peakGain * sustainLevel, endTime)
-        nodes.gain.gain.linearRampToValueAtTime(0, endTime + releaseTime)
+        nodes.gain.gain.setValueAtTime(decayFloor, endTime)
+        nodes.gain.gain.linearRampToValueAtTime(0, endTime + envelope.releaseSec)
 
         // Start and stop oscillator
         nodes.osc.start(clampedStart)
-        nodes.osc.stop(endTime + releaseTime)
+        nodes.osc.stop(endTime + envelope.releaseSec)
 
-        nodes.end = endTime + releaseTime
+        nodes.end = endTime + envelope.releaseSec
         // Count the voice as active through its release tail (nodes.end), not
         // just to endTime — the oscillator is still sounding during release, so
         // pruning at endTime would let more than VOICE_LIMIT voices overlap.
