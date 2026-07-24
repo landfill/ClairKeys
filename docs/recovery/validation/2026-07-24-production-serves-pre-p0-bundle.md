@@ -91,6 +91,18 @@ returning visitor's cached bundle. Once production is corrected, a stale service
 serve the pre-fix JavaScript to existing visitors. This is a separate defect from the deployment
 misconfiguration and is not yet filed.
 
+> **RETRACTED 2026-07-25.** The paragraph above is wrong and is kept only so the reasoning error is
+> visible. `/_next/static/**` URLs are content-hashed, so a new build emits new URLs that all miss the
+> cache and go to the network; the stale entries are simply never requested again. `isExpired()`
+> further returns `true` whenever `sw-cached-at` is missing, so the install-time
+> `cache.addAll(['/', '/manifest.json'])` entries pin nothing, and HTML is network-first anyway. The
+> fixed cache name does make the activate handler's eviction dead code, but bundle freshness never
+> depended on it. The claim was made from reading the cache-name constant without following the
+> request path. What is actually true is much narrower: non-hashed assets under `public/`
+> (`favicon.png`, `icon-*.png`, `icon-*.svg`) match the
+> `\.(js|css|woff|woff2|ttf|eot|ico|png|jpg|jpeg|gif|webp|svg)$` rule, which is cache-first with a
+> one-year `maxAge` over stable URLs, so a changed icon can persist for up to a year.
+
 ## Required actions (repository/dashboard admin, not performable by the agent)
 
 1. Set the Vercel project's Production Branch to `main` and redeploy `1e3d515`. This alone restores
