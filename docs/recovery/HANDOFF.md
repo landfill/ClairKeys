@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-07-22 KST
+Last updated: 2026-07-24 KST
 
 ## Current state
 
@@ -22,7 +22,7 @@ Last updated: 2026-07-22 KST
   - [#16](https://github.com/landfill/ClairKeys/pull/16) — `MERGED` at `32b5739` (recorded PR #14/#15 merge results; last PR of its kind — see #17)
   - [#17](https://github.com/landfill/ClairKeys/pull/17) — `MERGED` at `a78d0f2` (handoff documents now commit directly to `main`, ending the self-referential "PR records that a PR merged" pattern PR #16 exemplified)
 - Superseded pull request: [#11](https://github.com/landfill/ClairKeys/pull/11) — `CLOSED`
-- Current objective: choose the next bounded follow-up after P0-A through P0-D completion. The immediate evidence gaps are authenticated live `/sheet/2` playback and the unfiled deployment-workflow credential failures.
+- Current objective: **restore production deployment.** Every P0-A/P0-B/P0-C fix is merged and green in CI but has never reached `https://clairkeys.vercel.app`, so users still experience the pre-P0 behaviour. This blocks any live verification of completed work.
 
 ## Latest verified result
 
@@ -34,16 +34,19 @@ Last updated: 2026-07-22 KST
 - Whether to additionally require pull requests / forbid direct pushes to `main` (issue #9's fourth checklist item) remains an explicit open decision, not yet made.
 - PR #14 (P0-D closeout docs) and PR #15 (agent contract consolidation: sibling-project practices adopted into `AGENTS.md`/`WORKFLOW.md`/`LORE_COMMIT_PROTOCOL.md`, `CLAUDE.md` reduced to a pointer) were both merged with the user's explicit approval, checked out clean at merge time, and had their remote/local work branches deleted only after confirming both tips were included in updated `main`.
 - Full evidence: `docs/recovery/validation/2026-07-20-p0d-branch-protection-and-issue-closeout.md`; PR review logs at `docs/recovery/reviews/PR-14.md` and `docs/recovery/reviews/PR-15.md`.
-- OBSERVED (pre-existing, unrelated to P0-C): [Deploy run 29898010779](https://github.com/landfill/ClairKeys/actions/runs/29898010779) on merge commit `157c3b4` passed pre-deploy tests and build, then failed in `Deploy to production` because `vercel-token` was not supplied, in `Run database migrations` because `DATABASE_URL` was empty (Prisma `P1012`), and consequently in `Notify deployment status` because its failure branch exits 1. These failures predate P0-C and still have no dedicated GitHub issue.
+- BLOCKER (2026-07-24, supersedes the earlier "pre-existing, unrelated" reading of the deployment failures): **production serves a pre-P0 bundle, so issue #18 still reproduces for users.** The user reported audio stopping after ~10s on the deployed site while notes keep falling. The chunk served by `https://clairkeys.vercel.app/sheet/2` (`/_next/static/chunks/8327-78f4e1b75f62e239.js`) still contains the one-shot scheduler's `if(t>10||r<0)continue` cap and lacks every PR #26 marker, so it predates `7d0774a` (2026-07-21). Both deployment paths are broken: Vercel's Git integration has produced **only `Preview` deployments** for `main` (41 of them; zero Production-environment deployments in the last 100 records), consistent with the Vercel project's Production Branch never being moved off `master` after the DOC-1 rename `643ce71` (2026-07-19); and `deploy.yml`'s `Deploy to production` fails on every commit because `secrets.VERCEL_TOKEN` is absent, with `Run database migrations` failing on an empty `DATABASE_URL` (Prisma `P1012`). Fixing this needs Vercel/GitHub admin access the agent does not have. Full evidence: `docs/recovery/validation/2026-07-24-production-serves-pre-p0-bundle.md`.
+- OBSERVED (2026-07-24, unfiled): `public/sw.js` pins `CACHE_NAME = 'clairkeys-v1'`. Its activate handler only evicts caches whose name differs from that constant, so a build that leaves the constant unchanged cannot invalidate a returning visitor's cached bundle. Even after production is corrected, existing visitors may keep receiving pre-fix JavaScript.
 - CLEANUP COMPLETE: the user authorized deletion after confirming the untracked `fix_*.js` scripts, `ts_errors*.log`, disabled performance components, and Playwright `.last-run.json` were unreferenced local artifacts. All 16 files and their now-empty directories were removed. Local and remote `codex/p0-playback-sync-stages-4-5` refs were then deleted after both tips were re-confirmed in `main`; `git status --short` is clean.
 
 ## Next actions
 
-1. Verify authenticated live browser playback of `/sheet/2`, including issue #18's >10-second audio fix end-to-end. Local Chromium public-route smoke checks passed, but they do not exercise this authenticated score.
-2. Open a dedicated GitHub issue for the post-merge `Run database migrations` / `Deploy to production` / `Notify deployment status` failures, using run `29898010779` as current evidence.
-3. P0-B leftovers remain non-blocking: cross-staff/missing-hand fallback is corpus-covered but not separately documented; ties spanning >2 measures and same-measure conflicting per-part tempos are untested (see `docs/recovery/reviews/PR-24.md`).
-4. OMR pipeline defects remain filed and deferred: issue #20 (TS demo stub) and issue #22 (server-side Docker-in-Docker/Audiveris runtime defect). Hosting choice D-008 remains `Proposed`.
-5. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
+1. **Point Vercel's Production Branch at `main` and redeploy `1e3d515`** (user action — dashboard admin). Until this happens, no merged P0 work is observable by users and issue #18 keeps reproducing live despite being `CLOSED`.
+2. Decide the fate of `deploy.yml`'s deploy path: either supply `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` and a production `DATABASE_URL`, or remove the redundant `Deploy to production` / `Run database migrations` / `Notify deployment status` jobs. Leaving them keeps every `main` commit red. A dedicated GitHub issue for this is still unfiled.
+3. After redeploy, re-verify `https://clairkeys.vercel.app/sheet/2` authenticated playback: the served chunk must contain no `>10` scheduling cap, and audio must continue past 10 seconds. This also closes the long-standing authenticated-playback evidence gap.
+4. File the `public/sw.js` fixed-`CACHE_NAME` staleness defect, which can keep serving the pre-fix bundle to returning visitors even after production is corrected.
+5. P0-B leftovers remain non-blocking: cross-staff/missing-hand fallback is corpus-covered but not separately documented; ties spanning >2 measures and same-measure conflicting per-part tempos are untested (see `docs/recovery/reviews/PR-24.md`).
+6. OMR pipeline defects remain filed and deferred: issue #20 (TS demo stub) and issue #22 (server-side Docker-in-Docker/Audiveris runtime defect). Hosting choice D-008 remains `Proposed`.
+7. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
 
 ## Local worktree state
 
@@ -57,4 +60,4 @@ P0-A는 파일 범위가 겹치지 않으면 P0-D와 병렬로 시작할 수 있
 2. P0-B: MusicXML 박자/voice/staff/backup 변환 정확도
 3. P0-C: AudioContext 기준 시계와 애니메이션 동기화
 
-새 세션은 이 HANDOFF와 필요한 후속 문서를 읽고 `/sheet/2` 실브라우저 검증 또는 배포 실패 이슈 신설 중 하나를 선택한다. P0-A/P0-B/P0-C/P0-D는 모두 `DONE`이며 열린 PR은 없다.
+P0-A/P0-B/P0-C/P0-D는 저장소 기준으로 모두 `DONE`이며 열린 PR은 없다. 그러나 2026-07-24 확인 결과 이 성과는 **어느 것도 프로덕션에 배포되지 않았다** — `clairkeys.vercel.app`은 여전히 P0 이전 번들을 서빙한다. 새 세션은 다른 코드 작업을 시작하기 전에 위 Next actions 1–2(배포 경로 복구)를 먼저 해결한다. 배포가 막힌 상태에서는 추가 수정도 똑같이 사용자에게 도달하지 않으며, `/sheet/2` 실브라우저 검증 자체가 불가능하다.
