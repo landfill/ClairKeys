@@ -100,3 +100,44 @@ misconfiguration and is not yet filed.
    jobs. Leaving them in place keeps every `main` commit permanently red.
 3. Re-verify `https://clairkeys.vercel.app/sheet/2` after redeploy: the served chunk must no longer
    contain a `>10` scheduling cap, and audio must continue past 10 seconds.
+
+## RESOLVED — 2026-07-25 KST
+
+Required action 1 was performed by the user, and the issue #18 fix now reaches users. This closes the
+authenticated live-playback evidence gap that had been open since PR #26.
+
+### User confirmation
+
+The user reported the 10-second cutoff is gone on the deployed site.
+
+### Agent re-verification of the served bundle
+
+Re-fetched `https://clairkeys.vercel.app/sheet/2` and downloaded all 13 referenced chunks:
+
+- `AudioContext resume failed` and `Web Audio initialization failed` — both **present** in
+  `1280-8b2efdae58a9ab51.js`. These are PR #26 markers that were absent before.
+- A `>10||` scheduling cap — **absent** from every chunk. It was present before in
+  `8327-78f4e1b75f62e239.js`.
+
+### What production is actually running
+
+Production serves `main`, not the unmerged PR #27 branch. Confirmed by comparing the 13 served chunk
+filenames against the local PR #27 branch build (`next@15.5.21`): four differ
+(`1255-d90f22433f14e976.js`, `app_layout-482d56ddbb0877cc.js`, `app_page-7b385a1cc2ff4544.js`,
+`main-app-5eb0d9c55a395822.js`). Next.js chunk hashes are content-derived, so the shared
+`1280-8b2efdae58a9ab51.js` simply means the audio chunk's contents are identical across the two
+`next` patch versions — not that production is the branch build.
+
+### Deployment mechanism is still not automatic
+
+`gh api "repos/landfill/ClairKeys/deployments?per_page=100"` still returns only `Preview` (created by
+`vercel[bot]`) and `production` (created by the failing `deploy.yml` jobs). Vercel has still not
+created a Production-environment deployment, so the current production build was promoted by hand
+rather than by a branch push. **Required action 2 therefore remains open**: pushes to `main` still do
+not deploy themselves, and `deploy.yml` still fails on every commit. A future session must not assume
+that merging to `main` ships anything.
+
+### Newly reported, not yet investigated
+
+The user reports that low notes sound like bass noise rather than piano tone. Not diagnosed here; see
+`docs/recovery/HANDOFF.md` Next actions.
