@@ -213,20 +213,27 @@ export function useFallingNotesAudio() {
         // an unknown level.
         const attackEnd = clampedStart + envelope.attackSec
         nodes.gain.gain.setValueAtTime(0, clampedStart)
-        nodes.gain.gain.linearRampToValueAtTime(envelope.peak, attackEnd)
 
-        // exponentialRamp cannot pass through or land on zero.
-        const decayFloor = Math.max(envelope.sustain, 1e-4)
         if (envelope.peak > 0) {
+          nodes.gain.gain.linearRampToValueAtTime(envelope.peak, attackEnd)
+
+          // `exponentialRamp` can neither pass through nor land on zero, so the
+          // decay target is floored. That floor must not escape this branch: a
+          // velocity-0 note has to stay at exactly zero, and scheduling the
+          // floor for it would give a silent note an audible tail — the very
+          // guarantee PR #26 introduced `??` to protect.
+          const decayFloor = Math.max(envelope.sustain, 1e-4)
           nodes.gain.gain.exponentialRampToValueAtTime(
             decayFloor,
             Math.max(attackEnd + 0.001, endTime)
           )
-        }
 
-        // Release
-        nodes.gain.gain.setValueAtTime(decayFloor, endTime)
-        nodes.gain.gain.linearRampToValueAtTime(0, endTime + envelope.releaseSec)
+          // Release
+          nodes.gain.gain.setValueAtTime(decayFloor, endTime)
+          nodes.gain.gain.linearRampToValueAtTime(0, endTime + envelope.releaseSec)
+        }
+        // A zero-peak note schedules nothing beyond the initial 0: the gain node
+        // is already silent and every later event could only raise it.
 
         // Start and stop oscillator
         nodes.osc.start(clampedStart)

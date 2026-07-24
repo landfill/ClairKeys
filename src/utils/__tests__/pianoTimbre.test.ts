@@ -54,9 +54,12 @@ describe('harmonicAmplitudes', () => {
         expect(amplitude).toBeGreaterThanOrEqual(0)
       }
       expect(partials[0]).toBeGreaterThan(0)
+      // The module normalises to exactly 1, and the oscillator is built with
+      // `disableNormalization: true`, so the browser will not rescale this for
+      // us. A loose lower bound would let a normalisation bug through and take
+      // the output level with it — assert the documented contract instead.
       const total = partials.reduce((sum, a) => sum + a, 0)
-      expect(total).toBeLessThanOrEqual(1 + 1e-6)
-      expect(total).toBeGreaterThan(0.5)
+      expect(total).toBeCloseTo(1, 6)
     }
   })
 
