@@ -1,7 +1,7 @@
 # Validation — issue #22 / native Audiveris runtime repair
 
 Date: 2026-07-26
-Commit: `8f21c2b` (branch `codex/p1-omr-audiveris-runtime`, PR #36)
+Commit: `4613e08` (branch `codex/p1-omr-audiveris-runtime`, PR #36)
 Environment: macOS (Darwin 25.5.0), Python 3.14, Node/Jest jsdom. Docker CLI 29.4.0
 is installed but its daemon is not running. `flyctl` is installed but no Fly access token is
 available.
@@ -17,6 +17,7 @@ contract without restoring a demo success path:
 - the image definition installs the checksum-pinned package, its separate English OCR data, and
   uses the package's bundled JRE;
 - one 3GB Audiveris JVM can run at a time on the provisional 4GB VM;
+- a hung, timed-out, or cancelled Audiveris process is killed and reaped before its slot is reused;
 - multiple `.mxl` results fail explicitly rather than storing a partial score.
 
 This record does **not** claim that the image builds, a real PDF converts, or Fly serves the change.
@@ -63,12 +64,20 @@ Independent review then found two further runtime risks. New tests failed before
 Both now have behavior tests: conversions serialize at one JVM, and multiple outputs raise an
 explicit unsupported error.
 
+Hosted review then found that a hung conversion or `-version` validation could wait forever. New
+tests failed because `AudiverisProcessor` had no timeout parameter. After a 900-second conversion
+timeout and a 30-second validation cap were added, an independent cancellation review exposed one
+more lifecycle edge: cancelling the caller released the semaphore while its child stayed alive.
+That regression also failed first. Timeout and `asyncio.CancelledError` now share kill/wait cleanup,
+and the cancellation test waits until `communicate()` has actually begun before cancelling.
+
 ## Final commands and results
 
 | Command | Result |
 |---|---|
 | `npm test -- --runInBand src/utils/__tests__/converterCorpus.test.ts src/utils/__tests__/omrRuntimeContract.test.ts` | PASS — 2 suites / 11 Jest tests |
-| `python3 -m unittest discover -s tests -p test_audiveris_runtime.py` | PASS — 6 Python tests |
+| `python3 -m unittest discover -s tests -p test_audiveris_runtime.py` | PASS — 9 Python tests |
+| `python3 -m py_compile app.py omr/audiveris.py omr/converter.py tests/test_audiveris_runtime.py` | PASS |
 | `npm test -- --runInBand` | PASS — 42 suites / 389 tests |
 | `npx tsc --noEmit` | PASS — exit 0 |
 | `npm run lint` | PASS — no warnings or errors |
@@ -79,7 +88,7 @@ explicit unsupported error.
 | `npm audit --audit-level=high` | BLOCKED — restricted network failed, and escalation was rejected because it would send the dependency graph to a third party |
 
 Baseline: PR #35 recorded 41 suites / 387 tests. PR #36 adds one Jest suite and two Jest-visible
-cases; its Python subprocess runs six internal tests.
+cases; its Python subprocess runs nine internal tests.
 
 ## Independent review
 
@@ -91,6 +100,26 @@ The first read-only review reported three findings:
 
 All three were fixed. The follow-up review found zero new blockers and confirmed the behavior/static
 contract naming, semaphore test, and explicit multi-output failure.
+
+CodeRabbit then reported the missing conversion and validation timeouts. Both were fixed. Its claim
+that `Audiveris.cfg` was unused was disproved with the inspected 5.11.0 package; the build now
+asserts the exact rewritten heap line, CodeRabbit withdrew the finding, and the thread is resolved.
+The final independent review found and then verified the caller-cancellation cleanup. Its follow-up
+reported zero actionable issues and confirmed timeout/cancellation process termination with
+`returncode=-9`. CodeRabbit's final-commit review was rate limited.
+
+## Hosted verification
+
+Final head `4613e0823763d6ceedfed513b8abc26bb88844b8` passed both hosted workflows on
+2026-07-26 KST:
+
+- Tests run `30164315163`: `Run Tests`, `Lint`, `Security Audit`, `E2E Tests`;
+- PR Checks run `30164315135`: `Detect changes`, `Lint and Type Check`, `Unit Tests`, `E2E Tests`,
+  `All Checks Complete`, `PR Summary`;
+- Vercel and Vercel Preview Comments.
+
+Change-conditioned `Build Check`, `Security Scan`, and `Accessibility Check` were skipped. None of
+these jobs builds `omr-service/Dockerfile.audiveris`.
 
 ## Gaps and risks
 
@@ -104,6 +133,6 @@ contract naming, semaphore test, and explicit multi-output failure.
 - English is the only provisioned OCR language.
 - Audiveris can emit more than one `.mxl`; this change fails honestly in that case. Deliberate
   multi-result combination remains future work.
-- PR #36 must pass hosted CI/review and still needs the user's explicit merge approval. Until it is
-  merged and the OMR service is separately deployed, production upload remains in the intended
-  visible-failure state.
+- PR #36 passed hosted CI and has no known actionable review item, but still needs the user's
+  explicit merge approval. Until it is merged and the OMR service is separately deployed,
+  production upload remains in the intended visible-failure state.

@@ -31,8 +31,10 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
 - 2026-07-26 — Issue #22 repository repair is in review via PR
   [#36](https://github.com/landfill/ClairKeys/pull/36). It accepts Audiveris `.mxl`, invokes the
   native packaged launcher, removes Docker/demo processor selection, and pins the real 5.11.0
-  package. Docker build, Fly deployment, and a real PDF remain unverified, so this does not yet
-  establish a working production upload.
+  package. Final head `4613e08` also bounds and reaps hung/cancelled subprocesses. Local regression
+  tests, independent review, and hosted repository CI are green; CodeRabbit withdrew its packaged
+  launcher-config objection after the `.deb` evidence was supplied. Docker build, Fly deployment,
+  and a real PDF remain unverified, so this does not yet establish a working production upload.
 - Out of scope, handed to P2-A: `MultiStageUploadUI`, `BackgroundFileUpload`, and
   `musicDataConverter` have zero product callers after #35. Deleting them cascades into
   `ProcessStageIndicator`, `MusicThemeLoader`, and `ProcessingStatus`, which take types from
