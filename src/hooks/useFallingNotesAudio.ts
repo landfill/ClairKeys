@@ -74,9 +74,20 @@ export function useFallingNotesAudio() {
     try {
       audioContextRef.current = new AudioContextClass()
 
-      // Create master gain node
+      // Create master gain node.
+      //
+      // Raised from 0.1 after the first deployed timbre was judged too quiet.
+      // The cause is the move to a harmonic PeriodicWave normalised so its
+      // partial amplitudes sum to 1: spreading energy across partials drops the
+      // waveform's RMS well below the old unit-amplitude sine, so the same
+      // per-note peak gain now sounds softer. This compensates globally.
+      //
+      // Headroom: a note peaks at velocity(≤1) * PEAK_GAIN(0.3) ≈ 0.3 before
+      // this stage, and VOICE_LIMIT caps concurrent voices at 24. Real playback
+      // never aligns all 24 at full velocity and matching phase, so 0.22 keeps a
+      // comfortable margin below the ±1 clip point for any realistic chord.
       masterGainRef.current = audioContextRef.current.createGain()
-      masterGainRef.current.gain.value = 0.1 // Reasonable volume level
+      masterGainRef.current.gain.value = 0.22
       masterGainRef.current.connect(audioContextRef.current.destination)
       return true
     } catch (error) {
