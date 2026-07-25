@@ -51,7 +51,15 @@ Last updated: 2026-07-25 KST
 ## Next actions
 
 1. **The last P1-A item: the `provenance` backfill (D-010 decision 5).** Work stages 1–5 are merged and live; the writers are closed, which was the precondition for counting. What remains, in its own PR: add a `provenance` column (`'omr' | 'demo' | 'unknown'`, default `'unknown'`); run a read-only script that narrows candidates with `omrJobId IS NULL AND animationDataUrl <> ''`, then fetches each candidate's stored JSON and matches `notes` against `pdfParser`'s three fixed melodies; mark `'demo'` **only on a content match**; disclose `'demo'` scores on the playback screen and exclude them from `/api/sheet/public`. **`'unknown'` triggers nothing** — the filter alone also matches rows written by `POST /api/sheet` and `SheetMusicRepository.create`, and hiding a user's real score on a guess is its own harm. Needs real-data access, so it needs the user's approval before running. Do not delete rows: they carry user-chosen titles, categories, and `PracticeSession` history.
-2. **Issue #22 is now the only thing between a user and a working upload.** With the demo paths gone, the canonical path is the product, and it fails server-side because the container cannot run Audiveris on a Docker-less host. D-008 (hosting, still `Proposed`) gates the fix: whichever host is chosen, the image must install JRE+Audiveris directly and drop the Docker-in-Docker path. This was deferred while P0-B accuracy was unproven; P0-B is now `DONE`, so that reason has expired.
+2. **Issue #22 — audited 2026-07-25, not started. This is the next code task, and the audit changes its shape.** With the demo paths gone, the canonical path is the product, and it fails server-side. The issue records two causes; **fixing both would not be enough**, because two more sit behind them. Full evidence: `docs/recovery/validation/2026-07-25-omr-audiveris-runtime-audit.md`; the same findings are posted as a comment on issue #22.
+
+   Confirmed as filed: (a) `Dockerfile.audiveris` installs no JRE or Audiveris — and the unused `omr-service/Dockerfile` installs a JDK but writes `/opt/audiveris/bin/audiveris` as a shell script that echoes "Audiveris placeholder", the same shape as the `pdfParser` stub P1-A just removed; (b) `app.py:24-33` picks the processor at import time, and `audiveris_docker` imports only stdlib so it always wins, then fails on `docker run` with no daemon.
+
+   **Newly found, in neither the issue nor D-008:** (c) `audiveris.py` passes `output_dir / "output.xml"` to `-output`, but Audiveris's `-output <output-folder>` is a **directory**; (d) `-export` writes **`.mxl`**, a zip container, while `converter.py:49` calls `ET.parse()` directly and `audiveris.py`'s fallback globs `*.xml`. P0-B never caught this because `converterCorpus.test.ts` feeds `omr/cli.py` plain-XML fixtures — **the converter has never received a real Audiveris artifact.**
+
+   Plan, with honest verifiability: items 1–3 (`converter.py` accepts `.mxl` via `META-INF/container.xml`; `audiveris.py` passes a folder and finds the `.mxl`; `app.py` drops the Docker processor) **can carry real regression evidence** through the existing `omr/cli.py` seam. Items 4–5 (`Dockerfile.audiveris` installs a JRE + the Audiveris `.deb` + Tesseract; `fly.toml` memory and `-Xmx` raised above 512 MB / 400 MB) **cannot be verified here** — the local Docker daemon is not running and deploying needs Fly access. Mark them as unverified rather than claiming otherwise.
+
+   Useful facts: Audiveris **5.11.0** (2026-07-11) ships `Audiveris-5.11.0-ubuntu22.04-x86_64.deb`, and `Dockerfile.audiveris` is already `FROM ubuntu:22.04`. **Unresolved before writing the Dockerfile:** whether that `.deb` bundles its own JRE (jpackage) or needs a system JDK — it decides what to install and where the executable lands. D-008 (hosting) is still `Proposed`; items 1–3 are host-agnostic, item 5's numbers are not.
 
    Historical context of how P1-A got here: `src/app/api/__tests__/uploadPathInventory.test.ts` pins that only `/api/omr/upload` converts a score, while `/api/upload-async` (`MultiStageUploadUI`), `/api/processing` (`BackgroundFileUpload`), and the caller-less `/api/upload` all reach `pdfParser.createEnhancedDemo()` — which picks a canned melody by `bufferLength % melodyVariations.length` and never opens the PDF — then persist it as an ordinary `SheetMusic` row with no marker. D-001 forbade this on 2026-07-19 and the code never followed it. Stage 2 records D-010: `/api/omr/upload` is canonical, `/api/upload` and `useFileUpload` are deleted, the two async paths keep their progress UI for P1-B but lose persistence, and `pdfParser`'s demo generation is isolated for development rather than removed. **Accepting D-010 means upload visibly fails until issue #22 is fixed** — the canonical path cannot run Audiveris on a Docker-less host. That is the end of a concealment, not a regression. Evidence: `docs/recovery/validation/2026-07-25-p1a-upload-path-inventory.md`.
 3. **Needs the user's ear, not code: the two timbre defaults.** PR #30/#32/#33 all shipped and are live in production. `DEFAULT_MASTER_GAIN` (`src/hooks/useFallingNotesAudio.ts:54`, currently `0.22`) and `DEFAULT_TREBLE_ROLLOFF` (`src/utils/pianoTimbre.ts:62`, currently `3.2`) are still provisional. Both are exposed as live sliders on the playback screen whose readouts are exactly these values, so the remaining work is: listen, pick, then a small PR fixing the constants. No agent can settle this — jsdom has no Web Audio and no offline renderer is installed, so every timbre claim to date covers the coefficients fed to `PeriodicWave`, not the rendered sound.
@@ -61,6 +69,25 @@ Last updated: 2026-07-25 KST
 6. P0-B leftovers remain non-blocking: cross-staff/missing-hand fallback is corpus-covered but not separately documented; ties spanning >2 measures and same-measure conflicting per-part tempos are untested (see `docs/recovery/reviews/PR-24.md`).
 7. OMR pipeline defects: issue #20 (TS demo stub) is now **inside P1-A's scope** — D-010 stage 4 isolates `pdfParser`'s demo generation, which is what #20 asks for. Issue #22 (server-side Docker-in-Docker/Audiveris runtime defect) stays filed and deferred, but D-010 raises its priority: once P1-A lands, #22 is the only thing standing between a user and a working upload. Hosting choice D-008 remains `Proposed`.
 8. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
+
+## Session handoff — 2026-07-25, to a different agent
+
+Stopping point is clean. `main` is at `07d2100` plus this record; no open PR, no work branch (a
+`codex/p1-omr-audiveris-runtime` branch was created for issue #22 and deleted unused — no commits
+were made on it). `git status --short` shows only the untracked `playwright-report/` and
+`test-results/`, which are the user's.
+
+What landed this session: P1-A stages 1–5, via PR #34 (`aca4073`) and PR #35 (`317dad2`), both
+merged with the user's explicit approval and verified in production. What did **not** happen: any
+code for issue #22 — only the audit above.
+
+Two things the next agent should not re-derive:
+
+- **Upload failing is the intended state.** Do not restore a demo path to make it look like it
+  works; that re-breaks D-001, which the code violated for a year before P1-A.
+- **The audit's four causes supersede the issue's two.** Read
+  `docs/recovery/validation/2026-07-25-omr-audiveris-runtime-audit.md` before touching
+  `omr-service/`, or you will fix the container and find the pipeline still broken two layers down.
 
 ## Local worktree state
 
