@@ -90,6 +90,21 @@ describe('harmonicAmplitudes', () => {
     const a0Share = a0[0] / a0.reduce((sum, a) => sum + a, 0)
     expect(a0Share).toBeLessThan(0.4)
   })
+
+  it('darkens the treble as the rolloff argument rises', () => {
+    // The runtime brightness control passes a rolloff here; a larger value must
+    // move more energy into the fundamental (darker), and it must bite harder in
+    // the treble than the bass, since the exponent is scaled by register.
+    const share = (midi: number, rolloff: number) => {
+      const p = harmonicAmplitudes(midi, rolloff)
+      return p[0] / p.reduce((sum, a) => sum + a, 0)
+    }
+
+    expect(share(84, 4.5)).toBeGreaterThan(share(84, 2.0)) // C6 darker at higher rolloff
+    const trebleDelta = share(84, 4.5) - share(84, 2.0)
+    const bassDelta = share(A0_MIDI, 4.5) - share(A0_MIDI, 2.0)
+    expect(trebleDelta).toBeGreaterThan(bassDelta)
+  })
 })
 
 describe('timbreCutoffHz', () => {

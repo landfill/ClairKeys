@@ -6,6 +6,7 @@ import { buildKeyLayout } from '@/utils/pianoLayout'
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
+import { MIN_TREBLE_ROLLOFF, MAX_TREBLE_ROLLOFF } from '@/utils/pianoTimbre'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { PlaybackControls } from '@/components/playback'
@@ -33,13 +34,15 @@ export default function FallingNotesPlayer({
     tempoScale,
     lookAheadSec,
     volume,
+    trebleRolloff,
     totalLength,
     play,
     pause,
     stop,
     seek,
     setTempoScale,
-    setVolume
+    setVolume,
+    setTrebleRolloff
   } = useFallingNotesPlayer(notes)
 
   // Constants
@@ -111,6 +114,31 @@ export default function FallingNotesPlayer({
         />
         <span className="text-xs font-mono text-gray-500 tabular-nums w-10 text-right">
           {volume.toFixed(2)}
+        </span>
+      </div>
+
+      {/* Treble brightness — a tuning control. Higher = darker (partials roll off
+          faster). The readout is TREBLE_ROLLOFF; whatever sounds right is the
+          value to lock in as DEFAULT_TREBLE_ROLLOFF in pianoTimbre. Unlike
+          volume, a change is heard only on notes scheduled after it, since each
+          note's spectrum is fixed when it is created. */}
+      <div className="mb-4 flex items-center gap-3">
+        <label htmlFor="treble-rolloff" className="text-xs text-gray-600 whitespace-nowrap">
+          고음
+        </label>
+        <input
+          id="treble-rolloff"
+          type="range"
+          min={MIN_TREBLE_ROLLOFF}
+          max={MAX_TREBLE_ROLLOFF}
+          step={0.1}
+          value={trebleRolloff}
+          onChange={(e) => setTrebleRolloff(parseFloat(e.target.value))}
+          className="flex-1 max-w-xs"
+          aria-label="고음 밝기 (treble rolloff, 높을수록 어두움)"
+        />
+        <span className="text-xs font-mono text-gray-500 tabular-nums w-10 text-right">
+          {trebleRolloff.toFixed(1)}
         </span>
       </div>
       

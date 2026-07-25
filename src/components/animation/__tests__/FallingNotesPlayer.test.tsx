@@ -9,6 +9,7 @@ const mockPlayerState = {
   tempoScale: 1,
   lookAheadSec: 1.5,
   volume: 0.22,
+  trebleRolloff: 3.2,
   totalLength: 3,
   play: jest.fn(),
   pause: jest.fn(),
@@ -16,6 +17,7 @@ const mockPlayerState = {
   seek: jest.fn(),
   setTempoScale: jest.fn(),
   setVolume: jest.fn(),
+  setTrebleRolloff: jest.fn(),
 }
 
 jest.mock('@/hooks/useFallingNotesPlayer', () => ({
@@ -81,5 +83,19 @@ describe('FallingNotesPlayer', () => {
     // the hook, verified separately.
     fireEvent.change(slider, { target: { value: '0.3' } })
     expect(mockPlayerState.setVolume).toHaveBeenCalledWith(0.3)
+  })
+
+  it('shows the current treble rolloff and forwards slider changes to setTrebleRolloff', () => {
+    mockPlayerState.setTrebleRolloff.mockClear()
+    render(<FallingNotesPlayer animationData={animationData} />)
+
+    const slider = screen.getByLabelText(
+      '고음 밝기 (treble rolloff, 높을수록 어두움)'
+    ) as HTMLInputElement
+    expect(slider.value).toBe('3.2')
+    expect(screen.getByText('3.2')).toBeInTheDocument()
+
+    fireEvent.change(slider, { target: { value: '4' } })
+    expect(mockPlayerState.setTrebleRolloff).toHaveBeenCalledWith(4)
   })
 })

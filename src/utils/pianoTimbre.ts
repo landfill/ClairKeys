@@ -57,7 +57,18 @@ const MAX_PARTIALS = 24
 const BASS_ROLLOFF = 1.15
 // Raised from 2.4 after the first deployed version was judged too bright in the
 // treble: a larger exponent drops the upper partials faster, darkening the top.
-const TREBLE_ROLLOFF = 3.2
+// Exported as the default so the playback UI can retune it live and read off the
+// value to lock in here, exactly as the volume control does for the master gain.
+export const DEFAULT_TREBLE_ROLLOFF = 3.2
+
+/**
+ * Bounds the runtime treble control. Below `BASS_ROLLOFF` the treble would roll
+ * off more gently than the bass, inverting the register balance; the upper bound
+ * is where the top octave is already down to its fundamental and darkening
+ * further stops being audible.
+ */
+export const MIN_TREBLE_ROLLOFF = 1.5
+export const MAX_TREBLE_ROLLOFF = 5
 
 /**
  * How much the fundamental is held back in the lowest register.
@@ -84,14 +95,17 @@ function registerPosition(midi: number): number {
  * note ever degenerates back to a bare sine. The result is normalised to sum to
  * 1, which keeps a chord of many voices from clipping the master gain.
  */
-export function harmonicAmplitudes(midi: number): number[] {
+export function harmonicAmplitudes(
+  midi: number,
+  trebleRolloff: number = DEFAULT_TREBLE_ROLLOFF
+): number[] {
   const fundamental = midiToFreq(midi)
   const position = registerPosition(midi)
 
   const affordable = Math.floor(MAX_PARTIAL_HZ / fundamental)
   const count = Math.max(2, Math.min(MAX_PARTIALS, affordable))
 
-  const rolloff = BASS_ROLLOFF + (TREBLE_ROLLOFF - BASS_ROLLOFF) * position
+  const rolloff = BASS_ROLLOFF + (trebleRolloff - BASS_ROLLOFF) * position
 
   const amplitudes: number[] = []
   for (let n = 1; n <= count; n++) {

@@ -18,6 +18,9 @@ import {
   harmonicAmplitudes,
   timbreCutoffHz,
   envelopeBreakpoints,
+  DEFAULT_TREBLE_ROLLOFF,
+  MIN_TREBLE_ROLLOFF,
+  MAX_TREBLE_ROLLOFF,
 } from '@/utils/pianoTimbre'
 
 /**
@@ -68,6 +71,10 @@ export function useFallingNotesAudio() {
   // Current master level, kept in a ref so a runtime change survives the next
   // AudioContext (re)initialisation and is applied the moment the bus exists.
   const masterGainValueRef = useRef(DEFAULT_MASTER_GAIN)
+  // Treble rolloff for new notes. Unlike the master gain this cannot retune
+  // already-scheduled notes: their PeriodicWave is baked at creation, so a
+  // change takes effect from the next note the scheduler builds.
+  const trebleRolloffRef = useRef(DEFAULT_TREBLE_ROLLOFF)
   const scheduledNodesRef = useRef<AudioNodes[]>([])
   const baseAudioTimeRef = useRef<number | null>(null)
   const offsetSecRef = useRef(0)
@@ -147,7 +154,7 @@ export function useFallingNotesAudio() {
 
     // `createPeriodicWave` takes cosine/sine coefficients indexed by harmonic,
     // with index 0 the DC term, which must stay 0 to avoid a constant offset.
-    const amplitudes = harmonicAmplitudes(midi)
+    const amplitudes = harmonicAmplitudes(midi, trebleRolloffRef.current)
     const real = new Float32Array(amplitudes.length + 1)
     const imag = new Float32Array(amplitudes.length + 1)
     for (let n = 0; n < amplitudes.length; n++) {
@@ -464,6 +471,20 @@ export function useFallingNotesAudio() {
   }, [])
 
   /**
+   * Set the treble rolloff for notes scheduled from now on, clamped to a range
+   * that keeps the treble darker than the bass without over-dulling it.
+   *
+   * There is no ramp and no effect on sounding notes: each note's spectrum is
+   * fixed in its PeriodicWave at creation, so this changes only what the
+   * scheduler builds next. Returns the applied value so the UI readout matches.
+   */
+  const setTrebleRolloff = useCallback((value: number): number => {
+    const clamped = Math.min(MAX_TREBLE_ROLLOFF, Math.max(MIN_TREBLE_ROLLOFF, value))
+    trebleRolloffRef.current = clamped
+    return clamped
+  }, [])
+
+  /**
    * Set offset time (for seeking)
    */
   const setOffsetTime = useCallback((time: number) => {
@@ -509,6 +530,7 @@ export function useFallingNotesAudio() {
     updateTempoScale,
     setOffsetTime,
     setVolume,
+    setTrebleRolloff,
     reset,
     getTimingInfo
   }
