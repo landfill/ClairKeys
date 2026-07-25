@@ -103,3 +103,44 @@
   - Shape A(`note:"C4"`/`startTime`/`left|right`)를 저장 계약으로 되살리지 않는다. 신규 저장은 canonical로 쓰고, Shape A는 읽기 시 정규화로만 흡수한다.
   - legacy→canonical 마이그레이션 경로는 golden fixture로 회귀 검증한다(P0-A 완료 조건).
 - Related: D-002, D-001, 이슈 #20, `docs/recovery/phases/P0-A-animation-contract.md`, `docs/recovery/validation/2026-07-21-p0a-animation-shape-audit.md`
+
+## D-010: canonical 업로드 경로는 `/api/omr/upload` 하나이고, 데모 경로는 저장 능력을 잃는다
+
+- Date: 2026-07-25
+- Status: Accepted
+- Context: P1-A stage 1 인벤토리(`src/app/api/__tests__/uploadPathInventory.test.ts`)가 네 업로드 경로의 실제 동작을 고정했다.
+
+  | 경로 | UI 진입점 | 변환 실체 |
+  |---|---|---|
+  | `/api/omr/upload` | `OMRUploadForm` (업로드 페이지 기본 모드) | 실제 — Fly.io OMR 서비스 `/process` 프록시 |
+  | `/api/upload-async` | `MultiStageUploadUI` (`immediate` 모드) | 데모 — `asyncUploadProcessor` → `pdfParser` |
+  | `/api/processing` | `BackgroundFileUpload` (`background` 모드) | 데모 — `backgroundProcessor` → `pdfParser` |
+  | `/api/upload` | 없음(호출자 0) | 데모 — `pdfParser` 직접 |
+
+  `pdfParser.createEnhancedDemo()`는 PDF 내용을 읽지 않고 `bufferLength % melodyVariations.length`로 준비된 멜로디를 고른다. 세 데모 경로는 그 결과를 `prisma.sheetMusic.create`로 저장하며 **데모임을 나타내는 필드를 남기지 않는다** — 저장된 행은 재생 경로에서 실제 변환과 동일하게 취급된다. `asyncUploadProcessor`는 25초짜리 가짜 `omr` 진행률까지 표시한 뒤 저장한다. **이는 D-001을 정면으로 위반하는 현재 상태다** — 원칙은 2026-07-19에 이미 정해져 있었고, 코드가 따르지 않았다.
+
+  다만 **사후 식별은 가능하다.** 판별은 두 단계이며, 순서를 지켜야 한다.
+
+  1차 필터 — `omrJobId IS NULL AND animationDataUrl <> ''`. 세 데모 경로 중 어느 것도 `omrJobId`를 설정하지 않고 실제 경로만 `omrJobId: omrResult.job_id`를 채우며, OMR 요청이 실패한 행은 `animationDataUrl`이 빈 문자열로 남는다. **그러나 이는 필요조건일 뿐 충분조건이 아니다.** `SheetMusic` 행을 만드는 곳은 업로드 경로 넷만이 아니다 — `POST /api/sheet`(`src/app/api/sheet/route.ts:140`)와 `SheetMusicRepository.create`(`src/repositories/SheetMusicRepository.ts:54`)도 클라이언트가 준 `animationDataUrl`로 `omrJobId` 없이 행을 만든다. 이 필터만으로 `'demo'`를 확정하면 정상 canonical 악보를 데모로 오판해 공개 목록에서 지우게 된다.
+
+  확정 판별 — 저장된 애니메이션 JSON의 내용 대조. `createEnhancedDemo()`의 출력은 **`melodyVariations`에 하드코딩된 세 멜로디 중 하나**(C장조 스케일 8음 / 아르페지오 7음 / 단순 멜로디 4음)이고, 모두 `tempo: 120`, `timeSignature: '4/4'`, D-009의 Shape A(`note:"C4"`/`startTime`) 형식이다. `createDemoAnimation()` fallback 출력도 마찬가지로 고정 리터럴이다. 따라서 저장된 `notes` 배열을 이 알려진 리터럴 집합과 대조하면 `pdfParser`가 만들었음을 확정할 수 있다. 실제 악보가 이 4~8음 리터럴과 정확히 일치할 확률은 무시할 만하고, 설령 일치한다면 그 악보는 실질적으로 데모와 구별되지 않는다.
+
+  이 비대칭 중 코드로 고정 가능한 부분은 `uploadPathInventory.test.ts`가 지킨다 — 데모 경로에 `omrJobId`를 추가하는 변경, 그리고 `SheetMusic` writer 목록이 늘어나는 변경은 테스트가 먼저 실패시킨다.
+- Decision:
+  1. canonical 업로드 경로는 **`/api/omr/upload`** 다. 실제로 악보를 변환하는 유일한 경로이고, 이미 업로드 페이지의 기본 모드다.
+  2. `/api/upload`는 **제거**한다. 프로덕션 코드 호출자가 0이면서 데모 결과를 저장할 수 있는 열린 경로이므로, 격리가 아니라 삭제가 맞다. 유일한 호출자인 `useFileUpload` 훅도 함께 제거한다.
+  3. `/api/upload-async`와 `/api/processing`은 **저장 능력을 제거하고 UI에서 분리**한다. 두 경로의 진행률 기반 구조(SSE, 폴링)는 P1-B의 영속 큐가 물려받을 자산이므로 라우트 자체는 남기되, `pdfParser` 결과를 `SheetMusic`으로 저장하는 부분은 명시적 실패로 바꾸고, 이들을 호출하던 `MultiStageUploadUI`·`BackgroundFileUpload`는 canonical 경로로 옮긴다(Decision 5의 클라이언트 항목 참조).
+  4. `pdfParser`의 데모 생성은 **삭제하지 않고 개발 전용으로 격리**한다. 삭제하면 OMR 서비스 없이 재생 경로를 손볼 방법이 사라진다. 대신 저장 경로에서 분리해, 데모 데이터가 사용자 악보로 남을 수 없게 한다.
+  5. **기존 데이터 migration** — 쓰기 경로를 막는 것만으로는 이미 저장된 데모 행이 계속 진짜 변환으로 노출된다. P1-A 완료 조건("기존 사용자 데이터와 지원 클라이언트 migration이 검증된다")을 다음으로 구체화한다:
+     - **식별**: 읽기 전용 스크립트로 1차 필터를 적용해 후보를 좁힌 뒤, 각 후보의 `animationDataUrl`이 가리키는 JSON을 내려받아 `pdfParser`의 알려진 리터럴 집합과 대조한다. **대조에 일치한 행만 `'demo'`이고, 나머지는 전부 `'unknown'`이다** — 1차 필터만으로는 `POST /api/sheet` 경유 정상 행과 구별되지 않기 때문이다. 실데이터 접근이 필요하므로 사용자 승인 아래 한 번 실행하고, 후보 수·확정 수·`unknown` 수를 `docs/recovery/validation/`에 기록한다.
+     - **표시**: 삭제하지 않는다 — 사용자가 올린 악보의 제목·분류·연습 기록(`PracticeSession`)이 그 행에 매달려 있고, 파괴적 조치는 되돌릴 수 없다. 대신 `SheetMusic`에 `provenance` 필드(`'omr' | 'demo' | 'unknown'`)를 추가하는 migration을 수행한다. 기본값은 `'unknown'`이고, 확정 판별을 통과한 행만 `'demo'`로, `omrJobId`가 있는 행만 `'omr'`로 표시한다.
+     - **노출**: `'demo'`로 확정된 악보만 재생 화면에서 "실제 악보 변환 결과가 아님"을 명시하고 공개 목록(`/api/sheet/public`)에서 제외한다. **`'unknown'`은 아무것도 하지 않는다** — 확신 없는 판정으로 사용자 악보를 숨기는 것은 데모를 진짜로 보여주는 것과 다른 종류의, 그러나 역시 실재하는 해악이다. 이것이 D-001의 "demo 상태를 반환해야 한다"를 데이터 레이어까지 확장한 형태다.
+     - **클라이언트**: `/api/upload`는 프로덕션 호출자가 0이므로 전환 대상이 없다. `MultiStageUploadUI`(`immediate` 모드)와 `BackgroundFileUpload`(`background` 모드)는 **canonical 경로로 옮긴다** — 오류 표시만 손보고 항상 실패하는 엔드포인트에 남겨두면, 이슈 #22가 해소된 뒤에도 그 두 모드를 고른 사용자는 여전히 업로드할 수 없고, 이는 P1-A stage 3("UI와 API 호출자를 canonical path로 이동한다")을 만족하지 못한다. 업로드 페이지의 세 모드 선택지는 실질적으로 하나의 경로만 남으므로, stage 3에서 모드 선택 UI 자체를 걷어내고 단일 업로드 폼으로 통합하는 것이 자연스럽다. `/api/upload-async`·`/api/processing` 라우트와 그 진행률 계약은 P1-B가 물려받을 자산으로 남기되, **UI가 그 위에 얹혀 있지 않은 상태**로 남긴다.
+     - 이 migration은 stage 3~5와 **같은 PR에 넣지 않는다.** 스키마 변경과 실데이터 조작은 코드 제거와 위험도가 다르므로 별도 PR로 분리하고, 쓰기 경로를 먼저 막은 뒤 수행한다(새 데모 행이 유입되는 동안 집계해봐야 무의미하다).
+- Consequence (명시적으로 감수하는 것): 이 변경 후 **업로드는 이슈 [#22](https://github.com/landfill/ClairKeys/issues/22)가 해소될 때까지 실제로 실패한다.** 현재 canonical 경로는 Docker 없는 호스트에서 Audiveris를 실행하지 못하기 때문이다. 이는 회귀가 아니라 은폐의 종료다 — 지금은 데모 경로가 이 고장을 성공처럼 보이게 가려주고 있고, D-001은 바로 그 가림을 금지한다. 실패는 사용자에게 실패로 보여야 한다.
+- Directive:
+  - 데모 출력이 `SheetMusic` 행이 되는 코드 경로를 남기지 않는다. 새 저장 경로를 추가할 때 `uploadPathInventory` 계열 테스트로 호출자 수를 함께 고정한다.
+  - `/api/upload-async`·`/api/processing`이 P1-B에 넘길 queue/auth 경계는 P1-A 완료 시점에 `docs/recovery/phases/P1-B-durable-omr.md`가 참조할 수 있도록 문서화한다.
+  - 이슈 #22의 컨테이너 수정 없이 D-010을 되돌려 데모 저장을 부활시키지 않는다. 업로드를 다시 성공시키는 유일한 정당한 방법은 실제 변환을 고치는 것이다.
+  - 기존 데모 행을 일괄 삭제하지 않는다. 사용자 소유 메타데이터와 `PracticeSession`이 함께 사라지고, 잘못 판정한 행은 복구할 수 없다. 표시(`provenance`)가 기본 조치이고 삭제는 사용자가 개별적으로 선택할 일이다.
+- Related: D-001, D-002, D-008, 이슈 [#20](https://github.com/landfill/ClairKeys/issues/20), 이슈 [#22](https://github.com/landfill/ClairKeys/issues/22), `docs/recovery/phases/P1-A-upload-pipeline.md`
