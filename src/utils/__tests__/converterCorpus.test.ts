@@ -16,6 +16,7 @@
 
 import { execFileSync } from 'child_process'
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
 import { normalizeAnimationData } from '../animationContract'
 import { compareAnimationData, formatComparison, DEFAULT_TOLERANCE } from '../animationCompare'
@@ -41,6 +42,10 @@ function loadExpected(dir: string): CanonicalAnimationData {
 
 function runConverter(dir: string): CanonicalAnimationData {
   const input = path.join(FIXTURES_DIR, dir, 'input.musicxml')
+  return runConverterInput(input)
+}
+
+function runConverterInput(input: string): CanonicalAnimationData {
   const stdout = execFileSync(PYTHON, ['-m', 'omr.cli', input], {
     cwd: OMR_DIR,
     encoding: 'utf-8',
@@ -65,4 +70,39 @@ describe('converter corpus accuracy (P0-B)', () => {
       expect(result.match).toBe(true)
     })
   }
+
+  it('accepts an Audiveris-style .mxl container through the converter CLI', () => {
+    const fixtureDir = path.join(FIXTURES_DIR, '01-monophonic')
+    const input = path.join(fixtureDir, 'input.musicxml')
+    const expected = loadExpected('01-monophonic')
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'clairkeys-mxl-'))
+    const mxlPath = path.join(tempDir, 'audiveris-output.mxl')
+    const buildMxl = [
+      'import pathlib, sys, zipfile',
+      'source = pathlib.Path(sys.argv[1])',
+      'target = pathlib.Path(sys.argv[2])',
+      'container = """<?xml version="1.0" encoding="UTF-8"?>',
+      '<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">',
+      '  <rootfiles><rootfile full-path="score/score.musicxml" media-type="application/vnd.recordare.musicxml+xml"/></rootfiles>',
+      '</container>"""',
+      'with zipfile.ZipFile(target, "w") as archive:',
+      '    archive.writestr("META-INF/container.xml", container)',
+      '    archive.write(source, "score/score.musicxml")',
+    ].join('\n')
+
+    try {
+      execFileSync(PYTHON, ['-c', buildMxl, input, mxlPath], {
+        cwd: OMR_DIR,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+      const actual = runConverterInput(mxlPath)
+      const result = compareAnimationData(actual, expected, DEFAULT_TOLERANCE)
+      if (!result.match) {
+        throw new Error(formatComparison(result))
+      }
+      expect(result.match).toBe(true)
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true })
+    }
+  })
 })
