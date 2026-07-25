@@ -1,5 +1,6 @@
 import backgroundProcessor from '../backgroundProcessor'
 import { prisma } from '@/lib/prisma'
+import { CONVERSION_UNAVAILABLE } from '../conversionAvailability'
 import { ProcessingStatus, ProcessingStage } from '@prisma/client'
 
 // Mock Prisma
@@ -24,14 +25,8 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 
-// Mock PDF parser
-jest.mock('../pdfParser', () => ({
-  getPDFParserService: () => ({
-    parsePDF: jest.fn().mockResolvedValue({ notes: [], duration: 100, tempo: 120 }),
-    validateAnimationData: jest.fn().mockReturnValue(true),
-    serializeAnimationData: jest.fn().mockReturnValue('serialized-data'),
-  }),
-}))
+// No pdfParser mock: backgroundProcessor no longer imports the demo generator
+// (D-010 stage 4). A mock here would suggest it still can.
 
 describe('BackgroundProcessor', () => {
   const mockJobData = {
@@ -287,6 +282,27 @@ describe('BackgroundProcessor', () => {
 
       expect(result).toBe(false)
       expect(prisma.processingJob.update).not.toHaveBeenCalled()
+    })
+
+    it('should not retry a job that failed because conversion is unavailable', async () => {
+      // D-010 left this path without a converter, so every job on it fails.
+      // Retrying would set the row back to PENDING while the in-memory queue
+      // no longer holds its ProcessingJobData — the job would sit at 0%
+      // forever. Refuse instead, so the dashboard keeps showing the failure.
+      const mockJob = {
+        id: 'test-job-1',
+        userId: 'user-1',
+        status: ProcessingStatus.FAILED,
+        error: `${CONVERSION_UNAVAILABLE}: 이 경로는 실제 악보 변환을 수행하지 않습니다.`,
+      }
+
+      ;(prisma.processingJob.findFirst as any).mockResolvedValue(mockJob)
+
+      const result = await backgroundProcessor.retryJob('test-job-1', 'user-1')
+
+      expect(result).toBe(false)
+      expect(prisma.processingJob.update).not.toHaveBeenCalled()
+      expect(prisma.processingNotification.create).not.toHaveBeenCalled()
     })
   })
 

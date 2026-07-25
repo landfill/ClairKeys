@@ -287,6 +287,15 @@ class BackgroundProcessor {
       return false
     }
 
+    // A conversion that is unavailable does not become available on retry.
+    // Worse, this path cannot deliver on the attempt: it resets the row to
+    // PENDING but the in-memory `processingQueue` no longer holds the job's
+    // `ProcessingJobData`, so `processQueue` has nothing to run and the job
+    // would sit at 0% indefinitely. Refusing keeps the failure visible.
+    if (job.error?.startsWith(CONVERSION_UNAVAILABLE)) {
+      return false
+    }
+
     await prisma.processingJob.update({
       where: { id: jobId },
       data: {
