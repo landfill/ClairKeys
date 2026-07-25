@@ -8,12 +8,14 @@ const mockPlayerState = {
   currentTime: 1.5,
   tempoScale: 1,
   lookAheadSec: 1.5,
+  volume: 0.22,
   totalLength: 3,
   play: jest.fn(),
   pause: jest.fn(),
   stop: jest.fn(),
   seek: jest.fn(),
   setTempoScale: jest.fn(),
+  setVolume: jest.fn(),
 }
 
 jest.mock('@/hooks/useFallingNotesPlayer', () => ({

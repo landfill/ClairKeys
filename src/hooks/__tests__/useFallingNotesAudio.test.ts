@@ -1,5 +1,9 @@
 import { act, renderHook } from '@testing-library/react'
-import { useFallingNotesAudio } from '../useFallingNotesAudio'
+import {
+  useFallingNotesAudio,
+  DEFAULT_MASTER_GAIN,
+  MAX_MASTER_GAIN,
+} from '../useFallingNotesAudio'
 
 type AudioWindow = Window & {
   webkitAudioContext?: typeof AudioContext
@@ -206,6 +210,55 @@ describe('useFallingNotesAudio', () => {
     for (const value of scheduled) {
       expect(value).toBe(0)
     }
+
+    unmount()
+  })
+
+  it('applies the default master gain and retunes it live within the safe ceiling', () => {
+    // The runtime volume control writes to the master bus so a listener can find
+    // the level to lock in as DEFAULT_MASTER_GAIN, and it must clamp to the
+    // headroom ceiling rather than let a drag drive the bus into clipping.
+    const targets: number[] = []
+    const masterGain = {
+      connect: jest.fn(),
+      gain: {
+        value: 0,
+        setTargetAtTime: jest.fn((v: number) => targets.push(v)),
+      },
+    }
+    const context = {
+      state: 'running' as AudioContextState,
+      currentTime: 3,
+      destination: {},
+      createGain: jest.fn(() => masterGain),
+      resume: jest.fn(() => Promise.resolve()),
+      close: jest.fn(() => Promise.resolve()),
+    } as unknown as AudioContext
+
+    const constructor = jest.fn(() => context) as unknown as typeof AudioContext
+    setAudioContextConstructor(constructor)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    act(() => {
+      // startAudio initialises the context; the bus should open at the default.
+      result.current.startAudio([], 0, 1, false)
+    })
+    expect(masterGain.gain.value).toBe(DEFAULT_MASTER_GAIN)
+
+    act(() => {
+      result.current.setVolume(0.4)
+    })
+    expect(targets[targets.length - 1]).toBeCloseTo(0.4)
+
+    act(() => {
+      result.current.setVolume(999)
+    })
+    expect(targets[targets.length - 1]).toBe(MAX_MASTER_GAIN)
+
+    act(() => {
+      result.current.setVolume(-5)
+    })
+    expect(targets[targets.length - 1]).toBe(0)
 
     unmount()
   })

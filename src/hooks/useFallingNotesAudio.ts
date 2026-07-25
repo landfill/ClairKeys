@@ -42,9 +42,27 @@ interface AudioNodes {
  * and never re-filled — the cause of issue #18 (audio stops after ~10s while
  * notes keep falling).
  */
+/**
+ * Default master output level. See the `initializeAudio` comment for why this
+ * value: normalising the harmonic PeriodicWave to sum 1 lowered per-note RMS, so
+ * the bus is turned up to compensate. Exported so the playback UI can seed its
+ * volume control from the same source of truth rather than a duplicated literal.
+ */
+export const DEFAULT_MASTER_GAIN = 0.22
+
+/**
+ * Ceiling the runtime volume control clamps to. Above this, a dense chord near
+ * `VOICE_LIMIT` could drive the bus into hard clipping; see the headroom note in
+ * `initializeAudio`. Kept as headroom for tuning, not as a loudness target.
+ */
+export const MAX_MASTER_GAIN = 0.6
+
 export function useFallingNotesAudio() {
   const audioContextRef = useRef<AudioContext | null>(null)
   const masterGainRef = useRef<GainNode | null>(null)
+  // Current master level, kept in a ref so a runtime change survives the next
+  // AudioContext (re)initialisation and is applied the moment the bus exists.
+  const masterGainValueRef = useRef(DEFAULT_MASTER_GAIN)
   const scheduledNodesRef = useRef<AudioNodes[]>([])
   const baseAudioTimeRef = useRef<number | null>(null)
   const offsetSecRef = useRef(0)
@@ -76,18 +94,20 @@ export function useFallingNotesAudio() {
 
       // Create master gain node.
       //
-      // Raised from 0.1 after the first deployed timbre was judged too quiet.
-      // The cause is the move to a harmonic PeriodicWave normalised so its
-      // partial amplitudes sum to 1: spreading energy across partials drops the
-      // waveform's RMS well below the old unit-amplitude sine, so the same
-      // per-note peak gain now sounds softer. This compensates globally.
+      // DEFAULT_MASTER_GAIN was raised from 0.1 after the first deployed timbre
+      // was judged too quiet. The cause is the move to a harmonic PeriodicWave
+      // normalised so its partial amplitudes sum to 1: spreading energy across
+      // partials drops the waveform's RMS well below the old unit-amplitude
+      // sine, so the same per-note peak gain sounds softer. This compensates
+      // globally, and the playback UI can retune it live from here.
       //
       // Headroom: a note peaks at velocity(≤1) * PEAK_GAIN(0.3) ≈ 0.3 before
       // this stage, and VOICE_LIMIT caps concurrent voices at 24. Real playback
-      // never aligns all 24 at full velocity and matching phase, so 0.22 keeps a
-      // comfortable margin below the ±1 clip point for any realistic chord.
+      // never aligns all 24 at full velocity and matching phase, so the default
+      // keeps a comfortable margin below the ±1 clip point for any realistic
+      // chord. The runtime control clamps to the same safe ceiling.
       masterGainRef.current = audioContextRef.current.createGain()
-      masterGainRef.current.gain.value = 0.22
+      masterGainRef.current.gain.value = masterGainValueRef.current
       masterGainRef.current.connect(audioContextRef.current.destination)
       return true
     } catch (error) {
@@ -414,6 +434,26 @@ export function useFallingNotesAudio() {
   }, [])
 
   /**
+   * Set the master output level live, clamped to a headroom-safe ceiling.
+   *
+   * Applied immediately if the bus exists and remembered for the next
+   * AudioContext, so dragging the control mid-playback is heard at once. The
+   * ceiling matches the clipping analysis in `initializeAudio`: a note peaks
+   * near `PEAK_GAIN` and up to `VOICE_LIMIT` voices can overlap, so the master
+   * level is bounded rather than left free to drive the bus into hard clipping.
+   */
+  const setVolume = useCallback((value: number) => {
+    const clamped = Math.min(MAX_MASTER_GAIN, Math.max(0, value))
+    masterGainValueRef.current = clamped
+    const gain = masterGainRef.current
+    const context = audioContextRef.current
+    if (gain && context) {
+      // A short ramp instead of a step avoids a click on an audible bus.
+      gain.gain.setTargetAtTime(clamped, context.currentTime, 0.015)
+    }
+  }, [])
+
+  /**
    * Set offset time (for seeking)
    */
   const setOffsetTime = useCallback((time: number) => {
@@ -458,6 +498,7 @@ export function useFallingNotesAudio() {
     getCurrentTime,
     updateTempoScale,
     setOffsetTime,
+    setVolume,
     reset,
     getTimingInfo
   }
