@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { FallingNote } from '@/types/fallingNotes'
-import { useFallingNotesAudio } from './useFallingNotesAudio'
+import { useFallingNotesAudio, DEFAULT_MASTER_GAIN } from './useFallingNotesAudio'
 import { calculateSongLength, shouldAutoStop } from '@/utils/visualUtils'
 
 /**
@@ -16,6 +16,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
   const [tempoScale, setTempoScale] = useState(1.0)
   const [mute, setMute] = useState(false)
   const [lookAheadSec, setLookAheadSec] = useState(1.5)
+  const [volume, setVolumeState] = useState(DEFAULT_MASTER_GAIN)
 
   // Audio management
   const {
@@ -24,6 +25,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     getCurrentTime,
     updateTempoScale,
     setOffsetTime,
+    setVolume,
     reset,
   } = useFallingNotesAudio()
   
@@ -138,6 +140,18 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     setLookAheadSec(Math.max(1, Math.min(5, newLookAheadSec)))
   }, [])
 
+  /**
+   * Change master volume live. The audio hook clamps to a headroom-safe ceiling
+   * and applies it to the running bus; this mirrors the accepted value into
+   * React state so the control and its readout reflect what is actually set.
+   */
+  const handleVolumeChange = useCallback((newVolume: number) => {
+    // Store the value the audio hook actually applied after clamping, not the
+    // raw request, so the readout can never show a level the bus is not at.
+    const applied = setVolume(newVolume)
+    setVolumeState(applied)
+  }, [setVolume])
+
   // Enhanced animation loop with precise audio-visual synchronization
   useEffect(() => {
     if (!isPlaying) {
@@ -180,6 +194,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     tempoScale,
     mute,
     lookAheadSec,
+    volume,
     totalLength,
 
     // Actions
@@ -190,6 +205,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     setTempoScale: handleTempoChange,
     setMute: handleMuteChange,
     setLookAheadSec: handleLookAheadChange,
+    setVolume: handleVolumeChange,
 
     // Combined play/pause toggle
     togglePlayPause: isPlaying ? handlePause : handlePlay

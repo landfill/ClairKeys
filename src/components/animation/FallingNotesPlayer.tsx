@@ -5,6 +5,7 @@ import type { CanonicalAnimationData } from '@/types/animationContract'
 import { buildKeyLayout } from '@/utils/pianoLayout'
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
+import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { PlaybackControls } from '@/components/playback'
@@ -31,12 +32,14 @@ export default function FallingNotesPlayer({
     currentTime,
     tempoScale,
     lookAheadSec,
+    volume,
     totalLength,
     play,
     pause,
     stop,
     seek,
-    setTempoScale
+    setTempoScale,
+    setVolume
   } = useFallingNotesPlayer(notes)
 
   // Constants
@@ -86,6 +89,29 @@ export default function FallingNotesPlayer({
           onSpeedChange={setTempoScale}
           onModeChange={handleModeChange}
         />
+      </div>
+
+      {/* Master volume — a tuning control. The numeric readout is the master
+          gain value; whatever setting sounds right here is the number to lock in
+          as DEFAULT_MASTER_GAIN in useFallingNotesAudio. */}
+      <div className="mb-4 flex items-center gap-3">
+        <label htmlFor="master-volume" className="text-xs text-gray-600 whitespace-nowrap">
+          음량
+        </label>
+        <input
+          id="master-volume"
+          type="range"
+          min={0}
+          max={MAX_MASTER_GAIN}
+          step={0.01}
+          value={volume}
+          onChange={(e) => setVolume(parseFloat(e.target.value))}
+          className="flex-1 max-w-xs"
+          aria-label="음량 (master gain)"
+        />
+        <span className="text-xs font-mono text-gray-500 tabular-nums w-10 text-right">
+          {volume.toFixed(2)}
+        </span>
       </div>
       
       {/* Main Visualization Area */}

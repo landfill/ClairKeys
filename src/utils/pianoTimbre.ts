@@ -55,7 +55,9 @@ const MAX_PARTIALS = 24
  * both because real strings do and because a bright top octave is fatiguing.
  */
 const BASS_ROLLOFF = 1.15
-const TREBLE_ROLLOFF = 2.4
+// Raised from 2.4 after the first deployed version was judged too bright in the
+// treble: a larger exponent drops the upper partials faster, darkening the top.
+const TREBLE_ROLLOFF = 3.2
 
 /**
  * How much the fundamental is held back in the lowest register.
