@@ -1,7 +1,20 @@
 # P1-A — Upload Pipeline Consolidation
 
-Status: `NOT_STARTED`
-Depends on: P0-A, P0-B, P0-C, P0-D
+Status: `IN_PROGRESS`
+Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
+
+## Progress
+
+- 2026-07-25 — Work stage 1 done. `src/app/api/__tests__/uploadPathInventory.test.ts` (6 tests)
+  pins each path's converter and callers. Only `/api/omr/upload` converts a score;
+  `/api/upload-async`, `/api/processing`, and the caller-less `/api/upload` reach
+  `pdfParser.createEnhancedDemo()` and persist its output as an ordinary `SheetMusic` row.
+  Evidence: `docs/recovery/validation/2026-07-25-p1a-upload-path-inventory.md`.
+- 2026-07-25 — Work stage 2 in review. **D-010** selects `/api/omr/upload` as canonical and records
+  the migration plan. In PR [#34](https://github.com/landfill/ClairKeys/pull/34).
+- Work stages 3–5 not started; they wait on D-010 being agreed.
+- Note for stage 4: issue #20 (demo stub `pdfParser.ts`) is satisfied by this stage rather than
+  separately. `/api/processing-queue` is a read-only listing endpoint, not an upload path.
 
 ## Objective
 

@@ -11,7 +11,7 @@ ClairKeys의 우선순위는 제품 핵심 정확도, 실행 안전성, 운영 �
 | 2 | P0-B | MusicXML 변환 정확도 재구현 | DONE | `codex/p0-musicxml-converter` | P0-A |
 | 3 | P0-C | 오디오·애니메이션 동기화 복구 | DONE | `codex/p0-playback-sync-stages-4-5` | P0-A, P0-B |
 | 4 | P0-D | 인증·타입·테스트·CI 기준선 복구 | DONE | `codex/p0-quality-gates` | DOC-1 |
-| 5 | P1-A | 업로드 경로 단일화 | NOT_STARTED | `codex/p1-upload-pipeline` | P0-A~D |
+| 5 | P1-A | 업로드 경로 단일화 | IN_PROGRESS | `codex/p1-upload-pipeline` | P0-A~D |
 | 6 | P1-B | 영속 작업 큐와 OMR 보안 | NOT_STARTED | `codex/p1-durable-omr` | P1-A |
 | 7 | P2-A | 중복 계층과 설정 정리 | NOT_STARTED | `codex/p2-architecture-cleanup` | P1-A~B |
 
