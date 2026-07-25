@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { FallingNote } from '@/types/fallingNotes'
 import { useFallingNotesAudio, DEFAULT_MASTER_GAIN } from './useFallingNotesAudio'
+import { DEFAULT_TREBLE_ROLLOFF } from '@/utils/pianoTimbre'
 import { calculateSongLength, shouldAutoStop } from '@/utils/visualUtils'
 
 /**
@@ -17,6 +18,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
   const [mute, setMute] = useState(false)
   const [lookAheadSec, setLookAheadSec] = useState(1.5)
   const [volume, setVolumeState] = useState(DEFAULT_MASTER_GAIN)
+  const [trebleRolloff, setTrebleRolloffState] = useState(DEFAULT_TREBLE_ROLLOFF)
 
   // Audio management
   const {
@@ -26,6 +28,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     updateTempoScale,
     setOffsetTime,
     setVolume,
+    setTrebleRolloff,
     reset,
   } = useFallingNotesAudio()
   
@@ -152,6 +155,16 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     setVolumeState(applied)
   }, [setVolume])
 
+  /**
+   * Change treble rolloff live. Like volume, the readout reflects the clamped
+   * value the audio hook applied. Unlike volume, it retunes only notes scheduled
+   * after the change — sounding notes keep their baked spectrum.
+   */
+  const handleTrebleRolloffChange = useCallback((newRolloff: number) => {
+    const applied = setTrebleRolloff(newRolloff)
+    setTrebleRolloffState(applied)
+  }, [setTrebleRolloff])
+
   // Enhanced animation loop with precise audio-visual synchronization
   useEffect(() => {
     if (!isPlaying) {
@@ -195,6 +208,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     mute,
     lookAheadSec,
     volume,
+    trebleRolloff,
     totalLength,
 
     // Actions
@@ -206,6 +220,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     setMute: handleMuteChange,
     setLookAheadSec: handleLookAheadChange,
     setVolume: handleVolumeChange,
+    setTrebleRolloff: handleTrebleRolloffChange,
 
     // Combined play/pause toggle
     togglePlayPause: isPlaying ? handlePause : handlePlay
