@@ -24,8 +24,12 @@ Optical Music Recognition service for converting PDF sheet music to ClairKeys an
    ```
 
 3. **Install Audiveris**
-   - Download Audiveris 5.3.1 from GitHub releases
-   - Extract to `/opt/audiveris` or set `AUDIVERIS_HOME` environment variable
+   - Install the official Audiveris 5.11.0 package for your OS.
+   - The Ubuntu package installs its bundled JRE and launcher at
+     `/opt/audiveris/bin/Audiveris`; override that path with
+     `AUDIVERIS_EXECUTABLE` when developing elsewhere.
+   - Install the required Tesseract language data separately. The container
+     supplies English and points `TESSDATA_PREFIX` at its trained-data folder.
 
 4. **Run Development Server**
    ```bash
@@ -35,7 +39,7 @@ Optical Music Recognition service for converting PDF sheet music to ClairKeys an
 ## Docker Build
 
 ```bash
-docker build -t clairkeys-omr .
+docker build -f Dockerfile.audiveris -t clairkeys-omr .
 docker run -p 8000:8000 -e SUPABASE_URL=... -e SUPABASE_ANON_KEY=... clairkeys-omr
 ```
 
@@ -105,14 +109,21 @@ Health check endpoint.
 
 ## Memory Configuration
 
-The service is configured for Fly.io's shared-cpu-1x@512MB specification:
-- Java heap size limited to 400MB
-- Container memory: 512MB
-- Suitable for most sheet music processing tasks
+The current Fly configuration is a provisional safe starting point:
+
+- Audiveris maximum Java heap: 3GB
+- Container memory: 4GB
+- Native Audiveris conversions per service instance: 1
+- Remaining memory is reserved for Python, native OCR libraries, and the OS
+
+These values have not yet been validated with a real container conversion or
+Fly deployment. Measure representative PDFs before reducing the headroom.
 
 ## Error Handling
 
 - Processing failures are tracked in job status
 - Automatic cleanup of temporary files
+- Missing or failed Audiveris execution remains an explicit failed job; it
+  never falls back to demo MusicXML
 - Fallback to local storage if Supabase is unavailable
 - Comprehensive logging for debugging

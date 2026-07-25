@@ -5,10 +5,11 @@ Converts MusicXML files to ClairKeys animation data format
 
 import json
 import logging
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Dict, List, Optional, Any
 import xml.etree.ElementTree as ET
 from datetime import datetime
+import zipfile
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +46,10 @@ class MusicXMLToClairKeysConverter:
         try:
             logger.info(f"Converting MusicXML to ClairKeys format: {musicxml_path}")
             
-            # Parse MusicXML file
-            tree = ET.parse(musicxml_path)
+            # Audiveris exports compressed MusicXML (.mxl). Resolve its declared
+            # root document without extracting the archive; plain MusicXML remains
+            # supported for the existing converter corpus.
+            tree = self._parse_musicxml(musicxml_path)
             root = tree.getroot()
             
             # Extract basic metadata
@@ -80,6 +83,39 @@ class MusicXMLToClairKeysConverter:
         except Exception as e:
             logger.error(f"Error converting MusicXML: {str(e)}")
             raise
+
+    def _parse_musicxml(self, musicxml_path: Path) -> ET.ElementTree:
+        """Parse plain MusicXML or the root document declared by an MXL container."""
+        if not zipfile.is_zipfile(musicxml_path):
+            return ET.parse(musicxml_path)
+
+        with zipfile.ZipFile(musicxml_path) as archive:
+            try:
+                container = ET.fromstring(archive.read("META-INF/container.xml"))
+            except KeyError as exc:
+                raise ValueError("MXL archive has no META-INF/container.xml") from exc
+
+            rootfile = container.find(
+                ".//{urn:oasis:names:tc:opendocument:xmlns:container}rootfile"
+            )
+            if rootfile is None:
+                rootfile = container.find(".//rootfile")
+
+            root_path = rootfile.get("full-path") if rootfile is not None else None
+            if not root_path:
+                raise ValueError("MXL container does not declare a root MusicXML file")
+
+            archive_path = PurePosixPath(root_path)
+            if archive_path.is_absolute() or ".." in archive_path.parts:
+                raise ValueError(f"Unsafe MXL root path: {root_path}")
+
+            try:
+                with archive.open(root_path) as musicxml:
+                    return ET.parse(musicxml)
+            except KeyError as exc:
+                raise ValueError(
+                    f"MXL root MusicXML file is missing: {root_path}"
+                ) from exc
     
     def _extract_metadata(self, root: ET.Element, title: Optional[str], composer: Optional[str]) -> Dict[str, Any]:
         """Extract metadata from MusicXML"""

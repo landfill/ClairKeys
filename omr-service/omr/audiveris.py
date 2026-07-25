@@ -4,7 +4,6 @@ Handles PDF to MusicXML conversion using Audiveris
 """
 
 import asyncio
-import subprocess
 import logging
 from pathlib import Path
 from typing import Optional
@@ -15,10 +14,24 @@ logger = logging.getLogger(__name__)
 class AudiverisProcessor:
     """Processes PDF files using Audiveris OMR engine"""
     
-    def __init__(self):
-        self.audiveris_home = os.getenv("AUDIVERIS_HOME", "/opt/audiveris")
-        self.java_home = os.getenv("JAVA_HOME", "/usr/lib/jvm/java-11-openjdk-amd64")
-        
+    def __init__(
+        self,
+        audiveris_executable: Optional[Path] = None,
+        max_concurrent_conversions: Optional[int] = None,
+    ):
+        configured_executable = os.getenv(
+            "AUDIVERIS_EXECUTABLE", "/opt/audiveris/bin/Audiveris"
+        )
+        self.audiveris_executable = Path(
+            audiveris_executable or configured_executable
+        )
+        concurrency = max_concurrent_conversions
+        if concurrency is None:
+            concurrency = int(os.getenv("AUDIVERIS_MAX_CONCURRENCY", "1"))
+        if concurrency < 1:
+            raise ValueError("AUDIVERIS_MAX_CONCURRENCY must be at least 1")
+        self._conversion_slots = asyncio.Semaphore(concurrency)
+
     async def process_pdf(self, pdf_path: Path, output_dir: Path) -> Path:
         """
         Process PDF file with Audiveris to generate MusicXML
@@ -30,30 +43,30 @@ class AudiverisProcessor:
         Returns:
             Path to generated MusicXML file
         """
+        async with self._conversion_slots:
+            return await self._process_pdf_unlocked(pdf_path, output_dir)
+
+    async def _process_pdf_unlocked(
+        self, pdf_path: Path, output_dir: Path
+    ) -> Path:
         try:
             logger.info(f"Starting Audiveris processing for {pdf_path}")
             
-            # Prepare output path
-            musicxml_path = output_dir / "output.xml"
-            
-            # Build Audiveris command
-            # Audiveris CLI: java -jar audiveris.jar -batch -export -output output.xml input.pdf
-            audiveris_jar = Path(self.audiveris_home) / "lib" / "audiveris.jar"
-            
-            if not audiveris_jar.exists():
-                # Try alternative path structure
-                audiveris_jar = Path(self.audiveris_home) / "audiveris.jar"
-            
-            if not audiveris_jar.exists():
-                raise FileNotFoundError(f"Audiveris JAR not found at {audiveris_jar}")
+            if not self.audiveris_executable.is_file() or not os.access(
+                self.audiveris_executable, os.X_OK
+            ):
+                raise FileNotFoundError(
+                    f"Audiveris launcher is not executable: {self.audiveris_executable}"
+                )
+
+            output_dir.mkdir(parents=True, exist_ok=True)
             
             cmd = [
-                "java",
-                "-Xmx400m",  # Limit memory to 400MB (keeping some buffer for 512MB container)
-                "-jar", str(audiveris_jar),
+                str(self.audiveris_executable),
                 "-batch",
                 "-export",
-                "-output", str(musicxml_path),
+                "-output", str(output_dir),
+                "--",
                 str(pdf_path)
             ]
             
@@ -79,16 +92,18 @@ class AudiverisProcessor:
                 logger.error(error_msg)
                 raise RuntimeError(error_msg)
             
-            # Verify output file exists
-            if not musicxml_path.exists():
-                # Sometimes Audiveris creates files with different names
-                # Look for any .xml files in the output directory
-                xml_files = list(output_dir.glob("*.xml"))
-                if xml_files:
-                    musicxml_path = xml_files[0]
-                    logger.info(f"Found MusicXML file: {musicxml_path}")
-                else:
-                    raise FileNotFoundError("No MusicXML output file generated")
+            output_files = sorted(output_dir.glob("*.mxl"))
+            if not output_files:
+                output_files = sorted(output_dir.glob("*.xml"))
+            if not output_files:
+                raise FileNotFoundError("No MusicXML output file generated")
+            if len(output_files) > 1:
+                raise RuntimeError(
+                    "Audiveris generated multiple MusicXML files; "
+                    "multi-output scores are not yet supported"
+                )
+
+            musicxml_path = output_files[0]
             
             logger.info(f"Successfully generated MusicXML: {musicxml_path}")
             return musicxml_path
@@ -105,17 +120,16 @@ class AudiverisProcessor:
             True if Audiveris is available, False otherwise
         """
         try:
-            audiveris_jar = Path(self.audiveris_home) / "lib" / "audiveris.jar"
-            if not audiveris_jar.exists():
-                audiveris_jar = Path(self.audiveris_home) / "audiveris.jar"
-            
-            if not audiveris_jar.exists():
-                logger.error(f"Audiveris JAR not found at {audiveris_jar}")
+            if not self.audiveris_executable.is_file() or not os.access(
+                self.audiveris_executable, os.X_OK
+            ):
+                logger.error(
+                    f"Audiveris launcher is not executable: {self.audiveris_executable}"
+                )
                 return False
             
-            # Test Java availability
             process = await asyncio.create_subprocess_exec(
-                "java", "-version",
+                str(self.audiveris_executable), "-version",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
@@ -123,7 +137,7 @@ class AudiverisProcessor:
             stdout, stderr = await process.communicate()
             
             if process.returncode != 0:
-                logger.error("Java not available")
+                logger.error("Audiveris launcher is not available")
                 return False
             
             logger.info("Audiveris installation validated successfully")

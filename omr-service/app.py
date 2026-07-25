@@ -20,17 +20,7 @@ from typing import Optional
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Try different OMR processors in order of preference
-try:
-    from omr.audiveris_docker import AudiverisDockerProcessor as AudiverisProcessor
-    logger.info("Using Audiveris Docker processor")
-except ImportError:
-    try:
-        from omr.audiveris import AudiverisProcessor
-        logger.info("Using native Audiveris processor")
-    except ImportError:
-        logger.warning("Audiveris not available, using alternative OMR")
-        from omr.audiveris_alt import AlternativeOMRProcessor as AudiverisProcessor
+from omr.audiveris import AudiverisProcessor
 from omr.converter import MusicXMLToClairKeysConverter
 from omr.storage import SupabaseStorage
 
