@@ -99,15 +99,53 @@ describe('upload path defects P1-A removes', () => {
     }
   })
 
-  it('leaves omrJobId unset on demo rows, which is what makes them recoverable', () => {
-    // No demo writer sets omrJobId, and only the real path does. That asymmetry
-    // is the identifier D-010's migration plan relies on: a row with an
-    // animationDataUrl but no omrJobId was fabricated, not converted.
+  it('leaves omrJobId unset on demo rows, which narrows but does not confirm them', () => {
+    // No demo writer sets omrJobId, and only the real path does. D-010's
+    // migration uses that as a first-pass filter — see the next test for why
+    // it cannot be the verdict on its own.
     for (const writer of [ASYNC_PROCESSOR, BACKGROUND_PROCESSOR, IMMEDIATE_ROUTE]) {
       expect(readSource(writer)).not.toContain('omrJobId')
     }
 
     expect(readSource(OMR_ROUTE)).toContain('omrJobId')
+  })
+
+  it('creates SheetMusic rows outside the upload paths too', () => {
+    // Why "omrJobId IS NULL" cannot decide provenance by itself: POST /api/sheet
+    // and SheetMusicRepository.create also write rows with a client-supplied
+    // animationDataUrl and no omrJobId. Marking those as demo would hide
+    // genuine scores. D-010 therefore confirms against pdfParser's known
+    // melody literals and leaves everything else 'unknown'.
+    //
+    // Pinning the full writer list means a new writer has to be classified
+    // here before it can quietly widen that ambiguity.
+    const writers = productSourceFiles()
+      .filter((file) => /prisma\.sheetMusic\.create|this\.prisma\.sheetMusic\.create/.test(
+        readFileSync(file, 'utf8')
+      ))
+      .map((file) => file.replace(`${process.cwd()}/`, ''))
+      .sort()
+
+    expect(writers).toEqual([
+      'src/app/api/omr/upload/route.ts',      // real conversion — sets omrJobId
+      'src/app/api/sheet/route.ts',           // client-supplied URL — ambiguous
+      'src/app/api/upload/route.ts',          // demo
+      'src/repositories/SheetMusicRepository.ts', // client-supplied URL — ambiguous
+      'src/services/asyncUploadProcessor.ts',  // demo
+      'src/services/backgroundProcessor.ts',   // demo
+    ])
+  })
+
+  it('generates demo output from a fixed set of hardcoded melodies', () => {
+    // The discriminator the migration actually relies on. Every demo row's
+    // notes come from one of these literals, so stored JSON can be matched
+    // against them to confirm pdfParser produced it.
+    const generator = readSource(DEMO_GENERATOR)
+    expect(generator).toContain('melodyVariations')
+    expect(generator).toMatch(/tempo:\s*120/)
+    expect(generator).toMatch(/timeSignature:\s*'4\/4'/)
+    // Shape A (D-009): string pitch + startTime, the outlier pdfParser keeps.
+    expect(generator).toMatch(/note:\s*'C4',\s*startTime:\s*0/)
   })
 
   it('shows a fabricated OMR progress bar on the async path', () => {
