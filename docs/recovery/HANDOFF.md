@@ -9,12 +9,15 @@ Last updated: 2026-07-26 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Pull request created: [#36](https://github.com/landfill/ClairKeys/pull/36), issue #22
-  repository-side Audiveris runtime repair. Live state belongs in GitHub and
-  `docs/recovery/reviews/PR-36.md`. Final head `4613e08` is review-ready, mergeable, and green
-  across both hosted workflows plus Vercel. It is not yet merged because explicit user approval
-  has not been given.
 - Completed pull requests:
+  - [#36](https://github.com/landfill/ClairKeys/pull/36) — `MERGED` at `c8764ec` (issue #22
+    repository repair: accepts Audiveris `.mxl`, invokes the real packaged launcher, removes
+    Docker/demo processor selection, pins the checksum-verified 5.11.0 `.deb`, provisions English
+    traineddata, serializes 3GB JVMs on a provisional 4GB VM, and kills/reaps timed-out or cancelled
+    subprocesses. Multiple `.mxl` results fail explicitly. PR and merge-commit CI passed; Vercel
+    Production deployed the Next.js main commit. **The separate Fly OMR image is not built or
+    deployed, so production upload is not yet proven and issue #22 remains open.** Review log:
+    `docs/recovery/reviews/PR-36.md`)
   - [#35](https://github.com/landfill/ClairKeys/pull/35) — `MERGED` at `317dad2` (**P1-A stages 3–5**: the upload page offers only `OMRUploadForm`; `/api/upload` + `useFileUpload` deleted; `asyncUploadProcessor`/`backgroundProcessor` keep their queue contracts but lose persistence and return `CONVERSION_UNAVAILABLE`; `pdfParser` survives as a development-only generator behind `assertDemoGenerationAllowed()`. `prisma.sheetMusic.create` call sites drop from six to three, none reaching the demo generator. Codex found that removing persistence made an older bug the normal case — `retryJob` reset a `FAILED` row to `PENDING` without restoring the in-memory queue entry, so the job sat at 0% forever; `retryJob` now refuses `CONVERSION_UNAVAILABLE` failures, with a regression test that failed before the fix. CodeRabbit was rate limited for this entire PR and produced no review. 41 suites / 387 tests. **Upload now fails visibly until issue #22 is fixed — intended, not a regression.** Review log: `docs/recovery/reviews/PR-35.md`)
   - [#34](https://github.com/landfill/ClairKeys/pull/34) — `MERGED` at `aca4073` (**P1-A stages 1–2**: `uploadPathInventory.test.ts` pins that only `/api/omr/upload` converts a score while three paths reached `pdfParser.createEnhancedDemo()` and stored the result as an ordinary `SheetMusic` row — the D-001 violation that had outlived its decision by a year. Records **D-010**. Codex found three real issues across two rounds: a missing migration plan; that `omrJobId IS NULL` also matches rows from `POST /api/sheet` and `SheetMusicRepository.create`, so the backfill would have hidden genuine scores; and that leaving the legacy UI callers on always-failing endpoints contradicts stage 3. All fixed. CodeRabbit contributed one valid finding then went rate limited for the rest of the PR. 42 suites / 395 tests. `Unit Tests` went red once on a Docker Hub outage (`docker pull postgres:15` timed out before checkout) and passed on re-run with no code change. Review log: `docs/recovery/reviews/PR-34.md`)
   - [#33](https://github.com/landfill/ClairKeys/pull/33) — `MERGED` at `8df3c4a` (adds a live 고음/treble-rolloff control matching PR #32's volume slider; `harmonicAmplitudes` parameterised, `setTrebleRolloff` clamped 1.5–5, retunes only notes scheduled after the change. 41 suites / 386 tests. CI-conditioned merge. **Follow-up: set `DEFAULT_TREBLE_ROLLOFF` and `DEFAULT_MASTER_GAIN` from the levels the user picks.** Review log: `docs/recovery/reviews/PR-33.md`)
@@ -38,7 +41,7 @@ Last updated: 2026-07-26 KST
 
 ## Latest verified result
 
-- PR #36 local verification at `4613e08`: Audiveris 5.11.0's Ubuntu package was downloaded and its
+- PR #36 merged at `c8764ec` from verified head `4613e08`: Audiveris 5.11.0's Ubuntu package was downloaded and its
   release digest matched SHA-256
   `ae714594f40e54b1a4951fc3f914f08ae38fe5d07b7f2283b1a904fdb6e0a318`. The package includes its
   own Java 25 runtime and official `/opt/audiveris/bin/Audiveris` launcher but no OCR traineddata.
@@ -46,7 +49,8 @@ Last updated: 2026-07-26 KST
   provisions English traineddata, serializes 3GB JVMs on a provisional 4GB VM, kills/reaps timed
   out or cancelled subprocesses, and rejects multiple `.mxl` results rather than storing a partial
   score. 42 Jest suites / 389 tests, 9 Python tests, py_compile, TypeScript, lint, and production
-  build pass. Both hosted workflows and Vercel are green. CodeRabbit's valid timeout findings were
+  build pass. PR CI, merge-commit required checks, and post-merge checks are green. Vercel
+  Production deployment `5602694131` succeeded for the Next.js application. CodeRabbit's valid timeout findings were
   fixed; it withdrew its launcher-config objection after package evidence, while final independent
   review found zero actionable issues. **Not verified:** Docker build/run, real PDF conversion,
   Fly validation/deployment, production end-to-end. Evidence:
@@ -74,7 +78,7 @@ Last updated: 2026-07-26 KST
    review findings: concurrent 3GB JVMs on one 4GB VM, silent first-file selection when Audiveris
    emits multiple `.mxl` results, unbounded subprocess waits, and orphaned child processes on caller
    cancellation. Final head `4613e08` is locally verified, independently reviewed, and green across
-   hosted repository CI; it awaits explicit merge approval. Full implementation evidence:
+   hosted repository CI; it merged at `c8764ec`. Full implementation evidence:
    `docs/recovery/validation/2026-07-26-issue-22-audiveris-runtime-repair.md`.
 
    Confirmed as filed: (a) `Dockerfile.audiveris` installs no JRE or Audiveris — and the unused `omr-service/Dockerfile` installs a JDK but writes `/opt/audiveris/bin/audiveris` as a shell script that echoes "Audiveris placeholder", the same shape as the `pdfParser` stub P1-A just removed; (b) `app.py:24-33` picks the processor at import time, and `audiveris_docker` imports only stdlib so it always wins, then fails on `docker run` with no daemon.
@@ -90,7 +94,7 @@ Last updated: 2026-07-26 KST
 
    Do not close issue #22 on repository CI alone. Docker build/run, real PDF conversion, Fly
    deployment, and `/api/omr/upload` → status end-to-end remain unverified. D-008 hosting is still
-   `Proposed`, and PR #36 still needs the user's explicit merge approval.
+   `Proposed`; issue #22 remains open until that runtime proof exists.
 
    Historical context of how P1-A got here: `src/app/api/__tests__/uploadPathInventory.test.ts` pins that only `/api/omr/upload` converts a score, while `/api/upload-async` (`MultiStageUploadUI`), `/api/processing` (`BackgroundFileUpload`), and the caller-less `/api/upload` all reach `pdfParser.createEnhancedDemo()` — which picks a canned melody by `bufferLength % melodyVariations.length` and never opens the PDF — then persist it as an ordinary `SheetMusic` row with no marker. D-001 forbade this on 2026-07-19 and the code never followed it. Stage 2 records D-010: `/api/omr/upload` is canonical, `/api/upload` and `useFileUpload` are deleted, the two async paths keep their progress UI for P1-B but lose persistence, and `pdfParser`'s demo generation is isolated for development rather than removed. **Accepting D-010 means upload visibly fails until issue #22 is fixed** — the canonical path cannot run Audiveris on a Docker-less host. That is the end of a concealment, not a regression. Evidence: `docs/recovery/validation/2026-07-25-p1a-upload-path-inventory.md`.
 3. **Needs the user's ear, not code: the two timbre defaults.** PR #30/#32/#33 all shipped and are live in production. `DEFAULT_MASTER_GAIN` (`src/hooks/useFallingNotesAudio.ts:54`, currently `0.22`) and `DEFAULT_TREBLE_ROLLOFF` (`src/utils/pianoTimbre.ts:62`, currently `3.2`) are still provisional. Both are exposed as live sliders on the playback screen whose readouts are exactly these values, so the remaining work is: listen, pick, then a small PR fixing the constants. No agent can settle this — jsdom has no Web Audio and no offline renderer is installed, so every timbre claim to date covers the coefficients fed to `PeriodicWave`, not the rendered sound.
@@ -103,18 +107,18 @@ Last updated: 2026-07-26 KST
 
 ## Session handoff — 2026-07-26, to a different agent
 
-PR #36 is the active issue #22 repository repair. Its three Lore commits are `49f78b6` (regression
-contracts), `8f21c2b` (implementation), and `4613e08` (review-driven subprocess lifecycle and
-fail-closed image checks). Local validation, independent review, both hosted workflows, and Vercel
-are green. CodeRabbit's final-commit review was rate limited, but its prior valid findings are fixed
-and its incorrect launcher-config finding was withdrawn. The immediate next action is the user's
-explicit merge decision. The user's untracked `playwright-report/` and `test-results/` remain
-untouched.
+PR #36 merged at `c8764ec` from its verified head `4613e08`. Local validation, independent review,
+PR CI, merge-commit required checks, post-merge tests/build, and the Next.js Vercel Production
+deployment are green. CodeRabbit's final-commit review was rate limited, but its prior valid
+findings are fixed and its incorrect launcher-config finding was withdrawn. The separate Fly OMR
+image still has no build, deployment, real-PDF, or production end-to-end evidence, so issue #22
+remains open and upload failure must not be concealed with demo output.
 
 Three constraints remain load-bearing:
 
-- **Upload failure on current `main` is still intentional.** PR #36 is not merged or deployed; do
-  not restore demo output to make upload look successful.
+- **Upload failure remains expected until the OMR service is separately deployed.** PR #36 is in
+  `main`, but Vercel does not build or deploy the Fly OMR service. Do not restore demo output to
+  make upload look successful.
 - A green repository PR does not prove the OMR image. Docker build/run, real PDF conversion, Fly
   deployment, and production end-to-end remain separate evidence.
 - Do not close issue #22 or call production upload fixed until those runtime checks pass.
@@ -125,7 +129,9 @@ Three constraints remain load-bearing:
 the handoff files are committed. `.omx/` remains an ignored local runtime directory; tracked
 `.claude/settings.local.json` and `prisma/schema.prisma` are unchanged. Previously listed
 `.claude/settings.json`, `docs/.bkit-memory.json`, and `docs/.pdca-status.json` do not exist in this
-checkout.
+checkout. Both local and remote `codex/p1-omr-audiveris-runtime` tips are included in `main`, but
+the branch refs are intentionally retained because the cleanup protocol forbids branch deletion
+while user-owned uncommitted state is present.
 
 ## Product-critical follow-up order
 

@@ -1,7 +1,7 @@
 # Validation — issue #22 / native Audiveris runtime repair
 
 Date: 2026-07-26
-Commit: `4613e08` (branch `codex/p1-omr-audiveris-runtime`, PR #36)
+Commit: `4613e08`; merged by PR #36 at `c8764ec`
 Environment: macOS (Darwin 25.5.0), Python 3.14, Node/Jest jsdom. Docker CLI 29.4.0
 is installed but its daemon is not running. `flyctl` is installed but no Fly access token is
 available.
@@ -121,6 +121,12 @@ Final head `4613e0823763d6ceedfed513b8abc26bb88844b8` passed both hosted workflo
 Change-conditioned `Build Check`, `Security Scan`, and `Accessibility Check` were skipped. None of
 these jobs builds `omr-service/Dockerfile.audiveris`.
 
+After the approved merge, merge commit `c8764ec24de07a3f5b6e2b834df3e7cc43ca1fde` passed Tests run
+`30164925501` (`Run Tests`, `Lint`, `Security Audit`, `E2E Tests`) and Post-merge checks run
+`30164925480` (`Post-merge tests`, `Post-merge build`). Vercel Production deployment `5602694131`
+completed successfully. That deployment covers the Next.js application and is not evidence that
+the separate Fly OMR service image built or deployed.
+
 ## Gaps and risks
 
 - **Docker image build/run is unverified.** The pinned package installation, launcher, traineddata
@@ -133,6 +139,6 @@ these jobs builds `omr-service/Dockerfile.audiveris`.
 - English is the only provisioned OCR language.
 - Audiveris can emit more than one `.mxl`; this change fails honestly in that case. Deliberate
   multi-result combination remains future work.
-- PR #36 passed hosted CI and has no known actionable review item, but still needs the user's
-  explicit merge approval. Until it is merged and the OMR service is separately deployed,
-  production upload remains in the intended visible-failure state.
+- PR #36 is merged, but the OMR service has not been separately built or deployed. Production
+  upload therefore remains in the expected visible-failure state until the runtime checks above
+  pass; issue #22 remains open.
