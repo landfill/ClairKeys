@@ -88,14 +88,26 @@ describe('upload path inventory', () => {
 
 describe('upload path defects P1-A removes', () => {
   it('persists demo output as an ordinary sheet music record', () => {
-    // Both demo processors create a SheetMusic row with a real
+    // All three demo paths create a SheetMusic row with a real
     // animationDataUrl and no marker separating it from a true conversion.
-    for (const processor of [ASYNC_PROCESSOR, BACKGROUND_PROCESSOR]) {
-      const source = readSource(processor)
+    // IMMEDIATE_ROUTE writes the row itself; the other two delegate.
+    for (const writer of [ASYNC_PROCESSOR, BACKGROUND_PROCESSOR, IMMEDIATE_ROUTE]) {
+      const source = readSource(writer)
       expect(source).toContain('prisma.sheetMusic.create')
       expect(source).toContain('animationDataUrl')
       expect(source).not.toMatch(/isDemo|isSynthetic|source:\s*['"]demo['"]/)
     }
+  })
+
+  it('leaves omrJobId unset on demo rows, which is what makes them recoverable', () => {
+    // No demo writer sets omrJobId, and only the real path does. That asymmetry
+    // is the identifier D-010's migration plan relies on: a row with an
+    // animationDataUrl but no omrJobId was fabricated, not converted.
+    for (const writer of [ASYNC_PROCESSOR, BACKGROUND_PROCESSOR, IMMEDIATE_ROUTE]) {
+      expect(readSource(writer)).not.toContain('omrJobId')
+    }
+
+    expect(readSource(OMR_ROUTE)).toContain('omrJobId')
   })
 
   it('shows a fabricated OMR progress bar on the async path', () => {
