@@ -1,26 +1,24 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
- * P1-A stage 1 — pins what each upload path actually does today.
+ * P1-A — pins the upload pipeline to a single canonical path.
  *
- * ClairKeys grew four PDF upload entry points. Only one of them converts a
- * score: `/api/omr/upload`, which proxies the Fly.io OMR service. The other
- * three end up in `src/services/pdfParser.ts`, whose `createEnhancedDemo()`
- * picks a canned melody by file *length* — it never reads the PDF.
+ * Stage 1 of this phase found four PDF upload entry points, only one of which
+ * converted a score. The other three reached `pdfParser.createEnhancedDemo()`,
+ * which picks a canned melody by file *length* and never opens the PDF, then
+ * stored the result as an ordinary `SheetMusic` row — indistinguishable from a
+ * real conversion. D-001 has forbidden that since 2026-07-19.
  *
- * That would be harmless if the fabricated output were labelled as such. It is
- * not: every path writes an ordinary `SheetMusic` row with an
- * `animationDataUrl`, so a demo melody is indistinguishable from a real
- * conversion once stored.
+ * Stages 3–5 (D-010) removed it. What this file now asserts is the end state:
  *
- * These assertions are deliberately split:
- *
- *   - "inventory" describes structure P1-A intends to keep proving (one real
- *     converter, one canonical path).
- *   - "defects" pins the behaviour P1-A intends to *remove*. Those tests are
- *     written to fail the moment the demo paths are isolated or deleted. That
- *     failure is the signal to rewrite them, not a regression.
+ *   - "inventory" — one real converter, reached by one canonical path.
+ *   - "demo output cannot be persisted" — the property D-010 bought. These are
+ *     the tests that replaced the earlier "defects P1-A removes" block; that
+ *     block described the old behaviour and went red here, as its own header
+ *     predicted.
+ *   - "provenance identifiers" — what a later migration needs in order to
+ *     classify rows that were already stored before this landed.
  */
 
 const readSource = (relativePath: string): string =>
@@ -29,11 +27,18 @@ const readSource = (relativePath: string): string =>
 const OMR_ROUTE = 'src/app/api/omr/upload/route.ts'
 const ASYNC_ROUTE = 'src/app/api/upload-async/route.ts'
 const BACKGROUND_ROUTE = 'src/app/api/processing/route.ts'
-const IMMEDIATE_ROUTE = 'src/app/api/upload/route.ts'
 
 const ASYNC_PROCESSOR = 'src/services/asyncUploadProcessor.ts'
 const BACKGROUND_PROCESSOR = 'src/services/backgroundProcessor.ts'
 const DEMO_GENERATOR = 'src/services/pdfParser.ts'
+
+const UPLOAD_PAGE = 'src/app/upload/page.tsx'
+
+/** Paths deleted by D-010 decisions 2 and 5. */
+const REMOVED_PATHS = [
+  'src/app/api/upload/route.ts',
+  'src/hooks/useFileUpload.ts',
+]
 
 /** Every `.ts`/`.tsx` file under `src/`, excluding tests. */
 function productSourceFiles(dir = join(process.cwd(), 'src')): string[] {
@@ -56,113 +61,122 @@ function productSourceFiles(dir = join(process.cwd(), 'src')): string[] {
   return collected
 }
 
+const relativeTo = (file: string) => file.replace(`${process.cwd()}/`, '')
+
+/**
+ * A runtime import of the demo generator — the thing that can actually produce
+ * fabricated notes. Type-only imports are excluded deliberately: they compile
+ * away and cannot generate anything. `musicDataConverter.ts` still takes
+ * `PianoAnimationData`/`PianoNote` from here, because the identically named
+ * types in `src/types/piano.ts` have a different shape (`key` vs `note`).
+ * Reconciling them is P2-A's duplicate-layer work, not P1-A's.
+ */
+const IMPORTS_DEMO_GENERATOR =
+  /import\s+(?!type\s)\{[^}]*\}\s+from\s+'(?:\.\/pdfParser|@\/services\/pdfParser)'/
+
 describe('upload path inventory', () => {
   it('has exactly one path that reaches the real OMR service', () => {
     const omrRoute = readSource(OMR_ROUTE)
     expect(omrRoute).toContain('OMR_SERVICE_URL')
     expect(omrRoute).toContain('/process')
 
-    for (const route of [ASYNC_ROUTE, BACKGROUND_ROUTE, IMMEDIATE_ROUTE]) {
+    for (const route of [ASYNC_ROUTE, BACKGROUND_ROUTE]) {
       expect(readSource(route)).not.toContain('OMR_SERVICE_URL')
     }
   })
 
-  it('routes the three non-OMR paths into the demo generator', () => {
-    // Direct: the immediate route calls the parser itself.
-    expect(readSource(IMMEDIATE_ROUTE)).toContain("from '@/services/pdfParser'")
+  it('offers the canonical path alone on the upload page', () => {
+    const page = readSource(UPLOAD_PAGE)
 
-    // Indirect: each async path delegates to a processor that calls it.
-    expect(readSource(ASYNC_ROUTE)).toContain('asyncUploadProcessor')
-    expect(readSource(ASYNC_PROCESSOR)).toContain("from './pdfParser'")
-
-    expect(readSource(BACKGROUND_ROUTE)).toContain('backgroundProcessor')
-    expect(readSource(BACKGROUND_PROCESSOR)).toContain("from './pdfParser'")
+    expect(page).toContain('OMRUploadForm')
+    // The three-mode selector is gone: no mode state, no alternative forms.
+    expect(page).not.toContain('uploadMode')
+    expect(page).not.toContain('MultiStageUploadUI')
+    expect(page).not.toContain('BackgroundFileUpload')
   })
 
-  it('selects the demo melody from file length rather than file content', () => {
-    const generator = readSource(DEMO_GENERATOR)
-    expect(generator).toContain('createEnhancedDemo')
-    expect(generator).toMatch(/bufferLength % melodyVariations\.length/)
+  it('has removed the caller-less immediate path entirely', () => {
+    for (const path of REMOVED_PATHS) {
+      expect(existsSync(join(process.cwd(), path))).toBe(false)
+    }
+
+    const referencing = productSourceFiles()
+      .filter((file) => /['"`]\/api\/upload['"`]|useFileUpload/.test(readFileSync(file, 'utf8')))
+      .map(relativeTo)
+
+    expect(referencing).toEqual([])
   })
 })
 
-describe('upload path defects P1-A removes', () => {
-  it('persists demo output as an ordinary sheet music record', () => {
-    // All three demo paths create a SheetMusic row with a real
-    // animationDataUrl and no marker separating it from a true conversion.
-    // IMMEDIATE_ROUTE writes the row itself; the other two delegate.
-    for (const writer of [ASYNC_PROCESSOR, BACKGROUND_PROCESSOR, IMMEDIATE_ROUTE]) {
-      const source = readSource(writer)
-      expect(source).toContain('prisma.sheetMusic.create')
-      expect(source).toContain('animationDataUrl')
-      expect(source).not.toMatch(/isDemo|isSynthetic|source:\s*['"]demo['"]/)
-    }
-  })
-
-  it('leaves omrJobId unset on demo rows, which narrows but does not confirm them', () => {
-    // No demo writer sets omrJobId, and only the real path does. D-010's
-    // migration uses that as a first-pass filter — see the next test for why
-    // it cannot be the verdict on its own.
-    for (const writer of [ASYNC_PROCESSOR, BACKGROUND_PROCESSOR, IMMEDIATE_ROUTE]) {
-      expect(readSource(writer)).not.toContain('omrJobId')
-    }
-
-    expect(readSource(OMR_ROUTE)).toContain('omrJobId')
-  })
-
-  it('creates SheetMusic rows outside the upload paths too', () => {
-    // Why "omrJobId IS NULL" cannot decide provenance by itself: POST /api/sheet
-    // and SheetMusicRepository.create also write rows with a client-supplied
-    // animationDataUrl and no omrJobId. Marking those as demo would hide
-    // genuine scores. D-010 therefore confirms against pdfParser's known
-    // melody literals and leaves everything else 'unknown'.
-    //
-    // Pinning the full writer list means a new writer has to be classified
-    // here before it can quietly widen that ambiguity.
+describe('demo output cannot be persisted', () => {
+  it('keeps every SheetMusic writer away from the demo generator', () => {
     const writers = productSourceFiles()
       .filter((file) => /prisma\.sheetMusic\.create|this\.prisma\.sheetMusic\.create/.test(
         readFileSync(file, 'utf8')
       ))
-      .map((file) => file.replace(`${process.cwd()}/`, ''))
+      .map(relativeTo)
       .sort()
 
+    // Three writers remain. The two demo processors are no longer among them:
+    // stage 4 removed their persistence entirely rather than guarding it.
     expect(writers).toEqual([
-      'src/app/api/omr/upload/route.ts',      // real conversion — sets omrJobId
-      'src/app/api/sheet/route.ts',           // client-supplied URL — ambiguous
-      'src/app/api/upload/route.ts',          // demo
-      'src/repositories/SheetMusicRepository.ts', // client-supplied URL — ambiguous
-      'src/services/asyncUploadProcessor.ts',  // demo
-      'src/services/backgroundProcessor.ts',   // demo
+      'src/app/api/omr/upload/route.ts',
+      'src/app/api/sheet/route.ts',
+      'src/repositories/SheetMusicRepository.ts',
     ])
+
+    for (const writer of writers) {
+      expect(readSource(writer)).not.toMatch(/from '\.\/pdfParser'|from '@\/services\/pdfParser'/)
+    }
   })
 
-  it('generates demo output from a fixed set of hardcoded melodies', () => {
-    // The discriminator the migration actually relies on. Every demo row's
-    // notes come from one of these literals, so stored JSON can be matched
-    // against them to confirm pdfParser produced it.
+  it('fails the async and background paths explicitly instead of fabricating', () => {
+    // D-001: a fallback must return an explicit failure or a demo state. These
+    // two keep their progress contract (P1-B inherits it) but can no longer
+    // finish a job with invented notes.
+    for (const processor of [ASYNC_PROCESSOR, BACKGROUND_PROCESSOR]) {
+      const source = readSource(processor)
+      expect(source).not.toMatch(IMPORTS_DEMO_GENERATOR)
+      expect(source).toContain('CONVERSION_UNAVAILABLE')
+    }
+  })
+
+  it('confines the demo generator to development', () => {
+    const generator = readSource(DEMO_GENERATOR)
+    expect(generator).toContain('assertDemoGenerationAllowed')
+    expect(generator).toMatch(/NODE_ENV.*production|production.*NODE_ENV/)
+  })
+
+  it('leaves no product code able to invoke the demo generator', () => {
+    const importers = productSourceFiles()
+      .filter((file) => relativeTo(file) !== DEMO_GENERATOR)
+      .filter((file) => IMPORTS_DEMO_GENERATOR.test(readFileSync(file, 'utf8')))
+      .map(relativeTo)
+
+    expect(importers).toEqual([])
+  })
+})
+
+describe('provenance identifiers for rows stored before this landed', () => {
+  it('sets omrJobId only on the real path', () => {
+    // First-pass filter for the migration in D-010 decision 5. It narrows
+    // candidates; it does not decide, because /api/sheet and
+    // SheetMusicRepository also write rows with no omrJobId.
+    expect(readSource(OMR_ROUTE)).toContain('omrJobId')
+
+    for (const ambiguous of ['src/app/api/sheet/route.ts', 'src/repositories/SheetMusicRepository.ts']) {
+      expect(readSource(ambiguous)).not.toContain('omrJobId')
+    }
+  })
+
+  it('keeps the demo melodies fixed so stored rows can be matched against them', () => {
+    // The discriminator that actually decides. Demo rows already in the
+    // database carry one of these literals; changing them breaks the only
+    // reliable way to classify those rows.
     const generator = readSource(DEMO_GENERATOR)
     expect(generator).toContain('melodyVariations')
     expect(generator).toMatch(/tempo:\s*120/)
     expect(generator).toMatch(/timeSignature:\s*'4\/4'/)
-    // Shape A (D-009): string pitch + startTime, the outlier pdfParser keeps.
     expect(generator).toMatch(/note:\s*'C4',\s*startTime:\s*0/)
-  })
-
-  it('shows a fabricated OMR progress bar on the async path', () => {
-    // 25 seconds of invented progress for a stage that never runs.
-    expect(readSource(ASYNC_PROCESSOR)).toMatch(
-      /simulateProgress\(\s*sessionId,\s*'omr',\s*25000/
-    )
-  })
-
-  it('keeps /api/upload reachable while no product code calls it', () => {
-    const callers = productSourceFiles().filter((file) => {
-      const source = readFileSync(file, 'utf8')
-      return /['"`]\/api\/upload['"`]/.test(source) || /useFileUpload/.test(source)
-    })
-
-    // Only the hook that defines it — nothing renders or imports the hook.
-    const relative = callers.map((file) => file.replace(`${process.cwd()}/`, ''))
-    expect(relative).toEqual(['src/hooks/useFileUpload.ts'])
   })
 })

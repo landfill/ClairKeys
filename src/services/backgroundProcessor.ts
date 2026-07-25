@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { getPDFParserService } from './pdfParser'
-import { fileStorageService } from './fileStorageService'
+import { CONVERSION_UNAVAILABLE, CONVERSION_UNAVAILABLE_MESSAGE } from './conversionAvailability'
 import { ProcessingStatus, ProcessingStage } from '@prisma/client'
 
 export interface ProcessingJobData {
@@ -83,107 +82,39 @@ class BackgroundProcessor {
     }
   }
 
+  /**
+   * Fail a queued job explicitly instead of fabricating a score.
+   *
+   * This method used to parse the PDF with `pdfParser` — which picks a canned
+   * melody by file size and never reads the score — simulate an OMR stage with
+   * a 1-second delay, and store the result as a real `SheetMusic` row. D-010
+   * removed that; the queue and notification machinery stay for P1-B.
+   *
+   * It deliberately bypasses `handleJobError`. That path retries up to
+   * `maxRetries`, and no number of retries makes a converter appear here.
+   */
   private async processJob(jobData: ProcessingJobData): Promise<void> {
-    const { id: jobId, userId, fileBuffer, metadata } = jobData
+    const { id: jobId, userId, metadata } = jobData
 
     try {
-      // Update job status to processing
-      await this.updateJobStatus(jobId, ProcessingStatus.PROCESSING, ProcessingStage.PARSING, 10)
-
-      // Stage 1: PDF Parsing
-      await this.updateJobStatus(jobId, ProcessingStatus.PROCESSING, ProcessingStage.PARSING, 20)
-      
-      const pdfParser = getPDFParserService()
-      let animationData
-
-      try {
-        animationData = await pdfParser.parsePDF(fileBuffer, {
-          title: metadata.title,
-          composer: metadata.composer,
-          originalFileName: jobData.fileName,
-          fileSize: jobData.fileSize
-        })
-      } catch (error) {
-        throw new Error(`PDF 파싱 실패: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      }
-
-      // Stage 2: OMR (Optical Music Recognition) - Simulated
-      await this.updateJobStatus(jobId, ProcessingStatus.PROCESSING, ProcessingStage.OMR, 40)
-      await this.simulateProcessingDelay(1000) // Simulate OMR processing
-
-      // Stage 3: Validation
-      await this.updateJobStatus(jobId, ProcessingStatus.PROCESSING, ProcessingStage.VALIDATION, 60)
-      
-      if (!pdfParser.validateAnimationData(animationData)) {
-        throw new Error('악보 데이터 검증 실패')
-      }
-
-      // Stage 4: Animation Data Generation & Storage Upload
-      await this.updateJobStatus(jobId, ProcessingStatus.PROCESSING, ProcessingStage.GENERATION, 80)
-      
-      // Upload animation data to storage
-      const uploadResult = await fileStorageService.uploadAnimationData(animationData, {
-        name: `${metadata.title}_animation.json`,
-        size: JSON.stringify(animationData).length,
-        type: 'application/json',
-        userId: userId,
-        isPublic: metadata.isPublic
-      })
-
-      if (!uploadResult.success || !uploadResult.url) {
-        throw new Error(`Failed to upload animation data: ${uploadResult.error}`)
-      }
-
-      // Stage 5: Save to database
-      await this.updateJobStatus(jobId, ProcessingStatus.PROCESSING, ProcessingStage.GENERATION, 90)
-
-      const sheetMusic = await prisma.sheetMusic.create({
-        data: {
-          title: metadata.title,
-          composer: metadata.composer,
-          categoryId: metadata.categoryId,
-          isPublic: metadata.isPublic,
-          userId: userId,
-          animationDataUrl: uploadResult.url,
-        },
-        include: {
-          category: true,
-        }
-      })
-
-      // Complete the job
-      await this.updateJobStatus(jobId, ProcessingStatus.COMPLETED, ProcessingStage.GENERATION, 100)
-      
       await prisma.processingJob.update({
         where: { id: jobId },
         data: {
-          result: {
-            sheetMusicId: sheetMusic.id,
-            sheetMusic: {
-              id: sheetMusic.id,
-              title: sheetMusic.title,
-              composer: sheetMusic.composer,
-              categoryId: sheetMusic.categoryId,
-              category: sheetMusic.category,
-              isPublic: sheetMusic.isPublic,
-              createdAt: sheetMusic.createdAt
-            }
-          },
+          status: ProcessingStatus.FAILED,
+          error: `${CONVERSION_UNAVAILABLE}: ${CONVERSION_UNAVAILABLE_MESSAGE}`,
           completedAt: new Date(),
         }
       })
 
-      // Create success notification
       await this.createNotification(
         userId,
         jobId,
-        'JOB_COMPLETED',
-        '처리 완료',
-        `${metadata.title} 악보 처리가 완료되었습니다.`
+        'JOB_FAILED',
+        '처리 실패',
+        `${metadata.title}: ${CONVERSION_UNAVAILABLE_MESSAGE}`
       )
-
     } catch (error) {
-      await this.handleJobError(jobId, userId, error instanceof Error ? error.message : 'Unknown error')
+      console.error(`Failed to record conversion failure for job ${jobId}:`, error)
     }
   }
 
@@ -353,6 +284,15 @@ class BackgroundProcessor {
     })
 
     if (!job || job.status !== ProcessingStatus.FAILED) {
+      return false
+    }
+
+    // A conversion that is unavailable does not become available on retry.
+    // Worse, this path cannot deliver on the attempt: it resets the row to
+    // PENDING but the in-memory `processingQueue` no longer holds the job's
+    // `ProcessingJobData`, so `processQueue` has nothing to run and the job
+    // would sit at 0% indefinitely. Refusing keeps the failure visible.
+    if (job.error?.startsWith(CONVERSION_UNAVAILABLE)) {
       return false
     }
 

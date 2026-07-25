@@ -1,4 +1,7 @@
-import { PianoAnimationData, PianoNote } from './pdfParser'
+// Type-only: this module must not be able to invoke the demo generator (D-010).
+// The identically named types in `src/types/piano.ts` have a different shape
+// (`key` vs `note`), so reconciling them is P2-A's duplicate-layer work.
+import type { PianoAnimationData, PianoNote } from './pdfParser'
 
 /**
  * New JSON format from sample-data folder
