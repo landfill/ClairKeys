@@ -73,6 +73,23 @@ describe('harmonicAmplitudes', () => {
     // fundamental; that is exactly what a lone sine cannot represent.
     expect(share(A0_MIDI)).toBeLessThan(share(C8_MIDI))
   })
+
+  it('keeps the treble as dark as the tuned TREBLE_ROLLOFF, not the original bright value', () => {
+    // Locks in the 2.4 -> 3.2 treble tuning. A darker rolloff concentrates more
+    // energy in the fundamental of an upper note; at C6 the tuned value gives a
+    // fundamental share well above what the original 2.4 produced (~0.65). If
+    // TREBLE_ROLLOFF drifts back toward 2.4 this fails, which the earlier
+    // normalisation-and-monotonicity assertions would not catch.
+    const c6 = harmonicAmplitudes(84) // C6
+    const c6Share = c6[0] / c6.reduce((sum, a) => sum + a, 0)
+    expect(c6Share).toBeGreaterThan(0.72)
+
+    // The bass must stay bright by contrast — its upper partials still carry the
+    // pitch, so its fundamental share stays well below the treble's.
+    const a0 = harmonicAmplitudes(A0_MIDI)
+    const a0Share = a0[0] / a0.reduce((sum, a) => sum + a, 0)
+    expect(a0Share).toBeLessThan(0.4)
+  })
 })
 
 describe('timbreCutoffHz', () => {

@@ -5,6 +5,7 @@ import type { CanonicalAnimationData } from '@/types/animationContract'
 import { buildKeyLayout } from '@/utils/pianoLayout'
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
+import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { PlaybackControls } from '@/components/playback'
@@ -101,7 +102,7 @@ export default function FallingNotesPlayer({
           id="master-volume"
           type="range"
           min={0}
-          max={0.6}
+          max={MAX_MASTER_GAIN}
           step={0.01}
           value={volume}
           onChange={(e) => setVolume(parseFloat(e.target.value))}

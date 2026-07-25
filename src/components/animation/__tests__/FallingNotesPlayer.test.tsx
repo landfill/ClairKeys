@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import FallingNotesPlayer from '../FallingNotesPlayer'
 
@@ -65,5 +65,21 @@ describe('FallingNotesPlayer', () => {
     expect(screen.getByTestId('visual-playhead')).toHaveTextContent('1.5')
     expect(screen.getByTestId('active-keys')).toHaveTextContent('60')
     expect(mockKeyboardFrames[0]).toEqual(new Set([60]))
+  })
+
+  it('shows the current master gain and forwards slider changes to setVolume', () => {
+    mockPlayerState.setVolume.mockClear()
+    render(<FallingNotesPlayer animationData={animationData} />)
+
+    // The readout is the gain value itself — that is what makes it usable for
+    // choosing DEFAULT_MASTER_GAIN — so it must render the state, not a percent.
+    const slider = screen.getByLabelText('음량 (master gain)') as HTMLInputElement
+    expect(slider.value).toBe('0.22')
+    expect(screen.getByText('0.22')).toBeInTheDocument()
+
+    // A drag forwards the numeric gain to setVolume unchanged; clamping lives in
+    // the hook, verified separately.
+    fireEvent.change(slider, { target: { value: '0.3' } })
+    expect(mockPlayerState.setVolume).toHaveBeenCalledWith(0.3)
   })
 })

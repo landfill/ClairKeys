@@ -245,20 +245,28 @@ describe('useFallingNotesAudio', () => {
     })
     expect(masterGain.gain.value).toBe(DEFAULT_MASTER_GAIN)
 
+    // A mid-range value passes through unchanged, and the applied value is
+    // returned so the UI can store what the bus is actually at.
+    let applied: number | undefined
     act(() => {
-      result.current.setVolume(0.4)
+      applied = result.current.setVolume(0.3)
     })
-    expect(targets[targets.length - 1]).toBeCloseTo(0.4)
+    expect(targets[targets.length - 1]).toBeCloseTo(0.3)
+    expect(applied).toBeCloseTo(0.3)
 
+    // Above the ceiling: both the bus and the returned value clamp.
     act(() => {
-      result.current.setVolume(999)
+      applied = result.current.setVolume(999)
     })
     expect(targets[targets.length - 1]).toBe(MAX_MASTER_GAIN)
+    expect(applied).toBe(MAX_MASTER_GAIN)
 
+    // Below zero: clamps to 0 both ways.
     act(() => {
-      result.current.setVolume(-5)
+      applied = result.current.setVolume(-5)
     })
     expect(targets[targets.length - 1]).toBe(0)
+    expect(applied).toBe(0)
 
     unmount()
   })

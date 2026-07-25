@@ -51,11 +51,16 @@ interface AudioNodes {
 export const DEFAULT_MASTER_GAIN = 0.22
 
 /**
- * Ceiling the runtime volume control clamps to. Above this, a dense chord near
- * `VOICE_LIMIT` could drive the bus into hard clipping; see the headroom note in
- * `initializeAudio`. Kept as headroom for tuning, not as a loudness target.
+ * Ceiling the runtime volume control clamps to.
+ *
+ * A voice peaks near `PEAK_GAIN` (0.3), so a realistic dense passage of ~8
+ * overlapping voices sums to ~2.4 pre-master; at 0.35 that lands near the ±1
+ * ceiling with little margin, so this is the top of the useful tuning range
+ * rather than a target. `VOICE_LIMIT` (24) is the absolute worst case, but 24
+ * notes at full velocity and aligned phase does not occur in real playback —
+ * pinning the ceiling to it would make every ordinary passage far too quiet.
  */
-export const MAX_MASTER_GAIN = 0.6
+export const MAX_MASTER_GAIN = 0.35
 
 export function useFallingNotesAudio() {
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -441,8 +446,12 @@ export function useFallingNotesAudio() {
    * ceiling matches the clipping analysis in `initializeAudio`: a note peaks
    * near `PEAK_GAIN` and up to `VOICE_LIMIT` voices can overlap, so the master
    * level is bounded rather than left free to drive the bus into hard clipping.
+   *
+   * Returns the value actually applied after clamping, so the caller's UI state
+   * reflects the real bus level rather than the raw request — the readout is the
+   * whole point of the control.
    */
-  const setVolume = useCallback((value: number) => {
+  const setVolume = useCallback((value: number): number => {
     const clamped = Math.min(MAX_MASTER_GAIN, Math.max(0, value))
     masterGainValueRef.current = clamped
     const gain = masterGainRef.current
@@ -451,6 +460,7 @@ export function useFallingNotesAudio() {
       // A short ramp instead of a step avoids a click on an audible bus.
       gain.gain.setTargetAtTime(clamped, context.currentTime, 0.015)
     }
+    return clamped
   }, [])
 
   /**

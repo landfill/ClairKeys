@@ -146,8 +146,10 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
    * React state so the control and its readout reflect what is actually set.
    */
   const handleVolumeChange = useCallback((newVolume: number) => {
-    setVolume(newVolume)
-    setVolumeState(newVolume)
+    // Store the value the audio hook actually applied after clamping, not the
+    // raw request, so the readout can never show a level the bus is not at.
+    const applied = setVolume(newVolume)
+    setVolumeState(applied)
   }, [setVolume])
 
   // Enhanced animation loop with precise audio-visual synchronization
