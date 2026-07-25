@@ -10,11 +10,25 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
   `/api/upload-async`, `/api/processing`, and the caller-less `/api/upload` reach
   `pdfParser.createEnhancedDemo()` and persist its output as an ordinary `SheetMusic` row.
   Evidence: `docs/recovery/validation/2026-07-25-p1a-upload-path-inventory.md`.
-- 2026-07-25 — Work stage 2 in review. **D-010** selects `/api/omr/upload` as canonical and records
-  the migration plan. In PR [#34](https://github.com/landfill/ClairKeys/pull/34).
-- Work stages 3–5 not started; they wait on D-010 being agreed.
+- 2026-07-25 — Work stages 1–2 merged via PR [#34](https://github.com/landfill/ClairKeys/pull/34) at
+  `aca4073`. **D-010** selects `/api/omr/upload` as canonical and records the migration plan.
+  Two Codex review rounds corrected the plan: `omrJobId IS NULL` also matches rows written by
+  `POST /api/sheet` and `SheetMusicRepository.create`, so classification requires matching stored
+  JSON against `pdfParser`'s three fixed melodies, and anything unconfirmed stays `'unknown'`.
+- 2026-07-25 — Work stages 3–5 in review as PR [#35](https://github.com/landfill/ClairKeys/pull/35).
+  Upload page reduced to `OMRUploadForm`; `/api/upload` + `useFileUpload` deleted; both async
+  processors lose persistence and return `CONVERSION_UNAVAILABLE`; `pdfParser` guarded by
+  `assertDemoGenerationAllowed()`. Evidence:
+  `docs/recovery/validation/2026-07-25-p1a-canonical-upload-only.md`.
+- Remaining for phase completion: the `provenance` migration for rows stored before #35 (D-010
+  decision 5), in its own PR **after** #35 closes the writers — counting rows while demo rows still
+  arrive measures nothing.
 - Note for stage 4: issue #20 (demo stub `pdfParser.ts`) is satisfied by this stage rather than
   separately. `/api/processing-queue` is a read-only listing endpoint, not an upload path.
+- Out of scope, handed to P2-A: `MultiStageUploadUI`, `BackgroundFileUpload`, and
+  `musicDataConverter` have zero product callers after #35. Deleting them cascades into
+  `ProcessStageIndicator`, `MusicThemeLoader`, and `ProcessingStatus`, which take types from
+  `MultiStageUploadUI`.
 
 ## Objective
 
