@@ -28,6 +28,11 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
   real-data access and therefore the user's approval. Criteria 1, 2, 4, and 5 are met.
 - Note for stage 4: issue #20 (demo stub `pdfParser.ts`) is satisfied by this stage rather than
   separately. `/api/processing-queue` is a read-only listing endpoint, not an upload path.
+- 2026-07-26 — Issue #22 repository repair is in review via PR
+  [#36](https://github.com/landfill/ClairKeys/pull/36). It accepts Audiveris `.mxl`, invokes the
+  native packaged launcher, removes Docker/demo processor selection, and pins the real 5.11.0
+  package. Docker build, Fly deployment, and a real PDF remain unverified, so this does not yet
+  establish a working production upload.
 - Out of scope, handed to P2-A: `MultiStageUploadUI`, `BackgroundFileUpload`, and
   `musicDataConverter` have zero product callers after #35. Deleting them cascades into
   `ProcessStageIndicator`, `MusicThemeLoader`, and `ProcessingStatus`, which take types from
