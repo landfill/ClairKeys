@@ -67,3 +67,22 @@ stages 3–5 specify.
 - `MultiStageUploadUI`, `BackgroundFileUpload`, and `musicDataConverter` now have zero product
   callers but remain in the tree. Deleting them cascades into three more components that take types
   from `MultiStageUploadUI`; that is P2-A's dead-layer work, deliberately out of scope here.
+
+## Post-merge production verification (2026-07-25)
+
+PR #35 merged at `317dad2`. Every post-merge check on that commit passed: `Lint`, `Run Tests`,
+`Security Audit`, `E2E Tests`, `Post-merge tests`, `Post-merge build`. Vercel created `Production`
+deployments for `317dad2` and for the following handoff commit `4d47027`.
+
+| Check | Result |
+|---|---|
+| `POST https://clairkeys.vercel.app/api/upload` | **404** — the route is absent from the deployed build |
+| `GET https://clairkeys.vercel.app/upload` | 307 — `AuthGuard` redirect to sign-in, as expected |
+
+The 404 is the load-bearing evidence. A route that still existed would answer `405` (method not
+allowed) or `401` (unauthorized); `404` means Next.js has no such route in the deployed bundle, so
+the deletion reached production rather than only `main`.
+
+Not verified in production: the upload page's single-form layout and the `CONVERSION_UNAVAILABLE`
+responses both sit behind authentication, so neither was exercised against the live site. Their
+evidence remains the local test suite and the production build output.
