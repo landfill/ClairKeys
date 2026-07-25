@@ -114,6 +114,7 @@ The current Fly configuration is a provisional safe starting point:
 - Audiveris maximum Java heap: 3GB
 - Container memory: 4GB
 - Native Audiveris conversions per service instance: 1
+- Audiveris conversion timeout: 15 minutes
 - Remaining memory is reserved for Python, native OCR libraries, and the OS
 
 These values have not yet been validated with a real container conversion or

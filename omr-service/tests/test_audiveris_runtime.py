@@ -19,6 +19,27 @@ class SuccessfulProcess:
         return b"", b""
 
 
+class HangingProcess:
+    returncode = None
+
+    def __init__(self):
+        self.killed = False
+        self.waited = False
+        self.communicate_started = asyncio.Event()
+
+    async def communicate(self):
+        self.communicate_started.set()
+        await asyncio.Future()
+
+    def kill(self):
+        self.killed = True
+        self.returncode = -9
+
+    async def wait(self):
+        self.waited = True
+        return self.returncode
+
+
 class AudiverisProcessorTests(unittest.TestCase):
     def test_native_launcher_receives_output_folder_and_returns_mxl(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -121,6 +142,91 @@ class AudiverisProcessorTests(unittest.TestCase):
                 ):
                     asyncio.run(processor.process_pdf(pdf_path, output_dir))
 
+    def test_timed_out_conversion_kills_process_and_releases_slot(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temp_dir = Path(temporary_directory)
+            executable = temp_dir / "Audiveris"
+            executable.touch(mode=0o755)
+            os.chmod(executable, 0o755)
+            pdf_path = temp_dir / "input.pdf"
+            pdf_path.write_bytes(b"%PDF-1.4")
+            output_dir = temp_dir / "output"
+            retry_output_dir = temp_dir / "retry-output"
+            retry_output_dir.mkdir()
+            retry_mxl_path = retry_output_dir / "input.mxl"
+            retry_mxl_path.write_bytes(b"PK")
+            hanging_process = HangingProcess()
+            processor = AudiverisProcessor(
+                audiveris_executable=executable,
+                process_timeout_seconds=0.01,
+            )
+
+            with patch(
+                "omr.audiveris.asyncio.create_subprocess_exec",
+                new=AsyncMock(
+                    side_effect=[hanging_process, SuccessfulProcess()]
+                ),
+            ):
+                with self.assertRaisesRegex(RuntimeError, "timed out after"):
+                    asyncio.run(processor.process_pdf(pdf_path, output_dir))
+                retry_result = asyncio.run(
+                    processor.process_pdf(pdf_path, retry_output_dir)
+                )
+
+            self.assertTrue(hanging_process.killed)
+            self.assertTrue(hanging_process.waited)
+            self.assertEqual(retry_result, retry_mxl_path)
+
+    def test_timed_out_installation_validation_kills_process(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            executable = Path(temporary_directory) / "Audiveris"
+            executable.touch(mode=0o755)
+            os.chmod(executable, 0o755)
+            hanging_process = HangingProcess()
+            processor = AudiverisProcessor(
+                audiveris_executable=executable,
+                process_timeout_seconds=0.01,
+            )
+
+            with patch(
+                "omr.audiveris.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=hanging_process),
+            ):
+                result = asyncio.run(processor.validate_audiveris_installation())
+
+            self.assertFalse(result)
+            self.assertTrue(hanging_process.killed)
+            self.assertTrue(hanging_process.waited)
+
+    def test_cancelled_conversion_kills_process_before_releasing_slot(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temp_dir = Path(temporary_directory)
+            executable = temp_dir / "Audiveris"
+            executable.touch(mode=0o755)
+            os.chmod(executable, 0o755)
+            pdf_path = temp_dir / "input.pdf"
+            pdf_path.write_bytes(b"%PDF-1.4")
+            hanging_process = HangingProcess()
+            processor = AudiverisProcessor(audiveris_executable=executable)
+
+            async def run_and_cancel():
+                task = asyncio.create_task(
+                    processor.process_pdf(pdf_path, temp_dir / "output")
+                )
+                await hanging_process.communicate_started.wait()
+                task.cancel()
+                with self.assertRaises(asyncio.CancelledError):
+                    await task
+
+            with patch(
+                "omr.audiveris.asyncio.create_subprocess_exec",
+                new=AsyncMock(return_value=hanging_process),
+            ):
+                asyncio.run(run_and_cancel())
+
+            self.assertTrue(hanging_process.killed)
+            self.assertTrue(hanging_process.waited)
+
 
 class DeploymentStaticContractTests(unittest.TestCase):
     def test_app_uses_only_the_native_audiveris_processor(self):
@@ -147,6 +253,9 @@ class DeploymentStaticContractTests(unittest.TestCase):
         self.assertIn("TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata", dockerfile)
         self.assertIn("/opt/audiveris/bin/Audiveris", dockerfile)
         self.assertIn("AUDIVERIS_MAX_CONCURRENCY=1", dockerfile)
+        self.assertIn("AUDIVERIS_TIMEOUT_SECONDS=900", dockerfile)
+        self.assertIn("grep -Fqx 'java-options=-Xmx3G'", dockerfile)
+        self.assertGreaterEqual(dockerfile.count("--no-install-recommends"), 2)
         self.assertNotIn("openjdk", dockerfile.lower())
 
     def test_fly_memory_and_bundled_launcher_heap_leave_headroom(self):

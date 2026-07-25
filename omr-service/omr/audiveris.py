@@ -18,6 +18,7 @@ class AudiverisProcessor:
         self,
         audiveris_executable: Optional[Path] = None,
         max_concurrent_conversions: Optional[int] = None,
+        process_timeout_seconds: Optional[float] = None,
     ):
         configured_executable = os.getenv(
             "AUDIVERIS_EXECUTABLE", "/opt/audiveris/bin/Audiveris"
@@ -31,6 +32,43 @@ class AudiverisProcessor:
         if concurrency < 1:
             raise ValueError("AUDIVERIS_MAX_CONCURRENCY must be at least 1")
         self._conversion_slots = asyncio.Semaphore(concurrency)
+        timeout_seconds = process_timeout_seconds
+        if timeout_seconds is None:
+            timeout_seconds = float(
+                os.getenv("AUDIVERIS_TIMEOUT_SECONDS", "900")
+            )
+        if timeout_seconds <= 0:
+            raise ValueError("AUDIVERIS_TIMEOUT_SECONDS must be greater than 0")
+        self.process_timeout_seconds = timeout_seconds
+
+    async def _kill_and_wait(
+        self,
+        process: asyncio.subprocess.Process,
+    ) -> None:
+        try:
+            process.kill()
+        except ProcessLookupError:
+            pass
+        await process.wait()
+
+    async def _communicate_with_timeout(
+        self,
+        process: asyncio.subprocess.Process,
+        timeout_seconds: float,
+    ) -> tuple[bytes, bytes]:
+        try:
+            return await asyncio.wait_for(
+                process.communicate(),
+                timeout=timeout_seconds,
+            )
+        except asyncio.TimeoutError:
+            await self._kill_and_wait(process)
+            raise RuntimeError(
+                f"Audiveris timed out after {timeout_seconds:g} seconds"
+            ) from None
+        except asyncio.CancelledError:
+            await self._kill_and_wait(process)
+            raise
 
     async def process_pdf(self, pdf_path: Path, output_dir: Path) -> Path:
         """
@@ -80,7 +118,10 @@ class AudiverisProcessor:
                 cwd=output_dir
             )
             
-            stdout, stderr = await process.communicate()
+            stdout, stderr = await self._communicate_with_timeout(
+                process,
+                self.process_timeout_seconds,
+            )
             
             # Check if process completed successfully
             if process.returncode != 0:
@@ -134,7 +175,10 @@ class AudiverisProcessor:
                 stderr=asyncio.subprocess.PIPE
             )
             
-            stdout, stderr = await process.communicate()
+            stdout, stderr = await self._communicate_with_timeout(
+                process,
+                min(self.process_timeout_seconds, 30.0),
+            )
             
             if process.returncode != 0:
                 logger.error("Audiveris launcher is not available")
