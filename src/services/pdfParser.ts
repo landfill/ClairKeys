@@ -1,5 +1,19 @@
-// Note: Canvas and Jimp imports are kept for future OMR implementation
-// Currently using enhanced demo data generation for system stability
+// Development-only demo animation generator.
+//
+// This module does not read PDFs. `createEnhancedDemo()` picks one of three
+// hardcoded melodies with `bufferLength % melodyVariations.length` — the score
+// itself is never opened. Until 2026-07-25 three upload paths called it and
+// stored the result as a genuine `SheetMusic` row, which is what D-001
+// prohibited and D-010 removed.
+//
+// It survives because without an OMR service there is otherwise no way to
+// exercise the playback path locally. `assertDemoGenerationAllowed()` keeps it
+// out of production, and no product code imports it any more — the upload
+// pipeline reaches the real converter through `/api/omr/upload` alone.
+//
+// Do not reconnect this to a persistence path. The rows it produced are still
+// identifiable only because its melodies are fixed literals; see D-010's
+// migration plan before changing them.
 
 import { Jimp } from 'jimp';
 type JimpType = Awaited<ReturnType<typeof Jimp.read>>;
@@ -45,9 +59,25 @@ interface DetectedNote {
   pitch: string
 }
 
+/**
+ * Refuses to fabricate a score outside development.
+ *
+ * Called at every entry point that can produce demo animation data. In
+ * production this throws rather than returning something a caller might store
+ * or show as a conversion result (D-001, D-010).
+ */
+export function assertDemoGenerationAllowed(): void {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'Demo animation generation is disabled in production. ' +
+      'Use the canonical upload path (/api/omr/upload), which performs a real conversion.'
+    )
+  }
+}
+
 export class PDFParserService {
   /**
-   * Parse PDF file and extract sheet music data using PDF.js and computer vision
+   * Generate demo animation data. Development only — see the file header.
    */
   async parsePDF(fileBuffer: Buffer, metadata: {
     title: string
@@ -55,9 +85,11 @@ export class PDFParserService {
     originalFileName: string
     fileSize: number
   }): Promise<PianoAnimationData> {
+    assertDemoGenerationAllowed()
+
     console.log('PDFParserService: Starting PDF parsing...')
     console.log('PDFParserService: Buffer length:', fileBuffer.length)
-    
+
     try {
       // For now, we'll use enhanced demo data generation based on file metadata
       // This ensures system stability while avoiding complex PDF.js/Node.js compatibility issues
