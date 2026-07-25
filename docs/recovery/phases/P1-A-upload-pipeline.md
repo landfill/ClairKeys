@@ -15,14 +15,17 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
   Two Codex review rounds corrected the plan: `omrJobId IS NULL` also matches rows written by
   `POST /api/sheet` and `SheetMusicRepository.create`, so classification requires matching stored
   JSON against `pdfParser`'s three fixed melodies, and anything unconfirmed stays `'unknown'`.
-- 2026-07-25 — Work stages 3–5 in review as PR [#35](https://github.com/landfill/ClairKeys/pull/35).
-  Upload page reduced to `OMRUploadForm`; `/api/upload` + `useFileUpload` deleted; both async
-  processors lose persistence and return `CONVERSION_UNAVAILABLE`; `pdfParser` guarded by
-  `assertDemoGenerationAllowed()`. Evidence:
+- 2026-07-25 — Work stages 3–5 merged via PR [#35](https://github.com/landfill/ClairKeys/pull/35) at
+  `317dad2`. Upload page reduced to `OMRUploadForm`; `/api/upload` + `useFileUpload` deleted; both
+  async processors lose persistence and return `CONVERSION_UNAVAILABLE`; `pdfParser` guarded by
+  `assertDemoGenerationAllowed()`. `prisma.sheetMusic.create` call sites: six → three, none reaching
+  the demo generator. Codex found that removing persistence turned an older `retryJob` defect into
+  the normal case; `retryJob` now refuses `CONVERSION_UNAVAILABLE` failures. Evidence:
   `docs/recovery/validation/2026-07-25-p1a-canonical-upload-only.md`.
-- Remaining for phase completion: the `provenance` migration for rows stored before #35 (D-010
-  decision 5), in its own PR **after** #35 closes the writers — counting rows while demo rows still
-  arrive measures nothing.
+- **Remaining for phase completion** — completion criterion 3 ("기존 사용자 데이터와 지원 클라이언트
+  migration이 검증된다"): the `provenance` backfill for rows stored before #35 (D-010 decision 5).
+  Its precondition is now met — the writers are closed, so a count is finally meaningful. Needs
+  real-data access and therefore the user's approval. Criteria 1, 2, 4, and 5 are met.
 - Note for stage 4: issue #20 (demo stub `pdfParser.ts`) is satisfied by this stage rather than
   separately. `/api/processing-queue` is a read-only listing endpoint, not an upload path.
 - Out of scope, handed to P2-A: `MultiStageUploadUI`, `BackgroundFileUpload`, and
