@@ -138,4 +138,75 @@ describe('useFallingNotesAudio', () => {
 
     unmount()
   })
+  it('keeps a velocity-0 note silent through every scheduled gain event', async () => {
+    // The canonical animation contract allows an explicit velocity of 0, and
+    // PR #26 switched `||` to `??` specifically so such a note stays silent.
+    // The piano-timbre envelope then reintroduced a floor: `exponentialRamp`
+    // cannot land on zero, so the decay target was clamped to 1e-4 — and the
+    // release scheduled that floor unconditionally, giving a silent note an
+    // audible tail. This asserts on every value ever written to the note's gain.
+    const scheduled: number[] = []
+
+    const makeGainNode = () => ({
+      connect: jest.fn(),
+      gain: {
+        value: 0,
+        setValueAtTime: jest.fn((v: number) => scheduled.push(v)),
+        linearRampToValueAtTime: jest.fn((v: number) => scheduled.push(v)),
+        exponentialRampToValueAtTime: jest.fn((v: number) => scheduled.push(v)),
+        cancelScheduledValues: jest.fn(),
+      },
+    })
+
+    let gainCalls = 0
+    const context = {
+      state: 'running' as AudioContextState,
+      currentTime: 10,
+      destination: {},
+      // The first createGain is the master bus; later ones belong to notes.
+      createGain: jest.fn(() => {
+        gainCalls += 1
+        return gainCalls === 1
+          ? { connect: jest.fn(), gain: { value: 0 } }
+          : makeGainNode()
+      }),
+      createOscillator: jest.fn(() => ({
+        connect: jest.fn(),
+        start: jest.fn(),
+        stop: jest.fn(),
+        frequency: { value: 0 },
+        type: 'sine',
+        setPeriodicWave: jest.fn(),
+      })),
+      createBiquadFilter: jest.fn(() => ({
+        connect: jest.fn(),
+        type: 'lowpass',
+        frequency: { value: 0 },
+        Q: { value: 0 },
+      })),
+      createPeriodicWave: jest.fn(() => ({})),
+      resume: jest.fn(() => Promise.resolve()),
+      close: jest.fn(() => Promise.resolve()),
+    } as unknown as AudioContext
+
+    const constructor = jest.fn(() => context) as unknown as typeof AudioContext
+    setAudioContextConstructor(constructor)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    await act(async () => {
+      await result.current.startAudio(
+        [{ midi: 21, start: 0, duration: 1, hand: 'L', velocity: 0 }],
+        0,
+        1,
+        false
+      )
+    })
+
+    expect(scheduled.length).toBeGreaterThan(0)
+    for (const value of scheduled) {
+      expect(value).toBe(0)
+    }
+
+    unmount()
+  })
 })
