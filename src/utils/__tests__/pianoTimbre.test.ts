@@ -137,10 +137,13 @@ describe('envelopeBreakpoints', () => {
     expect(envelope.decaySec).toBeGreaterThan(0)
   })
 
-  it('reaches the note end before releasing, however short the note', () => {
-    for (const duration of [0.05, 0.2, 1, 8]) {
+  it('never lets the attack outlast the note, down to zero length', () => {
+    // A zero-length note is degenerate but reachable; its attack must not run
+    // past the note's own end. The scheduler also filters these out, but the
+    // envelope contract has to hold on its own.
+    for (const duration of [0, 0.05, 0.2, 1, 8]) {
       const envelope = envelopeBreakpoints(0.8, duration)
-      expect(envelope.attackSec).toBeGreaterThan(0)
+      expect(envelope.attackSec).toBeGreaterThanOrEqual(0)
       expect(envelope.attackSec).toBeLessThanOrEqual(duration)
       expect(envelope.releaseSec).toBeGreaterThan(0)
     }

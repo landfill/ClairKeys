@@ -1,4 +1,5 @@
 import { A0_MIDI, C8_MIDI, midiToFreq } from './pianoLayout'
+import type { NoteEnvelope } from '@/types/fallingNotes'
 
 /**
  * Piano timbre: which partials a note carries, how bright it is, and how it decays.
@@ -118,17 +119,6 @@ export function timbreCutoffHz(midi: number): number {
   return Math.min(MAX_PARTIAL_HZ, Math.max(MIN_CUTOFF_HZ, tracking))
 }
 
-/** Amplitude envelope for one note, in seconds relative to its start. */
-export interface NoteEnvelope {
-  /** Peak amplitude reached at the end of the attack. */
-  peak: number
-  /** Amplitude the note has fallen to by the end of the decay. */
-  sustain: number
-  attackSec: number
-  decaySec: number
-  releaseSec: number
-}
-
 /** Loudest a single voice may be before the master gain stage. */
 const PEAK_GAIN = 0.3
 
@@ -156,7 +146,10 @@ export function envelopeBreakpoints(
   durationSec: number
 ): NoteEnvelope {
   const safeDuration = Math.max(durationSec, 0)
-  const attackSec = Math.min(ATTACK_SEC, safeDuration || ATTACK_SEC)
+  // Clamp to the note's own length so the attack never outlasts it — including
+  // a zero-length note, where the earlier `safeDuration || ATTACK_SEC` fell
+  // back to the full 4 ms.
+  const attackSec = Math.min(ATTACK_SEC, safeDuration)
   const peak = Math.max(0, velocity) * PEAK_GAIN
 
   return {

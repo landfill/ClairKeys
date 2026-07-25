@@ -40,6 +40,21 @@ export type FallingNote = {
 };
 
 /**
+ * Amplitude envelope for one synthesised note, in seconds relative to its start.
+ * Produced by `envelopeBreakpoints` in `@/utils/pianoTimbre` and consumed by the
+ * playback hook when scheduling gain events.
+ */
+export interface NoteEnvelope {
+  /** Peak amplitude reached at the end of the attack. */
+  peak: number;
+  /** Amplitude the note has fallen to by the end of the decay. */
+  sustain: number;
+  attackSec: number;
+  decaySec: number;
+  releaseSec: number;
+}
+
+/**
  * Piano key layout information for 88-key keyboard
  */
 export type KeyLayout = {
