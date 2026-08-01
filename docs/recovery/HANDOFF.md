@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-07-26 KST
+Last updated: 2026-08-02 KST
 
 ## Current state
 
@@ -125,13 +125,20 @@ Three constraints remain load-bearing:
 
 ## Local worktree state
 
-`git status --short` shows only the user's untracked `playwright-report/` and `test-results/` after
-the handoff files are committed. `.omx/` remains an ignored local runtime directory; tracked
+Updated 2026-08-02. `git status --short` is empty — the untracked `playwright-report/` and
+`test-results/` recorded on 2026-07-26 are gone, so the user-owned state that blocked branch
+cleanup no longer exists. `.omx/` remains an ignored local runtime directory; tracked
 `.claude/settings.local.json` and `prisma/schema.prisma` are unchanged. Previously listed
 `.claude/settings.json`, `docs/.bkit-memory.json`, and `docs/.pdca-status.json` do not exist in this
-checkout. Both local and remote `codex/p1-omr-audiveris-runtime` tips are included in `main`, but
-the branch refs are intentionally retained because the cleanup protocol forbids branch deletion
-while user-owned uncommitted state is present.
+checkout.
+
+**PR #36 branch cleanup is complete.** Before deletion, `git merge-base --is-ancestor
+origin/codex/p1-omr-audiveris-runtime origin/main` exited 0 and `git rev-list --count
+origin/main..origin/codex/p1-omr-audiveris-runtime` was 0, so tip `4613e08` carried no commits
+outside `main`. The local branch no longer existed; the remote ref was deleted and pruned. `git
+branch -a` now lists only `main` and `origin/main`, and local `main` matches `origin/main` at
+`5196754` with 0 commits either way. Deleting the branch was not a status change for issue #22 —
+the merged code is in `main`, and the Fly OMR runtime proof is still missing.
 
 ## Product-critical follow-up order
 
