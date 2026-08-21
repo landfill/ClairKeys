@@ -42,6 +42,21 @@ Last updated: 2026-08-21 KST
 
 ## Latest verified result
 
+- **2026-08-21 — the OMR service runs, and starting it exposed two defects that report success for
+  work that did not happen.** `POST /process` accepted a real 2-page PDF and reached `completed` in
+  about 25 seconds, using the host `/data` mount for scratch and invoking the packaged launcher.
+  (a) `app.py:71-78` declares `title`, `composer`, and `user_id` without `Form(...)`, so FastAPI
+  binds them as **query** parameters and silently drops the multipart fields
+  `src/app/api/omr/upload/route.ts:77-82` actually sends — measured against a query-string control
+  that returned all three correctly. `sheet_music_id` is not declared at all. A score is therefore
+  stored under its PDF filename rather than the user's title. (b) `omr/storage.py` falls back to
+  `_save_local_fallback` on missing credentials, on a non-2xx upload, **and on any exception**, and
+  the job still reports `"Processing completed successfully"` with a `file:///tmp/results/…` URL
+  that no browser can fetch. That is `AGENTS.md` § "금지되는 완료 상태" verbatim, and it is not a
+  container artifact — an unreachable Supabase in production takes the same path. **Do not expose
+  the service until (b) is fixed**: shipping it would replace P1-A's honest failure with a
+  successful-looking, unplayable score. Neither defect has a fix yet and neither belongs in PR #37.
+  Evidence: `docs/recovery/validation/2026-08-21-omr-service-first-run-defects.md`.
 - **2026-08-21 — the OMR image was built and run for the first time, on a NAVER Cloud VM, and a real
   PDF converted end to end through the conversion pipeline.** This is the runtime evidence issue #22
   has been waiting for, and producing it found two defects no static check in this repository could
