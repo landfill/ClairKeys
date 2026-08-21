@@ -5,7 +5,7 @@ FastAPI server for processing PDF sheet music to ClairKeys animation data
 
 import os
 import uvicorn
-from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import aiofiles
@@ -72,12 +72,18 @@ async def root():
 async def process_pdf(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    title: Optional[str] = None,
-    composer: Optional[str] = None,
-    user_id: Optional[str] = None
+    title: Optional[str] = Form(None),
+    composer: Optional[str] = Form(None),
+    user_id: Optional[str] = Form(None),
+    sheet_music_id: Optional[str] = Form(None),
 ):
     """
     Process PDF sheet music to ClairKeys animation data
+
+    Every field below `file` must be declared with `Form(...)`. FastAPI binds a
+    plain scalar parameter to the query string, and `/api/omr/upload` sends
+    these as multipart form fields, so without it they arrive as None and a
+    score is stored under its PDF filename.
     """
     # Validate file type
     if not file.filename.lower().endswith('.pdf'):
@@ -96,7 +102,8 @@ async def process_pdf(
             "filename": file.filename,
             "title": title,
             "composer": composer,
-            "user_id": user_id
+            "user_id": user_id,
+            "sheet_music_id": sheet_music_id
         }
     }
     
