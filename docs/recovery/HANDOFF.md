@@ -9,11 +9,11 @@ Last updated: 2026-08-21 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests:
-  - [#39](https://github.com/landfill/ClairKeys/pull/39) — `codex/p1-audit-advisory-pins`. Dependency-only: restores the `Security Audit` required check, which six newly published advisories turned red on `main` with no dependency change — the **fifth** occurrence of the PR #25/#27/#31 pattern. It currently blocks the merge button for both PRs below, so it merges first. Review log: `docs/recovery/reviews/PR-39.md`.
-  - [#38](https://github.com/landfill/ClairKeys/pull/38) — `codex/p1-omr-service-contract` at `9b85d82`. Stops the OMR service reporting success for work it did not do: `/process` now reads the multipart fields `/api/omr/upload` sends (including `sheet_music_id`), and a storage failure fails the job instead of returning an unreachable `file://` URL. The local fallback survives for development behind a guard that fails closed. 9 new tests, 18 passing; verified on the VM. Review log: `docs/recovery/reviews/PR-38.md`.
-- Open pull request: [#37](https://github.com/landfill/ClairKeys/pull/37) — `codex/p1-omr-naver-vm-runtime` at `8045eb0`. Makes the OMR image able to install and start Audiveris; adds two regression tests. Live status on GitHub; review log: `docs/recovery/reviews/PR-37.md`.
+- Open pull request: [#40](https://github.com/landfill/ClairKeys/pull/40) — `codex/p1-ignore-playwright-artifacts`. Ignores `playwright-report/` and `test-results/`. Small, but it is what currently blocks work branch cleanup: the protocol treats untracked files as user-owned, and these two have now blocked deletion twice. Live status on GitHub.
 - Completed pull requests:
+  - [#39](https://github.com/landfill/ClairKeys/pull/39) — `MERGED` at `9b31d82` (dependency-only: restored the `Security Audit` required check after six newly published advisories turned it red on unchanged dependencies — the **fifth** occurrence of the PR #25/#27/#31 pattern. `npm audit --audit-level high` went from 6 high to exit 0. Nested overrides keep `js-yaml` at 4.3.1 under `@eslint/eslintrc` and 3.15.1 under `@istanbuljs/load-nyc-config`, because no single version satisfies both; `3.15.1` is a backported fix despite the advisory title saying otherwise. `deepmerge-ts` is forced across a major under `prisma`, which pins it to exactly 7.1.5 in every published version — `prisma generate` still succeeds. All pins carry upper bounds so a resolution cannot silently cross a major. Review log: `docs/recovery/reviews/PR-39.md`)
+  - [#37](https://github.com/landfill/ClairKeys/pull/37) — `MERGED` at `0265771` (made the OMR image able to install and start Audiveris. The `.deb`'s postinst needed a system menu directory plus `desktop-file-utils`/`shared-mime-info`, and `libgtk-3-0` is absent from its `Depends` yet loaded by `WellKnowns.<clinit>` before argument parsing. The build now runs `Audiveris -version`. Review log: `docs/recovery/reviews/PR-37.md`)
+  - [#38](https://github.com/landfill/ClairKeys/pull/38) — `MERGED` at `3208488` (stopped the service reporting success for work it did not do: `/process` now reads its multipart fields including `sheet_music_id`, and a storage failure fails the job instead of returning a `file://` URL. The local fallback survives for development behind a guard that fails closed. Review log: `docs/recovery/reviews/PR-38.md`)
   - [#36](https://github.com/landfill/ClairKeys/pull/36) — `MERGED` at `c8764ec` (issue #22
     repository repair: accepts Audiveris `.mxl`, invokes the real packaged launcher, removes
     Docker/demo processor selection, pins the checksum-verified 5.11.0 `.deb`, provisions English
@@ -45,6 +45,15 @@ Last updated: 2026-08-21 KST
 
 ## Latest verified result
 
+- **2026-08-21 — PRs #39, #37, and #38 are merged and `main` is fully green.** Merged in that order
+  with the user's explicit approval: #39 first because its `Security Audit` fix was the only failing
+  check on the other two, then #37 and #38 after their branches were updated from `main`. All
+  post-merge checks on `3208488` report success — `Security Audit`, `Run Tests`, `E2E Tests`,
+  `Lint`, `Post-merge build`, `Post-merge tests`. Every work branch tip, local and remote, is
+  contained in `main` with 0 unique commits. **Branch deletion is deliberately deferred**: the
+  protocol treats untracked files as user-owned and `.gitignore` was modified but uncommitted, so
+  PR #40 carries that change rather than deleting branches over a dirty worktree. That change is
+  itself the fix for the condition that has now blocked cleanup twice.
 - **2026-08-21 — the anon key cannot write to Supabase Storage, so the OMR service could never have
   stored a result.** With the project restored, a direct probe of
   `POST /storage/v1/object/animation-data/…` with `SUPABASE_ANON_KEY` returned **403 `new row
