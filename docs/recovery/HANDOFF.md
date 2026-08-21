@@ -10,6 +10,7 @@ Last updated: 2026-08-21 KST
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
 - Open pull requests:
+  - [#39](https://github.com/landfill/ClairKeys/pull/39) — `codex/p1-audit-advisory-pins`. Dependency-only: restores the `Security Audit` required check, which six newly published advisories turned red on `main` with no dependency change — the **fifth** occurrence of the PR #25/#27/#31 pattern. It currently blocks the merge button for both PRs below, so it merges first. Review log: `docs/recovery/reviews/PR-39.md`.
   - [#38](https://github.com/landfill/ClairKeys/pull/38) — `codex/p1-omr-service-contract` at `9b85d82`. Stops the OMR service reporting success for work it did not do: `/process` now reads the multipart fields `/api/omr/upload` sends (including `sheet_music_id`), and a storage failure fails the job instead of returning an unreachable `file://` URL. The local fallback survives for development behind a guard that fails closed. 9 new tests, 18 passing; verified on the VM. Review log: `docs/recovery/reviews/PR-38.md`.
 - Open pull request: [#37](https://github.com/landfill/ClairKeys/pull/37) — `codex/p1-omr-naver-vm-runtime` at `8045eb0`. Makes the OMR image able to install and start Audiveris; adds two regression tests. Live status on GitHub; review log: `docs/recovery/reviews/PR-37.md`.
 - Completed pull requests:
@@ -44,6 +45,22 @@ Last updated: 2026-08-21 KST
 
 ## Latest verified result
 
+- **2026-08-21 — the anon key cannot write to Supabase Storage, so the OMR service could never have
+  stored a result.** With the project restored, a direct probe of
+  `POST /storage/v1/object/animation-data/…` with `SUPABASE_ANON_KEY` returned **403 `new row
+  violates row-level security policy`**, and `GET /storage/v1/bucket` returned `[]`. `storage.py:21`
+  reads exactly that key, so the upload path was blocked by policy, not by configuration. This is
+  the concealment chain's first link, and the rest is in code:
+  `src/app/api/omr/status/[jobId]/route.ts:77-82` writes `omrStatus.result.animation_data_url`
+  straight into `animationDataUrl` and **overwrites the user's title** with `result.title`, which
+  before PR #38 was the PDF filename. Without PR #38 a deployment would have produced a successful
+  upload, a `file://` URL persisted to the database, and a title replaced by a filename. PR #38
+  breaks that at the first link — the job now fails.
+  **Decision taken with the user (2026-08-21): the OMR service will not hold write credentials.**
+  It will return the animation JSON and the Next.js side will store it with the
+  `SUPABASE_SERVICE_ROLE_KEY` it already has, keeping the powerful key on Vercel. That needs a
+  `DECISIONS.md` entry (D-011) committed in the same PR as its code, and it must land **after**
+  #37/#38 to avoid re-writing `storage.py` twice.
 - **2026-08-21 — both service defects are fixed and verified on the VM (PR #38).** Regression-first:
   `tests/test_service_contract.py` was written before the fix and aborted at import against the old
   code. After the fix, 18 tests pass. On the VM the same PDF binds all four form fields
