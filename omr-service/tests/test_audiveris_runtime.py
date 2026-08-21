@@ -258,6 +258,34 @@ class DeploymentStaticContractTests(unittest.TestCase):
         self.assertGreaterEqual(dockerfile.count("--no-install-recommends"), 2)
         self.assertNotIn("openjdk", dockerfile.lower())
 
+    def test_container_supplies_the_needs_the_deb_does_not_declare(self):
+        """The 5.11.0 .deb fails to install and then fails to run without these.
+
+        Both were found by building the image for the first time on
+        2026-08-21; neither is visible from the package metadata. The postinst
+        shells out to xdg-desktop-menu/xdg-mime, which exit 3 in a minimal
+        image and take `dpkg --configure` down with them. Separately, gtk-3 is
+        loaded through JNA by WellKnowns' static initialiser, so a launcher
+        that installed cleanly still died before parsing its own arguments.
+        """
+        dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
+
+        self.assertIn("desktop-file-utils", dockerfile)
+        self.assertIn("shared-mime-info", dockerfile)
+        self.assertIn("/usr/share/applications", dockerfile)
+        self.assertIn("libgtk-3-0", dockerfile)
+
+    def test_build_proves_the_launcher_starts_not_merely_that_it_exists(self):
+        """`test -x` passed on an image whose launcher could not run at all.
+
+        The build must invoke the launcher so that a missing runtime
+        dependency fails the build instead of surfacing as a failed
+        conversion in production.
+        """
+        dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
+
+        self.assertIn("/opt/audiveris/bin/Audiveris -version", dockerfile)
+
     def test_fly_memory_and_bundled_launcher_heap_leave_headroom(self):
         dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
         fly_configuration = (OMR_SERVICE_ROOT / "fly.toml").read_text(encoding="utf-8")
