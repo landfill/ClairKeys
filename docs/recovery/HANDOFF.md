@@ -9,6 +9,8 @@ Last updated: 2026-08-21 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
+- Open pull requests:
+  - [#38](https://github.com/landfill/ClairKeys/pull/38) — `codex/p1-omr-service-contract` at `9b85d82`. Stops the OMR service reporting success for work it did not do: `/process` now reads the multipart fields `/api/omr/upload` sends (including `sheet_music_id`), and a storage failure fails the job instead of returning an unreachable `file://` URL. The local fallback survives for development behind a guard that fails closed. 9 new tests, 18 passing; verified on the VM. Review log: `docs/recovery/reviews/PR-38.md`.
 - Open pull request: [#37](https://github.com/landfill/ClairKeys/pull/37) — `codex/p1-omr-naver-vm-runtime` at `8045eb0`. Makes the OMR image able to install and start Audiveris; adds two regression tests. Live status on GitHub; review log: `docs/recovery/reviews/PR-37.md`.
 - Completed pull requests:
   - [#36](https://github.com/landfill/ClairKeys/pull/36) — `MERGED` at `c8764ec` (issue #22
@@ -42,6 +44,19 @@ Last updated: 2026-08-21 KST
 
 ## Latest verified result
 
+- **2026-08-21 — both service defects are fixed and verified on the VM (PR #38).** Regression-first:
+  `tests/test_service_contract.py` was written before the fix and aborted at import against the old
+  code. After the fix, 18 tests pass. On the VM the same PDF binds all four form fields
+  (`{'title': 'WTK1 Prelude 1', 'composer': 'J.S. Bach', 'user_id': 'test-user', 'sheet_music_id': '42'}`),
+  and with `ENVIRONMENT=production` and no credentials the job now reaches `failed` at progress 80
+  quoting the guard, writing no fallback file — where the identical run previously returned
+  `completed`. An `ENVIRONMENT=development` control still completes with the `file://` URL, so the
+  fallback is isolated rather than removed, matching `assertDemoGenerationAllowed()`. **A real
+  Supabase upload is still unverified**: the project's Storage host returned `NXDOMAIN` from two
+  independent networks during this work and the user reported it was down and being restored. Note
+  also that **`omr-service/tests/*.py` is run by no CI workflow**, so these tests and PR #37's
+  protect nothing automatically. Evidence:
+  `docs/recovery/validation/2026-08-21-omr-service-contract-fixes-verified.md`.
 - **2026-08-21 — the OMR service runs, and starting it exposed two defects that report success for
   work that did not happen.** `POST /process` accepted a real 2-page PDF and reached `completed` in
   about 25 seconds, using the host `/data` mount for scratch and invoking the packaged launcher.
