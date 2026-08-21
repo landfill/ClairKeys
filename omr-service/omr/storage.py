@@ -13,6 +13,28 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
+
+class StorageUploadError(RuntimeError):
+    """Animation data could not be stored anywhere a client can read it."""
+
+
+def assert_local_fallback_allowed() -> None:
+    """Refuse the local-file fallback outside development.
+
+    Writing the result inside the container and returning a `file://` URL is
+    useful when developing without Supabase. In production it produces a job
+    that reports success and an animation URL no browser can fetch, which is
+    the concealment D-001 and D-010 were written against. An unset ENVIRONMENT
+    is treated as production so this fails closed.
+    """
+    if os.getenv("ENVIRONMENT", "production").strip().lower() == "production":
+        raise StorageUploadError(
+            "Supabase Storage is not configured and the local fallback is "
+            "disabled in production. The job must fail rather than report "
+            "success with an unreachable file:// URL."
+        )
+
+
 class SupabaseStorage:
     """Handles uploading animation data to Supabase Storage"""
     
@@ -45,7 +67,7 @@ class SupabaseStorage:
         """
         try:
             if not self.supabase_url or not self.supabase_key:
-                # Fallback: save to local file for testing
+                assert_local_fallback_allowed()
                 return await self._save_local_fallback(job_id, animation_data, title)
             
             # Generate unique filename
@@ -73,9 +95,10 @@ class SupabaseStorage:
                 )
                 
                 if response.status_code not in [200, 201]:
-                    logger.error(f"Failed to upload to Supabase: {response.status_code} - {response.text}")
-                    # Fallback to local storage
-                    return await self._save_local_fallback(job_id, animation_data, title)
+                    raise StorageUploadError(
+                        "Supabase Storage rejected the upload: "
+                        f"{response.status_code} - {response.text}"
+                    )
             
             # Generate public URL
             public_url = f"{self.supabase_url}/storage/v1/object/public/{self.bucket_name}/{filename}"
@@ -83,10 +106,14 @@ class SupabaseStorage:
             logger.info(f"Successfully uploaded animation data: {public_url}")
             return public_url
             
+        except StorageUploadError:
+            raise
         except Exception as e:
-            logger.error(f"Error uploading to Supabase Storage: {str(e)}")
-            # Fallback to local storage
-            return await self._save_local_fallback(job_id, animation_data, title)
+            # A deleted, paused, or unreachable project must fail the job. Writing
+            # a local file here is what let a dead backend look like a success.
+            raise StorageUploadError(
+                f"Supabase Storage upload failed: {e}"
+            ) from e
     
     async def _save_local_fallback(self, job_id: str, animation_data: Dict[str, Any], title: str) -> str:
         """
