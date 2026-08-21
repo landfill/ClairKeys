@@ -13,6 +13,18 @@ ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
 
 # Audiveris's official .deb includes its own jlink JRE. English OCR language
 # data is separate from that runtime and must be installed explicitly.
+#
+# Three needs of the .deb are not expressed by its own metadata:
+#   - Its postinst runs xdg-desktop-menu/xdg-mime. Those exit 3 unless a system
+#     menu directory exists and desktop-file-utils/shared-mime-info supply the
+#     tools they shell out to, which fails `dpkg --configure` for the whole
+#     package even though the payload unpacks correctly.
+#   - libgtk-3-0 is absent from its Depends, but WellKnowns' static initialiser
+#     loads gtk-3 through JNA to read the HiDPI scale before any argument is
+#     parsed. Without it every invocation dies with UnsatisfiedLinkError, -batch
+#     included.
+# The desktop entries themselves are useless in a headless service; they are
+# provisioned only so the package configures cleanly.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
@@ -23,6 +35,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxslt1-dev \
     zlib1g-dev \
     tesseract-ocr-eng \
+    desktop-file-utils \
+    shared-mime-info \
+    libgtk-3-0 \
+    && mkdir -p /usr/share/applications /usr/share/desktop-directories \
     && curl -fsSL \
       "https://github.com/Audiveris/audiveris/releases/download/${AUDIVERIS_VERSION}/${AUDIVERIS_DEB}" \
       -o "/tmp/${AUDIVERIS_DEB}" \
@@ -35,6 +51,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       /opt/audiveris/lib/app/Audiveris.cfg \
     && test -x /opt/audiveris/bin/Audiveris \
     && test -x /opt/audiveris/lib/runtime/bin/java \
+    && /opt/audiveris/bin/Audiveris -version \
     && rm -f "/tmp/${AUDIVERIS_DEB}" \
     && rm -rf /var/lib/apt/lists/*
 
