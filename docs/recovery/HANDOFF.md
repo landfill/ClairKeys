@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-08-02 KST
+Last updated: 2026-08-21 KST
 
 ## Current state
 
@@ -9,6 +9,10 @@ Last updated: 2026-08-02 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
+- Open pull requests:
+  - [#39](https://github.com/landfill/ClairKeys/pull/39) — `codex/p1-audit-advisory-pins`. Dependency-only: restores the `Security Audit` required check, which six newly published advisories turned red on `main` with no dependency change — the **fifth** occurrence of the PR #25/#27/#31 pattern. It currently blocks the merge button for both PRs below, so it merges first. Review log: `docs/recovery/reviews/PR-39.md`.
+  - [#38](https://github.com/landfill/ClairKeys/pull/38) — `codex/p1-omr-service-contract` at `9b85d82`. Stops the OMR service reporting success for work it did not do: `/process` now reads the multipart fields `/api/omr/upload` sends (including `sheet_music_id`), and a storage failure fails the job instead of returning an unreachable `file://` URL. The local fallback survives for development behind a guard that fails closed. 9 new tests, 18 passing; verified on the VM. Review log: `docs/recovery/reviews/PR-38.md`.
+- Open pull request: [#37](https://github.com/landfill/ClairKeys/pull/37) — `codex/p1-omr-naver-vm-runtime` at `8045eb0`. Makes the OMR image able to install and start Audiveris; adds two regression tests. Live status on GitHub; review log: `docs/recovery/reviews/PR-37.md`.
 - Completed pull requests:
   - [#36](https://github.com/landfill/ClairKeys/pull/36) — `MERGED` at `c8764ec` (issue #22
     repository repair: accepts Audiveris `.mxl`, invokes the real packaged launcher, removes
@@ -41,6 +45,67 @@ Last updated: 2026-08-02 KST
 
 ## Latest verified result
 
+- **2026-08-21 — the anon key cannot write to Supabase Storage, so the OMR service could never have
+  stored a result.** With the project restored, a direct probe of
+  `POST /storage/v1/object/animation-data/…` with `SUPABASE_ANON_KEY` returned **403 `new row
+  violates row-level security policy`**, and `GET /storage/v1/bucket` returned `[]`. `storage.py:21`
+  reads exactly that key, so the upload path was blocked by policy, not by configuration. This is
+  the concealment chain's first link, and the rest is in code:
+  `src/app/api/omr/status/[jobId]/route.ts:77-82` writes `omrStatus.result.animation_data_url`
+  straight into `animationDataUrl` and **overwrites the user's title** with `result.title`, which
+  before PR #38 was the PDF filename. Without PR #38 a deployment would have produced a successful
+  upload, a `file://` URL persisted to the database, and a title replaced by a filename. PR #38
+  breaks that at the first link — the job now fails.
+  **Decision taken with the user (2026-08-21): the OMR service will not hold write credentials.**
+  It will return the animation JSON and the Next.js side will store it with the
+  `SUPABASE_SERVICE_ROLE_KEY` it already has, keeping the powerful key on Vercel. That needs a
+  `DECISIONS.md` entry (D-011) committed in the same PR as its code, and it must land **after**
+  #37/#38 to avoid re-writing `storage.py` twice.
+- **2026-08-21 — both service defects are fixed and verified on the VM (PR #38).** Regression-first:
+  `tests/test_service_contract.py` was written before the fix and aborted at import against the old
+  code. After the fix, 18 tests pass. On the VM the same PDF binds all four form fields
+  (`{'title': 'WTK1 Prelude 1', 'composer': 'J.S. Bach', 'user_id': 'test-user', 'sheet_music_id': '42'}`),
+  and with `ENVIRONMENT=production` and no credentials the job now reaches `failed` at progress 80
+  quoting the guard, writing no fallback file — where the identical run previously returned
+  `completed`. An `ENVIRONMENT=development` control still completes with the `file://` URL, so the
+  fallback is isolated rather than removed, matching `assertDemoGenerationAllowed()`. **A real
+  Supabase upload is still unverified**: the project's Storage host returned `NXDOMAIN` from two
+  independent networks during this work and the user reported it was down and being restored. Note
+  also that **`omr-service/tests/*.py` is run by no CI workflow**, so these tests and PR #37's
+  protect nothing automatically. Evidence:
+  `docs/recovery/validation/2026-08-21-omr-service-contract-fixes-verified.md`.
+- **2026-08-21 — the OMR service runs, and starting it exposed two defects that report success for
+  work that did not happen.** `POST /process` accepted a real 2-page PDF and reached `completed` in
+  about 25 seconds, using the host `/data` mount for scratch and invoking the packaged launcher.
+  (a) `app.py:71-78` declares `title`, `composer`, and `user_id` without `Form(...)`, so FastAPI
+  binds them as **query** parameters and silently drops the multipart fields
+  `src/app/api/omr/upload/route.ts:77-82` actually sends — measured against a query-string control
+  that returned all three correctly. `sheet_music_id` is not declared at all. A score is therefore
+  stored under its PDF filename rather than the user's title. (b) `omr/storage.py` falls back to
+  `_save_local_fallback` on missing credentials, on a non-2xx upload, **and on any exception**, and
+  the job still reports `"Processing completed successfully"` with a `file:///tmp/results/…` URL
+  that no browser can fetch. That is `AGENTS.md` § "금지되는 완료 상태" verbatim, and it is not a
+  container artifact — an unreachable Supabase in production takes the same path. **Do not expose
+  the service until (b) is fixed**: shipping it would replace P1-A's honest failure with a
+  successful-looking, unplayable score. Neither defect has a fix yet and neither belongs in PR #37.
+  Evidence: `docs/recovery/validation/2026-08-21-omr-service-first-run-defects.md`.
+- **2026-08-21 — the OMR image was built and run for the first time, on a NAVER Cloud VM, and a real
+  PDF converted end to end through the conversion pipeline.** This is the runtime evidence issue #22
+  has been waiting for, and producing it found two defects no static check in this repository could
+  see. (a) The official 5.11.0 `.deb`'s postinst runs `xdg-desktop-menu`/`xdg-mime`, which exit 3 in
+  a minimal image and fail `dpkg --configure` for the whole package. (b) `libgtk-3-0` is absent from
+  the `.deb`'s `Depends`, yet `WellKnowns.<clinit>` loads gtk-3 through JNA before any argument is
+  parsed — so an image built from the previous Dockerfile would have failed **every** conversion in
+  production while passing every check here, and `-batch` would not have avoided it. In both failure
+  modes the payload unpacks and `test -x` on the launcher still passes. Fixed in PR #37, which also
+  makes the build invoke `Audiveris -version`. Evidence: image `clairkeys-omr:5.11.0` (911 MB) built
+  on the VM, in-build `-version` reporting Audiveris 5.11.0 / OpenJDK 25.0.3 / Tesseract 5.5.2, a
+  Mutopia Bach WTK1 Prelude 1 PDF exported to `.mxl` and converted through `omr.cli` to 514 notes of
+  animation JSON, and 11 passing Python tests. **Recognition accuracy is not claimed** — that PDF has
+  no ground truth in `fixtures/`, so `compareAnimationData` cannot score it, and one sixteenth-note
+  position in the opening bar looks empty. The FastAPI service, Supabase upload, and every Next.js
+  end-to-end path remain unexercised, and nothing is deployed or exposed. Full record:
+  `docs/recovery/validation/2026-08-21-issue-22-naver-vm-omr-runtime-proof.md`.
 - PR #36 merged at `c8764ec` from verified head `4613e08`: Audiveris 5.11.0's Ubuntu package was downloaded and its
   release digest matched SHA-256
   `ae714594f40e54b1a4951fc3f914f08ae38fe5d07b7f2283b1a904fdb6e0a318`. The package includes its
@@ -73,7 +138,19 @@ Last updated: 2026-08-02 KST
 ## Next actions
 
 1. **The last P1-A item: the `provenance` backfill (D-010 decision 5).** Work stages 1–5 are merged and live; the writers are closed, which was the precondition for counting. What remains, in its own PR: add a `provenance` column (`'omr' | 'demo' | 'unknown'`, default `'unknown'`); run a read-only script that narrows candidates with `omrJobId IS NULL AND animationDataUrl <> ''`, then fetches each candidate's stored JSON and matches `notes` against `pdfParser`'s three fixed melodies; mark `'demo'` **only on a content match**; disclose `'demo'` scores on the playback screen and exclude them from `/api/sheet/public`. **`'unknown'` triggers nothing** — the filter alone also matches rows written by `POST /api/sheet` and `SheetMusicRepository.create`, and hiding a user's real score on a guess is its own harm. Needs real-data access, so it needs the user's approval before running. Do not delete rows: they carry user-chosen titles, categories, and `PracticeSession` history.
-2. **Issue #22 — repository repair is PR #36; runtime proof still remains.** The 2026-07-25 audit
+2. **Issue #22 — the runtime now provably works; the service around it does not yet exist.**
+   Updated 2026-08-21. The image builds, Audiveris starts, and a real PDF converts end to end on
+   the NAVER Cloud VM (PR #37). What is still missing before issue #22 can close: the FastAPI
+   service has never been started, Supabase upload is unconfigured and untested, and no
+   `/api/omr/upload` → status path has run against a live service. Deployment itself has not begun
+   — no systemd unit, no nginx, no TLS, no authentication, and `OMR_SERVICE_URL` still defaults to
+   the dead `https://clairkeys-omr.fly.dev` in `src/app/api/omr/upload/route.ts:6` and
+   `src/app/api/omr/status/[jobId]/route.ts:7`. **Recognition accuracy is a separate, unopened
+   question** — no PDF in this repository has ground truth, and `e2e/fixtures/sample-sheet.pdf` is
+   a 468-byte synthetic file that draws text, not a score. Historical framing of the repository
+   repair follows.
+
+   **Issue #22 — repository repair is PR #36; runtime proof still remains.** The 2026-07-25 audit
    found four causes rather than the issue's original two. PR #36 addresses all four and also fixes
    review findings: concurrent 3GB JVMs on one 4GB VM, silent first-file selection when Audiveris
    emits multiple `.mxl` results, unbounded subprocess waits, and orphaned child processes on caller
@@ -105,6 +182,42 @@ Last updated: 2026-08-02 KST
 7. OMR pipeline defects: issue #20 (TS demo stub) is now **inside P1-A's scope** — D-010 stage 4 isolates `pdfParser`'s demo generation, which is what #20 asks for. Issue #22's repository repair is PR #36; Docker/Fly/runtime proof remains open. Hosting choice D-008 remains `Proposed`.
 8. If the direct-push policy for `main` is decided, extend the branch protection payload with `required_pull_request_reviews` / `restrictions` accordingly.
 
+## Session handoff — 2026-08-21
+
+The OMR service is being deployed for the first time, on a NAVER Cloud Platform VM
+(`vm-naver-20260820145930`, KR-1, Rocky 8.8, 2 vCPU, 15Gi RAM). **This is not a migration from
+Fly.io** — `omr-service/fly.toml` was written but never deployed, so there is no running service to
+move. The Next.js application stays on Vercel; only the OMR service moves.
+
+Rocky 8.8 forces the container route: Audiveris 5.11.0 ships no `.rpm` (only Ubuntu `.deb`s), and
+the system Python is 3.6.8 against `pydantic==2.5.0`'s 3.8 floor. podman 4.4.1 is installed and the
+image is built.
+
+Decisions taken with the user on 2026-08-21:
+
+- Deploy behind nginx on port 80 with a shared-secret header now, and move to Let's Encrypt over a
+  wildcard-DNS hostname (`sslip.io`-style) later. No domain is owned. The later step is a strict
+  superset — certbot needs port 80 anyway — so nothing done now is thrown away.
+- **The shared secret is not optional.** SELinux is `Disabled` and firewalld is `inactive`, so the
+  NCloud ACG is the only control on a public IP. TLS would protect a threat that is not present
+  here; the token protects the one that is — an unauthenticated `/process` that spends 15 minutes of
+  a 2-vCPU box per request.
+- Memory stays at `-Xmx3G` for now despite 15Gi being available, so the deployment proves the
+  shipped contract rather than a variant. Tune after real conversions, not before.
+
+Constraints for the next session:
+
+- **Do not close issue #22 on PR #37.** The image runs; the service does not exist yet.
+- **Do not report recognition accuracy** from the 2026-08-21 record. The mechanism is proven; the
+  quality is unmeasured and one note position already looks suspicious.
+- `omr-service/tests/test_audiveris_runtime.py` still asserts `memory = "4gb"` from `fly.toml`.
+  Removing `fly.toml` breaks the suite, and replacing it needs a D-008 revision — which is a
+  decision record, so it belongs in a PR alongside the code, not a direct `main` commit.
+- The VM is expected to expire about one month from 2026-08-20 and may return with a different IP.
+  Capture provisioning as a re-runnable script rather than typed commands.
+- The VM's public IP is deliberately absent from this public repository while the host has no
+  OS-level firewall. Look it up in the NCloud console by resource name.
+
 ## Session handoff — 2026-07-26, to a different agent
 
 PR #36 merged at `c8764ec` from its verified head `4613e08`. Local validation, independent review,
@@ -125,9 +238,11 @@ Three constraints remain load-bearing:
 
 ## Local worktree state
 
-Updated 2026-08-02. `git status --short` is empty — the untracked `playwright-report/` and
-`test-results/` recorded on 2026-07-26 are gone, so the user-owned state that blocked branch
-cleanup no longer exists. `.omx/` remains an ignored local runtime directory; tracked
+Updated 2026-08-21. `git status --short` shows only a modified `.gitignore`, which adds
+`/playwright-report/` and `/test-results/` — those directories reappeared from a Playwright run
+after the 2026-08-02 note claimed they were gone, and they are generated artifacts, so they are now
+ignored rather than tracked as evidence of anything. That `.gitignore` change is uncommitted and is
+not part of PR #37, whose scope is the OMR image. `.omx/` remains an ignored local runtime directory; tracked
 `.claude/settings.local.json` and `prisma/schema.prisma` are unchanged. Previously listed
 `.claude/settings.json`, `docs/.bkit-memory.json`, and `docs/.pdca-status.json` do not exist in this
 checkout.
