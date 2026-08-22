@@ -10,6 +10,17 @@ Last updated: 2026-08-23 KST
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
 - Open pull requests:
+  - [#42](https://github.com/landfill/ClairKeys/pull/42) — `OPEN` at `e5aab93`, **stacked on #41**
+    (base `codex/p1-upload-failure-visibility`; retarget to `main` when #41 merges). Implements
+    **D-011** and records it: `omr/storage.py` is deleted, the service returns the animation JSON
+    from `GET /result/{job_id}` and holds no storage credential, and `/api/omr/status/[jobId]`
+    stores it with the `SUPABASE_SERVICE_ROLE_KEY` that only Vercel has. Payload on `/result`
+    rather than `/status` because `/status` is polled in a loop; store keyed on the job id with
+    upsert so a double poll cannot orphan an object; the user's title is no longer overwritten by
+    the service echo. A shared secret (`X-ClairKeys-Token`) guards every endpoint except
+    `/health`, and an unset `OMR_SHARED_SECRET` refuses every request. 6 new Jest tests (4 fail
+    against pre-change code), 25 Python tests, full-suite failures byte-identical to baseline.
+    Review log: `docs/recovery/reviews/PR-42.md`
   - [#41](https://github.com/landfill/ClairKeys/pull/41) — `OPEN` at `8629ead` (the 2026-08-23
     production upload report: a row created, `Internal server error`, nothing stored. Both OMR
     routes defaulted to the never-deployed `clairkeys-omr.fly.dev`, whose wildcard DNS resolves, so
