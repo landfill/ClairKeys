@@ -33,6 +33,7 @@ const BACKGROUND_PROCESSOR = 'src/services/backgroundProcessor.ts'
 const DEMO_GENERATOR = 'src/services/pdfParser.ts'
 
 const UPLOAD_PAGE = 'src/app/upload/page.tsx'
+const OMR_SERVICE_URL_MODULE = 'src/lib/omr/serviceUrl.ts'
 
 /** Paths deleted by D-010 decisions 2 and 5. */
 const REMOVED_PATHS = [
@@ -77,11 +78,19 @@ const IMPORTS_DEMO_GENERATOR =
 describe('upload path inventory', () => {
   it('has exactly one path that reaches the real OMR service', () => {
     const omrRoute = readSource(OMR_ROUTE)
-    expect(omrRoute).toContain('OMR_SERVICE_URL')
+    // The service address moved into `src/lib/omr/serviceUrl.ts` when the dead
+    // `clairkeys-omr.fly.dev` default was removed, so reaching the service is
+    // now spelled `getOmrServiceUrl()` rather than the raw variable name. The
+    // property being pinned is unchanged: one route, and only one, calls it.
+    expect(omrRoute).toContain('getOmrServiceUrl')
     expect(omrRoute).toContain('/process')
 
+    expect(readSource(OMR_SERVICE_URL_MODULE)).toContain('OMR_SERVICE_URL')
+
     for (const route of [ASYNC_ROUTE, BACKGROUND_ROUTE]) {
-      expect(readSource(route)).not.toContain('OMR_SERVICE_URL')
+      const source = readSource(route)
+      expect(source).not.toContain('OMR_SERVICE_URL')
+      expect(source).not.toContain('getOmrServiceUrl')
     }
   })
 
