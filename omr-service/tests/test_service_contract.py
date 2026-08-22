@@ -1,14 +1,20 @@
-"""Contract tests for the OMR service's HTTP surface and storage behaviour.
+"""Contract tests for the OMR service's HTTP surface.
 
-Both defects covered here were found by running the service against a real PDF
-on 2026-08-21 and are recorded in
-`docs/recovery/validation/2026-08-21-omr-service-first-run-defects.md`. Each
-test fails against the code as it stood before that date.
+The `/process` field defects covered here were found by running the service
+against a real PDF on 2026-08-21 and are recorded in
+`docs/recovery/validation/2026-08-21-omr-service-first-run-defects.md`.
+
+The storage tests that used to sit alongside them are gone, because the thing
+they guarded is gone: D-011 removed `omr/storage.py` entirely. The service now
+returns the animation JSON through `GET /result/{job_id}` and holds no storage
+credentials at all, so there is no upload here that could fail dishonestly.
+What replaces them asserts the *absence* — that no credential and no upload
+found their way back in — plus the shared secret a public-IP deployment needs.
 
 `app.py` cannot be imported here — fastapi and aiofiles are not installed in
 this environment — so its request contract is asserted from its AST, the same
 way `test_audiveris_runtime.py` asserts the Dockerfile's contract from its
-text. `storage.py` imports only stdlib plus httpx, so it is exercised for real.
+text. `omr/auth.py` imports stdlib only, so it is exercised for real.
 """
 
 import ast
@@ -24,7 +30,9 @@ import sys
 if str(OMR_SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(OMR_SERVICE_ROOT))
 
-from omr.storage import StorageUploadError, SupabaseStorage, assert_local_fallback_allowed
+from omr.auth import SharedSecretError, verify_shared_secret
+
+APP_SOURCE = (OMR_SERVICE_ROOT / "app.py").read_text(encoding="utf-8")
 
 
 def _process_pdf_signature() -> ast.arguments:
@@ -82,104 +90,144 @@ class ProcessEndpointContractTests(unittest.TestCase):
         self.assertEqual(_default_call_name(defaults["sheet_music_id"]), "Form")
 
 
-class LocalFallbackGuardTests(unittest.TestCase):
-    def test_fallback_is_refused_in_production(self):
-        with mock.patch.dict("os.environ", {"ENVIRONMENT": "production"}, clear=False):
-            with self.assertRaises(StorageUploadError):
-                assert_local_fallback_allowed()
+class NoStorageCredentialsTests(unittest.TestCase):
+    """D-011: the service must not be able to write to storage at all.
 
-    def test_fallback_is_refused_when_environment_is_unset(self):
-        """An unset ENVIRONMENT must fail closed, not open."""
-        environ = {k: v for k, v in __import__("os").environ.items() if k != "ENVIRONMENT"}
-        with mock.patch.dict("os.environ", environ, clear=True):
-            with self.assertRaises(StorageUploadError):
-                assert_local_fallback_allowed()
+    Two facts settled the design. `SUPABASE_ANON_KEY` is rejected by Storage
+    RLS with 403, so this service could never have stored anything; and handing
+    it the service-role key instead would put an unrestricted credential on a
+    public-IP VM. The upload therefore moved to the Next.js side, which already
+    holds that key.
+    """
 
-    def test_fallback_is_permitted_in_development(self):
-        with mock.patch.dict("os.environ", {"ENVIRONMENT": "development"}, clear=False):
-            assert_local_fallback_allowed()
-
-
-class StorageUploadHonestyTests(unittest.TestCase):
-    """A job must not report success when nothing was uploaded."""
-
-    def _upload(self, storage: SupabaseStorage):
-        return asyncio.run(
-            storage.upload_animation_data("job-1", {"notes": []}, "Title", "user-1")
+    def test_storage_module_is_gone(self):
+        self.assertFalse(
+            (OMR_SERVICE_ROOT / "omr" / "storage.py").exists(),
+            "omr/storage.py is back; the service is holding storage credentials again",
         )
 
-    def test_missing_credentials_fail_in_production(self):
-        with mock.patch.dict(
-            "os.environ",
-            {"ENVIRONMENT": "production", "SUPABASE_URL": "", "SUPABASE_ANON_KEY": ""},
-            clear=False,
-        ):
-            storage = SupabaseStorage()
-            with self.assertRaises(StorageUploadError):
-                self._upload(storage)
+    def test_app_reads_no_supabase_credentials(self):
+        for name in ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY"):
+            with self.subTest(name=name):
+                self.assertNotIn(
+                    'getenv("%s")' % name,
+                    APP_SOURCE,
+                    "app.py reads %s; D-011 keeps storage credentials off this service" % name,
+                )
 
-    def test_rejected_upload_fails_instead_of_returning_a_local_path(self):
-        with mock.patch.dict(
-            "os.environ",
-            {
-                "ENVIRONMENT": "production",
-                "SUPABASE_URL": "https://example.supabase.co",
-                "SUPABASE_ANON_KEY": "anon-key",
-            },
-            clear=False,
-        ):
-            storage = SupabaseStorage()
-            response = mock.Mock(status_code=403, text="new row violates row-level security policy")
-            with mock.patch("omr.storage.httpx.AsyncClient") as client_cls:
-                client = client_cls.return_value.__aenter__.return_value
-                client.post = mock.AsyncMock(return_value=response)
-                with self.assertRaises(StorageUploadError) as caught:
-                    self._upload(storage)
+    def test_completed_job_carries_no_storage_url(self):
+        """The old completion payload advertised `animation_data_url`.
 
-        self.assertIn("403", str(caught.exception))
-
-    def test_transport_error_is_not_swallowed(self):
-        """A deleted or paused Supabase project must fail the job.
-
-        On 2026-08-21 the project's host stopped resolving; the previous code
-        caught the exception, wrote a local file, and reported the job
-        completed.
+        Before PR #38 that field could be a `file:///tmp/...` path no browser
+        can fetch. There is no URL to advertise any more — the caller stores the
+        payload and knows the URL it wrote.
         """
-        with mock.patch.dict(
-            "os.environ",
-            {
-                "ENVIRONMENT": "production",
-                "SUPABASE_URL": "https://example.supabase.co",
-                "SUPABASE_ANON_KEY": "anon-key",
-            },
-            clear=False,
-        ):
-            storage = SupabaseStorage()
-            with mock.patch("omr.storage.httpx.AsyncClient") as client_cls:
-                client = client_cls.return_value.__aenter__.return_value
-                client.post = mock.AsyncMock(side_effect=OSError("Name or service not known"))
-                with self.assertRaises(StorageUploadError):
-                    self._upload(storage)
+        self.assertNotIn("animation_data_url", APP_SOURCE)
 
-    def test_successful_upload_returns_the_public_url(self):
-        with mock.patch.dict(
-            "os.environ",
-            {
-                "ENVIRONMENT": "production",
-                "SUPABASE_URL": "https://example.supabase.co",
-                "SUPABASE_ANON_KEY": "anon-key",
-            },
-            clear=False,
-        ):
-            storage = SupabaseStorage()
-            response = mock.Mock(status_code=200, text="")
-            with mock.patch("omr.storage.httpx.AsyncClient") as client_cls:
-                client = client_cls.return_value.__aenter__.return_value
-                client.post = mock.AsyncMock(return_value=response)
-                url = self._upload(storage)
 
-        self.assertTrue(url.startswith("https://example.supabase.co/storage/v1/object/public/"))
-        self.assertNotIn("file://", url)
+def _handler_for(path):
+    tree = ast.parse(APP_SOURCE)
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.AsyncFunctionDef):
+            continue
+        for decorator in node.decorator_list:
+            if isinstance(decorator, ast.Call) and decorator.args:
+                first = decorator.args[0]
+                if isinstance(first, ast.Constant) and first.value == path:
+                    return node
+    return None
+
+
+class ResultEndpointTests(unittest.TestCase):
+    """The D-011 handoff: a completed job's payload is collectable by the caller."""
+
+    def test_result_endpoint_exists(self):
+        self.assertIsNotNone(
+            _handler_for("/result/{job_id}"),
+            "GET /result/{job_id} is missing; the caller cannot collect the payload",
+        )
+
+    def test_status_endpoint_does_not_carry_the_payload(self):
+        """`/status` is polled in a loop; the payload must not ride along."""
+        self.assertIn('key != "animation_data"', APP_SOURCE)
+
+
+class SharedSecretRoutingTests(unittest.TestCase):
+    """Every endpoint that costs CPU or reveals work must require the secret."""
+
+    GUARDED = ("/process", "/status/{job_id}", "/result/{job_id}")
+
+    def test_guarded_endpoints_depend_on_the_secret(self):
+        for path in self.GUARDED:
+            with self.subTest(path=path):
+                handler = _handler_for(path)
+                self.assertIsNotNone(handler, "no handler declared for %s" % path)
+
+                defaults = list(handler.args.defaults) + [
+                    d for d in handler.args.kw_defaults if d is not None
+                ]
+                depends = [
+                    d
+                    for d in defaults
+                    if isinstance(d, ast.Call)
+                    and _default_call_name(d) == "Depends"
+                    and any(
+                        isinstance(a, ast.Name) and a.id == "require_shared_secret"
+                        for a in d.args
+                    )
+                ]
+                self.assertTrue(
+                    depends, "%s does not depend on require_shared_secret" % path
+                )
+
+    def test_health_is_reachable_without_the_secret(self):
+        """nginx and any uptime check need one unauthenticated endpoint."""
+        handler = _handler_for("/health")
+        self.assertIsNotNone(handler)
+        self.assertNotIn("require_shared_secret", ast.dump(handler))
+
+
+class SharedSecretVerificationTests(unittest.TestCase):
+    """The check itself, exercised for real."""
+
+    def test_matching_secret_is_accepted(self):
+        with mock.patch.dict("os.environ", {"OMR_SHARED_SECRET": "s3cret"}, clear=False):
+            verify_shared_secret("s3cret")
+
+    def test_wrong_secret_is_rejected_with_401(self):
+        with mock.patch.dict("os.environ", {"OMR_SHARED_SECRET": "s3cret"}, clear=False):
+            with self.assertRaises(SharedSecretError) as caught:
+                verify_shared_secret("wrong")
+        self.assertEqual(caught.exception.status_code, 401)
+
+    def test_missing_header_is_rejected(self):
+        with mock.patch.dict("os.environ", {"OMR_SHARED_SECRET": "s3cret"}, clear=False):
+            with self.assertRaises(SharedSecretError):
+                verify_shared_secret(None)
+
+    def test_unset_secret_refuses_every_request_in_production(self):
+        """Fails closed: a forgotten secret yields a service nobody can drive."""
+        import os as _os
+
+        environ = {
+            k: v
+            for k, v in _os.environ.items()
+            if k not in ("OMR_SHARED_SECRET", "ENVIRONMENT")
+        }
+        with mock.patch.dict("os.environ", environ, clear=True):
+            with self.assertRaises(SharedSecretError) as caught:
+                verify_shared_secret("anything")
+        self.assertEqual(caught.exception.status_code, 503)
+
+    def test_development_may_run_without_a_secret(self):
+        import os as _os
+
+        environ = {
+            k: v for k, v in _os.environ.items() if k != "OMR_SHARED_SECRET"
+        }
+        environ["ENVIRONMENT"] = "development"
+        with mock.patch.dict("os.environ", environ, clear=True):
+            verify_shared_secret(None)
 
 
 if __name__ == "__main__":

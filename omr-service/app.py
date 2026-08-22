@@ -5,7 +5,7 @@ FastAPI server for processing PDF sheet music to ClairKeys animation data
 
 import os
 import uvicorn
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException, BackgroundTasks
+from fastapi import Depends, FastAPI, File, Form, Header, UploadFile, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import aiofiles
@@ -21,8 +21,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 from omr.audiveris import AudiverisProcessor
+from omr.auth import SharedSecretError, verify_shared_secret
 from omr.converter import MusicXMLToClairKeysConverter
-from omr.storage import SupabaseStorage
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -41,9 +41,28 @@ app.add_middleware(
 )
 
 # Initialize processors
+#
+# D-011: this service holds no storage credentials. It converts a PDF and hands
+# the animation JSON back through `GET /result/{job_id}`; the Next.js side
+# stores it with the SUPABASE_SERVICE_ROLE_KEY it already has. The powerful key
+# stays on Vercel rather than on a public-IP VM, and a service that cannot write
+# anywhere cannot quietly write somewhere unreadable.
 audiveris_processor = AudiverisProcessor()
 converter = MusicXMLToClairKeysConverter()
-storage = SupabaseStorage()
+
+def require_shared_secret(
+    x_clairkeys_token: Optional[str] = Header(default=None),
+) -> None:
+    """FastAPI dependency guarding every endpoint that costs CPU or reveals work.
+
+    The check itself is in `omr/auth.py` and imports stdlib only, so it stays
+    testable in an environment without fastapi.
+    """
+    try:
+        verify_shared_secret(x_clairkeys_token)
+    except SharedSecretError as error:
+        raise HTTPException(status_code=error.status_code, detail=error.detail) from error
+
 
 # Processing status storage (in production, use Redis or database)
 processing_jobs = {}
@@ -71,6 +90,7 @@ async def root():
 @app.post("/process")
 async def process_pdf(
     background_tasks: BackgroundTasks,
+    _: None = Depends(require_shared_secret),
     file: UploadFile = File(...),
     title: Optional[str] = Form(None),
     composer: Optional[str] = Form(None),
@@ -117,12 +137,61 @@ async def process_pdf(
     }
 
 @app.get("/status/{job_id}")
-async def get_processing_status(job_id: str):
-    """Get processing status for a job"""
+async def get_processing_status(
+    job_id: str,
+    _: None = Depends(require_shared_secret),
+):
+    """Get processing status for a job.
+
+    The animation payload is deliberately absent: this endpoint is polled in a
+    loop, and a few hundred notes repeated on every poll is the cost of putting
+    it here. `GET /result/{job_id}` returns it once, when the caller is ready to
+    store it.
+    """
     if job_id not in processing_jobs:
         raise HTTPException(status_code=404, detail="Job not found")
-    
-    return processing_jobs[job_id]
+
+    job = processing_jobs[job_id]
+    return {key: value for key, value in job.items() if key != "animation_data"}
+
+
+@app.get("/result/{job_id}")
+async def get_processing_result(
+    job_id: str,
+    _: None = Depends(require_shared_secret),
+):
+    """Return the converted animation data for a completed job.
+
+    This is the D-011 handoff. The caller stores what it receives; the service
+    never writes it anywhere, so there is no path here that can report success
+    for a file no browser can fetch.
+    """
+    if job_id not in processing_jobs:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    job = processing_jobs[job_id]
+
+    if job["status"] != ProcessingStatus.COMPLETED:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Job is {job['status']}, not completed",
+        )
+
+    animation_data = job.get("animation_data")
+    if animation_data is None:
+        # A completed job without its payload is a defect, not an empty score.
+        raise HTTPException(
+            status_code=500,
+            detail="Job completed but its animation data is no longer held",
+        )
+
+    return {
+        "job_id": job_id,
+        "animation_data": animation_data,
+        "title": job["result"]["title"],
+        "composer": job["result"]["composer"],
+        "processed_at": job["result"]["processed_at"],
+    }
 
 async def process_pdf_background(
     job_id: str,
@@ -164,24 +233,20 @@ async def process_pdf_background(
         clairkeys_data = await converter.convert(musicxml_path, title, composer)
         logger.info(f"Converted to ClairKeys format for job {job_id}")
         
-        # Step 3: Upload to Supabase Storage
-        processing_jobs[job_id]["progress"] = 80
-        processing_jobs[job_id]["message"] = "Uploading result to storage"
-        
-        storage_url = await storage.upload_animation_data(
-            job_id, 
-            clairkeys_data, 
-            title or file.filename,
-            user_id
-        )
-        logger.info(f"Uploaded to storage for job {job_id}: {storage_url}")
-        
-        # Step 4: Complete
+        # Step 3: Hold the result for the caller to collect (D-011)
+        #
+        # There is no upload step here any more. The previous one used
+        # SUPABASE_ANON_KEY, which Storage RLS rejects with 403, so this service
+        # could never have stored anything; giving it the service-role key
+        # instead would put an unrestricted credential on a public-IP VM. The
+        # caller collects the payload from `GET /result/{job_id}` and stores it
+        # with the key it already holds.
+        processing_jobs[job_id]["animation_data"] = clairkeys_data
+
         processing_jobs[job_id]["status"] = ProcessingStatus.COMPLETED
         processing_jobs[job_id]["progress"] = 100
         processing_jobs[job_id]["message"] = "Processing completed successfully"
         processing_jobs[job_id]["result"] = {
-            "animation_data_url": storage_url,
             "title": title or file.filename,
             "composer": composer,
             "processed_at": datetime.utcnow().isoformat()

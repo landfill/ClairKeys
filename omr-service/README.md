@@ -40,8 +40,20 @@ Optical Music Recognition service for converting PDF sheet music to ClairKeys an
 
 ```bash
 docker build -f Dockerfile.audiveris -t clairkeys-omr .
-docker run -p 8000:8000 -e SUPABASE_URL=... -e SUPABASE_ANON_KEY=... clairkeys-omr
+docker run -p 8000:8000 \
+  -e ENVIRONMENT=production \
+  -e OMR_SHARED_SECRET=... \
+  clairkeys-omr
 ```
+
+The service takes **no storage credentials** (D-011). It converts a PDF and
+returns the animation JSON from `GET /result/{job_id}`; the Next.js side stores
+it with `SUPABASE_SERVICE_ROLE_KEY`, so that key never reaches this host.
+
+`OMR_SHARED_SECRET` is mandatory outside `ENVIRONMENT=development`: every
+request must carry it as `X-ClairKeys-Token`, and an unset secret makes the
+service refuse everything rather than run unauthenticated. `/health` is the
+one endpoint that stays open, for nginx and uptime checks.
 
 ## Fly.io Deployment
 
@@ -58,9 +70,10 @@ docker run -p 8000:8000 -e SUPABASE_URL=... -e SUPABASE_ANON_KEY=... clairkeys-o
 
 3. **Set Environment Variables**
    ```bash
-   fly secrets set SUPABASE_URL=https://your-project.supabase.co
-   fly secrets set SUPABASE_ANON_KEY=your-anon-key
+   fly secrets set OMR_SHARED_SECRET=$(openssl rand -hex 32)
    ```
+
+   No Supabase credentials are set here — see D-011 above.
 
 4. **Deploy**
    ```bash

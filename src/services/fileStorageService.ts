@@ -157,6 +157,56 @@ export class FileStorageService {
   }
 
   /**
+   * Store a completed OMR conversion (D-011).
+   *
+   * The OMR service holds no storage credentials, so the animation JSON is
+   * collected from it and written here with `SUPABASE_SERVICE_ROLE_KEY`.
+   *
+   * The path is derived from the job id instead of a timestamp and a random
+   * suffix, and the upload upserts. `/api/omr/status/[jobId]` is polled in a
+   * loop, so two polls can observe the same completed job at once; with a
+   * random name that produces two objects and orphans whichever one loses the
+   * race to the database row. The same job writing the same bytes to the same
+   * key is harmless.
+   */
+  async uploadOmrAnimationData(
+    jobId: string,
+    userId: string,
+    data: unknown
+  ): Promise<UploadResult> {
+    const filePath = `${userId}/omr_${jobId}.json`
+
+    try {
+      const buffer = Buffer.from(JSON.stringify(data, null, 2), 'utf-8')
+
+      const { error } = await getSupabaseServer().storage
+        .from(this.ANIMATION_BUCKET)
+        .upload(filePath, buffer, {
+          contentType: 'application/json',
+          cacheControl: '3600',
+          upsert: true
+        })
+
+      if (error) {
+        console.error('OMR animation data upload failed:', filePath, error)
+        return { success: false, error: error.message }
+      }
+
+      const { data: { publicUrl } } = getSupabaseServer().storage
+        .from(this.ANIMATION_BUCKET)
+        .getPublicUrl(filePath)
+
+      return { success: true, url: publicUrl, path: filePath }
+    } catch (error) {
+      console.error('OMR animation data upload threw:', filePath, error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown upload error'
+      }
+    }
+  }
+
+  /**
    * Update existing animation data by overwriting the file
    * More efficient than creating new files - preserves URL and reduces storage usage
    */
