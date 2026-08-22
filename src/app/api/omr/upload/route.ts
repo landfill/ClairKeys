@@ -2,8 +2,33 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
+import { getOmrServiceUrl, OmrServiceNotConfiguredError } from '@/lib/omr/serviceUrl'
 
-const OMR_SERVICE_URL = process.env.OMR_SERVICE_URL || 'https://clairkeys-omr.fly.dev'
+/**
+ * Marks a row this request created as failed.
+ *
+ * The row is created before the OMR call because the service is given
+ * `sheet_music_id`, so the id has to exist first. That ordering is load-bearing
+ * and must not be reversed — what it needs instead is a cleanup on every exit
+ * that does not hand the row to a job. Without it the row sits at
+ * `processing` with no `omrJobId`, which `/api/omr/status/[jobId]` looks rows
+ * up by, so nothing can ever move it again.
+ */
+async function markFailed(sheetMusicId: number): Promise<void> {
+  try {
+    await prisma.sheetMusic.update({
+      where: { id: sheetMusicId },
+      data: {
+        processingStatus: 'failed',
+        updatedAt: new Date()
+      }
+    })
+  } catch (error) {
+    // Losing the database as well is worth logging, but the caller is already
+    // returning a failure and should not have it replaced by this one.
+    console.error('Failed to mark sheet music as failed:', sheetMusicId, error)
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,6 +83,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Resolve the service before writing anything. A missing configuration is
+    // knowable here, and refusing now is what keeps an unconfigured deployment
+    // from accumulating rows that no job will ever complete.
+    let omrServiceUrl: string
+    try {
+      omrServiceUrl = getOmrServiceUrl()
+    } catch (error) {
+      if (!(error instanceof OmrServiceNotConfiguredError)) throw error
+
+      console.error('OMR upload refused:', error.message)
+      return NextResponse.json(
+        {
+          error: '악보 변환 서비스가 설정되지 않았습니다. 관리자에게 문의해 주세요.',
+          code: 'OMR_SERVICE_NOT_CONFIGURED'
+        },
+        { status: 503 }
+      )
+    }
+
     // Create sheet music record in database with pending status
     const sheetMusic = await prisma.sheetMusic.create({
       data: {
@@ -81,33 +125,53 @@ export async function POST(request: NextRequest) {
     omrFormData.append('user_id', userId)
     omrFormData.append('sheet_music_id', sheetMusic.id.toString())
 
-    // Send to OMR service
-    const omrResponse = await fetch(`${OMR_SERVICE_URL}/process`, {
-      method: 'POST',
-      body: omrFormData,
-      headers: {
-        // Don't set Content-Type header for FormData, let fetch set it with boundary
-      },
-      // Increase timeout for file upload
-      signal: AbortSignal.timeout(60000) // 60 seconds
-    })
+    // Send to OMR service.
+    //
+    // A `fetch` rejection and a non-ok response are different failures and were
+    // handled as one: only the second branch existed, so an unreachable host —
+    // DNS, TCP or TLS — fell through to the outer `catch`, which returned a
+    // generic 500 and left the row untouched.
+    let omrResponse: Response
+    try {
+      omrResponse = await fetch(`${omrServiceUrl}/process`, {
+        method: 'POST',
+        body: omrFormData,
+        headers: {
+          // Don't set Content-Type header for FormData, let fetch set it with boundary
+        },
+        // Increase timeout for file upload
+        signal: AbortSignal.timeout(60000) // 60 seconds
+      })
+    } catch (error) {
+      await markFailed(sheetMusic.id)
+
+      console.error('OMR service unreachable:', omrServiceUrl, error)
+
+      return NextResponse.json(
+        {
+          error: '악보 변환 서비스에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+          code: 'OMR_SERVICE_UNAVAILABLE',
+          sheetMusicId: sheetMusic.id,
+          details:
+            process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+        },
+        { status: 503 }
+      )
+    }
 
     if (!omrResponse.ok) {
-      // Update database to failed status
-      await prisma.sheetMusic.update({
-        where: { id: sheetMusic.id },
-        data: { 
-          processingStatus: 'failed',
-          updatedAt: new Date()
-        }
-      })
+      await markFailed(sheetMusic.id)
 
       const errorText = await omrResponse.text()
-      console.error('OMR service error:', errorText)
-      
+      console.error('OMR service error:', omrResponse.status, errorText)
+
       return NextResponse.json(
-        { error: 'Failed to start OMR processing' },
-        { status: 500 }
+        {
+          error: '악보 변환을 시작하지 못했습니다.',
+          code: 'OMR_SERVICE_ERROR',
+          sheetMusicId: sheetMusic.id
+        },
+        { status: 502 }
       )
     }
 

@@ -3,8 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@prisma/client'
-
-const OMR_SERVICE_URL = process.env.OMR_SERVICE_URL || 'https://clairkeys-omr.fly.dev'
+import { getOmrServiceUrl, OmrServiceNotConfiguredError } from '@/lib/omr/serviceUrl'
 
 export async function GET(
   request: NextRequest,
@@ -47,20 +46,38 @@ export async function GET(
       )
     }
 
-    // Get status from OMR service
-    const statusResponse = await fetch(`${OMR_SERVICE_URL}/status/${jobId}`, {
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      // Short timeout for status checks
-      signal: AbortSignal.timeout(10000) // 10 seconds
-    })
+    // Get status from OMR service. As in the upload route, an unreachable or
+    // unconfigured service must not read as an application error — the poll
+    // simply has no answer yet, and the stored status stays as it is.
+    let statusResponse: Response
+    try {
+      statusResponse = await fetch(`${getOmrServiceUrl()}/status/${jobId}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        // Short timeout for status checks
+        signal: AbortSignal.timeout(10000) // 10 seconds
+      })
+    } catch (error) {
+      const notConfigured = error instanceof OmrServiceNotConfiguredError
+      console.error('OMR service status unreachable:', error)
+
+      return NextResponse.json(
+        {
+          error: notConfigured
+            ? '악보 변환 서비스가 설정되지 않았습니다. 관리자에게 문의해 주세요.'
+            : '악보 변환 서비스에 연결할 수 없습니다.',
+          code: notConfigured ? 'OMR_SERVICE_NOT_CONFIGURED' : 'OMR_SERVICE_UNAVAILABLE'
+        },
+        { status: 503 }
+      )
+    }
 
     if (!statusResponse.ok) {
-      console.error('OMR service status error:', await statusResponse.text())
+      console.error('OMR service status error:', statusResponse.status, await statusResponse.text())
       return NextResponse.json(
-        { error: 'Failed to get processing status' },
-        { status: 500 }
+        { error: '처리 상태를 가져오지 못했습니다.', code: 'OMR_SERVICE_ERROR' },
+        { status: 502 }
       )
     }
 
