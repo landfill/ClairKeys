@@ -6,6 +6,16 @@ import type { Prisma } from '@prisma/client'
 import { getOmrServiceUrl, omrAuthHeaders, OmrServiceNotConfiguredError } from '@/lib/omr/serviceUrl'
 import { FileStorageService } from '@/services/fileStorageService'
 
+/**
+ * The completing poll does more than poll: it fetches the score from the OMR
+ * service and uploads it to Storage inside this one invocation. Vercel's
+ * default function duration is shorter than the `/result` timeout below, so
+ * without this the store could be killed mid-flight — and because the row keeps
+ * its empty `animationDataUrl`, the next poll would retry and be killed again.
+ * 60s is the Hobby-plan ceiling.
+ */
+export const maxDuration = 60
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ jobId: string }> }
