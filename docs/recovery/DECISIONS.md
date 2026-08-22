@@ -144,3 +144,33 @@
   - 이슈 #22의 컨테이너 수정 없이 D-010을 되돌려 데모 저장을 부활시키지 않는다. 업로드를 다시 성공시키는 유일한 정당한 방법은 실제 변환을 고치는 것이다.
   - 기존 데모 행을 일괄 삭제하지 않는다. 사용자 소유 메타데이터와 `PracticeSession`이 함께 사라지고, 잘못 판정한 행은 복구할 수 없다. 표시(`provenance`)가 기본 조치이고 삭제는 사용자가 개별적으로 선택할 일이다.
 - Related: D-001, D-002, D-008, 이슈 [#20](https://github.com/landfill/ClairKeys/issues/20), 이슈 [#22](https://github.com/landfill/ClairKeys/issues/22), `docs/recovery/phases/P1-A-upload-pipeline.md`
+
+## D-011: OMR 서비스는 스토리지 쓰기 자격증명을 갖지 않는다
+
+- Date: 2026-08-23 (사용자와 함께 내린 결정은 2026-08-21, 구현·기록은 이 PR)
+- Status: Accepted
+- Context:
+  - `omr/storage.py:21`은 `SUPABASE_ANON_KEY`를 읽어 결과 JSON을 직접 업로드했다. 2026-08-21 실측에서 그 키로 `POST /storage/v1/object/animation-data/…`는 **403 `new row violates row-level security policy`**를 받았다. 즉 이 서비스는 **한 번도 결과를 저장할 수 없었다**. 배포되지 않았기에 드러나지 않았을 뿐이다.
+  - 자연스러운 반사적 수정은 서비스에 `SUPABASE_SERVICE_ROLE_KEY`를 주는 것이다. 그러나 그 키는 RLS를 우회하는 무제한 자격증명이고, 서비스가 놓일 곳은 SELinux `Disabled`·firewalld `inactive`인 공인 IP VM이다. 프로젝트 전체를 읽고 쓸 수 있는 키를 그 호스트에 두는 것과, Vercel에만 두는 것은 사고 시 피해 범위가 다르다.
+  - 2026-08-23 확인: `animation-data` 버킷은 실재한다(public, 10 MB, `application/json`). 2026-08-21에 기록된 `GET /storage/v1/bucket → []`는 anon 키에 버킷 목록 권한이 없었던 것이지 버킷 부재가 아니었다.
+- Decision:
+  1. **OMR 서비스는 어떤 스토리지 자격증명도 갖지 않는다.** `omr/storage.py`를 삭제하고, 서비스는 변환 결과를 메모리에 들고 `GET /result/{job_id}`로 반환한다.
+  2. **저장은 Next.js가 한다.** `/api/omr/status/[jobId]`가 job 완료를 확인하면 결과를 수거해 `SUPABASE_SERVICE_ROLE_KEY`로 `animation-data`에 쓴다. 그 키는 이미 Vercel에만 존재한다(`src/lib/supabase/server.ts`).
+  3. **결과 payload는 `/status`가 아니라 `/result`에 둔다.** `/status`는 폴링 루프로 호출되므로, 수백 개 음표를 매 폴마다 실어 보내는 비용을 치를 이유가 없다.
+  4. **저장 경로는 job id로 결정하고 upsert한다** (`{userId}/omr_{jobId}.json`). 폴링은 루프이므로 두 폴이 동시에 완료를 관측할 수 있고, 랜덤 파일명이면 객체가 둘 생겨 하나는 영구 고아가 된다. 같은 job이 같은 바이트를 같은 키에 쓰는 것은 무해하다.
+  5. **공유 시크릿은 선택이 아니다.** `/process`·`/status`·`/result`는 `X-ClairKeys-Token`을 요구하고, `OMR_SHARED_SECRET` 미설정 시 서비스는 **모든 요청을 거절한다**(`ENVIRONMENT=development`만 예외). `/health`만 열어 둔다 — nginx와 가동 확인이 필요하다.
+  6. **서비스가 반환한 `title`·`composer`로 사용자가 입력한 값을 덮어쓰지 않는다.** 기존 코드는 덮어썼고, PR #38 이전에는 그 값이 PDF 파일명이었다.
+- Reason: 강력한 키를 공개 IP VM이 아니라 Vercel에 두고, 동시에 "저장할 수 없는 서비스"는 저장에 실패했다는 사실을 숨길 수 없게 만든다. TLS는 여기서 존재하지 않는 위협을 막지만, 토큰은 실재하는 위협을 막는다 — 인증 없는 `/process`는 2 vCPU 박스의 15분을 요청 한 번에 소모한다.
+- Constraint: `sheet_music_id`는 계속 `/process`가 받는다. 소비처는 `/status`의 `file_info`(운영자 상관용)이며, PR #38이 이 필드 바인딩을 고친 직후 다시 제거하는 churn을 만들지 않는다.
+- Rejected:
+  - 서비스에 service role 키 부여 | 무제한 자격증명을 공인 IP VM에 두게 된다.
+  - 서비스에 제한된 전용 키 발급 | Supabase는 버킷 단위 서명 키를 제공하지 않아 결국 같은 문제이고, 키 하나를 더 관리해야 한다.
+  - `/status`가 payload를 함께 반환 | 폴링 횟수만큼 곱해지는 비용.
+  - 서비스가 결과를 디스크에 쓰고 정적 서빙 | `file://` 은폐(PR #38)를 nginx 경유로 되살리는 것이고, 만료·정리 정책을 새로 만들어야 한다.
+- Consequence: 결과 JSON은 job이 살아 있는 동안 서비스 메모리에 남는다. `processing_jobs`는 이미 프로세스 메모리의 dict이고 재시작하면 사라진다 — 영속 큐는 P1-B의 범위이며, D-011은 그 성질을 바꾸지 않는다. 수거 전에 서비스가 재시작되면 job은 사라지고 행은 `failed`가 된다.
+- Directive:
+  - OMR 서비스에 스토리지 자격증명을 다시 넣지 않는다. `test_service_contract.py`의 `NoStorageCredentialsTests`가 이를 고정한다.
+  - `/status`에 payload를 얹지 않는다.
+  - 애니메이션 저장 경로를 랜덤 파일명으로 되돌리지 않는다 — 이중 폴링에서 고아 객체가 생긴다.
+  - 프로덕션 배포에서 `OMR_SHARED_SECRET` 없이 서비스를 띄우지 않는다. 실패는 닫히는 방향(전부 거절)이므로 안전하지만, 그 상태를 정상으로 오해하지 않는다.
+- Related: D-001, D-010, 이슈 [#22](https://github.com/landfill/ClairKeys/issues/22), PR [#38](https://github.com/landfill/ClairKeys/pull/38), PR [#41](https://github.com/landfill/ClairKeys/pull/41), `docs/recovery/HANDOFF.md` 2026-08-21 항목

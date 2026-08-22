@@ -30,3 +30,22 @@ export function getOmrServiceUrl(): string {
 
   return configured.replace(/\/+$/, '')
 }
+
+/**
+ * Header carrying the shared secret the deployed service requires.
+ *
+ * The VM sits on a public IP with SELinux disabled and firewalld inactive, and
+ * one `/process` call spends up to fifteen minutes of a two-vCPU box. The
+ * exposure worth controlling is an unauthenticated caller, not an eavesdropper,
+ * so the secret is mandatory on the service side and fails closed when unset.
+ *
+ * This returns an empty object when the secret is absent rather than throwing:
+ * a service run locally with `ENVIRONMENT=development` accepts requests without
+ * one, and a deployed service answers 503 by itself, which is a clearer signal
+ * than a client-side guess.
+ */
+export function omrAuthHeaders(): Record<string, string> {
+  const secret = process.env.OMR_SHARED_SECRET?.trim()
+
+  return secret ? { 'X-ClairKeys-Token': secret } : {}
+}
