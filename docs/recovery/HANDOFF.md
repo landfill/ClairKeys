@@ -9,9 +9,11 @@ Last updated: 2026-08-23 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: none — #41 and #42 merged 2026-08-23.
-  - [#42](https://github.com/landfill/ClairKeys/pull/42) — `OPEN` at `e5aab93`, **stacked on #41**
-    (base `codex/p1-upload-failure-visibility`; retarget to `main` when #41 merges). Implements
+- Open pull requests: none. Issues #44, #46, #47, #48, #49 are open; #48 and #49 are the next session's scope.
+- Pull requests merged 2026-08-23, kept below as the record of what landed:
+  - [#45](https://github.com/landfill/ClairKeys/pull/45) — `MERGED` at `9ccf64e` (README service-architecture section: a topology diagram carrying which credential crosses which boundary, plus sequence diagrams for upload→convert→store and for playback, and a table of how each failure surfaces. CodeRabbit's first complete review of this sequence produced two valid findings, both fixed in `6e06e04`: the credential table said the OMR service holds none while `omr/auth.py` requires `OMR_SHARED_SECRET`, and the failure table contradicted itself because upload and polling handle an unreachable service oppositely — on purpose. Review log: `docs/recovery/reviews/PR-45.md`)
+  - [#43](https://github.com/landfill/ClairKeys/pull/43) — `MERGED` at `f55a4b4` (**D-012**: exposes the OMR service on `http://101.79.16.73:3000` under a systemd unit, plain HTTP without TLS for the test phase, with the accepted risk and the exit condition both written down. Secret in a 600 env file rather than the 644 unit. Verified from outside the VM: `/health` 200 without a token, `/process`/`/status` 401 with none and with a wrong one, and a full Bach conversion returning 514 notes through the public IP. Review log: `docs/recovery/reviews/PR-43.md`)
+  - [#42](https://github.com/landfill/ClairKeys/pull/42) — `MERGED` at `670201a` (head `f328dc9`; was stacked on #41 and retargeted to `main`). Implements
     **D-011** and records it: `omr/storage.py` is deleted, the service returns the animation JSON
     from `GET /result/{job_id}` and holds no storage credential, and `/api/omr/status/[jobId]`
     stores it with the `SUPABASE_SERVICE_ROLE_KEY` that only Vercel has. Payload on `/result`
@@ -21,7 +23,7 @@ Last updated: 2026-08-23 KST
     `/health`, and an unset `OMR_SHARED_SECRET` refuses every request. 6 new Jest tests (4 fail
     against pre-change code), 25 Python tests, full-suite failures byte-identical to baseline.
     Review log: `docs/recovery/reviews/PR-42.md`
-  - [#41](https://github.com/landfill/ClairKeys/pull/41) — `OPEN` at `8629ead` (the 2026-08-23
+  - [#41](https://github.com/landfill/ClairKeys/pull/41) — `MERGED` at `727031c` (head `48d123c`; the 2026-08-23
     production upload report: a row created, `Internal server error`, nothing stored. Both OMR
     routes defaulted to the never-deployed `clairkeys-omr.fly.dev`, whose wildcard DNS resolves, so
     `fetch` **threw** at TLS and skipped the `!ok` branch that marks the row failed — leaving a row
@@ -400,7 +402,101 @@ Last updated: 2026-08-23 KST
 - CORRECTED (2026-07-25): the 2026-07-24 claim that `public/sw.js` can serve a returning visitor the pre-fix JavaScript was **wrong**, and is retracted. `/_next/static/**` URLs are content-hashed, so a new build produces new URLs, every one of which is a cache miss; the stale entries are never requested again. `isExpired()` also returns `true` when `sw-cached-at` is absent, so the install-time `cache.addAll(['/', '/manifest.json'])` entries do not pin anything, and HTML is network-first regardless. The fixed `CACHE_NAME = 'clairkeys-v1'` does make the activate handler's cache eviction dead code, but bundle freshness was never resting on it. What remains real is narrower: non-hashed files under `public/` (`favicon.png`, `icon-*.png`, `icon-*.svg`, …) match the `\.(js|css|woff|…|png|svg)$` rule, which is cache-first with a one-year `maxAge` and stable URLs, so a changed icon can stay stale for up to a year. Low impact, still unfiled.
 - CLEANUP COMPLETE: the user authorized deletion after confirming the untracked `fix_*.js` scripts, `ts_errors*.log`, disabled performance components, and Playwright `.last-run.json` were unreferenced local artifacts. All 16 files and their now-empty directories were removed. Local and remote `codex/p0-playback-sync-stages-4-5` refs were then deleted after both tips were re-confirmed in `main`; `git status --short` is clean.
 
-## Resume here — 2026-08-23
+## Resume here — next session: issues #49 and #48
+
+Decided with the user 2026-08-23: **the next session takes issues #49 (OCR is dead) and #48
+(playback tempo) together.** They are one story — the tempo is wrong because the printed
+`♩ = 60` was never read — but they are two fixes in two different places, and #49 alone does not
+close #48.
+
+The prior resume section for this date is kept below as `Resume here — 2026-08-23 (completed)`;
+every step in it is done.
+
+### First prompt on the new machine — copy this
+
+```text
+AGENTS.md를 읽고 그 규약을 따른다.
+그다음 docs/recovery/HANDOFF.md의 "Resume here — next session" 섹션을 읽고,
+거기 적힌 순서대로 이어서 진행한다.
+
+이슈 #49(OCR 사망)와 #48(재생 빠르기)을 함께 처리한다.
+#49를 고쳐도 메트로놈 표기는 여전히 인식되지 않으므로, #49만으로 #48이 닫히지 않는다.
+빠르기를 못 읽었을 때 120을 지어내지 않는 것이 #48의 핵심이다 (D-001, D-010과 같은 계열).
+```
+
+### State
+
+- `main` is clean, no open PRs, no work branches. All of 2026-08-23's merges (#41, #42, #43, #45)
+  are in and their branches deleted.
+- Production upload works end to end and plays. What is wrong is the *content* of what plays.
+- The VM runs `clairkeys-omr-prod` under systemd on `0.0.0.0:3000`; `omr-service/deploy/README.md`
+  has the procedure and D-012 the exposure decision.
+
+### What to do, in order
+
+1. **Issue [#49](https://github.com/landfill/ClairKeys/issues/49) — OCR. Cause and fix are both
+   already demonstrated; this is implementation, not investigation.**
+   Ubuntu's `tesseract-ocr-eng` ships a 4.1 MB LSTM-only `eng.traineddata`; Audiveris initialises
+   Tesseract in legacy mode and `TesseractOrder` exposes no constant to change that. Substituting
+   the 23.5 MB legacy-capable file from `tesseract-ocr/tessdata` removed
+   `Could not initialize TessBaseAPI` and `No OCR'd lines`, and read the printed credits correctly.
+
+   The change is in `Dockerfile.audiveris` — fetch that file and pin its checksum, the same shape
+   as the Audiveris `.deb` pin from PR #36. Image grows ~19 MB on 911 MB.
+
+   **Regression evidence first**: the fixture to assert on is that a converted score carries
+   `<credit-words>` at all. `omr-service/tests` runs in no CI workflow, so whatever is added there
+   protects nothing automatically — say so rather than implying coverage.
+
+2. **Issue [#48](https://github.com/landfill/ClairKeys/issues/48) — tempo. Two separable parts.**
+
+   **(a) `beat-unit` is discarded — demonstrated, and independent of everything else.**
+   `_extract_tempo` reads only the number in `<per-minute>`; `converter.py:183` assumes that number
+   is quarter-notes per minute. Injecting three musically identical markings produced 2:27
+   (`quarter`/60, correct), 1:13 (`eighth`/120) and 4:55 (`half`/30). Convert `<beat-unit>` and
+   `<beat-unit-dot/>` to a quarter-note equivalent, and note that `_extract_tempo` returns `int`
+   while the converted value need not be integral.
+
+   **(b) Stop inventing 120, and let the user supply a tempo.** This is the part that actually
+   fixes what the user hears, and it does not depend on OCR succeeding. `/process` already takes
+   `title`, `composer`, `user_id` and `sheet_music_id` as multipart fields, so `tempo` is a
+   symmetric addition. When no tempo is known, do not substitute 120 — the player prints
+   `{composer} • {timeSignature} • {tempo} BPM`, so a fabricated number currently sits beside two
+   measured ones in identical type. That is the D-001/D-010 defect at lower stakes.
+
+   Precedence, if a printed marking is ever recovered: the user's explicit value should win, and
+   the score's value should be shown to them rather than silently overridden.
+
+3. **Do not expect (1) to close (2).** With OCR restored, `<metronome>` was still 0 on the same
+   score, and neither `Adagio` nor `60` appeared anywhere, though measure numbers 10/13/16/19/25/28
+   were read. Every `ProcessingSwitch` was enumerated; none governs metronome recognition. Why the
+   marking is not assembled is **unexplained**, and nothing here should be written as though
+   fixing OCR will reveal it.
+
+4. **Re-conversion is accepted.** The user confirmed on 2026-08-23 that stored scores may be
+   re-converted, so a fix does not have to be backward-compatible with already-stored animation
+   JSON. Note times are baked in seconds at conversion, so stored scores keep their current speed
+   until re-converted — anyone checking the fix against an old upload will conclude it failed.
+
+### Reproductions available without any new file
+
+- `/data/testpdf/wtk1-prelude1-a4.pdf` — A4, no tempo marking, 514 notes, 73.875 s at the default.
+- `/data/testpdf/love-affair.pdf` — the user's score, prints `Adagio ♩ = 60`, 2 sheets, converts
+  cleanly, produces no `<metronome>`.
+- `omr/cli.py` reproduces the service's exact conversion locally from a `.musicxml`, which is how
+  the `beat-unit` and tempo experiments were run without touching the service.
+- Audiveris can be driven directly on the VM to keep the intermediate MusicXML:
+  `podman exec clairkeys-omr-prod /opt/audiveris/bin/Audiveris -batch -export -output DIR -- PDF`
+
+### Also open, not part of this session
+
+Issues [#46](https://github.com/landfill/ClairKeys/issues/46) (small-page PDFs discarded at
+`SCALE`), [#47](https://github.com/landfill/ClairKeys/issues/47) (Java stack trace shown to the
+user), [#44](https://github.com/landfill/ClairKeys/issues/44) (recognised rhythm wrong in 10 of 35
+measures). #46 sits underneath #48 in one respect: a sheet discarded at `SCALE` never reaches text
+recognition, so a printed marking on such a file could never be read.
+
+## Resume here — 2026-08-23 (completed)
 
 This section is the immediate continuation point and takes precedence over the
 numbered `Next actions` below, which describe the longer-lived backlog. It was
@@ -638,6 +734,21 @@ Local verification for #42 is recorded in `docs/recovery/reviews/PR-42.md`.
   global mock — the rest of the suite depends on it.
 
 ## Next actions
+
+0. **Recognition quality is now the live problem, and it is what the next session takes.**
+   Added 2026-08-23, after production upload started working. Ordered by how settled each one is:
+
+   | Issue | State |
+   |---|---|
+   | [#49](https://github.com/landfill/ClairKeys/issues/49) OCR completely dead | **Cause and fix both demonstrated** — implementation only |
+   | [#48](https://github.com/landfill/ClairKeys/issues/48) tempo | Part (a) `beat-unit` demonstrated; part (b) is a product decision, already framed |
+   | [#46](https://github.com/landfill/ClairKeys/issues/46) small-page PDFs discarded | Reproduction and threshold measured; three options, none chosen |
+   | [#47](https://github.com/landfill/ClairKeys/issues/47) stack trace shown to the user | Cause obvious, one line; no design question |
+   | [#44](https://github.com/landfill/ClairKeys/issues/44) recognised rhythm wrong | Diagnosed as an Audiveris recognition failure; no fix identified |
+
+   #49 and #48 are the current session's scope — see `Resume here — next session` above. #44 is the
+   least tractable: no PDF in this repository has ground truth, so "wrong" is currently measured
+   against 4/4 arithmetic and a piece whose measures are structurally uniform.
 
 1. **The last P1-A item: the `provenance` backfill (D-010 decision 5).** Work stages 1–5 are merged and live; the writers are closed, which was the precondition for counting. What remains, in its own PR: add a `provenance` column (`'omr' | 'demo' | 'unknown'`, default `'unknown'`); run a read-only script that narrows candidates with `omrJobId IS NULL AND animationDataUrl <> ''`, then fetches each candidate's stored JSON and matches `notes` against `pdfParser`'s three fixed melodies; mark `'demo'` **only on a content match**; disclose `'demo'` scores on the playback screen and exclude them from `/api/sheet/public`. **`'unknown'` triggers nothing** — the filter alone also matches rows written by `POST /api/sheet` and `SheetMusicRepository.create`, and hiding a user's real score on a guess is its own harm. Needs real-data access, so it needs the user's approval before running. Do not delete rows: they carry user-chosen titles, categories, and `PracticeSession` history.
 2. **Issue #22 — the runtime now provably works; the service around it does not yet exist.**
