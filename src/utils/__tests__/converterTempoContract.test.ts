@@ -50,6 +50,24 @@ describe('converter tempo provenance contract (issue #48)', () => {
     expect(actual.notes[0].duration).toBeCloseTo(1, 6)
   })
 
+  it('does not let a later measure\'s tempo describe the opening measure', () => {
+    // A score silent at bar 1 and marked 90 at bar 2 says nothing about bar 1.
+    // Scanning every measure for the "score tempo" made that later number
+    // govern the opening bar and claim `score` provenance for the whole piece —
+    // the same invention this contract exists to remove, displaced by one bar.
+    const actual = runConverter('14-tempo-first-declared-late')
+
+    expect(actual).toMatchObject({
+      tempo: null,
+      tempoSource: 'unknown',
+      timingReferenceBpm: 60,
+      scoreTempo: null,
+    })
+    // Bar 1 is timed at the declared 60 reference, bar 2 at the score's 90.
+    expect(actual.notes[0].duration).toBeCloseTo(1, 6)
+    expect(actual.notes[1].duration).toBeCloseTo(60 / 90, 6)
+  })
+
   it('keeps an absent score tempo unknown while naming the timing reference', () => {
     const actual = runConverter('11-no-tempo')
 

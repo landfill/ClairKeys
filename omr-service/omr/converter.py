@@ -493,9 +493,21 @@ class MusicXMLToClairKeysConverter:
         return per_minute_value * multiplier * dot_multiplier
 
     def _extract_tempo(self, root: ET.Element) -> Optional[float]:
-        """Extract the first score-declared quarter BPM, or preserve unknown."""
-        for measure in root.findall('.//measure'):
-            tempo = self._find_tempo(measure)
+        """Extract the tempo the score declares *at its opening*, or None.
+
+        Only the first measure of each part is consulted. Scanning the whole
+        score for "a tempo" reads a mark that appears at bar 12 as though it
+        described bar 1: the opening bars get re-timed by a number the score
+        never applied to them, and `tempoSource` claims `score` for a piece
+        whose beginning is in fact unmarked. Later marks are not lost — they
+        still take effect from their own measure through
+        `_build_tempo_timeline`, which is where a mid-piece change belongs.
+        """
+        for part in root.findall('.//part'):
+            measures = part.findall('measure')
+            if not measures:
+                continue
+            tempo = self._find_tempo(measures[0])
             if tempo is not None:
                 return tempo
         return None

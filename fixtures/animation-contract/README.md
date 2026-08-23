@@ -51,6 +51,7 @@ quarter = 1.5s, an eighth = 0.5s, a triplet eighth (three in one beat) = 1/3s.
 | `11-no-tempo` | 빠르기 표기 없음 | unknown score tempo stays `null`; seconds use the explicit 60 BPM timing reference |
 | `12-beat-unit-half` | 2분음표 기준 빠르기 | `half = 30` converts to 60 quarter BPM before seconds are calculated |
 | `13-beat-unit-quarter` | 4분음표 기준 빠르기 | `quarter = 60` is already quarter BPM and remains unchanged |
+| `14-tempo-first-declared-late` | 뒤늦게 처음 표기된 빠르기 | a mark first appearing at bar 2 leaves bar 1 unknown and timed at the declared reference (added in P1-A) |
 
 ## Comparison
 

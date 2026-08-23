@@ -1,0 +1,16 @@
+{
+  "version": "1.1",
+  "title": "Tempo first declared late",
+  "composer": "P1-A Fixtures",
+  "duration": 1.666667,
+  "tempo": null,
+  "tempoSource": "unknown",
+  "timingReferenceBpm": 60,
+  "scoreTempo": null,
+  "timeSignature": "1/4",
+  "keySignature": "C",
+  "notes": [
+    { "midi": 60, "start": 0.0, "duration": 1.0, "hand": "R", "voice": 1, "staff": 1 },
+    { "midi": 62, "start": 1.0, "duration": 0.666667, "hand": "R", "voice": 1, "staff": 1 }
+  ]
+}
