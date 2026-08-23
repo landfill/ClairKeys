@@ -450,9 +450,35 @@ different things instead of one number.
    conversion, so an old upload keeps its current speed no matter what these PRs do. Anyone
    testing the fix against an existing score will conclude it failed. The user allowed
    re-conversion on 2026-08-23.
-3. **Deploying #50 needs an image rebuild.** The Docker daemon was unavailable in this session,
-   so the image was never built and the replacement model has not been exercised by Audiveris
-   in this repository's own CI or locally. That is the one unverified link in #50.
+3. **The VM image must be rebuilt, and it gates far more than OCR. Do this first.**
+   `Dockerfile.audiveris` ends in `COPY . .`, and `omr-service/deploy/README.md` bind-mounts
+   only `/data` — so `app.py` and `omr/converter.py` are baked into the image too. Vercel
+   redeploys itself on merge; the VM does not. **Right now the two halves are out of step**,
+   and everything #51 added on the service side is inert:
+
+   | | before rebuild | after rebuild |
+   |---|---|---|
+   | printed text (title, composer) | ✗ | ✓ |
+   | **metronome mark recognised** | ✗ | **✗ — cause unexplained, see item 1** |
+   | user-supplied tempo | **✗ — silently dropped** | ✓ |
+   | beat-unit conversion (♪=120 → 60) | ✗ still twice as fast | ✓ |
+   | no invented 120 when unmarked | ✗ | ✓ |
+
+   The silent drop is the one to know about. Traced through the real code: the form accepts
+   72, `/api/omr/upload` validates it and forwards it, the old `/process` has no `tempo`
+   parameter so the field is discarded without an error, the old converter invents 120 and
+   emits `version: "1.0"`, and the player prints `♩=120 (출처 미상)`. The user's input
+   disappears with nothing anywhere saying so. D-013's honesty property does survive this
+   half-deployed state — 120 is not presented as measured — but the lost input is invisible.
+
+   Rebuild per `omr-service/deploy/README.md` § "From nothing to running" steps 1–2, then
+   `systemctl restart clairkeys-omr`. The Docker daemon was unavailable in this session, so
+   the image was never built here and the replacement traineddata has not been exercised by
+   Audiveris anywhere — that remains the one unverified link in #50.
+
+   Worth considering afterwards: nothing detects this skew. A capability or version check
+   between Vercel and `/process`, or simply refusing a user tempo the service will not
+   honour, would turn a silent loss into a visible failure. Not done; no issue filed yet.
 
 ### Still open, untouched by this session
 
