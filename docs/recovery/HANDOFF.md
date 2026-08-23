@@ -462,7 +462,7 @@ different things instead of one number.
 ### Still open, untouched by this session
 
 Issues [#46](https://github.com/landfill/ClairKeys/issues/46) (small-page PDFs discarded at
-`SCALE` — sits underneath the metronome問題: a sheet discarded at `SCALE` never reaches text
+`SCALE` — sits underneath the 메트로놈 문제: a sheet discarded at `SCALE` never reaches text
 recognition at all), [#47](https://github.com/landfill/ClairKeys/issues/47) (Java stack trace
 shown to the user), [#44](https://github.com/landfill/ClairKeys/issues/44) (recognised rhythm
 wrong in 10 of 35 measures).
