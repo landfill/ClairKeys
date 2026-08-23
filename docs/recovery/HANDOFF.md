@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-08-23 KST
+Last updated: 2026-08-24 KST
 
 ## Current state
 
@@ -9,7 +9,8 @@ Last updated: 2026-08-23 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: none. **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
+- Open pull requests: **[#53](https://github.com/landfill/ClairKeys/pull/53)** — README에 OCR 단계를 드러낸다 (문서 전용, review-ready, 병합 승인 대기). 근거: `docs/recovery/reviews/PR-53.md`
+- **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
 - **#48 was found closed on GitHub and reopened** on 2026-08-23. It had been closed as `completed` at 11:46 UTC while no fix commit existed anywhere — only the four analysis comments had landed. The user confirmed the reopen.
 - Pull requests merged 2026-08-23, kept below as the record of what landed:
   - [#45](https://github.com/landfill/ClairKeys/pull/45) — `MERGED` at `9ccf64e` (README service-architecture section: a topology diagram carrying which credential crosses which boundary, plus sequence diagrams for upload→convert→store and for playback, and a table of how each failure surfaces. CodeRabbit's first complete review of this sequence produced two valid findings, both fixed in `6e06e04`: the credential table said the OMR service holds none while `omr/auth.py` requires `OMR_SHARED_SECRET`, and the failure table contradicted itself because upload and polling handle an unreachable service oppositely — on purpose. Review log: `docs/recovery/reviews/PR-45.md`)
@@ -67,6 +68,20 @@ Last updated: 2026-08-23 KST
 - Current objective: **P1-A — consolidate the four PDF upload paths onto the one that actually converts a score.** The deployment and timbre objectives that preceded it are closed: `main` deploys itself again (Vercel Production Branch Tracking fixed), the `Security Audit` gate is green, and both timbre tuning sliders are live in production. The only thing outstanding from the timbre work is a pair of default values that need the user's ear, not code.
 
 ## Latest verified result
+
+- **2026-08-24 — OCR이 읽은 제목이 JSON에 도달하는지는 아무도 확인한 적이 없다.** README에
+  OCR 절을 쓰다가 드러난 빈틈이다. 2026-08-23 실측이 관측한 요소는 `<credit-words>` 뿐인데
+  (`'Piano Solo - Love Affair'`, `'Ennio Morricone'` 등), `omr/converter.py`의
+  `_extract_metadata`가 찾는 것은 `<work-title>`과 `<creator[@type="composer"]>`다.
+  Audiveris가 후자도 함께 채우는지는 이 저장소 어디에도 근거가 없다.
+
+  **채우지 않는다면 OCR 복구(#49)는 사용자에게 아무 차이도 만들지 않는다** — 제목·작곡가는
+  계속 업로드 폼의 입력값이 쓰이고, 겉보기 동작은 OCR이 죽어 있던 때와 구별되지 않는다.
+  #49를 숨겼던 바로 그 은폐 구조가 그대로 남아 있는 셈이다.
+
+  확인 방법은 간단하다: VM에서 `love-affair.pdf`를 다시 변환해 나온 `.mxl`에
+  `<work-title>`·`<creator>`가 있는지 보면 된다. README(PR #53)는 어느 쪽으로도 단정하지
+  않고 열린 질문으로 적어 두었으므로, 확인되면 그 자리를 답으로 교체한다.
 
 - **2026-08-23 — OCR has never worked, and finding that took a real score to see.** The user
   supplied `Love_Affair_Piano_Solo.pdf`, which prints `Adagio ♩ = 60` above the first system — and
