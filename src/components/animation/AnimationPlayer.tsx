@@ -6,6 +6,8 @@ import { PracticeGuideControls, PracticeKeyHighlight } from '@/components/practi
 import { AnimationEvent, PianoAnimationData, PracticeState } from '@/types/animation'
 import {
   DEFAULT_TIMING_REFERENCE_BPM,
+  type TempoDisplay,
+  type TempoDisplayInput,
   type TempoSource,
 } from '@/types/animationContract'
 import { getAnimationEngine } from '@/services/animationEngine'
@@ -24,18 +26,6 @@ interface AnimationPlayerProps {
   onNoteStop?: (note: string) => void
   onActiveNotesChange?: (activeNotes: Set<string>) => void
   className?: string
-}
-
-interface TempoDisplayInput {
-  tempo: number | null
-  tempoSource: TempoSource
-  timingReferenceBpm: number
-  scoreTempo?: number | null
-}
-
-interface TempoDisplay {
-  primary: string
-  secondary?: string
 }
 
 /** Pure presentation rule for the v1.1 tempo provenance contract. */

@@ -31,6 +31,30 @@ export type TempoSource = 'score' | 'user' | 'unknown'
 /** Explicit timing basis used only when a score has no known tempo. */
 export const DEFAULT_TIMING_REFERENCE_BPM = 60
 
+/**
+ * The four facts a screen needs to say where a tempo came from.
+ *
+ * Kept as a type rather than passing `CanonicalAnimationData` around because the
+ * presentation rule depends on exactly these fields, and a caller holding a
+ * legacy document can supply them without first inventing the rest.
+ */
+export interface TempoDisplayInput {
+  tempo: number | null
+  tempoSource: TempoSource
+  timingReferenceBpm: number
+  scoreTempo?: number | null
+}
+
+/**
+ * What to print. `secondary` is deliberately a separate string: the timing
+ * reference and the score's own mark are context for the primary claim, and
+ * setting them in the same line and weight is the defect D-013 removes.
+ */
+export interface TempoDisplay {
+  primary: string
+  secondary?: string
+}
+
 /** Lowest and highest MIDI numbers on an 88-key piano (A0–C8). */
 export const MIDI_MIN = 21
 export const MIDI_MAX = 108
