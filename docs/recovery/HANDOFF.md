@@ -450,35 +450,43 @@ different things instead of one number.
    conversion, so an old upload keeps its current speed no matter what these PRs do. Anyone
    testing the fix against an existing score will conclude it failed. The user allowed
    re-conversion on 2026-08-23.
-3. **The VM image must be rebuilt, and it gates far more than OCR. Do this first.**
-   `Dockerfile.audiveris` ends in `COPY . .`, and `omr-service/deploy/README.md` bind-mounts
-   only `/data` — so `app.py` and `omr/converter.py` are baked into the image too. Vercel
-   redeploys itself on merge; the VM does not. **Right now the two halves are out of step**,
-   and everything #51 added on the service side is inert:
+3. **The VM image was rebuilt on 2026-08-23 — this is done.** Deployed commit `cb42947`,
+   image `clairkeys-omr:cb42947`/`:current`, 911 MB → 930 MB. The half-deployed state the
+   earlier version of this section warned about was real and is now closed. Evidence:
+   `docs/recovery/validation/2026-08-23-omr-image-rebuild-after-48-49.md`.
 
-   | | before rebuild | after rebuild |
+   What that rebuild proved, in production, that no PR could:
+
+   | | before | after |
    |---|---|---|
-   | printed text (title, composer) | ✗ | ✓ |
-   | **metronome mark recognised** | ✗ | **✗ — cause unexplained, see item 1** |
-   | user-supplied tempo | **✗ — silently dropped** | ✓ |
-   | beat-unit conversion (♪=120 → 60) | ✗ still twice as fast | ✓ |
-   | no invented 120 when unmarked | ✗ | ✓ |
+   | `eng.traineddata` | 4,113,088 B (LSTM-only) | **23,466,654 B**, sha256 matches the pin |
+   | `Could not initialize TessBaseAPI` / `No OCR'd lines` | present | **gone** |
+   | `<credit-words>` on `love-affair.pdf` | none | title, subtitle, composer, arranger, bar numbers |
+   | `grep -c "return 120"` in the container | 1 | **0** |
+   | unmarked score | `tempo: 120` | **`tempo: null`, `tempoSource: unknown`** |
+   | user tempo 72 | silently dropped | `tempo: 72.0`, `tempoSource: "user"` |
+   | `tempo=abc` | ignored | **HTTP 400** |
 
-   The silent drop is the one to know about. Traced through the real code: the form accepts
-   72, `/api/omr/upload` validates it and forwards it, the old `/process` has no `tempo`
-   parameter so the field is discarded without an error, the old converter invents 120 and
-   emits `version: "1.0"`, and the player prints `♩=120 (출처 미상)`. The user's input
-   disappears with nothing anywhere saying so. D-013's honesty property does survive this
-   half-deployed state — 120 is not presented as measured — but the lost input is invisible.
+   So **#50's one unverified link is closed** (the image builds, the checksum pin holds, and
+   Audiveris actually reads text with the replacement model), and **#51 works end to end
+   through the live service**.
 
-   Rebuild per `omr-service/deploy/README.md` § "From nothing to running" steps 1–2, then
-   `systemctl restart clairkeys-omr`. The Docker daemon was unavailable in this session, so
-   the image was never built here and the replacement traineddata has not been exercised by
-   Audiveris anywhere — that remains the one unverified link in #50.
+   Still unverified: the browser round trip through the upload form. Only the service API was
+   exercised.
 
-   Worth considering afterwards: nothing detects this skew. A capability or version check
-   between Vercel and `/process`, or simply refusing a user tempo the service will not
-   honour, would turn a silent loss into a visible failure. Not done; no issue filed yet.
+4. **A new defect was found while deploying, and left unfixed on purpose:
+   [#52](https://github.com/landfill/ClairKeys/issues/52).** `systemctl restart clairkeys-omr`
+   exits nonzero every time — the first start dies at 125 on a cidfile race and `Restart=always`
+   recovers it 100ms later. The unit is missing `ExecStartPre=/bin/rm -f %t/%n.ctr-id`. The
+   service is fine; a deploy script reading the exit code is not. The repo's copy
+   (`omr-service/deploy/clairkeys-omr.service`) is byte-identical, so fixing it is a branch/PR,
+   not a handoff commit — which is why this session did not touch the production unit.
+
+5. **Nothing detects deployment skew.** The rebuild closed today's gap but not the mechanism:
+   Vercel redeploys itself on merge, the VM does not, and in between a user's tempo is accepted,
+   validated, forwarded, and discarded with no error anywhere. A capability/version handshake
+   with `/process`, or refusing a tempo the service will not honour, would make that visible.
+   Not done, no issue filed — a candidate, not a decision.
 
 ### Still open, untouched by this session
 
