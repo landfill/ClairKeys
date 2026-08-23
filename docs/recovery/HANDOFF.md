@@ -286,13 +286,22 @@ removed.
 
 - Two review-ready PRs are open, and **both are waiting on the user's explicit
   merge approval** — nothing here authorises merging them.
-  - **#41** `codex/p1-upload-failure-visibility` at `1750ec5`. Carries a second
-    commit added 2026-08-23: the 404-after-restart stranded row found by the #42
-    VM run. CodeRabbit reported `Review skipped: manual review required for this
-    OSS repository` on that push, so that commit has no automated review.
-  - **#42** `codex/p1-omr-result-handoff` at `f540752`, **stacked on #41's
-    branch**. Implements and records D-011, and has merged #41's fix so the stack
-    stays consistent.
+  - **#41** `codex/p1-upload-failure-visibility` at `48d123c`, with two commits
+    added 2026-08-23: the 404-after-restart stranded row found by the #42 VM run
+    (`1750ec5`), and CodeRabbit's `serviceUrl` finding — a malformed
+    `OMR_SERVICE_URL` was reported as a transient outage rather than a
+    configuration error (`48d123c`). 17/17 hosted checks pass on the head.
+  - **#42** `codex/p1-omr-result-handoff` at `f328dc9`, **stacked on #41's
+    branch**. Implements and records D-011, and has merged #41 twice so the stack
+    carries both fixes. Merged-branch suite: 46 suites / 421 tests, 0 failures.
+- **Neither PR has a complete automated review, and the green `CodeRabbit` check
+  does not mean it does.** Only #41's `8629ead` was ever reviewed; every later
+  push reported `Review skipped: manual review required for this OSS repository`,
+  #42 was never reviewed at all (`Review limit reached` at creation), and a
+  `@coderabbitai review` request on both returned `Review rate limited`. This is
+  the same shape as the CI trap on #42 below — a check that is green because it
+  did not run — and the third and fourth occurrence of the rate-limit pattern
+  already recorded for PRs #34 and #35.
 - `main`, and both work branches, are pushed with 0 unique local commits.
 - Production upload is still broken, by design, and will stay broken until the
   VM serves the OMR service **and is reachable from Vercel** (step 4) and the two
