@@ -82,10 +82,25 @@ Last updated: 2026-08-23 KST
   distinguishing them. That is the shape of defect this project has repeatedly removed (D-001,
   D-010) — milder than a demo melody, but the same kind.
 
-  Note for whoever fixes it: `start` and `duration` are already resolved to seconds at conversion
-  time (`converter.py:183`), and `playbackClock`'s `tempoScale` is a multiplier on top. **Changing
-  the default alone will not fix scores already stored** — they need re-conversion. Filed as issue
-  [#48](https://github.com/landfill/ClairKeys/issues/48) with four options and none chosen.
+  **Measured, not inferred: this is a conversion-time fault and the player is not involved.**
+  The stored JSON bakes a sixteenth note at 0.125 s — exactly 120 BPM. The player adds nothing:
+  `animationEngine.ts:23` defaults `speed: 1.0`, `AnimationPlayer.tsx:27` initialises the control
+  at 1.0, and `playbackClock.ts:24` advances song time at wall-clock rate when `tempoScale` is 1.
+  (`AnimationPlayer.tsx:114`, which sets speed from an event's `tempo`, is inside the practice-mode
+  tempo-progression handler and never runs on the default path.) Injecting `<sound tempo="60"/>`
+  into the MusicXML and re-converting produced the identical 514 notes with every time exactly
+  doubled — 0.250 s per sixteenth, 2:27 total, inside the conventional range for this prelude.
+
+  That experiment also turned a suspicion into a fact: **the `tempo` field stayed 120 while the
+  actual times honoured 60.** `_extract_tempo` reads only `<per-minute>`; `_build_tempo_timeline`
+  reads `<sound[@tempo]>`. So a score carrying `<sound tempo>` plays at the right speed while the
+  screen states the wrong BPM. That fix is needed independently of whichever option is chosen for
+  the default.
+
+  The user has accepted re-converting stored scores (2026-08-23), which removes the constraint that
+  made option C (rescale at playback, changing the D-009 seconds contract) attractive. Filed as
+  issue [#48](https://github.com/landfill/ClairKeys/issues/48); options A, B and D remain open and
+  none is chosen.
 
 - **2026-08-23 — the first two real uploads after go-live failed for two different reasons, and
   both are now filed with reproductions.** Neither is a deployment fault: Vercel reached the
