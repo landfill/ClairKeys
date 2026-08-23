@@ -50,6 +50,7 @@ PDF 악보를 시각적 피아노 애니메이션으로 변환하여 피아노 �
 - **Tone.js** - 웹 오디오 합성 및 처리
 - **Web Audio API** - 저수준 오디오 제어
 - **Audiveris 5.11** - PDF 악보 인식 (OMR), NAVER Cloud VM에서 실행
+- **Tesseract 5.5.2** - 악보 위 인쇄된 글자 인식 (OCR). 별도 서비스가 아니라 같은 VM의 Audiveris가 `TEXTS` 단계에서 호출한다
 - **Canvas API** - 피아노 건반 렌더링
 
 ### DevOps & Deployment
@@ -65,7 +66,7 @@ PDF 악보를 시각적 피아노 애니메이션으로 변환하여 피아노 �
 | 구성 요소 | 실행 위치 | 하는 일 | 필요한 환경변수 | 다른 시스템에 접근할 수 있는 키 |
 |---|---|---|---|---|
 | Next.js 앱 | Vercel (서버리스) | 업로드 접수, 폴링, **결과 저장**, 재생 화면 | `SUPABASE_SERVICE_ROLE_KEY`, `OMR_SERVICE_URL`, `OMR_SHARED_SECRET` | Supabase 전체 읽기·쓰기 |
-| OMR 서비스 | NAVER Cloud VM (podman) | PDF → MusicXML → 애니메이션 JSON 변환 | `OMR_SHARED_SECRET` (**검증용**), `ENVIRONMENT` | **없음** |
+| OMR 서비스 | NAVER Cloud VM (podman) | PDF → MusicXML → 애니메이션 JSON 변환. 음표 인식(OMR)과 글자 인식(OCR)이 **한 프로세스 안에서** 함께 돈다 | `OMR_SHARED_SECRET` (**검증용**), `ENVIRONMENT` | **없음** |
 | Supabase | 관리형 | PostgreSQL(메타데이터) + Storage(JSON 파일) | — | — |
 
 두 열을 나눈 이유가 이 구조의 핵심이다. OMR 서비스도 `OMR_SHARED_SECRET`을 **설정해야** 한다 — 없으면 모든 요청을 503으로 거절한다. 다만 그 값은 들어온 요청을 **검증**하는 데만 쓰이고, 그것으로 나가서 무언가에 접근할 수는 없다. 반면 `SUPABASE_SERVICE_ROLE_KEY`는 RLS를 우회해 프로젝트 전체를 읽고 쓴다.
@@ -86,6 +87,8 @@ flowchart TB
   subgraph M["NAVER Cloud VM · podman"]
     direction LR
     F["FastAPI :8000"] --> A["Audiveris<br/>PDF → MusicXML"] --> C["converter.py<br/>MusicXML → JSON"]
+    A -.->|"TEXTS 단계"| T["Tesseract OCR<br/>제목 · 작곡가 · 마디 번호"]
+    T -.-> A
   end
 
   subgraph S["Supabase"]
@@ -122,6 +125,7 @@ sequenceDiagram
 
   Note over M: 백그라운드 변환
   M->>M: Audiveris -batch -export<br/>PDF → MusicXML
+  Note over M: 같은 실행 안에서 OMR(음표)과<br/>OCR(글자)이 함께 돈다
   M->>M: converter.py<br/>MusicXML → 애니메이션 JSON
   Note over M: JSON을 메모리에 보관<br/>(어디에도 쓰지 않는다)
 
@@ -147,6 +151,55 @@ sequenceDiagram
 - **이미 저장됐으면 다시 저장하지 않는다** (`animationDataUrl`이 비어 있지 않으면 건너뜀).
 - **`/status`가 404를 주면 행을 `failed`로 만든다.** 변환 작업 상태는 서비스 프로세스 메모리에 있어 재시작하면 사라진다. 404는 "작업이 영구히 없다"는 뜻이므로 종료 처리해야 하고, 그렇지 않으면 행이 `processing`에 영원히 남는다. 반면 **폴링 중의** 5xx·401·503이나 연결 불가는 일시적이므로 저장된 상태를 건드리지 않는다 — 그 시점에는 서비스에서 작업이 아직 돌고 있을 수 있다. (업로드 시점의 연결 불가는 반대로 행을 `failed`로 만든다. 아래 실패 표 참조.)
 - **서비스가 돌려준 제목으로 사용자가 입력한 제목을 덮어쓰지 않는다.**
+
+### OCR — 악보 위의 글자
+
+**OCR은 별도 서비스가 아니다.** 같은 VM, 같은 Audiveris 실행 안에서 돈다. Audiveris는 페이지를 단계별로 처리하는데(`SCALE` → … → `TEXTS` → …), 그중 `TEXTS` 단계가 Tesseract를 호출해 오선 위·아래에 인쇄된 글자를 읽는다. 그래서 로그도 컨테이너도 하나이고, "OMR 서비스"라는 이름 하나가 음표 인식과 글자 인식을 둘 다 덮고 있다.
+
+수정 후 실제 악보(`love-affair.pdf`)에서 읽어낸 것 — 전부 MusicXML의 `<credit-words>`로 나왔다:
+
+```
+'Piano Solo - Love Affair'   'Love Affair OST'
+'Ennio Morricone'            'trans. Jose Hernandez'
+'10' '13' '16' '19' '25' '28'        (마디 번호)
+```
+
+제목·부제·작곡가·편곡자를 지면 그대로 읽었다.
+
+**다만 이 글자들이 JSON까지 도달하는지는 아직 확인되지 않았다.** `omr/converter.py`의 `_extract_metadata`는 `<work-title>`과 `<creator type="composer">`를 찾고, 둘 다 없을 때만 업로드 폼의 사용자 입력으로 채운다. 그런데 위 실측에서 관측된 요소는 `<credit-words>`뿐이고, Audiveris가 `<work-title>`·`<creator>`도 함께 채우는지는 검증된 적이 없다. 채우지 않는다면 OCR이 읽은 제목은 JSON에 반영되지 않고 **사용자 입력이 계속 쓰인다** — 겉보기 동작은 OCR이 죽어 있던 때와 구별되지 않는다.
+
+어느 쪽이든 DB `SheetMusic` 행의 제목은 위 규칙대로 사용자 입력이 유지된다. 가사·나타냄말은 `<words>`로 나오지만 현재 변환기가 쓰지 않는다.
+
+#### traineddata를 체크섬으로 고정해 둔 이유
+
+`omr-service/Dockerfile.audiveris`는 Ubuntu 패키지가 깔아둔 `eng.traineddata`를 **덮어쓴다**. 이건 재현성을 위한 장식이 아니라 OCR의 생사가 걸린 지점이다:
+
+- `tesseract-ocr-eng` 패키지의 영어 모델은 4,113,088 B짜리 **LSTM 전용**이다.
+- 그런데 Audiveris는 Tesseract를 **legacy 엔진 모드**로 초기화하고, 엔진 모드를 바꿀 설정 상수를 노출하지 않는다.
+- 그 조합은 페이지마다 `Could not initialize TessBaseAPI languages: eng in legacy mode`와 `No OCR'd lines`를 남기고 **글자를 한 자도 읽지 못한다.**
+
+그래서 `tesseract-ocr/tessdata` 4.1.0의 23,466,654 B legacy+LSTM 통합 모델을 sha256 핀(`daa0c97d…`)과 함께 받아 같은 경로에 설치한다. 패키지 자체는 Tesseract 실행 파일·설정·표준 tessdata 경로를 깔아주므로 그대로 두고, 모델 파일만 교체한다. 프로비저닝된 언어는 **`eng` 하나**다.
+
+#### 이 고장이 오래 보이지 않은 이유
+
+OCR은 이 프로젝트에서 **한 번도 동작한 적이 없었고**, 2026-08-23에야 발견됐다([이슈 #49](https://github.com/landfill/ClairKeys/issues/49), PR #50에서 수정). 보이지 않은 이유는 업로드 폼이 제목과 작곡가를 묻기 때문이다 — 사용자가 타이핑한 값이 OCR이 채웠어야 할 자리를 그대로 메워서, 완전히 죽은 텍스트 파이프라인이 작동하는 것처럼 보였다. 이 저장소가 반복해 제거해 온 "실패가 성공처럼 보이는" 결함의 또 다른 형태다(**D-001**, **D-010**).
+
+위 실측의 전문은 `docs/recovery/validation/2026-08-23-omr-image-rebuild-after-48-49.md`에 있다.
+
+#### 메트로놈 표기: "읽는 코드"와 "읽어내는 인식"은 다른 층이다
+
+빠르기 처리는 두 단계로 나뉘고, **둘 중 하나만 완성돼 있다.** 이 구분을 놓치면 "메트로놈을 읽도록 이미 고쳤는데 왜 안 되나"라는 혼란이 생긴다.
+
+| 층 | 하는 일 | 어디에 있나 | 상태 |
+|---|---|---|---|
+| 1. 인식 | 지면의 `♩ = 60` → MusicXML `<metronome>` | VM의 Audiveris (OCR + 심볼 인식) | **동작하지 않는다** |
+| 2. 해석 | MusicXML `<metronome>` → JSON `tempo` | `omr/converter.py` | 완성 — `<beat-unit>`·부점까지 환산 |
+
+`converter.py`의 `_find_tempo`·`_metronome_quarter_bpm`은 `<sound tempo>`와 `<metronome>`을 읽고, `<per-minute>`의 숫자를 `<beat-unit>`과 짝지어 4분음표 BPM으로 환산하며, 중간에 바뀌는 빠르기까지 마디 단위 타임라인으로 반영한다. **이건 OCR이 아니라 이미 만들어진 MusicXML을 파싱하는 코드다** — 1층이 `<metronome>`을 만들어 주지 않으면 한 번도 실행되지 않는다.
+
+그리고 1층은 아직 그걸 만들어 주지 않는다. OCR을 되살린 뒤(#49) 같은 악보를 다시 통과시켜도 MusicXML의 `<metronome>`은 **0개**였고 `Adagio`도 `60`도 어디에도 나타나지 않았다. Audiveris 5.11은 `MetronomeInter`·`BeatUnitInter`·`TextRole.Metronome`을 갖고 있고 이를 끄는 `ProcessingSwitch`도 없으므로 경로 자체는 배선돼 있다 — **OCR이 살아 있는 것은 필요조건이었지 충분조건이 아니었다.** 그 아래 원인은 아직 미규명이다([이슈 #48](https://github.com/landfill/ClairKeys/issues/48)).
+
+그래서 빠르기는 악보에서 읽히기를 기다리지 않고 **업로드 폼의 선택 입력**으로도 받는다. 결과 JSON은 그 값이 어디서 왔는지 숨기지 않는다 — 아래 `tempoSource`.
 
 ### 연주
 
@@ -175,9 +228,11 @@ sequenceDiagram
 
 ```json
 {
-  "version": "1.0",
+  "version": "1.1",
   "title": "...", "composer": "...",
-  "tempo": 120, "duration": 73.875,
+  "tempo": null, "tempoSource": "unknown",
+  "timingReferenceBpm": 60.0, "scoreTempo": null,
+  "duration": 115.2,
   "timeSignature": "4/4", "keySignature": "C",
   "notes": [
     { "midi": 60, "start": 0.0, "duration": 1.0,
@@ -187,6 +242,17 @@ sequenceDiagram
 ```
 
 `start`와 `duration`은 **초** 단위이고, `hand`는 MusicXML의 staff에서 유도한다. 타이로 묶인 음은 **하나의 음표로 합쳐진다** — 연주자는 건반을 한 번 누르고 유지하기 때문이다. 그래서 JSON의 음표 수는 MusicXML의 `<note>` 수보다 적은 것이 정상이다.
+
+빠르기 네 필드가 함께 있는 이유는 **출처를 지어내지 않기 위해서다.** 예전 변환기는 악보에 표기가 없으면 조용히 `120`을 넣었고, 재생 화면은 그것을 악보에서 읽은 값과 같은 서체로 표시했다(**이슈 #48**). 지금은 이렇게 나뉜다:
+
+| 필드 | 뜻 |
+|---|---|
+| `tempo` | 근거 있는 빠르기. 없으면 **`null`** — 지어내지 않는다 |
+| `tempoSource` | `score`(악보에서 인식) · `user`(업로드 폼 입력) · `unknown`(둘 다 없음) |
+| `scoreTempo` | 악보에서 인식된 값 그 자체 (사용자 입력이 있어도 보존) |
+| `timingReferenceBpm` | 음표 시각을 계산할 때 실제로 쓴 BPM. `unknown`일 때도 값이 필요하므로 항상 채워진다 |
+
+`tempoSource: "score"`는 **실제 악보에서 아직 한 번도 관측된 적이 없다** — 위 메트로놈 인식 문제 때문이다.
 
 형식의 정의와 검증기는 **D-009**에, 정확도 게이트는 `src/utils/__tests__/converterCorpus.test.ts`에 있다.
 
@@ -207,6 +273,8 @@ sequenceDiagram
 **같은 "연결 불가"가 업로드와 폴링에서 반대로 처리되는 것은 의도된 것이다.** 업로드 시점에는 행에 아직 `omrJobId`가 없다 — 호출이 실패하면 이어받을 작업 자체가 없으므로, 행을 실패시키지 않으면 아무도 다시 움직일 수 없는 상태로 남는다. 폴링 시점에는 `omrJobId`가 있고 서비스에서 작업이 아직 돌고 있을 수 있으므로, 여기서 행을 실패시키면 복구 가능한 작업을 파괴한다.
 
 폴링에서 유일하게 행을 실패시키는 비정상 응답은 **404**다. 그것만이 "작업이 영구히 없다"는 뜻이기 때문이다.
+
+텍스트 쪽에도 오래 보이지 않던 실패가 있었다 — **OCR이 한 글자도 읽지 못하는데 업로드 폼의 제목·작곡가 입력이 그 자리를 메워 정상처럼 보였다**(이슈 #49, 2026-08-23 수정). 자세한 내용과 남은 한계는 위 "OCR — 악보 위의 글자"에 있다.
 
 **아직 보이지 않는 실패가 하나 있다**: 인식이 되긴 했으나 박자가 틀린 경우. 마디 길이가 박자표와 맞지 않아도 지금은 조용히 그대로 재생된다 — [이슈 #44](https://github.com/landfill/ClairKeys/issues/44).
 
@@ -321,7 +389,8 @@ clairkeys/
 1. 대시보드에서 "새 악보 업로드" 버튼 클릭
 2. PDF 파일을 드래그 앤 드롭하거나 파일 선택
 3. 곡명, 작곡가, 카테고리 정보 입력
-4. 업로드 및 처리 완료 대기
+4. **빠르기(BPM)는 선택 입력** — 20~400 범위. 비워두면 빠르기 미상으로 표시되며, 임의의 값을 지어내지 않는다 (악보에 인쇄된 `♩ = N`은 아직 인식되지 않는다. 위 "OCR — 악보 위의 글자" 참조)
+5. 업로드 및 처리 완료 대기
 
 ### 2. 피아노 연주
 - **기본 재생**: 재생 버튼으로 자동 연주 감상
