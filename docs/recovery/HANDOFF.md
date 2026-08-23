@@ -65,6 +65,57 @@ Last updated: 2026-08-23 KST
 
 ## Latest verified result
 
+- **2026-08-23 — PR #42 is verified against a live OMR service on the VM, and one of its own
+  claims turned out to be false.** Built `clairkeys-omr:pr42` from `dcc946a` on the VM and drove
+  the Bach WTK1 Prelude 1 PDF through `/process` → `/status` → `/result`. Three of PR #42's four
+  "Not verified" items are now evidence: `/result` returns the payload (200, 45,580 bytes, 514
+  notes — the same count as the 2026-08-21 run, so the conversion is unchanged), the shared secret
+  gates all three endpoints at 401 while `/health` stays open, and **a job completes with no
+  storage credentials present** where the identical job on the pre-change image failed at 80%.
+  The gate is provable by comparison rather than assertion: the same unauthenticated `POST
+  /process` returns **422 on the old image and 401 on the new one** — 422 meaning the old service
+  accepted the request and only missed the multipart fields. The service wrote nothing at all
+  (`find /data -type f` → 0 files).
+
+  **The fourth item was wrong, not merely untested.** PR #42's review log said a restart between
+  completion and collection "fails the row, which is correct but untested". After `podman restart`,
+  `/status` returns 404, and `src/app/api/omr/status/[jobId]/route.ts:88-93` returns 502 for every
+  non-ok status **without writing to the database** — so the row stays at `processing` with its
+  `omrJobId` forever, which is exactly the stranded-row shape PR #41 exists to remove. It is not a
+  regression PR #42 introduces (the pre-change service also lost in-memory jobs on restart); what
+  is new is the claim that it is handled. The route never distinguishes "unreachable, poll again"
+  from "the service answered and this job is gone" — only the second is safe to mark failed. There
+  is no systemd unit, so a VM reboot does this to every in-flight job at once. **Undecided: whether
+  this belongs in #42, in #41, or in its own PR.**
+  Record: `docs/recovery/validation/2026-08-23-pr42-vm-verification.md`.
+
+- **2026-08-23 — correction: this machine does have an SSH path to the VM, and the clone is not
+  where the resume steps said.** The 2026-08-23 note below claimed `~/.ssh` holds no NAVER key and
+  `known_hosts` no matching entry. Both are wrong. `~/.ssh/ncp-aitestbed-user-555.pem` is an NCP
+  key (the prefix is `ncp-`, not `naver-`, which is why a name search missed it), `known_hosts`
+  contains `101.79.16.73`, port 22 is reachable, and
+  `ssh -i ~/.ssh/ncp-aitestbed-user-555.pem root@101.79.16.73` returns
+  `vm-naver-20260820145930` / `root` / `Rocky Linux release 8.8`. The user can still drive the VM
+  themselves, but an agent on this machine is not blocked from it.
+
+  The clone on the VM is at **`/opt/clairkeys`**, not `~/ClairKeys` — the step 1 command below
+  checked the wrong path and would have reported the repository absent. It sits at `43a5b14` with
+  three uncommitted modifications (`Dockerfile.audiveris`, `app.py`, `omr/storage.py`) whose
+  working-tree blob hashes are **byte-identical to merged `main`**; they are the source of PRs
+  #37/#38 and carry nothing unmerged. They were left untouched anyway — PR #42 was checked out into
+  a separate worktree at `/opt/clairkeys-pr42`.
+
+- **2026-08-23 — the OMR service is not reachable from Vercel, and no step in the resume list
+  covers making it so.** The `contract-fix` container has been up for 45 hours bound to
+  **`127.0.0.1:8000`** — loopback only. The VM has no nginx, no `/etc/letsencrypt`, no systemd unit
+  for the service, nothing listening on 80 or 443, and only a bare public IP with no domain.
+  Step 4 below says to set `OMR_SERVICE_URL` to "the VM's address", but there is no address that
+  answers. Between verifying #42 and setting the Vercel variables there is a missing step —
+  **expose the service** — and it is a decision, not a task: Let's Encrypt needs a domain the VM
+  does not have, and plain HTTP would carry the shared secret across the internet in the clear.
+  D-008 (hosting) is still `Proposed` and does not cover this. Per `AGENTS.md` a new
+  `DECISIONS.md` entry is required before implementing whichever option is chosen.
+
 - **2026-08-23 — the production upload symptom is fully explained, and the `animation-data` bucket
   exists after all.** The user reported that uploading on `clairkeys.vercel.app` created a
   `SheetMusic` row, returned `Internal server error`, and stored no file. All three are the
@@ -76,10 +127,11 @@ Last updated: 2026-08-23 KST
   the *anon key lacking list permission*, not a missing bucket. With `SUPABASE_SERVICE_ROLE_KEY`
   the same call returns all three buckets, and `animation-data` is present (public, 10 MB limit,
   `application/json` only). D-011's service-role upload therefore has a bucket to write to.
-- **2026-08-23 — VM work will be driven by the user at their own terminal.** The user confirmed they
-  have direct terminal access to the NAVER VM and will run the deployment commands themselves; this
-  machine has no SSH path to it (`~/.ssh` holds no NAVER key and `known_hosts` has no matching
-  entry). Vercel environment variables (`OMR_SERVICE_URL`, the shared secret) remain user-only in
+- **2026-08-23 — VM work will be driven by the user at their own terminal.** ~~this machine has no
+  SSH path to it (`~/.ssh` holds no NAVER key and `known_hosts` has no matching entry)~~
+  **— retracted the same day; see the correction entry above. The key is `ncp-aitestbed-user-555.pem`
+  and root SSH works from this machine.** The user does have direct terminal access to the NAVER VM
+  and can run deployment commands themselves. Vercel environment variables (`OMR_SERVICE_URL`, the shared secret) remain user-only in
   either case — the same shape as the 2026-07 Production Branch Tracking problem, and **production
   upload stays broken until they are set**, no matter what lands in this repository.
 
@@ -246,48 +298,51 @@ Local verification for #42 is recorded in `docs/recovery/reviews/PR-42.md`.
 
 ### What to do, in order
 
-1. **Collect VM state.** The user has direct terminal access to the NAVER VM
-   (`vm-naver-20260820145930`); this repository's machines have no SSH path to
-   it, so the user runs these and pastes the output. All read-only:
+1. ~~**Collect VM state.**~~ **DONE 2026-08-23.** State is in the entries above and in
+   `docs/recovery/validation/2026-08-23-pr42-vm-verification.md`. Two things this step got wrong
+   and the next session should not repeat: the clone is at **`/opt/clairkeys`**, not `~/ClairKeys`,
+   and this machine **can** SSH to the VM
+   (`ssh -i ~/.ssh/ncp-aitestbed-user-555.pem root@101.79.16.73`).
 
-   ```bash
-   ls -d ~/ClairKeys 2>/dev/null && git -C ~/ClairKeys log --oneline -1 && git -C ~/ClairKeys status --short | head
-   podman images | grep -i clairkeys
-   podman ps -a
-   rpm -q nginx 2>/dev/null || echo "nginx absent"
-   ss -tlnp | grep -E ':(80|443|8000)\s' || echo "nothing listening on 80/443/8000"
-   curl -s ifconfig.me; echo
-   df -h /data 2>/dev/null || echo "/data absent"
-   ```
+2. ~~**Verify #42 on the VM before asking for merge approval — not after.**~~ **DONE 2026-08-23**,
+   at `dcc946a`, before the approval request. Three of the four "Not verified" items are closed;
+   the fourth was a false claim, not an untested one. Full record:
+   `docs/recovery/validation/2026-08-23-pr42-vm-verification.md`. **One open decision came out of
+   it** — the 404-after-restart stranded row described in the entries above. Decide whether it
+   belongs in #42, in #41, or in its own PR **before** merging, since it is the same defect family
+   #41 was opened to close.
 
-2. **Verify #42 on the VM before asking for merge approval — not after.**
-   `omr-service/*.py` is run by **no CI workflow**, so the VM is the only place
-   this code is exercised at all. Build the image from
-   `codex/p1-omr-result-handoff` and drive `/process` → `/status` → `/result`
-   with the Mutopia Bach WTK1 Prelude 1 PDF used on 2026-08-21. What that
-   converts from claim into evidence, all currently in #42's "Not verified"
-   list: that `/result` returns the payload, that the shared secret gates
-   `/process`/`/status`/`/result` while `/health` stays open, and that a job
-   completes with no storage credentials present. Record it in
-   `docs/recovery/validation/` and update `docs/recovery/reviews/PR-42.md`.
-
-   This is one build either way — running it now just moves it before the
-   approval request, which is what "구현 완료 주장은 검증 명령과 결과가 기록된
-   경우에만" asks for.
+   The `omr-pr42` container is still running on the VM at `127.0.0.1:8001` (loopback only) with
+   its secret in `/root/.pr42-secret`, so it can be re-driven without a rebuild.
 
 3. **Merge order, once the user approves.** #41 first. Then retarget #42 to
    `main` (`gh pr edit 42 --base main`), let the full workflow set run for the
    first time, and merge #42 only after those checks are green.
 
-4. **Vercel environment variables — user only, and they are a pair.**
-   `OMR_SERVICE_URL` (the VM's address) **and** `OMR_SHARED_SECRET` (the same
+4. **Expose the service — the step this list was missing, and a decision before it is a task.**
+   Added 2026-08-23. The service binds `127.0.0.1:8000`; there is no nginx, no TLS certificate,
+   no domain, no systemd unit, and nothing on 80/443. Until this is settled there is no value to
+   put in `OMR_SERVICE_URL` in step 5, and no amount of merging changes that.
+
+   It needs a `DECISIONS.md` entry because the options trade differently and D-008 does not cover
+   this host: a domain plus nginx and Let's Encrypt is the clean answer but requires a domain the
+   VM does not have; plain HTTP on the public IP would put the shared secret on the wire in the
+   clear and leave `/process` — fifteen minutes of a two-vCPU box per call — exposed to anyone who
+   finds the port; an outbound tunnel avoids both the certificate and the open inbound port. Also
+   settle the systemd unit here: without one, a reboot drops the service and, per the
+   404-after-restart finding, strands every in-flight row.
+
+5. **Vercel environment variables — user only, and they are a pair.**
+   `OMR_SERVICE_URL` (whatever address step 4 produces) **and** `OMR_SHARED_SECRET` (the same
    value the VM runs with). `omrAuthHeaders()` returns `{}` when the secret is
    absent, so setting one without the other makes every call 401 and the
    symptom reads as a service bug. No code change can substitute for this step —
    it is the same shape as the 2026-07 Production Branch Tracking problem.
 
-5. **Only then is upload testable end to end in production.** Do not report
-   issue #22 closed, or upload fixed, before step 5 has actually run.
+6. **Only then is upload testable end to end in production.** Do not report
+   issue #22 closed, or upload fixed, before this step has actually run. Note that the Next.js
+   half of D-011 — fetching `/result` and storing it with `SUPABASE_SERVICE_ROLE_KEY` — has still
+   only run against Jest mocks; the 2026-08-23 VM verification covers the service half only.
 
 ### Notes for a different machine
 
