@@ -52,8 +52,24 @@ it with `SUPABASE_SERVICE_ROLE_KEY`, so that key never reaches this host.
 
 `OMR_SHARED_SECRET` is mandatory outside `ENVIRONMENT=development`: every
 request must carry it as `X-ClairKeys-Token`, and an unset secret makes the
-service refuse everything rather than run unauthenticated. `/health` is the
-one endpoint that stays open, for nginx and uptime checks.
+service refuse everything rather than run unauthenticated. `/health` stays open
+for uptime checks, and so does `GET /` — corrected 2026-08-23, having been
+described here as the only open endpoint. `/` returns the service name, a
+version, and `"status": "running"`, so it discloses only that something is
+listening on a port the caller already reached; whatever fronts the service in
+production should still not proxy it.
+
+Everything that costs CPU or reveals work — `/process`, `/status`, `/result` —
+requires the token.
+
+## Deployment
+
+`deploy/` holds the systemd unit and the procedure actually applied to the NAVER
+Cloud VM, including why the secret lives in a 600 env file rather than in the
+unit. The exposure decision it implements — plain HTTP without TLS, for the test
+phase only, and the condition for ending that — is **D-012** in
+`docs/recovery/DECISIONS.md`. The Fly.io section below is historical: `fly.toml`
+was written but never deployed.
 
 ## Fly.io Deployment
 
