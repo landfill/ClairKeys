@@ -258,6 +258,32 @@ class DeploymentStaticContractTests(unittest.TestCase):
         self.assertGreaterEqual(dockerfile.count("--no-install-recommends"), 2)
         self.assertNotIn("openjdk", dockerfile.lower())
 
+    def test_container_replaces_english_data_with_checksum_pinned_legacy_model(self):
+        dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
+
+        self.assertIn(
+            "ARG TESSDATA_REPOSITORY_URL=https://raw.githubusercontent.com/tesseract-ocr/tessdata",
+            dockerfile,
+        )
+        self.assertIn("ARG TESSDATA_TAG=4.1.0", dockerfile)
+        self.assertIn(
+            "ARG TESSDATA_ENG_SHA256=daa0c97d651c19fba3b25e81317cd697e9908c8208090c94c3905381c23fc047",
+            dockerfile,
+        )
+        self.assertIn(
+            '"${TESSDATA_REPOSITORY_URL}/${TESSDATA_TAG}/eng.traineddata"',
+            dockerfile,
+        )
+        self.assertIn(
+            'echo "${TESSDATA_ENG_SHA256}  /tmp/eng.traineddata" | sha256sum -c -',
+            dockerfile,
+        )
+        self.assertIn(
+            "install -m 0644 /tmp/eng.traineddata "
+            "/usr/share/tesseract-ocr/4.00/tessdata/eng.traineddata",
+            dockerfile,
+        )
+
     def test_container_supplies_the_needs_the_deb_does_not_declare(self):
         """The 5.11.0 .deb fails to install and then fails to run without these.
 
