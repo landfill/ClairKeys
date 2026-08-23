@@ -87,6 +87,63 @@ export async function GET(
 
     if (!statusResponse.ok) {
       console.error('OMR service status error:', statusResponse.status, await statusResponse.text())
+
+      // A 404 is the service answering that this job is gone — not a service
+      // that cannot answer. It holds job state in memory, so a restart drops
+      // every in-flight job at once. Rows are found here by `omrJobId`, so
+      // leaving one at `processing` strands it: every later poll takes this
+      // same path, and nothing ever moves it again. That is the failure this
+      // PR removes on the upload side, reached through a different door.
+      //
+      // Every other non-ok status is transient by comparison — 5xx is the
+      // service failing, 401/403 a shared secret that does not match yet, 503
+      // one that is not set at all. An operator fixes those and the same job
+      // resumes, so the stored status has to survive them untouched.
+      if (statusResponse.status === 404) {
+        const lostJobRow = await prisma.sheetMusic.update({
+          where: { id: sheetMusic.id },
+          data: {
+            processingStatus: 'failed',
+            updatedAt: new Date()
+          },
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        })
+
+        // Answering 200 with `status: 'failed'` rather than an error status is
+        // deliberate: the poller throws on any non-ok response and reports a
+        // generic "failed to check status". This puts it on the same path it
+        // already takes when the service itself reports a failed job, which
+        // carries a message the user can act on.
+        return NextResponse.json({
+          success: true,
+          jobId,
+          sheetMusicId: sheetMusic.id,
+          status: 'failed',
+          progress: 0,
+          message: '변환 작업을 찾을 수 없습니다.',
+          error: '변환 서비스가 재시작되어 진행 중이던 작업이 사라졌습니다. 다시 업로드해 주세요.',
+          sheetMusic: {
+            id: lostJobRow.id,
+            title: lostJobRow.title,
+            composer: lostJobRow.composer,
+            categoryId: lostJobRow.categoryId,
+            category: lostJobRow.category,
+            isPublic: lostJobRow.isPublic,
+            animationDataUrl: lostJobRow.animationDataUrl,
+            processingStatus: lostJobRow.processingStatus,
+            createdAt: lostJobRow.createdAt,
+            updatedAt: lostJobRow.updatedAt
+          }
+        })
+      }
+
       return NextResponse.json(
         { error: '처리 상태를 가져오지 못했습니다.', code: 'OMR_SERVICE_ERROR' },
         { status: 502 }
