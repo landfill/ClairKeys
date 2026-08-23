@@ -16,12 +16,15 @@
 
 import {
   ANIMATION_CONTRACT_VERSION,
+  DEFAULT_TIMING_REFERENCE_BPM,
   MIDI_MIN,
   MIDI_MAX,
+  SUPPORTED_ANIMATION_CONTRACT_VERSIONS,
   type CanonicalAnimationData,
   type CanonicalNote,
   type CanonicalHand,
   type CanonicalFinger,
+  type TempoSource,
 } from '@/types/animationContract'
 
 /** Thrown when input cannot be normalized into the canonical contract. */
@@ -149,6 +152,14 @@ function pickString(...candidates: unknown[]): string | undefined {
   return undefined
 }
 
+function pickPositiveFiniteNumber(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null
+}
+
+function normalizeTempoSource(value: unknown): TempoSource {
+  return value === 'score' || value === 'user' || value === 'unknown' ? value : 'unknown'
+}
+
 /**
  * Validate and normalize arbitrary parsed JSON into `CanonicalAnimationData`.
  * Accepts canonical, legacy Shape A, and `converter.py`-style documents; throws
@@ -168,9 +179,12 @@ export function normalizeAnimationData(raw: unknown): CanonicalAnimationData {
   // missing version is allowed (legacy Shape A / converter.py shape) and filled
   // with the current version below.
   const declaredVersion = pickString(raw.version)
-  if (declaredVersion && declaredVersion !== ANIMATION_CONTRACT_VERSION) {
+  if (
+    declaredVersion &&
+    !SUPPORTED_ANIMATION_CONTRACT_VERSIONS.some((version) => version === declaredVersion)
+  ) {
     throw new AnimationContractError(
-      `unsupported animation contract version ${JSON.stringify(declaredVersion)} (supported: ${ANIMATION_CONTRACT_VERSION})`
+      `unsupported animation contract version ${JSON.stringify(declaredVersion)} (supported: ${SUPPORTED_ANIMATION_CONTRACT_VERSIONS.join(', ')})`
     )
   }
 
@@ -189,9 +203,22 @@ export function normalizeAnimationData(raw: unknown): CanonicalAnimationData {
       ? raw.duration
       : notes.reduce((max, n) => Math.max(max, n.start + n.duration), 0)
 
-  // Guard against tempo <= 0 (division-by-zero for any BPM-based timing).
-  const tempo =
-    typeof raw.tempo === 'number' && Number.isFinite(raw.tempo) && raw.tempo > 0 ? raw.tempo : 120
+  // A missing or invalid tempo is unknown, never an invitation to invent one.
+  // The positive guard preserves the old division-by-zero protection.
+  const tempo = pickPositiveFiniteNumber(raw.tempo)
+
+  // A 1.0 value predates provenance, so even a plausible number must remain
+  // `unknown`. Missing-version Shape A / converter documents are treated the
+  // same way because they cannot prove the newer semantics either.
+  const isLegacyDocument = declaredVersion !== ANIMATION_CONTRACT_VERSION
+  const tempoSource: TempoSource =
+    tempo === null || isLegacyDocument ? 'unknown' : normalizeTempoSource(raw.tempoSource)
+  // In v1.1 an explicit timing reference records what actually baked the note
+  // seconds, so preserve a valid declaration. Older documents derive that
+  // basis from their tempo because they had no separate field.
+  const timingReferenceBpm = isLegacyDocument
+    ? tempo ?? DEFAULT_TIMING_REFERENCE_BPM
+    : pickPositiveFiniteNumber(raw.timingReferenceBpm) ?? tempo ?? DEFAULT_TIMING_REFERENCE_BPM
 
   const result: CanonicalAnimationData = {
     version: pickString(raw.version) ?? ANIMATION_CONTRACT_VERSION,
@@ -199,8 +226,13 @@ export function normalizeAnimationData(raw: unknown): CanonicalAnimationData {
     composer,
     duration,
     tempo,
+    tempoSource,
+    timingReferenceBpm,
     timeSignature,
     notes,
+  }
+  if (!isLegacyDocument && Object.prototype.hasOwnProperty.call(raw, 'scoreTempo')) {
+    result.scoreTempo = pickPositiveFiniteNumber(raw.scoreTempo)
   }
   if (keySignature) result.keySignature = keySignature
   if (isObject(raw.metadata)) result.metadata = raw.metadata as CanonicalAnimationData['metadata']

@@ -49,6 +49,8 @@ const animationData: CanonicalAnimationData = {
   composer: 'Test',
   duration: 3,
   tempo: 120,
+  tempoSource: 'unknown',
+  timingReferenceBpm: 120,
   timeSignature: '4/4',
   notes: [
     { midi: 60, start: 1, duration: 1 },

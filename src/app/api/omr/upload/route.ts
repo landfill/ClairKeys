@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File
     const title = formData.get('title') as string
     const composer = formData.get('composer') as string
+    const tempoField = formData.get('tempo')
     const categoryId = formData.get('categoryId') as string
     const isPublic = formData.get('isPublic') === 'true'
 
@@ -63,6 +64,28 @@ export async function POST(request: NextRequest) {
     if (!title) {
       return NextResponse.json(
         { error: 'Title is required' },
+        { status: 400 }
+      )
+    }
+
+    if (tempoField !== null && typeof tempoField !== 'string') {
+      return NextResponse.json(
+        {
+          error: '빠르기는 20에서 400 사이의 숫자로 입력해 주세요.',
+          code: 'INVALID_TEMPO'
+        },
+        { status: 400 }
+      )
+    }
+
+    const tempoText = tempoField?.trim() ?? ''
+    const tempo = tempoText ? Number(tempoText) : null
+    if (tempo !== null && (!Number.isFinite(tempo) || tempo < 20 || tempo > 400)) {
+      return NextResponse.json(
+        {
+          error: '빠르기는 20에서 400 사이의 숫자로 입력해 주세요.',
+          code: 'INVALID_TEMPO'
+        },
         { status: 400 }
       )
     }
@@ -122,6 +145,7 @@ export async function POST(request: NextRequest) {
     omrFormData.append('file', file)
     omrFormData.append('title', title)
     omrFormData.append('composer', composer || 'Unknown')
+    if (tempo !== null) omrFormData.append('tempo', tempo.toString())
     omrFormData.append('user_id', userId)
     omrFormData.append('sheet_music_id', sheetMusic.id.toString())
 

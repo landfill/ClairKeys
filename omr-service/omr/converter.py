@@ -5,6 +5,7 @@ Converts MusicXML files to ClairKeys animation data format
 
 import json
 import logging
+import math
 from pathlib import Path, PurePosixPath
 from typing import Dict, List, Optional, Any
 import xml.etree.ElementTree as ET
@@ -12,6 +13,21 @@ from datetime import datetime
 import zipfile
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_TIMING_REFERENCE_BPM = 60.0
+
+_QUARTER_NOTE_MULTIPLIERS = {
+    "breve": 8.0,
+    "long": 16.0,
+    "whole": 4.0,
+    "half": 2.0,
+    "quarter": 1.0,
+    "eighth": 0.5,
+    "16th": 0.25,
+    "32nd": 0.125,
+    "64th": 0.0625,
+    "128th": 0.03125,
+}
 
 class MusicXMLToClairKeysConverter:
     """Converts MusicXML to ClairKeys animation data format"""
@@ -31,7 +47,13 @@ class MusicXMLToClairKeysConverter:
             note_name = f"{note_names[note_index]}{octave}"
             self.midi_to_note[midi_num] = note_name
     
-    async def convert(self, musicxml_path: Path, title: Optional[str] = None, composer: Optional[str] = None) -> Dict[str, Any]:
+    async def convert(
+        self,
+        musicxml_path: Path,
+        title: Optional[str] = None,
+        composer: Optional[str] = None,
+        tempo: Optional[float] = None,
+    ) -> Dict[str, Any]:
         """
         Convert MusicXML file to ClairKeys animation data format
         
@@ -39,6 +61,7 @@ class MusicXMLToClairKeysConverter:
             musicxml_path: Path to MusicXML file
             title: Optional title for the piece
             composer: Optional composer name
+            tempo: Optional user-supplied quarter-note BPM
             
         Returns:
             ClairKeys animation data as dictionary
@@ -55,9 +78,30 @@ class MusicXMLToClairKeysConverter:
             # Extract basic metadata
             metadata = self._extract_metadata(root, title, composer)
             logger.info(f"Extracted metadata: {metadata}")
+
+            score_tempo = self._extract_tempo(root)
+            resolved_tempo = tempo if tempo is not None else score_tempo
+            if tempo is not None:
+                tempo_source = "user"
+            elif score_tempo is not None:
+                tempo_source = "score"
+            else:
+                tempo_source = "unknown"
+            timing_reference_bpm = (
+                resolved_tempo
+                if resolved_tempo is not None
+                else DEFAULT_TIMING_REFERENCE_BPM
+            )
+
+            if not math.isfinite(timing_reference_bpm) or timing_reference_bpm <= 0:
+                raise ValueError("Tempo must be greater than zero")
             
             # Extract notes and timing information
-            notes = self._extract_notes(root)
+            notes = self._extract_notes(
+                root,
+                timing_reference_bpm,
+                use_score_tempo_changes=tempo is None,
+            )
             logger.info(f"Extracted {len(notes)} notes")
             
             # Build ClairKeys animation data structure.
@@ -65,13 +109,16 @@ class MusicXMLToClairKeysConverter:
             # title/composer) rather than relying on the TS validator's tolerance
             # for the old metadata-nested layout. See P0-A / D-009.
             animation_data = {
-                "version": "1.0",
+                "version": "1.1",
                 "title": metadata.get("title", "Untitled"),
                 "composer": metadata.get("composer", "Unknown"),
                 "metadata": metadata,
                 "notes": notes,
                 "duration": self._calculate_duration(notes),
-                "tempo": self._extract_tempo(root),
+                "tempo": resolved_tempo,
+                "tempoSource": tempo_source,
+                "timingReferenceBpm": timing_reference_bpm,
+                "scoreTempo": score_tempo,
                 "keySignature": self._extract_key_signature(root),
                 "timeSignature": self._extract_time_signature(root),
                 "generated_at": datetime.utcnow().isoformat()
@@ -141,7 +188,12 @@ class MusicXMLToClairKeysConverter:
         
         return metadata
     
-    def _extract_notes(self, root: ET.Element) -> List[Dict[str, Any]]:
+    def _extract_notes(
+        self,
+        root: ET.Element,
+        initial_tempo: float,
+        use_score_tempo_changes: bool = True,
+    ) -> List[Dict[str, Any]]:
         """Extract notes from MusicXML into canonical timed notes.
 
         Timing is accumulated in *seconds*, not divisions, because tempo can
@@ -157,7 +209,11 @@ class MusicXMLToClairKeysConverter:
         # in one part (conventionally the first) governs playback for every part at
         # that measure position. Build one measure-indexed timeline from all parts so
         # a tempo change declared in one part re-scales the others' timing too.
-        tempo_timeline = self._build_tempo_timeline(parts, self._extract_tempo(root))
+        tempo_timeline = self._build_tempo_timeline(
+            parts,
+            initial_tempo,
+            use_score_tempo_changes=use_score_tempo_changes,
+        )
 
         for part_idx, part in enumerate(parts):
             divisions = 1
@@ -179,7 +235,7 @@ class MusicXMLToClairKeysConverter:
                 if divisions <= 0:
                     divisions = 1
 
-                tempo = tempo_timeline[measure_idx] if measure_idx < len(tempo_timeline) else self._extract_tempo(root)
+                tempo = tempo_timeline[measure_idx] if measure_idx < len(tempo_timeline) else initial_tempo
                 sec_per_tick = (60.0 / tempo) / divisions if tempo > 0 else 0.0
 
                 cursor_sec = 0.0        # seconds offset from measure_start_sec
@@ -320,41 +376,56 @@ class MusicXMLToClairKeysConverter:
         return None
 
     def _find_tempo(self, measure: ET.Element) -> Optional[float]:
-        """Find a tempo (BPM) declared in this measure, or None."""
+        """Find a quarter-note BPM declared in this measure, or None.
+
+        MusicXML defines `<sound tempo>` directly in quarter notes per minute,
+        while a printed `<metronome>` pairs its number with a beat unit that
+        must first be converted. Keep `sound` first because it is the playback
+        value and needs no beat-unit conversion.
+        """
         sound = measure.find('.//sound[@tempo]')
         if sound is not None:
             try:
-                return float(sound.get('tempo'))
+                tempo = float(sound.get('tempo'))
+                if tempo > 0:
+                    return tempo
             except (TypeError, ValueError):
                 pass
-        per_minute = measure.find('.//per-minute')
-        if per_minute is not None and per_minute.text:
-            try:
-                return float(per_minute.text)
-            except ValueError:
-                pass
+
+        for metronome in measure.findall('.//metronome'):
+            tempo = self._metronome_quarter_bpm(metronome)
+            if tempo is not None:
+                return tempo
         return None
 
-    def _build_tempo_timeline(self, parts: List[ET.Element], initial_tempo: float) -> List[float]:
+    def _build_tempo_timeline(
+        self,
+        parts: List[ET.Element],
+        initial_tempo: float,
+        use_score_tempo_changes: bool = True,
+    ) -> List[float]:
         """Build a measure-indexed tempo (BPM) timeline shared across all parts.
 
         For each measure position, the first tempo declared by any part (scanning
         parts in document order) wins and carries forward until the next change.
         This mirrors MusicXML's convention that a tempo direction in one part is a
         global playback change, so parts that carry no tempo of their own still get
-        re-scaled at a measure where another part changed tempo.
+        re-scaled at a measure where another part changed tempo. A user-supplied
+        tempo disables score changes because the explicit user value has contract
+        precedence over every score tempo.
         """
         max_measures = max((len(part.findall('measure')) for part in parts), default=0)
         timeline: List[float] = []
         current = initial_tempo
         for i in range(max_measures):
-            for part in parts:
-                measures = part.findall('measure')
-                if i < len(measures):
-                    measure_tempo = self._find_tempo(measures[i])
-                    if measure_tempo is not None and measure_tempo > 0:
-                        current = measure_tempo
-                        break
+            if use_score_tempo_changes:
+                for part in parts:
+                    measures = part.findall('measure')
+                    if i < len(measures):
+                        measure_tempo = self._find_tempo(measures[i])
+                        if measure_tempo is not None and measure_tempo > 0:
+                            current = measure_tempo
+                            break
             timeline.append(current)
         return timeline
 
@@ -388,18 +459,58 @@ class MusicXMLToClairKeysConverter:
         max_end_time = max(note['start'] + note['duration'] for note in notes)
         return max_end_time
     
-    def _extract_tempo(self, root: ET.Element) -> int:
-        """Extract tempo from MusicXML (BPM)"""
-        # Look for tempo marking
-        tempo_elem = root.find('.//per-minute')
-        if tempo_elem is not None and tempo_elem.text:
-            try:
-                return int(float(tempo_elem.text))
-            except ValueError:
-                pass
-        
-        # Default tempo
-        return 120
+    @staticmethod
+    def _metronome_quarter_bpm(metronome: ET.Element) -> Optional[float]:
+        """Convert a regular MusicXML metronome mark to quarter-note BPM."""
+        beat_unit = metronome.find('beat-unit')
+        per_minute = metronome.find('per-minute')
+        if (
+            beat_unit is None
+            or not beat_unit.text
+            or per_minute is None
+            or not per_minute.text
+        ):
+            return None
+
+        multiplier = _QUARTER_NOTE_MULTIPLIERS.get(beat_unit.text.strip())
+        if multiplier is None:
+            return None
+
+        try:
+            per_minute_value = float(per_minute.text)
+        except ValueError:
+            return None
+        if per_minute_value <= 0:
+            return None
+
+        dot_count = len(metronome.findall('beat-unit-dot'))
+        # MusicXML 4.0 calls each <beat-unit-dot/> an augmentation dot and
+        # permits zero or more of them:
+        # https://www.w3.org/2021/06/musicxml40/musicxml-reference/elements/beat-unit-dot/
+        # Augmentation dots add successive halves of the previous addition, so
+        # one dot is 1.5x and two are 1.75x (not 1.5x * 1.5x).
+        dot_multiplier = 2.0 - (0.5 ** dot_count)
+        return per_minute_value * multiplier * dot_multiplier
+
+    def _extract_tempo(self, root: ET.Element) -> Optional[float]:
+        """Extract the tempo the score declares *at its opening*, or None.
+
+        Only the first measure of each part is consulted. Scanning the whole
+        score for "a tempo" reads a mark that appears at bar 12 as though it
+        described bar 1: the opening bars get re-timed by a number the score
+        never applied to them, and `tempoSource` claims `score` for a piece
+        whose beginning is in fact unmarked. Later marks are not lost — they
+        still take effect from their own measure through
+        `_build_tempo_timeline`, which is where a mid-piece change belongs.
+        """
+        for part in root.findall('.//part'):
+            measures = part.findall('measure')
+            if not measures:
+                continue
+            tempo = self._find_tempo(measures[0])
+            if tempo is not None:
+                return tempo
+        return None
     
     def _extract_key_signature(self, root: ET.Element) -> str:
         """Extract key signature from MusicXML"""

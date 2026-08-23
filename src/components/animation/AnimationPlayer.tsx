@@ -4,15 +4,58 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { PlaybackControls } from '@/components/playback'
 import { PracticeGuideControls, PracticeKeyHighlight } from '@/components/practice'
 import { AnimationEvent, PianoAnimationData, PracticeState } from '@/types/animation'
+import {
+  DEFAULT_TIMING_REFERENCE_BPM,
+  type TempoDisplay,
+  type TempoDisplayInput,
+  type TempoSource,
+} from '@/types/animationContract'
 import { getAnimationEngine } from '@/services/animationEngine'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
+type AnimationPlayerData = Omit<PianoAnimationData, 'tempo'> & {
+  tempo: number | null
+  tempoSource?: TempoSource
+  timingReferenceBpm?: number
+  scoreTempo?: number | null
+}
+
 interface AnimationPlayerProps {
-  animationData: PianoAnimationData
+  animationData: AnimationPlayerData
   onNotePlay?: (note: string) => void
   onNoteStop?: (note: string) => void
   onActiveNotesChange?: (activeNotes: Set<string>) => void
   className?: string
+}
+
+/** Pure presentation rule for the v1.1 tempo provenance contract. */
+export function getTempoDisplay({
+  tempo,
+  tempoSource,
+  timingReferenceBpm,
+  scoreTempo,
+}: TempoDisplayInput): TempoDisplay {
+  if (tempo === null) {
+    return {
+      primary: '빠르기 미상',
+      secondary: `♩=${timingReferenceBpm} 기준으로 계산됨`,
+    }
+  }
+
+  if (tempoSource === 'score') {
+    return { primary: `♩=${tempo} (악보에서 읽음)` }
+  }
+
+  if (tempoSource === 'user') {
+    return {
+      primary: `♩=${tempo} (직접 입력)`,
+      ...(scoreTempo !== null && scoreTempo !== undefined && scoreTempo !== tempo
+        ? { secondary: `악보 표기: ♩=${scoreTempo}` }
+        : {}),
+    }
+  }
+
+  return { primary: `♩=${tempo} (출처 미상)` }
 }
 
 export default function AnimationPlayer({
@@ -34,6 +77,29 @@ export default function AnimationPlayer({
   
   // Performance optimization: Memoize expensive calculations
   const memoizedAnimationData = useMemo(() => animationData, [animationData])
+  const engineAnimationData = useMemo<PianoAnimationData>(
+    () => ({
+      ...animationData,
+      tempo:
+        animationData.tempo ??
+        animationData.timingReferenceBpm ??
+        DEFAULT_TIMING_REFERENCE_BPM,
+    }),
+    [animationData]
+  )
+  const tempoDisplay = useMemo(
+    () =>
+      getTempoDisplay({
+        tempo: animationData.tempo,
+        tempoSource: animationData.tempoSource ?? 'unknown',
+        timingReferenceBpm:
+          animationData.timingReferenceBpm ??
+          animationData.tempo ??
+          DEFAULT_TIMING_REFERENCE_BPM,
+        scoreTempo: animationData.scoreTempo,
+      }),
+    [animationData]
+  )
   
   // Performance optimization: Throttle state updates
   const updateThrottleRef = useRef<number | null>(null)
@@ -44,7 +110,7 @@ export default function AnimationPlayer({
     const engine = animationEngineRef.current
     
     // Load animation data
-    engine.loadAnimation(memoizedAnimationData)
+    engine.loadAnimation(engineAnimationData)
     setIsReady(true)
     
     // Set up event listeners with throttling for performance
@@ -141,7 +207,7 @@ export default function AnimationPlayer({
       engine.off('practiceComplete', handlePracticeComplete)
       engine.off('tempoIncrease', handleTempoIncrease)
     }
-  }, [memoizedAnimationData, onNotePlay, onNoteStop, onActiveNotesChange])
+  }, [engineAnimationData, onNotePlay, onNoteStop, onActiveNotesChange])
 
   // Sync local state with engine state
   useEffect(() => {
@@ -264,8 +330,12 @@ export default function AnimationPlayer({
           {animationData.title}
         </h3>
         <p className="text-gray-600">
-          {animationData.composer} • {animationData.timeSignature} • {animationData.tempo} BPM
+          {animationData.composer} • {animationData.timeSignature}
         </p>
+        <p className="mt-1 text-sm font-medium text-gray-700">{tempoDisplay.primary}</p>
+        {tempoDisplay.secondary && (
+          <p className="text-xs text-gray-500">{tempoDisplay.secondary}</p>
+        )}
       </div>
 
       {/* Controls - Switch based on mode */}

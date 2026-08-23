@@ -24,6 +24,7 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
   const [formData, setFormData] = useState({
     title: '',
     composer: '',
+    tempo: '',
     categoryId: null as number | null,
     isPublic: false
   })
@@ -103,6 +104,13 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
       newErrors.composer = '저작자는 필수 입력 항목입니다.'
     }
 
+    if (formData.tempo.trim()) {
+      const tempo = Number(formData.tempo)
+      if (!Number.isFinite(tempo) || tempo < 20 || tempo > 400) {
+        newErrors.tempo = '빠르기는 20에서 400 사이로 입력해 주세요.'
+      }
+    }
+
     if (!selectedFile) {
       newErrors.file = 'PDF 파일을 선택해주세요.'
     }
@@ -172,6 +180,9 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
       uploadFormData.append('file', selectedFile!)
       uploadFormData.append('title', formData.title.trim())
       uploadFormData.append('composer', formData.composer.trim())
+      if (formData.tempo.trim()) {
+        uploadFormData.append('tempo', formData.tempo.trim())
+      }
       if (formData.categoryId) {
         uploadFormData.append('categoryId', formData.categoryId.toString())
       }
@@ -215,6 +226,7 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
       setFormData({
         title: '',
         composer: '',
+        tempo: '',
         categoryId: null,
         isPublic: false
       })
@@ -246,7 +258,7 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         <h3 className="text-lg font-semibold text-gray-900">OMR 악보 업로드</h3>
 
         {/* File Upload */}
@@ -339,6 +351,35 @@ export default function OMRUploadForm({ onUploadStart, onUploadError }: OMRUploa
           />
           {errors.composer && (
             <p className="mt-1 text-sm text-red-600">{errors.composer}</p>
+          )}
+        </div>
+
+        {/* Optional Tempo Field */}
+        <div>
+          <label htmlFor="tempo" className="block text-sm font-medium text-gray-700 mb-2">
+            빠르기 (BPM)
+          </label>
+          <input
+            id="tempo"
+            type="number"
+            min={20}
+            max={400}
+            step="any"
+            value={formData.tempo}
+            onChange={(e) => handleInputChange('tempo', e.target.value)}
+            aria-describedby="tempo-help"
+            aria-invalid={Boolean(errors.tempo)}
+            className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              errors.tempo ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="예: 60"
+            disabled={uploadStatus.isUploading}
+          />
+          <p id="tempo-help" className="mt-1 text-xs text-gray-500">
+            선택 입력입니다. 비워두면 빠르기 미상으로 표시됩니다.
+          </p>
+          {errors.tempo && (
+            <p className="mt-1 text-sm text-red-600">{errors.tempo}</p>
           )}
         </div>
 

@@ -7,7 +7,7 @@ the canonical animation JSON to stdout. This is the seam the P0-B accuracy gate
 CLI per golden fixture and scores stdout with `compareAnimationData`.
 
 Usage:
-    python -m omr.cli path/to/input.musicxml [--title T] [--composer C]
+    python -m omr.cli path/to/input.musicxml [--title T] [--composer C] [--tempo BPM]
 """
 
 import argparse
@@ -24,10 +24,11 @@ def main(argv=None) -> int:
     parser.add_argument("input", type=Path, help="Path to input MusicXML file")
     parser.add_argument("--title", default=None, help="Optional title override")
     parser.add_argument("--composer", default=None, help="Optional composer override")
+    parser.add_argument("--tempo", type=float, default=None, help="Optional quarter-note BPM override")
     args = parser.parse_args(argv)
 
     converter = MusicXMLToClairKeysConverter()
-    data = asyncio.run(converter.convert(args.input, args.title, args.composer))
+    data = asyncio.run(converter.convert(args.input, args.title, args.composer, args.tempo))
     json.dump(data, sys.stdout, ensure_ascii=False)
     sys.stdout.write("\n")
     return 0
