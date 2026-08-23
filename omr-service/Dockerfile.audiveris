@@ -3,6 +3,9 @@ FROM ubuntu:22.04
 ARG AUDIVERIS_VERSION=5.11.0
 ARG AUDIVERIS_DEB=Audiveris-5.11.0-ubuntu22.04-x86_64.deb
 ARG AUDIVERIS_SHA256=ae714594f40e54b1a4951fc3f914f08ae38fe5d07b7f2283b1a904fdb6e0a318
+ARG TESSDATA_REPOSITORY_URL=https://raw.githubusercontent.com/tesseract-ocr/tessdata
+ARG TESSDATA_TAG=4.1.0
+ARG TESSDATA_ENG_SHA256=daa0c97d651c19fba3b25e81317cd697e9908c8208090c94c3905381c23fc047
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -13,6 +16,13 @@ ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
 
 # Audiveris's official .deb includes its own jlink JRE. English OCR language
 # data is separate from that runtime and must be installed explicitly.
+#
+# Keep tesseract-ocr-eng because it installs the matching Tesseract packages,
+# configuration, and canonical tessdata directory. Ubuntu's packaged English
+# model is LSTM-only, however, while Audiveris initializes Tesseract's legacy
+# engine. Overwrite only that model with tessdata 4.1.0's 23,466,654-byte
+# legacy+LSTM file. Keeping the canonical path also avoids a second shadow
+# tessdata directory and lets the existing TESSDATA_PREFIX remain unchanged.
 #
 # Three needs of the .deb are not expressed by its own metadata:
 #   - Its postinst runs xdg-desktop-menu/xdg-mime. Those exit 3 unless a system
@@ -44,6 +54,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       -o "/tmp/${AUDIVERIS_DEB}" \
     && echo "${AUDIVERIS_SHA256}  /tmp/${AUDIVERIS_DEB}" | sha256sum -c - \
     && apt-get install -y --no-install-recommends "/tmp/${AUDIVERIS_DEB}" \
+    && curl -fsSL \
+      "${TESSDATA_REPOSITORY_URL}/${TESSDATA_TAG}/eng.traineddata" \
+      -o /tmp/eng.traineddata \
+    && echo "${TESSDATA_ENG_SHA256}  /tmp/eng.traineddata" | sha256sum -c - \
+    && install -m 0644 /tmp/eng.traineddata /usr/share/tesseract-ocr/4.00/tessdata/eng.traineddata \
     && sed -i \
       's/java-options=-Xmx8G/java-options=-Xmx3G/' \
       /opt/audiveris/lib/app/Audiveris.cfg \
@@ -52,7 +67,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && test -x /opt/audiveris/bin/Audiveris \
     && test -x /opt/audiveris/lib/runtime/bin/java \
     && /opt/audiveris/bin/Audiveris -version \
-    && rm -f "/tmp/${AUDIVERIS_DEB}" \
+    && rm -f "/tmp/${AUDIVERIS_DEB}" /tmp/eng.traineddata \
     && rm -rf /var/lib/apt/lists/*
 
 # Create working directory
