@@ -9,7 +9,7 @@ Last updated: 2026-08-23 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: **[#50](https://github.com/landfill/ClairKeys/pull/50) (issue #49, OCR) and [#51](https://github.com/landfill/ClairKeys/pull/51) (issue #48, tempo)** — both review-ready, all checks green, awaiting the user's explicit merge approval (D-005). They are independent of each other; merge order does not matter. Issues #44, #46, #47 remain open and are untouched.
+- Open pull requests: none. **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
 - **#48 was found closed on GitHub and reopened** on 2026-08-23. It had been closed as `completed` at 11:46 UTC while no fix commit existed anywhere — only the four analysis comments had landed. The user confirmed the reopen.
 - Pull requests merged 2026-08-23, kept below as the record of what landed:
   - [#45](https://github.com/landfill/ClairKeys/pull/45) — `MERGED` at `9ccf64e` (README service-architecture section: a topology diagram carrying which credential crosses which boundary, plus sequence diagrams for upload→convert→store and for playback, and a table of how each failure surfaces. CodeRabbit's first complete review of this sequence produced two valid findings, both fixed in `6e06e04`: the credential table said the OMR service holds none while `omr/auth.py` requires `OMR_SHARED_SECRET`, and the failure table contradicted itself because upload and polling handle an unreachable service oppositely — on purpose. Review log: `docs/recovery/reviews/PR-45.md`)
@@ -403,20 +403,17 @@ Last updated: 2026-08-23 KST
 - CORRECTED (2026-07-25): the 2026-07-24 claim that `public/sw.js` can serve a returning visitor the pre-fix JavaScript was **wrong**, and is retracted. `/_next/static/**` URLs are content-hashed, so a new build produces new URLs, every one of which is a cache miss; the stale entries are never requested again. `isExpired()` also returns `true` when `sw-cached-at` is absent, so the install-time `cache.addAll(['/', '/manifest.json'])` entries do not pin anything, and HTML is network-first regardless. The fixed `CACHE_NAME = 'clairkeys-v1'` does make the activate handler's cache eviction dead code, but bundle freshness was never resting on it. What remains real is narrower: non-hashed files under `public/` (`favicon.png`, `icon-*.png`, `icon-*.svg`, …) match the `\.(js|css|woff|…|png|svg)$` rule, which is cache-first with a one-year `maxAge` and stable URLs, so a changed icon can stay stale for up to a year. Low impact, still unfiled.
 - CLEANUP COMPLETE: the user authorized deletion after confirming the untracked `fix_*.js` scripts, `ts_errors*.log`, disabled performance components, and Playwright `.last-run.json` were unreferenced local artifacts. All 16 files and their now-empty directories were removed. Local and remote `codex/p0-playback-sync-stages-4-5` refs were then deleted after both tips were re-confirmed in `main`; `git status --short` is clean.
 
-## Resume here — next session: merge approval for #50 and #51, then what #48 did not close
+## Resume here — next session: what #48 and #49 did *not* fix
 
-Written 2026-08-23 after both fixes were built, verified, and opened as PRs. The section that
-sent this session is kept below as `Resume here — 2026-08-23 (issues #49 and #48, completed)`.
+Written 2026-08-23 after both fixes were built, verified, merged, and cleaned up. The section
+that sent this session is kept below as `Resume here — 2026-08-23 (issues #49 and #48, completed)`.
 
 ### State
 
-- **Nothing is merged.** Both PRs wait on the user's explicit approval (D-005). CI is fully
-  green on both, and neither has an unresolved actionable review.
-- `main` carries only handoff documents from this session (`reviews/PR-50.md`,
-  `reviews/PR-51.md`, `validation/2026-08-23-p1a-tempo-provenance.md`, and this file).
-- Work branches `codex/p1a-ocr-traineddata` and `codex/p1a-tempo-provenance` exist locally and
-  on `origin`. Do **not** delete them until their PRs are merged and both tips are confirmed
-  contained in `main`.
+- **Both merged.** #50 at `210a021`, #51 at `64753d9`. Issues #48 and #49 closed automatically.
+- Work branches and the three Orca worktrees are deleted. `main` is clean, is the only
+  worktree, and its post-merge checks passed.
+- Nothing is in flight. The next session starts from a settled tree.
 
 ### What landed in each PR
 
@@ -442,20 +439,18 @@ different things instead of one number.
 
 ### What to do, in order
 
-1. **Ask the user to approve each PR.** Re-check CI and reviews at that moment, merge, confirm
-   the merge commit on `main`, then clean up both branches per AGENTS.md step 7.
-2. **#48 is closed by #51, but the thing underneath it is not.** A printed metronome mark is
+1. **#48 is closed by #51, but the thing underneath it is not.** A printed metronome mark is
    still never recognised. With OCR restored (#50), `<metronome>` was **still 0** on the same
    score and neither `Adagio` nor `60` appeared anywhere, though measure numbers 10/13/16/19/25/28
    were read. Every `ProcessingSwitch` was enumerated; none governs metronome recognition.
    **The cause is unexplained.** `tempoSource: 'score'` has therefore never been observed
    end to end — only proven correct on hand-authored MusicXML. If that matters to the user,
    it needs a new issue; do not fold it into #48's history as though #51 addressed it.
-3. **Re-conversion is required for anything already stored.** Note seconds are baked at
+2. **Re-conversion is required for anything already stored.** Note seconds are baked at
    conversion, so an old upload keeps its current speed no matter what these PRs do. Anyone
    testing the fix against an existing score will conclude it failed. The user allowed
    re-conversion on 2026-08-23.
-4. **Deploying #50 needs an image rebuild.** The Docker daemon was unavailable in this session,
+3. **Deploying #50 needs an image rebuild.** The Docker daemon was unavailable in this session,
    so the image was never built and the replacement model has not been exercised by Audiveris
    in this repository's own CI or locally. That is the one unverified link in #50.
 
