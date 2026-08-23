@@ -9,7 +9,8 @@ Last updated: 2026-08-23 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: none. Issues #44, #46, #47, #48, #49 are open; #48 and #49 are the next session's scope.
+- Open pull requests: **[#50](https://github.com/landfill/ClairKeys/pull/50) (issue #49, OCR) and [#51](https://github.com/landfill/ClairKeys/pull/51) (issue #48, tempo)** — both review-ready, all checks green, awaiting the user's explicit merge approval (D-005). They are independent of each other; merge order does not matter. Issues #44, #46, #47 remain open and are untouched.
+- **#48 was found closed on GitHub and reopened** on 2026-08-23. It had been closed as `completed` at 11:46 UTC while no fix commit existed anywhere — only the four analysis comments had landed. The user confirmed the reopen.
 - Pull requests merged 2026-08-23, kept below as the record of what landed:
   - [#45](https://github.com/landfill/ClairKeys/pull/45) — `MERGED` at `9ccf64e` (README service-architecture section: a topology diagram carrying which credential crosses which boundary, plus sequence diagrams for upload→convert→store and for playback, and a table of how each failure surfaces. CodeRabbit's first complete review of this sequence produced two valid findings, both fixed in `6e06e04`: the credential table said the OMR service holds none while `omr/auth.py` requires `OMR_SHARED_SECRET`, and the failure table contradicted itself because upload and polling handle an unreachable service oppositely — on purpose. Review log: `docs/recovery/reviews/PR-45.md`)
   - [#43](https://github.com/landfill/ClairKeys/pull/43) — `MERGED` at `f55a4b4` (**D-012**: exposes the OMR service on `http://101.79.16.73:3000` under a systemd unit, plain HTTP without TLS for the test phase, with the accepted risk and the exit condition both written down. Secret in a 600 env file rather than the 644 unit. Verified from outside the VM: `/health` 200 without a token, `/process`/`/status` 401 with none and with a wrong one, and a full Bach conversion returning 514 notes through the public IP. Review log: `docs/recovery/reviews/PR-43.md`)
@@ -402,7 +403,80 @@ Last updated: 2026-08-23 KST
 - CORRECTED (2026-07-25): the 2026-07-24 claim that `public/sw.js` can serve a returning visitor the pre-fix JavaScript was **wrong**, and is retracted. `/_next/static/**` URLs are content-hashed, so a new build produces new URLs, every one of which is a cache miss; the stale entries are never requested again. `isExpired()` also returns `true` when `sw-cached-at` is absent, so the install-time `cache.addAll(['/', '/manifest.json'])` entries do not pin anything, and HTML is network-first regardless. The fixed `CACHE_NAME = 'clairkeys-v1'` does make the activate handler's cache eviction dead code, but bundle freshness was never resting on it. What remains real is narrower: non-hashed files under `public/` (`favicon.png`, `icon-*.png`, `icon-*.svg`, …) match the `\.(js|css|woff|…|png|svg)$` rule, which is cache-first with a one-year `maxAge` and stable URLs, so a changed icon can stay stale for up to a year. Low impact, still unfiled.
 - CLEANUP COMPLETE: the user authorized deletion after confirming the untracked `fix_*.js` scripts, `ts_errors*.log`, disabled performance components, and Playwright `.last-run.json` were unreferenced local artifacts. All 16 files and their now-empty directories were removed. Local and remote `codex/p0-playback-sync-stages-4-5` refs were then deleted after both tips were re-confirmed in `main`; `git status --short` is clean.
 
-## Resume here — next session: issues #49 and #48
+## Resume here — next session: merge approval for #50 and #51, then what #48 did not close
+
+Written 2026-08-23 after both fixes were built, verified, and opened as PRs. The section that
+sent this session is kept below as `Resume here — 2026-08-23 (issues #49 and #48, completed)`.
+
+### State
+
+- **Nothing is merged.** Both PRs wait on the user's explicit approval (D-005). CI is fully
+  green on both, and neither has an unresolved actionable review.
+- `main` carries only handoff documents from this session (`reviews/PR-50.md`,
+  `reviews/PR-51.md`, `validation/2026-08-23-p1a-tempo-provenance.md`, and this file).
+- Work branches `codex/p1a-ocr-traineddata` and `codex/p1a-tempo-provenance` exist locally and
+  on `origin`. Do **not** delete them until their PRs are merged and both tips are confirmed
+  contained in `main`.
+
+### What landed in each PR
+
+**[#50](https://github.com/landfill/ClairKeys/pull/50) — issue #49, OCR.** `Dockerfile.audiveris`
+fetches the legacy+LSTM `eng.traineddata` from `tesseract-ocr/tessdata` 4.1.0 and pins its
+sha256, overwriting the LSTM-only file the Ubuntu package installs. Checksum re-verified
+independently by download (23,466,654 bytes, `daa0c97d…`). `tesseract-ocr-eng` stays for the
+directory and configuration it provides.
+
+**[#51](https://github.com/landfill/ClairKeys/pull/51) — issue #48, tempo. Records D-013.**
+Contract `1.0` → `1.1`, reader accepts both. `tempo` is nullable, joined by `tempoSource`
+(`score`/`user`/`unknown`), `timingReferenceBpm` (what actually baked the seconds), and
+`scoreTempo`. `<beat-unit>`/`<beat-unit-dot/>` convert to quarter BPM. `/process` takes a
+`tempo` form field; the upload form's input is optional. The player prints four visibly
+different things instead of one number.
+
+### The two facts that decide whether these can be merged separately
+
+1. **#51's two halves cannot be split.** The Python half alone fails `converterCorpus.test.ts`
+   14/14 because the old reader rejects version 1.1; the TypeScript half alone still receives
+   120 from the converter. They are one commit for that reason.
+2. **#50 and #51 are genuinely independent** and touch disjoint files. Either order works.
+
+### What to do, in order
+
+1. **Ask the user to approve each PR.** Re-check CI and reviews at that moment, merge, confirm
+   the merge commit on `main`, then clean up both branches per AGENTS.md step 7.
+2. **#48 is closed by #51, but the thing underneath it is not.** A printed metronome mark is
+   still never recognised. With OCR restored (#50), `<metronome>` was **still 0** on the same
+   score and neither `Adagio` nor `60` appeared anywhere, though measure numbers 10/13/16/19/25/28
+   were read. Every `ProcessingSwitch` was enumerated; none governs metronome recognition.
+   **The cause is unexplained.** `tempoSource: 'score'` has therefore never been observed
+   end to end — only proven correct on hand-authored MusicXML. If that matters to the user,
+   it needs a new issue; do not fold it into #48's history as though #51 addressed it.
+3. **Re-conversion is required for anything already stored.** Note seconds are baked at
+   conversion, so an old upload keeps its current speed no matter what these PRs do. Anyone
+   testing the fix against an existing score will conclude it failed. The user allowed
+   re-conversion on 2026-08-23.
+4. **Deploying #50 needs an image rebuild.** The Docker daemon was unavailable in this session,
+   so the image was never built and the replacement model has not been exercised by Audiveris
+   in this repository's own CI or locally. That is the one unverified link in #50.
+
+### Still open, untouched by this session
+
+Issues [#46](https://github.com/landfill/ClairKeys/issues/46) (small-page PDFs discarded at
+`SCALE` — sits underneath the metronome問題: a sheet discarded at `SCALE` never reaches text
+recognition at all), [#47](https://github.com/landfill/ClairKeys/issues/47) (Java stack trace
+shown to the user), [#44](https://github.com/landfill/ClairKeys/issues/44) (recognised rhythm
+wrong in 10 of 35 measures).
+
+### How this session was run
+
+Orca orchestration, run `run_6f9cddc08787`, three Codex workers in three separate worktrees:
+`task_820672adfb46` (#49), `task_83abe2073ce4` (#48 Python), `task_8e7e2224a615` (#48 TypeScript).
+The coordinator settled the tempo contract first and handed both #48 workers the same written
+contract, because they could not see each other's code. Workers ran no git commands; the
+coordinator integrated, verified, and committed. Both patches applied to one branch without a
+single conflict.
+
+## Resume here — 2026-08-23 (issues #49 and #48, completed)
 
 Decided with the user 2026-08-23: **the next session takes issues #49 (OCR is dead) and #48
 (playback tempo) together.** They are one story — the tempo is wrong because the printed
