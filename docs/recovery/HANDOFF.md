@@ -85,9 +85,17 @@ Last updated: 2026-08-23 KST
   regression PR #42 introduces (the pre-change service also lost in-memory jobs on restart); what
   is new is the claim that it is handled. The route never distinguishes "unreachable, poll again"
   from "the service answered and this job is gone" — only the second is safe to mark failed. There
-  is no systemd unit, so a VM reboot does this to every in-flight job at once. **Undecided: whether
-  this belongs in #42, in #41, or in its own PR.**
+  is no systemd unit, so a VM reboot does this to every in-flight job at once.
   Record: `docs/recovery/validation/2026-08-23-pr42-vm-verification.md`.
+
+  **Fixed the same day in PR #41 at `1750ec5`, at the user's direction** — removing the stranded
+  row is what #41 is for; #42 was only the run that exposed the second route into it. A 404 from
+  `/status` now fails the row; 5xx, 401, 503, and an unreachable service leave the stored status
+  untouched, because those are an operator mid-configuration rather than a lost job. The 404
+  response is 200 with `status: 'failed'` so the poller takes the branch it already has for a
+  service-reported failure instead of throwing a generic error. 7 regression tests written first,
+  3 of which fail against the pre-change code; full suite 44 suites / 399 tests, 0 failures.
+  #42's branch merged #41 cleanly at `f540752` and runs 45 suites / 405 tests, 0 failures.
 
 - **2026-08-23 — correction: this machine does have an SSH path to the VM, and the clone is not
   where the resume steps said.** The 2026-08-23 note below claimed `~/.ssh` holds no NAVER key and
@@ -278,13 +286,17 @@ removed.
 
 - Two review-ready PRs are open, and **both are waiting on the user's explicit
   merge approval** — nothing here authorises merging them.
-  - **#41** `codex/p1-upload-failure-visibility` at `8629ead`. Every hosted check
-    passes.
-  - **#42** `codex/p1-omr-result-handoff` at `dcc946a`, **stacked on #41's
-    branch**. Implements and records D-011.
+  - **#41** `codex/p1-upload-failure-visibility` at `1750ec5`. Carries a second
+    commit added 2026-08-23: the 404-after-restart stranded row found by the #42
+    VM run. CodeRabbit reported `Review skipped: manual review required for this
+    OSS repository` on that push, so that commit has no automated review.
+  - **#42** `codex/p1-omr-result-handoff` at `f540752`, **stacked on #41's
+    branch**. Implements and records D-011, and has merged #41's fix so the stack
+    stays consistent.
 - `main`, and both work branches, are pushed with 0 unique local commits.
 - Production upload is still broken, by design, and will stay broken until the
-  VM serves the OMR service and Vercel has the two variables in step 4.
+  VM serves the OMR service **and is reachable from Vercel** (step 4) and the two
+  variables are set (step 5).
 
 ### The CI trap on #42 — do not misread it as green
 
@@ -307,10 +319,9 @@ Local verification for #42 is recorded in `docs/recovery/reviews/PR-42.md`.
 2. ~~**Verify #42 on the VM before asking for merge approval — not after.**~~ **DONE 2026-08-23**,
    at `dcc946a`, before the approval request. Three of the four "Not verified" items are closed;
    the fourth was a false claim, not an untested one. Full record:
-   `docs/recovery/validation/2026-08-23-pr42-vm-verification.md`. **One open decision came out of
-   it** — the 404-after-restart stranded row described in the entries above. Decide whether it
-   belongs in #42, in #41, or in its own PR **before** merging, since it is the same defect family
-   #41 was opened to close.
+   `docs/recovery/validation/2026-08-23-pr42-vm-verification.md`. The one finding it produced —
+   the 404-after-restart stranded row — was **fixed in #41 at `1750ec5`** the same day, and #42
+   merged that fix at `f540752`. Nothing from this step is still open.
 
    The `omr-pr42` container is still running on the VM at `127.0.0.1:8001` (loopback only) with
    its secret in `/root/.pr42-secret`, so it can be re-driven without a rebuild.
@@ -357,6 +368,14 @@ Local verification for #42 is recorded in `docs/recovery/reviews/PR-42.md`.
   (all need Python), `omrRuntimeContract`, `prChecksWorkflow`, and one
   `uploadPathInventory` demo-writer assertion. Compare any new run against that
   set rather than against zero; CI has Python and is greener.
+
+  **Confirmed 2026-08-23: on a machine *with* Python the baseline is zero.** This
+  machine has Python 3.14.3 and the full suite runs 44/399 (on #41) and 45/405
+  (on #42) with no failures at all, and `tsc --noEmit` exits 0 rather than
+  reporting the 2 errors recorded earlier — those came from a stale `.next`
+  validator reference. So the number to compare against is a property of the
+  environment, not of the repository. Check `python3 --version` before reading a
+  failure count as a regression.
 - `jest.setup.js:103` replaces `global.File` with a class that is not a `Blob`,
   so `FormData.append` stringifies it and a route sees no filename. Route tests
   that post a file must import `File` from `node:buffer`. Do not change the
