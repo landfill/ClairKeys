@@ -9,7 +9,7 @@ Last updated: 2026-08-23 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests:
+- Open pull requests: none — #41 and #42 merged 2026-08-23.
   - [#42](https://github.com/landfill/ClairKeys/pull/42) — `OPEN` at `e5aab93`, **stacked on #41**
     (base `codex/p1-upload-failure-visibility`; retarget to `main` when #41 merges). Implements
     **D-011** and records it: `omr/storage.py` is deleted, the service returns the animation JSON
@@ -284,8 +284,15 @@ removed.
 
 ### State
 
-- Two review-ready PRs are open, and **both are waiting on the user's explicit
-  merge approval** — nothing here authorises merging them.
+**Both PRs merged 2026-08-23** with the user's explicit approval — #41 at
+`727031c`, #42 at `670201a`. All post-merge checks on `670201a` are green, every
+branch tip was confirmed contained in `main` with 0 unique commits, and both work
+branches are deleted local and remote. `git branch -a` lists only `main` and
+`origin/main`; `git status --short` is empty. The state below is kept as the
+record of what was merged.
+
+- ~~Two review-ready PRs are open, and **both are waiting on the user's explicit
+  merge approval**~~ — both merged; see above.
   - **#41** `codex/p1-upload-failure-visibility` at `48d123c`, with two commits
     added 2026-08-23: the 404-after-restart stranded row found by the #42 VM run
     (`1750ec5`), and CodeRabbit's `serviceUrl` finding — a malformed
@@ -307,13 +314,25 @@ removed.
   VM serves the OMR service **and is reachable from Vercel** (step 4) and the two
   variables are set (step 5).
 
-### The CI trap on #42 — do not misread it as green
+### The CI trap on a stacked PR — and the second trap under it
 
-`.github/workflows/test.yml:7` and the other workflows trigger on
-`pull_request: branches: [main, develop]`. #42's base is a `codex/*` branch, so
-**no test workflow has run on it at all** — only Vercel and CodeRabbit reported.
-An empty check list on a stacked PR is not a passing check list. The workflows
-run once #42 is retargeted to `main` (step 3).
+Resolved for #42 on 2026-08-23, but both halves will recur on the next stacked PR.
+
+`.github/workflows/test.yml` and `pr-checks.yml` trigger on
+`pull_request: branches: [main, develop]`, so while #42's base was a `codex/*`
+branch **no test workflow ran on it at all** — only Vercel and CodeRabbit
+reported. An empty check list on a stacked PR is not a passing check list.
+
+**Retargeting to `main` does not fix that by itself.** This was written here as
+though it did, and it is wrong. `pr-checks.yml` declares
+`types: [opened, synchronize, reopened]`, and `test.yml` omits `types:` — which
+defaults to exactly those three. Changing a PR's base fires `pull_request` with
+action **`edited`**, which is in neither list. #42 sat at `BLOCKED` with three
+checks and no way to progress until the PR was **closed and reopened**, firing
+`reopened`. Pushing any commit would also work by firing `synchronize`;
+close/reopen was chosen because it leaves no empty commit behind.
+
+Once triggered, #42 passed all 17 checks on its first-ever workflow run.
 
 Local verification for #42 is recorded in `docs/recovery/reviews/PR-42.md`.
 
@@ -335,22 +354,61 @@ Local verification for #42 is recorded in `docs/recovery/reviews/PR-42.md`.
    The `omr-pr42` container is still running on the VM at `127.0.0.1:8001` (loopback only) with
    its secret in `/root/.pr42-secret`, so it can be re-driven without a rebuild.
 
-3. **Merge order, once the user approves.** #41 first. Then retarget #42 to
-   `main` (`gh pr edit 42 --base main`), let the full workflow set run for the
-   first time, and merge #42 only after those checks are green.
+3. ~~**Merge order, once the user approves.**~~ **DONE 2026-08-23.** #41 at
+   `727031c`, then #42 retargeted, its workflows run for the first time (17/17
+   pass), merged at `670201a`. Branches deleted after confirming 0 unique commits
+   on all four refs. **`gh pr edit --base main` alone did not start the
+   workflows** — see the trap section above before repeating this on a stacked
+   PR.
+
+   `main` now carries the pieces that let Vercel talk to the service at all:
+   `omrAuthHeaders()` sends `X-ClairKeys-Token`, the status route collects
+   `/result` and stores it with `SUPABASE_SERVICE_ROLE_KEY` instead of reading
+   the `animation_data_url` the service no longer returns, and a malformed
+   `OMR_SERVICE_URL` is refused as a configuration error rather than reported as
+   an outage. Before this merge none of that was true on `main`, so setting the
+   Vercel variables would have produced 401s and rows marked `completed` with no
+   animation data.
 
 4. **Expose the service — the step this list was missing, and a decision before it is a task.**
    Added 2026-08-23. The service binds `127.0.0.1:8000`; there is no nginx, no TLS certificate,
    no domain, no systemd unit, and nothing on 80/443. Until this is settled there is no value to
    put in `OMR_SERVICE_URL` in step 5, and no amount of merging changes that.
 
-   It needs a `DECISIONS.md` entry because the options trade differently and D-008 does not cover
-   this host: a domain plus nginx and Let's Encrypt is the clean answer but requires a domain the
-   VM does not have; plain HTTP on the public IP would put the shared secret on the wire in the
-   clear and leave `/process` — fifteen minutes of a two-vCPU box per call — exposed to anyone who
-   finds the port; an outbound tunnel avoids both the certificate and the open inbound port. Also
-   settle the systemd unit here: without one, a reboot drops the service and, per the
-   404-after-restart finding, strands every in-flight row.
+   **Decided with the user 2026-08-23: plain HTTP, no TLS, for the test phase.** This is a
+   deliberate, recorded trade, not an oversight, and it needs a `DECISIONS.md` entry (D-012)
+   committed with the code that implements it — D-008 does not cover this host.
+
+   What the user weighed: this is a test deployment, not a live service. Two facts made the
+   trade defensible rather than reckless. **D-011 already removed the credential that mattered**
+   — the VM holds no Supabase key, verified 2026-08-23 by inspecting the container's environment,
+   so plaintext exposes the shared secret, the PDF, and the animation JSON, but never
+   `SUPABASE_SERVICE_ROLE_KEY`, which stays on Vercel. And both consequences are recoverable by
+   reissuing the secret and restarting the container.
+
+   What is being accepted, stated plainly so it is not rediscovered as a surprise: the shared
+   secret crosses the internet in the clear, so an on-path observer can capture it and then drive
+   `/process` — up to fifteen minutes of a two-vCPU box per call — and read any job's score from
+   `/result`. `omr/auth.py`'s own reasoning ("the exposure worth controlling is an
+   unauthenticated caller, not an eavesdropper") assumes the secret arrives safely; plaintext
+   removes that assumption, so D-012 must say so rather than let the code's comment stand
+   unqualified.
+
+   **Exit condition for D-012**: before this is treated as a real service, move to TLS. The path
+   was checked and costs nothing — `101.79.16.73.sslip.io` already resolves to the VM with no
+   registration, ports 80 and 443 are already open in the ACG, and nginx would terminate TLS in
+   front of a container that stays on loopback. Only `OMR_SERVICE_URL` changes; no application
+   code does.
+
+   Concrete shape agreed: bind the container to `0.0.0.0:3000` (already open in the ACG; 8000 is
+   not, and 80/443 stay free for the TLS upgrade), giving
+   `OMR_SERVICE_URL=http://101.79.16.73:3000`. Settle the systemd unit in the same PR —
+   `podman generate systemd` or a quadlet — because without one a reboot drops the service and,
+   per the 404-after-restart finding, fails every in-flight row. Generate a **fresh** secret;
+   `/root/.pr42-secret` was used for verification and should be discarded.
+
+   Hardening that costs nothing here: `GET /` answers 200 without a token (found 2026-08-23), so
+   whatever fronts the service should not expose it.
 
 5. **Vercel environment variables — user only, and they are a pair.**
    `OMR_SERVICE_URL` (whatever address step 4 produces) **and** `OMR_SHARED_SECRET` (the same
