@@ -185,6 +185,98 @@ Last updated: 2026-08-23 KST
 - CORRECTED (2026-07-25): the 2026-07-24 claim that `public/sw.js` can serve a returning visitor the pre-fix JavaScript was **wrong**, and is retracted. `/_next/static/**` URLs are content-hashed, so a new build produces new URLs, every one of which is a cache miss; the stale entries are never requested again. `isExpired()` also returns `true` when `sw-cached-at` is absent, so the install-time `cache.addAll(['/', '/manifest.json'])` entries do not pin anything, and HTML is network-first regardless. The fixed `CACHE_NAME = 'clairkeys-v1'` does make the activate handler's cache eviction dead code, but bundle freshness was never resting on it. What remains real is narrower: non-hashed files under `public/` (`favicon.png`, `icon-*.png`, `icon-*.svg`, …) match the `\.(js|css|woff|…|png|svg)$` rule, which is cache-first with a one-year `maxAge` and stable URLs, so a changed icon can stay stale for up to a year. Low impact, still unfiled.
 - CLEANUP COMPLETE: the user authorized deletion after confirming the untracked `fix_*.js` scripts, `ts_errors*.log`, disabled performance components, and Playwright `.last-run.json` were unreferenced local artifacts. All 16 files and their now-empty directories were removed. Local and remote `codex/p0-playback-sync-stages-4-5` refs were then deleted after both tips were re-confirmed in `main`; `git status --short` is clean.
 
+## Resume here — 2026-08-23
+
+This section is the immediate continuation point and takes precedence over the
+numbered `Next actions` below, which describe the longer-lived backlog. It was
+written so the work can be picked up on a different machine; everything it
+refers to is committed and pushed.
+
+### State
+
+- Two review-ready PRs are open, and **both are waiting on the user's explicit
+  merge approval** — nothing here authorises merging them.
+  - **#41** `codex/p1-upload-failure-visibility` at `8629ead`. Every hosted check
+    passes.
+  - **#42** `codex/p1-omr-result-handoff` at `dcc946a`, **stacked on #41's
+    branch**. Implements and records D-011.
+- `main`, and both work branches, are pushed with 0 unique local commits.
+- Production upload is still broken, by design, and will stay broken until the
+  VM serves the OMR service and Vercel has the two variables in step 4.
+
+### The CI trap on #42 — do not misread it as green
+
+`.github/workflows/test.yml:7` and the other workflows trigger on
+`pull_request: branches: [main, develop]`. #42's base is a `codex/*` branch, so
+**no test workflow has run on it at all** — only Vercel and CodeRabbit reported.
+An empty check list on a stacked PR is not a passing check list. The workflows
+run once #42 is retargeted to `main` (step 3).
+
+Local verification for #42 is recorded in `docs/recovery/reviews/PR-42.md`.
+
+### What to do, in order
+
+1. **Collect VM state.** The user has direct terminal access to the NAVER VM
+   (`vm-naver-20260820145930`); this repository's machines have no SSH path to
+   it, so the user runs these and pastes the output. All read-only:
+
+   ```bash
+   ls -d ~/ClairKeys 2>/dev/null && git -C ~/ClairKeys log --oneline -1 && git -C ~/ClairKeys status --short | head
+   podman images | grep -i clairkeys
+   podman ps -a
+   rpm -q nginx 2>/dev/null || echo "nginx absent"
+   ss -tlnp | grep -E ':(80|443|8000)\s' || echo "nothing listening on 80/443/8000"
+   curl -s ifconfig.me; echo
+   df -h /data 2>/dev/null || echo "/data absent"
+   ```
+
+2. **Verify #42 on the VM before asking for merge approval — not after.**
+   `omr-service/*.py` is run by **no CI workflow**, so the VM is the only place
+   this code is exercised at all. Build the image from
+   `codex/p1-omr-result-handoff` and drive `/process` → `/status` → `/result`
+   with the Mutopia Bach WTK1 Prelude 1 PDF used on 2026-08-21. What that
+   converts from claim into evidence, all currently in #42's "Not verified"
+   list: that `/result` returns the payload, that the shared secret gates
+   `/process`/`/status`/`/result` while `/health` stays open, and that a job
+   completes with no storage credentials present. Record it in
+   `docs/recovery/validation/` and update `docs/recovery/reviews/PR-42.md`.
+
+   This is one build either way — running it now just moves it before the
+   approval request, which is what "구현 완료 주장은 검증 명령과 결과가 기록된
+   경우에만" asks for.
+
+3. **Merge order, once the user approves.** #41 first. Then retarget #42 to
+   `main` (`gh pr edit 42 --base main`), let the full workflow set run for the
+   first time, and merge #42 only after those checks are green.
+
+4. **Vercel environment variables — user only, and they are a pair.**
+   `OMR_SERVICE_URL` (the VM's address) **and** `OMR_SHARED_SECRET` (the same
+   value the VM runs with). `omrAuthHeaders()` returns `{}` when the secret is
+   absent, so setting one without the other makes every call 401 and the
+   symptom reads as a service bug. No code change can substitute for this step —
+   it is the same shape as the 2026-07 Production Branch Tracking problem.
+
+5. **Only then is upload testable end to end in production.** Do not report
+   issue #22 closed, or upload fixed, before step 5 has actually run.
+
+### Notes for a different machine
+
+- `.env` is local-only and not in the repository. A fresh clone needs its own,
+  with at least `DATABASE_URL`, `NEXTAUTH_*`, the OAuth pairs,
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and
+  `SUPABASE_SERVICE_ROLE_KEY`. `AGENTS.md` § Project Reference lists the full
+  set. Leave `OMR_SERVICE_URL` unset locally — PR #41 makes an unset value fail
+  fast and explicitly, which is the honest local state until step 4.
+- The Jest baseline on a machine without Python is **13 failures**, and they are
+  environment dependent: 10 `converter corpus` cases plus the `.mxl` CLI case
+  (all need Python), `omrRuntimeContract`, `prChecksWorkflow`, and one
+  `uploadPathInventory` demo-writer assertion. Compare any new run against that
+  set rather than against zero; CI has Python and is greener.
+- `jest.setup.js:103` replaces `global.File` with a class that is not a `Blob`,
+  so `FormData.append` stringifies it and a route sees no filename. Route tests
+  that post a file must import `File` from `node:buffer`. Do not change the
+  global mock — the rest of the suite depends on it.
+
 ## Next actions
 
 1. **The last P1-A item: the `provenance` backfill (D-010 decision 5).** Work stages 1–5 are merged and live; the writers are closed, which was the precondition for counting. What remains, in its own PR: add a `provenance` column (`'omr' | 'demo' | 'unknown'`, default `'unknown'`); run a read-only script that narrows candidates with `omrJobId IS NULL AND animationDataUrl <> ''`, then fetches each candidate's stored JSON and matches `notes` against `pdfParser`'s three fixed melodies; mark `'demo'` **only on a content match**; disclose `'demo'` scores on the playback screen and exclude them from `/api/sheet/public`. **`'unknown'` triggers nothing** — the filter alone also matches rows written by `POST /api/sheet` and `SheetMusicRepository.create`, and hiding a user's real score on a guess is its own harm. Needs real-data access, so it needs the user's approval before running. Do not delete rows: they carry user-chosen titles, categories, and `PracticeSession` history.
