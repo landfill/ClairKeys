@@ -9,10 +9,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock  # Allow access to Docker daemon
       - ./temp:/tmp/processing  # Mount temporary processing directory
     environment:
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      # D-011: no storage credentials. The service returns the animation JSON
+      # through GET /result/{job_id} and the Next.js side stores it.
       - ENVIRONMENT=development
       - LOG_LEVEL=INFO
+      # ENVIRONMENT=development is the only mode that runs without a secret.
+      # Any other value refuses every request until OMR_SHARED_SECRET is set.
+      - OMR_SHARED_SECRET=${OMR_SHARED_SECRET:-}
     networks:
       - omr-network
     depends_on:

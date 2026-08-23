@@ -14,6 +14,8 @@ kill_timeout = "5s"
   release_command = "echo 'OMR Service deploying...'"
 
 [env]
+  # OMR_SHARED_SECRET is deliberately absent: it is a secret, set with
+  # `fly secrets set`. An unset value makes the service refuse every request.
   PORT = "8000"
   PYTHONUNBUFFERED = "1"
   ENVIRONMENT = "production"

@@ -3,7 +3,18 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@prisma/client'
-import { getOmrServiceUrl, OmrServiceNotConfiguredError } from '@/lib/omr/serviceUrl'
+import { getOmrServiceUrl, omrAuthHeaders, OmrServiceNotConfiguredError } from '@/lib/omr/serviceUrl'
+import { FileStorageService } from '@/services/fileStorageService'
+
+/**
+ * The completing poll does more than poll: it fetches the score from the OMR
+ * service and uploads it to Storage inside this one invocation. Vercel's
+ * default function duration is shorter than the `/result` timeout below, so
+ * without this the store could be killed mid-flight — and because the row keeps
+ * its empty `animationDataUrl`, the next poll would retry and be killed again.
+ * 60s is the Hobby-plan ceiling.
+ */
+export const maxDuration = 60
 
 export async function GET(
   request: NextRequest,
@@ -53,7 +64,8 @@ export async function GET(
     try {
       statusResponse = await fetch(`${getOmrServiceUrl()}/status/${jobId}`, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...omrAuthHeaders()
         },
         // Short timeout for status checks
         signal: AbortSignal.timeout(10000) // 10 seconds
@@ -146,16 +158,74 @@ export async function GET(
     }
 
     if (omrStatus.status === 'completed' && omrStatus.result) {
-      // OMR processing completed successfully
-      updateData.processingStatus = 'completed'
-      updateData.animationDataUrl = omrStatus.result.animation_data_url
-      
-      // Update metadata if available
-      if (omrStatus.result.title && omrStatus.result.title !== sheetMusic.title) {
-        updateData.title = omrStatus.result.title
-      }
-      if (omrStatus.result.composer && omrStatus.result.composer !== sheetMusic.composer) {
-        updateData.composer = omrStatus.result.composer
+      // D-011: the service stores nothing. Collect the animation JSON and write
+      // it here with SUPABASE_SERVICE_ROLE_KEY, which only this side holds.
+      //
+      // The title and composer are no longer copied back from the service.
+      // Overwriting what the user typed with a value the service echoed has no
+      // upside, and before PR #38 that echo was the PDF's filename — the second
+      // link in the concealment chain recorded on 2026-08-21.
+      if (sheetMusic.animationDataUrl) {
+        // Already stored by an earlier poll. Polling is a loop, so arriving here
+        // twice is normal, not an error.
+        updateData.processingStatus = 'completed'
+      } else {
+        let resultResponse: Response
+        try {
+          resultResponse = await fetch(`${getOmrServiceUrl()}/result/${jobId}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              ...omrAuthHeaders()
+            },
+            // The payload is a whole score, so this is not a status-poll timeout.
+            signal: AbortSignal.timeout(30000)
+          })
+        } catch (error) {
+          console.error('OMR result fetch failed:', jobId, error)
+          return NextResponse.json(
+            {
+              error: '변환 결과를 가져오지 못했습니다.',
+              code: 'OMR_RESULT_UNAVAILABLE'
+            },
+            { status: 503 }
+          )
+        }
+
+        if (!resultResponse.ok) {
+          console.error('OMR result error:', resultResponse.status, await resultResponse.text())
+          return NextResponse.json(
+            { error: '변환 결과를 가져오지 못했습니다.', code: 'OMR_RESULT_ERROR' },
+            { status: 502 }
+          )
+        }
+
+        const resultPayload = await resultResponse.json()
+
+        const stored = await FileStorageService.getInstance().uploadOmrAnimationData(
+          jobId,
+          userId,
+          resultPayload.animation_data
+        )
+
+        if (!stored.success || !stored.url) {
+          // Storage is the last step, and a job whose result cannot be stored has
+          // produced nothing a client can play. Fail it rather than leave it
+          // 'processing' forever against a service that will drop the payload.
+          await prisma.sheetMusic.update({
+            where: { id: sheetMusic.id },
+            data: { processingStatus: 'failed', updatedAt: new Date() }
+          })
+
+          console.error('OMR result storage failed:', jobId, stored.error)
+
+          return NextResponse.json(
+            { error: '변환 결과를 저장하지 못했습니다.', code: 'ANIMATION_STORAGE_FAILED' },
+            { status: 502 }
+          )
+        }
+
+        updateData.animationDataUrl = stored.url
+        updateData.processingStatus = 'completed'
       }
     } else if (omrStatus.status === 'failed') {
       // OMR processing failed

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
-import { getOmrServiceUrl, OmrServiceNotConfiguredError } from '@/lib/omr/serviceUrl'
+import { getOmrServiceUrl, omrAuthHeaders, OmrServiceNotConfiguredError } from '@/lib/omr/serviceUrl'
 
 /**
  * Marks a row this request created as failed.
@@ -138,6 +138,7 @@ export async function POST(request: NextRequest) {
         body: omrFormData,
         headers: {
           // Don't set Content-Type header for FormData, let fetch set it with boundary
+          ...omrAuthHeaders()
         },
         // Increase timeout for file upload
         signal: AbortSignal.timeout(60000) // 60 seconds
