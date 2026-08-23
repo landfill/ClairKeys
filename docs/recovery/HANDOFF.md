@@ -65,6 +65,31 @@ Last updated: 2026-08-23 KST
 
 ## Latest verified result
 
+- **2026-08-23 — a second tempo defect, demonstrated: `beat-unit` is discarded, so a marking in
+  anything but quarter notes is off by that ratio.** The user reported that their test scores
+  mostly *do* carry a printed tempo and playback is still about twice too fast, which rules out
+  "no marking" as the whole story. `converter.py:391-402` reads only the number in `<per-minute>`
+  and never reads `<beat-unit>`, while `converter.py:183` assumes that number is quarter-notes per
+  minute. In a `<metronome>` the number and the note are a pair; reading half of it makes the other
+  half a guess.
+
+  Three musically identical tempos injected into the Bach MusicXML and re-converted:
+
+  | MusicXML | printed as | `tempo` | sixteenth | total |
+  |---|---|---|---|---|
+  | `quarter` + `60` | ♩=60 | 60 | 0.2500 s | **2:27** — correct |
+  | `eighth` + `120` | ♪=120 | 120 | 0.1250 s | **1:13** — twice too fast |
+  | `half` + `30` | 𝅗𝅥=30 | 30 | 0.5000 s | **4:55** — twice too slow |
+
+  All three should be 2:27. The `♪=120` row reproduces the user's symptom exactly, and
+  eighth-note markings are common in compound metres.
+
+  **Not yet settled which defect the user is hitting.** Both score crops they showed use ♩, which
+  would make `beat-unit=quarter` and leave "the marking was never recognised" as the cause instead.
+  One observation separates them: `AnimationPlayer.tsx:267` displays `{tempo} BPM`, so a screen
+  reading of 120 means recognition failed, while a reading that matches the print means the
+  beat-unit ratio is the culprit. The `beat-unit` conversion is needed either way.
+
 - **2026-08-23 — the default playback tempo is fabricated, and the screen presents it as read from
   the score.** The user reported that playback at speed `1.0` is too fast and that 0.5–0.75 matches
   the score. `converter.py:391-402` returns a hardcoded **120** whenever the MusicXML carries no
