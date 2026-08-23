@@ -370,10 +370,22 @@ Local verification for #42 is recorded in `docs/recovery/reviews/PR-42.md`.
    Vercel variables would have produced 401s and rows marked `completed` with no
    animation data.
 
-4. **Expose the service — the step this list was missing, and a decision before it is a task.**
-   Added 2026-08-23. The service binds `127.0.0.1:8000`; there is no nginx, no TLS certificate,
-   no domain, no systemd unit, and nothing on 80/443. Until this is settled there is no value to
-   put in `OMR_SERVICE_URL` in step 5, and no amount of merging changes that.
+4. ~~**Expose the service**~~ **DONE 2026-08-23 — PR [#43](https://github.com/landfill/ClairKeys/pull/43)
+   merged at `f55a4b4`.** The service is reachable at `http://101.79.16.73:3000`, managed by a
+   systemd unit, and verified from a machine outside the VM: `/health` 200 without a token,
+   `/process`/`/status` 401 without one and with a wrong one, and a full Bach WTK1 Prelude 1
+   conversion returning 514 notes in 45,598 bytes with `/result` answering in 51 ms. D-012 records
+   the decision; `omr-service/deploy/` holds the unit and the procedure. Details below are kept as
+   the reasoning, not as outstanding work.
+
+   **Still unobserved: a reboot.** Boot-time start is inferred from `systemctl is-enabled`
+   (`enabled`, `default.target` → `multi-user.target`) plus a successful `systemctl restart`.
+   Whoever is next on the VM should reboot it once and confirm the service returns.
+
+   Original framing, retained because it explains the decision: the service bound
+   `127.0.0.1:8000`; there was no nginx, no TLS certificate, no domain, no systemd unit, and
+   nothing on 80/443. Until that was settled there was no value to put in `OMR_SERVICE_URL` in
+   step 5, and no amount of merging would have changed it.
 
    **Decided with the user 2026-08-23: plain HTTP, no TLS, for the test phase.** This is a
    deliberate, recorded trade, not an oversight, and it needs a `DECISIONS.md` entry (D-012)
@@ -410,17 +422,25 @@ Local verification for #42 is recorded in `docs/recovery/reviews/PR-42.md`.
    Hardening that costs nothing here: `GET /` answers 200 without a token (found 2026-08-23), so
    whatever fronts the service should not expose it.
 
-5. **Vercel environment variables — user only, and they are a pair.**
-   `OMR_SERVICE_URL` (whatever address step 4 produces) **and** `OMR_SHARED_SECRET` (the same
-   value the VM runs with). `omrAuthHeaders()` returns `{}` when the secret is
+5. **Vercel environment variables — user only, and they are a pair.** *(current step)*
+   `OMR_SERVICE_URL = http://101.79.16.73:3000` **and** `OMR_SHARED_SECRET` (the exact value in
+   `/etc/clairkeys-omr.env` on the VM; `omr-service/deploy/README.md` says how to read and rotate
+   it). Setting them does not affect an existing deployment — Vercel applies environment variables
+   at build time, so a redeploy of `main` is required after saving. `omrAuthHeaders()` returns `{}` when the secret is
    absent, so setting one without the other makes every call 401 and the
    symptom reads as a service bug. No code change can substitute for this step —
    it is the same shape as the 2026-07 Production Branch Tracking problem.
 
 6. **Only then is upload testable end to end in production.** Do not report
-   issue #22 closed, or upload fixed, before this step has actually run. Note that the Next.js
-   half of D-011 — fetching `/result` and storing it with `SUPABASE_SERVICE_ROLE_KEY` — has still
-   only run against Jest mocks; the 2026-08-23 VM verification covers the service half only.
+   issue #22 closed, or upload fixed, before this step has actually run.
+
+   **What step 6 exercises for the first time**: the Next.js half of D-011 — the status route
+   fetching `/result` and storing it with `SUPABASE_SERVICE_ROLE_KEY`. Every verification so far
+   covers the service half; that half has only ever run against Jest mocks, and no real Supabase
+   upload has happened. A successful upload is therefore not the end of the check — confirm the
+   row's `animationDataUrl` is non-empty and that the score actually plays, because the failure
+   this project has repeatedly produced is a row marked `completed` with nothing readable behind
+   it.
 
 ### Notes for a different machine
 
