@@ -192,6 +192,36 @@ numbered `Next actions` below, which describe the longer-lived backlog. It was
 written so the work can be picked up on a different machine; everything it
 refers to is committed and pushed.
 
+### First prompt on the new machine — copy this
+
+Paste this as the first message to the coding agent in a fresh clone. It is
+kept here rather than in a separate file because this document is the canonical
+entrypoint every session is already told to read, and because `AGENTS.md`
+allows this file to be committed straight to `main` — a resume prompt is a
+state record, not a change to the contract.
+
+```text
+AGENTS.md를 읽고 그 규약을 따른다.
+그다음 docs/recovery/HANDOFF.md의 "Resume here — 2026-08-23" 섹션을 읽고,
+거기 적힌 순서대로 이어서 진행한다.
+
+지금 열려 있는 PR #41과 #42는 사용자의 명시적 승인 없이 병합하지 않는다.
+업로드를 성공시키기 위해 데모 생성 경로나 fallback을 되살리지 않는다 (D-010).
+NAVER VM은 사용자가 직접 터미널로 실행하므로, 실행할 명령을 주고 출력을 받아 판단한다.
+```
+
+Keep it short on purpose. The detail lives in this section and in
+`docs/recovery/reviews/PR-41.md` / `PR-42.md`; a prompt that restates them
+would go stale the moment either changes, and a session that reads a stale
+prompt instead of the live document is worse off than one that reads nothing.
+
+The two prohibitions are in the prompt rather than left to discovery because
+both are decisions a fresh session has no way to infer: `AGENTS.md` records
+that merge approval is the user's (D-005), and `DECISIONS.md` D-010 records
+that visible upload failure is intended. An agent that finds a broken upload
+and no context is very likely to "fix" it by restoring exactly what P1-A
+removed.
+
 ### State
 
 - Two review-ready PRs are open, and **both are waiting on the user's explicit
