@@ -174,3 +174,41 @@
   - 애니메이션 저장 경로를 랜덤 파일명으로 되돌리지 않는다 — 이중 폴링에서 고아 객체가 생긴다.
   - 프로덕션 배포에서 `OMR_SHARED_SECRET` 없이 서비스를 띄우지 않는다. 실패는 닫히는 방향(전부 거절)이므로 안전하지만, 그 상태를 정상으로 오해하지 않는다.
 - Related: D-001, D-010, 이슈 [#22](https://github.com/landfill/ClairKeys/issues/22), PR [#38](https://github.com/landfill/ClairKeys/pull/38), PR [#41](https://github.com/landfill/ClairKeys/pull/41), `docs/recovery/HANDOFF.md` 2026-08-21 항목
+
+## D-012: 테스트 단계에서는 OMR 서비스를 TLS 없이 평문 HTTP로 노출한다
+
+- Date: 2026-08-23
+- Status: Accepted (**기한부** — 아래 Exit condition 참조)
+- Context:
+  - D-011까지 끝났지만 서비스는 여전히 `127.0.0.1:8000`에만 바인딩돼 있었다. nginx도, 인증서도, 도메인도, systemd unit도 없었다. HANDOFF의 재개 절차는 "`OMR_SERVICE_URL`에 VM 주소를 넣어라"고 지시했지만 **넣을 주소가 존재하지 않았다** — 이 단계가 통째로 누락돼 있었다.
+  - VM에는 도메인이 없다. 공인 IP `101.79.16.73`뿐이고, ACG는 22·80·443·3000을 연다(8000은 열려 있지 않다). firewalld는 `inactive`, SELinux는 `Disabled`이므로 ACG가 유일한 방어선이다.
+  - 호출자는 브라우저가 아니라 Vercel의 서버사이드 `fetch`다. mixed content 제약이 없으므로 평문 HTTP도 기술적으로는 동작한다.
+  - Vercel의 egress IP는 고정이 아니므로 ACG로 출발지를 제한할 수 없다.
+- Decision:
+  1. **테스트 단계 동안 TLS 없이 평문 HTTP로 노출한다.** 컨테이너를 `0.0.0.0:3000`에 바인딩하고 `OMR_SERVICE_URL=http://101.79.16.73:3000`을 쓴다.
+  2. **포트는 3000이다.** 8000은 ACG에 열려 있지 않고, 80·443은 나중에 TLS를 앞에 세울 때 nginx가 쓰도록 비워 둔다.
+  3. **systemd unit으로 관리한다.** 시크릿은 unit 파일이 아니라 `--env-file /etc/clairkeys-omr.env`(600)에 둔다 — `podman generate systemd --new`는 `podman run` 전체를 644 unit 파일에 박아 넣으므로, `-e`로 넘기면 로컬 사용자 전원에게 공개된다.
+  4. **검증용 시크릿은 폐기하고 새로 발급한다.**
+- Reason:
+  - 실서비스가 아니라 **테스트 배포**다. 그리고 이 판단을 방어 가능하게 만드는 것은 **D-011이 이미 중요한 자격증명을 이 호스트에서 제거했다**는 사실이다. 2026-08-23 컨테이너 환경변수 실측에서 `SUPABASE`/`SERVICE_ROLE` 계열은 하나도 없었다. 평문으로 노출되는 것은 공유 시크릿·PDF·애니메이션 JSON이며, `SUPABASE_SERVICE_ROLE_KEY`는 Vercel에 남는다.
+  - 두 피해 모두 복구 가능하다 — 시크릿 재발급과 컨테이너 재기동으로 끝난다.
+  - D-011 이전 설계(서비스가 직접 업로드)였다면 이 결정은 훨씬 나빴을 것이다. 순서가 바뀌었다면 같은 선택이 정당화되지 않는다는 뜻이다.
+- **Accepted risk (명시적으로 감수하는 것):**
+  - 공유 시크릿이 인터넷을 평문으로 건넌다. 경로상의 관찰자는 이를 탈취해 `/process`를 호출할 수 있고, 한 번의 호출은 2 vCPU 박스의 최대 15분을 소모한다. 또한 관측한 job id로 `/result`에서 타인의 악보를 읽을 수 있다.
+  - `omr/auth.py`의 주석은 "통제할 가치가 있는 노출은 도청이 아니라 인증되지 않은 호출자"라고 판단한다. 그 판단은 **시크릿이 안전하게 전달된다는 전제** 위에 서 있다. 평문 HTTP는 그 전제를 무효화하며, 도청이 곧 인증 우회가 된다. 이 항목이 그 주석을 무조건적 참으로 읽는 것을 막는다.
+- **Exit condition:** 이 서비스를 실사용자에게 여는 시점 이전에 TLS로 전환한다. 경로는 이미 확인됐고 비용은 0이다 — `101.79.16.73.sslip.io`가 등록 없이 이 호스트로 해석되고(2026-08-23 `dig` 확인), 80·443은 이미 ACG에 열려 있으며, nginx가 TLS를 종료하고 loopback의 컨테이너로 프록시하면 된다. 컨테이너 공개 포트를 `127.0.0.1:3000`으로 되돌리는 unit 한 줄 수정과 Vercel의 `OMR_SERVICE_URL` 변경뿐이고, **애플리케이션 코드는 바뀌지 않는다**.
+- Rejected:
+  - 도메인 구매 후 nginx + Let's Encrypt | 되지만 유료이고, 테스트 단계에 필요한 비용이 아니다. sslip.io로 같은 결과를 0원에 얻을 수 있음이 확인됐으므로 Exit condition 쪽으로 넘긴다.
+  - Cloudflare Tunnel | 고정 하위도메인을 쓰려면 Cloudflare에 도메인을 등록해야 한다. 무료 quick tunnel은 재기동마다 URL이 바뀌어 `OMR_SERVICE_URL`로 쓸 수 없다 — 도메인이 없는 상황에서는 이점이 없다.
+  - Let's Encrypt IP 인증서 | 도메인 없이 TLS가 가능하지만 단기(6일) 갱신이라 자동화가 실패하면 조용히 만료된다. sslip.io + 90일 인증서가 더 안전하다.
+  - ACG로 Vercel egress IP만 허용 | Vercel은 고정 egress IP를 보장하지 않는다.
+- Consequence:
+  - `/process`는 인터넷에서 도달 가능하며, 유일한 방어는 공유 시크릿이다. `OMR_SHARED_SECRET` 미설정 시 서비스가 전 요청을 거절하는(D-011 결정 5) 성질이 여기서 특히 중요하다.
+  - `GET /`는 토큰 없이 200을 반환한다(2026-08-23 확인). 노출되는 것은 서비스명·버전뿐이지만, `omr-service/README.md`와 PR #42 리뷰 로그의 "`/health`만 열려 있다"는 서술은 부정확하다. TLS 전환 시 nginx에서 `/`를 프록시하지 않는 것으로 막는다.
+  - systemd 재기동은 진행 중 job을 잃는다. job 상태는 프로세스 메모리에 있다(D-011). 다만 PR #41 이후 `/status`의 404가 행을 `failed`로 만들므로 고착되지는 않는다.
+- Directive:
+  - **이 결정을 실서비스로 이월하지 않는다.** Exit condition을 만족하기 전에 실사용자 트래픽을 이 엔드포인트로 보내지 않는다.
+  - 시크릿을 systemd unit 파일에 직접 넣지 않는다 — unit은 644이고 env 파일은 600이다.
+  - 컨테이너를 8000이나 80에 바인딩하지 않는다. 8000은 ACG 미개방이고, 80·443은 TLS 전환용으로 비워 둔다.
+  - 시크릿을 교체할 때는 VM과 Vercel 양쪽을 함께 바꾼다. 한쪽만 바꾸면 전 요청이 401이 되고 증상은 서비스 장애처럼 보인다.
+- Related: D-008(호스팅, 여전히 `초안` — 이 항목이 그 자리를 대신하지 않는다), D-011, PR [#41](https://github.com/landfill/ClairKeys/pull/41), PR [#42](https://github.com/landfill/ClairKeys/pull/42), 이슈 [#22](https://github.com/landfill/ClairKeys/issues/22), `omr-service/deploy/README.md`
