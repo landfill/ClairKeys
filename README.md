@@ -49,7 +49,7 @@ PDF 악보를 시각적 피아노 애니메이션으로 변환하여 피아노 �
 ### Audio & Processing
 - **Tone.js** - 웹 오디오 합성 및 처리
 - **Web Audio API** - 저수준 오디오 제어
-- **PDF-parse** - PDF 문서 파싱
+- **Audiveris 5.11** - PDF 악보 인식 (OMR), NAVER Cloud VM에서 실행
 - **Canvas API** - 피아노 건반 렌더링
 
 ### DevOps & Deployment
@@ -57,6 +57,164 @@ PDF 악보를 시각적 피아노 애니메이션으로 변환하여 피아노 �
 - **GitHub Actions** - CI/CD 파이프라인
 - **Jest & Playwright** - 테스트 프레임워크
 - **ESLint & Prettier** - 코드 품질 관리
+
+## 🏗️ 서비스 구조
+
+세 곳에서 나뉘어 돌아간다. **어느 자격증명이 어디에 있는지**가 이 구조를 정한 이유이므로 함께 적는다.
+
+| 구성 요소 | 실행 위치 | 하는 일 | 필요한 환경변수 | 다른 시스템에 접근할 수 있는 키 |
+|---|---|---|---|---|
+| Next.js 앱 | Vercel (서버리스) | 업로드 접수, 폴링, **결과 저장**, 재생 화면 | `SUPABASE_SERVICE_ROLE_KEY`, `OMR_SERVICE_URL`, `OMR_SHARED_SECRET` | Supabase 전체 읽기·쓰기 |
+| OMR 서비스 | NAVER Cloud VM (podman) | PDF → MusicXML → 애니메이션 JSON 변환 | `OMR_SHARED_SECRET` (**검증용**), `ENVIRONMENT` | **없음** |
+| Supabase | 관리형 | PostgreSQL(메타데이터) + Storage(JSON 파일) | — | — |
+
+두 열을 나눈 이유가 이 구조의 핵심이다. OMR 서비스도 `OMR_SHARED_SECRET`을 **설정해야** 한다 — 없으면 모든 요청을 503으로 거절한다. 다만 그 값은 들어온 요청을 **검증**하는 데만 쓰이고, 그것으로 나가서 무언가에 접근할 수는 없다. 반면 `SUPABASE_SERVICE_ROLE_KEY`는 RLS를 우회해 프로젝트 전체를 읽고 쓴다.
+
+그래서 공인 IP VM이 유출되어도 잃는 것은 "이 서비스를 호출할 권한"까지이고, Supabase 데이터가 아니다(**D-011**). 저장은 그 키를 이미 가진 Vercel이 한다.
+
+```mermaid
+flowchart TB
+  U["브라우저<br/>업로드 · 재생"]
+
+  subgraph V["Vercel · Next.js 서버리스"]
+    direction LR
+    R1["POST /api/omr/upload"]
+    R2["GET /api/omr/status/:jobId"]
+    R3["/sheet/:id"]
+  end
+
+  subgraph M["NAVER Cloud VM · podman"]
+    direction LR
+    F["FastAPI :8000"] --> A["Audiveris<br/>PDF → MusicXML"] --> C["converter.py<br/>MusicXML → JSON"]
+  end
+
+  subgraph S["Supabase"]
+    direction LR
+    DB[("PostgreSQL<br/>SheetMusic 메타데이터")]
+    ST[("Storage<br/>animation-data 버킷")]
+  end
+
+  U --> V
+  V -->|"X-ClairKeys-Token"| M
+  V -->|"SUPABASE_SERVICE_ROLE_KEY"| S
+  U -.->|"애니메이션 JSON 직접 fetch<br/>공개 버킷"| ST
+```
+
+### 업로드 → 변환 → 저장
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant U as 사용자
+  participant V as Vercel<br/>Next.js
+  participant D as PostgreSQL
+  participant M as OMR 서비스<br/>(VM)
+  participant S as Supabase<br/>Storage
+
+  U->>V: PDF 업로드
+  Note over V: 세션 확인<br/>OMR_SERVICE_URL 검증<br/>(형식이 틀리면 여기서 거절)
+  V->>D: SheetMusic 행 생성<br/>processingStatus='processing'
+  Note over V,D: 행을 먼저 만드는 건 서비스에<br/>sheet_music_id를 넘겨야 하기 때문
+  V->>M: POST /process + X-ClairKeys-Token
+  M-->>V: job_id
+  V->>D: omrJobId 기록
+  V-->>U: jobId 반환
+
+  Note over M: 백그라운드 변환
+  M->>M: Audiveris -batch -export<br/>PDF → MusicXML
+  M->>M: converter.py<br/>MusicXML → 애니메이션 JSON
+  Note over M: JSON을 메모리에 보관<br/>(어디에도 쓰지 않는다)
+
+  loop 3초 간격 폴링
+    U->>V: GET /api/omr/status/:jobId
+    V->>M: GET /status/:jobId + 토큰
+    M-->>V: status / progress
+    alt completed (최초 1회만)
+      V->>M: GET /result/:jobId
+      M-->>V: animation_data (JSON 본문)
+      V->>S: animation-data 버킷에 업로드<br/>service role key · job id 키로 upsert
+      S-->>V: 공개 URL
+      V->>D: animationDataUrl 기록<br/>processingStatus='completed'
+    end
+    V-->>U: 상태 + 진행률
+  end
+```
+
+폴링 루프가 이 설계의 여러 결정을 만들었다:
+
+- **JSON 본문은 `/status`가 아니라 `/result`에 있다.** `/status`는 3초마다 호출되므로 수백 개 음표를 매번 실어 보낼 이유가 없다.
+- **저장은 job id를 키로 upsert한다.** 두 폴링이 동시에 완료를 관측할 수 있고, 랜덤 파일명이면 객체가 둘 생겨 하나는 영구 고아가 된다.
+- **이미 저장됐으면 다시 저장하지 않는다** (`animationDataUrl`이 비어 있지 않으면 건너뜀).
+- **`/status`가 404를 주면 행을 `failed`로 만든다.** 변환 작업 상태는 서비스 프로세스 메모리에 있어 재시작하면 사라진다. 404는 "작업이 영구히 없다"는 뜻이므로 종료 처리해야 하고, 그렇지 않으면 행이 `processing`에 영원히 남는다. 반면 **폴링 중의** 5xx·401·503이나 연결 불가는 일시적이므로 저장된 상태를 건드리지 않는다 — 그 시점에는 서비스에서 작업이 아직 돌고 있을 수 있다. (업로드 시점의 연결 불가는 반대로 행을 `failed`로 만든다. 아래 실패 표 참조.)
+- **서비스가 돌려준 제목으로 사용자가 입력한 제목을 덮어쓰지 않는다.**
+
+### 연주
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant U as 사용자
+  participant V as Vercel<br/>/sheet/:id
+  participant D as PostgreSQL
+  participant S as Supabase Storage
+
+  U->>V: /sheet/:id 접속
+  V->>D: SheetMusic 조회
+  D-->>V: animationDataUrl 등 메타데이터
+  V-->>U: 페이지 렌더 (URL 포함)
+  U->>S: animationDataUrl 직접 fetch
+  S-->>U: 애니메이션 JSON
+  Note over U: AudioContext 시계 기준으로<br/>오디오와 낙하 노트를 함께 스케줄
+```
+
+애니메이션 JSON은 브라우저가 Supabase Storage에서 **직접** 받는다 — `animation-data`는 공개 버킷이고, Vercel 함수를 한 번 더 거칠 이유가 없다.
+
+재생 시각은 `Date.now()`가 아니라 **AudioContext 시계** 하나를 기준으로 삼는다(**P0-C**). 오디오와 시각 요소가 서로 다른 시계를 쓰면 긴 곡에서 어긋나기 때문이다.
+
+### 애니메이션 JSON 형식
+
+```json
+{
+  "version": "1.0",
+  "title": "...", "composer": "...",
+  "tempo": 120, "duration": 73.875,
+  "timeSignature": "4/4", "keySignature": "C",
+  "notes": [
+    { "midi": 60, "start": 0.0, "duration": 1.0,
+      "hand": "L", "finger": null, "voice": 5, "staff": 2 }
+  ]
+}
+```
+
+`start`와 `duration`은 **초** 단위이고, `hand`는 MusicXML의 staff에서 유도한다. 타이로 묶인 음은 **하나의 음표로 합쳐진다** — 연주자는 건반을 한 번 누르고 유지하기 때문이다. 그래서 JSON의 음표 수는 MusicXML의 `<note>` 수보다 적은 것이 정상이다.
+
+형식의 정의와 검증기는 **D-009**에, 정확도 게이트는 `src/utils/__tests__/converterCorpus.test.ts`에 있다.
+
+### 실패가 보이는 방식
+
+이 프로젝트가 오래 겪은 문제는 실패가 성공처럼 보이는 것이었다. 업로드 경로 넷 중 셋이 PDF를 열지도 않고 파일 크기로 고른 데모 멜로디를 실제 악보와 구분 불가능하게 저장했다. 그 경로들은 제거됐고(**D-010**), 지금은 다음처럼 실패한다:
+
+| 상황 | 시점 | 결과 |
+|---|---|---|
+| `OMR_SERVICE_URL` 미설정·형식 오류 | 업로드 | 행을 만들기 **전에** 거절, "관리자에게 문의" |
+| 서비스 연결 불가 | 업로드 | 행을 `failed`로 |
+| 서비스 연결 불가 | 폴링 | 503 반환, **행은 그대로** |
+| 시크릿 불일치 (401) · 서비스 오류 (5xx) | 폴링 | 502 반환, **행은 그대로** |
+| Audiveris 인식 실패 | 변환 | job이 `failed` → 행도 `failed`. 데모 멜로디로 대체하지 않음 |
+| 변환 결과 저장 실패 | 폴링 | 행을 `failed` — `completed`인데 재생할 데이터가 없는 상태를 만들지 않음 |
+| 서비스 재시작으로 작업 유실 | 폴링 | `/status` 404 → 행을 `failed` |
+
+**같은 "연결 불가"가 업로드와 폴링에서 반대로 처리되는 것은 의도된 것이다.** 업로드 시점에는 행에 아직 `omrJobId`가 없다 — 호출이 실패하면 이어받을 작업 자체가 없으므로, 행을 실패시키지 않으면 아무도 다시 움직일 수 없는 상태로 남는다. 폴링 시점에는 `omrJobId`가 있고 서비스에서 작업이 아직 돌고 있을 수 있으므로, 여기서 행을 실패시키면 복구 가능한 작업을 파괴한다.
+
+폴링에서 유일하게 행을 실패시키는 비정상 응답은 **404**다. 그것만이 "작업이 영구히 없다"는 뜻이기 때문이다.
+
+**아직 보이지 않는 실패가 하나 있다**: 인식이 되긴 했으나 박자가 틀린 경우. 마디 길이가 박자표와 맞지 않아도 지금은 조용히 그대로 재생된다 — [이슈 #44](https://github.com/landfill/ClairKeys/issues/44).
+
+### 배포·운영
+
+- OMR 서비스 배포 절차와 systemd unit: `omr-service/deploy/`
+- 노출 방식(현재 테스트 단계 한정 평문 HTTP)과 그 종료 조건: **D-012**
+- 결정 기록 전체: `docs/recovery/DECISIONS.md`
 
 ## 🚀 빠른 시작
 
