@@ -65,6 +65,30 @@ Last updated: 2026-08-23 KST
 
 ## Latest verified result
 
+- **2026-08-23 — upload works end to end in production, and the first real score exposed the next
+  problem.** The user set `OMR_SERVICE_URL` and `OMR_SHARED_SECRET`, redeployed, uploaded a score,
+  and confirmed the animation plays. Service logs show Vercel's AWS egress calling `/process` and
+  `/status` with **zero 401/403**. This is the first time the Next.js half of D-011 has run against
+  real Supabase rather than Jest mocks, and the first time `main` could talk to the service at all
+  — before PRs #41/#42 merged it sent no auth header and read an `animation_data_url` the service
+  no longer returns.
+
+  **The rhythm does not match the score in places, and the cause is recognition, not conversion.**
+  Audiveris was run directly on the VM to preserve the intermediate MusicXML, which turns out to be
+  wrong before the converter ever sees it: **10 of 35 measures have lengths impossible in 4/4** —
+  measures 1, 2, 4, 5, 6 and 19 advance 24 divisions where 16 is a full measure, 21/23/28 advance
+  15, and 25 advances 18. A voice length of 24 is a measure and a half. WTK1 Prelude 1 is
+  structurally identical across measures 1–34, so 29 clean measures beside 6 broken ones is a
+  recognition failure, not a rule or edition difference — a rule problem would break all 35 the
+  same way.
+
+  The converter is not the cause. The 63-note gap between the MusicXML (577) and the JSON (514) is
+  **exactly the 63 tie stops**, matching per voice (voice 5: 62, voice 7: 1) — merging tied notes
+  into one sustained note is what PR #24 built and what a player actually does. Filed as issue
+  [#44](https://github.com/landfill/ClairKeys/issues/44), which also records one thing genuinely
+  untested: how the converter handles a measure whose voices disagree. `omr/cli.py` reproduces the
+  service's exact output locally (514 notes, 73.875 s) from the preserved MusicXML.
+
 - **2026-08-23 — PR #42 is verified against a live OMR service on the VM, and one of its own
   claims turned out to be false.** Built `clairkeys-omr:pr42` from `dcc946a` on the VM and drove
   the Bach WTK1 Prelude 1 PDF through `/process` → `/status` → `/result`. Three of PR #42's four
@@ -431,7 +455,21 @@ Local verification for #42 is recorded in `docs/recovery/reviews/PR-42.md`.
    symptom reads as a service bug. No code change can substitute for this step —
    it is the same shape as the 2026-07 Production Branch Tracking problem.
 
-6. **Only then is upload testable end to end in production.** Do not report
+6. ~~**Only then is upload testable end to end in production.**~~ **DONE 2026-08-23 — upload
+   works end to end, and the animation plays.** The user set the two Vercel variables, redeployed,
+   and confirmed playback in the browser. That closes the last unexercised half of D-011: the
+   status route really does fetch `/result` and store it with `SUPABASE_SERVICE_ROLE_KEY`, against
+   real Supabase rather than a Jest mock. Service logs show the calls arriving from Vercel's AWS
+   egress (`44.210.239.240`, `54.205.70.194`) with **zero 401/403** — the shared secret pair is
+   correct.
+
+   **Issue #22 is not closed by this.** Recognition accuracy is a separate question that has never
+   been opened, and the first real upload opened it: see the entry below and issue
+   [#44](https://github.com/landfill/ClairKeys/issues/44).
+
+   Original wording:
+
+   **Only then is upload testable end to end in production.** Do not report
    issue #22 closed, or upload fixed, before this step has actually run.
 
    **What step 6 exercises for the first time**: the Next.js half of D-011 — the status route
