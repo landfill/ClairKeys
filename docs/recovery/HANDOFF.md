@@ -73,9 +73,22 @@ Last updated: 2026-08-23 KST
   runs 1:14, at 0.5× it runs 2:28, and this prelude is normally played in 2:00–2:30. The real tempo
   is around ♩=60, so the default is precisely twice too fast.
 
-  **This is structural, not specific to one file.** Audiveris can only recover a tempo that is
-  printed on the page, and most engraved classical scores print none — so nearly every upload will
-  get 120 substituted silently.
+  ~~**This is structural, not specific to one file.** Audiveris can only recover a tempo that is
+  printed on the page, and most engraved classical scores print none~~ — **retracted the same day.**
+  The user pointed out that modern engraved and arranged scores normally do print `♩ = N`, and the
+  jar bears that out: Audiveris 5.11.0 carries `MetronomeInter`, `BeatUnitInter` and a
+  `TextRole.Metronome`, and `PartwiseBuilder` calls `setBeatUnit`/`setPerMinute`, so a recognised
+  marking is exported as `<metronome><per-minute>`. No `ProcessingSwitch` gates it. **The path is
+  already wired end to end**, and `_extract_tempo` already reads `<per-minute>` — Bach WTK1 Prelude
+  1 is simply a score with no marking, which is why it looked like the general case.
+
+  Not yet proven: that OCR actually reads a real printed marking. That needs one score with a
+  printed `♩ = N` put through the pipeline; if the JSON's `tempo` matches the print, option (a)
+  needs no work at all.
+
+  **Interacts with issue #46**: a small-page PDF is discarded at `SCALE`, before any text
+  recognition runs — so a printed marking on such a file could never be read. Fixing #46 may
+  resolve part of this one.
 
   `AnimationPlayer.tsx:267` then renders `{composer} • {timeSignature} • {tempo} BPM`. Two of those
   three were read from the score and the third was invented, in the same typography, with nothing
