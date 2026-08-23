@@ -65,6 +65,32 @@ Last updated: 2026-08-23 KST
 
 ## Latest verified result
 
+- **2026-08-23 — OCR has never worked, and finding that took a real score to see.** The user
+  supplied `Love_Affair_Piano_Solo.pdf`, which prints `Adagio ♩ = 60` above the first system — and
+  ♩=60 against the 120 default is exactly the doubling they reported. The file converts cleanly
+  otherwise (2 sheets, 2480×3507, interline 20–21), so issue #46 is not involved. Yet the MusicXML
+  contained **no `<metronome>`, no `<sound tempo>`, and no `<words>` at all**.
+
+  No text at all was the tell. Every sheet logs
+  `Could not initialize TessBaseAPI languages: eng in legacy mode` followed by `No OCR'd lines`:
+  Ubuntu's `tesseract-ocr-eng` ships a **4.1 MB LSTM-only** `eng.traineddata` while Audiveris
+  initialises Tesseract in **legacy mode**, and `TesseractOrder` exposes no constant to change the
+  engine mode. Pointing `TESSDATA_PREFIX` at the 23.5 MB legacy-capable file from
+  `tesseract-ocr/tessdata` removed both messages and read the printed credits correctly —
+  `Piano Solo - Love Affair`, `Love Affair OST`, `Ennio Morricone`, `trans. Jose Hernandez`. Filed
+  as issue [#49](https://github.com/landfill/ClairKeys/issues/49) with the demonstrated fix.
+
+  **This was invisible because the upload form asks for title and composer.** Those user-typed
+  values stood in for everything OCR should have supplied, so a completely dead text pipeline
+  looked like a working one.
+
+  **Fixing OCR does not fix the tempo.** With OCR restored, `<metronome>` is still 0 and neither
+  `Adagio` nor `60` appears anywhere, though measure numbers 10/13/16/19/25/28 were read. Enumerating
+  every `ProcessingSwitch` found no metronome toggle. So issue #48's cause is confirmed as "the mark
+  is never recognised", with an unexplained second layer beneath the OCR failure — which makes the
+  user's own proposal, passing a tempo as a conversion parameter, the path that does not depend on
+  solving it.
+
 - **2026-08-23 — a second tempo defect, demonstrated: `beat-unit` is discarded, so a marking in
   anything but quarter notes is off by that ratio.** The user reported that their test scores
   mostly *do* carry a printed tempo and playback is still about twice too fast, which rules out
