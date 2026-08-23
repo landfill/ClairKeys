@@ -49,7 +49,7 @@ const CREATED_ROW_ID = 42
  * filename. Node's own `File` is used here instead; the global mock stays put
  * because the rest of the suite relies on it.
  */
-function uploadRequest(): NextRequest {
+function uploadRequest(tempo?: string): NextRequest {
   const body = new FormData()
   body.append(
     'file',
@@ -57,6 +57,7 @@ function uploadRequest(): NextRequest {
   )
   body.append('title', 'WTK1 Prelude 1')
   body.append('composer', 'J.S. Bach')
+  if (tempo !== undefined) body.append('tempo', tempo)
 
   return new NextRequest(
     new Request('http://localhost:3000/api/omr/upload', { method: 'POST', body })
@@ -141,5 +142,43 @@ describe('POST /api/omr/upload — failure is visible, not silent', () => {
       })
     )
     expect(response.status).toBe(502)
+  })
+
+  it.each(['19', '401', '0', 'not-a-number'])('rejects invalid tempo %s before creating a row', async (tempo) => {
+    process.env.OMR_SERVICE_URL = 'https://omr.example.invalid'
+    fetchSpy.mockResolvedValue(
+      new Response(JSON.stringify({ job_id: 'job-1', status: 'processing' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
+
+    const { POST } = await loadRoute()
+    const response = await POST(uploadRequest(tempo))
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({
+      error: '빠르기는 20에서 400 사이의 숫자로 입력해 주세요.',
+      code: 'INVALID_TEMPO',
+    })
+    expect(mockCreate).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('forwards a valid optional tempo to the OMR service', async () => {
+    process.env.OMR_SERVICE_URL = 'https://omr.example.invalid'
+    fetchSpy.mockResolvedValue(
+      new Response(JSON.stringify({ job_id: 'job-1', status: 'processing' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
+
+    const { POST } = await loadRoute()
+    const response = await POST(uploadRequest('72'))
+
+    expect(response.status).toBe(200)
+    const [, requestInit] = fetchSpy.mock.calls[0]
+    expect((requestInit?.body as FormData).get('tempo')).toBe('72')
   })
 })

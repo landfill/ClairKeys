@@ -12,9 +12,13 @@ exactly what P0-B must fix and will be measured against this corpus with
 
 ## Timing convention
 
-To keep expected onsets/durations exact, fixtures use **tempo = 60 BPM** with a
-**quarter-note beat**, so one quarter note = **1.0 second**. Seconds are derived
-as:
+To keep expected onsets/durations exact, fixtures resolve to **60 quarter BPM**,
+so one quarter note = **1.0 second**. Most fixtures print `quarter = 60`;
+`10-beat-unit-eighth` prints the musically equivalent `eighth = 120`,
+`12-beat-unit-half` prints `half = 30`, `13-beat-unit-quarter` prints
+`quarter = 60`, and `11-no-tempo` has no score tempo and therefore uses the
+declared 60 BPM timing reference without claiming that reference as the score's
+tempo. Seconds are derived as:
 
 ```
 seconds = (duration_in_divisions / divisions) * (60 / tempo_bpm)
@@ -43,6 +47,10 @@ quarter = 1.5s, an eighth = 0.5s, a triplet eighth (three in one beat) = 1/3s.
 | `07-tempo-change` | 템포/박자표 변경 | mid-piece tempo change re-scales seconds |
 | `08-multipart-tempo` | 멀티파트 전역 템포 | tempo declared in one part re-scales all parts at that measure (added in P0-B) |
 | `09-tie-across-barline` | 마디 넘는 붙임줄 | `<tie>` spanning a measure boundary merges into one sustained note (added in P0-B) |
+| `10-beat-unit-eighth` | 8분음표 기준 빠르기 | `eighth = 120` converts to 60 quarter BPM before seconds are calculated |
+| `11-no-tempo` | 빠르기 표기 없음 | unknown score tempo stays `null`; seconds use the explicit 60 BPM timing reference |
+| `12-beat-unit-half` | 2분음표 기준 빠르기 | `half = 30` converts to 60 quarter BPM before seconds are calculated |
+| `13-beat-unit-quarter` | 4분음표 기준 빠르기 | `quarter = 60` is already quarter BPM and remains unchanged |
 
 ## Comparison
 

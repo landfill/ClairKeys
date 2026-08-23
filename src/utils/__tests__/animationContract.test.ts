@@ -13,7 +13,11 @@ import {
   isValidAnimationData,
   AnimationContractError,
 } from '../animationContract'
-import { ANIMATION_CONTRACT_VERSION } from '@/types/animationContract'
+import {
+  ANIMATION_CONTRACT_VERSION,
+  DEFAULT_TIMING_REFERENCE_BPM,
+  SUPPORTED_ANIMATION_CONTRACT_VERSIONS,
+} from '@/types/animationContract'
 
 describe('parsePitchToMidi', () => {
   it('parses natural, sharp, and flat pitches', () => {
@@ -33,6 +37,40 @@ describe('parsePitchToMidi', () => {
 })
 
 describe('normalizeAnimationData — canonical (MIDI family)', () => {
+  it('accepts stored 1.0 documents while 1.1 is the current write version', () => {
+    const out = normalizeAnimationData({
+      version: '1.0',
+      tempo: 90,
+      notes: [{ midi: 60, start: 0, duration: 1 }],
+    })
+
+    expect(ANIMATION_CONTRACT_VERSION).toBe('1.1')
+    expect(SUPPORTED_ANIMATION_CONTRACT_VERSIONS).toEqual(['1.0', '1.1'])
+    expect(out.version).toBe('1.0')
+    expect(out.tempo).toBe(90)
+    expect(out.tempoSource).toBe('unknown')
+    expect(out.timingReferenceBpm).toBe(90)
+  })
+
+  it('preserves the explicit tempo provenance fields in a 1.1 document', () => {
+    const out = normalizeAnimationData({
+      version: '1.1',
+      tempo: 72,
+      tempoSource: 'user',
+      timingReferenceBpm: 72,
+      scoreTempo: 60,
+      notes: [{ midi: 60, start: 0, duration: 1 }],
+    })
+
+    expect(out).toMatchObject({
+      version: '1.1',
+      tempo: 72,
+      tempoSource: 'user',
+      timingReferenceBpm: 72,
+      scoreTempo: 60,
+    })
+  })
+
   it('passes a canonical document through, preserving voice/staff', () => {
     const canonical = {
       version: '1.0',
@@ -131,12 +169,14 @@ describe('normalizeAnimationData — hard errors (no silent fallback)', () => {
 })
 
 describe('normalizeAnimationData — defaults', () => {
-  it('derives duration from notes when absent and fills tempo/timeSignature', () => {
+  it('derives duration from notes and keeps an absent tempo unknown', () => {
     const out = normalizeAnimationData({
       notes: [{ midi: 60, start: 1, duration: 0.5 }],
     })
     expect(out.duration).toBeCloseTo(1.5)
-    expect(out.tempo).toBe(120)
+    expect(out.tempo).toBeNull()
+    expect(out.tempoSource).toBe('unknown')
+    expect(out.timingReferenceBpm).toBe(DEFAULT_TIMING_REFERENCE_BPM)
     expect(out.timeSignature).toBe('4/4')
     expect(out.title).toBe('Untitled')
   })
@@ -176,9 +216,13 @@ describe('normalizeAnimationData — field guards (PR #23 review)', () => {
     )
   })
 
-  it('falls back to a default tempo when tempo <= 0', () => {
-    expect(normalizeAnimationData({ tempo: 0, notes: [{ midi: 60, start: 0, duration: 1 }] }).tempo).toBe(120)
-    expect(normalizeAnimationData({ tempo: -60, notes: [{ midi: 60, start: 0, duration: 1 }] }).tempo).toBe(120)
+  it('normalizes non-positive and non-finite tempos to unknown instead of inventing 120', () => {
+    for (const tempo of [0, -60, Number.NaN, Number.POSITIVE_INFINITY]) {
+      const out = normalizeAnimationData({ tempo, notes: [{ midi: 60, start: 0, duration: 1 }] })
+      expect(out.tempo).toBeNull()
+      expect(out.tempoSource).toBe('unknown')
+      expect(out.timingReferenceBpm).toBe(DEFAULT_TIMING_REFERENCE_BPM)
+    }
   })
 
   it('derives duration from notes when the given duration is negative', () => {

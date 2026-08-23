@@ -1,0 +1,15 @@
+{
+  "version": "1.1",
+  "title": "Half-note metronome mark",
+  "composer": "P0-A Fixtures",
+  "duration": 1.0,
+  "tempo": 60,
+  "tempoSource": "score",
+  "timingReferenceBpm": 60,
+  "scoreTempo": 60,
+  "timeSignature": "1/4",
+  "keySignature": "C",
+  "notes": [
+    { "midi": 60, "start": 0.0, "duration": 1.0, "hand": "R", "voice": 1, "staff": 1 }
+  ]
+}

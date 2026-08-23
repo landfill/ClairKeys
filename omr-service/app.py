@@ -5,12 +5,15 @@ FastAPI server for processing PDF sheet music to ClairKeys animation data
 
 import os
 import uvicorn
-from fastapi import Depends, FastAPI, File, Form, Header, UploadFile, HTTPException, BackgroundTasks
+from fastapi import Depends, FastAPI, File, Form, Header, Request, UploadFile, HTTPException, BackgroundTasks
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import aiofiles
 import asyncio
 from datetime import datetime
+import math
 import uuid
 from pathlib import Path
 import logging
@@ -50,6 +53,26 @@ app.add_middleware(
 audiveris_processor = AudiverisProcessor()
 converter = MusicXMLToClairKeysConverter()
 
+
+@app.exception_handler(RequestValidationError)
+async def tempo_request_validation_error(
+    request: Request,
+    error: RequestValidationError,
+):
+    """Return HTTP 400 when the multipart tempo field is not numeric.
+
+    FastAPI normally returns 422 before `process_pdf` runs when a float form
+    field contains text. The upload contract uses 400 for every invalid tempo,
+    while unrelated request validation retains FastAPI's normal response.
+    """
+    if any(error["loc"][-1] == "tempo" for error in error.errors()):
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "Tempo must be a number between 20 and 400 BPM"},
+        )
+    return await request_validation_exception_handler(request, error)
+
+
 def require_shared_secret(
     x_clairkeys_token: Optional[str] = Header(default=None),
 ) -> None:
@@ -72,6 +95,7 @@ class ProcessingStatus:
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
+
 
 @app.get("/health")
 async def health_check():
@@ -96,6 +120,7 @@ async def process_pdf(
     composer: Optional[str] = Form(None),
     user_id: Optional[str] = Form(None),
     sheet_music_id: Optional[str] = Form(None),
+    tempo: Optional[float] = Form(None),
 ):
     """
     Process PDF sheet music to ClairKeys animation data
@@ -108,6 +133,13 @@ async def process_pdf(
     # Validate file type
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    if tempo is not None and (
+        not math.isfinite(tempo) or tempo < 20 or tempo > 400
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Tempo must be a number between 20 and 400 BPM",
+        )
     
     # Generate unique job ID
     job_id = str(uuid.uuid4())
@@ -123,12 +155,13 @@ async def process_pdf(
             "title": title,
             "composer": composer,
             "user_id": user_id,
-            "sheet_music_id": sheet_music_id
+            "sheet_music_id": sheet_music_id,
+            "tempo": tempo,
         }
     }
     
     # Start background processing
-    background_tasks.add_task(process_pdf_background, job_id, file, title, composer, user_id)
+    background_tasks.add_task(process_pdf_background, job_id, file, title, composer, user_id, tempo)
     
     return {
         "job_id": job_id,
@@ -198,7 +231,8 @@ async def process_pdf_background(
     file: UploadFile,
     title: Optional[str],
     composer: Optional[str], 
-    user_id: Optional[str]
+    user_id: Optional[str],
+    tempo: Optional[float],
 ):
     """Background task for processing PDF"""
     try:
@@ -230,7 +264,7 @@ async def process_pdf_background(
         processing_jobs[job_id]["progress"] = 60
         processing_jobs[job_id]["message"] = "Converting to ClairKeys format"
         
-        clairkeys_data = await converter.convert(musicxml_path, title, composer)
+        clairkeys_data = await converter.convert(musicxml_path, title, composer, tempo)
         logger.info(f"Converted to ClairKeys format for job {job_id}")
         
         # Step 3: Hold the result for the caller to collect (D-011)

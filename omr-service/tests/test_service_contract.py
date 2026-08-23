@@ -20,6 +20,7 @@ text. `omr/auth.py` imports stdlib only, so it is exercised for real.
 import ast
 import asyncio
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from unittest import mock
 
@@ -31,6 +32,7 @@ if str(OMR_SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(OMR_SERVICE_ROOT))
 
 from omr.auth import SharedSecretError, verify_shared_secret
+from omr.converter import MusicXMLToClairKeysConverter
 
 APP_SOURCE = (OMR_SERVICE_ROOT / "app.py").read_text(encoding="utf-8")
 
@@ -88,6 +90,100 @@ class ProcessEndpointContractTests(unittest.TestCase):
 
         self.assertIn("sheet_music_id", defaults)
         self.assertEqual(_default_call_name(defaults["sheet_music_id"]), "Form")
+
+    def test_tempo_is_a_typed_form_field(self):
+        """Tempo must not silently fall through to the query string."""
+        defaults = self._defaults_by_argument()
+        args = _process_pdf_signature()
+        annotations = {arg.arg: ast.unparse(arg.annotation) for arg in args.args if arg.annotation}
+
+        self.assertIn("tempo", defaults)
+        self.assertEqual(_default_call_name(defaults["tempo"]), "Form")
+        self.assertEqual(annotations["tempo"], "Optional[float]")
+
+    def test_tempo_is_forwarded_through_the_background_task(self):
+        """A bound form value is useless unless it reaches the converter."""
+        self.assertIn(
+            "process_pdf_background, job_id, file, title, composer, user_id, tempo",
+            APP_SOURCE,
+        )
+        self.assertIn(
+            "converter.convert(musicxml_path, title, composer, tempo)",
+            APP_SOURCE,
+        )
+
+    def test_invalid_tempo_is_rejected_as_bad_request(self):
+        """Bad numeric text and values outside 20..400 must both be HTTP 400."""
+        self.assertIn("RequestValidationError", APP_SOURCE)
+        self.assertIn('error["loc"][-1] == "tempo"', APP_SOURCE)
+        self.assertIn("status_code=400", APP_SOURCE)
+        self.assertIn("tempo < 20 or tempo > 400", APP_SOURCE)
+
+
+class ConverterTempoUnitTests(unittest.TestCase):
+    """Local unit coverage for MusicXML beat-unit arithmetic.
+
+    These tests are useful when running `omr-service/tests` manually, but that
+    directory is not invoked by any repository CI workflow. The Jest CLI gate
+    in `src/utils/__tests__/converterTempoContract.test.ts` is the CI-enforced
+    regression check for the emitted tempo contract.
+    """
+
+    def setUp(self):
+        self.converter = MusicXMLToClairKeysConverter()
+
+    def _metronome(self, unit, per_minute, dots=0):
+        dot_xml = "<beat-unit-dot/>" * dots
+        return ET.fromstring(
+            f"<metronome><beat-unit>{unit}</beat-unit>{dot_xml}"
+            f"<per-minute>{per_minute}</per-minute></metronome>"
+        )
+
+    def test_all_supported_beat_units_convert_to_quarter_bpm(self):
+        multipliers = {
+            "breve": 8,
+            "long": 16,
+            "whole": 4,
+            "half": 2,
+            "quarter": 1,
+            "eighth": 0.5,
+            "16th": 0.25,
+            "32nd": 0.125,
+            "64th": 0.0625,
+            "128th": 0.03125,
+        }
+        for unit, multiplier in multipliers.items():
+            with self.subTest(unit=unit):
+                self.assertEqual(
+                    self.converter._metronome_quarter_bpm(
+                        self._metronome(unit, 10)
+                    ),
+                    10 * multiplier,
+                )
+
+    def test_multiple_augmentation_dots_are_geometric_not_repeated_1_5(self):
+        self.assertEqual(
+            self.converter._metronome_quarter_bpm(
+                self._metronome("quarter", 60, dots=2)
+            ),
+            105,
+        )
+
+    def test_fractional_quarter_bpm_is_preserved(self):
+        self.assertEqual(
+            self.converter._metronome_quarter_bpm(
+                self._metronome("eighth", 45)
+            ),
+            22.5,
+        )
+
+    def test_sound_tempo_stays_quarter_bpm_and_precedes_metronome(self):
+        measure = ET.fromstring(
+            "<measure><direction><direction-type>"
+            "<metronome><beat-unit>eighth</beat-unit><per-minute>120</per-minute>"
+            "</metronome></direction-type><sound tempo='72'/></direction></measure>"
+        )
+        self.assertEqual(self.converter._find_tempo(measure), 72)
 
 
 class NoStorageCredentialsTests(unittest.TestCase):
