@@ -65,6 +65,36 @@ Last updated: 2026-08-23 KST
 
 ## Latest verified result
 
+- **2026-08-23 — the first two real uploads after go-live failed for two different reasons, and
+  both are now filed with reproductions.** Neither is a deployment fault: Vercel reached the
+  service and authenticated both times.
+  - A Korean-language document (fonts `Noto-Sans-CJK-KR` ×3, `-JP`) failed at `SCALE` with
+    `No regularly spaced lines found` — there is no staff on the page. Correct behaviour.
+  - A real 4-page arrangement failed with `too low interline value of 9 pixels` → `Sheet removed`
+    → the whole book abandoned. **Audiveris's advice, "try 300 DPI", is misleading: it already
+    renders at 300.** The controlling constant is
+    `org.audiveris.omr.image.ImageLoading.pdfResolution`, default 300, and the same A4 fixture
+    loads at 2480×3507 under it. So 1064×1521 means the *page* is small — 3.55″ × 5.07″, about A6
+    — and 300 DPI over that geometry yields a 9-pixel interline. Filed as issue
+    [#46](https://github.com/landfill/ClairKeys/issues/46).
+
+  **The reproduction needs no special file.** Lowering `pdfResolution` on the existing A4 fixture
+  reproduces it exactly: 100/120/150 all give `Sheet removed` (interline 7/8/10), 180 and above
+  succeed. The failure threshold sits between 150 and 180, and the user's file at interline 9 is
+  inside it. Issue #46 carries the measurements and three options; none is chosen.
+
+  Also worth knowing: Audiveris **abandons the whole book if any one sheet is invalid**
+  (`Could not export since transcription did not complete successfully`). Four pages failed here,
+  but one would have been enough.
+
+- **2026-08-23 — a failed upload shows the user a Java stack trace.** `omr-service/omr/audiveris.py:128-134`
+  appends the entire Audiveris stdout to the exception, which becomes the job message and reaches
+  the UI — over 200 lines in the observed case. The irony is that Audiveris states the cause in one
+  plain sentence and this buries it. Filed as issue
+  [#47](https://github.com/landfill/ClairKeys/issues/47). This is the opposite failure from the one
+  this project kept fixing: not a failure disguised as success, but a failure disclosed in a form
+  nobody can read.
+
 - **2026-08-23 — upload works end to end in production, and the first real score exposed the next
   problem.** The user set `OMR_SERVICE_URL` and `OMR_SHARED_SECRET`, redeployed, uploaded a score,
   and confirmed the animation plays. Service logs show Vercel's AWS egress calling `/process` and
