@@ -65,6 +65,28 @@ Last updated: 2026-08-23 KST
 
 ## Latest verified result
 
+- **2026-08-23 — the default playback tempo is fabricated, and the screen presents it as read from
+  the score.** The user reported that playback at speed `1.0` is too fast and that 0.5–0.75 matches
+  the score. `converter.py:391-402` returns a hardcoded **120** whenever the MusicXML carries no
+  `<per-minute>`, and the Bach MusicXML carries no tempo information at all — no `<sound tempo>`,
+  no `<metronome>`, no tempo words. The arithmetic matches the user's ear exactly: at 120 the piece
+  runs 1:14, at 0.5× it runs 2:28, and this prelude is normally played in 2:00–2:30. The real tempo
+  is around ♩=60, so the default is precisely twice too fast.
+
+  **This is structural, not specific to one file.** Audiveris can only recover a tempo that is
+  printed on the page, and most engraved classical scores print none — so nearly every upload will
+  get 120 substituted silently.
+
+  `AnimationPlayer.tsx:267` then renders `{composer} • {timeSignature} • {tempo} BPM`. Two of those
+  three were read from the score and the third was invented, in the same typography, with nothing
+  distinguishing them. That is the shape of defect this project has repeatedly removed (D-001,
+  D-010) — milder than a demo melody, but the same kind.
+
+  Note for whoever fixes it: `start` and `duration` are already resolved to seconds at conversion
+  time (`converter.py:183`), and `playbackClock`'s `tempoScale` is a multiplier on top. **Changing
+  the default alone will not fix scores already stored** — they need re-conversion. Filed as issue
+  [#48](https://github.com/landfill/ClairKeys/issues/48) with four options and none chosen.
+
 - **2026-08-23 — the first two real uploads after go-live failed for two different reasons, and
   both are now filed with reproductions.** Neither is a deployment fault: Vercel reached the
   service and authenticated both times.
