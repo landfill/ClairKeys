@@ -59,7 +59,7 @@ export default function SimplePianoKeyboard({
                 : 'bg-black hover:bg-gray-800'
             }`}
             style={{
-              left: pos.x + pos.w * 0.2,
+              left: pos.x,
               top: 0,
               width: pos.w,
               height: '64%',
