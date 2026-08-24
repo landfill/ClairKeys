@@ -46,7 +46,7 @@ export function notesToVisualNotes(
     if (!keyPos) continue; // Skip invalid MIDI numbers
     
     // Calculate visual properties
-    const x = keyPos.x + (keyPos.black ? keyPos.w * 0.2 : 0);
+    const x = keyPos.x;
     const width = keyPos.black ? keyPos.w * 0.75 : keyPos.w * 0.92;
     const color = getHandColor(note.hand);
     const zIndex = keyPos.black ? 30 : 20; // Black key notes on top

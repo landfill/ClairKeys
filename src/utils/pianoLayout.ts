@@ -58,13 +58,13 @@ export function buildKeyLayout(keyWidth: number): KeyLayout {
       const leftWhiteIndex = leftWhiteKeys.length - 1;
       const baseX = Math.max(0, leftWhiteIndex) * keyWidth;
       
-      // Black key offset patterns within each octave
+      // Black key offsets relative to the white key on the left
       const offsets: Record<number, number> = {
         1: 0.65,  // C#
-        3: 1.6,   // D#
-        6: 3.65,  // F#
-        8: 4.6,   // G#
-        10: 5.6   // A#
+        3: 0.6,   // D#
+        6: 0.65,  // F#
+        8: 0.6,   // G#
+        10: 0.6   // A#
       };
       
       const x = baseX + (offsets[pitchClass] ?? 0.5) * keyWidth;
