@@ -81,6 +81,9 @@ Last updated: 2026-08-24 KST
   `package.json`에 스크립트가 없어 실행할 수 없었다 — README의 해당 안내는 별도 정정
   대상이며 이 PR 범위에는 넣지 않았다. 좌표 재계산 결과 MIDI 순서 위반 0, 오른쪽 끝
   1040px = 컨테이너 폭 1040px, 최대 검은건반 빈 간격 29px(`keyWidth=20`)다.
+  PR head `299951d`의 hosted checks는 전부 통과했고(E2E 두 작업 포함), 수동 트리거한
+  CodeRabbit review는 코드 actionable comment 0건이었다. PR 설명 템플릿 누락 경고는
+  템플릿 전체를 채워 해결했다. 사용자의 명시적 병합 승인을 기다린다.
   근거: `docs/recovery/validation/2026-08-24-issue-56-piano-black-key-layout.md`,
   `docs/recovery/reviews/PR-57.md`
 

@@ -50,6 +50,10 @@
 | `npx tsc --noEmit` | **PASS** — exit 0 |
 | `git diff --check` | **PASS** |
 
+PR head `299951d`의 hosted checks도 모두 통과했다: Accessibility Check, All Checks Complete,
+Build Check, CodeQL, Detect changes, E2E Tests 두 작업, Lint, Lint and Type Check, PR Summary,
+Run Tests, Security Audit, Security Scan, Unit Tests, Vercel, Vercel Preview Comments.
+
 `keyWidth=20`으로 독립 재계산한 최종 지표:
 
 - 88 keys = 52 white + 36 black
@@ -61,7 +65,6 @@
 ## 검증하지 못한 것
 
 - 영향받는 다섯 화면의 실제 브라우저 스크린샷 비교
-- 호스팅 CI와 자동 리뷰의 최종 상태 — `docs/recovery/reviews/PR-57.md`에서 추적
 
 ## 별도 후속
 
