@@ -1,6 +1,6 @@
 # 2026-08-24 — 이슈 #56: 88건반 검은건반 좌표 검증
 
-- Branch: `codex/p1a-piano-black-key-layout` @ `299951d`
+- Branch: `codex/p1a-piano-black-key-layout` @ `db9801e`
 - PR: [#57](https://github.com/landfill/ClairKeys/pull/57)
 - Scope: `pianoLayout.ts`, `visualUtils.ts`, `SimplePianoKeyboard.tsx`와 회귀 테스트
 
@@ -36,8 +36,29 @@
 | 10 | A# | 0.6 |
 
 `visualUtils.ts`의 `keyPos.x + keyPos.w * 0.2`와 `SimplePianoKeyboard.tsx`의
-`pos.x + pos.w * 0.2`는 각각 `keyPos.x`, `pos.x`로 바꿨다. 회귀 테스트가 A#0에 대해
-두 소비자의 렌더 x와 `KeyLayout.x`가 모두 같음을 검증한다.
+`pos.x + pos.w * 0.2`는 함께 제거했다. 건반의 계약은 `KeyLayout.x`가 좌변이라는 것이고,
+폭이 더 좁은 낙하 노트의 계약은 `keyPos.x + (keyPos.w - width) / 2`로 해당 건반 안에
+중앙 정렬된다는 것이다. 88건반 전체(흰건반 52개, 검은건반 36개)의 노트 중심과 건반 중심이
+부동소수 허용오차 안에서 같음을 회귀 테스트로 고정했다.
+
+이 중심 계약 테스트를 동작 변경 전에 실행하면 **1 suite / 1 test가 실패**했다. A0에서 건반
+중심은 12px인데 낙하 노트 중심은 11.04px로 0.96px 왼쪽이었다(`keyWidth=24`). 검은건반도
+동일한 원인으로 1.80px 왼쪽이었으며, 중앙 정렬 구현 뒤 focused 2 suites / 8 tests가 통과했다.
+
+## Lore 정정 — 실제 피아노 비대칭과 이 PR의 근사값
+
+커밋 `299951d`의 “keeps the original asymmetric placement”라는 표현은 부정확하다. 원래
+오프셋 표도, 이 PR의 상대값 `0.65/0.6/0.65/0.6/0.6`도 실제 피아노의 비대칭을 나타내지
+않으며, 현재 값은 다섯 검은건반 모두를 인접 흰건반 경계에서 약 0.05–0.10칸 왼쪽에 두는
+“거의 경계 중앙” 근사다.
+
+표준 기하학에서 검은건반 중심의 경계 대비 위치는 C# -0.10(좌), D# +0.10(우),
+F# -0.15(좌), G# 0.00(정중앙), A# +0.15(우)다. 따라서 현재 PR은 D#과 A#의 방향이
+반대이고 G#도 실제 정중앙이 아니다. 실제 기하학의 좌변 오프셋은 C# 0.611, D# 0.806,
+F# 0.563, G# 0.709, A# 0.854이고 검은건반 폭은 흰건반의 0.583배다.
+
+PR #57은 절대 좌표 두 개를 더해 최대 5칸 밀리던 보고 결함만 고친다. 실제 비대칭 정밀도와
+`PianoKeyboard.tsx` 좌표계와의 통일은 이슈 #58로 분리했으며 이 PR에서 오프셋을 더 바꾸지 않는다.
 
 ## 수정 후 검증
 
@@ -50,9 +71,8 @@
 | `npx tsc --noEmit` | **PASS** — exit 0 |
 | `git diff --check` | **PASS** |
 
-PR head `299951d`의 hosted checks도 모두 통과했다: Accessibility Check, All Checks Complete,
-Build Check, CodeQL, Detect changes, E2E Tests 두 작업, Lint, Lint and Type Check, PR Summary,
-Run Tests, Security Audit, Security Scan, Unit Tests, Vercel, Vercel Preview Comments.
+낙하 노트 중앙 정렬을 추가한 PR head `db9801e`에서도 같은 로컬 검증을 다시 통과했다.
+Hosted checks의 최종 결과는 아래 PR 리뷰 기록과 이 문서의 후속 갱신에 기록한다.
 
 `keyWidth=20`으로 독립 재계산한 최종 지표:
 

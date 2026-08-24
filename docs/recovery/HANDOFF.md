@@ -73,7 +73,17 @@ Last updated: 2026-08-24 KST
 - **2026-08-24 — 이슈 #56의 검은건반 좌표 수정이 review-ready PR #57에 올라갔다.**
   `pianoLayout.ts`의 검은건반 오프셋을 왼쪽 흰건반 기준 `0.65/0.6/0.65/0.6/0.6`으로
   바꾸고, `SimplePianoKeyboard.tsx`와 `visualUtils.ts`에서 각각 더하던 `* 0.2` 보정을 함께
-  제거했다. 두 렌더 경로는 이제 `KeyLayout.x`를 그대로 쓴다.
+  제거했다. 건반은 `KeyLayout.x`를 좌변으로 쓰고, 더 좁은 낙하 노트는
+  `keyPos.x + (keyPos.w - width) / 2`로 해당 건반 중심에 맞춘다. 88건반 전체에서 흰건반과
+  검은건반 모두 노트 중심=건반 중심임을 고정했다. 이 중심 계약은 구현 전 **1 suite / 1 test
+  실패**(A0 0.96px 왼쪽)를 재현했고 구현 후 통과했다.
+
+  **Lore 정정:** 커밋 `299951d`의 “keeps the original asymmetric placement”는 부정확하다.
+  원래 표와 현재 PR 값은 실제 피아노 비대칭이 아니라 모두 경계에서 -0.05~-0.10칸 왼쪽인
+  근사다. 실제 중심은 C# -0.10, D# +0.10, F# -0.15, G# 0.00, A# +0.15칸이므로 D#/A#은
+  방향이 반대이고 G#은 경계 정중앙이다. 실제 좌변 오프셋은
+  `0.611/0.806/0.563/0.709/0.854`, 검은건반 폭은 0.583칸이다. PR #57은 최대 5칸 밀림만
+  고치며 이 정밀도와 `PianoKeyboard.tsx` 통일은 이슈 #58 소관이다.
 
   회귀 테스트를 코드보다 먼저 추가했다. 수정 전 focused Jest는 **2 suites failed,
   5 tests failed / 3 passed**였고, 수정 후 **2 suites / 8 tests 통과**했다. 전체 Jest는
@@ -81,9 +91,9 @@ Last updated: 2026-08-24 KST
   `package.json`에 스크립트가 없어 실행할 수 없었다 — README의 해당 안내는 별도 정정
   대상이며 이 PR 범위에는 넣지 않았다. 좌표 재계산 결과 MIDI 순서 위반 0, 오른쪽 끝
   1040px = 컨테이너 폭 1040px, 최대 검은건반 빈 간격 29px(`keyWidth=20`)다.
-  PR head `299951d`의 hosted checks는 전부 통과했고(E2E 두 작업 포함), 수동 트리거한
-  CodeRabbit review는 코드 actionable comment 0건이었다. PR 설명 템플릿 누락 경고는
-  템플릿 전체를 채워 해결했다. 사용자의 명시적 병합 승인을 기다린다.
+  최초 head `299951d`의 hosted checks는 전부 통과했고(E2E 두 작업 포함), 수동 트리거한
+  CodeRabbit review는 코드 actionable comment 0건이었다. 중앙 정렬을 추가한 현재 head는
+  `db9801e`이며 hosted checks 최종 결과를 대기한다. 사용자의 명시적 병합 승인 전에는 병합하지 않는다.
   근거: `docs/recovery/validation/2026-08-24-issue-56-piano-black-key-layout.md`,
   `docs/recovery/reviews/PR-57.md`
 
