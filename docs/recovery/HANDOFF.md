@@ -9,7 +9,8 @@ Last updated: 2026-08-24 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: **[#53](https://github.com/landfill/ClairKeys/pull/53)** — README에 OCR 단계를 드러낸다 (문서 전용, review-ready, 병합 승인 대기). 근거: `docs/recovery/reviews/PR-53.md`
+- Open pull requests: **[#54](https://github.com/landfill/ClairKeys/pull/54)** — OCR이 제품에 기여하는 범위를 과장하지 않도록 README를 바로잡는다 (문서 전용, review-ready, 병합 승인 대기). 근거: `docs/recovery/reviews/PR-54.md`
+- **[#53](https://github.com/landfill/ClairKeys/pull/53) merged 2026-08-24** at `a5d9da3` with the user's explicit approval — README now names the OCR stage and separates it from the converter code that consumes MusicXML. Merge-commit checks all passed; both branch tips were confirmed in `main` and the work branch is deleted. 근거: `docs/recovery/reviews/PR-53.md`
 - **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
 - **#48 was found closed on GitHub and reopened** on 2026-08-23. It had been closed as `completed` at 11:46 UTC while no fix commit existed anywhere — only the four analysis comments had landed. The user confirmed the reopen.
 - Pull requests merged 2026-08-23, kept below as the record of what landed:
@@ -68,6 +69,21 @@ Last updated: 2026-08-24 KST
 - Current objective: **P1-A — consolidate the four PDF upload paths onto the one that actually converts a score.** The deployment and timbre objectives that preceded it are closed: `main` deploys itself again (Vercel Production Branch Tracking fixed), the `Security Audit` gate is green, and both timbre tuning sliders are live in production. The only thing outstanding from the timbre work is a pair of default values that need the user's ear, not code.
 
 ## Latest verified result
+
+- **2026-08-24 — #50과 #51은 한 덩어리로 기억되지만 서로 다른 것을 고쳤고, 그 혼동이 실제로
+  일어났다.** 사용자가 "전일 작업한 OCR은 메트로놈 표기 숫자를 인식하는 것"이라고 이해하고
+  있었다. 파일 목록으로 확인한 실제 범위는 반대다: **#50은 `Dockerfile.audiveris`의
+  traineddata 교체뿐**(메트로놈 관련 코드 없음, OCR 전반), **#51은 `converter.py`·`app.py`·
+  업로드 폼의 빠르기 계약**(OCR 아님). 그리고 OCR 복구 후에도 `<metronome>`은 0개였으므로
+  **인쇄된 메트로놈 표기는 지금도 인식되지 않는다** — #51의 사용자 입력 필드가 존재하는 이유가
+  그것이다. 현재 `tempoSource`는 `user` 또는 `unknown`뿐이다.
+
+- **2026-08-24 — OCR 복구가 사용자에게 보이는 것을 바꿨다는 증거는 아직 없다.** 표시 경로를
+  추적했다: `src/app/sheet/[id]/page.tsx`는 DB `SheetMusic` 행(=사용자 입력)을 렌더하고,
+  악보 유래 값이 표면화될 수 있는 곳은 `AnimationPlayer.tsx`의 헤더(애니메이션 JSON) 하나뿐이다.
+  그 JSON의 `title`/`composer`를 만드는 `_extract_metadata`는 `<work-title>`·`<creator>`를
+  찾는데 그 둘은 관측된 적이 없다(아래 2026-08-24 항목). **따라서 #49 복구의 사용자 가시
+  효과는 현재 0으로 간주해야 한다.** PR #54가 README를 이 사실로 시작하도록 고쳤다.
 
 - **2026-08-24 — OCR이 읽은 제목이 JSON에 도달하는지는 아무도 확인한 적이 없다.** README에
   OCR 절을 쓰다가 드러난 빈틈이다. 2026-08-23 실측이 관측한 요소는 `<credit-words>` 뿐인데
