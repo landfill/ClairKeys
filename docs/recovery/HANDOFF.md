@@ -9,7 +9,7 @@ Last updated: 2026-08-24 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: none. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
+- Open pull requests: [#57](https://github.com/landfill/ClairKeys/pull/57) records the issue #56 piano-layout fix; current state remains a GitHub live-state question. 근거: `docs/recovery/reviews/PR-57.md`. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
 - **[#53](https://github.com/landfill/ClairKeys/pull/53) merged 2026-08-24** at `a5d9da3` with the user's explicit approval — README now names the OCR stage and separates it from the converter code that consumes MusicXML. Merge-commit checks all passed; both branch tips were confirmed in `main` and the work branch is deleted. 근거: `docs/recovery/reviews/PR-53.md`
 - **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
 - **#48 was found closed on GitHub and reopened** on 2026-08-23. It had been closed as `completed` at 11:46 UTC while no fix commit existed anywhere — only the four analysis comments had landed. The user confirmed the reopen.
@@ -69,6 +69,20 @@ Last updated: 2026-08-24 KST
 - Current objective: **P1-A — consolidate the four PDF upload paths onto the one that actually converts a score.** The deployment and timbre objectives that preceded it are closed: `main` deploys itself again (Vercel Production Branch Tracking fixed), the `Security Audit` gate is green, and both timbre tuning sliders are live in production. The only thing outstanding from the timbre work is a pair of default values that need the user's ear, not code.
 
 ## Latest verified result
+
+- **2026-08-24 — 이슈 #56의 검은건반 좌표 수정이 review-ready PR #57에 올라갔다.**
+  `pianoLayout.ts`의 검은건반 오프셋을 왼쪽 흰건반 기준 `0.65/0.6/0.65/0.6/0.6`으로
+  바꾸고, `SimplePianoKeyboard.tsx`와 `visualUtils.ts`에서 각각 더하던 `* 0.2` 보정을 함께
+  제거했다. 두 렌더 경로는 이제 `KeyLayout.x`를 그대로 쓴다.
+
+  회귀 테스트를 코드보다 먼저 추가했다. 수정 전 focused Jest는 **2 suites failed,
+  5 tests failed / 3 passed**였고, 수정 후 **2 suites / 8 tests 통과**했다. 전체 Jest는
+  **50 suites / 457 tests**, lint와 `npx tsc --noEmit`도 통과했다. `npm run type-check`는
+  `package.json`에 스크립트가 없어 실행할 수 없었다 — README의 해당 안내는 별도 정정
+  대상이며 이 PR 범위에는 넣지 않았다. 좌표 재계산 결과 MIDI 순서 위반 0, 오른쪽 끝
+  1040px = 컨테이너 폭 1040px, 최대 검은건반 빈 간격 29px(`keyWidth=20`)다.
+  근거: `docs/recovery/validation/2026-08-24-issue-56-piano-black-key-layout.md`,
+  `docs/recovery/reviews/PR-57.md`
 
 - **2026-08-24 — 88건반의 검은건반이 최대 5칸 밀려 있다. 재생 화면 본체의 결함이다.**
   사용자가 "건반 모양이 완전히 잘못된 것으로 보인다"고 지적해 좌표를 직접 계산한 결과 사실이었다.
