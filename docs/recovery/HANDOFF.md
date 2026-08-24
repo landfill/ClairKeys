@@ -92,8 +92,9 @@ Last updated: 2026-08-24 KST
   대상이며 이 PR 범위에는 넣지 않았다. 좌표 재계산 결과 MIDI 순서 위반 0, 오른쪽 끝
   1040px = 컨테이너 폭 1040px, 최대 검은건반 빈 간격 29px(`keyWidth=20`)다.
   최초 head `299951d`의 hosted checks는 전부 통과했고(E2E 두 작업 포함), 수동 트리거한
-  CodeRabbit review는 코드 actionable comment 0건이었다. 중앙 정렬을 추가한 현재 head는
-  `db9801e`이며 hosted checks 최종 결과를 대기한다. 사용자의 명시적 병합 승인 전에는 병합하지 않는다.
+  CodeRabbit review는 코드 actionable comment 0건이었다. 중앙 정렬을 추가한 현재 head
+  `db9801e`도 hosted checks 17개가 모두 통과했다(E2E 두 작업 포함). PR은 review-ready,
+  `MERGEABLE`이며 사용자의 명시적 병합 승인 전에는 병합하지 않는다.
   근거: `docs/recovery/validation/2026-08-24-issue-56-piano-black-key-layout.md`,
   `docs/recovery/reviews/PR-57.md`
 

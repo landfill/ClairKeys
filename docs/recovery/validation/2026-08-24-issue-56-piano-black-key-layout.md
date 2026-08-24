@@ -72,7 +72,10 @@ PR #57은 절대 좌표 두 개를 더해 최대 5칸 밀리던 보고 결함만
 | `git diff --check` | **PASS** |
 
 낙하 노트 중앙 정렬을 추가한 PR head `db9801e`에서도 같은 로컬 검증을 다시 통과했다.
-Hosted checks의 최종 결과는 아래 PR 리뷰 기록과 이 문서의 후속 갱신에 기록한다.
+Hosted checks 17개도 모두 통과했다: Accessibility Check, All Checks Complete, Build Check,
+CodeQL, CodeRabbit(정책상 review skipped), Detect changes, E2E Tests 두 작업, Lint,
+Lint and Type Check, PR Summary, Run Tests, Security Audit, Security Scan, Unit Tests, Vercel,
+Vercel Preview Comments.
 
 `keyWidth=20`으로 독립 재계산한 최종 지표:
 
