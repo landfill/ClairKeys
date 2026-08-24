@@ -9,7 +9,7 @@ Last updated: 2026-08-24 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: **[#54](https://github.com/landfill/ClairKeys/pull/54)** — OCR이 제품에 기여하는 범위를 과장하지 않도록 README를 바로잡는다 (문서 전용, review-ready, 병합 승인 대기). 근거: `docs/recovery/reviews/PR-54.md`
+- Open pull requests: none. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
 - **[#53](https://github.com/landfill/ClairKeys/pull/53) merged 2026-08-24** at `a5d9da3` with the user's explicit approval — README now names the OCR stage and separates it from the converter code that consumes MusicXML. Merge-commit checks all passed; both branch tips were confirmed in `main` and the work branch is deleted. 근거: `docs/recovery/reviews/PR-53.md`
 - **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
 - **#48 was found closed on GitHub and reopened** on 2026-08-23. It had been closed as `completed` at 11:46 UTC while no fix commit existed anywhere — only the four analysis comments had landed. The user confirmed the reopen.
@@ -69,6 +69,33 @@ Last updated: 2026-08-24 KST
 - Current objective: **P1-A — consolidate the four PDF upload paths onto the one that actually converts a score.** The deployment and timbre objectives that preceded it are closed: `main` deploys itself again (Vercel Production Branch Tracking fixed), the `Security Audit` gate is green, and both timbre tuning sliders are live in production. The only thing outstanding from the timbre work is a pair of default values that need the user's ear, not code.
 
 ## Latest verified result
+
+- **2026-08-24 — 업로드 후 화면을 이탈하면 변환 결과가 영구히 유실된다. 큐잉되지 않는다.**
+  사용자가 "화면을 이탈해도 백엔드가 큐잉되어 완료되는가"를 물어 코드로 추적한 결과, 답은
+  **아니오**였다. 이슈 [#55](https://github.com/landfill/ClairKeys/issues/55)로 등록.
+
+  결정적 지점: `src/app/api/omr/status/[jobId]/route.ts`는 상태 중계만 하지 않고 `completed`를
+  관측한 **그 요청 안에서** `/result`를 가져와 Supabase에 저장한다(`maxDuration = 60`의 이유).
+  그리고 그 요청을 부르는 주체는 브라우저뿐이다 — `OMRProcessingStatus.tsx:55`의
+  `setInterval(..., 5000)`과 `:127`의 `clearInterval`. 언마운트되면 폴링이 멈추고,
+  **저장 코드는 실행될 기회 자체가 없다.**
+
+  그 결과 VM은 변환을 끝까지 완료하고 결과를 `app.py:91`의 `processing_jobs` 메모리에 든 채
+  서 있게 되며(D-011로 서비스는 저장 자격증명이 없다), Supabase에는 아무것도 저장되지 않고
+  DB 행은 `processing`에 영구히 남는다.
+
+  **복구 경로가 없음을 세 군데에서 확인했다**: `vercel.json`에 cron 정의 없음;
+  `backgroundProcessor.ts`는 `/api/processing/*` 전용이고 OMR 업로드 경로가 참조하지 않으며
+  큐도 인메모리 `Map`이다; `jobs` prop은 `upload/page.tsx:16`의 `useState`라 새로고침에 사라지고
+  `processingStatus`를 읽어 진행 중 목록을 보여주는 UI는 코드 전체에 없다.
+
+  **이건 D-011의 대가다.** 서비스가 저장 자격증명을 갖지 않는 결정은 옳지만, 저장 주체를
+  Vercel로 옮긴 순간 저장 트리거가 브라우저 폴링이 되었다. 고치는 방향은 D-011을 되돌리는 게
+  아니라 트리거를 브라우저에서 떼는 것이다 — #55에 두 안(VM→Vercel webhook / Vercel cron으로
+  미완료 행 훑기)을 적어 두었고, 둘은 배타적이지 않다.
+
+  부수 발견: README 시퀀스 다이어그램의 `3초 간격 폴링`은 오기다. 실제는 5초
+  (3000ms는 중복 호출 방지 가드). #55에서 함께 정정한다.
 
 - **2026-08-24 — #50과 #51은 한 덩어리로 기억되지만 서로 다른 것을 고쳤고, 그 혼동이 실제로
   일어났다.** 사용자가 "전일 작업한 OCR은 메트로놈 표기 숫자를 인식하는 것"이라고 이해하고
