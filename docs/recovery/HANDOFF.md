@@ -9,7 +9,7 @@ Last updated: 2026-08-24 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: [#57](https://github.com/landfill/ClairKeys/pull/57) records the issue #56 piano-layout fix; current state remains a GitHub live-state question. 근거: `docs/recovery/reviews/PR-57.md`. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
+- Open pull requests: none. **[#57](https://github.com/landfill/ClairKeys/pull/57) merged 2026-08-24** at `d58ceea` with the user's explicit approval — issue #56's black-key displacement and the falling-note centering that followed from it. Merge-commit checks 6/6 successful; work branch, Orca worktree, and both leftover local branches deleted; `main` is the only branch. 근거: `docs/recovery/reviews/PR-57.md`. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
 - **[#53](https://github.com/landfill/ClairKeys/pull/53) merged 2026-08-24** at `a5d9da3` with the user's explicit approval — README now names the OCR stage and separates it from the converter code that consumes MusicXML. Merge-commit checks all passed; both branch tips were confirmed in `main` and the work branch is deleted. 근거: `docs/recovery/reviews/PR-53.md`
 - **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
 - **#48 was found closed on GitHub and reopened** on 2026-08-23. It had been closed as `completed` at 11:46 UTC while no fix commit existed anywhere — only the four analysis comments had landed. The user confirmed the reopen.
@@ -69,6 +69,36 @@ Last updated: 2026-08-24 KST
 - Current objective: **P1-A — consolidate the four PDF upload paths onto the one that actually converts a score.** The deployment and timbre objectives that preceded it are closed: `main` deploys itself again (Vercel Production Branch Tracking fixed), the `Security Audit` gate is green, and both timbre tuning sliders are live in production. The only thing outstanding from the timbre work is a pair of default values that need the user's ear, not code.
 
 ## Latest verified result
+
+- **2026-08-24 — 이슈 #56이 코덱스 워커 + 코디네이터 교차검증으로 닫혔다. PR #57 병합(`d58ceea`).**
+  Orca orchestration으로 진행했다: Run `run_1cfda20fe7be`, Task 3개(수정 / 교차검증 / 보완),
+  워커는 Codex `gpt-5.6-sol` effort high.
+
+  **결과**: `pianoLayout.ts`의 검은건반 오프셋을 왼쪽 흰건반 기준 상대값으로 교정(최대 5칸
+  어긋남 제거), `visualUtils.ts`·`SimplePianoKeyboard.tsx`의 `* 0.2` 이중 보정 제거,
+  이어서 낙하 노트를 88건반 중심에 정렬(`x = keyPos.x + (keyPos.w - width) / 2`).
+  회귀 테스트 신규 2개 파일. CodeRabbit 전체 재리뷰 actionable 0건.
+
+  **코디네이터 독립 검증**: 워커의 테스트를 쓰지 않고 별도 검증기로 `buildKeyLayout`과
+  `notesToVisualNotes` 출력을 직접 실행 검사했다(keyWidth 10/20/24/33.7 × 불변식 9개).
+  수정 전 코드에서 16건 + 88/88 불일치로 실패함을 먼저 확인해 검증기 자체를 검증한 뒤,
+  병합 후 `main`에서 전수 통과를 재확인했다.
+
+  **교차검증에서 오류가 양방향으로 나왔다** — 이 과정이 실제로 값을 했다:
+  - 코디네이터 spec이 틀림: "offsets 표가 실제 피아노 비대칭을 반영한다"는 주장은 거짓.
+    표준 치수 검산 결과 다섯 건반 모두 균일한 좌측 편향이며 D#·A#는 실제와 방향이 반대다.
+    → 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58)로 분리, 잘못된 lore는 정정.
+  - 코디네이터 spec이 틀림: `npm run type-check`는 존재하지 않는다(`README.md:446` 오기).
+    워커가 발견했고, 사실대로 기록하는 쪽으로 처리했다.
+  - 코디네이터 검증기가 틀림: 검은건반 간격 불변식을 좌변 기준으로 쟀는데 워커의 모서리 기준이
+    옳았다(실제 피아노는 좌변 기준 1.757칸이라 1.5 상한이 성립하지 않는다).
+  - 코디네이터 판단이 틀림: 낙하 노트 좌측 정렬을 "2px 미만이라 별도 이슈"로 미루려 했으나
+    워커가 반박했고 그쪽이 옳았다. 근거는 `visualUtils.ts:118`의 `getFingerBadgePosition`이
+    이미 "작은 것을 큰 것 안에 중앙 정렬"을 관용구로 쓰고 있다는 점 — 크기가 아니라 일관성이
+    기준이었다.
+
+  **남은 것**: 이슈 #58(실제 비대칭 + `PianoKeyboard.tsx`와의 통일). 브라우저 스크린샷 비교는
+  다섯 화면 모두 미실행이다.
 
 - **2026-08-24 — 이슈 #56의 검은건반 좌표 수정이 review-ready PR #57에 올라갔다.**
   `pianoLayout.ts`의 검은건반 오프셋을 왼쪽 흰건반 기준 `0.65/0.6/0.65/0.6/0.6`으로
