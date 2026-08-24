@@ -87,7 +87,7 @@ flowchart TB
   subgraph M["NAVER Cloud VM · podman"]
     direction LR
     F["FastAPI :8000"] --> A["Audiveris<br/>PDF → MusicXML"] --> C["converter.py<br/>MusicXML → JSON"]
-    A -.->|"TEXTS 단계"| T["Tesseract OCR<br/>제목 · 작곡가 · 마디 번호"]
+    A -.->|"TEXTS 단계"| T["Tesseract OCR<br/>지면의 글자"]
     T -.-> A
   end
 
@@ -156,7 +156,13 @@ sequenceDiagram
 
 **OCR은 별도 서비스가 아니다.** 같은 VM, 같은 Audiveris 실행 안에서 돈다. Audiveris는 페이지를 단계별로 처리하는데(`SCALE` → … → `TEXTS` → …), 그중 `TEXTS` 단계가 Tesseract를 호출해 오선 위·아래에 인쇄된 글자를 읽는다. 그래서 로그도 컨테이너도 하나이고, "OMR 서비스"라는 이름 하나가 음표 인식과 글자 인식을 둘 다 덮고 있다.
 
-수정 후 실제 악보(`love-affair.pdf`)에서 읽어낸 것 — 전부 MusicXML의 `<credit-words>`로 나왔다:
+#### 먼저: 지금 OCR이 제품에 기여하는 바는 확인된 것이 없다
+
+**사용자에게 보이는 제목·작곡가는 업로드 폼에 사용자가 입력한 값이다.** 악보 상세 화면(`src/app/sheet/[id]/page.tsx`)은 DB `SheetMusic` 행을 그대로 렌더하고, 그 행은 서비스가 돌려준 값으로 덮어쓰지 않는다(위 폴링 절 참조). OCR이 이 자리를 대신 채우지 않는다.
+
+DB가 아닌 값을 보여주는 곳은 재생 플레이어 헤더 하나뿐이다 — `AnimationPlayer.tsx`가 애니메이션 JSON의 `title`/`composer`를 렌더한다. 그리고 그 JSON을 만드는 `omr/converter.py`의 `_extract_metadata`는 `<work-title>`과 `<creator type="composer">`를 찾아 **있으면 그것을 쓰고, 없을 때만** 사용자 입력으로 채운다.
+
+문제는 그 두 요소가 관측된 적이 없다는 것이다. 2026-08-23 실측에서 OCR이 읽어낸 글자는 전부 `<credit-words>`로 나왔다:
 
 ```
 'Piano Solo - Love Affair'   'Love Affair OST'
@@ -164,11 +170,9 @@ sequenceDiagram
 '10' '13' '16' '19' '25' '28'        (마디 번호)
 ```
 
-제목·부제·작곡가·편곡자를 지면 그대로 읽었다.
+지면의 제목·부제·작곡가·편곡자를 정확히 읽은 것은 맞다. 그러나 Audiveris가 `<work-title>`·`<creator>`도 함께 채우는지는 **검증된 적이 없고**, 채우지 않는다면 이 글자들은 어디에도 반영되지 않는다. 플레이어 헤더에도 사용자 입력이 그대로 쓰이고, **겉보기 동작은 OCR이 죽어 있던 때와 구별되지 않는다.**
 
-**다만 이 글자들이 JSON까지 도달하는지는 아직 확인되지 않았다.** `omr/converter.py`의 `_extract_metadata`는 `<work-title>`과 `<creator type="composer">`를 찾고, 둘 다 없을 때만 업로드 폼의 사용자 입력으로 채운다. 그런데 위 실측에서 관측된 요소는 `<credit-words>`뿐이고, Audiveris가 `<work-title>`·`<creator>`도 함께 채우는지는 검증된 적이 없다. 채우지 않는다면 OCR이 읽은 제목은 JSON에 반영되지 않고 **사용자 입력이 계속 쓰인다** — 겉보기 동작은 OCR이 죽어 있던 때와 구별되지 않는다.
-
-어느 쪽이든 DB `SheetMusic` 행의 제목은 위 규칙대로 사용자 입력이 유지된다. 가사·나타냄말은 `<words>`로 나오지만 현재 변환기가 쓰지 않는다.
+마디 번호는 JSON에 나오지 않고, 가사·나타냄말은 `<words>`로 나오지만 변환기가 쓰지 않는다. 그래서 요약하면 — **OCR은 2026-08-23에 되살아났지만(#49), 그것이 사용자가 보는 무언가를 바꿨다는 증거는 아직 없다.**
 
 #### traineddata를 체크섬으로 고정해 둔 이유
 
@@ -190,6 +194,8 @@ OCR은 이 프로젝트에서 **한 번도 동작한 적이 없었고**, 2026-08
 
 빠르기 처리는 두 단계로 나뉘고, **둘 중 하나만 완성돼 있다.** 이 구분을 놓치면 "메트로놈을 읽도록 이미 고쳤는데 왜 안 되나"라는 혼란이 생긴다.
 
+두 PR이 자주 한 덩어리로 기억되지만 서로 다른 것을 고쳤다: **PR #50이 OCR**(`Dockerfile.audiveris`의 traineddata 교체뿐, 메트로놈과 무관), **PR #51이 빠르기 계약**(`converter.py`·업로드 폼, OCR 아님)이다.
+
 | 층 | 하는 일 | 어디에 있나 | 상태 |
 |---|---|---|---|
 | 1. 인식 | 지면의 `♩ = 60` → MusicXML `<metronome>` | VM의 Audiveris (OCR + 심볼 인식) | **동작하지 않는다** |
@@ -199,7 +205,7 @@ OCR은 이 프로젝트에서 **한 번도 동작한 적이 없었고**, 2026-08
 
 그리고 1층은 아직 그걸 만들어 주지 않는다. OCR을 되살린 뒤(#49) 같은 악보를 다시 통과시켜도 MusicXML의 `<metronome>`은 **0개**였고 `Adagio`도 `60`도 어디에도 나타나지 않았다. Audiveris 5.11은 `MetronomeInter`·`BeatUnitInter`·`TextRole.Metronome`을 갖고 있고 이를 끄는 `ProcessingSwitch`도 없으므로 경로 자체는 배선돼 있다 — **OCR이 살아 있는 것은 필요조건이었지 충분조건이 아니었다.** 그 아래 원인은 아직 미규명이다([이슈 #48](https://github.com/landfill/ClairKeys/issues/48)).
 
-그래서 빠르기는 악보에서 읽히기를 기다리지 않고 **업로드 폼의 선택 입력**으로도 받는다. 결과 JSON은 그 값이 어디서 왔는지 숨기지 않는다 — 아래 `tempoSource`.
+그래서 빠르기는 악보에서 읽히기를 기다리지 않고 **업로드 폼의 선택 입력**으로 받는다(PR #51). 현재 재생되는 빠르기는 사용자가 입력했다면 `tempoSource: "user"`, 아니면 `"unknown"`이다 — **`"score"`는 실제 악보에서 한 번도 관측된 적이 없다.** 결과 JSON은 그 출처를 숨기지 않는다 (아래 `tempoSource`).
 
 ### 연주
 
