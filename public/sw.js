@@ -7,6 +7,7 @@ const CACHE_NAME = 'clairkeys-v1'
 const STATIC_CACHE = 'clairkeys-static-v1'
 const API_CACHE = 'clairkeys-api-v1'
 const ANIMATION_CACHE = 'clairkeys-animation-v1'
+const SAMPLE_CACHE = 'clairkeys-samples-v1'
 
 // Cache strategies
 const CACHE_STRATEGIES = {
@@ -18,6 +19,22 @@ const CACHE_STRATEGIES = {
 
 // Route patterns and their caching strategies
 const ROUTE_PATTERNS = [
+  // Piano samples - Cache first, in a cache of their own.
+  //
+  // Listed before the general static rule so it wins the `.find` below. They
+  // need their own cache because the set is 30 files against the static cache's
+  // 100-entry budget: sharing it would let the samples evict the JavaScript
+  // chunks the app needs to start. Their URLs never change content, so a
+  // one-year cache-first is exactly right and makes the ~1.2 MB download a
+  // once-per-device cost.
+  {
+    pattern: /^\/samples\/piano\/.+\.mp3$/,
+    strategy: CACHE_STRATEGIES.CACHE_FIRST,
+    cacheName: SAMPLE_CACHE,
+    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+    maxEntries: 40
+  },
+
   // Static assets - Cache first (long-term cache)
   {
     pattern: /\.(js|css|woff|woff2|ttf|eot|ico|png|jpg|jpeg|gif|webp|svg)$/,
@@ -105,6 +122,7 @@ self.addEventListener('activate', (event) => {
             if (cacheName !== CACHE_NAME && 
                 cacheName !== STATIC_CACHE && 
                 cacheName !== API_CACHE && 
+                cacheName !== SAMPLE_CACHE && 
                 cacheName !== ANIMATION_CACHE) {
               console.log('Deleting old cache:', cacheName)
               return caches.delete(cacheName)

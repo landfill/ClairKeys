@@ -286,4 +286,124 @@ describe('useFallingNotesAudio', () => {
 
     unmount()
   })
+
+  // A voice that outlives the transport is the regression this change is most
+  // likely to introduce: `stopAudioNodes` walks handles the scheduler pushed, so
+  // any new kind of source node has to end up in the same list. These pin the
+  // guarantee against the pre-existing oscillator path so the sampler inherits
+  // a test that already passes rather than one written to fit it.
+  function makeRecordingContext() {
+    const sources: Array<{ start: jest.Mock; stop: jest.Mock }> = []
+
+    const makeGain = () => ({
+      connect: jest.fn(),
+      gain: {
+        value: 0,
+        setValueAtTime: jest.fn(),
+        linearRampToValueAtTime: jest.fn(),
+        exponentialRampToValueAtTime: jest.fn(),
+        setTargetAtTime: jest.fn(),
+        cancelScheduledValues: jest.fn(),
+      },
+    })
+
+    const context = {
+      state: 'running' as AudioContextState,
+      currentTime: 10,
+      destination: {},
+      createGain: jest.fn(makeGain),
+      createOscillator: jest.fn(() => {
+        const node = {
+          connect: jest.fn(),
+          start: jest.fn(),
+          stop: jest.fn(),
+          frequency: { value: 0 },
+          type: 'sine',
+          setPeriodicWave: jest.fn(),
+          context: null as unknown,
+        }
+        node.context = context
+        sources.push(node)
+        return node
+      }),
+      createBiquadFilter: jest.fn(() => ({
+        connect: jest.fn(),
+        type: 'lowpass',
+        frequency: { value: 0 },
+        Q: { value: 0 },
+      })),
+      createPeriodicWave: jest.fn(() => ({})),
+      resume: jest.fn(() => Promise.resolve()),
+      close: jest.fn(() => Promise.resolve()),
+    }
+
+    return { context: context as unknown as AudioContext, sources }
+  }
+
+  /** Assert each voice was cut short near `now` rather than left to run out. */
+  function expectCutShort(
+    sources: Array<{ stop: jest.Mock }>,
+    before: number[],
+    now: number
+  ) {
+    expect(sources.length).toBeGreaterThan(0)
+    sources.forEach((source, i) => {
+      expect(source.stop.mock.calls.length).toBeGreaterThan(before[i])
+      const lastStopAt = source.stop.mock.calls[source.stop.mock.calls.length - 1][0]
+      expect(lastStopAt).toBeLessThanOrEqual(now + 0.05)
+    })
+  }
+
+  it('cuts every sounding voice short when playback stops', async () => {
+    const { context, sources } = makeRecordingContext()
+    setAudioContextConstructor(jest.fn(() => context) as unknown as typeof AudioContext)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    // A 30-second note: its scheduled stop is far in the future, so only the
+    // teardown path can end it.
+    await act(async () => {
+      await result.current.startAudio(
+        [{ midi: 60, start: 0, duration: 30, hand: 'R', velocity: 0.8 }],
+        0,
+        1,
+        false
+      )
+    })
+
+    const before = sources.map((s) => s.stop.mock.calls.length)
+
+    act(() => {
+      result.current.stopAudio()
+    })
+
+    expectCutShort(sources, before, context.currentTime)
+
+    unmount()
+  })
+
+  it('cuts the previous voices short when seeking to a new position', async () => {
+    const { context, sources } = makeRecordingContext()
+    setAudioContextConstructor(jest.fn(() => context) as unknown as typeof AudioContext)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    const notes = [{ midi: 60, start: 0, duration: 30, hand: 'R' as const, velocity: 0.8 }]
+
+    await act(async () => {
+      await result.current.startAudio(notes, 0, 1, false)
+    })
+
+    const seekedFrom = sources.slice()
+    const before = seekedFrom.map((s) => s.stop.mock.calls.length)
+
+    // Seeking funnels through startAudio, which must tear the old schedule down
+    // before anchoring the new one — otherwise the pre-seek note keeps sounding
+    // over the post-seek audio.
+    await act(async () => {
+      await result.current.startAudio(notes, 12, 1, false)
+    })
+
+    expectCutShort(seekedFrom, before, context.currentTime)
+
+    unmount()
+  })
 })
