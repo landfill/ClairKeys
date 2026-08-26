@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
-import { useFallingNotesAudio } from '../useFallingNotesAudio'
+import { useFallingNotesAudio, SAMPLE_LOAD_WAIT_MS } from '../useFallingNotesAudio'
 import { SAMPLE_PEAK_GAIN, damperReleaseSec } from '@/utils/pianoSamples'
 
 /**
@@ -11,11 +11,14 @@ import { SAMPLE_PEAK_GAIN, damperReleaseSec } from '@/utils/pianoSamples'
  */
 
 const mockPlaybackRate = 1.5
+const mockBufferDuration = 6
 let mockVoiceFor: jest.Mock
+let mockLoad: jest.Mock
 
 jest.mock('@/utils/pianoSampleBank', () => ({
   getPianoSampleBank: jest.fn(() => ({
     voiceFor: (midi: number) => mockVoiceFor(midi),
+    load: () => mockLoad(),
   })),
   disposePianoSampleBank: jest.fn(),
 }))
@@ -97,8 +100,9 @@ const originalAudioContext = window.AudioContext
 describe('useFallingNotesAudio - recorded samples', () => {
   beforeEach(() => {
     jest.useFakeTimers()
+    mockLoad = jest.fn(() => Promise.resolve())
     mockVoiceFor = jest.fn(() => ({
-      buffer: {} as AudioBuffer,
+      buffer: { duration: mockBufferDuration } as AudioBuffer,
       playbackRate: mockPlaybackRate,
     }))
   })
@@ -281,6 +285,174 @@ describe('useFallingNotesAudio - recorded samples', () => {
     })
 
     expect(raw.createBufferSource).not.toHaveBeenCalled()
+    expect(oscillator.start).toHaveBeenCalled()
+
+    unmount()
+  })
+
+  it('starts a note from the beginning of its recording', async () => {
+    const { context, sources } = makeSampleContext()
+    useContext(context)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    await act(async () => {
+      await result.current.startAudio(
+        [{ midi: 60, start: 0, duration: 1, hand: 'R', velocity: 0.8 }],
+        0,
+        1,
+        false
+      )
+    })
+
+    const [, offset] = sources[0].start.mock.calls[0]
+    expect(offset).toBe(0)
+
+    unmount()
+  })
+
+  it('resumes mid-recording when seeking into a note already sounding', async () => {
+    // Without the offset the recorded hammer strike replays on every seek into a
+    // held note. That was inaudible with the synthesised path's 4 ms attack and
+    // is not with a real one.
+    const { context, sources } = makeSampleContext()
+    useContext(context)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    // The note began at song second 4; playback starts at second 5, one second
+    // into it.
+    await act(async () => {
+      await result.current.startAudio(
+        [{ midi: 60, start: 4, duration: 10, hand: 'R', velocity: 0.8 }],
+        5,
+        1,
+        false
+      )
+    })
+
+    expect(sources).toHaveLength(1)
+    const [startAt, offset] = sources[0].start.mock.calls[0]
+
+    // Output time maps to buffer position by the playback rate.
+    const skipped = startAt - (context.currentTime + 0.05 - 1)
+    expect(offset).toBeCloseTo(skipped * mockPlaybackRate, 6)
+    expect(offset).toBeGreaterThan(0)
+
+    unmount()
+  })
+
+  it('never seeks past the end of a recording', async () => {
+    // `start` throws on an offset beyond the buffer, which would drop the note.
+    const { context, sources } = makeSampleContext()
+    useContext(context)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    // Seek 30 seconds into a note whose recording is only 6 seconds long.
+    await act(async () => {
+      await result.current.startAudio(
+        [{ midi: 60, start: 0, duration: 60, hand: 'R', velocity: 0.8 }],
+        30,
+        1,
+        false
+      )
+    })
+
+    const [, offset] = sources[0].start.mock.calls[0]
+    expect(offset).toBe(mockBufferDuration)
+
+    unmount()
+  })
+
+  it('waits for the sample set before sounding the first note', async () => {
+    // Measured in a real browser: without this the opening notes synthesise
+    // while the bank decodes, and the instrument changes a second into the
+    // piece. Playback must not anchor its clock until the samples are there.
+    let finishLoad: (() => void) | undefined
+    mockLoad = jest.fn(
+      () => new Promise<void>((resolve) => {
+        finishLoad = resolve
+      })
+    )
+
+    const { context, sources } = makeSampleContext()
+    useContext(context)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    let started: boolean | undefined
+    let startPromise: Promise<boolean>
+    act(() => {
+      startPromise = result.current.startAudio(
+        [{ midi: 60, start: 0, duration: 1, hand: 'R', velocity: 0.8 }],
+        0,
+        1,
+        false
+      )
+      void startPromise.then((value) => {
+        started = value
+      })
+    })
+
+    // Still loading: nothing has been scheduled and the caller is still waiting.
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(sources).toHaveLength(0)
+    expect(started).toBeUndefined()
+
+    await act(async () => {
+      finishLoad?.()
+      started = await startPromise!
+    })
+
+    expect(started).toBe(true)
+    expect(sources).toHaveLength(1)
+
+    unmount()
+  })
+
+  it('starts anyway when the sample set does not load in time', async () => {
+    // A bad network must delay the first note, never withhold it. The
+    // synthesised fallback covers whatever has not arrived.
+    mockLoad = jest.fn(() => new Promise<void>(() => {}))
+    mockVoiceFor = jest.fn(() => null)
+
+    const { context, raw } = makeSampleContext()
+    const oscillator = {
+      connect: jest.fn(),
+      start: jest.fn(),
+      stop: jest.fn(),
+      frequency: { value: 0 },
+      type: 'sine',
+      setPeriodicWave: jest.fn(),
+      context,
+    }
+    raw.createOscillator.mockReturnValue(oscillator)
+    raw.createBiquadFilter.mockReturnValue({
+      connect: jest.fn(),
+      type: 'lowpass',
+      frequency: { value: 0 },
+      Q: { value: 0 },
+    })
+    raw.createPeriodicWave.mockReturnValue({})
+    useContext(context)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    let startPromise: Promise<boolean>
+    act(() => {
+      startPromise = result.current.startAudio(
+        [{ midi: 60, start: 0, duration: 1, hand: 'R', velocity: 0.8 }],
+        0,
+        1,
+        false
+      )
+    })
+
+    let started: boolean | undefined
+    await act(async () => {
+      jest.advanceTimersByTime(SAMPLE_LOAD_WAIT_MS)
+      started = await startPromise!
+    })
+
+    expect(started).toBe(true)
     expect(oscillator.start).toHaveBeenCalled()
 
     unmount()

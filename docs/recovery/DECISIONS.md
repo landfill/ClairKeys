@@ -242,3 +242,35 @@
   - `<sound tempo>`에 beat-unit 환산을 적용하지 마라 — 이미 4분음표 기준이다.
   - 인쇄된 메트로놈 표기가 조립되지 않는 원인(#48 잔여)은 여전히 미규명이다. `tempoSource: 'score'`가 실제로 나오는 것을 확인하기 전에 "악보에서 읽는다"가 동작한다고 쓰지 마라.
 - Related: D-001, D-002, D-009, D-010, 이슈 [#48](https://github.com/landfill/ClairKeys/issues/48), 이슈 [#49](https://github.com/landfill/ClairKeys/issues/49), 이슈 [#46](https://github.com/landfill/ClairKeys/issues/46)
+
+## D-014: 피아노 음색은 합성하지 않고 녹음을 재생한다
+
+- Date: 2026-08-27
+- Status: Accepted
+- Context:
+  - 사용자 보고: "악보 재생 소리가 너무 웹오디오 한계처럼 삑삑거리는 수준 같다."
+  - PR #30이 단일 `sine`을 24배음 `PeriodicWave`로 바꿨고, PR #32와 #33이 `TREBLE_ROLLOFF`와 master gain을 귀로 튜닝했다. 세 번 모두 개선은 있었지만 전자음이라는 인상은 남았다.
+  - 원인은 상수가 아니라 구조다. `createNoteAudio`는 음 하나에 oscillator 1개와 gain 1개를 준다. 따라서 **24개 배음 전부가 하나의 엔벨로프를 공유하고 같은 속도로 죽는다.** 실제 현은 상위 배음이 수백 ms 안에 사라지는 동안 기음이 몇 초를 울린다. `BASS_ROLLOFF`나 `DEFAULT_TREBLE_ROLLOFF`의 어떤 값도 이 차이를 표현할 수 없고, 해머 타격 노이즈·현의 비조화성·유니즌 3현의 디튠도 이 구조에서는 나오지 않는다.
+  - 즉 "더 잘 튜닝하면 된다"는 경로가 이미 세 번 소진됐다. 남은 선택은 그 성질들을 **모델링하지 말고 담고 있는 것**을 재생하는 것이다.
+  - 사용자가 제기한 제약: 상용 CDN이 없고 Vercel·Supabase만 있으므로 지연과 성능이 걱정된다.
+- Decision:
+  1. **녹음 샘플을 재생한다.** Salamander Grand Piano V3(CC-BY 3.0)를 A0~C8 단3도 간격 30개로 `public/samples/piano/`에 동봉한다. 단3도 간격이면 어떤 음도 샘플에서 최대 1반음 떨어져 있어 리샘플링에 의한 포먼트 이동이 들리지 않는다.
+  2. **네이티브 `AudioBufferSourceNode`를 쓰고 Tone.Sampler를 쓰지 않는다.** `AudioScheduledSourceNode`가 `OscillatorNode`와 동일한 `start(when)`/`stop(when)`을 제공하므로 변경이 `createNoteAudio` 안에 갇힌다. PR #26의 클럭 앵커, 롤링 look-ahead, `VOICE_LIMIT`, seek 재발성 로직이 전부 그대로다.
+  3. **Supabase Storage가 아니라 Vercel `public/`에 둔다.** 샘플은 모든 사용자가 공유하는 불변 정적 자산이고, Supabase egress는 이미 악보 애니메이션 JSON이 쓰고 있다. Vercel Edge Network가 실질적인 CDN이다.
+  4. **음역별로 자르고 모노로 접는다.** 원본을 그대로 디코딩하면 브라우저 메모리 **142MB**다(30개 스테레오, 합계 422초). 이건 휴대폰에서 받아들일 수 없다. `scripts/build-piano-samples.sh`가 모노 변환과 음역별 트림(C3 미만 6.0초 / A5까지 4.0초 / 그 위 2.0초, 트림 지점에 0.5초 페이드)을 수행해 120초·**20.2MB**·디스크 1.17MB로 만든다. 브라우저 실측으로 확인했다.
+  5. **`SAMPLE_PEAK_GAIN = 0.73`으로 게인을 되맞춘다.** 빌드된 샘플의 최대 피크는 A0의 -7.7 dBFS(선형 0.4112, Chromium 디코더 실측)이고 합성 경로의 `PEAK_GAIN`은 0.3이다. 보정하지 않으면 첫 화음이 약 37% 크게 나오고, `DEFAULT_MASTER_GAIN`·`MAX_MASTER_GAIN`이 근거로 삼은 헤드룸 계산이 전부 조용히 무효가 된다.
+  6. **샘플 간 음량 차이는 정규화하지 않는다.** A7(-18.5 dB)과 Fs1(-7.0 dB)의 11.5 dB 차이는 악기 자신의 음역 균형이다. 파일별로 평탄화하면 고음이 부자연스럽게 튀어나온다.
+  7. **샘플에는 ADSR을 씌우지 않는다.** 녹음이 이미 타격과 감쇠를 담고 있다. 샘플 경로의 엔벨로프는 벨로시티 게인과 음이 끝날 때의 댐퍼 페이드(`damperReleaseSec`, 저음 0.35초 → 고음 0.12초) 둘뿐이다.
+  8. **합성 경로는 폴백으로 남긴다.** 샘플을 못 받아오는 클라이언트에서는 이 변경의 최악이 "이전에 나가던 음색"이 되어야 한다. 죽은 코드가 아니다.
+  9. **첫 재생은 샘플 로딩을 기다리되 2.5초에서 끊는다.** 기다리지 않으면 도입부가 합성음으로 나다가 한두 초 뒤 샘플로 바뀌어 악기가 도중에 달라진다(실측: 샘플 5 : 합성 3). 전체 세트는 로컬에서 415ms에 받아 디코딩되며, 서비스워커 캐시 이후에는 이미 resolve된 promise라 대기가 없다.
+- Consequence (명시적으로 감수하는 것):
+  - 저장소에 바이너리 1.17MB가 영구히 들어온다. 사용자가 승인했다.
+  - 디코딩된 20.2MB가 재생 중 상주한다. 모노 선택이 이 값을 절반으로 만든 대가로 피아노의 스테레오 폭을 잃는다. `CHANNELS=2`로 재빌드하면 되돌릴 수 있고 메모리는 두 배가 된다.
+  - 저음에서 6.0초보다 긴 음(♩=42보다 느린 온음표)은 버퍼 끝에서 일찍 멈춘다. 트림 지점의 0.5초 페이드 때문에 클릭은 나지 않고 그냥 조용해진다. 저장소에 실제 저음 데이터가 없어 경험적으로 확인하지 못했다.
+  - 악보 재생과 건반 클릭이 각각 자기 AudioContext를 만들므로 이론상 뱅크가 두 벌 생긴다. 두 경로가 같은 화면에 함께 뜨지 않는 것을 확인했으므로(악보 화면의 `SimplePianoKeyboard`는 소리를 내지 않는다) 실제로는 동시에 존재하지 않는다.
+- Directive:
+  - **샘플 voice에 `envelopeBreakpoints`를 적용하지 마라.** 녹음이 이미 감쇠하므로 두 번 감쇠해 음이 일찍 죽는다.
+  - **샘플 세트를 손으로 수정하지 마라.** `scripts/build-piano-samples.sh`로 재생성한다. CC-BY 3.0은 변경 사실의 명시를 요구하고, 그 명세가 이 스크립트와 `public/samples/piano/LICENSE.txt`에 있다.
+  - **`SAMPLE_SET_PEAK`을 원본 파일에서 재지 마라.** 스테레오를 모노로 접으면 피크가 바뀐다(원본 -7.0 dB → 빌드 후 -7.7 dB). 반드시 빌드된 파일에서 잰다.
+  - 샘플 로딩 실패를 오류로 표면화하지 마라. 재생 중에 던지거나 reject하면 사용자에게는 조용한 음색 저하가 아니라 고장으로 보인다.
+- Related: PR [#30](https://github.com/landfill/ClairKeys/pull/30), PR [#32](https://github.com/landfill/ClairKeys/pull/32), PR [#33](https://github.com/landfill/ClairKeys/pull/33), D-002

@@ -41,6 +41,16 @@ interface AudioNodes {
    * samples land without touching the playback clock or the look-ahead window.
    */
   source: AudioScheduledSourceNode
+  /**
+   * The same node as `source` when this voice is a recording, typed so its
+   * `start(when, offset)` overload is reachable. Seeking into a note that is
+   * already sounding has to resume the buffer partway in; starting it from zero
+   * replays the recorded hammer strike, which is plainly audible in a way the
+   * synthesised path's 4 ms attack never was.
+   */
+  bufferSource?: AudioBufferSourceNode
+  /** Rate `bufferSource` plays at, needed to convert elapsed output time to a buffer offset. */
+  playbackRate?: number
   gain: GainNode
   /** Absent on the sample path: a recording carries its own spectrum. */
   lp?: BiquadFilterNode
@@ -84,6 +94,21 @@ export const DEFAULT_MASTER_GAIN = 0.22
  * pinning the ceiling to it would make every ordinary passage far too quiet.
  */
 export const MAX_MASTER_GAIN = 0.35
+
+/**
+ * How long the first play waits for the recorded samples, in milliseconds.
+ *
+ * Without a wait the opening notes synthesise while the set is still decoding
+ * and the timbre changes audibly a second or two into the piece — measured in a
+ * real browser as 5 sampled voices against 3 synthesised ones, because the bank
+ * only starts loading when `initializeAudio` runs, which is the play click.
+ *
+ * The whole set fetches and decodes in ~415 ms from a local server, so this is
+ * a ceiling for a slow connection rather than an expected cost: once the service
+ * worker has the files, `load()` is already resolved and the wait is a microtask.
+ * Bounded so a bad network delays the first note instead of withholding it.
+ */
+export const SAMPLE_LOAD_WAIT_MS = 2500
 
 export function useFallingNotesAudio() {
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -201,8 +226,14 @@ export function useFallingNotesAudio() {
       source.buffer = voice.buffer
       // An AudioBufferSourceNode has no pitch control, so transposing means
       // resampling — which shortens the buffer by the same factor. The build
-      // script sizes each register's trim against the worst case (see
-      // `playbackRateForMidi`), so this cannot run a note off the end.
+      // script's per-register trim is sized against that: the bass keeps 6.0s,
+      // which the widest possible shift (one semitone up) reduces to 5.67s of
+      // output — a whole note at quarter=42 or faster.
+      //
+      // A note longer than that runs off the end of its buffer and simply stops
+      // early. It does not click: the build applies a 0.5s fade at every trim
+      // point, so the recording is already at silence by then, which is also
+      // roughly where a real string of that register has faded to.
       source.playbackRate.value = voice.playbackRate
 
       // No lowpass: the recording already has the spectrum a filter would be
@@ -211,7 +242,14 @@ export function useFallingNotesAudio() {
       source.connect(sampleGain)
       sampleGain.connect(masterGain)
 
-      return { source, gain: sampleGain, isSample: true, end: 0 }
+      return {
+        source,
+        bufferSource: source,
+        playbackRate: voice.playbackRate,
+        gain: sampleGain,
+        isSample: true,
+        end: 0,
+      }
     }
 
     const oscillator = audioContext.createOscillator()
@@ -375,7 +413,25 @@ export function useFallingNotesAudio() {
         // Start and stop the voice. Both source kinds honour absolute
         // AudioContext times, which is what kept the sample path off the
         // playback clock entirely.
-        nodes.source.start(clampedStart)
+        if (nodes.bufferSource && nodes.playbackRate) {
+          // `clampedStart` is later than `startTime` only for a note that was
+          // already sounding when playback began — the seek case. Resume the
+          // recording that far in rather than restarting it, so the listener
+          // hears the note continuing rather than being struck again.
+          //
+          // Output time maps to buffer position by the playback rate: playing
+          // 5% fast means 1s of output consumed 1.05s of buffer. Clamped to the
+          // buffer length because `start` throws on an offset past the end.
+          const skippedSec = Math.max(0, clampedStart - startTime)
+          const bufferDuration = nodes.bufferSource.buffer?.duration ?? 0
+          const offsetSecIntoBuffer = Math.min(
+            skippedSec * nodes.playbackRate,
+            bufferDuration
+          )
+          nodes.bufferSource.start(clampedStart, offsetSecIntoBuffer)
+        } else {
+          nodes.source.start(clampedStart)
+        }
         nodes.source.stop(endTime + releaseSec)
 
         nodes.end = endTime + releaseSec
@@ -471,6 +527,24 @@ export function useFallingNotesAudio() {
       }
     }
 
+    // Wait for the recorded samples before anchoring the clock, so a piece does
+    // not open on the synthesised fallback and switch instruments mid-phrase.
+    // Bounded: a slow or failed load must delay the first note, never withhold
+    // it, and the fallback still covers whatever has not arrived.
+    const bank = sampleBankRef.current
+    if (bank) {
+      let timer: ReturnType<typeof setTimeout> | undefined
+      await Promise.race([
+        bank.load(),
+        new Promise<void>((resolve) => {
+          timer = setTimeout(resolve, SAMPLE_LOAD_WAIT_MS)
+        }),
+      ])
+      if (timer !== undefined) clearTimeout(timer)
+    }
+
+    // Covers both awaits above: a stop, unmount, or newer seek during either the
+    // resume or the sample wait has already taken ownership of the clock.
     if (generation !== playbackGenerationRef.current || audioContext.state !== 'running') {
       return false
     }
