@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-08-24 KST
+Last updated: 2026-08-27 KST
 
 ## Current state
 
@@ -9,6 +9,7 @@ Last updated: 2026-08-24 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
+- Open pull requests: **[#59](https://github.com/landfill/ClairKeys/pull/59)** — `OPEN`, created 2026-08-27, awaiting the user's listening judgement and explicit merge approval. Replaces the synthesised playback timbre with recorded Salamander Grand Piano samples (CC-BY 3.0, vendored in `public/samples/piano/`, 1.17 MB on disk / 20.2 MB decoded). Records **D-014**. Review log: `docs/recovery/reviews/PR-59.md`. **New scope outside P1-A's upload-pipeline objective**, taken on the user's explicit request; the user also asked for the on-screen keyboard's Tone.js `PolySynth` to be unified onto the same instrument, deliberately left to a separate PR. Verified in headless Chromium against the running app (8 buffer sources / 0 oscillators, note gains exactly `velocity x 0.73`, no console errors) and by browser decode of the built set (30/30, 120.0 s, peak 0.4112 at MIDI 21 against the 0.4111 in `SAMPLE_SET_PEAK`). **Not verified: how it sounds** — three constants may want adjusting by ear (`SAMPLE_PEAK_GAIN`, the mono fold, `damperReleaseSec`).
 - Open pull requests: none. **[#57](https://github.com/landfill/ClairKeys/pull/57) merged 2026-08-24** at `d58ceea` with the user's explicit approval — issue #56's black-key displacement and the falling-note centering that followed from it. Merge-commit checks 6/6 successful; work branch, Orca worktree, and both leftover local branches deleted; `main` is the only branch. 근거: `docs/recovery/reviews/PR-57.md`. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
 - **[#53](https://github.com/landfill/ClairKeys/pull/53) merged 2026-08-24** at `a5d9da3` with the user's explicit approval — README now names the OCR stage and separates it from the converter code that consumes MusicXML. Merge-commit checks all passed; both branch tips were confirmed in `main` and the work branch is deleted. 근거: `docs/recovery/reviews/PR-53.md`
 - **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
