@@ -9,7 +9,7 @@ Last updated: 2026-08-27 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: **[#59](https://github.com/landfill/ClairKeys/pull/59)** — `OPEN`, created 2026-08-27, awaiting the user's listening judgement and explicit merge approval. Replaces the synthesised playback timbre with recorded Salamander Grand Piano samples (CC-BY 3.0, vendored in `public/samples/piano/`, 1.17 MB on disk / 20.2 MB decoded). Records **D-014**. Review log: `docs/recovery/reviews/PR-59.md`. **New scope outside P1-A's upload-pipeline objective**, taken on the user's explicit request; the user also asked for the on-screen keyboard's Tone.js `PolySynth` to be unified onto the same instrument, deliberately left to a separate PR. Verified in headless Chromium against the running app (8 buffer sources / 0 oscillators, note gains exactly `velocity x 0.73`, no console errors) and by browser decode of the built set (30/30, 120.0 s, peak 0.4112 at MIDI 21 against the 0.4111 in `SAMPLE_SET_PEAK`). **Not verified: how it sounds** — three constants may want adjusting by ear (`SAMPLE_PEAK_GAIN`, the mono fold, `damperReleaseSec`).
+- Open pull requests: **[#59](https://github.com/landfill/ClairKeys/pull/59)** — `OPEN`, created 2026-08-27, awaiting the user's listening judgement and explicit merge approval. Replaces the synthesised playback timbre with recorded Salamander Grand Piano samples (CC-BY 3.0, vendored in `public/samples/piano/`, 1.17 MB on disk / 20.2 MB decoded). Records **D-014**. Review log: `docs/recovery/reviews/PR-59.md`. **New scope outside P1-A's upload-pipeline objective**, taken on the user's explicit request; the user also asked for the on-screen keyboard's Tone.js `PolySynth` to be unified onto the same instrument, deliberately left to a separate PR. Verified in headless Chromium against the running app (8 buffer sources / 0 oscillators, note gains exactly `velocity x 0.73`, no console errors) and by browser decode of the built set (30/30, 120.0 s, peak 0.4112 at MIDI 21 against the 0.4111 in `SAMPLE_SET_PEAK`). **Not verified: how it sounds** — three constants may want adjusting by ear (`SAMPLE_PEAK_GAIN`, the mono fold, `damperReleaseSec`). **CI가 돌지 않았다**: 4개 required check가 실행 자체로 없으며, 저장소 전체의 마지막 Actions run이 2026-08-24다. 병합 전에 그것부터 해결해야 한다.
 - Open pull requests: none. **[#57](https://github.com/landfill/ClairKeys/pull/57) merged 2026-08-24** at `d58ceea` with the user's explicit approval — issue #56's black-key displacement and the falling-note centering that followed from it. Merge-commit checks 6/6 successful; work branch, Orca worktree, and both leftover local branches deleted; `main` is the only branch. 근거: `docs/recovery/reviews/PR-57.md`. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
 - **[#53](https://github.com/landfill/ClairKeys/pull/53) merged 2026-08-24** at `a5d9da3` with the user's explicit approval — README now names the OCR stage and separates it from the converter code that consumes MusicXML. Merge-commit checks all passed; both branch tips were confirmed in `main` and the work branch is deleted. 근거: `docs/recovery/reviews/PR-53.md`
 - **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
@@ -570,6 +570,100 @@ Last updated: 2026-08-27 KST
 - RESOLVED (2026-07-25) by PR #27; kept because the failure mode recurs. **The `Security Audit` required check went red again on `main`.** Direct handoff commit `f39fbb6` produced `Security Audit -> failure` while `Run Tests`, `Lint`, `E2E Tests`, `Build application`, and `Test before deploy` all passed. No dependency changed between `1e3d515` (green on 2026-07-22) and `f39fbb6`; `npm audit --audit-level high` (`.github/workflows/test.yml:173`, `.github/workflows/pr-checks.yml:213`) is time-dependent, so newly published advisories flipped it. Local `npm audit` reports 4 vulnerabilities: `next-auth <=4.24.14` **critical** (GHSA-xmf8-cvqr-rfgj uncaught exception on malformed Bearer headers, GHSA-7rqj-j65f-68wh homoglyph `@` bypass in the email normalizer, GHSA-x445-f3h2-j279 state/nonce/PKCE cookies not bound to the issuing provider), `postcss <=8.5.11` high via `next` (GHSA-qx2v-qp2m-jg93, GHSA-6g55-p6wh-862q), and `uuid <11.1.1` moderate. `next-auth`/`uuid` are fixable in-range via `npm audit fix`; `postcss` reports a fix only via `--force`, which would move `next` to `15.5.21`, outside the stated range — the same shape as PR #25's `sharp` problem, so an npm `overrides` pin is the likely bounded remedy. Because `Security Audit` is a required status check, this blocks the merge button for every future PR until resolved. **Addressed by open PR #27** (`next-auth` →4.24.15, `next` →15.5.21 patch bump, `postcss` overrides pin ≥8.5.12), which takes the local tree to 0 vulnerabilities; `uuid` was deliberately left alone as moderate-only and cleared incidentally. This is the second occurrence of the PR #25 failure mode and is a property of the time-dependent gate, not of any one dependency — expect it again.
 - CORRECTED (2026-07-25): the 2026-07-24 claim that `public/sw.js` can serve a returning visitor the pre-fix JavaScript was **wrong**, and is retracted. `/_next/static/**` URLs are content-hashed, so a new build produces new URLs, every one of which is a cache miss; the stale entries are never requested again. `isExpired()` also returns `true` when `sw-cached-at` is absent, so the install-time `cache.addAll(['/', '/manifest.json'])` entries do not pin anything, and HTML is network-first regardless. The fixed `CACHE_NAME = 'clairkeys-v1'` does make the activate handler's cache eviction dead code, but bundle freshness was never resting on it. What remains real is narrower: non-hashed files under `public/` (`favicon.png`, `icon-*.png`, `icon-*.svg`, …) match the `\.(js|css|woff|…|png|svg)$` rule, which is cache-first with a one-year `maxAge` and stable URLs, so a changed icon can stay stale for up to a year. Low impact, still unfiled.
 - CLEANUP COMPLETE: the user authorized deletion after confirming the untracked `fix_*.js` scripts, `ts_errors*.log`, disabled performance components, and Playwright `.last-run.json` were unreferenced local artifacts. All 16 files and their now-empty directories were removed. Local and remote `codex/p0-playback-sync-stages-4-5` refs were then deleted after both tips were re-confirmed in `main`; `git status --short` is clean.
+
+## Resume here — 2026-08-27, 맥북으로 이어받는 세션: PR #59는 귀를 기다린다
+
+사용자가 "필요한 설정이 모두 되어 있는 맥북에서 내일 PR을 검토하고 이어서 할 예정"이라고
+말했다. 이 절은 그 세션을 위해 쓴다. 모든 작업은 커밋되고 푸시되어 있다.
+
+### 상태
+
+- **PR [#59](https://github.com/landfill/ClairKeys/pull/59)** `OPEN`, 브랜치
+  `codex/p1a-piano-sample-timbre`, 커밋 `c8854ba`·`a341db2`. 악보 재생 음색을 합성에서
+  녹음 샘플(Salamander Grand Piano V3, CC-BY 3.0)로 교체한다. **D-014** 기록.
+- 상세 근거는 `docs/recovery/reviews/PR-59.md`에 다 있다. 먼저 읽어라.
+
+### 먼저 해야 할 것 — 실제로 들어보기
+
+이 변경의 유일한 미검증 부분이고, 개선 여부를 판단할 수 있는 건 사용자뿐이다.
+
+가장 빠른 경로는 Vercel 프리뷰다 (로컬 실행 불필요, Vercel 로그인 필요):
+
+    https://clairkeys-adbskt9zj-landfills-projects.vercel.app/test-finger
+
+`/test-finger`는 인증 없이 `FallingNotesPlayer`를 띄우므로 악보 업로드나 로그인 없이
+바로 재생해 볼 수 있다. 로컬로 보려면 `npm run dev` 후 같은 경로.
+
+### 들을 때 살펴야 할 세 가지 — 전부 상수 하나씩이다
+
+이 셋 외의 것이 이상하면 상수 조정이 아니라 설계 문제이니 먼저 의심해라.
+
+1. **음량** — `SAMPLE_PEAK_GAIN` (`src/utils/pianoSamples.ts`, 현재 `0.73`). 피크는
+   합성 경로와 정확히 맞춰놓았지만, 해머 타격음이 있는 녹음은 같은 피크의 합성음보다
+   **크게 들린다**. 크면 낮춰라. 화면의 음량 슬라이더는 master gain이라 별개다.
+2. **스테레오 폭** — 지금은 모노다. 얕거나 답답하면
+   `CHANNELS=2 bash scripts/build-piano-samples.sh`로 재빌드하면 된다. 대가는 디코딩
+   메모리 20.2MB → 약 40MB, 디스크 1.17MB → 약 2.3MB. **재빌드했으면
+   `SAMPLE_SET_PEAK`을 빌드된 파일에서 다시 재고 `SAMPLE_PEAK_GAIN`을 다시 계산해라**
+   — 모노로 접을 때 피크가 바뀐다(원본 -7.0 dB → 빌드 후 -7.7 dB).
+3. **음 끝의 자연스러움** — `damperReleaseSec` (같은 파일, 저음 0.35초 → 고음 0.12초).
+   짧으면 뚝 끊기고 길면 번진다.
+
+### 병합 전에 반드시 해결해야 할 blocker
+
+**GitHub Actions가 2026-08-24 이후 전혀 돌지 않는다.** PR #59의 4개 required check는
+실행 자체가 없고, `main` 직접 푸시 `f93ebe0`의 check-runs도 비어 있다.
+`actions/permissions`는 `enabled: true`고 워크플로우 4개 모두 `active`이므로 저장소
+설정 문제는 아니다. 사용량·결제 한도가 흔한 원인이나 **확인된 것은 아니다** (현재
+토큰에 `user` scope이 없어 billing API 조회 실패). 맥북에서는 GitHub 계정 설정을 직접
+볼 수 있을 테니 거기서 확인하라.
+
+이것 때문에 PR #59의 검증 근거는 전부 로컬과 헤드리스 브라우저 실측이고 호스팅 CI의
+확인은 없다.
+
+### 맥북에서 샘플을 재생성하려면
+
+`scripts/build-piano-samples.sh`는 `curl`과 `ffmpeg`만 있으면 돌아간다
+(`brew install ffmpeg`). 네트워크에서 원본을 받아 가공하므로 결과물은 결정적이다.
+**샘플을 손으로 고치지 마라** — CC-BY 3.0이 변경 사실의 명시를 요구하고, 그 명세가
+이 스크립트와 `public/samples/piano/LICENSE.txt`에 있다.
+
+### 이어서 할 작업 (PR #59 병합 후)
+
+사용자가 **두 경로 모두 통일**을 명시적으로 선택했다. 악보 재생은 끝났고, 화면
+건반 클릭음이 남았다 — **별도 PR**로 넘겼다(목적이 다르고, Tone 모킹 200줄짜리
+테스트 재작성이 따른다).
+
+- 대상: `src/services/audioService.ts` (285줄, Tone.js `PolySynth` + **triangle 파형** —
+  악보 재생보다 더 전자음에 가깝다). 도달 경로는 `useAudio.ts` →
+  `PianoKeyboard`·`EnhancedPianoKeyboard`, 화면은 `/demo-animation`·`/test-piano`·
+  `FullScreenPiano`뿐이다.
+- 유지해야 할 공개 API: `playNote`·`releaseNote`·`playChord`·`releaseChord`·
+  `stopAllNotes`·`setEnabled`·`updateSettings`·`getSettings`·`isReady`·`getContextState`·
+  `dispose`와 `AudioSettings` 타입.
+- 악보 경로와 달리 이쪽은 **길이를 모르는 상태로 누르고 뗄 때 뗀다**. note별로 voice를
+  보관했다가 `releaseNote`에서 댐퍼 페이드를 건다.
+- **이미 확인된 것**: `SimplePianoKeyboard`는 소리를 내지 않는 순수 시각 컴포넌트라,
+  악보 화면과 건반 클릭 경로가 **같은 화면에 공존하지 않는다**. 따라서 AudioContext가
+  둘이라 뱅크가 두 벌 생길 수 있다는 건 이론상의 이야기다. 다음 세션이 이걸 다시
+  따지지 않아도 된다.
+- `reverb`는 다시 구현하지 마라. `AudioSettings.tsx`는 `/test-piano`에서만
+  렌더되므로 실사용 관객이 없다 — 적용되지 않는다고 적는 편이 낫다.
+- `src/lib/audio/piano.ts`(`PianoAudio`, 33줄)를 import하는 곳이 없다. 그걸 지우면
+  `tone` 의존성 자체를 떨굴 수 있지만, 그건 또 다른 PR이다.
+
+### 이 변경과 무관하게 발견한 것 (아직 이슈 없음)
+
+- **`next.config.ts`가 로드되지 않는다.** Next는 `next.config.js` → `.mjs` → `.ts`
+  순서로 찾아 첫 번째에서 멈춘다(`next/dist/shared/lib/constants.js:356`). 이 저장소엔
+  `.mjs`와 `.ts`가 둘 다 있고 `.mjs`가 이긴다. 따라서 `.ts`의 webpack 청크 분할,
+  `tone` 별도 청크, 이미지 최적화, Supabase remotePattern이 전부 죽은 코드다.
+  PR #59는 이걸 고치지 않고 `headers()`를 `.mjs`에 넣었다.
+- **이 윈도우 머신의 사전 존재 테스트 실패 5건** — 맥북에선 사라질 가능성이 높다.
+  `converterCorpus`·`converterTempoContract`·`omrRuntimeContract`는 Python `music21`
+  미설치, `uploadPathInventory`는 Windows 절대경로, `prChecksWorkflow`는 CRLF 때문이다.
+  맥북에서 전체 스위트를 돌려 실제 baseline을 다시 잡아라.
+
 
 ## Resume here — next session: what #48 and #49 did *not* fix
 
