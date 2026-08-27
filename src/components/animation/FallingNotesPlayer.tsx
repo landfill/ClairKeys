@@ -6,7 +6,6 @@ import { buildKeyLayout } from '@/utils/pianoLayout'
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
-import { MIN_TREBLE_ROLLOFF, MAX_TREBLE_ROLLOFF } from '@/utils/pianoTimbre'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { PlaybackControls } from '@/components/playback'
@@ -34,7 +33,7 @@ export default function FallingNotesPlayer({
     tempoScale,
     lookAheadSec,
     volume,
-    trebleRolloff,
+    sampleStatus,
     totalLength,
     play,
     pause,
@@ -42,7 +41,6 @@ export default function FallingNotesPlayer({
     seek,
     setTempoScale,
     setVolume,
-    setTrebleRolloff
   } = useFallingNotesPlayer(notes)
 
   // Constants
@@ -80,7 +78,7 @@ export default function FallingNotesPlayer({
       <div className="mb-4">
         <PlaybackControls
           isPlaying={isPlaying}
-          isReady={true}
+          isReady={sampleStatus !== 'loading'}
           currentTime={currentTime}
           duration={totalLength}
           playbackSpeed={tempoScale}
@@ -92,6 +90,20 @@ export default function FallingNotesPlayer({
           onSpeedChange={setTempoScale}
           onModeChange={handleModeChange}
         />
+      </div>
+
+      <div
+        role="status"
+        aria-live="polite"
+        className="mb-4 text-xs text-gray-600"
+      >
+        {sampleStatus === 'idle' && '녹음 피아노 샘플은 첫 재생 때 준비됩니다.'}
+        {sampleStatus === 'loading' && '녹음 피아노 샘플을 준비 중입니다.'}
+        {sampleStatus === 'ready' && '녹음 피아노 샘플로 재생합니다.'}
+        {sampleStatus === 'degraded' &&
+          '샘플이 일부만 준비되었거나 늦어 이번 재생은 합성음으로 재생합니다.'}
+        {sampleStatus === 'failed' &&
+          '샘플을 불러오지 못해 합성음으로 재생합니다.'}
       </div>
 
       {/* Master volume — a tuning control. The numeric readout is the master
@@ -117,31 +129,6 @@ export default function FallingNotesPlayer({
         </span>
       </div>
 
-      {/* Treble brightness — a tuning control. Higher = darker (partials roll off
-          faster). The readout is TREBLE_ROLLOFF; whatever sounds right is the
-          value to lock in as DEFAULT_TREBLE_ROLLOFF in pianoTimbre. Unlike
-          volume, a change is heard only on notes scheduled after it, since each
-          note's spectrum is fixed when it is created. */}
-      <div className="mb-4 flex items-center gap-3">
-        <label htmlFor="treble-rolloff" className="text-xs text-gray-600 whitespace-nowrap">
-          고음
-        </label>
-        <input
-          id="treble-rolloff"
-          type="range"
-          min={MIN_TREBLE_ROLLOFF}
-          max={MAX_TREBLE_ROLLOFF}
-          step={0.1}
-          value={trebleRolloff}
-          onChange={(e) => setTrebleRolloff(parseFloat(e.target.value))}
-          className="flex-1 max-w-xs"
-          aria-label="고음 밝기 (treble rolloff, 높을수록 어두움)"
-        />
-        <span className="text-xs font-mono text-gray-500 tabular-nums w-10 text-right">
-          {trebleRolloff.toFixed(1)}
-        </span>
-      </div>
-      
       {/* Main Visualization Area */}
       <div
         className="w-full border rounded-2xl shadow overflow-hidden"

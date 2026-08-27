@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import type { FallingNote } from '@/types/fallingNotes'
 import { midiToFreq } from '@/utils/pianoLayout'
 import {
@@ -19,17 +19,46 @@ import {
   timbreCutoffHz,
   envelopeBreakpoints,
   DEFAULT_TREBLE_ROLLOFF,
-  MIN_TREBLE_ROLLOFF,
-  MAX_TREBLE_ROLLOFF,
 } from '@/utils/pianoTimbre'
+import { SAMPLE_PEAK_GAIN, damperReleaseSec } from '@/utils/pianoSamples'
+import {
+  getPianoSampleBank,
+  disposePianoSampleBank,
+  type PianoSampleBank,
+  type PianoSampleLoadResult,
+} from '@/utils/pianoSampleBank'
 
 /**
  * Audio nodes for a single note
  */
 interface AudioNodes {
-  osc: OscillatorNode
+  /**
+   * The voice's sound source. `AudioScheduledSourceNode` rather than
+   * `OscillatorNode` because a note is now either a recorded sample
+   * (`AudioBufferSourceNode`) or the synthesised fallback — both expose the
+   * `start(when)` / `stop(when)` this scheduler is built on, which is what let
+   * samples land without touching the playback clock or the look-ahead window.
+   */
+  source: AudioScheduledSourceNode
+  /**
+   * The same node as `source` when this voice is a recording, typed so its
+   * `start(when, offset)` overload is reachable. Seeking into a note that is
+   * already sounding has to resume the buffer partway in; starting it from zero
+   * replays the recorded hammer strike, which is plainly audible in a way the
+   * synthesised path's 4 ms attack never was.
+   */
+  bufferSource?: AudioBufferSourceNode
+  /** Rate `bufferSource` plays at, needed to convert elapsed output time to a buffer offset. */
+  playbackRate?: number
   gain: GainNode
-  lp: BiquadFilterNode
+  /** Absent on the sample path: a recording carries its own spectrum. */
+  lp?: BiquadFilterNode
+  /**
+   * Whether this voice is a recording. It selects the envelope: a sample
+   * already contains the strike and the decay, so applying the synthesised
+   * envelope on top would decay it a second time.
+   */
+  isSample: boolean
   /** AudioContext time at which this voice fully finishes (after release). */
   end: number
 }
@@ -65,7 +94,30 @@ export const DEFAULT_MASTER_GAIN = 0.22
  */
 export const MAX_MASTER_GAIN = 0.35
 
+/**
+ * How long the first play waits for the recorded samples, in milliseconds.
+ *
+ * Without a wait the opening notes synthesise while the set is still decoding
+ * and the timbre changes audibly a second or two into the piece — measured in a
+ * real browser as 5 sampled voices against 3 synthesised ones, because the bank
+ * only starts loading when `initializeAudio` runs, which is the play click.
+ *
+ * The whole set fetches and decodes in ~415 ms from a local server, so this is
+ * a ceiling for a slow connection rather than an expected cost: once the service
+ * worker has the files, `load()` is already resolved and the wait is a microtask.
+ * Bounded so a bad network delays the first note instead of withholding it.
+ */
+export const SAMPLE_LOAD_WAIT_MS = 2500
+
+export type PianoSamplePlaybackStatus =
+  | 'idle'
+  | 'loading'
+  | 'ready'
+  | 'degraded'
+  | 'failed'
+
 export function useFallingNotesAudio() {
+  const [sampleStatus, setSampleStatus] = useState<PianoSamplePlaybackStatus>('idle')
   const audioContextRef = useRef<AudioContext | null>(null)
   const masterGainRef = useRef<GainNode | null>(null)
   // Current master level, kept in a ref so a runtime change survives the next
@@ -88,6 +140,14 @@ export function useFallingNotesAudio() {
   const scheduleCursorRef = useRef(0)
   const activeEndsRef = useRef<number[]>([])
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  // Recorded piano samples for the current context, or null where the platform
+  // cannot fetch or decode them. Null means every note synthesises, which is the
+  // tone that shipped before samples existed.
+  const sampleBankRef = useRef<PianoSampleBank | null>(null)
+  // Chosen once per startAudio call. The scheduler must never consult the
+  // bank's changing contents note-by-note or one piece can change instrument
+  // while background decoding continues.
+  const useSamplesForPlaybackRef = useRef(false)
 
   /**
    * Initialize audio context
@@ -121,6 +181,19 @@ export function useFallingNotesAudio() {
       masterGainRef.current = audioContextRef.current.createGain()
       masterGainRef.current.gain.value = masterGainValueRef.current
       masterGainRef.current.connect(audioContextRef.current.destination)
+
+      // Start loading the recorded samples alongside the bus. startAudio waits
+      // for the complete result (bounded by SAMPLE_LOAD_WAIT_MS) and freezes one
+      // instrument choice for the whole playback.
+      //
+      // The guard is `decodeAudioData` specifically, because that is what
+      // separates a real AudioContext from the doubles used in tests and from
+      // engines too old to decode at all. Whether `fetch` exists is the bank's
+      // problem, not this one — it reports that once rather than once per note.
+      if (typeof audioContextRef.current.decodeAudioData === 'function') {
+        sampleBankRef.current = getPianoSampleBank(audioContextRef.current)
+      }
+
       return true
     } catch (error) {
       console.warn('Web Audio initialization failed:', error)
@@ -133,18 +206,64 @@ export function useFallingNotesAudio() {
   /**
    * Create audio nodes for a single note.
    *
-   * The oscillator carries a harmonic spectrum from `@/utils/pianoTimbre` rather
-   * than a bare sine. A sine has one partial, which left the lowpass with
-   * nothing to remove and left bass notes with no pitch definition — the "low
-   * notes sound like bass noise" report. Partials are supplied as a
-   * `PeriodicWave` so the whole spectrum still costs one oscillator, which
-   * matters because `VOICE_LIMIT` caps concurrent voices, not partials.
+   * Two possible voices, in preference order:
+   *
+   * 1. A recorded sample from `@/utils/pianoSampleBank`, resampled to pitch.
+   * 2. The synthesised fallback below, used until the sample has decoded and
+   *    permanently if the samples cannot be fetched at all.
+   *
+   * The synthesised branch is not dead code and is not a placeholder. It is what
+   * plays during the first seconds of a session and on any client where the
+   * fetch fails, so it stays a real tone rather than a beep of last resort.
+   *
+   * Why samples at all: that branch gives every partial of a note one shared
+   * gain envelope, so all 24 of them decay at the same rate. A real string's
+   * upper partials die in a few hundred milliseconds while the fundamental rings
+   * on, and no rolloff exponent can express that difference — which is why
+   * tuning it by ear across three rounds never stopped it sounding electronic.
    */
   const createNoteAudio = useCallback((
     midi: number,
     audioContext: AudioContext,
     masterGain: GainNode
   ): AudioNodes => {
+    const voice = useSamplesForPlaybackRef.current
+      ? sampleBankRef.current?.voiceFor(midi) ?? null
+      : null
+
+    if (voice) {
+      const source = audioContext.createBufferSource()
+      const sampleGain = audioContext.createGain()
+
+      source.buffer = voice.buffer
+      // An AudioBufferSourceNode has no pitch control, so transposing means
+      // resampling — which shortens the buffer by the same factor. The build
+      // script's per-register trim is sized against that: the bass keeps 6.0s,
+      // which the widest possible shift (one semitone up) reduces to 5.67s of
+      // output — a whole note at quarter=42 or faster.
+      //
+      // A note longer than that runs off the end of its buffer and simply stops
+      // early. It does not click: the build applies a 0.5s fade at every trim
+      // point, so the recording is already at silence by then, which is also
+      // roughly where a real string of that register has faded to.
+      source.playbackRate.value = voice.playbackRate
+
+      // No lowpass: the recording already has the spectrum a filter would be
+      // shaping, and `timbreCutoffHz` was derived from the synthesised partials.
+      sampleGain.gain.value = 0
+      source.connect(sampleGain)
+      sampleGain.connect(masterGain)
+
+      return {
+        source,
+        bufferSource: source,
+        playbackRate: voice.playbackRate,
+        gain: sampleGain,
+        isSample: true,
+        end: 0,
+      }
+    }
+
     const oscillator = audioContext.createOscillator()
     const gainNode = audioContext.createGain()
     const lowPassFilter = audioContext.createBiquadFilter()
@@ -185,7 +304,7 @@ export function useFallingNotesAudio() {
     lowPassFilter.connect(gainNode)
     gainNode.connect(masterGain)
 
-    return { osc: oscillator, gain: gainNode, lp: lowPassFilter, end: 0 }
+    return { source: oscillator, gain: gainNode, lp: lowPassFilter, isSample: false, end: 0 }
   }, [])
 
   /**
@@ -246,43 +365,88 @@ export function useFallingNotesAudio() {
         // Nullish (not `||`) so an explicit velocity of 0 stays silent rather
         // than snapping to the default 0.7 — the canonical contract allows 0.
         const velocity = note.velocity ?? 0.7
-        const envelope = envelopeBreakpoints(velocity, endTime - clampedStart)
 
-        // A struck string only loses energy after the hammer, so the note decays
-        // across its whole length instead of holding a plateau. The decay is
-        // exponential rather than linear because that is how the ear reads a
-        // piano's fade; `setTargetAtTime` cannot be used here since it never
-        // exactly reaches its target and would leave the release starting from
-        // an unknown level.
-        const attackEnd = clampedStart + envelope.attackSec
-        nodes.gain.gain.setValueAtTime(0, clampedStart)
+        let releaseSec: number
 
-        if (envelope.peak > 0) {
-          nodes.gain.gain.linearRampToValueAtTime(envelope.peak, attackEnd)
+        if (nodes.isSample) {
+          // A recording needs no attack, decay or sustain: the hammer strike and
+          // the string's fall-off are in the audio. The only envelope a sampled
+          // piano wants is the damper landing when the note ends. Shaping it
+          // further would decay an already-decaying sound twice, which is
+          // audible as a note that dies too early.
+          //
+          // SAMPLE_PEAK_GAIN scales the loudest sample in the set to the same
+          // peak the synthesised path produces, so the headroom analysis behind
+          // DEFAULT_MASTER_GAIN and MAX_MASTER_GAIN keeps holding unchanged.
+          releaseSec = damperReleaseSec(note.midi)
+          const peak = Math.max(0, velocity) * SAMPLE_PEAK_GAIN
 
-          // `exponentialRamp` can neither pass through nor land on zero, so the
-          // decay target is floored. That floor must not escape this branch: a
-          // velocity-0 note has to stay at exactly zero, and scheduling the
-          // floor for it would give a silent note an audible tail — the very
-          // guarantee PR #26 introduced `??` to protect.
-          const decayFloor = Math.max(envelope.sustain, 1e-4)
-          nodes.gain.gain.exponentialRampToValueAtTime(
-            decayFloor,
-            Math.max(attackEnd + 0.001, endTime)
-          )
+          // Stepping straight to peak is safe where a synthesised oscillator
+          // would click: the buffer's own first samples are silence, so the
+          // recorded attack does the ramp.
+          nodes.gain.gain.setValueAtTime(peak, clampedStart)
+          nodes.gain.gain.setValueAtTime(peak, endTime)
+          nodes.gain.gain.linearRampToValueAtTime(0, endTime + releaseSec)
+        } else {
+          const envelope = envelopeBreakpoints(velocity, endTime - clampedStart)
+          releaseSec = envelope.releaseSec
 
-          // Release
-          nodes.gain.gain.setValueAtTime(decayFloor, endTime)
-          nodes.gain.gain.linearRampToValueAtTime(0, endTime + envelope.releaseSec)
+          // A struck string only loses energy after the hammer, so the note decays
+          // across its whole length instead of holding a plateau. The decay is
+          // exponential rather than linear because that is how the ear reads a
+          // piano's fade; `setTargetAtTime` cannot be used here since it never
+          // exactly reaches its target and would leave the release starting from
+          // an unknown level.
+          const attackEnd = clampedStart + envelope.attackSec
+          nodes.gain.gain.setValueAtTime(0, clampedStart)
+
+          if (envelope.peak > 0) {
+            nodes.gain.gain.linearRampToValueAtTime(envelope.peak, attackEnd)
+
+            // `exponentialRamp` can neither pass through nor land on zero, so the
+            // decay target is floored. That floor must not escape this branch: a
+            // velocity-0 note has to stay at exactly zero, and scheduling the
+            // floor for it would give a silent note an audible tail — the very
+            // guarantee PR #26 introduced `??` to protect.
+            const decayFloor = Math.max(envelope.sustain, 1e-4)
+            nodes.gain.gain.exponentialRampToValueAtTime(
+              decayFloor,
+              Math.max(attackEnd + 0.001, endTime)
+            )
+
+            // Release
+            nodes.gain.gain.setValueAtTime(decayFloor, endTime)
+            nodes.gain.gain.linearRampToValueAtTime(0, endTime + envelope.releaseSec)
+          }
+          // A zero-peak note schedules nothing beyond the initial 0: the gain node
+          // is already silent and every later event could only raise it.
         }
-        // A zero-peak note schedules nothing beyond the initial 0: the gain node
-        // is already silent and every later event could only raise it.
 
-        // Start and stop oscillator
-        nodes.osc.start(clampedStart)
-        nodes.osc.stop(endTime + envelope.releaseSec)
+        // Start and stop the voice. Both source kinds honour absolute
+        // AudioContext times, which is what kept the sample path off the
+        // playback clock entirely.
+        if (nodes.bufferSource && nodes.playbackRate) {
+          // `clampedStart` is later than `startTime` only for a note that was
+          // already sounding when playback began — the seek case. Resume the
+          // recording that far in rather than restarting it, so the listener
+          // hears the note continuing rather than being struck again.
+          //
+          // Output time maps to buffer position by the playback rate: playing
+          // 5% fast means 1s of output consumed 1.05s of buffer. Clamped to the
+          // buffer length because `start` throws on an offset past the end.
+          const skippedSec = Math.max(0, clampedStart - startTime)
+          const bufferDuration = nodes.bufferSource.buffer?.duration ?? 0
+          const offsetSecIntoBuffer = Math.min(
+            skippedSec * nodes.playbackRate,
+            bufferDuration
+          )
+          nodes.bufferSource.start(clampedStart, offsetSecIntoBuffer)
+        } else {
+          nodes.source.start(clampedStart)
+        }
+        nodes.source.stop(endTime + releaseSec)
 
-        nodes.end = endTime + envelope.releaseSec
+        nodes.end = endTime + releaseSec
         // Count the voice as active through its release tail (nodes.end), not
         // just to endTime — the oscillator is still sounding during release, so
         // pruning at endTime would let more than VOICE_LIMIT voices overlap.
@@ -345,7 +509,10 @@ export function useFallingNotesAudio() {
     tempoScale: number,
     mute: boolean
   ): Promise<boolean> => {
-    if (!initializeAudio()) return false
+    if (!initializeAudio()) {
+      setSampleStatus('failed')
+      return false
+    }
 
     const audioContext = audioContextRef.current
     if (!audioContext || !masterGainRef.current) return false
@@ -375,9 +542,38 @@ export function useFallingNotesAudio() {
       }
     }
 
+    // Wait for the recorded samples before anchoring the clock, so a piece does
+    // not open on the synthesised fallback and switch instruments mid-phrase.
+    // Bounded: a slow or failed load must delay the first note, never withhold
+    // it, and the fallback still covers whatever has not arrived.
+    const bank = sampleBankRef.current
+    setSampleStatus('loading')
+    let loadResult: PianoSampleLoadResult | 'timeout'
+    if (bank) {
+      let timer: ReturnType<typeof setTimeout> | undefined
+      loadResult = await Promise.race([
+        bank.load(),
+        new Promise<'timeout'>((resolve) => {
+          timer = setTimeout(() => resolve('timeout'), SAMPLE_LOAD_WAIT_MS)
+        }),
+      ])
+      if (timer !== undefined) clearTimeout(timer)
+    } else {
+      loadResult = {
+        status: 'failed',
+        readyCount: 0,
+        totalCount: 0,
+      }
+    }
+
+    // Covers both awaits above: a stop, unmount, or newer seek during either the
+    // resume or the sample wait has already taken ownership of the clock.
     if (generation !== playbackGenerationRef.current || audioContext.state !== 'running') {
       return false
     }
+
+    useSamplesForPlaybackRef.current = loadResult !== 'timeout' && loadResult.status === 'ready'
+    setSampleStatus(loadResult === 'timeout' ? 'degraded' : loadResult.status)
 
     // Store current state
     notesRef.current = notes
@@ -471,20 +667,6 @@ export function useFallingNotesAudio() {
   }, [])
 
   /**
-   * Set the treble rolloff for notes scheduled from now on, clamped to a range
-   * that keeps the treble darker than the bass without over-dulling it.
-   *
-   * There is no ramp and no effect on sounding notes: each note's spectrum is
-   * fixed in its PeriodicWave at creation, so this changes only what the
-   * scheduler builds next. Returns the applied value so the UI readout matches.
-   */
-  const setTrebleRolloff = useCallback((value: number): number => {
-    const clamped = Math.min(MAX_TREBLE_ROLLOFF, Math.max(MIN_TREBLE_ROLLOFF, value))
-    trebleRolloffRef.current = clamped
-    return clamped
-  }, [])
-
-  /**
    * Set offset time (for seeking)
    */
   const setOffsetTime = useCallback((time: number) => {
@@ -518,6 +700,10 @@ export function useFallingNotesAudio() {
     return () => {
       stopAudio()
       if (audioContextRef.current) {
+        // Release the decoded buffers before closing: they are ~20 MB and belong
+        // to this context, so nothing can play them again once it is closed.
+        disposePianoSampleBank(audioContextRef.current)
+        sampleBankRef.current = null
         audioContextRef.current.close()
       }
     }
@@ -530,7 +716,7 @@ export function useFallingNotesAudio() {
     updateTempoScale,
     setOffsetTime,
     setVolume,
-    setTrebleRolloff,
+    sampleStatus,
     reset,
     getTimingInfo
   }
@@ -540,16 +726,33 @@ export function useFallingNotesAudio() {
  * Helper function to stop audio nodes
  */
 function stopAudioNodes(nodes: AudioNodes[]) {
-  for (const { osc, gain } of nodes) {
+  for (const { source, gain } of nodes) {
     try {
       // Fade out quickly to avoid clicks
-      const now = osc.context.currentTime
-      gain.gain.cancelScheduledValues(now)
-      gain.gain.setValueAtTime(gain.gain.value, now)
+      const now = source.context.currentTime
+      const currentGain = gain.gain.value
+
+      // cancelScheduledValues() may restore the value from before an active
+      // ramp, producing a discontinuity before this fade even begins. Modern
+      // engines can hold the computed automation value directly; older ones
+      // need that value captured before cancellation and restored afterwards.
+      if (typeof gain.gain.cancelAndHoldAtTime === 'function') {
+        try {
+          gain.gain.cancelAndHoldAtTime(now)
+        } catch {
+          gain.gain.cancelScheduledValues(now)
+          gain.gain.setValueAtTime(currentGain, now)
+        }
+      } else {
+        gain.gain.cancelScheduledValues(now)
+        gain.gain.setValueAtTime(currentGain, now)
+      }
       gain.gain.linearRampToValueAtTime(0, now + 0.02)
 
-      // Stop oscillator after fade out
-      osc.stop(now + 0.02)
+      // Stop the source after fade out. This is the only thing that ends a note
+      // whose scheduled stop is still far in the future, so every voice the
+      // scheduler creates has to reach this list — sample voices included.
+      source.stop(now + 0.02)
     } catch {
       // Ignore errors for already stopped nodes
     }

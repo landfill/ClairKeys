@@ -1,0 +1,24 @@
+Salamander Grand Piano V3
+=========================
+
+Copyright (c) Alexander Holm
+Licensed under Creative Commons Attribution 3.0 (CC-BY 3.0)
+https://creativecommons.org/licenses/by/3.0/
+
+Original recordings: https://archive.org/details/SalamanderGrandPianoV3
+mp3 conversion used as the source here: https://tonejs.github.io/audio/salamander/
+(Tone.js project, MIT-licensed code, redistributing the CC-BY samples.)
+
+These files are MODIFIED from the source, as CC-BY 3.0 permits and requires to be
+stated. `scripts/build-piano-samples.sh` in this repository performs and records
+the modifications:
+
+  - folded from stereo to mono
+  - trimmed per register (6.0s below C3, 4.0s to A5, 2.0s above) with a 0.5s
+    fade at the trim point
+  - re-encoded to 80 kbps mp3
+  - renamed from note names to MIDI note numbers
+
+No change was made to the relative levels between samples: the difference between
+registers is the instrument's own balance, and normalising each file separately
+would destroy it.
