@@ -1,5 +1,10 @@
 import { A0_MIDI, C8_MIDI } from './pianoLayout'
 import sampleManifest from './pianoSampleManifest.json'
+import {
+  SYNTHESISED_VOICE_RMS,
+  playedBandMedianRms,
+  sampleSetPeak,
+} from './pianoSampleLevels'
 
 /**
  * Which recorded piano sample plays a given note, and at what rate and level.
@@ -47,24 +52,49 @@ export const SAMPLE_SET_VERSION = sampleManifest.version
 /**
  * Loudest peak in the built sample set, as a linear amplitude.
  *
- * Measured with `ffmpeg -af volumedetect` over `public/samples/piano/*.mp3`
- * after the build script's mono fold and trim: the maximum is A0 (`21.mp3`) at
- * -7.7 dBFS. It is measured on the built files rather than the upstream ones
- * because folding stereo to mono changes the peak — upstream A0 peaks at
- * -7.0 dBFS, and using that number would leave the level 8% off.
+ * Measured on the built files rather than the upstream ones because folding
+ * stereo to mono changes the peak — upstream A0 peaks at -7.0 dBFS and the built
+ * file at -7.7 dBFS, so using the upstream number would leave the level 8% off.
+ *
+ * This is what bounds clipping, and it is no longer what sets the playing level:
+ * the maximum belongs to A0, and normalising to it was the second half of issue
+ * #60. It is derived from `pianoSampleLevels` so the two cannot drift apart.
  */
-export const SAMPLE_SET_PEAK = 0.4111
+export const SAMPLE_SET_PEAK = sampleSetPeak()
 
 /**
  * Per-voice gain applied to a sample at velocity 1.
  *
- * Chosen so a full-velocity note reaches the same bus level as the synthesised
- * path's `PEAK_GAIN` (0.3): 0.3 / SAMPLE_SET_PEAK. Without this a decoded sample
- * would arrive ~37% hotter than the tone it replaces, so every existing headroom
- * figure — `DEFAULT_MASTER_GAIN`, `MAX_MASTER_GAIN`, and the `VOICE_LIMIT`
- * clipping analysis they were derived from — would silently stop holding.
+ * Derived, not tuned: it is the factor that brings the median note of the
+ * playing register to the loudness of the synthesised voice it replaced. Both
+ * sides of that ratio are measurements (`pianoSampleLevels`), so re-measuring a
+ * rebuilt sample set moves this value on its own rather than leaving a stale
+ * literal behind.
+ *
+ * ## Why not the peak
+ *
+ * It was `0.3 / SAMPLE_SET_PEAK` — the factor that made a full-velocity sample
+ * peak exactly where a synthesised voice peaks. That arithmetic was correct and
+ * produced a piano the user reported as too quiet (issue #60), for two reasons
+ * that multiply:
+ *
+ * 1. **Peaks are not loudness.** These recordings carry a 20 dB crest factor
+ *    against the sustained waveform's 8.8 dB, so matching the peak leaves them
+ *    about 11 dB down in the quantity the ear tracks. A recorded piano is a
+ *    brief hammer transient over a long decay; the tone it replaced was not.
+ * 2. **The reference was A0.** Normalising to the set's maximum makes that one
+ *    file the only one that reaches the target. Across C3–C6 the shortfall
+ *    averaged 3.9 dB, and C5 arrived at a third of the intended level.
+ *
+ * ## What this deliberately does not fix
+ *
+ * One scalar preserves every relative difference in the set, including the
+ * ±5 dB of file-to-file scatter that D-015 shows is recording variance rather
+ * than the instrument's register balance. Correcting that needs a per-sample
+ * table and a judgement about which differences are the piano; it is issue #61,
+ * not this constant.
  */
-export const SAMPLE_PEAK_GAIN = 0.73
+export const SAMPLE_PEAK_GAIN = SYNTHESISED_VOICE_RMS / playedBandMedianRms()
 
 /**
  * The sample nearest to `midi`, in semitones.
