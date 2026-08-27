@@ -2,25 +2,32 @@
 
 Last updated: 2026-08-27 KST
 
-## 지금 해야 할 것 — 청감 확인 하나
+## PR #62의 청감 확인 — 2026-08-27, 조건부 수용
 
-**PR #62가 병합·배포됐으나 그 목적은 아직 검증되지 않았다.** PR #59와 완전히 같은 지점이다.
+**사용자가 운영 배포된 재생을 들었고 "이 상태로 일단 유지"라고 답했다.**
 
-사용자가 운영 배포된 재생을 들어보고, 음량이 적절해졌는지 확인해야 한다. 결과를 **좋든 나쁘든**
-`docs/recovery/reviews/PR-62.md`와 이 파일에 기록한다.
+**이 표현을 만족으로 격상하지 마라.** PR #59 때 사용자는 "만족한다"고 답했고 그건 목적 달성의
+확인이었다. 이번은 다르다 — 되돌릴 필요는 없다는 수용이지, 음량이 맞다는 확인이 아니다.
+따라서 **"+3.87 dB가 옳은 값이었다"는 아직 입증되지 않았고**, 앞으로도 그 근거로 인용해서는
+안 된다. 입증된 것은 "되돌릴 만큼 나쁘지는 않다" 하나다.
 
-**결과가 여전히 부족하더라도 마스터 게인부터 올리지 마라.** `DEFAULT_MASTER_GAIN`·
-`MAX_MASTER_GAIN`은 합성 폴백과 공유하는 버스이므로, 원인 제공을 하지 않은 경로를 클리핑
-쪽으로 민다. 먼저 D-015의 기준 선택 — 창 0.5초, 음역 C3~C6, 중앙값 — 이 실제 연주와 맞는지
-재검토한다. `SAMPLE_PEAK_GAIN`을 리터럴로 되돌려 귀로 튜닝하는 것도 금지다(D-015 Directive).
+실무적으로 이건 **탐색을 멈추라는 뜻이지 완료라는 뜻이 아니다.** 음량 조정을 더 시도하지
+않는다. 사용자가 다시 제기하면 그때 D-015의 기준 선택부터 재검토한다.
+
+**다시 제기되더라도 마스터 게인부터 올리지 마라.** `DEFAULT_MASTER_GAIN`·`MAX_MASTER_GAIN`은
+합성 폴백과 공유하는 버스이므로, 원인 제공을 하지 않은 경로를 클리핑 쪽으로 민다. 먼저
+D-015의 기준 선택 — 창 0.5초, 음역 C3~C6, 중앙값 — 이 실제 연주와 맞는지 재검토한다.
+`SAMPLE_PEAK_GAIN`을 리터럴로 되돌려 귀로 튜닝하는 것도 금지다(D-015 Directive).
 
 ## 열려 있는 이슈
 
 - **이슈 [#61](https://github.com/landfill/ClairKeys/issues/61)** — #62 작업 중 D-014 결정 6의
   전제가 부분적으로 거짓임이 측정으로 드러나 분리했다. 샘플 세트의 음량 편차 중 매끄러운
   10.6 dB 추세는 악기의 음역 균형이 맞지만, 잔차 ±5 dB는 녹음 편차다(인접 단3도 29구간 중
-  14개에서 위 음이 더 크고 최대 +7.5 dB). **#62의 청감 확인 이후에 착수한다** — 전체 음량이
-  미확정인 채로 음역 균형을 만지면 두 변수가 섞여 어느 쪽이 효과를 냈는지 판별할 수 없다.
+  14개에서 위 음이 더 크고 최대 +7.5 dB). **선행 조건이던 #62 청감 확인은 2026-08-27에
+  끝났으므로 이제 착수 가능하다.** 다만 사용자가 "일단 유지"로 답했으므로 전체 음량은 확정이
+  아니라 동결이다 — #61을 진행할 때 음량 상수를 함께 건드리면 두 변수가 섞인다. #61 범위는
+  샘플 간 상대 편차로만 한정한다.
 
 ## Current state
 
@@ -29,7 +36,7 @@ Last updated: 2026-08-27 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: none. **[#62](https://github.com/landfill/ClairKeys/pull/62) merged 2026-08-27** at `fcc6252` with the user's explicit approval — 이슈 #60(녹음 샘플 재생 음량이 약하다)의 수정. `SAMPLE_PEAK_GAIN`이 리터럴 0.73에서 측정 유도값 `SYNTHESISED_VOICE_RMS / playedBandMedianRms()` = **1.140**(+3.87 dB)이 됐다. **D-015**를 기록하고 이슈 **#61**을 파생시켰다. Merge-commit checks 6/6 successful; 원격·로컬 작업 브랜치 모두 삭제됐고 `main`이 유일한 브랜치다. Vercel Production이 `fcc6252`를 배포했다. 이슈 #60은 자동 종료됐다. **목적은 아직 미검증** — 위 "지금 해야 할 것" 참조. 근거: `docs/recovery/reviews/PR-62.md`, `docs/recovery/validation/2026-08-27-issue-60-sample-gain-recalibration.md`
+- Open pull requests: none. **[#62](https://github.com/landfill/ClairKeys/pull/62) merged 2026-08-27** at `fcc6252` with the user's explicit approval — 이슈 #60(녹음 샘플 재생 음량이 약하다)의 수정. `SAMPLE_PEAK_GAIN`이 리터럴 0.73에서 측정 유도값 `SYNTHESISED_VOICE_RMS / playedBandMedianRms()` = **1.140**(+3.87 dB)이 됐다. **D-015**를 기록하고 이슈 **#61**을 파생시켰다. Merge-commit checks 6/6 successful; 원격·로컬 작업 브랜치 모두 삭제됐고 `main`이 유일한 브랜치다. Vercel Production이 `fcc6252`를 배포했다. 이슈 #60은 자동 종료됐다. **청감 확인 완료(2026-08-27), 단 "일단 유지"라는 조건부 수용이며 만족 확인이 아니다** — 위 절 참조. 근거: `docs/recovery/reviews/PR-62.md`, `docs/recovery/validation/2026-08-27-issue-60-sample-gain-recalibration.md`
 - **[#59](https://github.com/landfill/ClairKeys/pull/59) merged 2026-08-27** at `67efc6d`, and its objective is now **confirmed by the user's listening in production** with the user's explicit approval — score playback now uses recorded piano samples. Merge-commit checks 6/6 successful; work branch deleted; Vercel Production deployed `67efc6d`. Audible listening was only possible after deploy, and the user has since listened and confirmed the result. The `degraded`/`failed` states remain unobserved in a real failed load. 근거: `docs/recovery/reviews/PR-59.md`
 - Open pull requests: none. **[#57](https://github.com/landfill/ClairKeys/pull/57) merged 2026-08-24** at `d58ceea` with the user's explicit approval — issue #56's black-key displacement and the falling-note centering that followed from it. Merge-commit checks 6/6 successful; work branch, Orca worktree, and both leftover local branches deleted; `main` is the only branch. 근거: `docs/recovery/reviews/PR-57.md`. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
 - **[#53](https://github.com/landfill/ClairKeys/pull/53) merged 2026-08-24** at `a5d9da3` with the user's explicit approval — README now names the OCR stage and separates it from the converter code that consumes MusicXML. Merge-commit checks all passed; both branch tips were confirmed in `main` and the work branch is deleted. 근거: `docs/recovery/reviews/PR-53.md`
