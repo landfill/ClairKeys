@@ -86,7 +86,7 @@ echo "$SAMPLES" | while read -r name midi keep; do
   # sample by MIDI distance, so a numeric name needs no note-spelling table and
   # cannot disagree with one.
   fade_start=$(awk "BEGIN { printf \"%.3f\", $keep - $FADE_SEC }")
-  ffmpeg -v error -y -i "$WORK_DIR/$name.mp3" \
+  ffmpeg -nostdin -v error -y -i "$WORK_DIR/$name.mp3" \
     -t "$keep" \
     -af "afade=t=out:st=$fade_start:d=$FADE_SEC" \
     -ac "$CHANNELS" -b:a "$BITRATE" \
