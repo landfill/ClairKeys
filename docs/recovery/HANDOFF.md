@@ -9,7 +9,7 @@ Last updated: 2026-08-27 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: **[#59](https://github.com/landfill/ClairKeys/pull/59)** — `OPEN`, created 2026-08-27, awaiting the user's listening judgement and explicit merge approval. Replaces the synthesised playback timbre with recorded Salamander Grand Piano samples (CC-BY 3.0, vendored in `public/samples/piano/`, 1.17 MB on disk / 20.2 MB decoded). Records **D-014**. Review log: `docs/recovery/reviews/PR-59.md`. **New scope outside P1-A's upload-pipeline objective**, taken on the user's explicit request; the user also asked for the on-screen keyboard's Tone.js `PolySynth` to be unified onto the same instrument, deliberately left to a separate PR. Verified in headless Chromium against the running app (8 buffer sources / 0 oscillators, note gains exactly `velocity x 0.73`, no console errors) and by browser decode of the built set (30/30, 120.0 s, peak 0.4112 at MIDI 21 against the 0.4111 in `SAMPLE_SET_PEAK`). **Not verified: how it sounds** — three constants may want adjusting by ear (`SAMPLE_PEAK_GAIN`, the mono fold, `damperReleaseSec`). **CI가 돌지 않았다**: 4개 required check가 실행 자체로 없으며, 저장소 전체의 마지막 Actions run이 2026-08-24다. 병합 전에 그것부터 해결해야 한다.
+- Open pull requests: none. **[#59](https://github.com/landfill/ClairKeys/pull/59) merged 2026-08-27** at `67efc6d` with the user's explicit approval — score playback now uses recorded piano samples. Merge-commit checks 6/6 successful; work branch deleted; Vercel Production deployed `67efc6d`. **Its objective is not yet verified: audible listening is only possible after a production deploy in this environment, and nobody has listened.** 근거: `docs/recovery/reviews/PR-59.md`
 - Open pull requests: none. **[#57](https://github.com/landfill/ClairKeys/pull/57) merged 2026-08-24** at `d58ceea` with the user's explicit approval — issue #56's black-key displacement and the falling-note centering that followed from it. Merge-commit checks 6/6 successful; work branch, Orca worktree, and both leftover local branches deleted; `main` is the only branch. 근거: `docs/recovery/reviews/PR-57.md`. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
 - **[#53](https://github.com/landfill/ClairKeys/pull/53) merged 2026-08-24** at `a5d9da3` with the user's explicit approval — README now names the OCR stage and separates it from the converter code that consumes MusicXML. Merge-commit checks all passed; both branch tips were confirmed in `main` and the work branch is deleted. 근거: `docs/recovery/reviews/PR-53.md`
 - **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
@@ -70,6 +70,35 @@ Last updated: 2026-08-27 KST
 - Current objective: **P1-A — consolidate the four PDF upload paths onto the one that actually converts a score.** The deployment and timbre objectives that preceded it are closed: `main` deploys itself again (Vercel Production Branch Tracking fixed), the `Security Audit` gate is green, and both timbre tuning sliders are live in production. The only thing outstanding from the timbre work is a pair of default values that need the user's ear, not code.
 
 ## Latest verified result
+
+- **2026-08-27 — PR #59 병합(`67efc6d`). 단, 이 PR의 목적은 아직 검증되지 않았다.**
+  악보 재생이 합성 배음 대신 녹음 피아노 샘플을 쓴다. 커밋 4개, hosted CI 17개 통과,
+  머지 커밋 체크 6/6 성공, Vercel Production이 `67efc6d`를 배포했다.
+
+  **이 PR은 소리를 바꾸려고 존재하는데 소리는 아무도 확인하지 않았다.** 사용자 환경에서는
+  청감 검증이 운영 배포 이후에만 가능하다. 지금까지의 검증은 전부 구조적이다 — 노드 수,
+  게인 산술, 버퍼 선택, 테스트 499건. 그중 어느 것도 "피아노처럼 들린다"를 입증하지 않는다.
+  **배포 후 후속 조치 4단계가 `docs/recovery/reviews/PR-59.md`에 있다** (들어보기 → 결과를
+  좋든 나쁘든 기록 → 개선 안 됐으면 되돌리기, 상수 튜닝 재시도 금지 → degraded/failed 표시
+  실물 확인).
+
+  **리뷰가 실제로 값을 만든 라운드였다.** 코덱스 리뷰 워커(읽기 전용)가 HIGH 1건 + MEDIUM
+  3건을 찾았고, 그중 HIGH는 샘플 로딩 실패가 `isReady={true}` 하드코딩·전부 삼키는 catch·
+  2.5초 race와 맞물려 **성공처럼 보이던 것**이다(D-001/D-010이 반복해 제거해 온 형태).
+  같은 워커가 수정까지 맡아 D-014에 8~10항을 추가하고(폴백 유지 + 상태 표면화, 재생 시작 시
+  음색 고정, URL 세트 버전) 코드를 고쳤다. 이어 CodeRabbit이 Major 1건(빌드가 서빙 디렉터리에
+  직접 써서 같은 버전 URL이 신·구 혼합 세트를 가리킬 수 있음)과 산문 지적 1건(stop 경로 gain
+  불연속)을 냈고 둘 다 처리됐다.
+
+  **코디네이터 오류 2건도 이 라운드에서 나왔다.** (1) CodeRabbit 지적을 인라인 코멘트로만
+  확인해 요약 산문의 캐시 버저닝 지적을 놓치고 "actionable 1건 처리 완료"로 잘못 기록했다.
+  (2) 워커가 LOW로 낸 원자적 교체를 범위 밖으로 뺐는데, **우리가 넣은 URL 버저닝이 그 항목의
+  심각도를 올렸다**(버전이 세트 내용을 보증하게 되었으므로 부분 실패가 계약을 깬다).
+  CodeRabbit이 Major로 다시 냈다.
+
+  **리뷰 피드백 확인법**: 인라인 코멘트 + 요약 산문 + 요약의 `updated_at`과 리뷰 범위 문자열,
+  세 가지를 모두 봐야 한다. 요약 코멘트는 제자리에서 수정되므로 `created_at`만 보면 재리뷰를
+  놓친다.
 
 - **2026-08-24 — 이슈 #56이 코덱스 워커 + 코디네이터 교차검증으로 닫혔다. PR #57 병합(`d58ceea`).**
   Orca orchestration으로 진행했다: Run `run_1cfda20fe7be`, Task 3개(수정 / 교차검증 / 보완),
