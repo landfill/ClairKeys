@@ -12,7 +12,23 @@ import {
   sampleUrl,
   damperReleaseSec,
 } from '../pianoSamples'
+import {
+  SAMPLE_CREST_DB,
+  SAMPLE_LEVELS,
+  SYNTHESISED_CREST_DB,
+  SYNTHESISED_VOICE_RMS,
+  playedBandMedianRms,
+  sampleSetPeak,
+} from '../pianoSampleLevels'
 import { A0_MIDI, C8_MIDI } from '../pianoLayout'
+import { DEFAULT_MASTER_GAIN, MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
+
+/**
+ * Velocity every real note plays at. `omr-service/omr/converter.py` emits no
+ * velocity field, so the scheduler's `note.velocity ?? 0.7` default is not a
+ * fallback in practice — it is the only value that occurs.
+ */
+const PLAYBACK_VELOCITY = 0.7
 
 function writeExecutable(file: string, contents: string) {
   fs.writeFileSync(file, contents)
@@ -174,11 +190,85 @@ describe('pianoSamples', () => {
   })
 
   describe('SAMPLE_PEAK_GAIN', () => {
-    it('brings a full-velocity sample to the synthesised path peak', () => {
-      // `pianoTimbre`'s PEAK_GAIN is 0.3. A voice louder than that invalidates
-      // the DEFAULT_MASTER_GAIN / VOICE_LIMIT headroom analysis rather than just
-      // sounding loud, so this is pinned rather than left to listening.
-      expect(SAMPLE_SET_PEAK * SAMPLE_PEAK_GAIN).toBeCloseTo(0.3, 2)
+    // This block used to assert `SAMPLE_SET_PEAK * SAMPLE_PEAK_GAIN ≈ 0.3` —
+    // that a full-velocity sample reaches the synthesised path's peak. The
+    // arithmetic was right and the target was wrong, which is issue #60: peaks
+    // were matched while loudness is what a listener hears, and the peak in
+    // question belonged to A0, so every other sample landed under it. Pinning it
+    // held the defect in place, so it is replaced rather than adjusted.
+
+    it('brings the median note of the playing register to the loudness of the tone it replaced', () => {
+      // The regression. At the shipped 0.73 this lands 3.9 dB low, which is the
+      // reported symptom.
+      const median = playedBandMedianRms() * SAMPLE_PEAK_GAIN
+
+      expect(median).toBeGreaterThanOrEqual(SYNTHESISED_VOICE_RMS)
+      // Bounded above as well: overshooting spends the clipping headroom the
+      // gain was raised inside of, and there is no listening loop tight enough
+      // to catch that before it ships.
+      expect(median).toBeLessThanOrEqual(SYNTHESISED_VOICE_RMS * 1.2)
+    })
+
+    it('does not correct the file-to-file scatter, which issue #61 still owns', () => {
+      // Ground truth for a defect this change deliberately leaves in place. C5
+      // is recorded well below both of its neighbouring samples — a dip no
+      // instrument produces, since a major third up should not gain 6 dB — and a
+      // single scalar moves it with everything else rather than closing it.
+      //
+      // If a rebuilt sample set makes this pass, the premise of #61 has changed
+      // and the gain must be re-derived against the new audio.
+      const belowNeighbourAverage =
+        SAMPLE_LEVELS[72].rms / ((SAMPLE_LEVELS[69].rms + SAMPLE_LEVELS[75].rms) / 2)
+
+      expect(20 * Math.log10(belowNeighbourAverage)).toBeLessThan(-3)
+    })
+
+    it('keeps a dense chord clear of the clip point at both master levels', () => {
+      // Real notes arrive without a velocity — `converter.py` emits none — so the
+      // scheduler's `?? 0.7` default is the level that actually plays. Voices are
+      // summed linearly here, which assumes every one of them peaks at the same
+      // instant with matching phase; across different pitches that does not
+      // happen, so these counts are a floor rather than an estimate.
+      const loudestVoice = sampleSetPeak() * SAMPLE_PEAK_GAIN * PLAYBACK_VELOCITY
+      const voicesBefore = (master: number) => Math.floor(1 / (loudestVoice * master))
+
+      expect(voicesBefore(DEFAULT_MASTER_GAIN)).toBeGreaterThanOrEqual(12)
+      expect(voicesBefore(MAX_MASTER_GAIN)).toBeGreaterThanOrEqual(8)
+    })
+
+    it('cannot clip on a single note at any reachable setting', () => {
+      for (const midi of SAMPLE_MIDI_NOTES) {
+        const peak = SAMPLE_LEVELS[midi].peak * SAMPLE_PEAK_GAIN * MAX_MASTER_GAIN
+        expect(peak).toBeLessThan(1)
+      }
+    })
+  })
+
+  describe('measured levels', () => {
+    it('describes exactly the notes the set ships', () => {
+      // A rebuild that adds or drops a sample without re-measuring would leave
+      // the gain derived from notes that no longer exist.
+      expect(Object.keys(SAMPLE_LEVELS).map(Number).sort((a, b) => a - b)).toEqual([
+        ...SAMPLE_MIDI_NOTES,
+      ])
+    })
+
+    it('is pinned to the sample set it was taken from', () => {
+      // Every figure in `pianoSampleLevels` describes v1. The build script moves
+      // this version on, so a bumped manifest with unchanged measurements means
+      // the gain is derived from audio that is no longer served.
+      expect(SAMPLE_SET_VERSION).toBe('v1')
+    })
+
+    it('agrees with the set peak the headroom argument uses', () => {
+      expect(SAMPLE_SET_PEAK).toBeCloseTo(sampleSetPeak(), 4)
+    })
+
+    it('records both paths differing by the crest factor that caused the defect', () => {
+      // Not decoration: without this pair, "recordings peak higher for the same
+      // loudness" is a claim about waveform shape rather than a measurement, and
+      // it is the entire reason peak-matching produced a quiet piano.
+      expect(SAMPLE_CREST_DB - SYNTHESISED_CREST_DB).toBeGreaterThan(10)
     })
   })
 

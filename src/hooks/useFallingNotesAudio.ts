@@ -85,12 +85,23 @@ export const DEFAULT_MASTER_GAIN = 0.22
 /**
  * Ceiling the runtime volume control clamps to.
  *
- * A voice peaks near `PEAK_GAIN` (0.3), so a realistic dense passage of ~8
- * overlapping voices sums to ~2.4 pre-master; at 0.35 that lands near the ±1
- * ceiling with little margin, so this is the top of the useful tuning range
- * rather than a target. `VOICE_LIMIT` (24) is the absolute worst case, but 24
- * notes at full velocity and aligned phase does not occur in real playback —
- * pinning the ceiling to it would make every ordinary passage far too quiet.
+ * The figure this was derived from — "a voice peaks near `PEAK_GAIN` (0.3)" —
+ * was measured for issue #60 and holds on neither path. A synthesised voice
+ * peaks between 0.129 and 0.269 because summing sine-phase partials does not
+ * reach their sum, and a sample peaks between 0.118 and 0.469 across the set.
+ * Nor does a note arrive at full velocity: `converter.py` emits no velocity
+ * field, so every real note plays at the scheduler's `?? 0.7`.
+ *
+ * The ceiling is left where it is regardless, for a reason the old arithmetic
+ * did not capture: this gain is shared with the synthesised fallback, whose
+ * level PR #32 set by ear and which nobody has reported as quiet. Raising it to
+ * suit the samples would push that path toward clipping to fix a complaint it
+ * did not cause. The sample side gets its headroom from `SAMPLE_PEAK_GAIN`
+ * instead, which only the sample path reads.
+ *
+ * `VOICE_LIMIT` (24) remains the absolute worst case and remains unreachable:
+ * 24 notes at matching phase does not occur in real playback, and pinning the
+ * ceiling to it would make every ordinary passage far too quiet.
  */
 export const MAX_MASTER_GAIN = 0.35
 
@@ -375,9 +386,10 @@ export function useFallingNotesAudio() {
           // further would decay an already-decaying sound twice, which is
           // audible as a note that dies too early.
           //
-          // SAMPLE_PEAK_GAIN scales the loudest sample in the set to the same
-          // peak the synthesised path produces, so the headroom analysis behind
-          // DEFAULT_MASTER_GAIN and MAX_MASTER_GAIN keeps holding unchanged.
+          // SAMPLE_PEAK_GAIN sets the level of the whole set at once, derived so
+          // the median note of the playing register matches the loudness of the
+          // synthesised tone this replaced. It applies only here, which is why
+          // the sample level can move without disturbing the fallback.
           releaseSec = damperReleaseSec(note.midi)
           const peak = Math.max(0, velocity) * SAMPLE_PEAK_GAIN
 
