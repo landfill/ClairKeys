@@ -4,7 +4,6 @@ import {
   DEFAULT_MASTER_GAIN,
   MAX_MASTER_GAIN,
 } from '../useFallingNotesAudio'
-import { MIN_TREBLE_ROLLOFF, MAX_TREBLE_ROLLOFF } from '@/utils/pianoTimbre'
 
 type AudioWindow = Window & {
   webkitAudioContext?: typeof AudioContext
@@ -268,21 +267,6 @@ describe('useFallingNotesAudio', () => {
     })
     expect(targets[targets.length - 1]).toBe(0)
     expect(applied).toBe(0)
-
-    unmount()
-  })
-
-  it('clamps the treble rolloff to its range and returns the applied value', () => {
-    setAudioContextConstructor(
-      jest.fn(() => makeAudioContext('running')) as unknown as typeof AudioContext
-    )
-    const { result, unmount } = renderHook(() => useFallingNotesAudio())
-
-    // A value in range passes through; out-of-range clamps to each bound. The
-    // return value is what the UI stores, so it must equal the applied rolloff.
-    expect(result.current.setTrebleRolloff(3)).toBeCloseTo(3)
-    expect(result.current.setTrebleRolloff(99)).toBe(MAX_TREBLE_ROLLOFF)
-    expect(result.current.setTrebleRolloff(0)).toBe(MIN_TREBLE_ROLLOFF)
 
     unmount()
   })

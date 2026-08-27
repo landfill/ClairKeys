@@ -1,4 +1,5 @@
 import { A0_MIDI, C8_MIDI } from './pianoLayout'
+import sampleManifest from './pianoSampleManifest.json'
 
 /**
  * Which recorded piano sample plays a given note, and at what rate and level.
@@ -35,6 +36,13 @@ export const SAMPLE_MIDI_NOTES: readonly number[] = Object.freeze([
 
 /** Where the built sample set is served from. */
 export const SAMPLE_BASE_URL = '/samples/piano'
+
+/**
+ * Cache-busting identity of the committed sample set. Both the HTTP response
+ * and service worker cache are intentionally long-lived, so rebuilding audio
+ * without changing this value would strand existing users on the old bytes.
+ */
+export const SAMPLE_SET_VERSION = sampleManifest.version
 
 /**
  * Loudest peak in the built sample set, as a linear amplitude.
@@ -101,7 +109,7 @@ export function playbackRateForMidi(midi: number, sampleMidi: number): number {
 
 /** URL of the sample for a MIDI note that appears in `SAMPLE_MIDI_NOTES`. */
 export function sampleUrl(sampleMidi: number): string {
-  return `${SAMPLE_BASE_URL}/${sampleMidi}.mp3`
+  return `${SAMPLE_BASE_URL}/${sampleMidi}.mp3?v=${SAMPLE_SET_VERSION}`
 }
 
 /**

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import type { FallingNote } from '@/types/fallingNotes'
 import { midiToFreq } from '@/utils/pianoLayout'
 import {
@@ -19,14 +19,13 @@ import {
   timbreCutoffHz,
   envelopeBreakpoints,
   DEFAULT_TREBLE_ROLLOFF,
-  MIN_TREBLE_ROLLOFF,
-  MAX_TREBLE_ROLLOFF,
 } from '@/utils/pianoTimbre'
 import { SAMPLE_PEAK_GAIN, damperReleaseSec } from '@/utils/pianoSamples'
 import {
   getPianoSampleBank,
   disposePianoSampleBank,
   type PianoSampleBank,
+  type PianoSampleLoadResult,
 } from '@/utils/pianoSampleBank'
 
 /**
@@ -110,7 +109,15 @@ export const MAX_MASTER_GAIN = 0.35
  */
 export const SAMPLE_LOAD_WAIT_MS = 2500
 
+export type PianoSamplePlaybackStatus =
+  | 'idle'
+  | 'loading'
+  | 'ready'
+  | 'degraded'
+  | 'failed'
+
 export function useFallingNotesAudio() {
+  const [sampleStatus, setSampleStatus] = useState<PianoSamplePlaybackStatus>('idle')
   const audioContextRef = useRef<AudioContext | null>(null)
   const masterGainRef = useRef<GainNode | null>(null)
   // Current master level, kept in a ref so a runtime change survives the next
@@ -137,6 +144,10 @@ export function useFallingNotesAudio() {
   // cannot fetch or decode them. Null means every note synthesises, which is the
   // tone that shipped before samples existed.
   const sampleBankRef = useRef<PianoSampleBank | null>(null)
+  // Chosen once per startAudio call. The scheduler must never consult the
+  // bank's changing contents note-by-note or one piece can change instrument
+  // while background decoding continues.
+  const useSamplesForPlaybackRef = useRef(false)
 
   /**
    * Initialize audio context
@@ -171,10 +182,9 @@ export function useFallingNotesAudio() {
       masterGainRef.current.gain.value = masterGainValueRef.current
       masterGainRef.current.connect(audioContextRef.current.destination)
 
-      // Start loading the recorded samples alongside the bus. Playback does not
-      // wait on this: notes synthesise until their sample has decoded and switch
-      // over silently as each lands, so the first press is never blocked by a
-      // download.
+      // Start loading the recorded samples alongside the bus. startAudio waits
+      // for the complete result (bounded by SAMPLE_LOAD_WAIT_MS) and freezes one
+      // instrument choice for the whole playback.
       //
       // The guard is `decodeAudioData` specifically, because that is what
       // separates a real AudioContext from the doubles used in tests and from
@@ -217,7 +227,9 @@ export function useFallingNotesAudio() {
     audioContext: AudioContext,
     masterGain: GainNode
   ): AudioNodes => {
-    const voice = sampleBankRef.current?.voiceFor(midi) ?? null
+    const voice = useSamplesForPlaybackRef.current
+      ? sampleBankRef.current?.voiceFor(midi) ?? null
+      : null
 
     if (voice) {
       const source = audioContext.createBufferSource()
@@ -497,7 +509,10 @@ export function useFallingNotesAudio() {
     tempoScale: number,
     mute: boolean
   ): Promise<boolean> => {
-    if (!initializeAudio()) return false
+    if (!initializeAudio()) {
+      setSampleStatus('failed')
+      return false
+    }
 
     const audioContext = audioContextRef.current
     if (!audioContext || !masterGainRef.current) return false
@@ -532,15 +547,23 @@ export function useFallingNotesAudio() {
     // Bounded: a slow or failed load must delay the first note, never withhold
     // it, and the fallback still covers whatever has not arrived.
     const bank = sampleBankRef.current
+    setSampleStatus('loading')
+    let loadResult: PianoSampleLoadResult | 'timeout'
     if (bank) {
       let timer: ReturnType<typeof setTimeout> | undefined
-      await Promise.race([
+      loadResult = await Promise.race([
         bank.load(),
-        new Promise<void>((resolve) => {
-          timer = setTimeout(resolve, SAMPLE_LOAD_WAIT_MS)
+        new Promise<'timeout'>((resolve) => {
+          timer = setTimeout(() => resolve('timeout'), SAMPLE_LOAD_WAIT_MS)
         }),
       ])
       if (timer !== undefined) clearTimeout(timer)
+    } else {
+      loadResult = {
+        status: 'failed',
+        readyCount: 0,
+        totalCount: 0,
+      }
     }
 
     // Covers both awaits above: a stop, unmount, or newer seek during either the
@@ -548,6 +571,9 @@ export function useFallingNotesAudio() {
     if (generation !== playbackGenerationRef.current || audioContext.state !== 'running') {
       return false
     }
+
+    useSamplesForPlaybackRef.current = loadResult !== 'timeout' && loadResult.status === 'ready'
+    setSampleStatus(loadResult === 'timeout' ? 'degraded' : loadResult.status)
 
     // Store current state
     notesRef.current = notes
@@ -641,20 +667,6 @@ export function useFallingNotesAudio() {
   }, [])
 
   /**
-   * Set the treble rolloff for notes scheduled from now on, clamped to a range
-   * that keeps the treble darker than the bass without over-dulling it.
-   *
-   * There is no ramp and no effect on sounding notes: each note's spectrum is
-   * fixed in its PeriodicWave at creation, so this changes only what the
-   * scheduler builds next. Returns the applied value so the UI readout matches.
-   */
-  const setTrebleRolloff = useCallback((value: number): number => {
-    const clamped = Math.min(MAX_TREBLE_ROLLOFF, Math.max(MIN_TREBLE_ROLLOFF, value))
-    trebleRolloffRef.current = clamped
-    return clamped
-  }, [])
-
-  /**
    * Set offset time (for seeking)
    */
   const setOffsetTime = useCallback((time: number) => {
@@ -704,7 +716,7 @@ export function useFallingNotesAudio() {
     updateTempoScale,
     setOffsetTime,
     setVolume,
-    setTrebleRolloff,
+    sampleStatus,
     reset,
     getTimingInfo
   }

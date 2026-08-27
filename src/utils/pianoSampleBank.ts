@@ -15,12 +15,9 @@ import {
  *
  * Three properties matter more than speed here:
  *
- * - **It never throws and never rejects.** A failed sample leaves that note on
- *   the synthesised fallback in `./pianoTimbre`. A failed set leaves the whole
- *   keyboard there. The worst case is the tone that shipped before this change,
- *   not silence and not an error surfaced during playback.
- * - **It is usable while still loading.** Samples land one at a time and each is
- *   playable the moment it decodes, so playback never waits on the full set.
+ * - **It never throws and never rejects.** It resolves to an explicit readiness
+ *   result so playback can continue on synthesis without presenting that
+ *   fallback as successful sample playback.
  * - **It is bound to the AudioContext that will play it.** An `AudioBuffer`
  *   belongs to the context that decoded it, so a bank cannot outlive its
  *   context; `disposePianoSampleBank` exists to break that link explicitly.
@@ -32,11 +29,19 @@ export interface SampleVoice {
   playbackRate: number
 }
 
+export type PianoSampleLoadStatus = 'ready' | 'degraded' | 'failed'
+
+export interface PianoSampleLoadResult {
+  status: PianoSampleLoadStatus
+  readyCount: number
+  totalCount: number
+}
+
 export class PianoSampleBank {
   private readonly context: AudioContext
   private readonly buffers = new Map<number, AudioBuffer>()
   private readonly abort = new AbortController()
-  private loading: Promise<void> | null = null
+  private loading: Promise<PianoSampleLoadResult> | null = null
   private disposed = false
 
   constructor(context: AudioContext) {
@@ -47,22 +52,36 @@ export class PianoSampleBank {
    * Fetch and decode every sample. Safe to call repeatedly: the first call owns
    * the work and later callers await the same promise.
    */
-  load(): Promise<void> {
+  load(): Promise<PianoSampleLoadResult> {
     if (this.loading) return this.loading
 
     if (typeof fetch !== 'function') {
       // No way to retrieve the samples at all. Reported once here rather than
       // as thirty identical per-sample failures below.
       console.warn('fetch unavailable; piano samples disabled, using synthesis')
-      this.loading = Promise.resolve()
+      this.loading = Promise.resolve(this.loadResult())
       return this.loading
     }
 
     this.loading = Promise.all(
       SAMPLE_MIDI_NOTES.map((midi) => this.loadOne(midi))
-    ).then(() => undefined)
+    ).then(() => this.loadResult())
 
     return this.loading
+  }
+
+  private loadResult(): PianoSampleLoadResult {
+    const readyCount = this.readyCount
+    const totalCount = this.totalCount
+    return {
+      status: readyCount === totalCount
+        ? 'ready'
+        : readyCount === 0
+          ? 'failed'
+          : 'degraded',
+      readyCount,
+      totalCount,
+    }
   }
 
   private async loadOne(sampleMidi: number): Promise<void> {

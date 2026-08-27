@@ -19,9 +19,27 @@
 set -euo pipefail
 
 BASE_URL="https://tonejs.github.io/audio/salamander"
-OUT_DIR="$(cd "$(dirname "$0")/.." && pwd)/public/samples/piano"
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+OUT_DIR="$ROOT_DIR/public/samples/piano"
+MANIFEST_FILE="$ROOT_DIR/src/utils/pianoSampleManifest.json"
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
+
+# Every deployed set is immutable for one year and cache-first in the service
+# worker. Advance the query-string version only after all samples build, so a
+# failed rebuild cannot point the app at an incomplete new set. SAMPLE_VERSION
+# may be supplied for a deliberate jump; otherwise the numeric vN increments.
+CURRENT_VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\(v[0-9][0-9]*\)".*/\1/p' "$MANIFEST_FILE")"
+if [[ ! "$CURRENT_VERSION" =~ ^v[0-9]+$ ]]; then
+  echo "Cannot read numeric sample version from $MANIFEST_FILE" >&2
+  exit 1
+fi
+CURRENT_VERSION_NUMBER="${CURRENT_VERSION#v}"
+SAMPLE_VERSION="${SAMPLE_VERSION:-v$((CURRENT_VERSION_NUMBER + 1))}"
+if [[ ! "$SAMPLE_VERSION" =~ ^v[0-9]+$ ]] || (( ${SAMPLE_VERSION#v} <= CURRENT_VERSION_NUMBER )); then
+  echo "SAMPLE_VERSION must be newer than $CURRENT_VERSION (got $SAMPLE_VERSION)" >&2
+  exit 1
+fi
 
 # Channel layout. Mono halves decoded memory at the cost of the recording's
 # stereo width; set to 2 to keep it.
@@ -93,5 +111,9 @@ echo "$SAMPLES" | while read -r name midi keep; do
     "$OUT_DIR/$midi.mp3"
 done
 
+printf '{\n  "version": "%s"\n}\n' "$SAMPLE_VERSION" > "$WORK_DIR/pianoSampleManifest.json"
+mv "$WORK_DIR/pianoSampleManifest.json" "$MANIFEST_FILE"
+
 echo
 echo "Wrote $(ls -1 "$OUT_DIR"/*.mp3 | wc -l) samples, $(du -sh "$OUT_DIR" | cut -f1) total."
+echo "Sample URL version advanced from $CURRENT_VERSION to $SAMPLE_VERSION."

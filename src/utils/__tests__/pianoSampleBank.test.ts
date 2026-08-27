@@ -58,7 +58,11 @@ describe('PianoSampleBank', () => {
     const context = makeContext()
     const bank = new PianoSampleBank(context)
 
-    await bank.load()
+    await expect(bank.load()).resolves.toEqual({
+      status: 'ready',
+      readyCount: SAMPLE_MIDI_NOTES.length,
+      totalCount: SAMPLE_MIDI_NOTES.length,
+    })
 
     expect(bank.readyCount).toBe(SAMPLE_MIDI_NOTES.length)
     expect(bank.totalCount).toBe(SAMPLE_MIDI_NOTES.length)
@@ -86,7 +90,11 @@ describe('PianoSampleBank', () => {
     global.fetch = makeFetch(new Set([sampleUrl(60)])) as unknown as typeof fetch
     const bank = new PianoSampleBank(makeContext())
 
-    await expect(bank.load()).resolves.toBeUndefined()
+    await expect(bank.load()).resolves.toEqual({
+      status: 'degraded',
+      readyCount: SAMPLE_MIDI_NOTES.length - 1,
+      totalCount: SAMPLE_MIDI_NOTES.length,
+    })
 
     expect(bank.voiceFor(60)).toBeNull()
     expect(bank.readyCount).toBe(SAMPLE_MIDI_NOTES.length - 1)
@@ -101,7 +109,11 @@ describe('PianoSampleBank', () => {
     }) as unknown as typeof fetch
     const bank = new PianoSampleBank(makeContext())
 
-    await expect(bank.load()).resolves.toBeUndefined()
+    await expect(bank.load()).resolves.toEqual({
+      status: 'failed',
+      readyCount: 0,
+      totalCount: SAMPLE_MIDI_NOTES.length,
+    })
 
     expect(bank.readyCount).toBe(0)
     expect(bank.voiceFor(60)).toBeNull()
@@ -112,7 +124,11 @@ describe('PianoSampleBank', () => {
     global.fetch = undefined as unknown as typeof fetch
     const bank = new PianoSampleBank(makeContext())
 
-    await expect(bank.load()).resolves.toBeUndefined()
+    await expect(bank.load()).resolves.toEqual({
+      status: 'failed',
+      readyCount: 0,
+      totalCount: SAMPLE_MIDI_NOTES.length,
+    })
 
     expect(warn).toHaveBeenCalledTimes(1)
     expect(bank.readyCount).toBe(0)

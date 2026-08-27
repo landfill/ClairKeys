@@ -9,7 +9,7 @@ const mockPlayerState = {
   tempoScale: 1,
   lookAheadSec: 1.5,
   volume: 0.22,
-  trebleRolloff: 3.2,
+  sampleStatus: 'ready' as 'idle' | 'loading' | 'ready' | 'degraded' | 'failed',
   totalLength: 3,
   play: jest.fn(),
   pause: jest.fn(),
@@ -17,7 +17,6 @@ const mockPlayerState = {
   seek: jest.fn(),
   setTempoScale: jest.fn(),
   setVolume: jest.fn(),
-  setTrebleRolloff: jest.fn(),
 }
 
 jest.mock('@/hooks/useFallingNotesPlayer', () => ({
@@ -40,7 +39,9 @@ jest.mock('../../piano/SimplePianoKeyboard', () => ({
 }))
 
 jest.mock('@/components/playback', () => ({
-  PlaybackControls: () => null,
+  PlaybackControls: ({ isReady }: { isReady: boolean }) => (
+    <div data-testid="playback-ready">{String(isReady)}</div>
+  ),
 }))
 
 const animationData: CanonicalAnimationData = {
@@ -61,6 +62,7 @@ const animationData: CanonicalAnimationData = {
 describe('FallingNotesPlayer', () => {
   beforeEach(() => {
     mockKeyboardFrames.length = 0
+    mockPlayerState.sampleStatus = 'ready'
   })
 
   it('derives the visual frame and active keys from the same playhead on first render', () => {
@@ -87,17 +89,32 @@ describe('FallingNotesPlayer', () => {
     expect(mockPlayerState.setVolume).toHaveBeenCalledWith(0.3)
   })
 
-  it('shows the current treble rolloff and forwards slider changes to setTrebleRolloff', () => {
-    mockPlayerState.setTrebleRolloff.mockClear()
+  it('shows recorded-sample readiness and removes the ineffective treble control', () => {
     render(<FallingNotesPlayer animationData={animationData} />)
 
-    const slider = screen.getByLabelText(
-      '고음 밝기 (treble rolloff, 높을수록 어두움)'
-    ) as HTMLInputElement
-    expect(slider.value).toBe('3.2')
-    expect(screen.getByText('3.2')).toBeInTheDocument()
+    expect(screen.getByText('녹음 피아노 샘플로 재생합니다.')).toBeInTheDocument()
+    expect(screen.getByTestId('playback-ready')).toHaveTextContent('true')
+    expect(screen.queryByLabelText(/treble rolloff/)).not.toBeInTheDocument()
+  })
 
-    fireEvent.change(slider, { target: { value: '4' } })
-    expect(mockPlayerState.setTrebleRolloff).toHaveBeenCalledWith(4)
+  it('exposes degraded and failed fallback states without blocking playback', () => {
+    mockPlayerState.sampleStatus = 'degraded'
+    const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+
+    expect(screen.getByText(/이번 재생은 합성음으로 재생합니다/)).toBeInTheDocument()
+    expect(screen.getByTestId('playback-ready')).toHaveTextContent('true')
+
+    mockPlayerState.sampleStatus = 'failed'
+    rerender(<FallingNotesPlayer animationData={animationData} />)
+    expect(screen.getByText(/불러오지 못해 합성음으로 재생합니다/)).toBeInTheDocument()
+    expect(screen.getByTestId('playback-ready')).toHaveTextContent('true')
+  })
+
+  it('marks controls not ready only while loading', () => {
+    mockPlayerState.sampleStatus = 'loading'
+    render(<FallingNotesPlayer animationData={animationData} />)
+
+    expect(screen.getByText('녹음 피아노 샘플을 준비 중입니다.')).toBeInTheDocument()
+    expect(screen.getByTestId('playback-ready')).toHaveTextContent('false')
   })
 })

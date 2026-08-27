@@ -100,7 +100,11 @@ const originalAudioContext = window.AudioContext
 describe('useFallingNotesAudio - recorded samples', () => {
   beforeEach(() => {
     jest.useFakeTimers()
-    mockLoad = jest.fn(() => Promise.resolve())
+    mockLoad = jest.fn(() => Promise.resolve({
+      status: 'ready',
+      readyCount: 30,
+      totalCount: 30,
+    }))
     mockVoiceFor = jest.fn(() => ({
       buffer: { duration: mockBufferDuration } as AudioBuffer,
       playbackRate: mockPlaybackRate,
@@ -368,8 +372,12 @@ describe('useFallingNotesAudio - recorded samples', () => {
     // piece. Playback must not anchor its clock until the samples are there.
     let finishLoad: (() => void) | undefined
     mockLoad = jest.fn(
-      () => new Promise<void>((resolve) => {
-        finishLoad = resolve
+      () => new Promise((resolve) => {
+        finishLoad = () => resolve({
+          status: 'ready',
+          readyCount: 30,
+          totalCount: 30,
+        })
       })
     )
 
@@ -397,6 +405,7 @@ describe('useFallingNotesAudio - recorded samples', () => {
     })
     expect(sources).toHaveLength(0)
     expect(started).toBeUndefined()
+    expect(result.current.sampleStatus).toBe('loading')
 
     await act(async () => {
       finishLoad?.()
@@ -405,6 +414,7 @@ describe('useFallingNotesAudio - recorded samples', () => {
 
     expect(started).toBe(true)
     expect(sources).toHaveLength(1)
+    expect(result.current.sampleStatus).toBe('ready')
 
     unmount()
   })
@@ -454,6 +464,77 @@ describe('useFallingNotesAudio - recorded samples', () => {
 
     expect(started).toBe(true)
     expect(oscillator.start).toHaveBeenCalled()
+    expect(result.current.sampleStatus).toBe('degraded')
+
+    unmount()
+  })
+
+  it('uses synthesis for the whole playback when only part of the set loaded', async () => {
+    mockLoad = jest.fn(() => Promise.resolve({
+      status: 'degraded',
+      readyCount: 29,
+      totalCount: 30,
+    }))
+
+    const { context, raw } = makeSampleContext()
+    const oscillator = {
+      connect: jest.fn(), start: jest.fn(), stop: jest.fn(),
+      frequency: { value: 0 }, type: 'sine', setPeriodicWave: jest.fn(), context,
+    }
+    raw.createOscillator.mockReturnValue(oscillator)
+    raw.createBiquadFilter.mockReturnValue({
+      connect: jest.fn(), type: 'lowpass', frequency: { value: 0 }, Q: { value: 0 },
+    })
+    raw.createPeriodicWave.mockReturnValue({})
+    useContext(context)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    await act(async () => {
+      await result.current.startAudio(
+        [{ midi: 60, start: 0, duration: 1, hand: 'R', velocity: 0.8 }],
+        0, 1, false
+      )
+    })
+
+    // A decoded buffer exists for this note, but partial readiness freezes this
+    // playback to synthesis so the instrument cannot change midway through it.
+    expect(mockVoiceFor).not.toHaveBeenCalled()
+    expect(raw.createBufferSource).not.toHaveBeenCalled()
+    expect(oscillator.start).toHaveBeenCalled()
+    expect(result.current.sampleStatus).toBe('degraded')
+
+    unmount()
+  })
+
+  it('keeps playback working and reports failed when no samples loaded', async () => {
+    mockLoad = jest.fn(() => Promise.resolve({
+      status: 'failed',
+      readyCount: 0,
+      totalCount: 30,
+    }))
+
+    const { context, raw } = makeSampleContext()
+    const oscillator = {
+      connect: jest.fn(), start: jest.fn(), stop: jest.fn(),
+      frequency: { value: 0 }, type: 'sine', setPeriodicWave: jest.fn(), context,
+    }
+    raw.createOscillator.mockReturnValue(oscillator)
+    raw.createBiquadFilter.mockReturnValue({
+      connect: jest.fn(), type: 'lowpass', frequency: { value: 0 }, Q: { value: 0 },
+    })
+    raw.createPeriodicWave.mockReturnValue({})
+    useContext(context)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    await act(async () => {
+      await result.current.startAudio(
+        [{ midi: 60, start: 0, duration: 1, hand: 'R', velocity: 0.8 }],
+        0, 1, false
+      )
+    })
+
+    expect(oscillator.start).toHaveBeenCalled()
+    expect(result.current.sampleStatus).toBe('failed')
 
     unmount()
   })

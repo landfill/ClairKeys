@@ -4,6 +4,7 @@ import {
   SAMPLE_MIDI_NOTES,
   SAMPLE_PEAK_GAIN,
   SAMPLE_SET_PEAK,
+  SAMPLE_SET_VERSION,
   nearestSampleMidi,
   playbackRateForMidi,
   sampleUrl,
@@ -92,7 +93,17 @@ describe('pianoSamples', () => {
 
   describe('sampleUrl', () => {
     it('names the file by MIDI number under the served sample directory', () => {
-      expect(sampleUrl(60)).toBe('/samples/piano/60.mp3')
+      expect(sampleUrl(60)).toBe(`/samples/piano/60.mp3?v=${SAMPLE_SET_VERSION}`)
+    })
+
+    it('keeps the build script responsible for advancing the URL version', () => {
+      const script = fs.readFileSync(
+        path.join(process.cwd(), 'scripts', 'build-piano-samples.sh'),
+        'utf8'
+      )
+
+      expect(script).toContain('pianoSampleManifest.json')
+      expect(script).toContain('SAMPLE_VERSION')
     })
   })
 
