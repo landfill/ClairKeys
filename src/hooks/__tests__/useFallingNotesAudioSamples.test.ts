@@ -24,9 +24,12 @@ jest.mock('@/utils/pianoSampleBank', () => ({
 }))
 
 interface RecordedGain {
+  value: number
   setValueAtTime: jest.Mock
   linearRampToValueAtTime: jest.Mock
   exponentialRampToValueAtTime: jest.Mock
+  cancelScheduledValues: jest.Mock
+  cancelAndHoldAtTime?: jest.Mock
 }
 
 function makeSampleContext() {
@@ -251,6 +254,59 @@ describe('useFallingNotesAudio - recorded samples', () => {
       expect(calls[calls.length - 1][0]).toBeLessThanOrEqual(context.currentTime + 0.05)
     })
 
+    unmount()
+  })
+
+  it('preserves the automated gain before cancellation when hold is unavailable', async () => {
+    const { context, noteGains } = makeSampleContext()
+    useContext(context)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    await act(async () => {
+      await result.current.startAudio(
+        [{ midi: 60, start: 0, duration: 30, hand: 'R', velocity: 0.8 }],
+        0, 1, false
+      )
+    })
+
+    const gain = noteGains[0]
+    const automatedValue = 0.18
+    gain.value = automatedValue
+    gain.cancelScheduledValues.mockImplementation(() => {
+      // Web Audio allows cancelScheduledValues to restore the value preceding
+      // an active ramp. Model that discontinuity so the fallback must capture
+      // the automated value before it cancels the timeline.
+      gain.value = 0.73
+    })
+    const setCallsBeforeStop = gain.setValueAtTime.mock.calls.length
+
+    act(() => result.current.stopAudio())
+
+    expect(gain.setValueAtTime.mock.calls[setCallsBeforeStop]).toEqual([
+      automatedValue,
+      context.currentTime,
+    ])
+    unmount()
+  })
+
+  it('uses cancelAndHoldAtTime when the browser provides it', async () => {
+    const { context, noteGains } = makeSampleContext()
+    useContext(context)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+    await act(async () => {
+      await result.current.startAudio(
+        [{ midi: 60, start: 0, duration: 30, hand: 'R', velocity: 0.8 }],
+        0, 1, false
+      )
+    })
+
+    const gain = noteGains[0]
+    gain.cancelAndHoldAtTime = jest.fn()
+    act(() => result.current.stopAudio())
+
+    expect(gain.cancelAndHoldAtTime).toHaveBeenCalledWith(context.currentTime)
+    expect(gain.cancelScheduledValues).not.toHaveBeenCalled()
     unmount()
   })
 

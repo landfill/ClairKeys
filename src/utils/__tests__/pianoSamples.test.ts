@@ -1,5 +1,7 @@
 import fs from 'fs'
+import os from 'os'
 import path from 'path'
+import { spawnSync } from 'child_process'
 import {
   SAMPLE_MIDI_NOTES,
   SAMPLE_PEAK_GAIN,
@@ -11,6 +13,95 @@ import {
   damperReleaseSec,
 } from '../pianoSamples'
 import { A0_MIDI, C8_MIDI } from '../pianoLayout'
+
+function writeExecutable(file: string, contents: string) {
+  fs.writeFileSync(file, contents)
+  fs.chmodSync(file, 0o755)
+}
+
+function makeBuildFixture() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'clairkeys-piano-build-'))
+  const scriptDir = path.join(root, 'scripts')
+  const outputDir = path.join(root, 'public', 'samples', 'piano')
+  const manifestDir = path.join(root, 'src', 'utils')
+  const binDir = path.join(root, 'test-bin')
+  const counterFile = path.join(root, 'ffmpeg-count')
+
+  for (const dir of [scriptDir, outputDir, manifestDir, binDir]) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+
+  fs.copyFileSync(
+    path.join(process.cwd(), 'scripts', 'build-piano-samples.sh'),
+    path.join(scriptDir, 'build-piano-samples.sh')
+  )
+  fs.writeFileSync(path.join(outputDir, 'LICENSE.txt'), 'license')
+  fs.writeFileSync(path.join(outputDir, 'old.mp3'), 'old set')
+  fs.writeFileSync(
+    path.join(manifestDir, 'pianoSampleManifest.json'),
+    '{\n  "version": "v1"\n}\n'
+  )
+
+  writeExecutable(path.join(binDir, 'curl'), `#!/usr/bin/env bash
+set -euo pipefail
+while (( $# )); do
+  if [[ "$1" == "-o" ]]; then
+    printf 'source' > "$2"
+    exit 0
+  fi
+  shift
+done
+exit 2
+`)
+  writeExecutable(path.join(binDir, 'ffmpeg'), `#!/usr/bin/env bash
+set -euo pipefail
+count=0
+if [[ -f "$PIANO_TEST_COUNTER" ]]; then
+  count="$(<"$PIANO_TEST_COUNTER")"
+fi
+count=$((count + 1))
+printf '%s' "$count" > "$PIANO_TEST_COUNTER"
+if [[ "\${PIANO_TEST_FAIL_AT:-0}" == "$count" ]]; then
+  exit 3
+fi
+output="\${!#}"
+printf 'new sample %s' "$count" > "$output"
+`)
+  writeExecutable(path.join(binDir, 'mv'), `#!/usr/bin/env bash
+set -euo pipefail
+if [[ "\${PIANO_TEST_FAIL_SWAP:-0}" == "1" && "$1" == */piano.next && "$2" == */public/samples/piano ]]; then
+  exit 4
+fi
+exec /bin/mv "$@"
+`)
+
+  return { root, outputDir, counterFile, binDir }
+}
+
+function runBuild(
+  fixture: ReturnType<typeof makeBuildFixture>,
+  extraEnv: Record<string, string | undefined> = {}
+) {
+  return spawnSync(
+    'bash',
+    [path.join(fixture.root, 'scripts', 'build-piano-samples.sh')],
+    {
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        ...extraEnv,
+        PATH: `${fixture.binDir}:${process.env.PATH ?? ''}`,
+        PIANO_TEST_COUNTER: fixture.counterFile,
+      },
+    }
+  )
+}
+
+function manifestVersion(root: string): string {
+  return JSON.parse(
+    fs.readFileSync(path.join(root, 'src', 'utils', 'pianoSampleManifest.json'), 'utf8')
+  ).version
+}
 
 describe('pianoSamples', () => {
   describe('SAMPLE_MIDI_NOTES', () => {
@@ -96,14 +187,52 @@ describe('pianoSamples', () => {
       expect(sampleUrl(60)).toBe(`/samples/piano/60.mp3?v=${SAMPLE_SET_VERSION}`)
     })
 
-    it('keeps the build script responsible for advancing the URL version', () => {
-      const script = fs.readFileSync(
-        path.join(process.cwd(), 'scripts', 'build-piano-samples.sh'),
-        'utf8'
-      )
+    it('leaves the served set and version untouched when conversion fails', () => {
+      const fixture = makeBuildFixture()
+      try {
+        const result = runBuild(fixture, { PIANO_TEST_FAIL_AT: '15' })
 
-      expect(script).toContain('pianoSampleManifest.json')
-      expect(script).toContain('SAMPLE_VERSION')
+        expect(result.status).not.toBe(0)
+        expect(fs.readdirSync(fixture.outputDir).sort()).toEqual([
+          'LICENSE.txt',
+          'old.mp3',
+        ])
+        expect(manifestVersion(fixture.root)).toBe('v1')
+      } finally {
+        fs.rmSync(fixture.root, { recursive: true, force: true })
+      }
+    })
+
+    it('restores the served set when the staged directory cannot be installed', () => {
+      const fixture = makeBuildFixture()
+      try {
+        const result = runBuild(fixture, { PIANO_TEST_FAIL_SWAP: '1' })
+
+        expect(result.status).not.toBe(0)
+        expect(fs.readdirSync(fixture.outputDir).sort()).toEqual([
+          'LICENSE.txt',
+          'old.mp3',
+        ])
+        expect(manifestVersion(fixture.root)).toBe('v1')
+      } finally {
+        fs.rmSync(fixture.root, { recursive: true, force: true })
+      }
+    })
+
+    it('publishes a complete set before advancing the manifest version', () => {
+      const fixture = makeBuildFixture()
+      try {
+        const result = runBuild(fixture)
+        const files = fs.readdirSync(fixture.outputDir)
+
+        expect(result.status).toBe(0)
+        expect(files.filter((file) => file.endsWith('.mp3'))).toHaveLength(30)
+        expect(files).toContain('LICENSE.txt')
+        expect(files).not.toContain('old.mp3')
+        expect(manifestVersion(fixture.root)).toBe('v2')
+      } finally {
+        fs.rmSync(fixture.root, { recursive: true, force: true })
+      }
     })
   })
 

@@ -730,8 +730,23 @@ function stopAudioNodes(nodes: AudioNodes[]) {
     try {
       // Fade out quickly to avoid clicks
       const now = source.context.currentTime
-      gain.gain.cancelScheduledValues(now)
-      gain.gain.setValueAtTime(gain.gain.value, now)
+      const currentGain = gain.gain.value
+
+      // cancelScheduledValues() may restore the value from before an active
+      // ramp, producing a discontinuity before this fade even begins. Modern
+      // engines can hold the computed automation value directly; older ones
+      // need that value captured before cancellation and restored afterwards.
+      if (typeof gain.gain.cancelAndHoldAtTime === 'function') {
+        try {
+          gain.gain.cancelAndHoldAtTime(now)
+        } catch {
+          gain.gain.cancelScheduledValues(now)
+          gain.gain.setValueAtTime(currentGain, now)
+        }
+      } else {
+        gain.gain.cancelScheduledValues(now)
+        gain.gain.setValueAtTime(currentGain, now)
+      }
       gain.gain.linearRampToValueAtTime(0, now + 0.02)
 
       // Stop the source after fade out. This is the only thing that ends a note

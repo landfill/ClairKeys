@@ -22,8 +22,39 @@ BASE_URL="https://tonejs.github.io/audio/salamander"
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 OUT_DIR="$ROOT_DIR/public/samples/piano"
 MANIFEST_FILE="$ROOT_DIR/src/utils/pianoSampleManifest.json"
-WORK_DIR="$(mktemp -d)"
-trap 'rm -rf "$WORK_DIR"' EXIT
+# Keep staging on the repository filesystem so the final directory renames are
+# atomic rather than cross-device copies.
+WORK_DIR="$(mktemp -d "$ROOT_DIR/.piano-samples-build.XXXXXX")"
+STAGING_DIR="$WORK_DIR/piano.next"
+BACKUP_DIR="$WORK_DIR/piano.previous"
+BACKUP_ACTIVE=0
+
+restore_previous_set() {
+  [[ -d "$BACKUP_DIR" ]] || return 0
+
+  if [[ -d "$OUT_DIR" ]]; then
+    mv "$OUT_DIR" "$WORK_DIR/piano.failed" || return 1
+  fi
+  mv "$BACKUP_DIR" "$OUT_DIR"
+}
+
+cleanup() {
+  local status=$?
+  trap - EXIT INT TERM
+
+  if (( BACKUP_ACTIVE )); then
+    if ! restore_previous_set; then
+      echo "Failed to restore the previous sample set; recovery files remain in $WORK_DIR" >&2
+      exit "$status"
+    fi
+  fi
+
+  rm -rf "$WORK_DIR"
+  exit "$status"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 # Every deployed set is immutable for one year and cache-first in the service
 # worker. Advance the query-string version only after all samples build, so a
@@ -92,9 +123,11 @@ A7 105 2.0
 C8 108 2.0
 "
 
-mkdir -p "$OUT_DIR"
+mkdir -p "$OUT_DIR" "$STAGING_DIR"
+cp "$OUT_DIR/LICENSE.txt" "$STAGING_DIR/LICENSE.txt"
 
-echo "$SAMPLES" | while read -r name midi keep; do
+BUILT_COUNT=0
+while read -r name midi keep; do
   [ -z "$name" ] && continue
 
   echo "  $name -> $midi.mp3 (${keep}s, ${CHANNELS}ch)"
@@ -108,12 +141,38 @@ echo "$SAMPLES" | while read -r name midi keep; do
     -t "$keep" \
     -af "afade=t=out:st=$fade_start:d=$FADE_SEC" \
     -ac "$CHANNELS" -b:a "$BITRATE" \
-    "$OUT_DIR/$midi.mp3"
-done
+    "$STAGING_DIR/$midi.mp3"
+
+  [[ -s "$STAGING_DIR/$midi.mp3" ]]
+  BUILT_COUNT=$((BUILT_COUNT + 1))
+done <<< "$SAMPLES"
+
+shopt -s nullglob
+BUILT_FILES=("$STAGING_DIR"/*.mp3)
+if (( BUILT_COUNT != 30 || ${#BUILT_FILES[@]} != 30 )); then
+  echo "Expected 30 distinct samples, built $BUILT_COUNT entries and ${#BUILT_FILES[@]} files" >&2
+  exit 1
+fi
 
 printf '{\n  "version": "%s"\n}\n' "$SAMPLE_VERSION" > "$WORK_DIR/pianoSampleManifest.json"
-mv "$WORK_DIR/pianoSampleManifest.json" "$MANIFEST_FILE"
+
+# Keep the previous directory until both the complete staged set and its new
+# manifest are installed. Any failure or signal in this window runs cleanup(),
+# which restores the previous directory before discarding staging files.
+mv "$OUT_DIR" "$BACKUP_DIR"
+BACKUP_ACTIVE=1
+if ! mv "$STAGING_DIR" "$OUT_DIR"; then
+  echo "Failed to install the staged sample set; restoring the previous set" >&2
+  exit 1
+fi
+if ! mv "$WORK_DIR/pianoSampleManifest.json" "$MANIFEST_FILE"; then
+  echo "Failed to advance the sample manifest; restoring the previous set" >&2
+  exit 1
+fi
+
+BACKUP_ACTIVE=0
+rm -rf "$BACKUP_DIR"
 
 echo
-echo "Wrote $(ls -1 "$OUT_DIR"/*.mp3 | wc -l) samples, $(du -sh "$OUT_DIR" | cut -f1) total."
+echo "Wrote $BUILT_COUNT samples, $(du -sh "$OUT_DIR" | cut -f1) total."
 echo "Sample URL version advanced from $CURRENT_VERSION to $SAMPLE_VERSION."
