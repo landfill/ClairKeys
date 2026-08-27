@@ -2,6 +2,17 @@
 
 Last updated: 2026-08-27 KST
 
+## 지금 열려 있는 것
+
+- **PR [#62](https://github.com/landfill/ClairKeys/pull/62) `OPEN`, review-ready** — 이슈 #60(녹음
+  샘플 재생 음량이 약하다)의 수정. `SAMPLE_PEAK_GAIN`을 리터럴 0.73에서 측정 유도값
+  (`SYNTHESISED_VOICE_RMS / playedBandMedianRms()` = 1.140, **+3.87 dB**)으로 바꾼다.
+  **D-015**를 기록한다. 사용자의 명시적 병합 승인 전에는 병합하지 않는다.
+  근거: `docs/recovery/reviews/PR-62.md`,
+  `docs/recovery/validation/2026-08-27-issue-60-sample-gain-recalibration.md`
+- **이슈 [#61](https://github.com/landfill/ClairKeys/issues/61) 신규** — #62 작업 중 D-014 결정 6의
+  전제가 부분적으로 거짓임이 측정으로 드러나 분리했다. **#62의 청감 확인 이후에 착수한다.**
+
 ## Current state
 
 - Program status: `IN_PROGRESS`
