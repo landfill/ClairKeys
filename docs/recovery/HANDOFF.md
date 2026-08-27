@@ -9,7 +9,7 @@ Last updated: 2026-08-27 KST
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: none. **[#59](https://github.com/landfill/ClairKeys/pull/59) merged 2026-08-27** at `67efc6d` with the user's explicit approval — score playback now uses recorded piano samples. Merge-commit checks 6/6 successful; work branch deleted; Vercel Production deployed `67efc6d`. **Its objective is not yet verified: audible listening is only possible after a production deploy in this environment, and nobody has listened.** 근거: `docs/recovery/reviews/PR-59.md`
+- Open pull requests: none. **[#59](https://github.com/landfill/ClairKeys/pull/59) merged 2026-08-27** at `67efc6d`, and its objective is now **confirmed by the user's listening in production** with the user's explicit approval — score playback now uses recorded piano samples. Merge-commit checks 6/6 successful; work branch deleted; Vercel Production deployed `67efc6d`. Audible listening was only possible after deploy, and the user has since listened and confirmed the result. The `degraded`/`failed` states remain unobserved in a real failed load. 근거: `docs/recovery/reviews/PR-59.md`
 - Open pull requests: none. **[#57](https://github.com/landfill/ClairKeys/pull/57) merged 2026-08-24** at `d58ceea` with the user's explicit approval — issue #56's black-key displacement and the falling-note centering that followed from it. Merge-commit checks 6/6 successful; work branch, Orca worktree, and both leftover local branches deleted; `main` is the only branch. 근거: `docs/recovery/reviews/PR-57.md`. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
 - **[#53](https://github.com/landfill/ClairKeys/pull/53) merged 2026-08-24** at `a5d9da3` with the user's explicit approval — README now names the OCR stage and separates it from the converter code that consumes MusicXML. Merge-commit checks all passed; both branch tips were confirmed in `main` and the work branch is deleted. 근거: `docs/recovery/reviews/PR-53.md`
 - **#50 and #51 were merged 2026-08-23** with the user's explicit approval — #50 at `210a021`, #51 at `64753d9`. Both work branches and all three Orca worktrees are deleted; `main` is clean and the only worktree. Issues #48 and #49 closed automatically. Issues #44, #46, #47 remain open and are untouched.
@@ -75,7 +75,11 @@ Last updated: 2026-08-27 KST
   악보 재생이 합성 배음 대신 녹음 피아노 샘플을 쓴다. 커밋 4개, hosted CI 17개 통과,
   머지 커밋 체크 6/6 성공, Vercel Production이 `67efc6d`를 배포했다.
 
-  **이 PR은 소리를 바꾸려고 존재하는데 소리는 아무도 확인하지 않았다.** 사용자 환경에서는
+  **2026-08-27 청감 확인 완료: 사용자가 운영 배포된 재생을 듣고 만족한다고 확인했다.**
+  아래 문단은 병합 시점의 상태 기록이며, 그 미검증은 배포 후 확인으로 닫혔다. 되돌리기는
+  발동하지 않는다. 다만 `degraded`/`failed` 표시는 여전히 실물로 관측된 적이 없다.
+
+  (병합 시점 기록) **이 PR은 소리를 바꾸려고 존재하는데 소리는 아무도 확인하지 않았다.** 사용자 환경에서는
   청감 검증이 운영 배포 이후에만 가능하다. 지금까지의 검증은 전부 구조적이다 — 노드 수,
   게인 산술, 버퍼 선택, 테스트 499건. 그중 어느 것도 "피아노처럼 들린다"를 입증하지 않는다.
   **배포 후 후속 조치 4단계가 `docs/recovery/reviews/PR-59.md`에 있다** (들어보기 → 결과를
