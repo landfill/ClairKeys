@@ -31,13 +31,7 @@
  * rot silently.
  */
 
-/** Peak and short-window loudness of one built sample, as linear amplitudes. */
-export interface SampleLevel {
-  /** Largest absolute sample value in the file. */
-  peak: number
-  /** RMS over `LOUDNESS_WINDOW_SEC` from the file's start. */
-  rms: number
-}
+import type { SampleLevel } from '@/types/fallingNotes'
 
 /**
  * Window the loudness figures are taken over, in seconds.

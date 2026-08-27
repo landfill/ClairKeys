@@ -55,6 +55,21 @@ export interface NoteEnvelope {
 }
 
 /**
+ * Measured level of one built piano sample, as linear amplitudes.
+ *
+ * The counterpart to `NoteEnvelope` on the recorded path: where a synthesised
+ * note's level is computed, a sample's is whatever the recording happens to be,
+ * so it has to be measured. Values live in `@/utils/pianoSampleLevels` and the
+ * playback gain is derived from them.
+ */
+export interface SampleLevel {
+  /** Largest absolute sample value in the file. */
+  peak: number;
+  /** RMS over the module's loudness window, taken from the file's start. */
+  rms: number;
+}
+
+/**
  * Piano key layout information for 88-key keyboard
  */
 export type KeyLayout = {
