@@ -119,6 +119,7 @@ describe('responsive playback layout contract', () => {
     expect(layout.byMidi.has(29)).toBe(true);
     expect(layout.byMidi.has(30)).toBe(true);
     expect(layout.byMidi.has(83)).toBe(true);
+    expect(layout.byMidi.get(29)?.w).toBeCloseTo(356 / 32, 10);
     expect(Math.min(...notes.map(note => note.midi))).toBeGreaterThanOrEqual(
       Math.min(...layout.byMidi.keys())
     );

@@ -27,6 +27,7 @@ export default function SheetMusicPage() {
   const [animationData, setAnimationData] = useState<CanonicalAnimationData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isPlaybackActive, setIsPlaybackActive] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -169,20 +170,23 @@ export default function SheetMusicPage() {
   return (
     <AuthGuard>
       <MainLayout>
-        <PageHeader
-          title={sheetMusic.title}
-          description={`${sheetMusic.composer}${sheetMusic.category ? ` • ${sheetMusic.category}` : ''}`}
-        />
+        {!isPlaybackActive && (
+          <PageHeader
+            title={sheetMusic.title}
+            description={`${sheetMusic.composer}${sheetMusic.category ? ` • ${sheetMusic.category}` : ''}`}
+          />
+        )}
         
-        <Container className="py-8" size="lg">
+        <Container className={isPlaybackActive ? 'px-0 py-0 sm:px-0 lg:px-0' : 'py-8'} size={isPlaybackActive ? 'full' : 'lg'}>
           {/* Falling Notes Player - MVP Style */}
           <FallingNotesPlayer 
             animationData={animationData} 
-            className="mb-8"
+            className={isPlaybackActive ? '' : 'mb-8'}
+            onPlaybackChange={setIsPlaybackActive}
           />
 
           {/* Sheet Music Info */}
-          <Card padding="lg">
+          {!isPlaybackActive && <Card padding="lg">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">악보 정보</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -212,7 +216,7 @@ export default function SheetMusicPage() {
                 </dd>
               </div>
             </div>
-          </Card>
+          </Card>}
         </Container>
       </MainLayout>
     </AuthGuard>

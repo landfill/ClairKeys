@@ -25,6 +25,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+body.playback-active .playback-chrome {
+  display: none;
+}
+
 /* Playback Controls 스타일 */
 .playback-controls .slider::-webkit-slider-thumb {
   appearance: none;
