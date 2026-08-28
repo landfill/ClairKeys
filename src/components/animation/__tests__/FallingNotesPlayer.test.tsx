@@ -49,6 +49,7 @@ jest.mock('../../piano/SimplePianoKeyboard', () => ({
 }))
 
 jest.mock('@/components/playback', () => ({
+  ...jest.requireActual('@/components/playback'),
   PlaybackControls: ({ isReady, onPlay }: { isReady: boolean; onPlay: () => void }) => (
     <div>
       <div data-testid="playback-ready">{String(isReady)}</div>
@@ -91,6 +92,7 @@ describe('FallingNotesPlayer', () => {
 
   it('shows the current master gain and forwards slider changes to setVolume', () => {
     mockPlayerState.setVolume.mockClear()
+    mockPlayerState.isPlaying = false
     render(<FallingNotesPlayer animationData={animationData} />)
 
     // The readout is the gain value itself — that is what makes it usable for
@@ -106,6 +108,7 @@ describe('FallingNotesPlayer', () => {
   })
 
   it('shows recorded-sample readiness and removes the ineffective treble control', () => {
+    mockPlayerState.isPlaying = false
     render(<FallingNotesPlayer animationData={animationData} />)
 
     expect(screen.getByText('녹음 피아노 샘플로 재생합니다.')).toBeInTheDocument()
@@ -114,6 +117,7 @@ describe('FallingNotesPlayer', () => {
   })
 
   it('exposes degraded and failed fallback states without blocking playback', () => {
+    mockPlayerState.isPlaying = false
     mockPlayerState.sampleStatus = 'degraded'
     const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
 
@@ -127,6 +131,7 @@ describe('FallingNotesPlayer', () => {
   })
 
   it('marks controls not ready only while loading', () => {
+    mockPlayerState.isPlaying = false
     mockPlayerState.sampleStatus = 'loading'
     render(<FallingNotesPlayer animationData={animationData} />)
 
@@ -234,6 +239,54 @@ describe('FallingNotesPlayer', () => {
       expect(root.style.transform).toBe('')
       expect(root.className).toContain('min-h-[100dvh]')
       expect(document.body).not.toHaveClass('playback-rotated')
+    })
+  })
+
+  // Compact playback chrome. Measured on the deployed player: the four stacked
+  // blocks cost 264px, and an iPhone 12 in landscape has 390px of viewport
+  // height in total. Rotating without compacting leaves a 6px falling area, so
+  // the rotation and this compaction are one feature, not two.
+  describe('compact playback chrome', () => {
+    it('replaces the stacked setup chrome with one bar while playing', () => {
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      // The full three-row control block is a setup affordance.
+      expect(screen.queryByTestId('playback-ready')).not.toBeInTheDocument()
+      // So is the line explaining what the hit line means.
+      expect(screen.queryByText(/히트라인/)).not.toBeInTheDocument()
+      expect(screen.getByTestId('compact-playback-bar')).toBeInTheDocument()
+    })
+
+    it('keeps the master gain adjustable while the score is sounding', () => {
+      mockPlayerState.setVolume.mockClear()
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      // This slider exists to choose DEFAULT_MASTER_GAIN by ear, which can only
+      // be done while listening. Hiding it during playback would defeat it.
+      const slider = screen.getByLabelText('음량 (master gain)') as HTMLInputElement
+      expect(slider.value).toBe('0.22')
+      fireEvent.change(slider, { target: { value: '0.4' } })
+      expect(mockPlayerState.setVolume).toHaveBeenCalledWith(0.4)
+    })
+
+    it('keeps announcing sample fallbacks even though the line is not shown', () => {
+      mockPlayerState.sampleStatus = 'failed'
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      // Reclaiming the row must not remove the live region that tells a screen
+      // reader the recorded piano was replaced by a synthesised one.
+      const status = screen.getByRole('status')
+      expect(status).toHaveTextContent('샘플을 불러오지 못해 합성음으로 재생합니다.')
+      expect(status.className).toContain('sr-only')
+    })
+
+    it('restores the full setup chrome when playback stops', () => {
+      mockPlayerState.isPlaying = false
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      expect(screen.getByTestId('playback-ready')).toBeInTheDocument()
+      expect(screen.getByText(/히트라인/)).toBeInTheDocument()
+      expect(screen.queryByTestId('compact-playback-bar')).not.toBeInTheDocument()
     })
   })
 })
