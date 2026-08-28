@@ -39,19 +39,37 @@ D-015의 기준 선택 — 창 0.5초, 음역 C3~C6, 중앙값 — 이 실제 �
 
 ## 열려 있는 이슈
 
-- **이슈 [#65](https://github.com/landfill/ClairKeys/issues/65)** — 2026-08-28 생성. 사용자가
-  "모바일에서 악보 재생 시 자동 가로모드"를 요청했고, 검토 결과 **요청대로만 구현하면 목적을
-  달성하지 못한다**는 사실이 측정으로 나왔다. `FallingNotesPlayer.tsx:45`의 `keyWidth = 24`가
-  하드코딩이라 건반 폭이 52 × 24 = 1248px 고정이고, 바깥이 `overflow-hidden`이라 넘치는 부분은
-  스크롤도 안 되고 사라진다. iPhone 세로에서 흰건반 **14/52**만 보이는데, **가로로 돌려도
-  33/52**다(E5 위 19개가 여전히 잘림). 데스크톱 `max-w-5xl`에서도 42/52로 10개가 잘린다.
-  게다가 `screen.orientation.lock()`은 MDN browser-compat-data 기준 `safari: false` /
-  `safari_ios: mirror(=false)`이므로 **iOS에서는 API 자체가 없다** — Android는 fullscreen
-  상태에서만 되는데 재생 화면에 fullscreen 진입 경로가 없다. 따라서 이슈는 자동 회전이 아니라
-  **반응형 `keyWidth`를 1순위**로 잡았다. 자동 회전만 넣고 닫으면 "고쳤다고 기록됐는데 여전히
-  안 보이는" 상태가 된다. `src/components/mobile/` 스택(`FullScreenPiano` 외 4개)은 어떤
-  페이지도 루트를 import하지 않는 **죽은 코드**이고, 그 안에서도 `lock()`을 부르지 않고 안내
-  문구만 띄운다 — 되살릴지 삭제할지는 #58(두 건반 구현 불일치)과 함께 판단해야 한다.
+- **이슈 [#65](https://github.com/landfill/ClairKeys/issues/65)** — 2026-08-28 생성, 같은 날
+  Codex 워커 교차검증으로 본문 정정. 사용자가 "모바일에서 악보 재생 시 자동 가로모드"를
+  요청했고, 검토 결과 **요청대로만 구현하면 목적을 달성하지 못한다**는 사실이 측정으로 나왔다.
+  `FallingNotesPlayer.tsx:46`의 `keyWidth = 24`가 하드코딩이라 건반 폭이 52 × 24 = 1248px
+  고정이고, 바깥이 `overflow-hidden`이며 가로 스크롤 컨테이너가 없어 넘치는 부분은 사라진다.
+  iPhone 세로에서 흰건반 **14/52**만 보이는데 **가로로 돌려도 33/52**다(E5 위 19개가 여전히
+  잘림). 데스크톱에서도 42/52다. `screen.orientation.lock()`은 MDN BCD 기준 safari/safari_ios
+  모두 `false`이므로 **iOS에서는 자동 회전이 불가능하다.**
+
+  **우선순위를 세로 정책 결정 → 반응형 geometry → 재생 전용 모드 → 가로모드 유도 순으로 잡았다.**
+  자동 회전을 먼저 넣으면 iOS는 무변화, Android도 19개가 계속 잘린 채 닫힌다. 반대로 52개를
+  무조건 맞추면 iPhone 세로 흰건반이 **6.85px**이 되고 손가락 배지가 `note.w >= 12` 조건에
+  걸려 전부 사라진다(`visualUtils.ts:127`) — "다 보이지만 못 쓰는" 화면이다. 그래서 정책 결정이
+  구현보다 앞선다.
+
+  **교차검증에서 코디네이터 오류 3건이 나왔다** — 이 과정이 값을 했다: (1) Container의
+  `sm:px-6` tier와 border 2px를 누락해 가로 가용 폭을 812px로 적었다(정정 794px). (2)
+  `lock()` 미지원을 "API 자체가 없다"로 과장했다 — 실제로는 `ScreenOrientation` 인터페이스와
+  `type`/`angle`은 Safari 16.4+에서 지원되고 `lock()`/`unlock()`만 `false`다. 따라서
+  feature-detect를 `'orientation' in screen`으로 하면 **iOS에서 true가 나와 지원됨 경로를 탄다**
+  — `typeof screen.orientation?.lock === 'function'`을 써야 한다. (3) 전역 Header를
+  `MainLayout` 소속으로 잘못 지목했다(실제는 RootLayout `layout.tsx:98`). 잘리는 건반 개수
+  자체는 정정 전후 동일하다.
+
+  워커가 추가로 찾은 것: `FallingNotesPlayer`에 `ResizeObserver`·resize 구독이 전혀 없어
+  반응형화의 선행 작업이 필요하다는 점, 낙하 영역이 border-box 때문에 실제 208px인데
+  `FallingNotes`에 210px이 전달돼 **약 14ms 시각 어긋남**이 있다는 점, 죽은
+  `PianoKeyboard`가 `keyWidth`를 무시하고 canvas 최소폭 **800px을 강제**해 그대로 재사용할 수
+  없다는 점, 재생 화면이 listen-only라는 점, 그리고 **오디오 unlock은 결함이 아니라는 점**
+  (`useFallingNotesAudio.ts:570`에서 suspended 컨텍스트를 `await resume()`으로 처리).
+  `src/components/mobile/` 스택은 죽은 코드이며 되살릴지 삭제할지는 #58과 함께 판단한다.
 
 - **이슈 [#61](https://github.com/landfill/ClairKeys/issues/61)** — #62 작업 중 D-014 결정 6의
   전제가 부분적으로 거짓임이 측정으로 드러나 분리했다. 샘플 세트의 음량 편차 중 매끄러운
