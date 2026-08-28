@@ -11,11 +11,10 @@ import { prisma } from '@/lib/prisma'
  * created a `SheetMusic` row, returned `Internal server error`, and stored
  * nothing.
  *
- * The cause is not in this route — the OMR service has never been deployed and
- * `OMR_SERVICE_URL` still names the dead `clairkeys-omr.fly.dev`, so the
- * `fetch` throws at TLS rather than returning a non-ok response. D-010 accepted
- * that upload fails visibly until issue #22 lands, so these tests do NOT assert
- * that upload succeeds.
+ * The cause was not in this route — `OMR_SERVICE_URL` named an undeployed
+ * placeholder, so `fetch` threw before returning a non-ok response. D-010
+ * accepted that upload failed visibly until issue #22 landed, so these tests
+ * do NOT assert that upload succeeds.
  *
  * What they assert is that the failure is *honest and clean*:
  *
@@ -23,7 +22,7 @@ import { prisma } from '@/lib/prisma'
  *     `catch` block returned 500 and left the row `processing` forever with no
  *     `omrJobId`, which `/api/omr/status/[jobId]` can never reach either.
  *   - an unconfigured service is refused before any row is created, instead of
- *     surfacing a TLS handshake error from a hostname nobody owns any more.
+ *     surfacing a transport error from a stale placeholder.
  */
 
 jest.mock('next-auth')

@@ -99,7 +99,7 @@ class ProcessingStatus:
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for Fly.io"""
+    """Health check endpoint for the service supervisor."""
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
 @app.get("/")

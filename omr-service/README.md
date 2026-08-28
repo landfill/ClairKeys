@@ -69,33 +69,9 @@ requires the token.
 Cloud VM, including why the secret lives in a 600 env file rather than in the
 unit. The exposure decision it implements — plain HTTP without TLS, for the test
 phase only, and the condition for ending that — is **D-012** in
-`docs/recovery/DECISIONS.md`. The Fly.io section below is historical: `fly.toml`
-was written but never deployed.
-
-## Fly.io Deployment
-
-1. **Install Fly CLI**
-   ```bash
-   curl -L https://fly.io/install.sh | sh
-   ```
-
-2. **Login and Initialize**
-   ```bash
-   fly auth login
-   fly apps create clairkeys-omr
-   ```
-
-3. **Set Environment Variables**
-   ```bash
-   fly secrets set OMR_SHARED_SECRET=$(openssl rand -hex 32)
-   ```
-
-   No Supabase credentials are set here — see D-011 above.
-
-4. **Deploy**
-   ```bash
-   fly deploy
-   ```
+`docs/recovery/DECISIONS.md`. This is the repository's only active OMR
+deployment procedure. Earlier hosting experiments are retained only in dated
+recovery records and must not be used as deployment instructions.
 
 ## API Endpoints
 
@@ -181,10 +157,9 @@ this service should not expose it.
 - Audiveris conversion timeout: 15 minutes
 - Remaining memory is reserved for Python, native OCR libraries, and the OS
 
-These were chosen for a provisional 4GB Fly machine (PR #36) that was never
-deployed. The service now runs on a VM with **15GiB**, so the concurrency limit
-of 1 is conservative rather than necessary — but nothing has re-measured it, and
-a limit that has never caused a problem is a poor thing to raise on a guess.
+The service runs on a VM with **15GiB**, so the concurrency limit of 1 is
+conservative rather than necessary — but nothing has re-measured it, and a
+limit that has never caused a problem is a poor thing to raise on a guess.
 
 They are no longer unvalidated. Real conversions have run in this container on
 the VM since 2026-08-21: the Bach WTK1 Prelude 1 fixture completes in roughly 45

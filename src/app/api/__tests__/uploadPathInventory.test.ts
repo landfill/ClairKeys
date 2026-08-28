@@ -78,9 +78,9 @@ const IMPORTS_DEMO_GENERATOR =
 describe('upload path inventory', () => {
   it('has exactly one path that reaches the real OMR service', () => {
     const omrRoute = readSource(OMR_ROUTE)
-    // The service address moved into `src/lib/omr/serviceUrl.ts` when the dead
-    // `clairkeys-omr.fly.dev` default was removed, so reaching the service is
-    // now spelled `getOmrServiceUrl()` rather than the raw variable name. The
+    // The service address moved into `src/lib/omr/serviceUrl.ts` when the stale
+    // hard-coded default was removed, so reaching the service is now spelled
+    // `getOmrServiceUrl()` rather than the raw variable name. The
     // property being pinned is unchanged: one route, and only one, calls it.
     expect(omrRoute).toContain('getOmrServiceUrl')
     expect(omrRoute).toContain('/process')
