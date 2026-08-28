@@ -1,6 +1,8 @@
 import {
   MAX_LOOK_AHEAD_SEC,
   MIN_KEYBOARD_HEIGHT,
+  MIN_LOOK_AHEAD_SEC,
+  PIANO_KEY_ASPECT,
   PX_PER_SEC,
   planPlaybackGeometry,
 } from '../playbackGeometry'
@@ -32,32 +34,61 @@ describe('planPlaybackGeometry', () => {
     })
   })
 
-  describe('a landscape phone, where nothing is spare', () => {
+  // On a phone the 2.5s ceiling never binds — a landscape viewport is roughly
+  // 390px tall and the falling area could never reach 350px of it. So serving
+  // the notes first left the phone with the original defect: the falling area
+  // took everything, the keyboard stayed pinned at its 120px floor, and a real
+  // device showed a runway far longer than the instrument. The keyboard is
+  // served first now, and the notes keep a floor instead of a remainder.
+  describe('a landscape phone, where the ceiling never binds', () => {
     // 390px of viewport less the 64px compact bar, less the border.
     const plan = planPlaybackGeometry({ availableHeight: 276, keyWidth: 24 })
 
-    it('changes nothing about what a phone already showed', () => {
-      expect(plan.keyboardHeight).toBe(MIN_KEYBOARD_HEIGHT)
-      expect(plan.fallingHeight).toBe(276 - 2 - MIN_KEYBOARD_HEIGHT)
-      expect(plan.boxHeight).toBe(276)
+    it('gives the keyboard its proportion before the notes take the rest', () => {
+      expect(plan.keyboardHeight).toBeGreaterThan(MIN_KEYBOARD_HEIGHT)
+      expect(plan.keyboardHeight).toBe(134)
     })
 
-    it('never grows the keyboard by taking from the falling area', () => {
-      // 24px keys would earn a 151px keyboard, which here would cost the notes
-      // a fifth of their runway.
-      expect(plan.keyboardHeight).toBeLessThan(24 * 6)
-      expect(lookAheadOf(plan.fallingHeight)).toBeLessThan(MAX_LOOK_AHEAD_SEC)
+    it('still leaves the notes a full second of runway', () => {
+      expect(lookAheadOf(plan.fallingHeight)).toBeCloseTo(MIN_LOOK_AHEAD_SEC, 6)
+      expect(plan.fallingHeight).toBe(140)
+    })
+
+    it('fills the phone height exactly, with no margin to centre', () => {
+      expect(plan.boxHeight).toBe(276)
+      expect(plan.boxHeight - 2 - plan.keyboardHeight).toBe(plan.fallingHeight)
     })
   })
 
-  it('grows the keyboard only as far as the spare height reaches', () => {
-    // 500px sits between the two: the falling area gets its full ceiling and
-    // the keyboard gets what is left, short of its proportional height.
+  it('reaches the full piano proportion once the notes have their floor', () => {
+    // Enough height that neither bound binds: the keyboard gets exactly what a
+    // real white key's shape asks for.
     const plan = planPlaybackGeometry({ availableHeight: 500, keyWidth: 24 })
 
-    expect(plan.fallingHeight).toBe(350)
-    expect(plan.keyboardHeight).toBe(148)
-    expect(plan.boxHeight).toBe(500)
+    expect(plan.keyboardHeight).toBe(Math.round(24 * PIANO_KEY_ASPECT))
+    expect(plan.fallingHeight).toBe(500 - 2 - plan.keyboardHeight)
+    expect(lookAheadOf(plan.fallingHeight)).toBeLessThan(MAX_LOOK_AHEAD_SEC)
+  })
+
+  it('never trades away the floor the notes are promised', () => {
+    for (const availableHeight of [200, 276, 330, 400]) {
+      const plan = planPlaybackGeometry({ availableHeight, keyWidth: 24 })
+      const content = availableHeight - 2
+
+      // Whenever the box can hold both, the notes keep at least their floor.
+      if (content >= MIN_KEYBOARD_HEIGHT + MIN_LOOK_AHEAD_SEC * PX_PER_SEC) {
+        expect(plan.fallingHeight).toBeGreaterThanOrEqual(MIN_LOOK_AHEAD_SEC * PX_PER_SEC)
+      }
+    }
+  })
+
+  it('holds the keyboard at its floor when the notes cannot spare the height', () => {
+    // 200px cannot pay for both a proportional keyboard and a second of runway,
+    // so the keyboard falls back to the height it has always had.
+    const plan = planPlaybackGeometry({ availableHeight: 200, keyWidth: 24 })
+
+    expect(plan.keyboardHeight).toBe(MIN_KEYBOARD_HEIGHT)
+    expect(plan.fallingHeight).toBe(200 - 2 - MIN_KEYBOARD_HEIGHT)
   })
 
   it('keeps the keyboard at its floor when the box is smaller than the keyboard', () => {
@@ -68,12 +99,14 @@ describe('planPlaybackGeometry', () => {
     expect(plan.boxHeight).toBe(90)
   })
 
-  it('reproduces the idle box exactly, so the resting view does not move', () => {
-    // The idle box is a fixed 330px: 1.5s of look-ahead plus the keyboard.
+  it('shapes the idle box by the same rule, so pressing play changes no proportion', () => {
+    // The resting box stays 330px, but its keyboard is the same shape as the
+    // playing one. An instrument that changes proportion on play reads as two
+    // different instruments.
     const plan = planPlaybackGeometry({ availableHeight: 330, keyWidth: 24 })
 
-    expect(plan.keyboardHeight).toBe(MIN_KEYBOARD_HEIGHT)
-    expect(plan.fallingHeight).toBe(208)
+    expect(plan.keyboardHeight).toBe(Math.round(24 * PIANO_KEY_ASPECT))
+    expect(plan.fallingHeight).toBe(330 - 2 - plan.keyboardHeight)
     expect(plan.boxHeight).toBe(330)
   })
 
