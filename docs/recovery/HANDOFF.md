@@ -2,30 +2,31 @@
 
 Last updated: 2026-08-28 KST
 
-## 지금 해야 할 것 — PR #67 리뷰·CI 확인 후 병합 승인 판단
+## 지금 해야 할 것 — PR #67의 실기기 확인
 
-**PR [#67](https://github.com/landfill/ClairKeys/pull/67)이 2026-08-28 review-ready로 열렸다.** 이슈 #65의
-할 일 1~3(반응형 keyWidth, 곡 단위 음역 크롭, 재생 전용 모드) 구현이며 **D-017**을 기록한다.
-브랜치 `codex/p1-mobile-playback-geometry`, 커밋 `262d94e`(회귀 테스트 단독) + `60c9fe9`(구현).
+**PR [#67](https://github.com/landfill/ClairKeys/pull/67)이 2026-08-28 `4e084a1`로 병합·배포됐다.**
+이슈 #65의 할 일 1~3(반응형 `keyWidth`, 곡 단위 음역 크롭, 재생 전용 모드)이며 **D-017**을 기록한다.
+머지 커밋 체크 6/6 성공, Vercel Production 배포 성공, 작업 브랜치 삭제 완료, `main`이 유일.
 
-코디네이터가 워커 보고를 재실행 검증했다: `tsc` exit 0, lint 0건, **53 suites / 514 tests 통과**.
-별도 프로브로 사전 계산(32건반/11.1px, 26건반/13.7px)이 구현 출력(11.13px, 13.69px)과 일치함도 확인했다.
+**목적은 아직 사람 눈으로 검증되지 않았다.** 이 PR이 존재하는 이유는 "모바일에서 88건반이 보인다"인데,
+지금까지의 검증은 전부 구조적이다 — 좌표 계산, jsdom 렌더, 테스트 515건. 그중 어느 것도 실제 폰에서
+건반이 읽히는지를 입증하지 않는다. **실기기로 확인하고 결과를 좋든 나쁘든 기록하라.**
 
-**세로는 이 PR로도 해결되지 않는다** — 크롭 후에도 11.1~13.7px로 데스크톱 24px의 절반이다. 세로 대책은
-이슈 #65의 **할 일 4(재생 시 가로 전환)**이며 D-017 Consequence에도 그렇게 적혀 있다. 이 PR을 세로 문제의
-해결로 기록하지 마라.
+**확인할 때 알아둘 것: 세로는 여전히 좁다.** 크롭 후에도 11.1~13.7px로 데스크톱 24px의 절반이다.
+이건 결함이 아니라 예상된 결과이며, 세로 대책은 이슈 #65의 **할 일 4(재생 시 가로 전환)**다.
+D-017 Consequence에도 그렇게 적혀 있다. **세로가 좁다는 이유로 이 병합을 되돌리지 마라.**
 
-**이슈 #65를 닫지 마라** — 할 일 4~6이 남아 있다.
+### 사고 — 이슈 #65가 자동으로 닫혔다가 재개됐다
 
-**2026-08-28 CI 2라운드 전부 통과.** 1라운드에서 Accessibility Check 1건이 실패했는데, Codex
-`gpt-5.6-sol` high 교차검토가 **이 PR이 결함을 만든 게 아니라 드러냈다**고 측정으로 확정했다:
-`main`의 홈페이지 `.overflow-x-auto`는 이미 scrollWidth 1248 / tabIndex −1이었고, C 라벨이 추가되자
-axe의 `isNoneEmptyElement`(자손 content 요구) 때문에 비로소 검사 대상이 됐다. 폭은 변하지 않았다.
-`gpt-5.6-terra` high가 `711641b`로 고쳤다(`tabIndex={0}` + `role="region"` + `aria-label` +
-`focus-visible:ring`, `SimplePianoKeyboard`는 무변경). 54 suites / 515 tests.
+PR 본문에 `Closes #65 의 할 일 1~3. ... 이슈는 닫지 않는다`라고 썼는데 **GitHub는 그 문장에서
+`Closes #65`만 파싱한다.** 뒤에 붙인 한국어 단서는 파서에게 의미가 없다. 병합 직후 재개했고
+(`OPEN` 확인) 병합된 PR 본문에서도 키워드를 제거했다.
 
-**`711641b`에는 CodeRabbit 리뷰가 없다** — 앞선 리뷰가 시간당 할당량을 소진해 skip됐다(PR #34·#35의
-반복 패턴). 이 커밋의 검토는 코디네이터 수동 검토뿐이다.
+**자연어 단서로 기계 동작을 무효화할 수 없다 — 닫지 않으려면 키워드 자체를 쓰지 마라.**
+선례가 있다: 이슈 #48이 수정 커밋 없이 `completed`로 닫혔다가 2026-08-23에 재개됐다.
+
+**이슈 #65는 열려 있다** — 할 일 4(재생 시 가로 전환), 5(`src/components/mobile/` 죽은 스택 처리),
+6(인증 fixture가 필요한 E2E)가 남았다.
 
 근거: `docs/recovery/reviews/PR-67.md`
 
@@ -183,6 +184,7 @@ D-015의 기준 선택 — 창 0.5초, 음역 C3~C6, 중앙값 — 이 실제 �
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
+- Open pull requests: none. **[#67](https://github.com/landfill/ClairKeys/pull/67) merged 2026-08-28** at `4e084a1` with the user's explicit approval — 이슈 #65의 할 일 1~3. `keyWidth`를 `ResizeObserver`가 읽은 폭과 곡 전체 음역에서 유도하고, 경계를 **흰건반으로 스냅**하며(C 옥타브 스냅은 실측으로 철회), 기준점을 C1–C8 라벨로 제공한다. 재생 중에는 전역 chrome을 비운다. **D-017** 기록. 커밋 3개 — `262d94e`(회귀 테스트 단독), `60c9fe9`(구현), `711641b`(홈페이지 키보드 접근성). Merge-commit checks 6/6 successful; Vercel Production 배포 성공; 원격·로컬 작업 브랜치 삭제, `main`이 유일. **목적은 아직 미검증**(실기기 확인 없음) — 위 절 참조. **이슈 #65는 자동 종료됐다가 재개됐다** — 할 일 4~6이 남았다. 근거: `docs/recovery/reviews/PR-67.md`
 - Open pull requests: none. **[#64](https://github.com/landfill/ClairKeys/pull/64) merged 2026-08-28** at `f23d549` with the user's explicit approval — 이슈 #63. 게인 헤드룸을 보이스 선형합이 아니라 실측 믹스다운 피크로 재산정했다. `DEFAULT_MASTER_GAIN` 0.22 → 0.5, `MAX_MASTER_GAIN` 0.35 → 0.638(유도값). **D-016** 기록. Merge-commit checks 6/6 successful; 작업 브랜치 삭제, `main`이 유일. Vercel Production이 `f23d549` 배포. 이슈 #63 자동 종료. **목적은 아직 미검증** — 위 절 참조. 근거: `docs/recovery/reviews/PR-64.md`
 - **[#62](https://github.com/landfill/ClairKeys/pull/62) merged 2026-08-27** at `fcc6252` with the user's explicit approval — 이슈 #60(녹음 샘플 재생 음량이 약하다)의 수정. `SAMPLE_PEAK_GAIN`이 리터럴 0.73에서 측정 유도값 `SYNTHESISED_VOICE_RMS / playedBandMedianRms()` = **1.140**(+3.87 dB)이 됐다. **D-015**를 기록하고 이슈 **#61**을 파생시켰다. Merge-commit checks 6/6 successful; 원격·로컬 작업 브랜치 모두 삭제됐고 `main`이 유일한 브랜치다. Vercel Production이 `fcc6252`를 배포했다. 이슈 #60은 자동 종료됐다. **청감 확인 완료(2026-08-27), 단 "일단 유지"라는 조건부 수용이며 만족 확인이 아니다** — 위 절 참조. 근거: `docs/recovery/reviews/PR-62.md`, `docs/recovery/validation/2026-08-27-issue-60-sample-gain-recalibration.md`
 - **[#59](https://github.com/landfill/ClairKeys/pull/59) merged 2026-08-27** at `67efc6d`, and its objective is now **confirmed by the user's listening in production** with the user's explicit approval — score playback now uses recorded piano samples. Merge-commit checks 6/6 successful; work branch deleted; Vercel Production deployed `67efc6d`. Audible listening was only possible after deploy, and the user has since listened and confirmed the result. The `degraded`/`failed` states remain unobserved in a real failed load. 근거: `docs/recovery/reviews/PR-59.md`
