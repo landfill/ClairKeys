@@ -37,6 +37,10 @@ Review-ready PR [#68](https://github.com/landfill/ClairKeys/pull/68)이 열려 �
 - 로컬 검증: Jest **55 suites / 522 tests**, Python **34 tests**, `tsc`, lint, production build 통과.
 - **미검증:** 실제 VM→Vercel callback, 화면 이탈을 포함한 실제 PDF 종단 업로드. 배포 전에는
   목적 달성을 주장하지 않는다.
+- **리뷰 정정:** 수동 리뷰의 Fly auto-stop H1은 `REJECTED`. 리뷰어가 배포된 적 없는 과거
+  `omr-service/fly.toml`을 현재 설정으로 오인했다. 실제 OMR 런타임은 NAVER Cloud VM의
+  podman/systemd이며 idle auto-stop이 없다. 일반적인 프로세스 재시작 내구성 제약과 실제
+  callback 미배포·미검증 상태는 그대로다. 현재형 Fly 잔재는 별도 정리 PR에서 제거한다.
 - **현재 상태:** review-ready, head `6f624f7`, `MERGEABLE` / `CLEAN`, hosted checks **17/17 성공**,
   실패·대기 0건, 미해결 review thread 0건. CodeRabbit은 수동 요청 2회 모두 rate limit이라 실제
   리뷰가 없었다. **사용자의 PR #68 명시적 병합 승인 전에는 병합하지 않는다.** 근거:
