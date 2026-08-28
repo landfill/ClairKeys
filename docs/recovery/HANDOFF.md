@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-08-27 KST
+Last updated: 2026-08-28 KST
 
 ## 지금 해야 할 것 — PR #64의 청감 확인
 
@@ -38,6 +38,20 @@ D-015의 기준 선택 — 창 0.5초, 음역 C3~C6, 중앙값 — 이 실제 �
 `SAMPLE_PEAK_GAIN`을 리터럴로 되돌려 귀로 튜닝하는 것도 금지다(D-015 Directive).
 
 ## 열려 있는 이슈
+
+- **이슈 [#65](https://github.com/landfill/ClairKeys/issues/65)** — 2026-08-28 생성. 사용자가
+  "모바일에서 악보 재생 시 자동 가로모드"를 요청했고, 검토 결과 **요청대로만 구현하면 목적을
+  달성하지 못한다**는 사실이 측정으로 나왔다. `FallingNotesPlayer.tsx:45`의 `keyWidth = 24`가
+  하드코딩이라 건반 폭이 52 × 24 = 1248px 고정이고, 바깥이 `overflow-hidden`이라 넘치는 부분은
+  스크롤도 안 되고 사라진다. iPhone 세로에서 흰건반 **14/52**만 보이는데, **가로로 돌려도
+  33/52**다(E5 위 19개가 여전히 잘림). 데스크톱 `max-w-5xl`에서도 42/52로 10개가 잘린다.
+  게다가 `screen.orientation.lock()`은 MDN browser-compat-data 기준 `safari: false` /
+  `safari_ios: mirror(=false)`이므로 **iOS에서는 API 자체가 없다** — Android는 fullscreen
+  상태에서만 되는데 재생 화면에 fullscreen 진입 경로가 없다. 따라서 이슈는 자동 회전이 아니라
+  **반응형 `keyWidth`를 1순위**로 잡았다. 자동 회전만 넣고 닫으면 "고쳤다고 기록됐는데 여전히
+  안 보이는" 상태가 된다. `src/components/mobile/` 스택(`FullScreenPiano` 외 4개)은 어떤
+  페이지도 루트를 import하지 않는 **죽은 코드**이고, 그 안에서도 `lock()`을 부르지 않고 안내
+  문구만 띄운다 — 되살릴지 삭제할지는 #58(두 건반 구현 불일치)과 함께 판단해야 한다.
 
 - **이슈 [#61](https://github.com/landfill/ClairKeys/issues/61)** — #62 작업 중 D-014 결정 6의
   전제가 부분적으로 거짓임이 측정으로 드러나 분리했다. 샘플 세트의 음량 편차 중 매끄러운
