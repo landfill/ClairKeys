@@ -70,6 +70,28 @@ export interface SampleLevel {
 }
 
 /**
+ * Peak level a real mixdown reaches on one playback path, before the master gain.
+ *
+ * Measured rather than modelled. Summing voices arithmetically assumes each one
+ * peaks at the same instant in matching phase, which different pitches struck by
+ * different fingers do not do; values here come from rendering real audio.
+ * Populated in `@/utils/pianoSampleLevels` for both the recorded and the
+ * synthesised path.
+ */
+export interface MixdownPeaks {
+  /** One note alone. */
+  single: number;
+  /** Eight voices struck together — a dense fortissimo chord. */
+  denseChord: number;
+  /** Twelve voices accumulating under the pedal, onsets staggered. */
+  pedalled: number;
+  /** Twelve struck at the same instant. Beyond ten fingers; a bound, not a texture. */
+  twelveSimultaneous: number;
+  /** Sixteen at the same instant. Unreachable in performance; the outer bound. */
+  sixteenSimultaneous: number;
+}
+
+/**
  * Piano key layout information for 88-key keyboard
  */
 export type KeyLayout = {

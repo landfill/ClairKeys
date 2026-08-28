@@ -31,7 +31,7 @@
  * rot silently.
  */
 
-import type { SampleLevel } from '@/types/fallingNotes'
+import type { MixdownPeaks, SampleLevel } from '@/types/fallingNotes'
 
 /**
  * Window the loudness figures are taken over, in seconds.
@@ -156,4 +156,87 @@ export function playedBandMedianRms(): number {
 /** Loudest peak anywhere in the built set, as a linear amplitude. */
 export function sampleSetPeak(): number {
   return Math.max(...Object.values(SAMPLE_LEVELS).map((level) => level.peak))
+}
+
+/**
+ * What a real passage actually peaks at, per path, before the master gain.
+ *
+ * Every gain in this repository was previously derived by summing voices
+ * linearly — assuming each one peaks at the same instant with matching phase.
+ * Different pitches struck by different fingers do not do that, and the error is
+ * not small: measured against real mixdowns, eight voices reach half the linear
+ * figure and a pedalled twelve a quarter of it. Built on that assumption,
+ * `DEFAULT_MASTER_GAIN` left a dense passage around -14 dBFS and the slider could
+ * not reach past -10, which is issue #63.
+ *
+ * These are measured rather than modelled: real decoded sample buffers, and the
+ * synthesised voice rendered as the scheduler builds it, mixed and peak-read.
+ *
+ * ## Measured at velocity 1, not at the velocity notes currently carry
+ *
+ * `converter.py` emits no velocity, so every note produced today plays at the
+ * scheduler's `?? 0.7` default — and sizing the gain against 0.7 was a mistake
+ * caught in review. `animationContract` clamps velocity to 0-1 and
+ * `canonicalToFallingNotes` passes it straight through, so 1 is reachable by
+ * contract; that today's converter happens not to emit it is a property of one
+ * producer, not a guarantee. Taking 0.7 as the ceiling let a conforming score
+ * clip.
+ *
+ * The distinction matters against the other bound below. Sixteen voices struck
+ * at one instant is excluded because ten fingers cannot produce it — a physical
+ * limit. Velocity 1 has no such limit; it is simply data this repository does not
+ * generate yet. Excluding the first is prudence and excluding the second was an
+ * assumption.
+ *
+ * Notes at the current 0.7 therefore sit 3.1 dB below every figure here.
+ *
+ * Sample-path figures include `SAMPLE_PEAK_GAIN`; synthesised figures include
+ * `pianoTimbre`'s `PEAK_GAIN`. Neither includes the master gain, which is what
+ * they exist to size.
+ */
+export const SAMPLE_MIXDOWN_PEAKS: Readonly<MixdownPeaks> = Object.freeze({
+  single: 0.397,
+  denseChord: 1.219,
+  pedalled: 0.917,
+  twelveSimultaneous: 1.546,
+  sixteenSimultaneous: 1.759,
+})
+
+export const SYNTHESISED_MIXDOWN_PEAKS: Readonly<MixdownPeaks> = Object.freeze({
+  single: 0.193,
+  denseChord: 1.343,
+  pedalled: 0.917,
+  twelveSimultaneous: 1.551,
+  sixteenSimultaneous: 1.938,
+})
+
+/**
+ * Margin left below full scale by the derived ceiling.
+ *
+ * Small on purpose. The peaks it applies to are already the worst case at the
+ * loudest velocity the contract allows, so this guards float and resampling
+ * error rather than musical dynamics — those are inside the measurement.
+ */
+export const CLIP_SAFETY = 0.99
+
+/**
+ * Loudest mixdown either path can produce from a playable texture, at velocity 1.
+ *
+ * Twelve struck at one instant rather than sixteen: a pianist has ten fingers,
+ * and textures beyond that reach the ear through the pedal, where staggered
+ * onsets peak *below* a struck chord of the same size (0.917 against 1.546).
+ * Sixteen at one instant stays in the table as an outer bound but is not what
+ * the ceiling is sized against — pricing in a texture no performance produces is
+ * what left every real passage 20 dB too quiet.
+ *
+ * Both paths are consulted because the master bus is shared and the synthesised
+ * fallback is the louder of the two at equal voice count. Sizing on the sample
+ * path alone would let a synthesised passage clip at a setting the sample path
+ * made look safe.
+ */
+export function loudestRealisticMixdown(): number {
+  return Math.max(
+    SAMPLE_MIXDOWN_PEAKS.twelveSimultaneous,
+    SYNTHESISED_MIXDOWN_PEAKS.twelveSimultaneous
+  )
 }

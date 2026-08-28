@@ -21,6 +21,7 @@ import {
   DEFAULT_TREBLE_ROLLOFF,
 } from '@/utils/pianoTimbre'
 import { SAMPLE_PEAK_GAIN, damperReleaseSec } from '@/utils/pianoSamples'
+import { CLIP_SAFETY, loudestRealisticMixdown } from '@/utils/pianoSampleLevels'
 import {
   getPianoSampleBank,
   disposePianoSampleBank,
@@ -75,35 +76,56 @@ interface AudioNodes {
  * notes keep falling).
  */
 /**
- * Default master output level. See the `initializeAudio` comment for why this
- * value: normalising the harmonic PeriodicWave to sum 1 lowered per-note RMS, so
- * the bus is turned up to compensate. Exported so the playback UI can seed its
- * volume control from the same source of truth rather than a duplicated literal.
+ * Default master output level.
+ *
+ * Sized from measured mixdowns (`pianoSampleLevels`): a dense chord of notes at
+ * the velocity real scores carry lands near -7.4 dBFS — a normal listening level
+ * with the slider still able to go further.
+ *
+ * The previous 0.22 put that same chord at -14.5 dBFS and the slider's ceiling
+ * could only reach -10.5, so the user ran out of control while still asking for
+ * more volume (issue #63). The cause was not this number but the model behind
+ * it: every gain here had been derived by summing voices linearly, as though
+ * each peaked at the same instant in matching phase. Real chords do not — eight
+ * voices measure half the linear figure and a pedalled twelve a quarter of it —
+ * so the bus had been sized against a texture that cannot occur.
+ *
+ * Kept a fixed step below `MAX_MASTER_GAIN` rather than derived on its own. The
+ * ceiling is a safety constraint and has to be computed; the default is a
+ * listening preference, and the slider exists precisely because that is the part
+ * measurement cannot settle.
+ *
+ * Exported so the playback UI seeds its volume control from the same source of
+ * truth rather than a duplicated literal.
  */
-export const DEFAULT_MASTER_GAIN = 0.22
+export const DEFAULT_MASTER_GAIN = 0.5
 
 /**
  * Ceiling the runtime volume control clamps to.
  *
- * The figure this was derived from — "a voice peaks near `PEAK_GAIN` (0.3)" —
- * was measured for issue #60 and holds on neither path. A synthesised voice
- * peaks between 0.129 and 0.269 because summing sine-phase partials does not
- * reach their sum, and a sample peaks between 0.118 and 0.469 across the set.
- * Nor does a note arrive at full velocity: `converter.py` emits no velocity
- * field, so every real note plays at the scheduler's `?? 0.7`.
+ * Derived rather than chosen: the largest gain at which the loudest playable
+ * texture still fits under full scale, measured on both paths because the bus is
+ * shared and the synthesised fallback is the louder of the two.
  *
- * The ceiling is left where it is regardless, for a reason the old arithmetic
- * did not capture: this gain is shared with the synthesised fallback, whose
- * level PR #32 set by ear and which nobody has reported as quiet. Raising it to
- * suit the samples would push that path toward clipping to fix a complaint it
- * did not cause. The sample side gets its headroom from `SAMPLE_PEAK_GAIN`
- * instead, which only the sample path reads.
+ * The measurement it divides is taken at velocity 1, which review caught this
+ * change getting wrong. `converter.py` emits no velocity so notes today play at
+ * the scheduler's `?? 0.7`, and sizing against that let a conforming score clip:
+ * `animationContract` permits velocity up to 1 and `canonicalToFallingNotes`
+ * passes it through, so twelve voices at full velocity reach 1.551 — a figure the
+ * earlier 0.9 would have pushed to 1.39.
  *
- * `VOICE_LIMIT` (24) remains the absolute worst case and remains unreachable:
- * 24 notes at matching phase does not occur in real playback, and pinning the
- * ceiling to it would make every ordinary passage far too quiet.
+ * That is a different kind of exclusion from the sixteen-simultaneous case
+ * `pianoSampleLevels` sets aside. Sixteen at one instant is beyond ten fingers,
+ * a physical limit; velocity 1 is merely data this repository does not produce
+ * yet, which is an assumption rather than a bound.
+ *
+ * The relative level between the paths is not set here; `SAMPLE_PEAK_GAIN` does
+ * that (D-015), and this stage moves both together.
+ *
+ * `VOICE_LIMIT` (24) remains the cap on concurrency and remains a different
+ * question: it bounds how many voices exist, not how loudly they sum.
  */
-export const MAX_MASTER_GAIN = 0.35
+export const MAX_MASTER_GAIN = CLIP_SAFETY / loudestRealisticMixdown()
 
 /**
  * How long the first play waits for the recorded samples, in milliseconds.
@@ -184,11 +206,11 @@ export function useFallingNotesAudio() {
       // sine, so the same per-note peak gain sounds softer. This compensates
       // globally, and the playback UI can retune it live from here.
       //
-      // Headroom: a note peaks at velocity(≤1) * PEAK_GAIN(0.3) ≈ 0.3 before
-      // this stage, and VOICE_LIMIT caps concurrent voices at 24. Real playback
-      // never aligns all 24 at full velocity and matching phase, so the default
-      // keeps a comfortable margin below the ±1 clip point for any realistic
-      // chord. The runtime control clamps to the same safe ceiling.
+      // Headroom is sized from measured mixdowns rather than from a voice count
+      // times a per-voice peak. That arithmetic assumed every voice peaked at
+      // the same instant in matching phase; real chords reach a quarter to a
+      // half of it, and sizing against the assumption is what left playback 20
+      // dB too quiet (issue #63). See `pianoSampleLevels`.
       masterGainRef.current = audioContextRef.current.createGain()
       masterGainRef.current.gain.value = masterGainValueRef.current
       masterGainRef.current.connect(audioContextRef.current.destination)
