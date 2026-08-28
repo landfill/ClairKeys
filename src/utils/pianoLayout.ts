@@ -100,7 +100,7 @@ export function buildKeyLayout(
     });
   }
   
-  return { byMidi, totalWidth };
+  return { byMidi, totalWidth, keyWidth };
 }
 
 /**
@@ -211,5 +211,5 @@ export function buildResponsiveKeyLayout(
     byMidi.set(midi, { ...position, x: position.x + horizontalInset });
   }
 
-  return { byMidi, totalWidth: safeWidth };
+  return { byMidi, totalWidth: safeWidth, keyWidth };
 }

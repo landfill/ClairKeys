@@ -99,6 +99,8 @@ export type KeyLayout = {
   byMidi: Map<number, KeyPosition>;
   /** Total width of the keyboard */
   totalWidth: number;
+  /** White-key width the layout settled on; the keyboard's proportions follow it */
+  keyWidth: number;
 };
 
 /**

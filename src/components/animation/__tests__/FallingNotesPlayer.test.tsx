@@ -155,7 +155,7 @@ describe('FallingNotesPlayer', () => {
       return { fallingArea, keyboardWrapper, column: fallingArea.parentElement! }
     }
 
-    it('lays out the falling area and the keyboard on the measured element itself', () => {
+    it('lays out the falling area and the keyboard on one column of its own', () => {
       render(<FallingNotesPlayer animationData={animationData} />)
       const { fallingArea, keyboardWrapper, column } = readColumn()
 
@@ -164,11 +164,25 @@ describe('FallingNotesPlayer', () => {
       expect(column.style.display).toBe('flex')
       expect(column.style.flexDirection).toBe('column')
 
-      // No percentage height may sit between the flex-sized box and the two
-      // stacked areas — that is exactly the dependency that broke.
-      expect(column.style.height).toBe('')
+      // The original defect was a percentage height resolving against a parent
+      // that only had a flex-computed one. The box may carry a pixel height —
+      // it now does, from the look-ahead plan — but never a percentage, and
+      // nothing between it and the two areas may state one either.
+      expect(column.style.height).toMatch(/^\d+(\.\d+)?px$/)
       expect(fallingArea.style.height).toBe('')
-      expect(keyboardWrapper.style.height).toBe('120px')
+      expect(keyboardWrapper.style.height).toMatch(/^\d+px$/)
+    })
+
+    it('measures a wrapper rather than the box it sizes', () => {
+      render(<FallingNotesPlayer animationData={animationData} />)
+      const { column } = readColumn()
+      const wrapper = column.parentElement!
+
+      // Deriving the box's height from the box's own measurement would feed
+      // back into itself; the wrapper is what owns the available space.
+      expect(wrapper.style.flex).toBe('1 1 0%')
+      expect(wrapper.style.height).toBe('')
+      expect(column.style.flex).toBe('')
     })
 
     it('clips the falling area at the hit line so notes cannot draw over the keys', () => {
