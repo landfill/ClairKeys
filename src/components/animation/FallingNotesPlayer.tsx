@@ -179,59 +179,63 @@ export default function FallingNotesPlayer({
       </div>
 
       {/* Main Visualization Area */}
+      {/* The measured box is the column itself. An inner `height: 100%` wrapper
+          would resolve to `auto` while playback sizes this box with flex, which
+          collapses the falling area and lifts the keyboard to the top. */}
       <div
         ref={visualizationRef}
         className="w-full border rounded-2xl shadow overflow-hidden"
-        style={isPlaying
-          ? { flex: 1, minHeight: 0 }
-          : { height: standardVisualizationHeight }}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          ...(isPlaying
+            ? { flex: 1, minHeight: 0 }
+            : { height: standardVisualizationHeight }),
+        }}
       >
+        {/* Falling Notes Area */}
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%'
+            position: 'relative',
+            flex: 1,
+            minHeight: 0,
+            // The hit line is a boundary, not a decoration: a note that has
+            // already been played must not keep falling across the keys.
+            overflow: 'hidden',
+            background: '#0b0b0c'
           }}
         >
-          {/* Falling Notes Area */}
+          <FallingNotes
+            notes={notes}
+            nowSec={currentTime}
+            pxPerSec={pxPerSec}
+            height={fallingHeight}
+            layout={layout}
+          />
+
+          {/* Hit Line */}
           <div
+            className="absolute left-0 right-0"
             style={{
-              position: 'relative',
-              flex: 1,
-              background: '#0b0b0c'
+              bottom: 0,
+              height: 1,
+              background: '#1f2937'
             }}
-          >
-            <FallingNotes
-              notes={notes}
-              nowSec={currentTime}
-              pxPerSec={pxPerSec}
-              height={fallingHeight}
-              layout={layout}
-            />
-            
-            {/* Hit Line */}
-            <div
-              className="absolute left-0 right-0"
-              style={{
-                bottom: 0,
-                height: 1,
-                background: '#1f2937'
-              }}
-            />
-          </div>
-          
-          {/* Piano Keyboard */}
-          <div
-            style={{
-              height: keyboardHeight,
-              background: '#0f0f10'
-            }}
-          >
-            <SimplePianoKeyboard 
-              layout={layout} 
-              activeKeys={activeKeys}
-            />
-          </div>
+          />
+        </div>
+
+        {/* Piano Keyboard */}
+        <div
+          style={{
+            height: keyboardHeight,
+            flexShrink: 0,
+            background: '#0f0f10'
+          }}
+        >
+          <SimplePianoKeyboard
+            layout={layout}
+            activeKeys={activeKeys}
+          />
         </div>
       </div>
       
