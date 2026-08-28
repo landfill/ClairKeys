@@ -2,7 +2,41 @@
 
 Last updated: 2026-08-28 KST
 
-## PR #74 열림 — PR #67이 만든 재생 회귀
+## PR #74 병합 완료 + PR #75 열림 — 이슈 #65 할 일 4
+
+PR [#74](https://github.com/landfill/ClairKeys/pull/74)가 2026-08-28 `eee0e94`로 병합됐다
+(체크 13/13 pass). 브랜치 `codex/p1-playback-column-collapse`는 원격·로컬 모두 삭제했다.
+운영 배포 후 DOM에서 래퍼 div가 사라진 새 구조와 낙하 영역 `overflow: hidden`을 확인했다.
+
+이어서 이슈 #65 **할 일 4(재생 시 가로 전환)**를 PR
+[#75](https://github.com/landfill/ClairKeys/pull/75)로 구현했다. **D-019**를 기록한다.
+
+- **하나의 조건이 두 플랫폼을 처리한다.** `engaged && (pointer: coarse) && (orientation:
+  portrait)`. Android의 `lock()` 성공은 화면을 실제 가로로 만들어 portrait 질의를 스스로
+  종료시키므로, 이슈가 요구한 "이중 회전 해제"가 별도 분기 없이 같은 식에서 나온다.
+- **iOS 판별은 `typeof screen.orientation?.lock === 'function'`으로만** 한다 — 인터페이스는
+  Safari 16.4+로 존재하므로 다른 검사는 iOS를 조용히 Android 경로로 보낸다.
+- **방향 요청은 재생 클릭 핸들러에서 동기적으로** 발사한다. `play()`가 AudioContext와 샘플
+  로딩을 await하는 사이 fullscreen의 transient activation 창을 잃기 때문이다.
+- **데스크톱은 대상이 아니다** — 사용자 지시대로 PC에는 가로모드 개념이 없다. `(pointer:
+  coarse)`로 배제하고 테스트로 고정했다.
+- **실측이 범위를 넓혔다.** 재생 중 플레이어 chrome이 264px인데 iPhone 12 가로의 뷰포트 높이는
+  390px 전체다. 회전만 하면 낙하 영역이 **6px**이 되므로 컨트롤 압축이 회전과 분리될 수 없다.
+  `CompactPlaybackBar`(56px)가 4개 블록을 대체해 chrome 264 → **64px**, 낙하 영역
+  6 → **206px**, 건반 폭 10.79 → **24px**이 된다.
+- 사용자 결정: 회전 대상은 "재생 화면 전체 + 컨트롤 압축"이다. "시각화 블록만 회전"은 폰을
+  세로로 든 채 노트가 옆으로 흐르게 되어 기각했다.
+- 검증: `npm test` 56 suites / 542 tests, `tsc`, lint, build 통과. 회전 수식이 변환 후 뷰포트를
+  오차 0으로 덮는 것과, 로컬 `/test-finger` 재생의 압축 바 56px·낙하 영역 일치를 브라우저에서
+  실측했다.
+- **미검증 — 이 PR로 닫히지 않는다:** 실제 방향 잠금을 관측하지 못했다. Android/iOS 실기기가
+  없고, `lock()` 호출의 실제 결과는 실기기에서만 확인된다. CSS 회전 방향(`rotate(90deg)`,
+  기기를 반시계로 돌려야 바로 보임)도 임의 선택이며 실기기 확인 대상이다.
+- 남은 할 일: 5(`src/components/mobile/` 스택 처리), 6(인증 E2E fixture). **이슈 #65를 닫지
+  않는다.**
+- 근거: `docs/recovery/reviews/PR-74.md`, `docs/recovery/reviews/PR-75.md`, D-019
+
+## PR #74 상세 — PR #67이 만든 재생 회귀
 
 2026-08-28, 사용자가 `/sheet/2` 재생 화면에서 **건반이 최상단으로 올라가고 노트가 건반에서
 시작해 아래로 떨어지는** 상태를 보고했다. 배포본에서 결정적으로 재현했고 PR
