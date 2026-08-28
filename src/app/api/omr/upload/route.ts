@@ -125,6 +125,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Resolve the callback before creating a row for the same reason as the
+    // service URL above: a malformed deployment URL is knowable now, while a
+    // row created first would have no job and no trigger capable of moving it.
+    let callbackUrl: string
+    try {
+      const callbackBaseUrl = process.env.NEXTAUTH_URL?.trim() || request.nextUrl.origin
+      callbackUrl = new URL('/api/omr/finalize', callbackBaseUrl).toString()
+    } catch (error) {
+      console.error('OMR callback refused: public application URL is invalid', error)
+      return NextResponse.json(
+        {
+          error: '완료 알림 주소가 설정되지 않았습니다. 관리자에게 문의해 주세요.',
+          code: 'OMR_CALLBACK_NOT_CONFIGURED'
+        },
+        { status: 503 }
+      )
+    }
+
     // Create sheet music record in database with pending status
     const sheetMusic = await prisma.sheetMusic.create({
       data: {
@@ -148,6 +166,7 @@ export async function POST(request: NextRequest) {
     if (tempo !== null) omrFormData.append('tempo', tempo.toString())
     omrFormData.append('user_id', userId)
     omrFormData.append('sheet_music_id', sheetMusic.id.toString())
+    omrFormData.append('callback_url', callbackUrl)
 
     // Send to OMR service.
     //

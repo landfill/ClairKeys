@@ -189,6 +189,36 @@ describe('GET /api/omr/status/[jobId] — the D-011 store', () => {
     }
   })
 
+  it('encodes the job id it puts in both service URLs', async () => {
+    // D-018 records the rule that closed the CodeQL alert on the `/result`
+    // call: a request-supplied string may not be pasted into a server-side
+    // fetch target unencoded. `/status` is the sibling call in this same
+    // handler and was left on the old shape, so the rule held for one of the
+    // two URLs this route builds.
+    //
+    // The value is constrained today — it has to match a row's `omrJobId`,
+    // which the service generates as a uuid4 — so this is the invariant, not a
+    // live hole. Pinning it here is what stops the next edit from widening it.
+    const AWKWARD = 'a/b?c#d'
+    mockFindFirst.mockResolvedValue(storedRow({ omrJobId: AWKWARD }))
+    respondCompleted()
+
+    const { GET } = await loadRoute()
+    await GET(
+      new NextRequest(`http://localhost:3000/api/omr/status/${encodeURIComponent(AWKWARD)}`),
+      { params: Promise.resolve({ jobId: AWKWARD }) }
+    )
+
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    for (const call of fetchSpy.mock.calls) {
+      const url = new URL(String(call[0]))
+      // One segment, not four: the separators are data, not structure.
+      expect(url.pathname.split('/').filter(Boolean)).toHaveLength(2)
+      expect(url.pathname).toContain(encodeURIComponent(AWKWARD))
+      expect(url.search).toBe('')
+    }
+  })
+
   it('stores once when a second poll arrives after the first stored it', async () => {
     // Polling is a loop; the second poll sees a row that already has its URL.
     mockFindFirst.mockResolvedValue(
