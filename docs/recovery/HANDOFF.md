@@ -2,19 +2,23 @@
 
 Last updated: 2026-08-27 KST
 
-## 지금 열려 있는 것
+## 지금 해야 할 것 — PR #64의 청감 확인
 
-- **PR [#64](https://github.com/landfill/ClairKeys/pull/64) `OPEN`, review-ready** — 이슈 #63.
-  사용자가 **슬라이더 최대에서도 소리가 작다**고 보고했다. 원인은 상수가 아니라 모델이다 —
-  모든 게인이 보이스 선형 합산으로 유도됐는데 실제 화음은 그 25~50%다. 실측 믹스다운 기준으로
-  `DEFAULT_MASTER_GAIN` 0.22 → **0.7**, `MAX_MASTER_GAIN` 0.35 → **0.9**. **D-016** 기록.
-  사용자의 명시적 병합 승인 전에는 병합하지 않는다.
-  근거: `docs/recovery/reviews/PR-64.md`,
-  `docs/recovery/validation/2026-08-27-issue-63-master-gain-staging.md`
+**PR [#64](https://github.com/landfill/ClairKeys/pull/64)가 2026-08-28 `f23d549`로 병합·배포됐다.**
+이슈 #63(슬라이더 최대에서도 소리가 작다)의 수정이며, 목적은 **아직 검증되지 않았다.**
 
-  **주의**: 이 PR은 아래 #62 절과 D-015가 남긴 "마스터 게인부터 올리지 마라"는 지침을 뒤집는다.
-  그 지침은 샘플 경로만 몇 dB 부족한 상황을 전제로 했고, 실측 결과 버스 전체가 20 dB 낮았다.
-  D-016이 그 전제 변화를 기록한다.
+`DEFAULT_MASTER_GAIN` 0.22 → **0.5**, `MAX_MASTER_GAIN` 0.35 → **0.638**(유도값). 실제 재생의
+조밀한 화음이 기본값 **−7.4 dBFS**, 상한 **−5.3 dBFS**다(기존 −14.5 / −10.5). **D-016** 기록.
+
+**여전히 부족하다면 마스터 게인을 더 올릴 여지가 거의 없다** — 상한이 velocity 1.0 기준 클리핑
+한계에서 유도됐기 때문이다. 검토 순서는 `docs/recovery/reviews/PR-64.md`에 있다.
+
+### 이 라운드에서 리뷰가 실제로 값을 만들었다
+
+CodeRabbit이 Major 1건을 잡았고, 없었으면 **클리핑 가능한 상태로 병합됐다.** 최초 안은 헤드룸을
+velocity 0.7에서 쟀는데 그건 계약이 아니라 현재 변환기의 성질이다. 같은 커밋이 동시타 16음은
+"물리적 한계"로 배제하면서 velocity 1.0은 "지금 아무도 안 내보낸다"로 배제했다 — 후자는 가정이며
+둘을 같은 종류로 취급한 것이 오류였다. 근거: `docs/recovery/reviews/PR-64.md`
 
 ## PR #62의 청감 확인 — 2026-08-27, 조건부 수용
 
@@ -50,7 +54,8 @@ D-015의 기준 선택 — 창 0.5초, 음역 C3~C6, 중앙값 — 이 실제 �
 - Phase document: `docs/recovery/phases/P1-A-upload-pipeline.md` (`IN_PROGRESS`)
 - Base branch: `main`
 - Handoff delivery: none pending. `AGENTS.md` § "핸드오프 문서는 즉시 `main` 커밋" now governs this file's own updates — they commit straight to `main`, no PR to track here.
-- Open pull requests: none. **[#62](https://github.com/landfill/ClairKeys/pull/62) merged 2026-08-27** at `fcc6252` with the user's explicit approval — 이슈 #60(녹음 샘플 재생 음량이 약하다)의 수정. `SAMPLE_PEAK_GAIN`이 리터럴 0.73에서 측정 유도값 `SYNTHESISED_VOICE_RMS / playedBandMedianRms()` = **1.140**(+3.87 dB)이 됐다. **D-015**를 기록하고 이슈 **#61**을 파생시켰다. Merge-commit checks 6/6 successful; 원격·로컬 작업 브랜치 모두 삭제됐고 `main`이 유일한 브랜치다. Vercel Production이 `fcc6252`를 배포했다. 이슈 #60은 자동 종료됐다. **청감 확인 완료(2026-08-27), 단 "일단 유지"라는 조건부 수용이며 만족 확인이 아니다** — 위 절 참조. 근거: `docs/recovery/reviews/PR-62.md`, `docs/recovery/validation/2026-08-27-issue-60-sample-gain-recalibration.md`
+- Open pull requests: none. **[#64](https://github.com/landfill/ClairKeys/pull/64) merged 2026-08-28** at `f23d549` with the user's explicit approval — 이슈 #63. 게인 헤드룸을 보이스 선형합이 아니라 실측 믹스다운 피크로 재산정했다. `DEFAULT_MASTER_GAIN` 0.22 → 0.5, `MAX_MASTER_GAIN` 0.35 → 0.638(유도값). **D-016** 기록. Merge-commit checks 6/6 successful; 작업 브랜치 삭제, `main`이 유일. Vercel Production이 `f23d549` 배포. 이슈 #63 자동 종료. **목적은 아직 미검증** — 위 절 참조. 근거: `docs/recovery/reviews/PR-64.md`
+- **[#62](https://github.com/landfill/ClairKeys/pull/62) merged 2026-08-27** at `fcc6252` with the user's explicit approval — 이슈 #60(녹음 샘플 재생 음량이 약하다)의 수정. `SAMPLE_PEAK_GAIN`이 리터럴 0.73에서 측정 유도값 `SYNTHESISED_VOICE_RMS / playedBandMedianRms()` = **1.140**(+3.87 dB)이 됐다. **D-015**를 기록하고 이슈 **#61**을 파생시켰다. Merge-commit checks 6/6 successful; 원격·로컬 작업 브랜치 모두 삭제됐고 `main`이 유일한 브랜치다. Vercel Production이 `fcc6252`를 배포했다. 이슈 #60은 자동 종료됐다. **청감 확인 완료(2026-08-27), 단 "일단 유지"라는 조건부 수용이며 만족 확인이 아니다** — 위 절 참조. 근거: `docs/recovery/reviews/PR-62.md`, `docs/recovery/validation/2026-08-27-issue-60-sample-gain-recalibration.md`
 - **[#59](https://github.com/landfill/ClairKeys/pull/59) merged 2026-08-27** at `67efc6d`, and its objective is now **confirmed by the user's listening in production** with the user's explicit approval — score playback now uses recorded piano samples. Merge-commit checks 6/6 successful; work branch deleted; Vercel Production deployed `67efc6d`. Audible listening was only possible after deploy, and the user has since listened and confirmed the result. The `degraded`/`failed` states remain unobserved in a real failed load. 근거: `docs/recovery/reviews/PR-59.md`
 - Open pull requests: none. **[#57](https://github.com/landfill/ClairKeys/pull/57) merged 2026-08-24** at `d58ceea` with the user's explicit approval — issue #56's black-key displacement and the falling-note centering that followed from it. Merge-commit checks 6/6 successful; work branch, Orca worktree, and both leftover local branches deleted; `main` is the only branch. 근거: `docs/recovery/reviews/PR-57.md`. **[#54](https://github.com/landfill/ClairKeys/pull/54) merged 2026-08-24** at `c9946c3` with the user's explicit approval — the README's OCR section now opens with the fact that OCR has no demonstrated user-visible effect, and names what #50 and #51 each actually changed. Both branch tips confirmed in `main`; work branch deleted. 근거: `docs/recovery/reviews/PR-54.md`
 - **[#53](https://github.com/landfill/ClairKeys/pull/53) merged 2026-08-24** at `a5d9da3` with the user's explicit approval — README now names the OCR stage and separates it from the converter code that consumes MusicXML. Merge-commit checks all passed; both branch tips were confirmed in `main` and the work branch is deleted. 근거: `docs/recovery/reviews/PR-53.md`
