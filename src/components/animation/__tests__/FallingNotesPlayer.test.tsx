@@ -63,6 +63,7 @@ describe('FallingNotesPlayer', () => {
   beforeEach(() => {
     mockKeyboardFrames.length = 0
     mockPlayerState.sampleStatus = 'ready'
+    mockPlayerState.isPlaying = true
   })
 
   it('derives the visual frame and active keys from the same playhead on first render', () => {
@@ -117,5 +118,53 @@ describe('FallingNotesPlayer', () => {
 
     expect(screen.getByText('녹음 피아노 샘플을 준비 중입니다.')).toBeInTheDocument()
     expect(screen.getByTestId('playback-ready')).toHaveTextContent('false')
+  })
+
+  // Playback geometry. jsdom performs no layout, so these assertions pin the
+  // structural contract that a browser then resolves: the element whose height
+  // playback controls must be the same element that lays the falling area and
+  // the keyboard out as a column. A separate `height: 100%` wrapper reads as
+  // `auto` the moment its parent is sized by flex instead of a pixel height,
+  // which collapses the falling area to 0 and lifts the keyboard to the top.
+  describe('playback geometry', () => {
+    const readColumn = () => {
+      const fallingArea = screen.getByTestId('visual-playhead').parentElement!
+      const keyboardWrapper = screen.getByTestId('active-keys').parentElement!
+      return { fallingArea, keyboardWrapper, column: fallingArea.parentElement! }
+    }
+
+    it('lays out the falling area and the keyboard on the measured element itself', () => {
+      render(<FallingNotesPlayer animationData={animationData} />)
+      const { fallingArea, keyboardWrapper, column } = readColumn()
+
+      expect(keyboardWrapper.parentElement).toBe(column)
+      expect(column).toHaveClass('overflow-hidden')
+      expect(column.style.display).toBe('flex')
+      expect(column.style.flexDirection).toBe('column')
+
+      // No percentage height may sit between the flex-sized box and the two
+      // stacked areas — that is exactly the dependency that broke.
+      expect(column.style.height).toBe('')
+      expect(fallingArea.style.height).toBe('')
+      expect(keyboardWrapper.style.height).toBe('120px')
+    })
+
+    it('clips the falling area at the hit line so notes cannot draw over the keys', () => {
+      render(<FallingNotesPlayer animationData={animationData} />)
+      const { fallingArea } = readColumn()
+
+      expect(fallingArea.style.overflow).toBe('hidden')
+    })
+
+    it('keeps the idle player at its standard pixel height', () => {
+      mockPlayerState.isPlaying = false
+      render(<FallingNotesPlayer animationData={animationData} />)
+      const { column } = readColumn()
+
+      // lookAheadSec 1.5 * 140 px/s + 120 px keyboard
+      expect(column.style.height).toBe('330px')
+      expect(column.style.display).toBe('flex')
+      expect(column.style.flexDirection).toBe('column')
+    })
   })
 })
