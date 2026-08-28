@@ -36,6 +36,9 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
   are green; CodeRabbit withdrew its packaged launcher-config objection after the `.deb` evidence
   was supplied. Docker build, Fly OMR deployment, and a real PDF remain unverified, so this does not
   yet establish a working production upload.
+- 2026-08-28 — 위 2026-07-26 기록의 Fly 배포는 당시 검증하지 못한 후보였을 뿐이며 실제
+  배포된 적이 없었음이 2026-08-21 첫 NAVER Cloud VM 배포에서 확인됐다. PR #69가 현재형
+  Fly 설정·절차를 제거하고 D-012의 podman/systemd 계약만 활성 배포 표면으로 남긴다.
 - Out of scope, handed to P2-A: `MultiStageUploadUI`, `BackgroundFileUpload`, and
   `musicDataConverter` have zero product callers after #35. Deleting them cascades into
   `ProcessStageIndicator`, `MusicThemeLoader`, and `ProcessingStatus`, which take types from

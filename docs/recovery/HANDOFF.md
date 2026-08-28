@@ -47,6 +47,21 @@ Review-ready PR [#68](https://github.com/landfill/ClairKeys/pull/68)이 열려 �
   `docs/recovery/reviews/PR-68.md`,
   `docs/recovery/validation/2026-08-28-issue-55-server-finalization.md`.
 
+## PR #69 — 폐기된 Fly 배포 표면 제거
+
+Review-ready PR [#69](https://github.com/landfill/ClairKeys/pull/69)이 열려 있다.
+브랜치 `codex/ops-remove-fly-artifacts`, head `afa5a0a`.
+
+- `c674a72` — 회귀 테스트 단독. NAVER VM podman unit을 유일한 활성 배포 계약으로 요구하고
+  정리 전 main의 `omr-service/fly.toml` 존재 때문에 실패했다.
+- `afa5a0a` — 배포된 적 없는 `fly.toml`과 README 배포 절차를 제거하고, AGENTS·코드 주석·테스트
+  설명을 실제 FastAPI/NAVER VM 기준으로 정정했다. D-008은 D-012에 의해 superseded된 역사
+  항목으로 축약했다. 날짜가 있는 과거 리뷰·검증 기록은 당시 사실의 증거로 보존했다.
+- 로컬 검증: Python 34, focused Jest 33, full Jest 515, build, `tsc`, lint 모두 통과.
+- 생성 직후 상태: `OPEN`, draft=false, `MERGEABLE`; hosted checks 진행 중. **사용자의 PR #69
+  명시적 병합 승인 전에는 병합하지 않는다.** 근거: `docs/recovery/reviews/PR-69.md`,
+  `docs/recovery/validation/2026-08-28-remove-obsolete-fly-artifacts.md`.
+
 ## 지금 해야 할 것 — PR #67의 실기기 확인
 
 **PR [#67](https://github.com/landfill/ClairKeys/pull/67)이 2026-08-28 `4e084a1`로 병합·배포됐다.**
