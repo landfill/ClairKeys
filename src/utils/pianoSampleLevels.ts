@@ -31,7 +31,7 @@
  * rot silently.
  */
 
-import type { SampleLevel } from '@/types/fallingNotes'
+import type { MixdownPeaks, SampleLevel } from '@/types/fallingNotes'
 
 /**
  * Window the loudness figures are taken over, in seconds.
@@ -177,18 +177,6 @@ export function sampleSetPeak(): number {
  * `pianoTimbre`'s `PEAK_GAIN`. Neither includes the master gain, which is what
  * they exist to size.
  */
-export interface MixdownPeaks {
-  /** One note alone. */
-  single: number
-  /** Eight voices struck together — a dense fortissimo chord. */
-  denseChord: number
-  /** Twelve voices accumulating under the pedal, onsets staggered. */
-  pedalled: number
-  /** Twelve struck at the same instant. Beyond ten fingers; a bound, not a texture. */
-  twelveSimultaneous: number
-  /** Sixteen at the same instant. Unreachable in performance; the outer bound. */
-  sixteenSimultaneous: number
-}
 
 export const SAMPLE_MIXDOWN_PEAKS: Readonly<MixdownPeaks> = Object.freeze({
   single: 0.278,
