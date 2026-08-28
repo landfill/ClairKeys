@@ -58,7 +58,8 @@ Review-ready PR [#69](https://github.com/landfill/ClairKeys/pull/69)이 열려 �
   설명을 실제 FastAPI/NAVER VM 기준으로 정정했다. D-008은 D-012에 의해 superseded된 역사
   항목으로 축약했다. 날짜가 있는 과거 리뷰·검증 기록은 당시 사실의 증거로 보존했다.
 - 로컬 검증: Python 34, focused Jest 33, full Jest 515, build, `tsc`, lint 모두 통과.
-- 생성 직후 상태: `OPEN`, draft=false, `MERGEABLE`; hosted checks 진행 중. **사용자의 PR #69
+- 현재 상태: `OPEN`, draft=false, `MERGEABLE` / `CLEAN`, hosted checks **17/17 성공**,
+  실패·대기 0건. CodeRabbit은 manual-review-required skip이라 실제 리뷰가 없다. **사용자의 PR #69
   명시적 병합 승인 전에는 병합하지 않는다.** 근거: `docs/recovery/reviews/PR-69.md`,
   `docs/recovery/validation/2026-08-28-remove-obsolete-fly-artifacts.md`.
 
