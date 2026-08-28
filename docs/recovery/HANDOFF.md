@@ -2,6 +2,23 @@
 
 Last updated: 2026-08-28 KST
 
+## 지금 해야 할 것 — PR #67 리뷰·CI 확인 후 병합 승인 판단
+
+**PR [#67](https://github.com/landfill/ClairKeys/pull/67)이 2026-08-28 review-ready로 열렸다.** 이슈 #65의
+할 일 1~3(반응형 keyWidth, 곡 단위 음역 크롭, 재생 전용 모드) 구현이며 **D-017**을 기록한다.
+브랜치 `codex/p1-mobile-playback-geometry`, 커밋 `262d94e`(회귀 테스트 단독) + `60c9fe9`(구현).
+
+코디네이터가 워커 보고를 재실행 검증했다: `tsc` exit 0, lint 0건, **53 suites / 514 tests 통과**.
+별도 프로브로 사전 계산(32건반/11.1px, 26건반/13.7px)이 구현 출력(11.13px, 13.69px)과 일치함도 확인했다.
+
+**세로는 이 PR로도 해결되지 않는다** — 크롭 후에도 11.1~13.7px로 데스크톱 24px의 절반이다. 세로 대책은
+이슈 #65의 **할 일 4(재생 시 가로 전환)**이며 D-017 Consequence에도 그렇게 적혀 있다. 이 PR을 세로 문제의
+해결로 기록하지 마라.
+
+**이슈 #65를 닫지 마라** — 할 일 4~6이 남아 있다.
+
+근거: `docs/recovery/reviews/PR-67.md`
+
 ## 지금 해야 할 것 — PR #64의 청감 확인
 
 **PR [#64](https://github.com/landfill/ClairKeys/pull/64)가 2026-08-28 `f23d549`로 병합·배포됐다.**
@@ -127,6 +144,19 @@ D-015의 기준 선택 — 창 0.5초, 음역 C3~C6, 중앙값 — 이 실제 �
 
   **주의 — n=2다.** 두 곡 모두 Morricone이고 같은 업로더(`804629`)다. 음역 분포의 일반성은
   입증되지 않았다. 다만 스냅 정책 결론은 분포와 무관하게 구조적이므로 이 표본 한계의 영향을 받지 않는다.
+
+  **2026-08-28 할 일 1~3 구현 완료, PR #67로 열렸다.** Orca 감독형 orchestration으로 진행했다:
+  Run `run_d1078ff1739d`, Task `task_11ab9e6e6604`, 워커는 Codex `gpt-5.6-terra` effort high,
+  **현재 워크트리 재사용**(분리 안 함). 상세는 `docs/recovery/reviews/PR-67.md`.
+
+  **코디네이터 오류 1건**: 첫 dispatch에 `--model terra`를 넘겨 Codex가 400으로 거절했고 그 워커는
+  18분간 아무것도 하지 않았다. 실제 id는 `gpt-5.6-terra`다. **`check --wait` 타임아웃만으로는 이 실패를
+  못 잡는다** — 가이드가 타임아웃을 "체크포인트"로 보라고 하기 때문이다. 실패를 드러낸 것은
+  `worker-read`의 transcript에 preamble 1건뿐이었다는 사실이었다. `liveness: live`는 살아 있다는 뜻이지
+  일하고 있다는 뜻이 아니다.
+
+  **할 일 4~6은 남아 있다**: 재생 시 가로 전환(Android fullscreen+`lock()`, iOS CSS 회전),
+  `src/components/mobile/` 죽은 스택 처리, 인증 fixture가 필요한 E2E.
 
 - **이슈 [#61](https://github.com/landfill/ClairKeys/issues/61)** — #62 작업 중 D-014 결정 6의
   전제가 부분적으로 거짓임이 측정으로 드러나 분리했다. 샘플 세트의 음량 편차 중 매끄러운
