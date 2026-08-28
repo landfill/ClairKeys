@@ -20,7 +20,9 @@ describe('planPlaybackGeometry', () => {
 
     it('measures the runway in keyboards, not in whatever height is left', () => {
       expect(plan.fallingHeight).toBe(Math.round(plan.keyboardHeight * FALLING_TO_KEYBOARD_RATIO))
-      expect(plan.fallingHeight).toBe(196)
+      // 170 * 1.15 lands just under 195.5 in binary floating point, so this is
+      // 195 rather than the 196 the decimal arithmetic suggests.
+      expect(plan.fallingHeight).toBe(195)
       expect(lookAheadOf(plan.fallingHeight)).toBeLessThan(MAX_LOOK_AHEAD_SEC)
     })
 
@@ -31,7 +33,7 @@ describe('planPlaybackGeometry', () => {
     })
 
     it('leaves the rest as margin rather than stretching either area', () => {
-      expect(plan.boxHeight).toBe(196 + 170 + 2)
+      expect(plan.boxHeight).toBe(195 + 170 + 2)
       expect(plan.boxHeight).toBeLessThan(680)
     })
   })
