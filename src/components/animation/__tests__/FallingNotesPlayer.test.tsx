@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import FallingNotesPlayer from '../FallingNotesPlayer'
 

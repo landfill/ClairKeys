@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 
 /**
@@ -67,6 +67,11 @@ export function usePlaybackOrientation(
   const [isPortrait, setIsPortrait] = useState(false)
   const [isTouchDevice, setIsTouchDevice] = useState(false)
   const lockedRef = useRef(false)
+  // The browser answers requestFullscreen and lock() on its own schedule. A
+  // reader can stop playback or leave the page while it is still deciding, and
+  // a chain that completes after that would lock a screen with nothing left to
+  // release it.
+  const requestIdRef = useRef(0)
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
@@ -104,6 +109,7 @@ export function usePlaybackOrientation(
   }, [])
 
   const enter = useCallback(() => {
+    const requestId = ++requestIdRef.current
     setEngaged(true)
 
     // A desktop window is not something the reader can turn, and putting a
@@ -119,29 +125,47 @@ export function usePlaybackOrientation(
     const target = fullscreenTarget.current
     if (!target?.requestFullscreen) return
 
+    const isCurrent = () => requestIdRef.current === requestId
+
     target
       .requestFullscreen()
-      .then(() => screenOrientation()?.lock?.('landscape'))
       .then(() => {
-        lockedRef.current = true
+        if (!isCurrent()) return undefined
+        return screenOrientation()?.lock?.('landscape')
+      })
+      .then(() => {
+        if (isCurrent()) {
+          lockedRef.current = true
+          return
+        }
+        // The session ended while the browser was deciding. Fullscreen may have
+        // been granted anyway, and the release that would have undone it has
+        // already run.
+        release()
       })
       .catch(() => {
         // A device that refuses landscape keeps the CSS rotation, because the
         // portrait query never changed. Nothing else has to happen here.
       })
-  }, [fullscreenTarget])
+  }, [fullscreenTarget, release])
 
   const exit = useCallback(() => {
+    requestIdRef.current += 1
     setEngaged(false)
     release()
   }, [release])
 
   // Leaving the page mid-playback must not strand a locked screen.
-  useEffect(() => release, [release])
+  useEffect(() => () => {
+    requestIdRef.current += 1
+    release()
+  }, [release])
 
-  return {
-    rotate: engaged && isTouchDevice && isPortrait,
-    enter,
-    exit,
-  }
+  // A fresh object every render re-runs any effect that lists it, and the
+  // player lists it beside `isPlaying`. That churn is what let an exit() land
+  // on the render that enter() had just caused.
+  return useMemo(
+    () => ({ rotate: engaged && isTouchDevice && isPortrait, enter, exit }),
+    [engaged, isTouchDevice, isPortrait, enter, exit]
+  )
 }

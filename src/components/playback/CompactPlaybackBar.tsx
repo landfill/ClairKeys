@@ -31,6 +31,7 @@ export interface CompactPlaybackBarProps {
 }
 
 const SPEEDS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
+const SEEK_STEP_SEC = 5
 
 function formatTime(seconds: number): string {
   const total = Math.max(0, Math.floor(seconds))
@@ -55,10 +56,34 @@ export default function CompactPlaybackBar({
 }: CompactPlaybackBarProps) {
   const progress = duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0
 
+  const clamp = (time: number) => Math.min(duration, Math.max(0, time))
+
   const handleSeek = (event: React.MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect()
     if (rect.width <= 0) return
-    onSeek(((event.clientX - rect.left) / rect.width) * duration)
+    onSeek(clamp(((event.clientX - rect.left) / rect.width) * duration))
+  }
+
+  /**
+   * The playhead is a slider, not decoration, so a keyboard has to be able to
+   * move it. It is not an `input[type=range]`: React fires that element's
+   * onChange on every drag step, and each seek here restarts the audio from the
+   * new position. Discrete key steps commit one seek apiece.
+   */
+  const handleSeekKey = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const step = event.shiftKey ? 1 : SEEK_STEP_SEC
+    const next = {
+      ArrowRight: () => currentTime + step,
+      ArrowUp: () => currentTime + step,
+      ArrowLeft: () => currentTime - step,
+      ArrowDown: () => currentTime - step,
+      Home: () => 0,
+      End: () => duration,
+    }[event.key]
+
+    if (!next) return
+    event.preventDefault()
+    onSeek(clamp(next()))
   }
 
   return (
@@ -93,9 +118,16 @@ export default function CompactPlaybackBar({
       </span>
 
       <div
-        className="h-2 min-w-0 flex-1 cursor-pointer rounded-full bg-gray-200 hover:bg-gray-300"
+        className="h-2 min-w-0 flex-1 cursor-pointer rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         onClick={handleSeek}
-        role="presentation"
+        onKeyDown={handleSeekKey}
+        role="slider"
+        tabIndex={0}
+        aria-label="재생 위치"
+        aria-valuemin={0}
+        aria-valuemax={Math.round(duration)}
+        aria-valuenow={Math.round(currentTime)}
+        aria-valuetext={`${formatTime(currentTime)} / ${formatTime(duration)}`}
       >
         <div className="h-2 rounded-full bg-blue-600" style={{ width: `${progress}%` }} />
       </div>

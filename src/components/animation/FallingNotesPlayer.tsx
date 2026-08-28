@@ -121,10 +121,16 @@ export default function FallingNotesPlayer({
     ? Math.max(0, visualizationSize.height - keyboardHeight)
     : Math.max(0, standardFallingHeight - 2)
 
+  // `isPlaying` is still false for as long as play() spends awaiting the
+  // AudioContext and the samples, so a plain `!isPlaying` here would release the
+  // orientation that the click had just requested. Only the fall from true is a
+  // stop.
+  const wasPlayingRef = useRef(false)
   useEffect(() => {
     document.body.classList.toggle('playback-active', isPlaying)
     onPlaybackChange?.(isPlaying)
-    if (!isPlaying) orientation.exit()
+    if (wasPlayingRef.current && !isPlaying) orientation.exit()
+    wasPlayingRef.current = isPlaying
     return () => document.body.classList.remove('playback-active')
   }, [isPlaying, onPlaybackChange, orientation])
 
@@ -138,9 +144,12 @@ export default function FallingNotesPlayer({
   // The orientation request has to be issued from the click that produced the
   // user activation. play() awaits the AudioContext and the sample load, which
   // can outlive the activation window that requestFullscreen needs.
-  const handlePlay = useCallback(() => {
+  const handlePlay = useCallback(async () => {
     orientation.enter()
-    void play()
+    // A start that never happens must not leave a phone turned with nothing
+    // playing, and no state transition would report that on its own.
+    const started = await play()
+    if (!started) orientation.exit()
   }, [orientation, play])
 
   // Derive key activation synchronously from the exact playhead passed to the
