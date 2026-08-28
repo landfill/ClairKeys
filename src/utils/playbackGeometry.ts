@@ -17,6 +17,14 @@ export const PX_PER_SEC = 140
 /** Seconds of score visible above the hit line, at most. */
 export const MAX_LOOK_AHEAD_SEC = 2.5
 
+/**
+ * Seconds of runway the notes keep before the keyboard may claim height. On a
+ * landscape phone the ceiling above never binds, so without this floor the two
+ * bounds would leave the falling area taking whatever remained — the shape a
+ * real device reported as far too long beside the instrument.
+ */
+export const MIN_LOOK_AHEAD_SEC = 1
+
 /** The height the keyboard has always had, and its floor. */
 export const MIN_KEYBOARD_HEIGHT = 120
 
@@ -59,16 +67,17 @@ export function planPlaybackGeometry({
 }): PlaybackGeometry {
   const available = Math.max(0, availableHeight)
   const maxFallingHeight = MAX_LOOK_AHEAD_SEC * PX_PER_SEC
+  const minFallingHeight = MIN_LOOK_AHEAD_SEC * PX_PER_SEC
   const content = Math.max(0, available - BOX_BORDER)
 
-  // Only height the notes will not use may reach the keyboard. On a phone this
-  // is negative, which is what keeps the keyboard at its floor there instead of
-  // taking a fifth of the runway for a proportion nobody asked for.
-  const spare = content - MIN_KEYBOARD_HEIGHT - maxFallingHeight
+  // The keyboard is served first, up to the shape a real white key has, but
+  // never so far that the notes lose their floor. Serving the notes first only
+  // worked where the ceiling could bind: a landscape phone is around 390px
+  // tall, so there the falling area would simply take everything left.
   const keyboardHeight = Math.round(
-    Math.min(
-      Math.max(MIN_KEYBOARD_HEIGHT, keyWidth * PIANO_KEY_ASPECT),
-      MIN_KEYBOARD_HEIGHT + Math.max(0, spare)
+    Math.max(
+      MIN_KEYBOARD_HEIGHT,
+      Math.min(keyWidth * PIANO_KEY_ASPECT, content - minFallingHeight)
     )
   )
 
