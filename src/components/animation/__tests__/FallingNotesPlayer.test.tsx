@@ -23,6 +23,16 @@ jest.mock('@/hooks/useFallingNotesPlayer', () => ({
   useFallingNotesPlayer: () => mockPlayerState,
 }))
 
+const mockOrientation = {
+  rotate: false,
+  enter: jest.fn(),
+  exit: jest.fn(),
+}
+
+jest.mock('@/hooks/usePlaybackOrientation', () => ({
+  usePlaybackOrientation: () => mockOrientation,
+}))
+
 jest.mock('../FallingNotes', () => ({
   __esModule: true,
   default: ({ nowSec }: { nowSec: number }) => (
@@ -39,8 +49,11 @@ jest.mock('../../piano/SimplePianoKeyboard', () => ({
 }))
 
 jest.mock('@/components/playback', () => ({
-  PlaybackControls: ({ isReady }: { isReady: boolean }) => (
-    <div data-testid="playback-ready">{String(isReady)}</div>
+  PlaybackControls: ({ isReady, onPlay }: { isReady: boolean; onPlay: () => void }) => (
+    <div>
+      <div data-testid="playback-ready">{String(isReady)}</div>
+      <button type="button" data-testid="play" onClick={onPlay}>play</button>
+    </div>
   ),
 }))
 
@@ -64,6 +77,7 @@ describe('FallingNotesPlayer', () => {
     mockKeyboardFrames.length = 0
     mockPlayerState.sampleStatus = 'ready'
     mockPlayerState.isPlaying = true
+    mockOrientation.rotate = false
   })
 
   it('derives the visual frame and active keys from the same playhead on first render', () => {
@@ -165,6 +179,61 @@ describe('FallingNotesPlayer', () => {
       expect(column.style.height).toBe('330px')
       expect(column.style.display).toBe('flex')
       expect(column.style.flexDirection).toBe('column')
+    })
+  })
+
+  // Landscape playback. The orientation request must ride the play click's own
+  // user activation, and the rotated box has to swap the viewport's axes —
+  // neither is observable through layout in jsdom, so both are pinned here as
+  // the contract a device then honours.
+  describe('landscape playback', () => {
+    it('asks for landscape from the play click itself, not from a later effect', () => {
+      mockOrientation.enter.mockClear()
+      mockPlayerState.play.mockClear()
+      mockPlayerState.isPlaying = false
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      fireEvent.click(screen.getByTestId('play'))
+
+      // requestFullscreen needs transient activation, and play() awaits audio
+      // setup that can outlive it.
+      expect(mockOrientation.enter).toHaveBeenCalledTimes(1)
+      expect(mockPlayerState.play).toHaveBeenCalledTimes(1)
+    })
+
+    it('releases the orientation as soon as playback stops', () => {
+      mockOrientation.exit.mockClear()
+      const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+
+      mockPlayerState.isPlaying = false
+      rerender(<FallingNotesPlayer animationData={animationData} />)
+
+      expect(mockOrientation.exit).toHaveBeenCalled()
+    })
+
+    it('swaps the viewport axes when it stands in for a real rotation', () => {
+      mockOrientation.rotate = true
+      const { container } = render(<FallingNotesPlayer animationData={animationData} />)
+      const root = container.firstElementChild as HTMLElement
+
+      expect(root.style.position).toBe('fixed')
+      // The rotated box is as wide as the viewport is tall, and vice versa.
+      expect(root.style.width).toBe('100dvh')
+      expect(root.style.height).toBe('100dvw')
+      expect(root.style.transform).toBe('rotate(90deg) translateY(-100%)')
+      expect(root.style.transformOrigin).toBe('top left')
+      // min-h-[100dvh] would fight the explicit height along the wrong axis.
+      expect(root.className).not.toContain('min-h-[100dvh]')
+      expect(document.body).toHaveClass('playback-rotated')
+    })
+
+    it('keeps the upright playback view free of the rotation styles', () => {
+      const { container } = render(<FallingNotesPlayer animationData={animationData} />)
+      const root = container.firstElementChild as HTMLElement
+
+      expect(root.style.transform).toBe('')
+      expect(root.className).toContain('min-h-[100dvh]')
+      expect(document.body).not.toHaveClass('playback-rotated')
     })
   })
 })
