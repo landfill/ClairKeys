@@ -75,18 +75,20 @@ INFO:app:Delivered completed job 0309f4a3-1130-482a-9698-fef933f395f6 to https:/
 **저장 트리거가 더 이상 마운트된 브라우저에 의존하지 않는다.** 폴링은 idempotent fallback으로
 남으며 D-018이 이유를 기록한다.
 
-**이것으로 닫히지 **않는** 것 — 다음 세션은 아래를 완료로 오인하지 않는다:**
+**이것으로 닫히지 **않는** 것 — 전부 이슈로 추적 중이다:**
 
-- **영속 전달 없음.** job 상태와 전달 재시도는 OMR 프로세스 메모리에 있다. 프로세스·컨테이너·
-  호스트 재시작 시 진행 중 job과 전달 태스크가 함께 사라진다. D-018이 P1-B queue 범위로
-  명시한다. 이번 확인을 영속 큐 완료로 표현하지 않는다.
-- **12회 소진 후 폴링 회수 경로 미실측.** 합성 job으로 소진과 `delivery_status=failed`는
-  확인했지만, 실제 사용자 job이 전달에 실패했을 때의 회수는 관측하지 않았다.
-- **미해결 리뷰 항목** R6(`omrJobId` 인덱스 부재), R8(finalize의 no-op DB 왕복과 오해 소지
-  주석), R10(`NEXTAUTH_URL` 미설정 시 요청 origin fallback), R11(`alreadyStored`가
-  `processingStatus` 미갱신). `docs/recovery/reviews/PR-68.md` 참조.
-- **systemd unit 재시작 quirk** — `systemctl restart`가 실패를 보고한 뒤 `Restart=always`가
-  살려낸다. 종료 코드를 배포 성공 판정에 쓸 수 없다.
+| 이슈 | 내용 |
+|---|---|
+| [#70](https://github.com/landfill/ClairKeys/issues/70) | `omrJobId`에 인덱스가 없다. 이제 모든 콜백·재시도가 타는 경로인데 시퀀셜 스캔 (R6) |
+| [#71](https://github.com/landfill/ClairKeys/issues/71) | `NEXTAUTH_URL` 미설정 시 콜백 주소가 요청 Host에서 유도되고 그 주소로 공유 비밀이 나간다 (R10) |
+| [#72](https://github.com/landfill/ClairKeys/issues/72) | finalize의 도달 불가 409 분기 + 오해 소지 주석, `alreadyStored`가 상태를 안 고침 (R8·R11) |
+| [#73](https://github.com/landfill/ClairKeys/issues/73) | `notify_completion`의 HTTP 경로 미실행, 소진 후 폴링 회수 미관측 (R9 잔여) |
+| [#52](https://github.com/landfill/ClairKeys/issues/52) | `systemctl restart`가 항상 한 번 실패 후 자동 복구 — 2026-08-28 재현 확인, `deploy/README.md`에 재배포 절차 부재도 함께 기록 |
+
+이슈로 옮기지 않은 것이 하나 있다. **영속 전달 없음** — job 상태와 전달 재시도가 OMR 프로세스
+메모리에 있어 재시작 시 함께 사라진다. 이건 결함이 아니라 D-018이 명시적으로 P1-B queue 범위로
+남긴 **설계된 미완성**이므로 `docs/recovery/phases/P1-B-durable-omr.md`가 추적한다. 이번 확인을
+영속 큐 완료로 표현하지 않는다.
 
 - 근거: `docs/recovery/validation/2026-08-28-issue-55-page-leave-end-to-end.md`
 
