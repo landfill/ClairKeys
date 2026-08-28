@@ -1,4 +1,5 @@
 import {
+  FALLING_TO_KEYBOARD_RATIO,
   MAX_LOOK_AHEAD_SEC,
   MIN_KEYBOARD_HEIGHT,
   MIN_LOOK_AHEAD_SEC,
@@ -17,9 +18,10 @@ describe('planPlaybackGeometry', () => {
     // A 1470x746 desktop measured 680px of space and 27px keys.
     const plan = planPlaybackGeometry({ availableHeight: 680, keyWidth: 27 })
 
-    it('stops the falling area at the look-ahead ceiling', () => {
-      expect(lookAheadOf(plan.fallingHeight)).toBeCloseTo(MAX_LOOK_AHEAD_SEC, 6)
-      expect(plan.fallingHeight).toBe(350)
+    it('measures the runway in keyboards, not in whatever height is left', () => {
+      expect(plan.fallingHeight).toBe(Math.round(plan.keyboardHeight * FALLING_TO_KEYBOARD_RATIO))
+      expect(plan.fallingHeight).toBe(196)
+      expect(lookAheadOf(plan.fallingHeight)).toBeLessThan(MAX_LOOK_AHEAD_SEC)
     })
 
     it('spends the spare height on the keyboard, up to a real piano proportion', () => {
@@ -29,8 +31,37 @@ describe('planPlaybackGeometry', () => {
     })
 
     it('leaves the rest as margin rather than stretching either area', () => {
-      expect(plan.boxHeight).toBe(350 + 170 + 2)
+      expect(plan.boxHeight).toBe(196 + 170 + 2)
       expect(plan.boxHeight).toBeLessThan(680)
+    })
+  })
+
+  // The whole point. `100dvh` tracks the dynamic viewport, so a phone's address
+  // bar retracting hands the layout another 50-60px — and while the falling
+  // area was bounded only by a 2.5s ceiling it could never reach on a 390px
+  // screen, every one of those pixels went to it. The picture grew while the
+  // reader watched.
+  describe('a phone whose address bar retracts mid-playback', () => {
+    const withBar = planPlaybackGeometry({ availableHeight: 326, keyWidth: 24 })
+    const barGone = planPlaybackGeometry({ availableHeight: 390, keyWidth: 24 })
+    const taller = planPlaybackGeometry({ availableHeight: 430, keyWidth: 24 })
+
+    it('stops growing once the keyboard has its proportion', () => {
+      expect(barGone.fallingHeight).toBe(taller.fallingHeight)
+      expect(barGone.keyboardHeight).toBe(taller.keyboardHeight)
+    })
+
+    it('hands the extra height to margin instead of to the notes', () => {
+      expect(taller.boxHeight).toBe(barGone.boxHeight)
+      expect(taller.boxHeight).toBeLessThan(430)
+    })
+
+    it('never shows more runway than about one keyboard', () => {
+      for (const plan of [withBar, barGone, taller]) {
+        expect(plan.fallingHeight).toBeLessThanOrEqual(
+          Math.round(plan.keyboardHeight * FALLING_TO_KEYBOARD_RATIO)
+        )
+      }
     })
   })
 
@@ -66,7 +97,7 @@ describe('planPlaybackGeometry', () => {
     const plan = planPlaybackGeometry({ availableHeight: 500, keyWidth: 24 })
 
     expect(plan.keyboardHeight).toBe(Math.round(24 * PIANO_KEY_ASPECT))
-    expect(plan.fallingHeight).toBe(500 - 2 - plan.keyboardHeight)
+    expect(plan.fallingHeight).toBe(Math.round(plan.keyboardHeight * FALLING_TO_KEYBOARD_RATIO))
     expect(lookAheadOf(plan.fallingHeight)).toBeLessThan(MAX_LOOK_AHEAD_SEC)
   })
 
@@ -106,8 +137,7 @@ describe('planPlaybackGeometry', () => {
     const plan = planPlaybackGeometry({ availableHeight: 330, keyWidth: 24 })
 
     expect(plan.keyboardHeight).toBe(Math.round(24 * PIANO_KEY_ASPECT))
-    expect(plan.fallingHeight).toBe(330 - 2 - plan.keyboardHeight)
-    expect(plan.boxHeight).toBe(330)
+    expect(plan.fallingHeight).toBe(Math.round(plan.keyboardHeight * FALLING_TO_KEYBOARD_RATIO))
   })
 
   it('reports heights the CSS box can actually add up to', () => {
