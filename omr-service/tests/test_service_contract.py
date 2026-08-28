@@ -19,6 +19,7 @@ text. `omr/auth.py` imports stdlib only, so it is exercised for real.
 
 import ast
 import asyncio
+import re
 import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -31,6 +32,7 @@ import sys
 if str(OMR_SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(OMR_SERVICE_ROOT))
 
+from omr import delivery
 from omr.auth import SharedSecretError, verify_shared_secret
 from omr.converter import MusicXMLToClairKeysConverter
 
@@ -43,6 +45,31 @@ def _process_pdf_signature() -> ast.arguments:
         if isinstance(node, ast.AsyncFunctionDef) and node.name == "process_pdf":
             return node.args
     raise AssertionError("process_pdf is not defined in app.py")
+
+
+def _async_function(name: str) -> ast.AsyncFunctionDef:
+    tree = ast.parse(APP_SOURCE)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.AsyncFunctionDef) and node.name == name:
+            return node
+    raise AssertionError(f"{name} is not defined in app.py")
+
+
+def _calls_within(node: ast.AST, callee: str) -> bool:
+    """True when `callee` is invoked anywhere inside `node`."""
+    for child in ast.walk(node):
+        if isinstance(child, ast.Call):
+            func = child.func
+            if isinstance(func, ast.Name) and func.id == callee:
+                return True
+            if isinstance(func, ast.Attribute) and func.attr == callee:
+                return True
+    return False
+
+
+def _calls_within_body(body, callee: str) -> bool:
+    """True when `callee` is invoked anywhere inside a list of statements."""
+    return any(_calls_within(stmt, callee) for stmt in body)
 
 
 def _default_call_name(default: ast.expr) -> str:
@@ -113,14 +140,23 @@ class ProcessEndpointContractTests(unittest.TestCase):
         )
 
     def test_callback_is_forwarded_through_the_background_task(self):
-        """Completion delivery must not depend on a mounted browser poller."""
+        """Completion delivery must not depend on a mounted browser poller.
+
+        Asserted from the AST rather than from source text: the earlier version
+        of this test matched the literal argument list, so reordering a
+        parameter or running a formatter broke it while a `notify_completion`
+        that sent nothing still passed.
+        """
+        background = _async_function("process_pdf_background")
         self.assertIn(
-            "process_pdf_background, job_id, file, title, composer, user_id, tempo, callback_url",
-            APP_SOURCE,
+            "callback_url",
+            [arg.arg for arg in background.args.args],
+            "the background task cannot deliver a callback it never receives",
         )
-        self.assertIn("await notify_completion(callback_url, job_id)", APP_SOURCE)
-        self.assertIn("max_attempts = 12", APP_SOURCE)
-        self.assertIn('processing_jobs[job_id]["delivery_status"] = "failed"', APP_SOURCE)
+        self.assertTrue(
+            _calls_within(background, "notify_completion"),
+            "process_pdf_background never invokes notify_completion",
+        )
 
     def test_invalid_tempo_is_rejected_as_bad_request(self):
         """Bad numeric text and values outside 20..400 must both be HTTP 400."""
@@ -334,6 +370,150 @@ class SharedSecretVerificationTests(unittest.TestCase):
         environ["ENVIRONMENT"] = "development"
         with mock.patch.dict("os.environ", environ, clear=True):
             verify_shared_secret(None)
+
+
+class CompletionDeliveryTests(unittest.TestCase):
+    """Delivering a completed job must not be able to un-complete it.
+
+    `process_pdf_background` marks a job COMPLETED, fills in `animation_data`,
+    and only then announces it. Announcing is a separate concern with its own
+    failure modes — an unreachable Next.js host, a secret that does not match,
+    a callback URL that no longer resolves. None of those change the fact that
+    the conversion succeeded and the payload is sitting in memory ready for
+    `GET /result/{job_id}`.
+
+    The delivery call therefore may not sit inside the `try` whose handler
+    writes `status = FAILED`. If it does, a delivery fault rewrites a finished
+    job as a failed one and the browser fallback — the very thing that is
+    supposed to catch a missed callback — shows the user a failure for a score
+    that exists.
+    """
+
+    def _background_try(self) -> ast.Try:
+        background = _async_function("process_pdf_background")
+        tries = [n for n in background.body if isinstance(n, ast.Try)]
+        self.assertEqual(
+            len(tries), 1, "process_pdf_background should have exactly one top-level try"
+        )
+        return tries[0]
+
+    def test_the_failure_handler_marks_the_job_failed(self):
+        """Guards the premise of the test below.
+
+        If the handler stops writing FAILED, the containment test underneath
+        would pass for the wrong reason.
+        """
+        handler_source = "\n".join(
+            ast.unparse(h) for h in self._background_try().handlers
+        )
+        self.assertIn("ProcessingStatus.FAILED", handler_source)
+
+    def test_delivery_is_not_inside_the_block_that_can_fail_the_job(self):
+        node = self._background_try()
+
+        self.assertFalse(
+            _calls_within_body(node.body, "notify_completion"),
+            "notify_completion is inside the try whose handler writes FAILED; a "
+            "delivery fault would rewrite a completed job as failed",
+        )
+        self.assertTrue(
+            _calls_within_body(node.orelse, "notify_completion")
+            or _calls_within(_async_function("process_pdf_background"), "notify_completion"),
+            "the background task must still deliver the completion",
+        )
+
+    def test_delivery_runs_only_when_the_conversion_succeeded(self):
+        """A failed conversion has nothing to announce.
+
+        `else` is the placement that satisfies both halves: it runs only when
+        the `try` raised nothing, and an exception it raises is not caught by
+        the handler above it.
+        """
+        node = self._background_try()
+        self.assertTrue(
+            _calls_within_body(node.orelse, "notify_completion"),
+            "notify_completion should sit in the try's `else`, so it runs after "
+            "a successful conversion and never after a failed one",
+        )
+
+    def test_the_callback_client_outlives_the_route_it_calls(self):
+        """The producer's timeout must exceed the consumer's own budget.
+
+        `src/app/api/omr/finalize/route.ts` declares `maxDuration = 60`, and the
+        `/result` fetch inside it alone may take 30s before Storage is even
+        touched. A client that gives up at 30s abandons a finalize that is still
+        working and retries a second later, so the same job runs finalize twice
+        concurrently: two `/result` fetches, two Storage uploads, two row
+        updates. The upsert keeps that correct, but it doubles the work in
+        exactly the case that was already slow.
+        """
+        finalize_route = (
+            OMR_SERVICE_ROOT.parent
+            / "src/app/api/omr/finalize/route.ts"
+        ).read_text(encoding="utf-8")
+        match = re.search(r"maxDuration\s*=\s*(\d+)", finalize_route)
+        self.assertIsNotNone(match, "finalize route no longer declares maxDuration")
+        max_duration = int(match.group(1))
+
+        self.assertGreater(
+            delivery.CALLBACK_TIMEOUT_SECONDS,
+            max_duration,
+            "the callback client would abandon a finalize that is still running",
+        )
+
+
+class DeliveryRetryPolicyTests(unittest.TestCase):
+    """The retry policy is exercised for real — `omr/delivery.py` is stdlib only.
+
+    This is the part of delivery that can be wrong in an interesting way, so it
+    lives outside `app.py` where a test can actually run it rather than read it.
+    """
+
+    def test_a_permanent_rejection_is_not_retried(self):
+        """400 and 401 do not become true because we asked twelve more times.
+
+        400 means the job id is not a UUID — this service generated it, so it
+        will not change. 401 means the shared secret does not match, which is
+        deployment configuration. Retrying either spends ten minutes of backoff
+        to reach the conclusion already in hand, and buries a configuration
+        fault under a long quiet period instead of surfacing it.
+        """
+        for status in (400, 401, 403, 422):
+            with self.subTest(status=status):
+                self.assertFalse(delivery.is_retryable_status(status))
+
+    def test_a_missing_row_is_retried(self):
+        """404 is the upload race, not a permanent answer.
+
+        `/api/omr/upload` writes `omrJobId` only after `/process` answers, so a
+        conversion that finishes quickly can deliver before the row carries the
+        id the callback looks it up by. That window closes on its own within a
+        retry or two, which is why 404 must stay outside the permanent set.
+        """
+        self.assertTrue(delivery.is_retryable_status(404))
+
+    def test_transient_server_faults_are_retried(self):
+        for status in (409, 500, 502, 503, 504):
+            with self.subTest(status=status):
+                self.assertTrue(delivery.is_retryable_status(status))
+
+    def test_backoff_grows_then_settles_at_the_ceiling(self):
+        delay = delivery.INITIAL_BACKOFF_SECONDS
+        seen = [delay]
+        for _ in range(delivery.MAX_DELIVERY_ATTEMPTS):
+            delay = delivery.next_backoff_seconds(delay)
+            seen.append(delay)
+
+        self.assertEqual(seen[:7], [1, 2, 4, 8, 16, 32, 60])
+        self.assertTrue(all(d <= delivery.MAX_BACKOFF_SECONDS for d in seen))
+
+    def test_app_uses_the_shared_policy_rather_than_its_own(self):
+        """A second copy of the rule in `app.py` is how the two drift apart."""
+        notify = _async_function("notify_completion")
+        self.assertTrue(
+            _calls_within(notify, "is_retryable_status"),
+            "notify_completion must consult the shared retry policy",
+        )
 
 
 if __name__ == "__main__":
