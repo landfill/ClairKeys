@@ -75,7 +75,7 @@ class ProcessEndpointContractTests(unittest.TestCase):
         """
         defaults = self._defaults_by_argument()
 
-        for field in ("title", "composer", "user_id"):
+        for field in ("title", "composer", "user_id", "callback_url"):
             with self.subTest(field=field):
                 self.assertIn(field, defaults, f"{field} is not a declared parameter")
                 self.assertEqual(
@@ -111,6 +111,16 @@ class ProcessEndpointContractTests(unittest.TestCase):
             "converter.convert(musicxml_path, title, composer, tempo)",
             APP_SOURCE,
         )
+
+    def test_callback_is_forwarded_through_the_background_task(self):
+        """Completion delivery must not depend on a mounted browser poller."""
+        self.assertIn(
+            "process_pdf_background, job_id, file, title, composer, user_id, tempo, callback_url",
+            APP_SOURCE,
+        )
+        self.assertIn("await notify_completion(callback_url, job_id)", APP_SOURCE)
+        self.assertIn("max_attempts = 12", APP_SOURCE)
+        self.assertIn('processing_jobs[job_id]["delivery_status"] = "failed"', APP_SOURCE)
 
     def test_invalid_tempo_is_rejected_as_bad_request(self):
         """Bad numeric text and values outside 20..400 must both be HTTP 400."""

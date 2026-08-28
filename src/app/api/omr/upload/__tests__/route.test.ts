@@ -75,6 +75,7 @@ async function loadRoute() {
 
 describe('POST /api/omr/upload — failure is visible, not silent', () => {
   const originalUrl = process.env.OMR_SERVICE_URL
+  const originalNextAuthUrl = process.env.NEXTAUTH_URL
   let fetchSpy: jest.SpyInstance
 
   beforeEach(() => {
@@ -91,6 +92,8 @@ describe('POST /api/omr/upload — failure is visible, not silent', () => {
     fetchSpy.mockRestore()
     if (originalUrl === undefined) delete process.env.OMR_SERVICE_URL
     else process.env.OMR_SERVICE_URL = originalUrl
+    if (originalNextAuthUrl === undefined) delete process.env.NEXTAUTH_URL
+    else process.env.NEXTAUTH_URL = originalNextAuthUrl
   })
 
   it('marks the row failed when the OMR service is unreachable', async () => {
@@ -180,5 +183,38 @@ describe('POST /api/omr/upload — failure is visible, not silent', () => {
     expect(response.status).toBe(200)
     const [, requestInit] = fetchSpy.mock.calls[0]
     expect((requestInit?.body as FormData).get('tempo')).toBe('72')
+  })
+
+  it('gives the service a server callback that survives browser navigation', async () => {
+    process.env.OMR_SERVICE_URL = 'https://omr.example.invalid'
+    fetchSpy.mockResolvedValue(
+      new Response(JSON.stringify({ job_id: 'job-1', status: 'processing' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
+
+    const { POST } = await loadRoute()
+    const response = await POST(uploadRequest())
+
+    expect(response.status).toBe(200)
+    const [, requestInit] = fetchSpy.mock.calls[0]
+    expect((requestInit?.body as FormData).get('callback_url')).toBe(
+      'http://localhost:3000/api/omr/finalize'
+    )
+  })
+
+  it('refuses an invalid public app URL before creating a row', async () => {
+    process.env.OMR_SERVICE_URL = 'https://omr.example.invalid'
+    process.env.NEXTAUTH_URL = 'not an absolute URL'
+
+    const { POST } = await loadRoute()
+    const response = await POST(uploadRequest())
+    const data = await response.json()
+
+    expect(response.status).toBe(503)
+    expect(data.code).toBe('OMR_CALLBACK_NOT_CONFIGURED')
+    expect(mockCreate).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 })
