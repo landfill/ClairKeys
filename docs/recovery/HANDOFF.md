@@ -55,6 +55,44 @@ PR [#68](https://github.com/landfill/ClairKeys/pull/68)이 2026-08-28 `41606e7`�
 - 근거: `docs/recovery/reviews/PR-68.md`,
   `docs/recovery/validation/2026-08-28-issue-55-server-finalization.md`.
 
+## OMR 서비스 배포 완료 — 콜백 발사 확인, #55는 아직 열려 있다
+
+2026-08-28, `acf25f8`을 NAVER VM에 배포했다. 배포 전 실행 이미지는 `cb42947`로 PR #68 **이전**
+이었다 — 즉 D-018의 서비스 절반은 이때까지 한 번도 돌지 않았다.
+
+**배포 전에 확인한 것 — 기존 deploy README에 없는 새 위험.** README의 절차는 인바운드만
+검증한다. 이번 릴리스는 서비스가 처음으로 아웃바운드 요청을 보내므로 그 경로 존재 여부가
+성패를 가른다. ACG가 막고 있었다면 콜백은 12회 조용히 실패하고 증상은 "아무 일도 안 일어남"이다.
+VM에서 실행한 결과, 일반 HTTPS 200이고 `POST /api/omr/finalize`는 토큰 없이 **401**, 올바른
+토큰 + 비-UUID는 **400**, 올바른 토큰 + 없는 UUID는 **404**, 틀린 토큰은 **401**이다.
+**401이 아니라 400/404라는 사실이 곧 양쪽 `OMR_SHARED_SECRET`이 일치한다는 증거**이며, 배포
+전에 콜백 계약의 Next.js 절반이 전부 실증됐다.
+
+**배포 후 확인.** 외부에서 `/health` 200, `/process` 401. 실행 중인 컨테이너 내부에서 소스가
+아니라 적재된 모듈을 검사해 R3(`notify_completion`이 `else` 블록), R4(`70.0`),
+R5(`is_retryable_status(400)=False`, `(404)=True`), `httpx 0.24.1`을 확인했다.
+
+**실제 변환 + 콜백 발사.** `wtk1-prelude1-a4.pdf`가 **514 notes**로 변환됐다 — 2026-08-21 이후
+고정값과 같으므로 이 배포는 변환기를 바꾸지 않았다. `delivery_status`가 `retrying`으로 전이하고
+로그에 `Completion callback … returned 404: {"error":"Job not found."}`가 남았다. 합성 job이라
+`SheetMusic` 행이 없어 404가 옳은 답이고, 404를 재시도하는 것도 D-018 정책대로다.
+
+**이슈 #55는 이 배포로 닫히지 않는다.** 남은 고리는 하나뿐이다: 실제 사용자가 웹앱에서 PDF를
+업로드해 행이 생기고, 그 행의 `omrJobId`로 콜백이 조회에 **성공**해 결과가 저장되는 것.
+인증된 브라우저 세션이 필요해 에이전트가 실행할 수 없다. 확인 방법은 업로드 직후 **업로드
+화면을 벗어나고** 약 45초 넘게 기다린 뒤 악보가 `completed`인지 보는 것이다 — 화면에 머무르면
+폴링이 콜백 없이도 저장하므로 검증이 되지 않는다.
+
+**발견: systemd unit의 잠복 결함 (기배포분, 이번 변경과 무관).** `systemctl restart`가
+`Error: remove /run/clairkeys-omr.service.ctr-id: no such file or directory` / `status=125`로
+실패를 보고한 뒤 `Restart=always`가 100ms 후 재시도해 성공한다. 2026-08-23 journal에 동일
+시퀀스가 있다. 결과적으로 서비스는 뜨지만 **`systemctl restart`의 종료 코드를 배포 성공 판정에
+쓸 수 없고**, `Restart=always`를 손대면 배포가 서비스를 내린 채 끝날 수 있다. 후속으로
+`deploy/README.md`에 재배포 절차와 이 quirk를 적고 `ExecStartPre=-/bin/rm -f %t/%n.ctr-id`를
+검토한다 — ops 설정이므로 브랜치·PR 대상이다.
+
+- 근거: `docs/recovery/validation/2026-08-28-omr-callback-vm-deployment.md`
+
 ## PR #69 병합 완료 — 폐기된 Fly 배포 표면 제거
 
 PR [#69](https://github.com/landfill/ClairKeys/pull/69)가 2026-08-28 `aaae994`로 병합됐다.
