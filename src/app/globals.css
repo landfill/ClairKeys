@@ -29,6 +29,12 @@ body.playback-active .playback-chrome {
   display: none;
 }
 
+/* The rotated player is fixed over the whole viewport; whatever remains behind
+   it can only contribute rubber-banding on iOS. */
+body.playback-rotated {
+  overflow: hidden;
+}
+
 /* Playback Controls 스타일 */
 .playback-controls .slider::-webkit-slider-thumb {
   appearance: none;

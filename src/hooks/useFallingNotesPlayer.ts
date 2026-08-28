@@ -39,8 +39,12 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
   /**
    * Start playback
    */
+  // Returns whether playback actually began. The caller needs that: a request
+  // made from the click — the orientation change is one — has to be undone when
+  // the audio never starts, and `isPlaying` alone cannot distinguish "not yet"
+  // from "never".
   const handlePlay = useCallback(async () => {
-    if (isPlaying) return
+    if (isPlaying) return false
 
     updateTempoScale(tempoScale)
     const started = await startAudio(
@@ -50,6 +54,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
       mute
     )
     if (started) setIsPlaying(true)
+    return started
   }, [isPlaying, tempoScale, mute, notes, getCurrentTime, startAudio, updateTempoScale])
 
   /**
