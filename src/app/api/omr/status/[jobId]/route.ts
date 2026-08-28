@@ -57,6 +57,14 @@ export async function GET(
       )
     }
 
+    const storedJobId = sheetMusic.omrJobId
+    if (!storedJobId) {
+      return NextResponse.json(
+        { error: 'Stored job identifier is missing.' },
+        { status: 409 }
+      )
+    }
+
     // Get status from OMR service. As in the upload route, an unreachable or
     // unconfigured service must not read as an application error — the poll
     // simply has no answer yet, and the stored status stays as it is.
@@ -171,7 +179,7 @@ export async function GET(
         updateData.processingStatus = 'completed'
       } else {
         try {
-          updateData.animationDataUrl = await fetchAndStoreOmrResult(jobId, userId)
+          updateData.animationDataUrl = await fetchAndStoreOmrResult(storedJobId, userId)
           updateData.processingStatus = 'completed'
         } catch (error) {
           if (error instanceof OmrFinalizationError) {

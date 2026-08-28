@@ -23,7 +23,7 @@ const mockFindFirst = prisma.sheetMusic.findFirst as jest.Mock
 const mockUpdate = prisma.sheetMusic.update as jest.Mock
 const mockGetInstance = FileStorageService.getInstance as jest.Mock
 
-const JOB_ID = 'job-callback'
+const JOB_ID = '123e4567-e89b-42d3-a456-426614174000'
 const ANIMATION = {
   version: '1.0',
   notes: [{ midi: 60, start: 0, duration: 1, velocity: 0.8 }],
@@ -69,7 +69,7 @@ describe('POST /api/omr/finalize — server-owned completion trigger', () => {
     )
     uploadOmrAnimationData = jest.fn().mockResolvedValue({
       success: true,
-      url: 'https://project.supabase.co/storage/v1/object/public/animation-data/user-1/omr_job-callback.json',
+      url: `https://project.supabase.co/storage/v1/object/public/animation-data/user-1/omr_${JOB_ID}.json`,
     })
     mockGetInstance.mockReturnValue({ uploadOmrAnimationData })
     mockFindFirst.mockResolvedValue(row())
@@ -112,6 +112,24 @@ describe('POST /api/omr/finalize — server-owned completion trigger', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
+  it('rejects a job identifier outside the service UUID contract', async () => {
+    const request = new NextRequest('http://localhost:3000/api/omr/finalize', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'X-ClairKeys-Token': 'shared-secret',
+      },
+      body: JSON.stringify({ job_id: '../status/other-job' }),
+    })
+
+    const { POST } = await import('../route')
+    const response = await POST(request)
+
+    expect(response.status).toBe(400)
+    expect(mockFindFirst).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
   it('fails closed when the callback secret is not configured', async () => {
     delete process.env.OMR_SHARED_SECRET
 
@@ -127,7 +145,7 @@ describe('POST /api/omr/finalize — server-owned completion trigger', () => {
     mockFindFirst.mockResolvedValue(
       row({
         animationDataUrl:
-          'https://project.supabase.co/storage/v1/object/public/animation-data/user-1/omr_job-callback.json',
+          `https://project.supabase.co/storage/v1/object/public/animation-data/user-1/omr_${JOB_ID}.json`,
         processingStatus: 'completed',
       })
     )

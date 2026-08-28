@@ -8,6 +8,8 @@ import {
 
 export const maxDuration = 60
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
 function callbackIsAuthorized(request: NextRequest): 'authorized' | 'missing-config' | 'unauthorized' {
   const expected = process.env.OMR_SHARED_SECRET?.trim()
   if (!expected) return 'missing-config'
@@ -52,8 +54,8 @@ export async function POST(request: NextRequest) {
       ? (body as { job_id: string }).job_id.trim()
       : ''
 
-  if (!jobId) {
-    return NextResponse.json({ error: 'job_id is required.' }, { status: 400 })
+  if (!jobId || !UUID_PATTERN.test(jobId)) {
+    return NextResponse.json({ error: 'A valid job_id UUID is required.' }, { status: 400 })
   }
 
   const sheetMusic = await prisma.sheetMusic.findFirst({
@@ -62,6 +64,11 @@ export async function POST(request: NextRequest) {
 
   if (!sheetMusic) {
     return NextResponse.json({ error: 'Job not found.' }, { status: 404 })
+  }
+
+  const storedJobId = sheetMusic.omrJobId
+  if (!storedJobId) {
+    return NextResponse.json({ error: 'Stored job identifier is missing.' }, { status: 409 })
   }
 
   if (sheetMusic.animationDataUrl) {
@@ -76,7 +83,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const animationDataUrl = await fetchAndStoreOmrResult(jobId, sheetMusic.userId)
+    // Use the identifier read back from the database, not request input, for
+    // the server-side fetch target. The request value is only a lookup key.
+    const animationDataUrl = await fetchAndStoreOmrResult(storedJobId, sheetMusic.userId)
     await prisma.sheetMusic.update({
       where: { id: sheetMusic.id },
       data: {

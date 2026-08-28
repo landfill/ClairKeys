@@ -26,7 +26,8 @@ export async function fetchAndStoreOmrResult(
 ): Promise<string> {
   let resultResponse: Response
   try {
-    resultResponse = await fetch(`${getOmrServiceUrl()}/result/${jobId}`, {
+    const resultUrl = `${getOmrServiceUrl()}/result/${encodeURIComponent(jobId)}`
+    resultResponse = await fetch(resultUrl, {
       headers: {
         'Content-Type': 'application/json',
         ...omrAuthHeaders(),

@@ -386,7 +386,8 @@
      `X-ClairKeys-Token`으로 보낸다. callback 실패는 지수 backoff로 12회 재시도한다.
   3. callback은 공유 비밀을 constant-time으로 검증하고, job id로 DB 행을 찾아 `/result`를
      수거한 뒤 Next.js에만 있는 service-role key로 저장한다. 저장 경로는 D-011의 job-derived
-     upsert를 그대로 사용한다.
+     upsert를 그대로 사용한다. request의 job id는 서비스 계약인 UUID만 허용하고, 실제
+     `/result` fetch에는 request 문자열이 아니라 DB에서 다시 읽은 `omrJobId`를 사용한다.
   4. 기존 사용자 세션 기반 status poll은 삭제하지 않는다. callback과 경합하거나 재호출돼도
      이미 `animationDataUrl`이 있으면 즉시 성공하고, 같은 job은 같은 객체 키에 upsert하므로
      브라우저·callback 모두 안전한 fallback이다.
@@ -408,5 +409,7 @@
   - callback을 이유로 OMR 서비스에 스토리지 자격증명을 추가하지 않는다.
   - callback URL을 행 생성 뒤에 처음 검증하지 않는다. 잘못된 URL로 job 없는 `processing` 행을
     다시 만들게 된다.
+  - request body의 문자열을 `/result` URL에 직접 이어 붙이지 않는다. UUID로 검증해 행을 찾은 뒤
+    DB에 저장된 job id를 fetch target으로 사용한다.
 - Related: D-010, D-011, 이슈 [#55](https://github.com/landfill/ClairKeys/issues/55),
   `src/app/api/omr/finalize/route.ts`, `omr-service/app.py`
