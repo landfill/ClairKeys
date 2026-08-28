@@ -157,3 +157,69 @@ export function playedBandMedianRms(): number {
 export function sampleSetPeak(): number {
   return Math.max(...Object.values(SAMPLE_LEVELS).map((level) => level.peak))
 }
+
+/**
+ * What a real passage actually peaks at, per path, before the master gain.
+ *
+ * Every gain in this repository was previously derived by summing voices
+ * linearly — assuming each one peaks at the same instant with matching phase.
+ * Different pitches struck by different fingers do not do that, and the error
+ * is not small: measured against real mixdowns, eight voices reach half the
+ * linear figure and a pedalled twelve reach a quarter of it. Built on that
+ * assumption, `DEFAULT_MASTER_GAIN` left a dense passage around -14 dBFS and the
+ * slider could not reach past -10, which is issue #63.
+ *
+ * These are measured rather than modelled: real decoded sample buffers, and the
+ * synthesised voice rendered as the scheduler builds it, mixed at the velocity
+ * real notes carry (0.7 — `converter.py` emits none) and peak-read.
+ *
+ * Sample-path figures include `SAMPLE_PEAK_GAIN`; synthesised figures include
+ * `pianoTimbre`'s `PEAK_GAIN`. Neither includes the master gain, which is what
+ * they exist to size.
+ */
+export interface MixdownPeaks {
+  /** One note alone. */
+  single: number
+  /** Eight voices struck together — a dense fortissimo chord. */
+  denseChord: number
+  /** Twelve voices accumulating under the pedal, onsets staggered. */
+  pedalled: number
+  /** Twelve struck at the same instant. Beyond ten fingers; a bound, not a texture. */
+  twelveSimultaneous: number
+  /** Sixteen at the same instant. Unreachable in performance; the outer bound. */
+  sixteenSimultaneous: number
+}
+
+export const SAMPLE_MIXDOWN_PEAKS: Readonly<MixdownPeaks> = Object.freeze({
+  single: 0.278,
+  denseChord: 0.853,
+  pedalled: 0.642,
+  twelveSimultaneous: 1.082,
+  sixteenSimultaneous: 1.231,
+})
+
+export const SYNTHESISED_MIXDOWN_PEAKS: Readonly<MixdownPeaks> = Object.freeze({
+  single: 0.135,
+  denseChord: 0.94,
+  pedalled: 0.642,
+  twelveSimultaneous: 1.086,
+  sixteenSimultaneous: 1.356,
+})
+
+/**
+ * Loudest realistic mixdown across both paths, before the master gain.
+ *
+ * The twelve-simultaneous case rather than the sixteen: a pianist has ten
+ * fingers, and the textures that exceed ten voices reach them through the pedal,
+ * where staggered onsets put the peak *below* a struck chord of the same size.
+ * Sixteen struck at one instant is kept in the table as an outer bound but is
+ * not what the ceiling is sized against — doing so would price in a texture that
+ * cannot occur and leave every real passage quiet, which is the mistake this
+ * measurement exists to undo.
+ */
+export function loudestRealisticMixdown(): number {
+  return Math.max(
+    SAMPLE_MIXDOWN_PEAKS.twelveSimultaneous,
+    SYNTHESISED_MIXDOWN_PEAKS.twelveSimultaneous
+  )
+}
