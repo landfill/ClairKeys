@@ -1,15 +1,36 @@
 'use client'
 
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import { buildResponsiveKeyLayout } from '@/utils/pianoLayout'
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
+import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
-import { PlaybackControls } from '@/components/playback'
+import { CompactPlaybackBar, PlaybackControls } from '@/components/playback'
 import { getActiveNotes } from '@/utils/visualUtils'
+
+/**
+ * Standing in for a rotation the device will not perform. The box is laid out
+ * along the viewport's opposite axis and then turned about its top-left corner;
+ * `translateY(-100%)` brings it back over the viewport afterwards. dvh/dvw are
+ * required rather than vh/vw — iOS measures vh against the toolbar-less height,
+ * which would push the keyboard off screen.
+ */
+const rotatedRootStyle: React.CSSProperties = {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100dvh',
+  height: '100dvw',
+  transformOrigin: 'top left',
+  transform: 'rotate(90deg) translateY(-100%)',
+  overflow: 'hidden',
+  zIndex: 40,
+  background: '#f9fafb',
+}
 
 /**
  * Falling Notes Player - MVP Style Piano Visualization
@@ -51,7 +72,12 @@ export default function FallingNotesPlayer({
   const standardFallingHeight = Math.round(lookAheadSec * pxPerSec)
   const standardVisualizationHeight = standardFallingHeight + keyboardHeight
   const visualizationRef = useRef<HTMLDivElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
   const [visualizationSize, setVisualizationSize] = useState({ width: 0, height: 0 })
+
+  // Fullscreen is requested on the player root so the rotated box, not just the
+  // visualization, owns the screen.
+  const orientation = usePlaybackOrientation(rootRef)
 
   // The content box is the coordinate system shared by the keyboard and the
   // falling notes. ResizeObserver keeps it current after breakpoint, rotation,
@@ -98,8 +124,24 @@ export default function FallingNotesPlayer({
   useEffect(() => {
     document.body.classList.toggle('playback-active', isPlaying)
     onPlaybackChange?.(isPlaying)
+    if (!isPlaying) orientation.exit()
     return () => document.body.classList.remove('playback-active')
-  }, [isPlaying, onPlaybackChange])
+  }, [isPlaying, onPlaybackChange, orientation])
+
+  // The rotated player is fixed over the whole screen, so anything left
+  // scrolling behind it only produces rubber-banding on iOS.
+  useEffect(() => {
+    document.body.classList.toggle('playback-rotated', orientation.rotate)
+    return () => document.body.classList.remove('playback-rotated')
+  }, [orientation.rotate])
+
+  // The orientation request has to be issued from the click that produced the
+  // user activation. play() awaits the AudioContext and the sample load, which
+  // can outlive the activation window that requestFullscreen needs.
+  const handlePlay = useCallback(() => {
+    orientation.enter()
+    void play()
+  }, [orientation, play])
 
   // Derive key activation synchronously from the exact playhead passed to the
   // falling-note visualization. An effect would leave the keyboard one render
@@ -115,36 +157,95 @@ export default function FallingNotesPlayer({
   }
 
   return (
-    <div className={`w-full mx-auto ${isPlaying ? 'max-w-none min-h-[100dvh] flex flex-col' : 'max-w-5xl'} ${className}`}>
-      {/* Usage Instructions */}
-      <div className="mb-4">
-        <p className="text-xs text-gray-500">
-          노트의 아랫변이 히트라인(건반 상단)에 닿는 순간이 연주 타이밍입니다.
-        </p>
-      </div>
-      
-      {/* Playback Controls */}
-      <div className="mb-4">
-        <PlaybackControls
-          isPlaying={isPlaying}
-          isReady={sampleStatus !== 'loading'}
-          currentTime={currentTime}
-          duration={totalLength}
-          playbackSpeed={tempoScale}
-          playbackMode="listen"
-          onPlay={play}
-          onPause={pause}
-          onStop={stop}
-          onSeek={seek}
-          onSpeedChange={setTempoScale}
-          onModeChange={handleModeChange}
-        />
-      </div>
+    <div
+      ref={rootRef}
+      className={[
+        'w-full mx-auto',
+        isPlaying ? 'max-w-none flex flex-col' : 'max-w-5xl',
+        // An explicit cross-axis height replaces min-h while rotated; keeping
+        // both would constrain the box along the wrong axis.
+        isPlaying && !orientation.rotate ? 'min-h-[100dvh]' : '',
+        className,
+      ].filter(Boolean).join(' ')}
+      style={orientation.rotate ? rotatedRootStyle : undefined}
+    >
+      {isPlaying ? (
+        /* One row instead of four. The landscape viewport this mode targets is
+           390px tall in total; the stacked setup chrome cost 264px of it. */
+        <div className="mb-2">
+          <CompactPlaybackBar
+            isReady={sampleStatus !== 'loading'}
+            currentTime={currentTime}
+            duration={totalLength}
+            playbackSpeed={tempoScale}
+            volume={volume}
+            maxVolume={MAX_MASTER_GAIN}
+            onPause={pause}
+            onStop={stop}
+            onSeek={seek}
+            onSpeedChange={setTempoScale}
+            onVolumeChange={setVolume}
+          />
+        </div>
+      ) : (
+        <>
+          {/* Usage Instructions */}
+          <div className="mb-4">
+            <p className="text-xs text-gray-500">
+              노트의 아랫변이 히트라인(건반 상단)에 닿는 순간이 연주 타이밍입니다.
+            </p>
+          </div>
 
+          {/* Playback Controls */}
+          <div className="mb-4">
+            <PlaybackControls
+              isPlaying={isPlaying}
+              isReady={sampleStatus !== 'loading'}
+              currentTime={currentTime}
+              duration={totalLength}
+              playbackSpeed={tempoScale}
+              playbackMode="listen"
+              onPlay={handlePlay}
+              onPause={pause}
+              onStop={stop}
+              onSeek={seek}
+              onSpeedChange={setTempoScale}
+              onModeChange={handleModeChange}
+            />
+          </div>
+
+          {/* Master volume — a tuning control. The numeric readout is the master
+              gain value; whatever setting sounds right here is the number to lock in
+              as DEFAULT_MASTER_GAIN in useFallingNotesAudio. */}
+          <div className="mb-4 flex items-center gap-3">
+            <label htmlFor="master-volume" className="text-xs text-gray-600 whitespace-nowrap">
+              음량
+            </label>
+            <input
+              id="master-volume"
+              type="range"
+              min={0}
+              max={MAX_MASTER_GAIN}
+              step={0.01}
+              value={volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              className="flex-1 max-w-xs"
+              aria-label="음량 (master gain)"
+            />
+            <span className="text-xs font-mono text-gray-500 tabular-nums w-10 text-right">
+              {volume.toFixed(2)}
+            </span>
+          </div>
+        </>
+      )}
+
+      {/* Playback reclaims this row, but never the announcement: a listener who
+          cannot see the screen still has to learn that the recorded piano was
+          replaced by a synthesised one. */}
       <div
         role="status"
         aria-live="polite"
-        className="mb-4 text-xs text-gray-600"
+        className={isPlaying ? 'sr-only' : 'mb-4 text-xs text-gray-600'}
       >
         {sampleStatus === 'idle' && '녹음 피아노 샘플은 첫 재생 때 준비됩니다.'}
         {sampleStatus === 'loading' && '녹음 피아노 샘플을 준비 중입니다.'}
@@ -153,29 +254,6 @@ export default function FallingNotesPlayer({
           '샘플이 일부만 준비되었거나 늦어 이번 재생은 합성음으로 재생합니다.'}
         {sampleStatus === 'failed' &&
           '샘플을 불러오지 못해 합성음으로 재생합니다.'}
-      </div>
-
-      {/* Master volume — a tuning control. The numeric readout is the master
-          gain value; whatever setting sounds right here is the number to lock in
-          as DEFAULT_MASTER_GAIN in useFallingNotesAudio. */}
-      <div className="mb-4 flex items-center gap-3">
-        <label htmlFor="master-volume" className="text-xs text-gray-600 whitespace-nowrap">
-          음량
-        </label>
-        <input
-          id="master-volume"
-          type="range"
-          min={0}
-          max={MAX_MASTER_GAIN}
-          step={0.01}
-          value={volume}
-          onChange={(e) => setVolume(parseFloat(e.target.value))}
-          className="flex-1 max-w-xs"
-          aria-label="음량 (master gain)"
-        />
-        <span className="text-xs font-mono text-gray-500 tabular-nums w-10 text-right">
-          {volume.toFixed(2)}
-        </span>
       </div>
 
       {/* Main Visualization Area */}

@@ -17,26 +17,25 @@ function setQuery(query: string, matches: boolean) {
 }
 
 function installMatchMedia() {
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    configurable: true,
-    value: (query: string) => {
-      if (!queries.has(query)) queries.set(query, { matches: false, listeners: new Set() })
-      const state = queries.get(query)!
-      return {
-        get matches() {
-          return state.matches
-        },
-        media: query,
-        addEventListener: (_type: string, listener: () => void) => {
-          state.listeners.add(listener)
-        },
-        removeEventListener: (_type: string, listener: () => void) => {
-          state.listeners.delete(listener)
-        },
-      }
-    },
-  })
+  // jest.setup.js already defines a non-configurable (but writable) matchMedia
+  // whose queries never match, so this replaces the value rather than the
+  // property descriptor.
+  window.matchMedia = ((query: string) => {
+    if (!queries.has(query)) queries.set(query, { matches: false, listeners: new Set() })
+    const state = queries.get(query)!
+    return {
+      get matches() {
+        return state.matches
+      },
+      media: query,
+      addEventListener: (_type: string, listener: () => void) => {
+        state.listeners.add(listener)
+      },
+      removeEventListener: (_type: string, listener: () => void) => {
+        state.listeners.delete(listener)
+      },
+    }
+  }) as unknown as typeof window.matchMedia
 }
 
 /** A phone held upright: touch input, portrait screen. */
