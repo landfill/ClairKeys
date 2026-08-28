@@ -38,7 +38,12 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-center mb-8">피아노 미리보기</h2>
           <div className="max-w-6xl mx-auto">
             <Card padding="lg" shadow="md">
-              <div className="w-full overflow-x-auto">
+              <div
+                className="w-full overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                tabIndex={0}
+                role="region"
+                aria-label="피아노 건반 미리보기"
+              >
                 <div className="min-w-[800px] w-full" style={{ height: 180 }}>
                   <SimplePianoKeyboard 
                     layout={buildKeyLayout(24)} 
