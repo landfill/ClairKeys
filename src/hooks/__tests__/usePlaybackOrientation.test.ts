@@ -206,4 +206,74 @@ describe('usePlaybackOrientation', () => {
     expect(unlock).toHaveBeenCalledTimes(1)
     expect(document.exitFullscreen).toHaveBeenCalledTimes(1)
   })
+
+  // The browser answers requestFullscreen and lock() on its own schedule, and a
+  // reader can press stop or leave the page while it is still deciding.
+  describe('requests that outlive their playback session', () => {
+    function deferredFullscreen() {
+      let resolveFullscreen: () => void = () => {}
+      const requestFullscreen = jest.fn(
+        () => new Promise<void>(resolve => { resolveFullscreen = resolve })
+      )
+      const target = document.createElement('div')
+      Object.defineProperty(target, 'requestFullscreen', {
+        writable: true,
+        configurable: true,
+        value: requestFullscreen,
+      })
+      const ref = createRef<HTMLElement>()
+      ;(ref as { current: HTMLElement | null }).current = target
+      return { ref, target, requestFullscreen, resolve: () => resolveFullscreen() }
+    }
+
+    it('does not lock a screen whose playback already stopped', async () => {
+      givenPortraitTouchDevice()
+      const lock = jest.fn().mockResolvedValue(undefined)
+      givenScreenOrientation({ lock, unlock: jest.fn() })
+      const { ref, target, resolve } = deferredFullscreen()
+
+      const { result } = renderHook(() => usePlaybackOrientation(ref))
+      act(() => result.current.enter())
+      act(() => result.current.exit())
+      ;(document as { fullscreenElement: Element | null }).fullscreenElement = target
+
+      resolve()
+      await flush()
+
+      // Locking here would leave the screen turned with nothing left to turn it
+      // back: exit() has already run its release.
+      expect(lock).not.toHaveBeenCalled()
+      expect(document.exitFullscreen).toHaveBeenCalled()
+    })
+
+    it('does not lock a screen whose player already unmounted', async () => {
+      givenPortraitTouchDevice()
+      const lock = jest.fn().mockResolvedValue(undefined)
+      givenScreenOrientation({ lock, unlock: jest.fn() })
+      const { ref, resolve } = deferredFullscreen()
+
+      const { result, unmount } = renderHook(() => usePlaybackOrientation(ref))
+      act(() => result.current.enter())
+      unmount()
+
+      resolve()
+      await flush()
+
+      expect(lock).not.toHaveBeenCalled()
+    })
+  })
+
+  it('returns a stable object so consumers can depend on it in an effect', () => {
+    givenDesktop()
+    givenScreenOrientation({})
+    const { ref } = makeTarget()
+
+    const { result, rerender } = renderHook(() => usePlaybackOrientation(ref))
+    const first = result.current
+    rerender()
+
+    // A fresh object every render re-runs any effect that lists it, which is how
+    // an exit() ended up cancelling the enter() that had just been issued.
+    expect(result.current).toBe(first)
+  })
 })

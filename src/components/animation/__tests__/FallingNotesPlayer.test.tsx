@@ -11,7 +11,7 @@ const mockPlayerState = {
   volume: 0.22,
   sampleStatus: 'ready' as 'idle' | 'loading' | 'ready' | 'degraded' | 'failed',
   totalLength: 3,
-  play: jest.fn(),
+  play: jest.fn().mockResolvedValue(true),
   pause: jest.fn(),
   stop: jest.fn(),
   seek: jest.fn(),
@@ -79,6 +79,9 @@ describe('FallingNotesPlayer', () => {
     mockPlayerState.sampleStatus = 'ready'
     mockPlayerState.isPlaying = true
     mockOrientation.rotate = false
+    mockOrientation.enter.mockClear()
+    mockOrientation.exit.mockClear()
+    mockPlayerState.play.mockClear().mockResolvedValue(true)
   })
 
   it('derives the visual frame and active keys from the same playhead on first render', () => {
@@ -287,6 +290,47 @@ describe('FallingNotesPlayer', () => {
       expect(screen.getByTestId('playback-ready')).toBeInTheDocument()
       expect(screen.getByText(/히트라인/)).toBeInTheDocument()
       expect(screen.queryByTestId('compact-playback-bar')).not.toBeInTheDocument()
+    })
+  })
+
+  // enter() runs from the click, but isPlaying only flips after play() resolves
+  // its audio setup. Anything that treats that window as "not playing" cancels
+  // the request that was just issued — on iOS that is the whole feature.
+  describe('the window between the click and the first sound', () => {
+    it('does not release the orientation while playback is still starting', async () => {
+      mockPlayerState.isPlaying = false
+      render(<FallingNotesPlayer animationData={animationData} />)
+      mockOrientation.exit.mockClear()
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('play'))
+      })
+
+      expect(mockOrientation.enter).toHaveBeenCalledTimes(1)
+      expect(mockOrientation.exit).not.toHaveBeenCalled()
+    })
+
+    it('does not release the orientation merely because the player mounted idle', () => {
+      mockPlayerState.isPlaying = false
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      // Releasing on a false that was never preceded by a true is the same
+      // cancellation, arriving one render earlier.
+      expect(mockOrientation.exit).not.toHaveBeenCalled()
+    })
+
+    it('releases the orientation when the audio never starts', async () => {
+      mockPlayerState.isPlaying = false
+      mockPlayerState.play.mockResolvedValue(false)
+      render(<FallingNotesPlayer animationData={animationData} />)
+      mockOrientation.exit.mockClear()
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId('play'))
+      })
+
+      // Otherwise a failed start leaves a phone turned with nothing playing.
+      expect(mockOrientation.exit).toHaveBeenCalledTimes(1)
     })
   })
 })
