@@ -2,7 +2,36 @@
 
 Last updated: 2026-08-28 KST
 
-## PR #74 병합 완료 + PR #75 열림 — 이슈 #65 할 일 4
+## PR #74·#75 병합 완료 — 이슈 #65 할 일 1~4 종료, 5~6 잔존
+
+2026-08-28, PR [#75](https://github.com/landfill/ClairKeys/pull/75)가 `8197188`로 병합됐다.
+병합 후 main checks **6/6 success**. 브랜치 `codex/p1-playback-landscape`는 원격·로컬 모두
+삭제했다. **D-019**가 `main`에 있다.
+
+**리뷰 지적 3건은 전부 실제 결함이었고 병합 전에 수정했다** — 회귀 선행 커밋 `ccacbb1`,
+수정 `32d72bd`, 수정 후 CI 18/18 pass. 세 리뷰 스레드 모두 처리 내용을 남기고 resolve했다.
+상세는 `docs/recovery/reviews/PR-75.md`.
+
+가장 중요한 것은 R1이다. `usePlaybackOrientation`이 매 렌더 새 객체를 반환해, 그것을 deps에
+넣은 effect가 매 렌더 재실행되고 `enter()`가 유발한 렌더에서 아직 `false`인 `isPlaying`을 읽어
+방금 건 요청을 취소했다. **CSS 회전이 유일한 수단인 iOS에서는 회전이 아예 나타나지 않는다.**
+이것이 초록 CI를 통과한 이유는 컴포넌트 테스트가 hook을 **안정 객체로 mock**했기 때문이다 —
+불안정성이야말로 진짜 hook이 가진 성질이었고, mock은 의존성을 단순화한 게 아니라 결함 자체를
+제거했다. PR #67의 "백분율 높이는 레이아웃 엔진만 답할 수 있다"와 같은 계열의 실패다.
+
+**이슈 #65는 닫지 않았다.** 남은 할 일:
+
+| 할 일 | 내용 |
+|---|---|
+| 5 | `src/components/mobile/` 죽은 스택 처리 결정 — 되살릴지 삭제할지. 되살린다면 `PianoKeyboard`의 800px 강제와 이슈 #58을 먼저 정리해야 한다 |
+| 6 | 인증 E2E fixture 부재 — `/sheet/[id]`가 `AuthGuard` 뒤라 재생 화면에 Playwright가 도달하지 못한다 |
+
+**미검증 — 다음 세션이 가장 먼저 확인할 것:** 실기기 방향 잠금을 한 번도 관측하지 못했다.
+Android/iOS 실기기가 없어 `lock()`의 실제 결과는 확인되지 않았고, CSS 회전 방향
+(`rotate(90deg)` — 기기를 **반시계**로 돌려야 바로 보인다)도 임의 선택이다. 회전 잠금을 켠 iOS
+사용자가 반대로 돌리면 뒤집혀 보인다. D-019 Consequence에 기록돼 있다.
+
+## (경과) PR #74 병합 + PR #75 열림 — 이슈 #65 할 일 4
 
 PR [#74](https://github.com/landfill/ClairKeys/pull/74)가 2026-08-28 `eee0e94`로 병합됐다
 (체크 13/13 pass). 브랜치 `codex/p1-playback-column-collapse`는 원격·로컬 모두 삭제했다.
