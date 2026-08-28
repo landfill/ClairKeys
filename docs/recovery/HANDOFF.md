@@ -33,12 +33,14 @@ Review-ready PR [#68](https://github.com/landfill/ClairKeys/pull/68)이 열려 �
   fallback으로 남는다. callback은 12회 bounded retry 후에도 실패하면 payload를 `/result`에 남긴다.
 - `6f624f7` — CodeQL critical SSRF 1건 대응. request job id를 UUID로 제한하고 request 값은 DB
   lookup에만 쓴 뒤, 실제 `/result` fetch는 DB에서 다시 읽은 `omrJobId`로 만든다. focused Jest
-  3 suites / 19 tests, tsc, lint 통과; hosted CodeQL 재실행 대기.
+  3 suites / 19 tests, tsc, lint 통과. hosted CodeQL은 `fixed`, thread resolved/outdated 확인.
 - 로컬 검증: Jest **55 suites / 522 tests**, Python **34 tests**, `tsc`, lint, production build 통과.
 - **미검증:** 실제 VM→Vercel callback, 화면 이탈을 포함한 실제 PDF 종단 업로드. 배포 전에는
   목적 달성을 주장하지 않는다.
-- PR 생성 직후 상태: review-ready, `MERGEABLE`; hosted checks 진행 중. CodeRabbit은 OSS 수동
-  trigger 대기 상태. 근거: `docs/recovery/reviews/PR-68.md`,
+- **현재 상태:** review-ready, head `6f624f7`, `MERGEABLE` / `CLEAN`, hosted checks **17/17 성공**,
+  실패·대기 0건, 미해결 review thread 0건. CodeRabbit은 수동 요청 2회 모두 rate limit이라 실제
+  리뷰가 없었다. **사용자의 PR #68 명시적 병합 승인 전에는 병합하지 않는다.** 근거:
+  `docs/recovery/reviews/PR-68.md`,
   `docs/recovery/validation/2026-08-28-issue-55-server-finalization.md`.
 
 ## 지금 해야 할 것 — PR #67의 실기기 확인

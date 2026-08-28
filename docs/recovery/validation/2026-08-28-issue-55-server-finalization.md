@@ -38,8 +38,14 @@ Environment: macOS, Node/Jest, Python 3.14, local mocks; external OMR/Supabase n
   `job_id`가 공유 helper를 거쳐 OMR `/result` fetch URL에 도달했다.
 - `6f624f7`에서 UUID 외 입력을 400으로 거절하고, request 값은 DB lookup에만 사용하며, fetch에는
   DB row에서 다시 읽은 `omrJobId`만 전달한다. path encoding도 추가했다.
-- 수정 후 focused Jest **3 suites / 19 tests**, tsc, lint, diff check 통과. hosted CodeQL 재실행은
-  이 기록 시점에 대기 중이다.
+- 수정 후 focused Jest **3 suites / 19 tests**, tsc, lint, diff check 통과. hosted CodeQL 재실행도
+  pass했고 alert instance는 `fixed`, review thread는 resolved/outdated다.
+
+## Hosted verification
+
+- PR #68 head `6f624f7`: **17 checks success / 0 pending / 0 failing**.
+- Vercel preview deployment success.
+- CodeRabbit은 실제 리뷰를 완료하지 못했다. 두 번의 수동 요청 모두 rate limit 응답이었다.
 
 ## Baseline comparison
 
