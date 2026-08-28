@@ -366,3 +366,47 @@
   - 음역을 넓히기 위해 노트를 필터링하거나, 재생 시각을 레이아웃 계산에 넣지 않는다.
   - 새 운지 데이터를 생성하기 전까지 배지 임계값을 반응형 폭의 하한으로 오인하지 않는다.
 - Related: 이슈 [#65](https://github.com/landfill/ClairKeys/issues/65), `src/utils/pianoLayout.ts`, `src/components/animation/FallingNotesPlayer.tsx`
+
+## D-018: OMR 완료 저장은 생산자 callback이 트리거하고 브라우저 폴링은 fallback으로 둔다
+
+- Date: 2026-08-28
+- Status: Accepted
+- Context:
+  - D-011은 스토리지 자격증명을 OMR 서비스에서 제거하고 Next.js만 결과를 저장하게 했다. 그러나
+    저장 코드를 `/api/omr/status/[jobId]`에만 둬서, 완료 저장의 유일한 트리거가 브라우저의 5초
+    폴링이 됐다. 업로드 화면을 벗어나면 interval이 해제되고 VM이 변환을 끝내도 결과는 메모리에
+    남은 채 DB 행이 영구히 `processing`에 고착된다.
+  - OMR 서비스는 정확한 완료 시점과 job id를 이미 알고 있으며, 양쪽에는 `OMR_SHARED_SECRET`이
+    이미 배포되어 있다. 완료 사실만 알리는 데 새 자격증명이나 주기적 전수 조회가 필요하지 않다.
+- Decision:
+  1. Next.js 업로드 경로가 `/process` multipart에 canonical callback URL을 함께 보낸다. URL은
+     `NEXTAUTH_URL`을 우선하고 없으면 현재 요청 origin을 쓰며, 행을 만들기 전에 절대 URL로
+     검증한다.
+  2. OMR 서비스는 변환 완료 뒤 callback에 `{job_id}`를 POST하고 기존 공유 비밀을
+     `X-ClairKeys-Token`으로 보낸다. callback 실패는 지수 backoff로 12회 재시도한다.
+  3. callback은 공유 비밀을 constant-time으로 검증하고, job id로 DB 행을 찾아 `/result`를
+     수거한 뒤 Next.js에만 있는 service-role key로 저장한다. 저장 경로는 D-011의 job-derived
+     upsert를 그대로 사용한다.
+  4. 기존 사용자 세션 기반 status poll은 삭제하지 않는다. callback과 경합하거나 재호출돼도
+     이미 `animationDataUrl`이 있으면 즉시 성공하고, 같은 job은 같은 객체 키에 upsert하므로
+     브라우저·callback 모두 안전한 fallback이다.
+- Reason: 완료를 가장 먼저 아는 생산자가 정확히 한 job을 알리는 것이, 브라우저 수명주기나
+  모든 미완료 행을 훑는 주기 작업보다 직접적이다. 저장 권한과 저장 트리거를 분리해 D-011의
+  credential boundary도 유지한다.
+- Rejected:
+  - OMR 서비스가 Supabase에 직접 저장 | D-011을 되돌리고 공인 IP VM에 service-role key를 둔다.
+  - 브라우저 polling만 유지 | 화면 이탈이 저장 가능 여부를 결정하는 현재 결함을 보존한다.
+  - Vercel cron이 미완료 행을 주기적으로 전수 조회 | 정확한 완료 시점을 아는 생산자가 있는데도
+    지연과 불필요한 조회를 만들고, 배포 plan의 cron 주기 제약에 동작을 의존시킨다.
+- Consequence:
+  - callback 재시도와 job 결과는 여전히 OMR 프로세스 메모리에 있다. VM 재시작까지 견디는 영속
+    전달은 P1-B의 queue 범위이며, 이 결정은 화면 이탈 결함만 제거한다.
+  - 12회가 모두 실패하면 `delivery_status=failed`가 되지만 결과는 `/result/{job_id}`에 남아
+    브라우저 polling 또는 운영자 재수거가 가능하다. 이를 영속 큐 완료로 표현하지 않는다.
+- Directive:
+  - callback endpoint에 사용자 세션을 요구하지 않는다. 인증 경계는 OMR 공유 비밀이다.
+  - callback을 이유로 OMR 서비스에 스토리지 자격증명을 추가하지 않는다.
+  - callback URL을 행 생성 뒤에 처음 검증하지 않는다. 잘못된 URL로 job 없는 `processing` 행을
+    다시 만들게 된다.
+- Related: D-010, D-011, 이슈 [#55](https://github.com/landfill/ClairKeys/issues/55),
+  `src/app/api/omr/finalize/route.ts`, `omr-service/app.py`

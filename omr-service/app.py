@@ -14,6 +14,7 @@ import aiofiles
 import asyncio
 from datetime import datetime
 import math
+import httpx
 import uuid
 from pathlib import Path
 import logging
@@ -121,6 +122,7 @@ async def process_pdf(
     user_id: Optional[str] = Form(None),
     sheet_music_id: Optional[str] = Form(None),
     tempo: Optional[float] = Form(None),
+    callback_url: Optional[str] = Form(None),
 ):
     """
     Process PDF sheet music to ClairKeys animation data
@@ -157,11 +159,12 @@ async def process_pdf(
             "user_id": user_id,
             "sheet_music_id": sheet_music_id,
             "tempo": tempo,
+            "callback_url": callback_url,
         }
     }
     
     # Start background processing
-    background_tasks.add_task(process_pdf_background, job_id, file, title, composer, user_id, tempo)
+    background_tasks.add_task(process_pdf_background, job_id, file, title, composer, user_id, tempo, callback_url)
     
     return {
         "job_id": job_id,
@@ -226,6 +229,64 @@ async def get_processing_result(
         "processed_at": job["result"]["processed_at"],
     }
 
+async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
+    """Deliver completion until the Next.js side has persisted the result.
+
+    This is intentionally an in-process retry loop, matching the service's
+    existing in-memory job store. A process restart still loses both the job
+    and its delivery task, but browser navigation no longer does. The shared
+    secret authenticates the callback; storage credentials remain on Next.js.
+    """
+    if not callback_url:
+        logger.warning("No completion callback configured for job %s", job_id)
+        return
+
+    secret = (os.getenv("OMR_SHARED_SECRET") or "").strip()
+    if not secret:
+        logger.error("Cannot deliver completion for job %s without OMR_SHARED_SECRET", job_id)
+        return
+
+    delay_seconds = 1
+    max_attempts = 12
+    processing_jobs[job_id]["delivery_status"] = "pending"
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    callback_url,
+                    json={"job_id": job_id},
+                    headers={"X-ClairKeys-Token": secret},
+                )
+            if 200 <= response.status_code < 300:
+                processing_jobs[job_id]["delivery_status"] = "delivered"
+                logger.info("Delivered completed job %s to %s", job_id, callback_url)
+                return
+            logger.error(
+                "Completion callback for job %s returned %s: %s",
+                job_id,
+                response.status_code,
+                response.text,
+            )
+        except Exception as error:
+            logger.error("Completion callback for job %s failed: %s", job_id, error)
+
+        if attempt == max_attempts:
+            processing_jobs[job_id]["delivery_status"] = "failed"
+            logger.error(
+                "Giving up completion delivery for job %s after %s attempts; "
+                "the result remains available through GET /result/%s",
+                job_id,
+                max_attempts,
+                job_id,
+            )
+            return
+
+        processing_jobs[job_id]["delivery_status"] = "retrying"
+        await asyncio.sleep(delay_seconds)
+        delay_seconds = min(delay_seconds * 2, 60)
+
+
 async def process_pdf_background(
     job_id: str,
     file: UploadFile,
@@ -233,6 +294,7 @@ async def process_pdf_background(
     composer: Optional[str], 
     user_id: Optional[str],
     tempo: Optional[float],
+    callback_url: Optional[str],
 ):
     """Background task for processing PDF"""
     try:
@@ -291,6 +353,12 @@ async def process_pdf_background(
         shutil.rmtree(temp_dir, ignore_errors=True)
         
         logger.info(f"Successfully completed job {job_id}")
+
+        # The browser may have navigated away hours ago. Delivery is owned by
+        # the producer and retries across transient failures. If delivery is
+        # exhausted, the payload remains collectable through the existing
+        # browser/manual fallback.
+        await notify_completion(callback_url, job_id)
         
     except Exception as e:
         logger.error(f"Error processing job {job_id}: {str(e)}")
