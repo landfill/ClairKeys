@@ -31,6 +31,15 @@ export const MIN_KEYBOARD_HEIGHT = 120
 /** A white key is about 23mm wide and 145mm long. */
 export const PIANO_KEY_ASPECT = 6.3
 
+/**
+ * Runway measured in keyboards. A ceiling in seconds cannot bind on a landscape
+ * phone — 2.5s is 350px and the whole viewport is 276 to 390px — so the falling
+ * area kept absorbing every pixel the address bar handed back as it retracted.
+ * Tying it to the keyboard bounds it on any screen, and keeps the instrument and
+ * its runway in the same relation everywhere.
+ */
+export const FALLING_TO_KEYBOARD_RATIO = 1.15
+
 /** The visualization box's border, which its content box does not include. */
 export const BOX_BORDER = 2
 
@@ -83,7 +92,11 @@ export function planPlaybackGeometry({
 
   const fallingHeight = Math.max(
     0,
-    Math.min(maxFallingHeight, content - keyboardHeight)
+    Math.min(
+      maxFallingHeight,
+      Math.round(keyboardHeight * FALLING_TO_KEYBOARD_RATIO),
+      content - keyboardHeight
+    )
   )
 
   return {
