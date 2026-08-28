@@ -55,7 +55,42 @@ PR [#68](https://github.com/landfill/ClairKeys/pull/68)이 2026-08-28 `41606e7`�
 - 근거: `docs/recovery/reviews/PR-68.md`,
   `docs/recovery/validation/2026-08-28-issue-55-server-finalization.md`.
 
-## OMR 서비스 배포 완료 — 콜백 발사 확인, #55는 아직 열려 있다
+## 이슈 #55 종료 — 화면을 벗어나도 결과가 저장된다
+
+2026-08-28, 사용자가 웹앱에서 PDF를 업로드하고 **업로드 화면을 벗어난 뒤** 악보가 저장된 것을
+확인했다. 이슈 [#55](https://github.com/landfill/ClairKeys/issues/55)를 종료했다.
+
+서비스 측 근거 — job `0309f4a3-1130-482a-9698-fef933f395f6`:
+
+```
+INFO:app:Successfully completed job 0309f4a3-1130-482a-9698-fef933f395f6
+INFO:app:Delivered completed job 0309f4a3-1130-482a-9698-fef933f395f6 to https://clairkeys.vercel.app/api/omr/finalize
+```
+
+`delivery_status=delivered`, 이 job의 실패·재시도 로그 **0건** — **첫 시도에 전달**됐다.
+결과 411 notes. `Delivered`는 2xx를 받은 경우에만 기록되고, finalize는 2xx를 돌려주기 전에
+`/result` 수거·Supabase 저장·행 갱신을 모두 마쳐야 한다. 따라서 이 한 줄이 변환 완료 → 콜백
+발사 → 인증 → `omrJobId` 조회 성공 → 결과 수거 → 저장 → 행 갱신 전 구간의 실행을 뜻한다.
+
+**저장 트리거가 더 이상 마운트된 브라우저에 의존하지 않는다.** 폴링은 idempotent fallback으로
+남으며 D-018이 이유를 기록한다.
+
+**이것으로 닫히지 **않는** 것 — 다음 세션은 아래를 완료로 오인하지 않는다:**
+
+- **영속 전달 없음.** job 상태와 전달 재시도는 OMR 프로세스 메모리에 있다. 프로세스·컨테이너·
+  호스트 재시작 시 진행 중 job과 전달 태스크가 함께 사라진다. D-018이 P1-B queue 범위로
+  명시한다. 이번 확인을 영속 큐 완료로 표현하지 않는다.
+- **12회 소진 후 폴링 회수 경로 미실측.** 합성 job으로 소진과 `delivery_status=failed`는
+  확인했지만, 실제 사용자 job이 전달에 실패했을 때의 회수는 관측하지 않았다.
+- **미해결 리뷰 항목** R6(`omrJobId` 인덱스 부재), R8(finalize의 no-op DB 왕복과 오해 소지
+  주석), R10(`NEXTAUTH_URL` 미설정 시 요청 origin fallback), R11(`alreadyStored`가
+  `processingStatus` 미갱신). `docs/recovery/reviews/PR-68.md` 참조.
+- **systemd unit 재시작 quirk** — `systemctl restart`가 실패를 보고한 뒤 `Restart=always`가
+  살려낸다. 종료 코드를 배포 성공 판정에 쓸 수 없다.
+
+- 근거: `docs/recovery/validation/2026-08-28-issue-55-page-leave-end-to-end.md`
+
+## OMR 서비스 배포 — 콜백 발사 확인
 
 2026-08-28, `acf25f8`을 NAVER VM에 배포했다. 배포 전 실행 이미지는 `cb42947`로 PR #68 **이전**
 이었다 — 즉 D-018의 서비스 절반은 이때까지 한 번도 돌지 않았다.

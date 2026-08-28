@@ -3,6 +3,12 @@
 Status: `NOT_STARTED`
 Depends on: P1-A
 
+Progress (2026-08-28): 이 phase는 아직 착수하지 않았다. 다만 인접한 결함 하나가 별도로 처리됐다 —
+이슈 #55(화면 이탈 시 결과 유실)가 D-018의 생산자 소유 콜백으로 해소되어 2026-08-28 종단
+확인까지 마쳤다. **이를 Work stages 1~3의 착수로 읽지 않는다.** job 상태와 전달 재시도는 여전히
+OMR 프로세스 메모리에 있고, 재시작 복구·영속 idempotency key는 손대지 않았다. 근거:
+`docs/recovery/validation/2026-08-28-issue-55-page-leave-end-to-end.md`, D-018.
+
 ## Objective
 
 P1-A의 canonical upload path를 재시작·수평 확장 가능한 작업 처리와 인증된 OMR 서비스 위에서 실행한다.
