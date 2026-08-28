@@ -21,30 +21,38 @@ GitHub live state와 저장소 기록의 불일치 4건을 정리했다.
 조합을 파싱한다. 사고를 설명하는 인용문도 예외가 아니다. 완료 의도가 없는 상태 기록 커밋에서는
 이 조합을 쓰지 말고 `issue #번호`, `재개`, `종료 키워드`처럼 적는다.
 
-## PR #68 — 이슈 #55 서버 주도 완료 저장
+## PR #68 병합 완료 — 이슈 #55 서버 주도 완료 저장
 
-Review-ready PR [#68](https://github.com/landfill/ClairKeys/pull/68)이 열려 있다.
-브랜치 `codex/p1b-issue-55-server-finalization`, head `6f624f7`. **이슈는 병합 전 닫지 않는다.**
+PR [#68](https://github.com/landfill/ClairKeys/pull/68)이 2026-08-28 `41606e7`로 병합됐다.
+브랜치 `codex/p1b-issue-55-server-finalization`은 원격·로컬 모두 삭제했다.
+**D-018**을 기록한다. 병합 후 main checks 6/6 성공.
 
-- `7c0242f` — 회귀 테스트 단독. 구현 전 callback URL·endpoint·service delivery가 없어 Jest
-  4 assertions, Python contract 2 assertions가 실패했다.
-- `00b6b41` — **D-018**. 업로드가 callback URL을 보내고 OMR 서비스가 변환 완료 뒤 기존 공유
-  비밀로 Next.js endpoint를 호출한다. Next.js만 결과를 수거·저장하며 browser poll은 idempotent
-  fallback으로 남는다. callback은 12회 bounded retry 후에도 실패하면 payload를 `/result`에 남긴다.
-- `6f624f7` — CodeQL critical SSRF 1건 대응. request job id를 UUID로 제한하고 request 값은 DB
-  lookup에만 쓴 뒤, 실제 `/result` fetch는 DB에서 다시 읽은 `omrJobId`로 만든다. focused Jest
-  3 suites / 19 tests, tsc, lint 통과. hosted CodeQL은 `fixed`, thread resolved/outdated 확인.
-- 로컬 검증: Jest **55 suites / 522 tests**, Python **34 tests**, `tsc`, lint, production build 통과.
-- **미검증:** 실제 VM→Vercel callback, 화면 이탈을 포함한 실제 PDF 종단 업로드. 배포 전에는
-  목적 달성을 주장하지 않는다.
-- **리뷰 정정:** 수동 리뷰의 Fly auto-stop H1은 `REJECTED`. 리뷰어가 배포된 적 없는 과거
-  `omr-service/fly.toml`을 현재 설정으로 오인했다. 실제 OMR 런타임은 NAVER Cloud VM의
-  podman/systemd이며 idle auto-stop이 없다. 일반적인 프로세스 재시작 내구성 제약과 실제
-  callback 미배포·미검증 상태는 그대로다. 현재형 Fly 잔재는 별도 정리 PR에서 제거한다.
-- **현재 상태:** review-ready, head `6f624f7`, `MERGEABLE` / `CLEAN`, hosted checks **17/17 성공**,
-  실패·대기 0건, 미해결 review thread 0건. CodeRabbit은 수동 요청 2회 모두 rate limit이라 실제
-  리뷰가 없었다. **사용자의 PR #68 명시적 병합 승인 전에는 병합하지 않는다.** 근거:
-  `docs/recovery/reviews/PR-68.md`,
+- `7c0242f` / `00b6b41` / `6f624f7` — callback 계약, 인증된 finalize endpoint, 공유
+  idempotent 저장 경로, CodeQL SSRF 대응.
+- `caab7f7` / `638e478` — 수동 리뷰 지적 **R3·R4·R5·R7** 수정. 회귀를 먼저 단독 커밋했고,
+  `omr.delivery`를 당시 동작으로 stub한 상태에서 Python 8 assertions, Jest 1건이 실패했다.
+  - **R3** — `notify_completion`이 FAILED를 쓰는 `try` 안에 있어 전달 결함이 완료된 job을
+    실패로 되돌릴 수 있었다. `try`의 `else`로 옮겼다. `else`는 변환이 예외를 내지 않았을 때만
+    실행되고 그 안의 예외는 위 handler가 잡지 않는다 — 두 조건을 동시에 만족하는 유일한 위치다.
+  - **R4** — httpx timeout 30s < finalize `maxDuration` 60s라 느린 finalize가 중복 실행됐다.
+    70s로 올렸고, 회귀가 라우트의 `maxDuration`을 직접 읽어 비교한다.
+  - **R5** — 400/401 같은 영구 실패도 12회 재시도했다. 재시도 정책을 stdlib-only
+    `omr-service/omr/delivery.py`로 분리했다(`omr/auth.py`와 같은 이유 — `app.py`는 fastapi
+    때문에 import되지 않아 안에 있는 로직은 읽을 수만 있다). **404는 의도적으로 retryable
+    유지**: upload가 `/process` 응답 후에야 `omrJobId`를 쓰므로 빠른 job이 그 창으로 들어온다.
+  - **R7** — `/status/{jobId}`가 라우트 파라미터를 원문 보간했다. `encodeURIComponent(storedJobId)`.
+- 병합 전 검증: Python **43**, Jest **55 suites / 524 tests**, `tsc`, lint, build 통과,
+  hosted checks 17/17.
+- **미해결 리뷰 항목 — 병합으로 닫히지 않았다:** R6(`omrJobId` 인덱스 부재), R8(finalize의
+  DB 왕복 no-op과 오해 소지 주석), R10(`NEXTAUTH_URL` 미설정 시 요청 origin fallback),
+  R11(`alreadyStored`가 `processingStatus`를 고치지 않음). R9는 PARTIAL — 재시도 정책은 실제
+  실행 테스트로 전환했지만 `notify_completion`의 HTTP 경로 자체는 여전히 미실행이다.
+- **미검증:** 실제 VM→Vercel callback, 화면 이탈을 포함한 실제 PDF 종단 업로드. **이 브랜치의
+  `omr-service/app.py`가 VM에 배포되기 전에는 이슈 #55 달성을 주장하지 않는다.**
+- **리뷰 정정 기록:** 수동 리뷰의 Fly auto-stop H1은 `REJECTED`였다. 리뷰어가 배포된 적 없는
+  과거 `omr-service/fly.toml`을 현재 설정으로 오인했다. 실제 런타임은 NAVER Cloud VM의
+  podman/systemd다.
+- 근거: `docs/recovery/reviews/PR-68.md`,
   `docs/recovery/validation/2026-08-28-issue-55-server-finalization.md`.
 
 ## PR #69 — 폐기된 Fly 배포 표면 제거
