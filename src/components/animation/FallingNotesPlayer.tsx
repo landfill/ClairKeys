@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import { buildResponsiveKeyLayout } from '@/utils/pianoLayout'
+import { BOX_BORDER, PX_PER_SEC, planPlaybackGeometry } from '@/utils/playbackGeometry'
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
@@ -67,10 +68,9 @@ export default function FallingNotesPlayer({
   } = useFallingNotesPlayer(notes)
 
   // Constants
-  const pxPerSec = 140
-  const keyboardHeight = 120
-  const standardFallingHeight = Math.round(lookAheadSec * pxPerSec)
-  const standardVisualizationHeight = standardFallingHeight + keyboardHeight
+  const pxPerSec = PX_PER_SEC
+  // The idle box has always been a border-box 330px, so the border is inside it.
+  const standardVisualizationHeight = Math.round(lookAheadSec * pxPerSec) + 120
   const visualizationRef = useRef<HTMLDivElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const [visualizationSize, setVisualizationSize] = useState({ width: 0, height: 0 })
@@ -113,13 +113,21 @@ export default function FallingNotesPlayer({
 
   // This runs only when a score is loaded or the containing box is resized;
   // playback time deliberately cannot remap a falling note's horizontal x.
+  // The measured element wraps the box, so its content width is the box's own
+  // less the border the box draws.
   const layout = useMemo(
-    () => buildResponsiveKeyLayout(visualizationSize.width, notes),
+    () => buildResponsiveKeyLayout(Math.max(0, visualizationSize.width - BOX_BORDER), notes),
     [notes, visualizationSize.width]
   )
-  const fallingHeight = visualizationSize.height > 0
-    ? Math.max(0, visualizationSize.height - keyboardHeight)
-    : Math.max(0, standardFallingHeight - 2)
+
+  // The wrapper owns the available height and the box takes the height this
+  // returns, which is what keeps the cap from feeding back into its own input.
+  const { fallingHeight, keyboardHeight, boxHeight } = planPlaybackGeometry({
+    availableHeight: visualizationSize.height > 0
+      ? visualizationSize.height
+      : standardVisualizationHeight,
+    keyWidth: layout.keyWidth,
+  })
 
   // `isPlaying` is still false for as long as play() spends awaiting the
   // AudioContext and the samples, so a plain `!isPlaying` here would release the
@@ -266,18 +274,22 @@ export default function FallingNotesPlayer({
       </div>
 
       {/* Main Visualization Area */}
-      {/* The measured box is the column itself. An inner `height: 100%` wrapper
-          would resolve to `auto` while playback sizes this box with flex, which
-          collapses the falling area and lifts the keyboard to the top. */}
+      {/* Two elements with one job each. The wrapper is measured and owns the
+          available height; the box takes the height the plan returns. Sizing the
+          measured element from its own measurement would be a feedback loop. */}
       <div
         ref={visualizationRef}
+        className="w-full"
+        style={isPlaying
+          ? { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }
+          : undefined}
+      >
+      <div
         className="w-full border rounded-2xl shadow overflow-hidden"
         style={{
           display: 'flex',
           flexDirection: 'column',
-          ...(isPlaying
-            ? { flex: 1, minHeight: 0 }
-            : { height: standardVisualizationHeight }),
+          height: isPlaying ? boxHeight : standardVisualizationHeight,
         }}
       >
         {/* Falling Notes Area */}
@@ -324,6 +336,7 @@ export default function FallingNotesPlayer({
             activeKeys={activeKeys}
           />
         </div>
+      </div>
       </div>
       
       {/* Debug Info (development only) */}

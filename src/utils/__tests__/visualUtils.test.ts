@@ -23,7 +23,8 @@ const mockLayout: KeyLayout = {
     [64, { x: 140, w: 20, black: false }], // E4
     [67, { x: 170, w: 20, black: false }]  // G4
   ]),
-  totalWidth: 200
+  totalWidth: 200,
+  keyWidth: 20,
 };
 
 describe('visualUtils with fingering', () => {

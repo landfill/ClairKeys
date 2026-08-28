@@ -78,14 +78,23 @@ describe('planPlaybackGeometry', () => {
   })
 
   it('reports heights the CSS box can actually add up to', () => {
-    for (const availableHeight of [90, 276, 330, 500, 680, 1442]) {
+    // Above the keyboard's own floor plus the border, the box always gets the
+    // height it asks for.
+    for (const availableHeight of [276, 330, 500, 680, 1442]) {
       const plan = planPlaybackGeometry({ availableHeight, keyWidth: 27 })
 
       // The falling area is a flex child of the box, so whatever the box is
       // after its border must equal the two parts. A mismatch here is the class
       // of defect that once had notes falling through the keys.
       expect(plan.boxHeight - 2 - plan.keyboardHeight).toBe(plan.fallingHeight)
-      expect(plan.boxHeight).toBeLessThanOrEqual(Math.max(availableHeight, 122))
+    }
+  })
+
+  it('never asks for more height than the space it was given', () => {
+    for (const availableHeight of [0, 90, 121, 276, 680, 1442]) {
+      const plan = planPlaybackGeometry({ availableHeight, keyWidth: 27 })
+
+      expect(plan.boxHeight).toBeLessThanOrEqual(availableHeight)
     }
   })
 })
