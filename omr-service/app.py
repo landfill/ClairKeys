@@ -26,6 +26,13 @@ logger = logging.getLogger(__name__)
 
 from omr.audiveris import AudiverisProcessor
 from omr.auth import SharedSecretError, verify_shared_secret
+from omr.delivery import (
+    CALLBACK_TIMEOUT_SECONDS,
+    INITIAL_BACKOFF_SECONDS,
+    MAX_DELIVERY_ATTEMPTS,
+    is_retryable_status,
+    next_backoff_seconds,
+)
 from omr.converter import MusicXMLToClairKeysConverter
 
 # Initialize FastAPI app
@@ -246,13 +253,12 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
         logger.error("Cannot deliver completion for job %s without OMR_SHARED_SECRET", job_id)
         return
 
-    delay_seconds = 1
-    max_attempts = 12
+    delay_seconds = INITIAL_BACKOFF_SECONDS
     processing_jobs[job_id]["delivery_status"] = "pending"
 
-    for attempt in range(1, max_attempts + 1):
+    for attempt in range(1, MAX_DELIVERY_ATTEMPTS + 1):
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            async with httpx.AsyncClient(timeout=CALLBACK_TIMEOUT_SECONDS) as client:
                 response = await client.post(
                     callback_url,
                     json={"job_id": job_id},
@@ -268,23 +274,37 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
                 response.status_code,
                 response.text,
             )
+            if not is_retryable_status(response.status_code):
+                # The answer will not change. Say so now, in the log, rather
+                # than after ten minutes of backoff that only look like a
+                # network problem.
+                processing_jobs[job_id]["delivery_status"] = "failed"
+                logger.error(
+                    "Completion callback for job %s was rejected permanently "
+                    "with %s; not retrying. The result remains available "
+                    "through GET /result/%s",
+                    job_id,
+                    response.status_code,
+                    job_id,
+                )
+                return
         except Exception as error:
             logger.error("Completion callback for job %s failed: %s", job_id, error)
 
-        if attempt == max_attempts:
+        if attempt == MAX_DELIVERY_ATTEMPTS:
             processing_jobs[job_id]["delivery_status"] = "failed"
             logger.error(
                 "Giving up completion delivery for job %s after %s attempts; "
                 "the result remains available through GET /result/%s",
                 job_id,
-                max_attempts,
+                MAX_DELIVERY_ATTEMPTS,
                 job_id,
             )
             return
 
         processing_jobs[job_id]["delivery_status"] = "retrying"
         await asyncio.sleep(delay_seconds)
-        delay_seconds = min(delay_seconds * 2, 60)
+        delay_seconds = next_backoff_seconds(delay_seconds)
 
 
 async def process_pdf_background(
@@ -354,12 +374,6 @@ async def process_pdf_background(
         
         logger.info(f"Successfully completed job {job_id}")
 
-        # The browser may have navigated away hours ago. Delivery is owned by
-        # the producer and retries across transient failures. If delivery is
-        # exhausted, the payload remains collectable through the existing
-        # browser/manual fallback.
-        await notify_completion(callback_url, job_id)
-        
     except Exception as e:
         logger.error(f"Error processing job {job_id}: {str(e)}")
         processing_jobs[job_id]["status"] = ProcessingStatus.FAILED
@@ -371,6 +385,28 @@ async def process_pdf_background(
         if temp_dir.exists():
             import shutil
             shutil.rmtree(temp_dir, ignore_errors=True)
+
+    else:
+        # The browser may have navigated away hours ago. Delivery is owned by
+        # the producer and retries across transient failures. If delivery is
+        # exhausted, the payload remains collectable through the existing
+        # browser/manual fallback.
+        #
+        # This sits in `else`, not in the `try` above, and that placement is
+        # the point: the job is already COMPLETED with its animation_data in
+        # memory, so a fault while *announcing* it must not reach the handler
+        # that writes FAILED. A completed job that could not be announced is
+        # still a completed job, and the browser fallback — the thing that
+        # exists to catch a missed callback — would otherwise be shown a
+        # failure for a score that is sitting right here. `else` also runs only
+        # when the conversion raised nothing, so a failed job announces
+        # nothing.
+        try:
+            await notify_completion(callback_url, job_id)
+        except Exception as delivery_error:
+            logger.error(
+                "Completion delivery raised for job %s: %s", job_id, delivery_error
+            )
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))

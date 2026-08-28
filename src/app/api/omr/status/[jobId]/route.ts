@@ -70,7 +70,11 @@ export async function GET(
     // simply has no answer yet, and the stored status stays as it is.
     let statusResponse: Response
     try {
-      statusResponse = await fetch(`${getOmrServiceUrl()}/status/${jobId}`, {
+      // The identifier read back from the row, encoded as one path segment.
+      // D-018 records this rule for the `/result` call below; this is the
+      // sibling call in the same handler, and it was left on the old shape.
+      const statusUrl = `${getOmrServiceUrl()}/status/${encodeURIComponent(storedJobId)}`
+      statusResponse = await fetch(statusUrl, {
         headers: {
           'Content-Type': 'application/json',
           ...omrAuthHeaders()
