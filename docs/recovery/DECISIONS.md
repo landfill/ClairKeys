@@ -398,3 +398,55 @@
     DB에 저장된 job id를 fetch target으로 사용한다.
 - Related: D-010, D-011, 이슈 [#55](https://github.com/landfill/ClairKeys/issues/55),
   `src/app/api/omr/finalize/route.ts`, `omr-service/app.py`
+
+## D-019: 재생 가로 전환은 하나의 조건으로 두 플랫폼을 처리하고, 컨트롤 압축을 동반한다
+
+- Date: 2026-08-28
+- Status: Accepted
+- Context:
+  - D-017의 곡 단위 크롭은 세로 화면의 폭 문제를 풀지 못한다. iPhone 12 세로의 가용 폭 356px
+    에서 33 흰건반 악보는 건반 폭 10.79px에 그친다. 남은 지렛대는 화면 자체의 방향뿐이다.
+  - 두 플랫폼이 반대 수단을 요구한다. Android는 fullscreen 선행 후 `screen.orientation.lock()`
+    이 동작하고, iOS는 `lock()`도 manifest `orientation`도 없어 CSS 변환만 남는다.
+  - **실측**: 재생 중 플레이어 자체 chrome이 264px(안내문 32 + PlaybackControls 168 +
+    샘플 상태 32 + 음량 32)이다. iPhone 12 가로의 뷰포트 높이는 **390px 전체**이므로, 회전만
+    하면 시각화에 126px이 남고 건반 120px을 빼면 낙하 영역이 **6px**이 된다.
+- Decision:
+  1. 회전 여부는 `engaged && (pointer: coarse) && (orientation: portrait)` 하나의 식으로
+     정한다. 락 성공은 화면을 실제 가로로 만들어 portrait 질의를 스스로 종료시키므로, **이중
+     회전 해제가 별도 분기 없이 같은 식에서 나온다.**
+  2. iOS 판별은 `typeof screen.orientation?.lock === 'function'`으로만 한다. iOS는 인터페이스
+     자체는 Safari 16.4+로 제공하므로 `'orientation' in screen`이나 null 검사는 iOS를 조용히
+     Android 경로로 보낸다.
+  3. 방향 요청은 재생 클릭 핸들러 안에서 **동기적으로** 발사한다. `play()`는 AudioContext 재개와
+     샘플 로딩을 await하므로 `isPlaying` effect에서 요청하면 fullscreen의 transient activation
+     창을 놓칠 수 있다.
+  4. `lock()`이 없는 플랫폼에서는 fullscreen을 요청하지 않는다. iOS는 `Element.requestFullscreen`
+     을 `<video>`에만 허용하므로 거절된 Promise만 남고, CSS 회전이 이미 화면을 덮는다.
+  5. **데스크톱은 회전 대상이 아니다.** 창에는 전환할 방향이 없고, 재생 시 브라우저를 fullscreen
+     으로 밀어넣는 것은 그 자체가 결함이다. `(pointer: coarse)`로 배제한다.
+  6. 회전은 **컨트롤 압축을 반드시 동반한다.** 재생 중에는 `CompactPlaybackBar` 한 줄(56px)이
+     기존 4개 블록을 대체해 chrome을 264px → 64px로 줄인다. 낙하 영역이 6px → 206px이 되며,
+     이는 설정값 `lookAheadSec` 1.5s(210px)에 해당한다.
+  7. 압축이 버리는 것과 남기는 것: 안내문과 3행 컨트롤 블록은 설정용이므로 버린다. **음량
+     슬라이더는 남긴다** — 귀로 `DEFAULT_MASTER_GAIN`을 고르는 것이 목적이라 소리가 나는 동안
+     조작할 수 있어야 한다. 샘플 상태 줄은 행을 내주되 `sr-only`로 live region을 유지한다.
+  8. 공유 `PlaybackControls`는 수정하지 않는다. `AnimationPlayer`와 demo 페이지가 현재 형태에
+     의존한다.
+- Consequence:
+  - 회전 잠금을 켠 iOS 사용자는 CSS 회전만 받는다. 이때 기기를 어느 방향으로 돌려야 바로 보이는지는
+    `rotate(90deg)`가 정한다(기기를 반시계로 돌린다). 반대로 돌리면 뒤집혀 보이며, 브라우저가
+    실제로 가로로 reflow하는 경우에만 회전이 해제된다. 이 방향은 임의 선택이며 실기기 확인 대상이다.
+  - 재생 중에는 모드 선택이 사라진다. `FallingNotesPlayer`는 listen 모드만 지원하고 핸들러가
+    로그만 남기므로 잃는 기능이 없다.
+- Rejected:
+  - 시각화 블록만 회전 | 폰을 세로로 든 채 노트가 옆으로 흘러 낙하 노트의 전제를 깬다.
+  - 회전만 하고 압축은 나중에 | 가로 390px에서 낙하 영역 6px은 쓸 수 없는 화면이다.
+  - manifest `"orientation"` | iOS가 무시하므로 이미 동작하는 플랫폼에서만 동작한다.
+  - `'orientation' in screen` feature-detect | iOS에서 true가 되어 조용히 아무 일도 안 한다.
+- Directive:
+  - `screen.orientation`의 존재로 방향 잠금 지원을 판별하지 않는다. 반드시 `lock`이 함수인지 본다.
+  - 행을 되찾기 위해 live region을 unmount하지 않는다.
+  - 방향 요청을 `isPlaying` effect로 옮기지 않는다. 사용자 활성화 창을 잃는다.
+- Related: D-017, 이슈 [#65](https://github.com/landfill/ClairKeys/issues/65) 할 일 4,
+  `src/hooks/usePlaybackOrientation.ts`, `src/components/playback/CompactPlaybackBar.tsx`
