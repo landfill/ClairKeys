@@ -71,6 +71,7 @@ describe('FallingNotesPlayer', () => {
     expect(screen.getByTestId('visual-playhead')).toHaveTextContent('1.5')
     expect(screen.getByTestId('active-keys')).toHaveTextContent('60')
     expect(mockKeyboardFrames[0]).toEqual(new Set([60]))
+    expect(document.body).toHaveClass('playback-active')
   })
 
   it('shows the current master gain and forwards slider changes to setVolume', () => {

@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import SimplePianoKeyboard from '../SimplePianoKeyboard';
 import { notesToVisualNotes } from '@/utils/visualUtils';
 import { A0_MIDI, C8_MIDI, buildKeyLayout } from '@/utils/pianoLayout';
@@ -51,5 +51,16 @@ describe('SimplePianoKeyboard', () => {
 
     expect(centeredWhiteKeys).toBe(52);
     expect(centeredBlackKeys).toBe(36);
+  });
+
+  it('marks C keys without widening a cropped score range', () => {
+    const croppedLayout = buildKeyLayout(12, { minMidi: 29, maxMidi: 83 });
+    render(<SimplePianoKeyboard layout={croppedLayout} />);
+
+    expect(screen.getByLabelText('C2 octave marker')).toBeInTheDocument();
+    expect(screen.getByLabelText('C3 octave marker')).toBeInTheDocument();
+    expect(screen.getByLabelText('C4 octave marker')).toBeInTheDocument();
+    expect(screen.getByLabelText('C5 octave marker')).toBeInTheDocument();
+    expect(croppedLayout.byMidi.has(24)).toBe(false);
   });
 });

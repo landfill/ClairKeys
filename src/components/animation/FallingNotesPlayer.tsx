@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CanonicalAnimationData } from '@/types/animationContract'
-import { buildKeyLayout } from '@/utils/pianoLayout'
+import { buildResponsiveKeyLayout } from '@/utils/pianoLayout'
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
@@ -18,10 +18,12 @@ import { getActiveNotes } from '@/utils/visualUtils'
  */
 export default function FallingNotesPlayer({
   animationData,
-  className = ''
+  className = '',
+  onPlaybackChange,
 }: {
   animationData: CanonicalAnimationData
   className?: string
+  onPlaybackChange?: (isPlaying: boolean) => void
 }) {
   // Convert canonical animation data to falling notes format
   const notes = useMemo(() => canonicalToFallingNotes(animationData), [animationData])
@@ -45,12 +47,59 @@ export default function FallingNotesPlayer({
 
   // Constants
   const pxPerSec = 140
-  const keyWidth = 24
   const keyboardHeight = 120
-  
-  // Calculate derived values
-  const layout = useMemo(() => buildKeyLayout(keyWidth), [keyWidth])
-  const height = Math.round(lookAheadSec * pxPerSec)
+  const standardFallingHeight = Math.round(lookAheadSec * pxPerSec)
+  const standardVisualizationHeight = standardFallingHeight + keyboardHeight
+  const visualizationRef = useRef<HTMLDivElement>(null)
+  const [visualizationSize, setVisualizationSize] = useState({ width: 0, height: 0 })
+
+  // The content box is the coordinate system shared by the keyboard and the
+  // falling notes. ResizeObserver keeps it current after breakpoint, rotation,
+  // and browser-chrome changes without listening to playback time.
+  useLayoutEffect(() => {
+    const element = visualizationRef.current
+    if (!element) return
+
+    const measure = () => {
+      const rect = element.getBoundingClientRect()
+      setVisualizationSize({
+        width: element.clientWidth || Math.max(0, rect.width - 2),
+        height: element.clientHeight || Math.max(0, rect.height - 2),
+      })
+    }
+
+    measure()
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', measure)
+      return () => window.removeEventListener('resize', measure)
+    }
+
+    const observer = new ResizeObserver(([entry]) => {
+      setVisualizationSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      })
+    })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+
+  // This runs only when a score is loaded or the containing box is resized;
+  // playback time deliberately cannot remap a falling note's horizontal x.
+  const layout = useMemo(
+    () => buildResponsiveKeyLayout(visualizationSize.width, notes),
+    [notes, visualizationSize.width]
+  )
+  const fallingHeight = visualizationSize.height > 0
+    ? Math.max(0, visualizationSize.height - keyboardHeight)
+    : Math.max(0, standardFallingHeight - 2)
+
+  useEffect(() => {
+    document.body.classList.toggle('playback-active', isPlaying)
+    onPlaybackChange?.(isPlaying)
+    return () => document.body.classList.remove('playback-active')
+  }, [isPlaying, onPlaybackChange])
 
   // Derive key activation synchronously from the exact playhead passed to the
   // falling-note visualization. An effect would leave the keyboard one render
@@ -66,7 +115,7 @@ export default function FallingNotesPlayer({
   }
 
   return (
-    <div className={`w-full max-w-5xl mx-auto ${className}`}>
+    <div className={`w-full mx-auto ${isPlaying ? 'max-w-none min-h-[100dvh] flex flex-col' : 'max-w-5xl'} ${className}`}>
       {/* Usage Instructions */}
       <div className="mb-4">
         <p className="text-xs text-gray-500">
@@ -131,8 +180,11 @@ export default function FallingNotesPlayer({
 
       {/* Main Visualization Area */}
       <div
+        ref={visualizationRef}
         className="w-full border rounded-2xl shadow overflow-hidden"
-        style={{ height: height + keyboardHeight }}
+        style={isPlaying
+          ? { flex: 1, minHeight: 0 }
+          : { height: standardVisualizationHeight }}
       >
         <div
           style={{
@@ -153,7 +205,7 @@ export default function FallingNotesPlayer({
               notes={notes}
               nowSec={currentTime}
               pxPerSec={pxPerSec}
-              height={height}
+              height={fallingHeight}
               layout={layout}
             />
             
