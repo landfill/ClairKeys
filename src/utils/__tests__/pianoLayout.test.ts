@@ -128,4 +128,81 @@ describe('responsive playback layout contract', () => {
     );
     expect(layout.totalWidth).toBe(356);
   });
+
+  // Leftover width used to become symmetric margin: 230px of blank on a 1022px
+  // desktop, 612px on a 1404px playback view. Those pixels can carry adjacent
+  // keys at the same density instead, which costs the score nothing — the added
+  // keys lie outside its range, so no note moves onto a different key.
+  describe('filling the measured width', () => {
+    type ResponsiveLayoutBuilder = (
+      availableWidth: number,
+      notes: FallingNote[]
+    ) => KeyLayout;
+    const { buildResponsiveKeyLayout } = pianoLayout as typeof pianoLayout & {
+      buildResponsiveKeyLayout: ResponsiveLayoutBuilder;
+    };
+
+    const narrowScore: FallingNote[] = [
+      { midi: 60, start: 0, duration: 1 }, // C4
+      { midi: 64, start: 1, duration: 1 }, // E4
+    ];
+
+    const whiteKeys = (layout: KeyLayout) =>
+      [...layout.byMidi.entries()].filter(([, key]) => !key.black);
+
+    it('adds neighbouring keys until the next one would fall below the base width', () => {
+      const layout = buildResponsiveKeyLayout(1022, narrowScore);
+      const whites = whiteKeys(layout);
+
+      // 1022 / 24 = 42.58 — a 43rd key would put every key under the base.
+      expect(whites).toHaveLength(42);
+      expect(whites[0][1].w).toBeCloseTo(1022 / 42, 10);
+      expect(whites[0][1].w).toBeGreaterThanOrEqual(pianoLayout.BASE_PLAYBACK_KEY_WIDTH);
+    });
+
+    it('leaves no margin once the width is filled', () => {
+      const layout = buildResponsiveKeyLayout(1022, narrowScore);
+      const whites = whiteKeys(layout).map(([, key]) => key);
+      const left = Math.min(...whites.map(key => key.x));
+      const right = Math.max(...whites.map(key => key.x + key.w));
+
+      expect(left).toBeCloseTo(0, 6);
+      expect(right).toBeCloseTo(1022, 6);
+    });
+
+    it('grows outward on both sides so the score keeps its place in the middle', () => {
+      const layout = buildResponsiveKeyLayout(1022, narrowScore);
+      const midis = [...layout.byMidi.keys()];
+
+      expect(Math.min(...midis)).toBeLessThan(60);
+      expect(Math.max(...midis)).toBeGreaterThan(64);
+    });
+
+    it('stops at the ends of an 88-key piano rather than inventing keys', () => {
+      const layout = buildResponsiveKeyLayout(5000, narrowScore);
+      const whites = whiteKeys(layout);
+      const midis = [...layout.byMidi.keys()];
+
+      expect(whites).toHaveLength(52);
+      expect(Math.min(...midis)).toBe(A0_MIDI);
+      expect(Math.max(...midis)).toBe(C8_MIDI);
+      // Nothing is left to add, so the remaining width has to go into the keys.
+      expect(whites[0][1].w).toBeCloseTo(5000 / 52, 10);
+    });
+
+    it('adds nothing when the score alone already exceeds the width', () => {
+      const wideScore: FallingNote[] = [
+        { midi: 30, start: 0, duration: 1 }, // F#1 → keeps F1 below it
+        { midi: 83, start: 1, duration: 1 }, // B5
+      ];
+
+      const layout = buildResponsiveKeyLayout(356, wideScore);
+      const whites = whiteKeys(layout);
+
+      // 356 / 24 = 14.8, far under the 32 the score itself needs. A narrow
+      // viewport must behave exactly as it did before.
+      expect(whites).toHaveLength(32);
+      expect(whites[0][1].w).toBeCloseTo(356 / 32, 10);
+    });
+  });
 });

@@ -9,7 +9,13 @@ import type { FallingNote, KeyLayout, KeyPosition } from '@/types/fallingNotes';
 export const A0_MIDI = 21;
 export const C8_MIDI = 108;
 export const TOTAL_KEYS = C8_MIDI - A0_MIDI + 1; // 88 keys
-export const MAX_PLAYBACK_KEY_WIDTH = 24;
+/**
+ * The density a playback keyboard aims for. It is a floor to grow from, not a
+ * ceiling to stop at: leftover width buys neighbouring keys at this width
+ * before it buys wider ones. A narrower viewport still goes below it, because
+ * the score's own range is never given up to keep it.
+ */
+export const BASE_PLAYBACK_KEY_WIDTH = 24;
 
 export type KeyboardRange = {
   minMidi: number;
@@ -116,26 +122,87 @@ export function snapRangeToWhiteKeys(notes: FallingNote[]): KeyboardRange {
   return { minMidi, maxMidi };
 }
 
+export function countWhiteKeys(range: KeyboardRange): number {
+  let count = 0;
+  for (let midi = range.minMidi; midi <= range.maxMidi; midi++) {
+    if (!isBlack(midi)) count++;
+  }
+  return count;
+}
+
+function nextWhiteKeyBelow(midi: number): number | null {
+  for (let candidate = midi - 1; candidate >= A0_MIDI; candidate--) {
+    if (!isBlack(candidate)) return candidate;
+  }
+  return null;
+}
+
+function nextWhiteKeyAbove(midi: number): number | null {
+  for (let candidate = midi + 1; candidate <= C8_MIDI; candidate++) {
+    if (!isBlack(candidate)) return candidate;
+  }
+  return null;
+}
+
 /**
- * Build the score-scoped playback keyboard from its measured content width.
- * The 24px ceiling keeps narrow scores visually consistent with the established
- * desktop keyboard; any unused width becomes symmetric margin rather than
- * oversized keys.
+ * Spend leftover width on neighbouring keys rather than on margin.
+ *
+ * The score's own range is the floor and is never touched, so no note can land
+ * on a different key — the added keys lie outside the score entirely. Growth
+ * stops as soon as one more key would push every key below the base width,
+ * which is what keeps a narrow viewport behaving exactly as it did before.
+ *
+ * This is not the C-octave snapping D-017 rejected. That added up to eleven
+ * semitones regardless of the measured width, which collapsed distinct scores
+ * onto one window; this adds only what the width would otherwise waste, so two
+ * scores on the same screen still differ and one score adapts per viewport.
+ */
+export function fillRangeToWidth(
+  range: KeyboardRange,
+  availableWidth: number,
+  baseKeyWidth: number = BASE_PLAYBACK_KEY_WIDTH
+): KeyboardRange {
+  const affordableKeys = Math.floor(Math.max(0, availableWidth) / baseKeyWidth);
+  let filled = { ...range };
+  let count = countWhiteKeys(filled);
+  // Alternating keeps the score near the middle instead of pinned to one edge.
+  let extendLow = true;
+
+  while (count < affordableKeys) {
+    const low = nextWhiteKeyBelow(filled.minMidi);
+    const high = nextWhiteKeyAbove(filled.maxMidi);
+    if (low === null && high === null) break;
+
+    const goLow = low !== null && (extendLow || high === null);
+    if (goLow) {
+      filled = { ...filled, minMidi: low };
+    } else if (high !== null) {
+      filled = { ...filled, maxMidi: high };
+    }
+
+    extendLow = !extendLow;
+    count++;
+  }
+
+  return filled;
+}
+
+/**
+ * Build the playback keyboard from its measured content width. The score sets
+ * the range that must be there; the width decides how much more is worth
+ * showing beside it. Playback time is not an input, so a note's x is fixed for
+ * the whole performance.
  */
 export function buildResponsiveKeyLayout(
   availableWidth: number,
   notes: FallingNote[]
 ): KeyLayout {
-  const range = snapRangeToWhiteKeys(notes);
-  const whiteKeyCount = Array.from(
-    { length: range.maxMidi - range.minMidi + 1 },
-    (_, index) => range.minMidi + index
-  ).filter(midi => !isBlack(midi)).length;
   const safeWidth = Math.max(0, availableWidth);
-  const keyWidth = Math.min(
-    MAX_PLAYBACK_KEY_WIDTH,
-    whiteKeyCount > 0 ? safeWidth / whiteKeyCount : MAX_PLAYBACK_KEY_WIDTH
-  );
+  const range = fillRangeToWidth(snapRangeToWhiteKeys(notes), safeWidth);
+  const whiteKeyCount = countWhiteKeys(range);
+  const keyWidth = whiteKeyCount > 0
+    ? safeWidth / whiteKeyCount
+    : BASE_PLAYBACK_KEY_WIDTH;
   const layout = buildKeyLayout(keyWidth, range);
   const horizontalInset = (safeWidth - layout.totalWidth) / 2;
   const byMidi = new Map<number, KeyPosition>();
