@@ -1,4 +1,6 @@
+import * as pianoLayout from '../pianoLayout';
 import { A0_MIDI, C8_MIDI, buildKeyLayout } from '../pianoLayout';
+import type { FallingNote, KeyLayout } from '@/types/fallingNotes';
 
 const KEY_WIDTH = 20;
 const BLACK_KEY_PITCH_CLASSES = new Set([1, 3, 6, 8, 10]);
@@ -86,5 +88,43 @@ describe('buildKeyLayout', () => {
       const gap = current.x - (previous.x + previous.w);
       expect(gap).toBeLessThanOrEqual(KEY_WIDTH * 1.5);
     }
+  });
+});
+
+describe('responsive playback layout contract', () => {
+  it('documents that the fixed 24px layout only fits 14 of 52 white keys in 356px', () => {
+    const layout = buildKeyLayout(24);
+    const visibleWhiteKeys = [...layout.byMidi.values()].filter(
+      key => !key.black && key.x + key.w <= 356
+    );
+
+    expect(visibleWhiteKeys).toHaveLength(14);
+  });
+
+  it('keeps every score note inside a white-key-snapped responsive layout', () => {
+    type ResponsiveLayoutBuilder = (
+      availableWidth: number,
+      notes: FallingNote[]
+    ) => KeyLayout;
+    const { buildResponsiveKeyLayout } = pianoLayout as typeof pianoLayout & {
+      buildResponsiveKeyLayout: ResponsiveLayoutBuilder;
+    };
+    const notes: FallingNote[] = [
+      { midi: 30, start: 0, duration: 1 }, // F#1 must retain F1 below it.
+      { midi: 83, start: 1, duration: 1 }, // B5 is already a white-key boundary.
+    ];
+
+    const layout = buildResponsiveKeyLayout(356, notes);
+
+    expect(layout.byMidi.has(29)).toBe(true);
+    expect(layout.byMidi.has(30)).toBe(true);
+    expect(layout.byMidi.has(83)).toBe(true);
+    expect(Math.min(...notes.map(note => note.midi))).toBeGreaterThanOrEqual(
+      Math.min(...layout.byMidi.keys())
+    );
+    expect(Math.max(...notes.map(note => note.midi))).toBeLessThanOrEqual(
+      Math.max(...layout.byMidi.keys())
+    );
+    expect(layout.totalWidth).toBe(356);
   });
 });
