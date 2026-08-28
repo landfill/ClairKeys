@@ -24,13 +24,16 @@ GitHub live state와 저장소 기록의 불일치 4건을 정리했다.
 ## PR #68 — 이슈 #55 서버 주도 완료 저장
 
 Review-ready PR [#68](https://github.com/landfill/ClairKeys/pull/68)이 열려 있다.
-브랜치 `codex/p1b-issue-55-server-finalization`, head `00b6b41`. **이슈는 병합 전 닫지 않는다.**
+브랜치 `codex/p1b-issue-55-server-finalization`, head `6f624f7`. **이슈는 병합 전 닫지 않는다.**
 
 - `7c0242f` — 회귀 테스트 단독. 구현 전 callback URL·endpoint·service delivery가 없어 Jest
   4 assertions, Python contract 2 assertions가 실패했다.
 - `00b6b41` — **D-018**. 업로드가 callback URL을 보내고 OMR 서비스가 변환 완료 뒤 기존 공유
   비밀로 Next.js endpoint를 호출한다. Next.js만 결과를 수거·저장하며 browser poll은 idempotent
   fallback으로 남는다. callback은 12회 bounded retry 후에도 실패하면 payload를 `/result`에 남긴다.
+- `6f624f7` — CodeQL critical SSRF 1건 대응. request job id를 UUID로 제한하고 request 값은 DB
+  lookup에만 쓴 뒤, 실제 `/result` fetch는 DB에서 다시 읽은 `omrJobId`로 만든다. focused Jest
+  3 suites / 19 tests, tsc, lint 통과; hosted CodeQL 재실행 대기.
 - 로컬 검증: Jest **55 suites / 522 tests**, Python **34 tests**, `tsc`, lint, production build 통과.
 - **미검증:** 실제 VM→Vercel callback, 화면 이탈을 포함한 실제 PDF 종단 업로드. 배포 전에는
   목적 달성을 주장하지 않는다.

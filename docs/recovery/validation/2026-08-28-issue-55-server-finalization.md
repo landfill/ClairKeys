@@ -32,6 +32,15 @@ Environment: macOS, Node/Jest, Python 3.14, local mocks; external OMR/Supabase n
 | `npm run build` | PASS | Prisma generate + Next production build; `/api/omr/finalize` route 포함 |
 | `git diff --check` | PASS | whitespace error 없음 |
 
+### Hosted security review correction
+
+- 최초 head `00b6b41`에서 CodeQL `js/request-forgery` critical 1건이 실패했다. callback request의
+  `job_id`가 공유 helper를 거쳐 OMR `/result` fetch URL에 도달했다.
+- `6f624f7`에서 UUID 외 입력을 400으로 거절하고, request 값은 DB lookup에만 사용하며, fetch에는
+  DB row에서 다시 읽은 `omrJobId`만 전달한다. path encoding도 추가했다.
+- 수정 후 focused Jest **3 suites / 19 tests**, tsc, lint, diff check 통과. hosted CodeQL 재실행은
+  이 기록 시점에 대기 중이다.
+
 ## Baseline comparison
 
 - Fixed failures: browser poll만 존재하던 완료 trigger에 producer callback 계약과 endpoint 추가.
