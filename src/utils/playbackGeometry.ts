@@ -35,6 +35,21 @@ export type PlaybackGeometry = {
   boxHeight: number
 }
 
+/**
+ * Divide the height between the controls and the bottom of the screen.
+ *
+ * The falling area is served first, up to the look-ahead ceiling, so a screen
+ * with no height to spare renders exactly as it did before this cap existed.
+ * The keyboard then takes what the notes will not use, up to a real white key's
+ * proportion, and anything past that is left for the caller to place as margin.
+ *
+ * @param availableHeight Content height of the wrapper the box sits in.
+ * @param keyWidth White-key width the layout settled on; sets the keyboard's
+ *   proportional target.
+ * @returns Heights for the falling area, the keyboard, and the bordered box,
+ *   where the box's content is exactly the two parts unless the space is too
+ *   short for the keyboard's own floor.
+ */
 export function planPlaybackGeometry({
   availableHeight,
   keyWidth,
