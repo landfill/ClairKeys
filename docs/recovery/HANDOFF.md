@@ -55,27 +55,31 @@ PR [#68](https://github.com/landfill/ClairKeys/pull/68)이 2026-08-28 `41606e7`�
 - 근거: `docs/recovery/reviews/PR-68.md`,
   `docs/recovery/validation/2026-08-28-issue-55-server-finalization.md`.
 
-## PR #69 — 폐기된 Fly 배포 표면 제거
+## PR #69 병합 완료 — 폐기된 Fly 배포 표면 제거
 
-Review-ready PR [#69](https://github.com/landfill/ClairKeys/pull/69)이 열려 있다.
-브랜치 `codex/ops-remove-fly-artifacts`, head `afa5a0a`.
+PR [#69](https://github.com/landfill/ClairKeys/pull/69)가 2026-08-28 `aaae994`로 병합됐다.
+브랜치 `codex/ops-remove-fly-artifacts`는 원격·로컬 모두 삭제했다. 병합 후 main checks 6/6 성공.
 
 - `c674a72` — 회귀 테스트 단독. NAVER VM podman unit을 유일한 활성 배포 계약으로 요구하고
   정리 전 main의 `omr-service/fly.toml` 존재 때문에 실패했다.
 - `afa5a0a` — 배포된 적 없는 `fly.toml`과 README 배포 절차를 제거하고, AGENTS·코드 주석·테스트
-  설명을 실제 FastAPI/NAVER VM 기준으로 정정했다. D-008은 D-012에 의해 superseded된 역사
-  항목으로 축약했다. 날짜가 있는 과거 리뷰·검증 기록은 당시 사실의 증거로 보존했다.
-- 로컬 검증: Python 34, focused Jest 33, full Jest 515, build, `tsc`, lint 모두 통과.
-- 현재 상태: `OPEN`, draft=false, `MERGEABLE` / `CLEAN`, hosted checks **17/17 성공**,
-  실패·대기 0건. CodeRabbit은 자동 skip 뒤 수동 요청도 rate limit이라 실제 리뷰가 없다. **사용자의 PR #69
-  명시적 병합 승인 전에는 병합하지 않는다.** 근거: `docs/recovery/reviews/PR-69.md`,
+  설명을 실제 FastAPI/NAVER VM 기준으로 정정했다. AGENTS.md의 "Standalone Flask API"도 함께
+  바로잡혔다 — 실제로는 FastAPI다. D-008은 D-012에 의해 superseded된 역사 항목으로 축약했다.
+  날짜가 있는 과거 리뷰·검증 기록은 당시 사실의 증거로 보존했다.
+- **재유입 방지가 이 PR의 핵심 자산이다.** `test_audiveris_runtime.py`의
+  `assertFalse((OMR_SERVICE_ROOT / "fly.toml").exists())`와 podman unit 계약 단언이
+  삭제 상태를 고정한다. 삭제는 되돌아오기 쉽지만 이제 되돌아오면 CI가 잡는다.
+- **독립 리뷰:** 새 터미널의 Claude Sonnet 5가 현재 워크트리를 공유해 읽기 전용 검토
+  (Run `run_f299fbc68bf1`, Task `task_20ba3293da69`, Dispatch `ctx_b0699d3f8522`).
+  Blocking findings 없음. LOW 관찰 R2는 `REJECTED`.
+- **PR #68 병합 후 재검증:** 두 PR이 `app.py`·`DECISIONS.md`·upload route test를 공유해
+  trial merge 후 병합 결과에서 전체 게이트를 다시 돌렸다 — Python **44**, Jest **55 suites /
+  524 tests**, `tsc` exit 0, lint clean, build 성공. #69가 `app.py`에 한 변경은 `/health`
+  docstring 한 줄이라 #68의 `notify_completion` 변경과 겹치지 않는다.
+- **정리 완결성 확인:** 날짜 기록을 제외한 코드·테스트·README·AGENTS·DECISIONS·워크플로·
+  Dockerfile 전체 grep 결과, 남은 Fly 언급은 가드 테스트 자체와 날짜 표제 아래 과거 기록뿐이다.
+- 근거: `docs/recovery/reviews/PR-69.md`,
   `docs/recovery/validation/2026-08-28-remove-obsolete-fly-artifacts.md`.
-- **독립 리뷰 완료:** 새 터미널의 Claude Sonnet 5가 현재 워크트리를 공유해 읽기 전용 검토했다
-  (Run `run_f299fbc68bf1`, Task `task_20ba3293da69`, Dispatch `ctx_b0699d3f8522`). Blocking
-  findings 없음. README 산문 재등장을 자동 테스트가 잡지 못한다는 LOW 관찰 1건은 실제 배포
-  계약 테스트와 무관한 취약한 문자열 고정이므로 `REJECTED`. 워커가 초반 `/tmp` detached
-  worktree를 잠시 만들었다 즉시 제거한 절차 일탈은 review log에 기록했으며 최종 프로젝트
-  worktree는 하나, 공유 checkout은 clean `main`이다.
 
 ## 지금 해야 할 것 — PR #67의 실기기 확인
 
@@ -1474,9 +1478,11 @@ Constraints for the next session:
 - **Do not close issue #22 on PR #37.** The image runs; the service does not exist yet.
 - **Do not report recognition accuracy** from the 2026-08-21 record. The mechanism is proven; the
   quality is unmeasured and one note position already looks suspicious.
-- `omr-service/tests/test_audiveris_runtime.py` still asserts `memory = "4gb"` from `fly.toml`.
+- ~~`omr-service/tests/test_audiveris_runtime.py` still asserts `memory = "4gb"` from `fly.toml`.
   Removing `fly.toml` breaks the suite, and replacing it needs a D-008 revision — which is a
-  decision record, so it belongs in a PR alongside the code, not a direct `main` commit.
+  decision record, so it belongs in a PR alongside the code, not a direct `main` commit.~~
+  **해소됨 (2026-08-28, PR #69 `aaae994`).** 이 제약이 요구한 그대로 D-008 개정을 코드와 같은
+  PR에 담았다. 그 단언은 이제 `fly.toml`의 **부재**와 podman unit 계약을 고정한다.
 - The VM is expected to expire about one month from 2026-08-20 and may return with a different IP.
   Capture provisioning as a re-runnable script rather than typed commands.
 - The VM's public IP is deliberately absent from this public repository while the host has no
