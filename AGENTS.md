@@ -263,8 +263,8 @@ Core service that orchestrates:
 ### OMR Service Integration
 
 #### External Python Service (`omr-service/`)
-- Standalone Flask API for PDF → MusicXML → ClairKeys JSON
-- Deployed on Fly.io with Docker containerization
+- Standalone FastAPI service for PDF → MusicXML → ClairKeys JSON
+- Containerized with Podman and managed by systemd on a NAVER Cloud VM
 - Uses Audiveris for optical music recognition
 - Asynchronous processing with job status tracking
 

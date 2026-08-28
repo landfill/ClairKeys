@@ -312,12 +312,19 @@ class DeploymentStaticContractTests(unittest.TestCase):
 
         self.assertIn("/opt/audiveris/bin/Audiveris -version", dockerfile)
 
-    def test_fly_memory_and_bundled_launcher_heap_leave_headroom(self):
+    def test_bundled_launcher_caps_the_audiveris_heap(self):
         dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
-        fly_configuration = (OMR_SERVICE_ROOT / "fly.toml").read_text(encoding="utf-8")
 
         self.assertIn("java-options=-Xmx3G", dockerfile)
-        self.assertIn('memory = "4gb"', fly_configuration)
+
+    def test_repository_exposes_only_the_applied_vm_deployment_contract(self):
+        deployment_unit = (
+            OMR_SERVICE_ROOT / "deploy" / "clairkeys-omr.service"
+        ).read_text(encoding="utf-8")
+
+        self.assertFalse((OMR_SERVICE_ROOT / "fly.toml").exists())
+        self.assertIn("/usr/bin/podman run", deployment_unit)
+        self.assertIn("--env-file /etc/clairkeys-omr.env", deployment_unit)
 
 
 if __name__ == "__main__":

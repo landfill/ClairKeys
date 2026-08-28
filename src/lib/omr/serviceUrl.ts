@@ -1,12 +1,10 @@
 /**
  * Resolves the OMR service base URL.
  *
- * Both OMR routes used to default to `https://clairkeys-omr.fly.dev`. That
- * hostname was never deployed — `fly.toml` was written and abandoned when the
- * service moved to a NAVER Cloud VM — but Fly's wildcard DNS still resolves it,
- * so the request reached a TLS handshake and *threw*. A thrown `fetch` skips
- * the `!response.ok` branch, so an unconfigured deployment surfaced as
- * `Internal server error` instead of "the service is not configured".
+ * Both OMR routes used to have a hard-coded default for a service that was
+ * never deployed. Requests to that placeholder threw before the
+ * `!response.ok` branch, so an unconfigured deployment surfaced as `Internal
+ * server error` instead of "the service is not configured".
  *
  * There is no default any more. An unset variable is a configuration fact the
  * caller can state plainly, and it costs nothing to detect.
