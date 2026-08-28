@@ -21,6 +21,23 @@ GitHub live state와 저장소 기록의 불일치 4건을 정리했다.
 조합을 파싱한다. 사고를 설명하는 인용문도 예외가 아니다. 완료 의도가 없는 상태 기록 커밋에서는
 이 조합을 쓰지 말고 `issue #번호`, `재개`, `종료 키워드`처럼 적는다.
 
+## PR #68 — 이슈 #55 서버 주도 완료 저장
+
+Review-ready PR [#68](https://github.com/landfill/ClairKeys/pull/68)이 열려 있다.
+브랜치 `codex/p1b-issue-55-server-finalization`, head `00b6b41`. **이슈는 병합 전 닫지 않는다.**
+
+- `7c0242f` — 회귀 테스트 단독. 구현 전 callback URL·endpoint·service delivery가 없어 Jest
+  4 assertions, Python contract 2 assertions가 실패했다.
+- `00b6b41` — **D-018**. 업로드가 callback URL을 보내고 OMR 서비스가 변환 완료 뒤 기존 공유
+  비밀로 Next.js endpoint를 호출한다. Next.js만 결과를 수거·저장하며 browser poll은 idempotent
+  fallback으로 남는다. callback은 12회 bounded retry 후에도 실패하면 payload를 `/result`에 남긴다.
+- 로컬 검증: Jest **55 suites / 522 tests**, Python **34 tests**, `tsc`, lint, production build 통과.
+- **미검증:** 실제 VM→Vercel callback, 화면 이탈을 포함한 실제 PDF 종단 업로드. 배포 전에는
+  목적 달성을 주장하지 않는다.
+- PR 생성 직후 상태: review-ready, `MERGEABLE`; hosted checks 진행 중. CodeRabbit은 OSS 수동
+  trigger 대기 상태. 근거: `docs/recovery/reviews/PR-68.md`,
+  `docs/recovery/validation/2026-08-28-issue-55-server-finalization.md`.
+
 ## 지금 해야 할 것 — PR #67의 실기기 확인
 
 **PR [#67](https://github.com/landfill/ClairKeys/pull/67)이 2026-08-28 `4e084a1`로 병합·배포됐다.**
