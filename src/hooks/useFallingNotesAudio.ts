@@ -21,6 +21,7 @@ import {
   DEFAULT_TREBLE_ROLLOFF,
 } from '@/utils/pianoTimbre'
 import { SAMPLE_PEAK_GAIN, damperReleaseSec } from '@/utils/pianoSamples'
+import { CLIP_SAFETY, loudestRealisticMixdown } from '@/utils/pianoSampleLevels'
 import {
   getPianoSampleBank,
   disposePianoSampleBank,
@@ -77,9 +78,9 @@ interface AudioNodes {
 /**
  * Default master output level.
  *
- * Sized from measured mixdowns (`pianoSampleLevels`), where a dense chord lands
- * near -4.5 dBFS — a normal listening level with the slider still able to go
- * further.
+ * Sized from measured mixdowns (`pianoSampleLevels`): a dense chord of notes at
+ * the velocity real scores carry lands near -7.4 dBFS — a normal listening level
+ * with the slider still able to go further.
  *
  * The previous 0.22 put that same chord at -14.5 dBFS and the slider's ceiling
  * could only reach -10.5, so the user ran out of control while still asking for
@@ -89,37 +90,42 @@ interface AudioNodes {
  * voices measure half the linear figure and a pedalled twelve a quarter of it —
  * so the bus had been sized against a texture that cannot occur.
  *
+ * Kept a fixed step below `MAX_MASTER_GAIN` rather than derived on its own. The
+ * ceiling is a safety constraint and has to be computed; the default is a
+ * listening preference, and the slider exists precisely because that is the part
+ * measurement cannot settle.
+ *
  * Exported so the playback UI seeds its volume control from the same source of
  * truth rather than a duplicated literal.
  */
-export const DEFAULT_MASTER_GAIN = 0.7
+export const DEFAULT_MASTER_GAIN = 0.5
 
 /**
  * Ceiling the runtime volume control clamps to.
  *
- * Sized so that no texture a pianist can actually play clips, on either path.
- * Twelve voices struck at one instant — already past ten fingers — peak at 1.086
- * on the synthesised path and 1.082 on the sample path, so 0.9 leaves both just
- * under full scale. Denser textures than that arrive through the pedal, where
- * staggered onsets peak *lower* than a struck chord of the same size (0.642
- * measured), so they are covered by the same figure.
+ * Derived rather than chosen: the largest gain at which the loudest playable
+ * texture still fits under full scale, measured on both paths because the bus is
+ * shared and the synthesised fallback is the louder of the two.
  *
- * Sixteen struck simultaneously does exceed this. It is kept in
- * `pianoSampleLevels` as an outer bound rather than as the design target,
- * because sizing the ceiling against a texture no performance produces is
- * precisely what left every real passage 20 dB too quiet (issue #63).
+ * The measurement it divides is taken at velocity 1, which review caught this
+ * change getting wrong. `converter.py` emits no velocity so notes today play at
+ * the scheduler's `?? 0.7`, and sizing against that let a conforming score clip:
+ * `animationContract` permits velocity up to 1 and `canonicalToFallingNotes`
+ * passes it through, so twelve voices at full velocity reach 1.551 — a figure the
+ * earlier 0.9 would have pushed to 1.39.
  *
- * Both paths matter here because this bus is shared, and the fallback is the
- * louder of the two at the same voice count — sizing on the sample path alone
- * would let a synthesised passage clip at a setting the sample path made look
- * safe. The relative level between the paths is not set here; `SAMPLE_PEAK_GAIN`
- * does that (D-015), and this stage moves both together.
+ * That is a different kind of exclusion from the sixteen-simultaneous case
+ * `pianoSampleLevels` sets aside. Sixteen at one instant is beyond ten fingers,
+ * a physical limit; velocity 1 is merely data this repository does not produce
+ * yet, which is an assumption rather than a bound.
  *
- * `VOICE_LIMIT` (24) remains the absolute cap on concurrency and remains a
- * different question from level: it bounds how many voices exist, not how
- * loudly they sum.
+ * The relative level between the paths is not set here; `SAMPLE_PEAK_GAIN` does
+ * that (D-015), and this stage moves both together.
+ *
+ * `VOICE_LIMIT` (24) remains the cap on concurrency and remains a different
+ * question: it bounds how many voices exist, not how loudly they sum.
  */
-export const MAX_MASTER_GAIN = 0.9
+export const MAX_MASTER_GAIN = CLIP_SAFETY / loudestRealisticMixdown()
 
 /**
  * How long the first play waits for the recorded samples, in milliseconds.

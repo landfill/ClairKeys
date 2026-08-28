@@ -15,6 +15,7 @@ import {
 import {
   SAMPLE_CREST_DB,
   SAMPLE_LEVELS,
+  CLIP_SAFETY,
   SAMPLE_MIXDOWN_PEAKS,
   SYNTHESISED_MIXDOWN_PEAKS,
   loudestRealisticMixdown,
@@ -114,6 +115,14 @@ function manifestVersion(root: string): string {
     fs.readFileSync(path.join(root, 'src', 'utils', 'pianoSampleManifest.json'), 'utf8')
   ).version
 }
+
+/**
+ * Velocity notes carry today. `omr-service/omr/converter.py` emits no velocity
+ * field, so the scheduler's `note.velocity ?? 0.7` default is what plays — but
+ * only for scores this repository converts, which is why the mixdown figures are
+ * measured at 1 instead.
+ */
+const CURRENT_PLAYBACK_VELOCITY = 0.7
 
 describe('pianoSamples', () => {
   describe('SAMPLE_MIDI_NOTES', () => {
@@ -243,21 +252,28 @@ describe('pianoSamples', () => {
     // was sized for a texture that does not occur.
 
     it('brings a dense passage to a level a listener does not have to strain for', () => {
-      // The regression. At the shipped 0.22 this is -14.5 dBFS, and the slider's
+      // The regression. At the shipped 0.22 this was -14.5 dBFS, and the slider's
       // 0.35 ceiling only reached -10.5 — quiet enough that the user hit the top
       // of the control and still asked for more.
-      const dBFS = 20 * Math.log10(SAMPLE_MIXDOWN_PEAKS.denseChord * DEFAULT_MASTER_GAIN)
+      //
+      // Measured at the velocity real scores carry: the mixdown figures are
+      // taken at velocity 1, and `converter.py` emits none, so playback today
+      // sits 3.1 dB below them.
+      const realPlayback = SAMPLE_MIXDOWN_PEAKS.denseChord * CURRENT_PLAYBACK_VELOCITY
+      const dBFS = 20 * Math.log10(realPlayback * DEFAULT_MASTER_GAIN)
 
-      expect(dBFS).toBeGreaterThan(-8)
-      // Bounded so the default still leaves the slider somewhere to go and does
-      // not ship a piano that clips on the first fortissimo.
-      expect(dBFS).toBeLessThan(-2)
+      expect(dBFS).toBeGreaterThan(-9)
+      // Bounded so the default leaves the slider somewhere to go and does not
+      // ship a piano that clips on the first fortissimo.
+      expect(dBFS).toBeLessThan(-4)
     })
 
-    it('cannot clip on any texture a pianist can actually play, on either path', () => {
-      // Ten fingers, so twelve struck at once is already past what a performance
-      // reaches; anything denser arrives through the pedal, whose staggered
-      // onsets peak lower than a struck chord of the same size.
+    it('cannot clip at full velocity, which the contract permits even though no converter emits it', () => {
+      // The hole review found in the first version of this change. It asserted
+      // safety at 0.7 because that is what `converter.py` produces — a property
+      // of one producer, not a guarantee. `animationContract` clamps velocity to
+      // 0-1 and `canonicalToFallingNotes` passes it through, so a conforming
+      // score can arrive at 1 and must not clip.
       for (const peaks of [SAMPLE_MIXDOWN_PEAKS, SYNTHESISED_MIXDOWN_PEAKS]) {
         expect(peaks.denseChord * MAX_MASTER_GAIN).toBeLessThan(1)
         expect(peaks.pedalled * MAX_MASTER_GAIN).toBeLessThan(1)
@@ -265,17 +281,30 @@ describe('pianoSamples', () => {
       }
     })
 
-    it('sizes the ceiling against the louder of the two paths', () => {
-      // The master bus is shared, so the fallback constrains it too. Sizing on
-      // the sample path alone would let a synthesised passage clip on a setting
-      // the sample path made look safe.
-      expect(loudestRealisticMixdown() * MAX_MASTER_GAIN).toBeLessThan(1)
+    it('derives the ceiling from the louder path rather than fixing a literal', () => {
+      // The bus is shared, so the fallback constrains it too — sizing on the
+      // sample path alone would let a synthesised passage clip at a setting the
+      // sample path made look safe. Written as a derivation so a re-measured set
+      // moves the ceiling instead of leaving a stale number behind.
+      expect(MAX_MASTER_GAIN).toBeCloseTo(CLIP_SAFETY / loudestRealisticMixdown(), 10)
       expect(loudestRealisticMixdown()).toBe(
         Math.max(
           SAMPLE_MIXDOWN_PEAKS.twelveSimultaneous,
           SYNTHESISED_MIXDOWN_PEAKS.twelveSimultaneous
         )
       )
+      expect(SYNTHESISED_MIXDOWN_PEAKS.twelveSimultaneous).toBeGreaterThan(
+        SAMPLE_MIXDOWN_PEAKS.twelveSimultaneous
+      )
+    })
+
+    it('peaks under the pedal below a struck chord of half the size', () => {
+      // The measurement that invalidates sizing a ceiling by voice count.
+      // Staggered onsets do not stack their transients, so twelve pedalled
+      // voices are quieter than eight struck together — more voices is not
+      // monotonically louder, and a gain derived from a voice count is answering
+      // a question the audio does not ask.
+      expect(SAMPLE_MIXDOWN_PEAKS.pedalled).toBeLessThan(SAMPLE_MIXDOWN_PEAKS.denseChord)
     })
 
     it('leaves the slider real range above the default', () => {
