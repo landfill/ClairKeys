@@ -17,6 +17,16 @@ Last updated: 2026-08-28 KST
 
 **이슈 #65를 닫지 마라** — 할 일 4~6이 남아 있다.
 
+**2026-08-28 CI 2라운드 전부 통과.** 1라운드에서 Accessibility Check 1건이 실패했는데, Codex
+`gpt-5.6-sol` high 교차검토가 **이 PR이 결함을 만든 게 아니라 드러냈다**고 측정으로 확정했다:
+`main`의 홈페이지 `.overflow-x-auto`는 이미 scrollWidth 1248 / tabIndex −1이었고, C 라벨이 추가되자
+axe의 `isNoneEmptyElement`(자손 content 요구) 때문에 비로소 검사 대상이 됐다. 폭은 변하지 않았다.
+`gpt-5.6-terra` high가 `711641b`로 고쳤다(`tabIndex={0}` + `role="region"` + `aria-label` +
+`focus-visible:ring`, `SimplePianoKeyboard`는 무변경). 54 suites / 515 tests.
+
+**`711641b`에는 CodeRabbit 리뷰가 없다** — 앞선 리뷰가 시간당 할당량을 소진해 skip됐다(PR #34·#35의
+반복 패턴). 이 커밋의 검토는 코디네이터 수동 검토뿐이다.
+
 근거: `docs/recovery/reviews/PR-67.md`
 
 ## 지금 해야 할 것 — PR #64의 청감 확인
