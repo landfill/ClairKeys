@@ -23,6 +23,9 @@ database field.
 | `npm run lint` | PASS | no warnings or errors |
 | `npm run build` | PASS | production build and 41 static pages completed |
 | PR #86 hosted checks | PASS | final head `4eefe52`; all required checks successful |
+| PR #86 merge commit checks | PASS | `d218746`; post-merge build, E2E, two test jobs, lint, Security Audit: 6/6 |
+| Vercel Production | PASS | Ready deployment after merge |
+| branch containment/cleanup | PASS | local and remote tips contained in main; both branches deleted |
 
 ## Behavior fixed
 
@@ -39,3 +42,5 @@ database field.
   regression tests.
 - CodeRabbit's one actionable finding was fixed at `4eefe52`, answered, and resolved. Both player
   implementations now use the shared `TempoDisplay` component.
+- PR #86 was merged as `d218746` after explicit user approval; issue #82 was closed. No database
+  migration was required.

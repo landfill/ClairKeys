@@ -9,6 +9,9 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
   [#86](https://github.com/landfill/ClairKeys/pull/86)로 진행 중이다. 이는 phase를 다시 열지 않으며,
   기존 animation JSON 계약을 실제 `FallingNotesPlayer`에 연결하는 bounded follow-up이다.
 
+- 2026-08-29 — PR #86을 `d218746`으로 병합하고 이슈 #82를 닫았다. merge commit checks 6/6,
+  Vercel Production Ready, 작업 브랜치 정리를 확인했다. P1-A는 DONE을 유지한다.
+
 - 2026-08-29 — 사용자의 명시적 승인으로 PR #84를 `2acc0b6`으로 병합했다. merge commit checks
   6/6 성공, Vercel Production Ready, 운영 `/api/sheet/public` 정상 응답과 demo 반환 0건을
   확인했다. 로컬·원격 작업 브랜치는 두 tip의 main 포함을 확인한 뒤 삭제했다. 운영 데이터에
