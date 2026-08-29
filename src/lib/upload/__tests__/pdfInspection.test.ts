@@ -56,6 +56,32 @@ describe('inspectPdfFile', () => {
     })
   })
 
+  it('본문에 /Encrypt 문자열이 있어도 trailer가 깨끗하면 통과시킨다', async () => {
+    // 오탐의 대가가 미탐보다 크다. 오탐은 멀쩡한 악보를 올릴 방법이 없게 만들고, 미탐은 서버까지
+    // 가서 변환 실패로 끝난다 — 후자는 느릴 뿐이지만 전자는 막다른 길이다.
+    const withDecoy =
+      '%PDF-1.7\n' +
+      '1 0 obj\n<< /Type /Catalog >>\nendobj\n' +
+      '2 0 obj\n<< /Length 40 >>\nstream\n(this text mentions /Encrypt inside)\nendstream\nendobj\n' +
+      'trailer\n<< /Root 1 0 R >>\nstartxref\n0\n%%EOF\n'
+
+    await expect(inspectPdfFile(pdfFile(ascii(withDecoy)))).resolves.toEqual({ ok: true })
+  })
+
+  it('trailer 키워드가 없는 PDF는 꼬리 전체에서 암호를 찾는다', async () => {
+    // xref 스트림을 쓰는 PDF에는 `trailer` 키워드가 없고 `/Encrypt`가 그 딕셔너리에 들어간다.
+    const xrefStream =
+      '%PDF-1.7\n' +
+      '1 0 obj\n<< /Type /Catalog >>\nendobj\n' +
+      '5 0 obj\n<< /Type /XRef /Root 1 0 R /Encrypt 6 0 R >>\nstream\nendstream\nendobj\n' +
+      'startxref\n120\n%%EOF\n'
+
+    await expect(inspectPdfFile(pdfFile(ascii(xrefStream)))).resolves.toEqual({
+      ok: false,
+      reason: 'encrypted',
+    })
+  })
+
   it('암호가 걸린 PDF를 제출 전에 잡아낸다', async () => {
     // 이걸 통과시키면 사용자는 몇 분을 기다린 뒤 "악보를 읽지 못했습니다"만 보게 되고,
     // 원인이 암호라는 것을 알 방법이 없다.

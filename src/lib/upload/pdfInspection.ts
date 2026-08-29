@@ -61,18 +61,57 @@ function readBytes(blob: Blob): Promise<Uint8Array> {
   })
 }
 
-/** ASCII 패턴을 바이트 배열에서 찾는다. 디코딩하지 않으므로 인코딩 추측이 끼어들지 않는다. */
-function containsAscii(haystack: Uint8Array, needle: string): boolean {
+/**
+ * ASCII 패턴이 처음 나타나는 위치. 없으면 -1.
+ *
+ * 디코딩하지 않으므로 인코딩 추측이 끼어들지 않는다.
+ */
+function indexOfAscii(haystack: Uint8Array, needle: string, from = 0): number {
   const target = Array.from(needle, (character) => character.charCodeAt(0))
-  if (target.length === 0 || haystack.length < target.length) return false
+  if (target.length === 0 || haystack.length < target.length) return -1
 
-  outer: for (let start = 0; start <= haystack.length - target.length; start += 1) {
+  outer: for (let start = Math.max(0, from); start <= haystack.length - target.length; start += 1) {
     for (let offset = 0; offset < target.length; offset += 1) {
       if (haystack[start + offset] !== target[offset]) continue outer
     }
-    return true
+    return start
   }
-  return false
+  return -1
+}
+
+function containsAscii(haystack: Uint8Array, needle: string): boolean {
+  return indexOfAscii(haystack, needle) !== -1
+}
+
+/** 마지막으로 나타나는 위치. 없으면 -1. */
+function lastIndexOfAscii(haystack: Uint8Array, needle: string): number {
+  let found = -1
+  let cursor = 0
+  for (;;) {
+    const next = indexOfAscii(haystack, needle, cursor)
+    if (next === -1) return found
+    found = next
+    cursor = next + 1
+  }
+}
+
+/**
+ * 꼬리 구간이 암호화를 가리키는가.
+ *
+ * `/Encrypt`를 꼬리 전체에서 찾으면 본문 스트림에 우연히 같은 문자열이 있는 멀쩡한 PDF를
+ * 거부한다. **오탐의 대가가 미탐보다 크다** — 오탐은 사용자에게 올릴 방법이 없는 파일을 남기고,
+ * 미탐은 서버까지 가서 변환 실패로 끝난다. 그래서 `trailer` 키워드가 있으면 그 뒤만 본다.
+ *
+ * `trailer` 키워드가 없는 PDF(xref 스트림을 쓰는 경우)는 `/Encrypt`가 그 스트림 딕셔너리에
+ * 들어가므로 꼬리 전체를 본다. 그 딕셔너리가 꼬리 구간보다 앞에 있으면 놓친다 — 이 검사는
+ * 최선의 추정이고, 실제 판정은 변환 서비스가 한다.
+ */
+function looksEncrypted(trailer: Uint8Array): boolean {
+  const trailerKeyword = lastIndexOfAscii(trailer, 'trailer')
+  if (trailerKeyword === -1) {
+    return containsAscii(trailer, '/Encrypt')
+  }
+  return indexOfAscii(trailer, '/Encrypt', trailerKeyword) !== -1
 }
 
 /**
@@ -114,7 +153,7 @@ export async function inspectPdfFile(
     return { ok: false, reason: 'not-pdf' }
   }
 
-  if (containsAscii(trailer, '/Encrypt')) {
+  if (looksEncrypted(trailer)) {
     return { ok: false, reason: 'encrypted' }
   }
 
