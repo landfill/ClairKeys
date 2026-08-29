@@ -26,8 +26,8 @@ function pdfBytes(options?: { encrypted?: boolean; header?: string }): Uint8Arra
   return ascii(pdfSource(options))
 }
 
-function pdfFile(bytes: Uint8Array<ArrayBuffer>, name = 'score.pdf'): File {
-  return new File([bytes], name, { type: 'application/pdf' })
+function pdfFile(bytes: Uint8Array<ArrayBuffer>, name = 'score.pdf', lastModified = 1_700_000_000_000): File {
+  return new File([bytes], name, { type: 'application/pdf', lastModified })
 }
 
 describe('inspectPdfFile', () => {
@@ -95,9 +95,34 @@ describe('inspectPdfFile', () => {
 
   it('이름이 같아도 크기가 다르면 중복이 아니다', async () => {
     const file = pdfFile(pdfBytes())
+    const other = pdfFile(pdfBytes({ header: '%PDF-1.4\n\n' }))
+    expect(other.size).not.toBe(file.size)
+
     await expect(
-      inspectPdfFile(file, { knownSignatures: [`${file.name}:${file.size + 1}`] })
+      inspectPdfFile(file, { knownSignatures: [fileSignature(other)] })
     ).resolves.toEqual({ ok: true })
+  })
+
+  it('이름과 크기가 같아도 다른 파일이면 중복이 아니다', async () => {
+    // `name:size`만으로는 파일을 특정하지 못한다. 같은 이름·크기의 다른 악보를 골랐을 때
+    // "이미 올린 파일입니다"로 막으면, 사용자는 올릴 방법이 없는 파일을 손에 쥐게 된다.
+    const first = pdfFile(pdfBytes(), 'score.pdf', 1_700_000_000_000)
+    const second = pdfFile(pdfBytes(), 'score.pdf', 1_700_000_999_000)
+    expect(first.size).toBe(second.size)
+
+    await expect(
+      inspectPdfFile(second, { knownSignatures: [fileSignature(first)] })
+    ).resolves.toEqual({ ok: true })
+  })
+
+  it('같은 파일을 다시 고르면 여전히 중복이다', async () => {
+    // 브라우저가 같은 파일을 다시 넘겨줄 때 `lastModified`는 그대로다.
+    const file = pdfFile(pdfBytes(), 'score.pdf', 1_700_000_000_000)
+    const sameFileAgain = pdfFile(pdfBytes(), 'score.pdf', 1_700_000_000_000)
+
+    await expect(
+      inspectPdfFile(sameFileAgain, { knownSignatures: [fileSignature(file)] })
+    ).resolves.toEqual({ ok: false, reason: 'duplicate' })
   })
 
   it('파일을 읽지 못하면 실패가 아니라 읽기 실패로 알린다', async () => {

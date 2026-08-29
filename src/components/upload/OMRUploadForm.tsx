@@ -236,6 +236,10 @@ export default function OMRUploadForm({ onUploadStart }: OMRUploadFormProps) {
       uploadFormData.append('isPublic', formData.isPublic.toString())
 
       // D-010: 저장 능력을 가진 업로드 경로는 이것 하나다. 새 경로를 만들지 않는다.
+      //
+      // `try`가 감싸는 것은 요청 자체뿐이다. 성공 응답 처리까지 감싸면, 본문을 읽지 못했을 때
+      // 네트워크 실패와 같은 안내("잠시 후 다시 시도해 주세요")가 나간다. 변환은 이미 시작된
+      // 뒤이므로 그 안내를 따르면 같은 악보의 행이 둘 생긴다.
       const response = await fetch('/api/omr/upload', {
         method: 'POST',
         body: uploadFormData,
@@ -262,7 +266,18 @@ export default function OMRUploadForm({ onUploadStart }: OMRUploadFormProps) {
         return
       }
 
-      const result = await response.json()
+      const result = await response.json().catch(() => null)
+
+      // 요청은 받아들여졌는데 무엇이 시작됐는지 알 수 없는 경우다. 여기서 다시 올리라고 하는 것이
+      // 가장 나쁜 안내다 — 변환은 진행 중이고, 결과는 내 악보에 나타난다.
+      if (typeof result?.sheetMusicId !== 'number' || typeof result?.jobId !== 'string') {
+        setErrors(prev => ({
+          ...prev,
+          form: '변환은 시작됐지만 진행 상태를 표시하지 못했습니다. 내 악보에서 확인해 주세요.',
+        }))
+        setPhase('idle')
+        return
+      }
 
       setSubmittedSignatures(prev => [...prev, fileSignature(selectedFile!)])
 

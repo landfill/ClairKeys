@@ -18,7 +18,9 @@ function pdf({ encrypted = false } = {}): Uint8Array<ArrayBuffer> {
 }
 
 function pdfFile(name = 'score.pdf', options?: { encrypted?: boolean }): File {
-  return new File([pdf(options)], name, { type: 'application/pdf' })
+  // 같은 파일을 두 번 고르는 상황을 흉내 내려면 `lastModified`가 같아야 한다. 브라우저는 같은
+  // 파일에 대해 같은 값을 주지만, `new File()`은 기본값으로 지금 시각을 넣는다.
+  return new File([pdf(options)], name, { type: 'application/pdf', lastModified: 1_700_000_000_000 })
 }
 
 function fileInput(): HTMLInputElement {
@@ -258,6 +260,36 @@ describe('OMRUploadForm', () => {
 
       expect(await screen.findByText('변환 서비스가 준비되지 않았습니다')).toBeInTheDocument()
       expect(screen.getByText('관리자에게 문의해 주세요.')).toBeInTheDocument()
+    })
+
+    it('올라간 뒤 응답을 읽지 못하면 다시 올리라고 하지 않는다', async () => {
+      // 변환은 이미 시작됐다. 여기서 "잠시 후 다시 시도해 주세요"라고 하면 사용자는 같은 파일을
+      // 다시 올리고, 같은 악보의 행이 둘 생긴다.
+      fetchMock.mockImplementation(async (url: string) => {
+        if (typeof url === 'string' && url.startsWith('/api/omr/upload')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => {
+              throw new SyntaxError('Unexpected end of JSON input')
+            },
+          }
+        }
+        return { ok: true, json: async () => [] }
+      })
+      const onUploadStart = jest.fn()
+      render(<OMRUploadForm onUploadStart={onUploadStart} />)
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+      await selectFile(pdfFile())
+      await fillRequiredFields()
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: '변환 시작하기' }))
+      })
+
+      expect(await screen.findByText(/내 악보에서 확인해 주세요/)).toBeInTheDocument()
+      expect(screen.queryByText('변환 서비스에 연결할 수 없습니다')).not.toBeInTheDocument()
+      expect(onUploadStart).not.toHaveBeenCalled()
     })
 
     it('서버가 거부한 파일도 사용자가 할 행동으로 끝난다', async () => {

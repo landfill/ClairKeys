@@ -37,9 +37,19 @@ const HEADER_WINDOW_BYTES = 1024
  */
 const TRAILER_WINDOW_BYTES = 64 * 1024
 
-/** 같은 파일을 두 번 올리는 것을 알아보기 위한 식별자. 브라우저가 알려주는 것은 이 둘뿐이다. */
+/**
+ * 같은 파일을 두 번 올리는 것을 알아보기 위한 식별자.
+ *
+ * `lastModified`가 들어가는 이유는 이름과 크기만으로는 파일이 특정되지 않기 때문이다. 같은
+ * 이름·크기의 다른 악보를 골랐을 때 "이미 올린 파일입니다"로 막으면, 사용자는 올릴 방법이 없는
+ * 파일을 손에 쥐게 된다 — 중복을 놓치는 것보다 나쁜 실패다. 브라우저는 같은 파일에 대해 같은
+ * `lastModified`를 주므로 진짜 중복은 그대로 잡힌다.
+ *
+ * 내용 해시가 더 정확하지만 50MB를 읽어야 하고, 여기서 막으려는 것은 실수로 같은 파일을 두 번
+ * 고르는 일이지 위조가 아니다.
+ */
 export function fileSignature(file: File): string {
-  return `${file.name}:${file.size}`
+  return `${file.name}:${file.size}:${file.lastModified}`
 }
 
 function readBytes(blob: Blob): Promise<Uint8Array> {
