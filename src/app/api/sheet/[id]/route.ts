@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 import { sheetMusicCache } from '@/services/cacheService'
+import { deriveSheetMusicAvailability } from '@/lib/sheetMusicAvailability'
 
 export async function GET(
   request: NextRequest,
@@ -70,6 +71,7 @@ export async function GET(
         category: sheetMusic.category?.name || null,
         isPublic: sheetMusic.isPublic,
         provenance: sheetMusic.provenance,
+        availability: deriveSheetMusicAvailability(sheetMusic),
         createdAt: sheetMusic.createdAt,
         updatedAt: sheetMusic.updatedAt,
         animationDataUrl: sheetMusic.animationDataUrl,

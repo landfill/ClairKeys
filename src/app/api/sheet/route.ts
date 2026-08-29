@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
+import { deriveSheetMusicAvailability } from '@/lib/sheetMusicAvailability'
 
 // GET /api/sheet - Get user's sheet music list
 export async function GET(request: NextRequest) {
@@ -68,6 +69,7 @@ export async function GET(request: NextRequest) {
         categoryId: sheet.categoryId,
         category: sheet.category,
         isPublic: sheet.isPublic,
+        availability: deriveSheetMusicAvailability(sheet),
         createdAt: sheet.createdAt,
         updatedAt: sheet.updatedAt
       }))
