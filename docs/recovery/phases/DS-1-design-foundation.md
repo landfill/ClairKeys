@@ -1,7 +1,7 @@
 # DS-1 — 디자인 토큰과 공통 셸
 
 Status: `NOT_STARTED`
-Depends on: DS-0 (`DONE`). 내비게이션 구성 항목은 **DS-G1의 G1-4**에 의존한다
+Depends on: **DS-G1** (내비게이션 구성이 G1-4의 답을 요구한다). DS-G1은 DS-0에 의존한다
 Blocks: DS-2, DS-3, DS-4, DS-5, DS-6, DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 1단계
 
@@ -12,11 +12,24 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 1단계
 
 ## In scope
 
+이 단계는 성격이 다른 두 종류의 변경을 담는다. **같은 PR에 담더라도 커밋을 나눈다** — 회귀가 나면
+어느 쪽이 원인인지 분리할 수 있어야 한다 (D-024).
+
+**A. 시각 변경 (기능 불변)**
+
 - 색·타이포그래피·간격·상태 색 토큰 (**라이트 팔레트 한 벌만** — D-025)
-- `Header`, `Footer`, `Container`, `PageHeader`와 주요 내비게이션
+- `Header`, `Footer`, `Container`, `PageHeader`의 표현
 - 포커스 링, 키보드 탐색 순서, 명도 대비, 색상 외 상태 구분을 공통 컴포넌트 단계에서 고정
 - 아이콘 체계 도입과 이모지 제거
-- DS0-3(고아 라우트 8개), DS0-5(죽은 Footer 링크·2024 저작권), DS0-10(죽은 다크 CSS)
+- DS0-5(죽은 Footer 링크·2024 저작권), DS0-10(죽은 다크 CSS)
+
+**B. 도달 경로 변경 (기능 변경)**
+
+- 내비게이션 5개 → 3개. 메뉴 제거는 **사용자가 그 화면에 도달하는 경로를 없애는 것**이다
+- DS0-3의 고아 라우트 8개 제거 또는 격리. 프로덕션에서 200을 반환하던 URL이 404가 되거나 인증 뒤로
+  간다
+
+B는 시각 개편이 아니라 라우팅 변경이므로 아래 "라우트 회귀 검증"을 별도로 갖는다.
 
 ## Out of scope
 
@@ -49,12 +62,25 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 1단계
 
 ## 회귀 기준
 
-**기능 회귀** — 이 단계는 기능을 바꾸지 않는다.
+**기능 회귀 (A가 바꾸지 않아야 하는 것)**
 
 - `body.playback-active .playback-chrome { display: none }`과 `body.playback-rotated`가
   그대로 동작한다. 새 Header·Footer가 `playback-chrome` 클래스를 갖는다.
 - 로그인 상태에 따른 내비게이션 표시 분기가 유지된다.
 - `AuthGuard`의 `callbackUrl` 보존이 깨지지 않는다.
+
+**라우트 회귀 검증 (B)**
+
+B는 의도적으로 도달 경로를 바꾸므로 "변하지 않음"이 아니라 "의도한 대로 변함"을 검증한다.
+
+- 변경 전 라우트별 응답 코드를 먼저 기록한다 (DS-0이 남긴 8개 200이 기준선이다).
+- 변경 후 각 라우트의 응답 코드가 **의도한 값**임을 확인한다. 제거 → 404, 격리 → 인증 리다이렉트,
+  유지 → 200.
+- 제품 라우트(`/`, `/explore`, `/sheet/[id]`, `/upload`, `/library`, `/profile`, `/auth/*`)의 응답
+  코드는 **바뀌지 않는다**. 여기서 하나라도 바뀌면 회귀다.
+- 제거한 라우트를 참조하는 코드가 남아 있지 않다 (`grep`으로 확인).
+- 내비게이션에서 제거한 화면에 **다른 도달 경로가 있는지** 확인한다. `처리 상태`를 지운다면
+  DS-G1의 G1-4가 정한 대체 진입점이 실제로 존재해야 한다.
 
 **시각 회귀** — `e2e/application-smoke.spec.ts`의 세 검사가 계속 통과한다.
 
@@ -76,7 +102,11 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 1단계
 - 내비게이션이 3개로 정리되어 있고, `처리 상태` 메뉴의 처리가 DS-G1의 결정과 일치한다.
 - `href="#"` 링크가 0건이고 저작권 표기가 현재 연도다.
 - 이모지가 공통 셸에서 제거되고 선형 아이콘으로 대체되어 있다.
-- DS0-3의 8개 라우트 각각에 대해 처리 결과(제거/격리/유지)와 이유가 기록되어 있다.
+- DS0-3의 8개 라우트 각각에 대해 처리 결과(제거/격리/유지), 변경 전후 응답 코드, 이유가 표로
+  기록되어 있다.
+- 제품 라우트 7개의 응답 코드가 변경 전과 같다.
+- 내비게이션에서 제거한 화면마다 대체 도달 경로가 명시되어 있다 (없다면 그 화면을 함께 제거한다).
+- 시각 변경(A)과 도달 경로 변경(B)이 서로 다른 커밋에 있다.
 - DS0-10의 죽은 다크 블록이 제거됐거나, 남긴 경우 죽은 코드임이 주석에 있다.
 - 재생 화면에 진입해 재생을 시작하면 Header·Footer가 숨겨진다 (수동 확인, 근거 기록).
 
@@ -91,4 +121,13 @@ npm run build
 grep -rn 'href="#"' src/components/layout/              # 0건
 grep -rn 'bg-white\|text-gray-' src/components/layout/  # 0건
 grep -rn 'playback-chrome' src/components/layout/       # Header·Footer 양쪽에 존재
+
+# 라우트 회귀 (B) — 배포 프리뷰에서 변경 전후를 각각 실행해 표로 남긴다
+for r in / /explore /upload /library /profile /auth/signin /auth/error \
+         /demo-animation /demo-category /demo-playback /demo-practice \
+         /test-piano /test-finger /test-background-processing /admin/update-finger-data; do
+  printf '%-34s %s\n' "$r" "$(curl -s -o /dev/null -w '%{http_code}' "<프리뷰 URL>$r")"
+done
+
+git log --oneline origin/main..HEAD   # A 커밋과 B 커밋이 분리되어 있어야 한다
 ```
