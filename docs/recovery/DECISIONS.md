@@ -643,3 +643,52 @@
     걸리지 않으면 그건 상한이 아니다 — D-021과 D-022가 이 확인을 빠뜨려 두 번 헛돌았다.
 - Related: D-021, D-022, 이슈 [#65](https://github.com/landfill/ClairKeys/issues/65),
   `src/utils/playbackGeometry.ts`
+
+## D-024: 디자인 개편은 재생 기하와 저장 계약을 회귀 기준으로 두고 단계별로 진행한다
+
+- Date: 2026-08-29
+- Status: Accepted
+- Context:
+  - 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)은 이름을 제외한 로고·색상·UI 전면
+    개편을 요구한다. 시각 개편은 성격상 거의 모든 화면 파일을 건드리므로, 지금까지 실기기 관측과
+    실측으로 확정한 계약을 조용히 밀어낼 수 있는 유일한 종류의 작업이다.
+  - 재생 기하는 D-021 → D-022 → D-023으로 **세 번** 고쳤고, 매번 이유는 "폰 가로에서 상한이 걸리는지
+    확인하지 않았다"였다. 이 값들은 취향이 아니라 실기기 보고에 대한 답이다.
+  - DS-0 인벤토리에서 canonical 업로드 경로가 `ProcessingJob`·`ProcessingNotification`을 전혀 쓰지
+    않는다는 것이 확인됐다. 즉 `/processing` 화면과 알림 API는 실제 업로드와 단절돼 있다. 이 상태를
+    모른 채 3단계 처리 화면을 디자인하면 없는 데이터를 그리는 UI가 나온다.
+- Decision:
+  1. 이슈 #76은 DS-0~DS-7의 별도 이슈·브랜치·PR로 진행한다. 한 PR에서 홈·업로드·플레이어를 동시에
+     교체하지 않는다.
+  2. DS-0이 고정한 회귀 계약(`docs/recovery/phases/DS-0-current-state-baseline.md`의 "변경하지 않을
+     회귀 계약")은 시각 개편의 부수효과로 바뀌지 않는다. 바꿔야 할 이유가 생기면 해당 결정 문서
+     (D-013, D-017~D-023 등)를 먼저 갱신한다.
+  3. `body.playback-active .playback-chrome`과 `body.playback-rotated`는 새 공통 셸에서도 유지한다.
+     Header·Footer를 교체하더라도 `playback-chrome` 클래스를 잃으면 재생 중 화면이 다시 좁아진다.
+  4. **DS-1(디자인 토큰과 공통 셸)이 다른 모든 단계의 선행 조건이다.** 토큰 없이 개별 화면부터
+     고치면 색상·간격·대비가 화면마다 흩어지고, DS-7에서 상태 표현을 통일할 근거가 사라진다.
+  5. 처리 단계 문구와 완료 알림(DS-3, DS-7)은 UI보다 **상태의 출처**를 먼저 정한다. 스키마에
+     `ProcessingStage` enum이 있다는 사실을 canonical 경로가 그것을 채운다는 뜻으로 읽지 않는다.
+  6. 기능 로직 변경과 시각 개편을 같은 커밋에 섞지 않는다.
+- Reason: 이 저장소가 지금까지 확정한 것 중 되돌리기 가장 비싼 것은 실기기로 세 번 고친 재생 기하와
+  D-010·D-011·D-018의 저장 경계다. 개편의 목적은 전환율이지 이 계약의 재검토가 아니므로, 계약을
+  명시적으로 열거해 두고 건드릴 때는 결정 문서를 먼저 고치게 만든다.
+- Rejected:
+  - 한 번의 전면 개편 PR | 회귀가 발생해도 어느 변경이 원인인지 분리할 수 없다. 이슈 #76의 실행
+    계획도 같은 이유로 이를 명시적으로 배제한다.
+  - 화면부터 고치고 토큰은 나중에 추출 | 추출 시점에 이미 화면마다 다른 값이 박혀 있어, 토큰화가
+    전면 재작업이 된다. 현재 `globals.css`의 토큰은 `--background`/`--foreground` 둘뿐이다.
+  - 회귀 계약을 테스트에만 맡긴다 | 테스트는 값이 바뀐 것은 잡지만 **왜 그 값인지**는 알려주지
+    않는다. 디자인 작업자는 실패한 단언을 근거 없는 제약으로 읽고 수정하기 쉽다.
+- Consequence:
+  - DS-0이 `미확인`으로 남긴 항목(구간 반복, 곡 제목 편집, WCAG AA)은 해당 단계 진입 시 실제
+    화면에서 먼저 확인해야 한다. 개편 전 상태를 모르면 개편 후 회귀도 판정할 수 없다.
+  - 프로덕션 화면 캡처가 아직 없으므로, DS-0의 판정은 코드 기준이며 배포본과의 차이는 배제되지
+    않았다.
+- Directive:
+  - 시각 개편 PR에서 `src/utils/playbackGeometry.ts`, `src/utils/pianoLayout.ts`,
+    `src/hooks/usePlaybackOrientation.ts`의 상수나 조건식을 바꾸지 않는다.
+  - `playback-chrome` 클래스를 새 레이아웃에서 누락하지 않는다.
+  - 없는 데이터를 전제로 화면을 그리지 않는다. 상태의 출처를 먼저 확인한다.
+- Related: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76), D-010, D-011, D-013, D-018,
+  D-017~D-023, `docs/recovery/phases/DS-0-current-state-baseline.md`
