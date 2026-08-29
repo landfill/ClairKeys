@@ -6,12 +6,13 @@ import { PracticeGuideControls, PracticeKeyHighlight } from '@/components/practi
 import { AnimationEvent, PianoAnimationData, PracticeState } from '@/types/animation'
 import {
   DEFAULT_TIMING_REFERENCE_BPM,
-  type TempoDisplay,
-  type TempoDisplayInput,
   type TempoSource,
 } from '@/types/animationContract'
 import { getAnimationEngine } from '@/services/animationEngine'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { getTempoDisplay } from '@/utils/tempoDisplay'
+
+export { getTempoDisplay } from '@/utils/tempoDisplay'
 
 type AnimationPlayerData = Omit<PianoAnimationData, 'tempo'> & {
   tempo: number | null
@@ -26,36 +27,6 @@ interface AnimationPlayerProps {
   onNoteStop?: (note: string) => void
   onActiveNotesChange?: (activeNotes: Set<string>) => void
   className?: string
-}
-
-/** Pure presentation rule for the v1.1 tempo provenance contract. */
-export function getTempoDisplay({
-  tempo,
-  tempoSource,
-  timingReferenceBpm,
-  scoreTempo,
-}: TempoDisplayInput): TempoDisplay {
-  if (tempo === null) {
-    return {
-      primary: '빠르기 미상',
-      secondary: `♩=${timingReferenceBpm} 기준으로 계산됨`,
-    }
-  }
-
-  if (tempoSource === 'score') {
-    return { primary: `♩=${tempo} (악보에서 읽음)` }
-  }
-
-  if (tempoSource === 'user') {
-    return {
-      primary: `♩=${tempo} (직접 입력)`,
-      ...(scoreTempo !== null && scoreTempo !== undefined && scoreTempo !== tempo
-        ? { secondary: `악보 표기: ♩=${scoreTempo}` }
-        : {}),
-    }
-  }
-
-  return { primary: `♩=${tempo} (출처 미상)` }
 }
 
 export default function AnimationPlayer({

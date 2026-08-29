@@ -93,6 +93,19 @@ describe('FallingNotesPlayer', () => {
     expect(document.body).toHaveClass('playback-active')
   })
 
+  it('shows the metronome value and provenance before and during playback', () => {
+    const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+
+    expect(screen.getByTestId('tempo-display')).toHaveTextContent('♩=120 (출처 미상)')
+    expect(screen.getByTestId('tempo-display')).toHaveClass('fixed')
+
+    mockPlayerState.isPlaying = false
+    rerender(<FallingNotesPlayer animationData={animationData} />)
+
+    expect(screen.getByTestId('tempo-display')).toHaveTextContent('♩=120 (출처 미상)')
+    expect(screen.getByTestId('tempo-display')).not.toHaveClass('fixed')
+  })
+
   it('shows the current master gain and forwards slider changes to setVolume', () => {
     mockPlayerState.setVolume.mockClear()
     mockPlayerState.isPlaying = false
