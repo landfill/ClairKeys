@@ -1,16 +1,22 @@
 import type { SheetMusicProvenance } from '@prisma/client'
 
-interface DemoProvenanceNoticeProps {
+export interface DemoProvenanceNoticeProps {
   provenance: SheetMusicProvenance
+  isPlaybackActive?: boolean
 }
 
-export default function DemoProvenanceNotice({ provenance }: DemoProvenanceNoticeProps) {
+export default function DemoProvenanceNotice({
+  provenance,
+  isPlaybackActive = false,
+}: DemoProvenanceNoticeProps) {
   if (provenance !== 'demo') return null
 
   return (
     <div
       role="alert"
-      className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+      className={isPlaybackActive
+        ? 'fixed left-2 right-2 top-2 z-50 mx-auto max-w-2xl rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950 shadow-lg'
+        : 'mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950'}
     >
       <p className="font-semibold">실제 악보 변환 결과가 아닙니다.</p>
       <p className="mt-1">

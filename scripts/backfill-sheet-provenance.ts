@@ -1,9 +1,6 @@
 import { config } from 'dotenv'
-import { PrismaClient, type SheetMusicProvenance } from '@prisma/client'
-import {
-  classifySheetProvenance,
-  type ProvenanceClassification,
-} from '../src/services/sheetProvenanceBackfill'
+import { PrismaClient } from '@prisma/client'
+import { runSheetProvenanceBackfill } from '../src/services/sheetProvenanceBackfill'
 
 config({ path: '.env.local' })
 config()
@@ -16,7 +13,11 @@ function allowedStorageOrigin(): string {
   if (!configured) {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL is required to constrain animation downloads')
   }
-  return new URL(configured).origin
+  const url = new URL(configured)
+  if (url.protocol !== 'https:') {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL must use HTTPS')
+  }
+  return url.origin
 }
 
 async function loadAnimation(animationDataUrl: string): Promise<unknown> {
@@ -31,51 +32,43 @@ async function loadAnimation(animationDataUrl: string): Promise<unknown> {
 }
 
 async function main() {
-  const rows = await prisma.sheetMusic.findMany({
-    select: {
-      id: true,
-      omrJobId: true,
-      animationDataUrl: true,
-    },
-    orderBy: { id: 'asc' },
-  })
+  const result = await runSheetProvenanceBackfill({
+    listRows: () => prisma.sheetMusic.findMany({
+      select: {
+        id: true,
+        omrJobId: true,
+        animationDataUrl: true,
+      },
+      orderBy: { id: 'asc' },
+    }),
+    loadAnimation,
+    validateAnimationStorage: allowedStorageOrigin,
+    updateProvenance: ({ omrIds, demoIds }) => prisma.$transaction([
+      prisma.sheetMusic.updateMany({
+        where: { id: { in: omrIds } },
+        data: { provenance: 'omr' },
+      }),
+      prisma.sheetMusic.updateMany({
+        where: { id: { in: demoIds } },
+        data: { provenance: 'demo' },
+      }),
+    ]),
+  }, apply)
 
-  const classifications: ProvenanceClassification[] = []
-  for (const row of rows) {
-    const classification = await classifySheetProvenance(row, loadAnimation)
-    if (classification.fetchFailed) console.error(`SheetMusic ${row.id}: animation could not be classified`)
-    classifications.push(classification)
+  for (const classification of result.classifications) {
+    if (classification.fetchFailed) {
+      console.error(`SheetMusic ${classification.id}: animation could not be classified`)
+    }
   }
-
-  const idsByProvenance = (provenance: SheetMusicProvenance) =>
-    classifications.filter((item) => item.provenance === provenance).map((item) => item.id)
-
-  const omrIds = idsByProvenance('omr')
-  const demoIds = idsByProvenance('demo')
-  const unknownIds = idsByProvenance('unknown')
-  const fetchFailures = classifications.filter((item) => item.fetchFailed).length
 
   console.log(JSON.stringify({
     mode: apply ? 'apply' : 'dry-run',
-    total: rows.length,
-    omr: omrIds.length,
-    demo: demoIds.length,
-    unknown: unknownIds.length,
-    fetchFailures,
+    total: result.classifications.length,
+    omr: result.omrIds.length,
+    demo: result.demoIds.length,
+    unknown: result.unknownIds.length,
+    fetchFailures: result.fetchFailures,
   }, null, 2))
-
-  if (!apply) return
-
-  await prisma.$transaction([
-    prisma.sheetMusic.updateMany({
-      where: { id: { in: omrIds } },
-      data: { provenance: 'omr' },
-    }),
-    prisma.sheetMusic.updateMany({
-      where: { id: { in: demoIds } },
-      data: { provenance: 'demo' },
-    }),
-  ])
 }
 
 main()

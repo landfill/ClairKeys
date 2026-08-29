@@ -1,4 +1,7 @@
-import { classifySheetProvenance } from '../sheetProvenanceBackfill'
+import {
+  classifySheetProvenance,
+  runSheetProvenanceBackfill,
+} from '../sheetProvenanceBackfill'
 
 const demo = {
   tempo: 120,
@@ -12,6 +15,26 @@ const demo = {
 }
 
 describe('D-010 provenance classification', () => {
+  it('fails configuration validation before fetching or updating any row', async () => {
+    const loadAnimation = jest.fn()
+    const updateProvenance = jest.fn()
+
+    await expect(runSheetProvenanceBackfill({
+      listRows: async () => [
+        { id: 1, omrJobId: 'job-1', animationDataUrl: 'https://storage/omr.json' },
+        { id: 2, omrJobId: null, animationDataUrl: 'https://storage/candidate.json' },
+      ],
+      loadAnimation,
+      validateAnimationStorage: () => {
+        throw new Error('NEXT_PUBLIC_SUPABASE_URL is required')
+      },
+      updateProvenance,
+    }, true)).rejects.toThrow('NEXT_PUBLIC_SUPABASE_URL is required')
+
+    expect(loadAnimation).not.toHaveBeenCalled()
+    expect(updateProvenance).not.toHaveBeenCalled()
+  })
+
   it('classifies an OMR job without fetching its animation', async () => {
     const load = jest.fn()
 

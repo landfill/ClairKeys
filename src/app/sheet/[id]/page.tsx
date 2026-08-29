@@ -181,7 +181,10 @@ export default function SheetMusicPage() {
         )}
         
         <Container className={isPlaybackActive ? 'px-0 py-0 sm:px-0 lg:px-0' : 'py-8'} size={isPlaybackActive ? 'full' : 'lg'}>
-          {!isPlaybackActive && <DemoProvenanceNotice provenance={sheetMusic.provenance} />}
+          <DemoProvenanceNotice
+            provenance={sheetMusic.provenance}
+            isPlaybackActive={isPlaybackActive}
+          />
 
           {/* Falling Notes Player - MVP Style */}
           <FallingNotesPlayer 

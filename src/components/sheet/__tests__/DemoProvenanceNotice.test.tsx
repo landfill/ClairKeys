@@ -8,6 +8,13 @@ describe('DemoProvenanceNotice', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('실제 악보 변환 결과가 아닙니다')
   })
 
+  it('remains visible as an overlay during active playback', () => {
+    render(<DemoProvenanceNotice provenance="demo" isPlaybackActive />)
+
+    expect(screen.getByRole('alert')).toHaveClass('fixed')
+    expect(screen.getByRole('alert')).toHaveTextContent('실제 악보 변환 결과가 아닙니다')
+  })
+
   it.each(['omr', 'unknown'] as const)('renders nothing for %s provenance', (provenance) => {
     const { container } = render(<DemoProvenanceNotice provenance={provenance} />)
 
