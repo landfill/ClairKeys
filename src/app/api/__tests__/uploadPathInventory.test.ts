@@ -17,7 +17,7 @@ import { join } from 'node:path'
  *     the tests that replaced the earlier "defects P1-A removes" block; that
  *     block described the old behaviour and went red here, as its own header
  *     predicted.
- *   - "provenance identifiers" — what a later migration needs in order to
+ *   - "provenance identifiers" — what the P1-A closing migration uses to
  *     classify rows that were already stored before this landed.
  */
 
@@ -31,6 +31,7 @@ const BACKGROUND_ROUTE = 'src/app/api/processing/route.ts'
 const ASYNC_PROCESSOR = 'src/services/asyncUploadProcessor.ts'
 const BACKGROUND_PROCESSOR = 'src/services/backgroundProcessor.ts'
 const DEMO_GENERATOR = 'src/services/pdfParser.ts'
+const DEMO_PROVENANCE = 'src/utils/demoProvenance.ts'
 
 const UPLOAD_PAGE = 'src/app/upload/page.tsx'
 const OMR_SERVICE_URL_MODULE = 'src/lib/omr/serviceUrl.ts'
@@ -183,9 +184,11 @@ describe('provenance identifiers for rows stored before this landed', () => {
     // database carry one of these literals; changing them breaks the only
     // reliable way to classify those rows.
     const generator = readSource(DEMO_GENERATOR)
+    const evidence = readSource(DEMO_PROVENANCE)
     expect(generator).toContain('melodyVariations')
     expect(generator).toMatch(/tempo:\s*120/)
     expect(generator).toMatch(/timeSignature:\s*'4\/4'/)
-    expect(generator).toMatch(/note:\s*'C4',\s*startTime:\s*0/)
+    expect(generator).toContain('HISTORICAL_DEMO_NOTE_SEQUENCES')
+    expect(evidence).toMatch(/note:\s*'C4',\s*startTime:\s*0/)
   })
 })

@@ -16,6 +16,7 @@
 // migration plan before changing them.
 
 import { Jimp } from 'jimp';
+import { HISTORICAL_DEMO_NOTE_SEQUENCES } from '@/utils/demoProvenance'
 type JimpType = Awaited<ReturnType<typeof Jimp.read>>;
 
 const jimpUtils = Jimp as unknown as { intToRGBA: (color: number) => { r: number; g: number; b: number; a: number } };
@@ -467,40 +468,11 @@ export class PDFParserService {
     console.log('PDFParserService: Creating enhanced demo with PDF-based variations')
     
     // Create different melodies based on file characteristics
-    const melodyVariations = [
-      // C Major Scale (default)
-      [
-        { note: 'C4', startTime: 0, duration: 0.5, velocity: 0.8 },
-        { note: 'D4', startTime: 0.5, duration: 0.5, velocity: 0.8 },
-        { note: 'E4', startTime: 1.0, duration: 0.5, velocity: 0.8 },
-        { note: 'F4', startTime: 1.5, duration: 0.5, velocity: 0.8 },
-        { note: 'G4', startTime: 2.0, duration: 0.5, velocity: 0.8 },
-        { note: 'A4', startTime: 2.5, duration: 0.5, velocity: 0.8 },
-        { note: 'B4', startTime: 3.0, duration: 0.5, velocity: 0.8 },
-        { note: 'C5', startTime: 3.5, duration: 1.0, velocity: 0.8 },
-      ],
-      // Arpeggio
-      [
-        { note: 'C4', startTime: 0, duration: 0.25, velocity: 0.7 },
-        { note: 'E4', startTime: 0.25, duration: 0.25, velocity: 0.7 },
-        { note: 'G4', startTime: 0.5, duration: 0.25, velocity: 0.7 },
-        { note: 'C5', startTime: 0.75, duration: 0.25, velocity: 0.8 },
-        { note: 'G4', startTime: 1.0, duration: 0.25, velocity: 0.7 },
-        { note: 'E4', startTime: 1.25, duration: 0.25, velocity: 0.7 },
-        { note: 'C4', startTime: 1.5, duration: 0.5, velocity: 0.8 },
-      ],
-      // Simple melody
-      [
-        { note: 'G4', startTime: 0, duration: 0.5, velocity: 0.8 },
-        { note: 'A4', startTime: 0.5, duration: 0.5, velocity: 0.8 },
-        { note: 'B4', startTime: 1.0, duration: 1.0, velocity: 0.8 },
-        { note: 'C5', startTime: 2.0, duration: 1.0, velocity: 0.9 },
-      ]
-    ]
+    const melodyVariations = HISTORICAL_DEMO_NOTE_SEQUENCES
     
     // Select melody based on file characteristics
     const fileHash = bufferLength % melodyVariations.length
-    const selectedMelody = melodyVariations[fileHash]
+    const selectedMelody = melodyVariations[fileHash].map((note) => ({ ...note }))
     
     const totalDuration = Math.max(...selectedMelody.map(n => n.startTime + n.duration))
     
@@ -534,16 +506,7 @@ export class PDFParserService {
     fileSize: number
   }, extractedText: string): PianoAnimationData {
     // Create a simple demo melody (C major scale)
-    const demoNotes: PianoNote[] = [
-      { note: 'C4', startTime: 0, duration: 0.5, velocity: 0.8 },
-      { note: 'D4', startTime: 0.5, duration: 0.5, velocity: 0.8 },
-      { note: 'E4', startTime: 1.0, duration: 0.5, velocity: 0.8 },
-      { note: 'F4', startTime: 1.5, duration: 0.5, velocity: 0.8 },
-      { note: 'G4', startTime: 2.0, duration: 0.5, velocity: 0.8 },
-      { note: 'A4', startTime: 2.5, duration: 0.5, velocity: 0.8 },
-      { note: 'B4', startTime: 3.0, duration: 0.5, velocity: 0.8 },
-      { note: 'C5', startTime: 3.5, duration: 1.0, velocity: 0.8 },
-    ]
+    const demoNotes: PianoNote[] = HISTORICAL_DEMO_NOTE_SEQUENCES[0].map((note) => ({ ...note }))
 
     // Try to extract some basic information from the PDF text
     const detectedTempo = this.extractTempo(extractedText)

@@ -21,6 +21,7 @@
     "seed": "tsx prisma/seed.ts",
     "db:seed": "tsx prisma/seed.ts",
     "db:test": "tsx scripts/test-db-connection.ts",
+    "backfill:sheet-provenance": "tsx scripts/backfill-sheet-provenance.ts",
     "init-storage": "tsx scripts/init-storage.js",
     "check-data-status": "tsx scripts/check-data-status.js",
     "migrate-storage-data": "tsx scripts/migrate-storage-data.js",

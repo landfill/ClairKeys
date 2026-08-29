@@ -76,11 +76,20 @@ model SheetMusic {
   animationDataUrl String
   processingStatus String            @default("pending") // pending, processing, completed, failed
   omrJobId         String?           // OMR service job ID for tracking
+  provenance       SheetMusicProvenance @default(unknown)
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   practiceSessions PracticeSession[]
   category         Category?         @relation(fields: [categoryId], references: [id])
   user             User              @relation(fields: [userId], references: [id])
+
+  @@index([provenance])
+}
+
+enum SheetMusicProvenance {
+  omr
+  demo
+  unknown
 }
 
 model PracticeSession {

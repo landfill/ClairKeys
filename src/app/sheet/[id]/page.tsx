@@ -6,6 +6,8 @@ import { MainLayout, PageHeader, Container } from '@/components/layout'
 import { Card, Loading } from '@/components/ui'
 import AuthGuard from '@/components/auth/AuthGuard'
 import FallingNotesPlayer from '@/components/animation/FallingNotesPlayer'
+import DemoProvenanceNotice from '@/components/sheet/DemoProvenanceNotice'
+import type { SheetMusicProvenance } from '@prisma/client'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import { normalizeAnimationData, AnimationContractError } from '@/utils/animationContract'
 
@@ -15,6 +17,7 @@ interface SheetMusic {
   composer: string
   category: string | null
   isPublic: boolean
+  provenance: SheetMusicProvenance
   createdAt: string
   animationData: string
 }
@@ -178,6 +181,8 @@ export default function SheetMusicPage() {
         )}
         
         <Container className={isPlaybackActive ? 'px-0 py-0 sm:px-0 lg:px-0' : 'py-8'} size={isPlaybackActive ? 'full' : 'lg'}>
+          {!isPlaybackActive && <DemoProvenanceNotice provenance={sheetMusic.provenance} />}
+
           {/* Falling Notes Player - MVP Style */}
           <FallingNotesPlayer 
             animationData={animationData} 

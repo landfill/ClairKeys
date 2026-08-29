@@ -124,7 +124,10 @@ export class SheetMusicRepository implements ISheetMusicRepository {
     total: number
     hasMore: boolean
   }> {
-    const where: Prisma.SheetMusicWhereInput = { isPublic: true }
+    const where: Prisma.SheetMusicWhereInput = {
+      isPublic: true,
+      provenance: { not: 'demo' }
+    }
     
     if (params?.search) {
       where.OR = [

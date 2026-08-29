@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
 
     // Build where clause for public sheets only
     const where: Prisma.SheetMusicWhereInput = {
-      isPublic: true
+      isPublic: true,
+      provenance: { not: 'demo' }
     }
 
     if (search) {
