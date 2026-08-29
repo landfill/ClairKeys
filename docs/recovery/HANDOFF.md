@@ -11,9 +11,9 @@ Last updated: 2026-08-30 KST
 DS-0, DS-G1, DS-1, DS-2, **DS-3이 `DONE`**이고 **DS-4는 `IN_PROGRESS`**, DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
 완료 조건 8개는 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 
-**Next action**: DS-4 마감 후속 PR을 연다. PR #93은 병합돼 891px 관측의 카드 뱃지·행동 과밀을
-해결했다. 남은 DS-4 마감 기준은 (1) 목록 갱신의 `aria-live` 전달, (2) 인증 뒤 `/library`의
-1440·1024·390 실제 반응형 측정이다. DS-4는
+**Next action**: PR [#94](https://github.com/landfill/ClairKeys/pull/94)의 CI·리뷰를 확인한다.
+사용자는 반응형을 수동 확인했고, D-029는 목록 변경의 별도 `aria-live` 요구를 제거한다. PR #94가
+병합되면 DS-4 완료 기준을 다시 대조한다. DS-4는
 D-026 결정 2·3의 **파생 상태 4종**(연습 가능 /
 처리 중 / 오류 / 알 수 없음)만 읽고, 단계 표시는 이 화면의 것이 아니다 (D-026 G1-2).
 
@@ -30,9 +30,8 @@ DS-4 구현은 PR #92가 merge commit `64aecb2`로 병합했다. 목록·상세 
 위치 필드·복원 경로가 없으므로 ‘이어하기’ UI를 만들지 않았으며, 상세는
 `docs/recovery/validation/2026-08-30-DS-4-my-library.md`에 기록했다.
 
-**병합 뒤 남은 DS-4 기준**: 목록 변경을 `aria-live`로 알려야 하고, 인증 쿠키를 발급한 실제 브라우저로
-1440·1024·390에서 카드 그리드·긴 제목·가로 스크롤을 측정해야 한다. PR #92의 로컬/CI E2E는 공개
-경로만 검사하므로 이 둘의 근거가 아니다. 후속은 별도 `codex/ds-4-*` 브랜치·PR로 한다.
+**DS-4 마감 근거**: 사용자는 2026-08-30에 반응형을 수동 확인했다. 목록 변경의 별도 `aria-live`
+안내는 D-029로 제거한다. 오류 `role="alert"`는 유지한다.
 
 PR #92 브랜치는 병합 후 local·remote tip `fc27178`이 `main`에 포함됨을 확인하고 2026-08-30 KST에
 원격→로컬 순으로 삭제했다. 병합 commit `64aecb2`의 post-merge build/run-tests는 기록 시점에 실행 중이다.
