@@ -36,8 +36,15 @@ Footer 죽은 링크 3개 제거와 저작권 연도 계산(DS0-5), 이모지 �
 firefox·webkit은 로컬에 바이너리가 없어 CI가 실행한다.
 기록: `docs/recovery/validation/2026-08-29-ds1-token-contrast.md`.
 
-**남은 확인**: 변경 후 라우트 응답 코드를 배포 프리뷰에서 실측해야 한다. 변경 전 기준선은 기록돼
-있다 — 제품 7개(200/307)는 불변, 고아 8개는 200 → 404(제거)/307(격리)이 의도된 변화다.
+**라우트 회귀 실측 완료**: 배포 프리뷰에서 확인했다. **제품 라우트 7개가 전부 변경 전과 같고**
+(`/` `/explore` `/auth/signin` `/auth/error` 200, `/upload` `/library` `/profile` redirect),
+고아 7개는 200 → **404**, `/admin/update-finger-data`는 200 → **redirect**다. 바뀐 것은 고아 8개뿐이며
+전부 의도한 방향이다. Vercel 배포 보호로 익명 `curl`이 302를 받으므로 사용자의 브라우저 세션에서
+측정했다.
+
+프리뷰 육안 확인에서 하나가 눈에 띈다 — **홈 본문은 아직 옛 파란색이다.** 히어로의 `Clairkeys`가
+`text-blue-600`으로 남아 있는데, `src/app/page.tsx`는 DS-2 소유이고 E2E 스모크가 그 문구를 고정하므로
+DS-1이 건드리지 않았다. DS-2가 홈을 다시 만들 때 토큰으로 바뀐다.
 
 **P2-A로 넘어가는 잔여**: `BackgroundFileUpload`의 `/processing` 링크 2곳,
 `/api/processing`·`/api/notifications`·`useBackgroundProcessing`·`ProcessingDashboard`의 삭제.

@@ -85,9 +85,42 @@ UI 컴포넌트 경계에 적용되므로, 입력·컨트롤 테두리에는 `--
 
 변경 후 실측은 배포 프리뷰에서 수행하고 아래에 기록한다.
 
-## 라우트 응답 코드 — 변경 후 (배포 프리뷰)
+## 라우트 응답 코드 — 변경 후 (배포 프리뷰, 로그아웃 상태)
 
-(PR 프리뷰 URL 확보 후 기록)
+프리뷰 URL: `https://clairkeys-1uj8dvy6k-landfills-projects.vercel.app` (커밋 `cb8a74b`)
+
+Vercel 배포 보호가 익명 `curl`을 전부 302로 돌려보내므로, 사용자의 브라우저 세션 안에서
+`fetch(route, { redirect: 'manual', cache: 'no-store' })`로 측정했다. `redirect: 'manual'`은 3xx를
+`opaqueredirect`로 돌려주므로 리다이렉트 여부만 판별된다(코드는 보이지 않는다).
+
+| 라우트 | 변경 전 | 변경 후 | 판정 |
+|---|---:|---:|---|
+| `/` | 200 | **200** | 불변 ✅ |
+| `/explore` | 200 | **200** | 불변 ✅ |
+| `/auth/signin` | 200 | **200** | 불변 ✅ |
+| `/auth/error` | 200 | **200** | 불변 ✅ |
+| `/upload` | 307 | **redirect** | 불변 ✅ |
+| `/library` | 307 | **redirect** | 불변 ✅ |
+| `/profile` | 307 | **redirect** | 불변 ✅ |
+| `/processing` | 200 | **404** | 의도된 제거 ✅ |
+| `/demo-animation` | 200 | **404** | 의도된 제거 ✅ |
+| `/demo-category` | 200 | **404** | 의도된 제거 ✅ |
+| `/demo-playback` | 200 | **404** | 의도된 제거 ✅ |
+| `/demo-practice` | 200 | **404** | 의도된 제거 ✅ |
+| `/test-piano` | 200 | **404** | 의도된 제거 ✅ |
+| `/test-finger` | 200 | **404** | 의도된 제거 ✅ |
+| `/test-background-processing` | 200 | **404** | 의도된 제거 ✅ |
+| `/admin/update-finger-data` | 200 | **redirect** | 의도된 격리 ✅ |
+
+**제품 라우트 7개 전부 변경 전과 같다.** 바뀐 것은 고아 8개뿐이며 전부 의도한 방향이다.
+
+### 프리뷰 육안 확인
+
+- 새 셸이 적용된다: 아이보리 배경, 선형 로고 마크, 테라코타 주 버튼, outline 보조 버튼.
+- 로그아웃 상태 내비게이션이 `탐색` 하나다 (계약대로). 로그인 상태의 3개 구성은 회귀 테스트가 고정한다.
+- **홈 본문은 아직 옛 색이다** — 히어로의 `Clairkeys`가 `text-blue-600`으로 남아 있다.
+  `src/app/page.tsx`는 DS-2 소유이고 E2E 스모크가 그 문구를 고정하므로 DS-1은 건드리지 않았다.
+  DS-2가 홈을 다시 만들 때 토큰으로 바뀐다.
 
 ## Manual checks
 
