@@ -911,3 +911,33 @@
   이슈 [#46](https://github.com/landfill/ClairKeys/issues/46),
   이슈 [#47](https://github.com/landfill/ClairKeys/issues/47),
   이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)
+
+## D-029: 내 악보 목록 변경에 별도 live announcement를 만들지 않는다
+
+- Date: 2026-08-30
+- Status: Accepted
+- Narrows: `docs/recovery/phases/DS-4-my-library.md` 접근성·반응형 검증 항목
+- Context:
+  - DS-4 목록의 제목 편집·이동·삭제는 현재 시각적 결과와 앱 내 확인 다이얼로그를 통해 즉시 확인된다.
+  - 별도 `aria-live` 영역은 화면에 보이지 않는 문장을 유지하고, 같은 변경을 반복적으로 읽어
+    스크린리더 흐름을 방해할 수 있다.
+  - 사용자는 2026-08-30에 이 화면의 별도 live announcement가 필요하지 않다고 명시했다.
+- Decision:
+  1. 내 악보 목록의 일반적인 제목 수정·카테고리 이동·삭제 후에는 별도 `aria-live` 메시지를 추가하지
+     않는다.
+  2. 오류는 기존의 `role="alert"`로 전달한다. 이는 실패를 인지하지 못하게 하는 것이 아니라, 성공한
+     목록 변화를 별도 음성 이벤트로 중복하지 않는 선택이다.
+  3. 장시간 비동기 처리 완료나 사용자 행동 없이 발생하는 중요한 상태 변화는 이 결정의 대상이 아니다.
+     그런 경우에는 해당 화면·단계에서 별도의 접근성 결정을 한다.
+- Reason: 이 화면에서 성공 변경은 사용자가 직접 시작하고 결과가 즉시 보인다. 그때마다 보이지 않는
+  안내를 추가하는 이득보다 반복 알림의 비용이 크며, 사용자가 요구하지 않는 동작이다.
+- Rejected:
+  - 모든 목록 변경을 `aria-live="polite"`로 읽는다 | 직접 실행한 행동과 이미 보이는 결과를 중복해
+    읽어 탐색 흐름을 방해한다.
+  - 오류까지 live region에서 제외한다 | 실패 원인을 놓칠 수 있어 실제 접근성 후퇴다.
+- Consequence:
+  - DS-4의 `aria-live` 검증 항목을 제거한다.
+  - 오류 안내의 `role="alert"`는 유지한다.
+- Directive:
+  - 이 결정을 장시간 백그라운드 처리나 자동 상태 변경의 live announcement 생략 근거로 넓히지 않는다.
+- Related: D-026, DS-4, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)
