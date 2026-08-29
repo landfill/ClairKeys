@@ -2,6 +2,40 @@
 
 Last updated: 2026-08-29 KST
 
+## #76 DS-0 IN_REVIEW — 디자인 개편 착수 전 계약 고정, PR #87 열림
+
+사용자가 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)(초보자 중심 여정·브랜드 전면
+개편) 중 **0단계**를 진행하도록 지시했다. 0단계는 코드나 화면을 바꾸지 않고 현재 상태와 제품 계약을
+고정하는 단계다. PR [#87](https://github.com/landfill/ClairKeys/pull/87)이 열려 있고 병합 승인을
+받지 않았다.
+
+이 PR은 새 트랙 DS-0~DS-7을 ROADMAP에 추가하고, DS-0 phase 문서·검증 기록·결정 D-024를 남긴다.
+`ROADMAP.md`의 단계 구성 변경과 `DECISIONS.md` 신규 항목은 직접 커밋 예외가 아니므로 PR에 포함했다.
+
+코드 인벤토리에서 확인된 것 (모두 `f184f28` 기준, 추정이 아니라 파일·행 근거가 있다):
+
+- **로그인 전 체험을 막는 것은 두 겹이다.** `src/app/sheet/[id]/page.tsx:139,153,174`의 `AuthGuard`와
+  `src/app/api/files/animation/route.ts:94`의 GET 401. 한쪽만 풀면 화면은 열리고 데이터는 401이 된다.
+  메타데이터 API(`/api/sheet/[id]:53-58`)는 이미 공개 악보를 세션 없이 허용한다.
+- **로그인 후 복귀가 경로마다 다르다.** `AuthGuard`는 `pathname + search`를 보존하지만 Header의
+  `LoginButton`은 `callbackUrl = "/"` 기본값이라 항상 홈으로 간다.
+- **`/processing` 화면과 알림 API가 실제 업로드와 단절돼 있다.** canonical 경로인
+  `/api/omr/upload`·`/api/omr/finalize`에 `ProcessingJob` 참조가 0건이다. 실제 상태는
+  `SheetMusic.processingStatus`(자유 문자열)에만 있고 렌더하는 화면이 없다. 스키마의
+  `ProcessingStage` enum이 존재한다는 사실을 canonical 경로가 채운다는 뜻으로 읽으면 안 된다.
+- 데모·테스트 7개 라우트가 UI 유입 링크 0인 채 프로덕션에서 URL로 열려 있다. Footer 지원 링크
+  3개가 전부 `href="#"`이고 저작권 표기가 2024다.
+- `globals.css`의 디자인 토큰은 `--background`/`--foreground` 둘뿐이다(Tailwind v4).
+
+D-024가 고정한 것: 단계별 이슈·PR로 진행하고 한 PR에서 홈·업로드·플레이어를 동시에 교체하지 않는다.
+`playbackGeometry.ts`·`pianoLayout.ts`·`usePlaybackOrientation.ts`의 상수와 조건식은 시각 개편의
+부수효과로 바꾸지 않는다. 새 공통 셸도 `playback-chrome` 클래스를 유지한다. **DS-1(디자인 토큰과
+공통 셸)이 나머지 전 단계의 선행 조건이다.**
+
+미완: 0단계 Work stage 4(운영 화면 캡처)와 5(발견 결함의 이슈 등록)는 수행하지 않았다. 로그인 후
+화면 캡처에 사용자 계정 세션이 필요하다. 따라서 현재 판정은 **코드 기준**이며 배포본과의 차이는
+배제하지 못했다. 구간 반복·곡 제목 편집·WCAG AA는 `미확인`으로 남겼다.
+
 ## #82 DONE — 메트로놈 값·출처 표시 완료
 
 사용자가 P1-B는 후순위로 두고 이슈 [#82](https://github.com/landfill/ClairKeys/issues/82)를 권장
