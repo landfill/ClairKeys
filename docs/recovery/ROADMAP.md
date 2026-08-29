@@ -26,7 +26,7 @@ P0-A와 P0-D는 서로 다른 파일 범위를 갖도록 설계하면 병렬 진
 | 순서 | ID | 단계 | 상태 | 권장 브랜치 | 선행 조건 |
 |---:|---|---|---|---|---|
 | 0 | DS-0 | 현재 상태와 제품 계약 고정 | DONE | `codex/ds-0-current-state-baseline` | P1-A |
-| 1 | **DS-G1** | **처리 상태 출처 계약 확정 (결정 gate)** | NOT_STARTED | `codex/ds-g1-processing-state-contract` | DS-0 |
+| 1 | **DS-G1** | **처리 상태 출처 계약 확정 (결정 gate)** | IN_REVIEW | `codex/ds-g1-processing-state-contract` | DS-0 |
 | 2 | DS-1 | 디자인 토큰과 공통 셸 | NOT_STARTED | `codex/ds-1-design-foundation` | **DS-G1** |
 | 3 | DS-2 | 로그인 전 핵심 가치 전달 (홈·샘플·복귀 계약) | NOT_STARTED | `codex/ds-2-prelogin-value` | DS-1 |
 | 4 | DS-3 | 업로드와 처리 상태 | NOT_STARTED | `codex/ds-3-upload-processing` | DS-1 |
@@ -87,10 +87,12 @@ DS-5·DS-6의 화면이 나중에 들어오면서 통일이 다시 깨진다.
 
 ### DS-G1: 처리 상태 출처 계약 확정 (결정 gate)
 
-- 실제 업로드의 진행·완료·실패를 **어느 필드에서 읽을지** 확정 (`SheetMusic.processingStatus` vs `ProcessingJob`)
-- 이슈 #76이 요구하는 4개 처리 단계와 실제 OMR `progress`/`message`의 대응 정의
-- 완료 알림의 트리거와 저장 위치 결정
-- 코드는 바꾸지 않는다. 산출물은 결정 문서 한 건
+- **결정 완료 → [D-026](DECISIONS.md)**. 상태 출처는 `SheetMusic` 한 곳이고, 화면은 원값이 아니라
+  파생 상태(연습 가능 / 처리 중 / 오류 / 알 수 없음)를 읽는다
+- 4개 처리 단계는 **업로드 화면에서만** 표시한다 — 서버가 단계를 저장하지 않는다
+- 별도 알림 시스템을 만들지 않는다. `/processing` 화면과 `처리 상태` 메뉴를 제거한다
+- 사용자 대면 실패 4종: 파일 거부 / 변환 실패 / 작업 유실 / 서비스 불가
+- 코드 변경 0건
 - 상세: [DS-G1](phases/DS-G1-processing-state-contract.md)
 
 ### DS-1: 디자인 토큰과 공통 셸
