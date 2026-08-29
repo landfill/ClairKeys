@@ -128,6 +128,34 @@ describe('PlaybackControls — 접근 가능한 이름', () => {
     expect(screen.getByRole('status', { name: '재생 상태' })).toHaveTextContent('재생 중')
   })
 
+  /**
+   * 고정 문자열 id는 한 문서에 두 인스턴스가 있으면 겹치고, 두 번째 `<label>`이 첫 번째 `<select>`를
+   * 가리킨다. `AnimationPlayer`와 `AdvancedPlaybackControls`가 각각 이 컴포넌트를 렌더하므로 실제로
+   * 가능한 조합이다. CodeRabbit이 PR #90에서 지적했다.
+   */
+  it('keeps select ids unique across instances', () => {
+    render(
+      <>
+        <PlaybackControls {...baseProps} />
+        <PlaybackControls {...baseProps} playbackSpeed={2} playbackMode="practice" />
+      </>
+    )
+
+    const speeds = screen.getAllByLabelText('속도:')
+    const modes = screen.getAllByLabelText('모드:')
+    expect(speeds).toHaveLength(2)
+    expect(modes).toHaveLength(2)
+
+    // 각 label이 자기 인스턴스의 select를 가리킨다.
+    expect(speeds[0]).toHaveValue('1')
+    expect(speeds[1]).toHaveValue('2')
+    expect(modes[0]).toHaveValue('listen')
+    expect(modes[1]).toHaveValue('practice')
+
+    const ids = [...speeds, ...modes].map((el) => el.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
   it('leaves focus styling to the shared :focus-visible rule', () => {
     const { container } = render(<PlaybackControls {...baseProps} />)
 

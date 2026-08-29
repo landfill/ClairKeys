@@ -1,5 +1,6 @@
 'use client'
 
+import { useId } from 'react'
 import { Button } from '@/components/ui'
 
 interface PlaybackControlsProps {
@@ -33,6 +34,15 @@ export default function PlaybackControls({
   onModeChange,
   className = ''
 }: PlaybackControlsProps) {
+  /**
+   * 고정 문자열 id를 쓰면 한 문서에 두 인스턴스가 있을 때 id가 겹치고, 두 번째 `<label>`이 첫 번째
+   * `<select>`를 가리킨다. `AnimationPlayer`와 `AdvancedPlaybackControls`가 각각 이 컴포넌트를
+   * 렌더하므로 실제로 가능한 조합이다.
+   */
+  const instanceId = useId()
+  const speedSelectId = `${instanceId}-speed`
+  const modeSelectId = `${instanceId}-mode`
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
@@ -150,11 +160,11 @@ export default function PlaybackControls({
 
         {/* Speed Control */}
         <div className="flex items-center space-x-3">
-          <label htmlFor="playback-speed" className="text-sm text-ink-muted font-medium">
+          <label htmlFor={speedSelectId} className="text-sm text-ink-muted font-medium">
             속도:
           </label>
           <select
-            id="playback-speed"
+            id={speedSelectId}
             value={playbackSpeed}
             onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
             className="px-3 py-2 border border-rule-strong rounded-md text-sm bg-surface text-ink transition-colors"
@@ -174,11 +184,11 @@ export default function PlaybackControls({
       {/* Mode Control */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <label htmlFor="playback-mode" className="text-sm text-ink-muted font-medium">
+          <label htmlFor={modeSelectId} className="text-sm text-ink-muted font-medium">
             모드:
           </label>
           <select
-            id="playback-mode"
+            id={modeSelectId}
             value={playbackMode}
             onChange={(e) => onModeChange(e.target.value as 'listen' | 'follow' | 'practice')}
             className="px-3 py-2 border border-rule-strong rounded-md text-sm bg-surface text-ink transition-colors"

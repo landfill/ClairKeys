@@ -3,7 +3,7 @@
 import { signIn, useSession } from 'next-auth/react'
 import { currentReturnPath, toSafeReturnPath } from '@/lib/returnPath'
 
-interface LoginButtonProps {
+export interface LoginButtonProps {
   className?: string
   children?: React.ReactNode
   /** 로그인 후 돌아갈 경로. 넘기지 않으면 **누른 자리**로 돌아온다. */
