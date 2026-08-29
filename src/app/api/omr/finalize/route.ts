@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'A valid job_id UUID is required.' }, { status: 400 })
   }
 
-  const sheetMusic = await prisma.sheetMusic.findFirst({
+  const sheetMusic = await prisma.sheetMusic.findUnique({
     where: { omrJobId: jobId },
   })
 
