@@ -63,13 +63,13 @@ export function SheetMusicCard({
         </div>
 
         {/* Category and visibility info */}
-        <div className="flex items-center gap-2 text-xs flex-shrink-0">
-            <span className="px-2 py-1 bg-surface-muted rounded-full truncate">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs flex-shrink-0">
+          <span className="max-w-full px-2 py-1 bg-surface-muted rounded-full truncate">
             📁 {sheetMusic.category?.name || '미분류'}
           </span>
           <span className={`px-2 py-1 rounded-full ${
             sheetMusic.isPublic 
-              ? 'bg-state-ready text-on-accent'
+              ? 'bg-surface-muted text-ink'
               : 'bg-surface-muted text-ink'
           }`}>
             {sheetMusic.isPublic ? '🌍 공개' : '🔒 비공개'}
@@ -91,9 +91,9 @@ export function SheetMusicCard({
         <div className="flex-1"></div>
 
         {/* Action buttons */}
-        <div className="flex gap-2 pt-2 flex-shrink-0">
+        <div className="space-y-2 pt-2 flex-shrink-0">
           {availability === 'ready' || availability === undefined ? (
-            <Link href={`/sheet/${sheetMusic.id}`} className="flex-1">
+            <Link href={`/sheet/${sheetMusic.id}`} className="block w-full">
               <Button as="span" className="w-full" size="sm">
                 연습 시작
               </Button>
@@ -103,73 +103,76 @@ export function SheetMusicCard({
               처리 중
             </Button>
           ) : (
-            <Link href="/upload" className="flex-1">
+            <Link href="/upload" className="block w-full">
               <Button as="span" className="w-full" size="sm">
                 다시 업로드
               </Button>
             </Link>
           )}
-          
-          {onEdit && (
-            <Button
-              onClick={() => onEdit(sheetMusic)}
-              variant="outline"
-              size="sm"
-              className="min-w-[3.5rem] flex-shrink-0"
-              aria-label={`${sheetMusic.title} 제목 수정`}
-            >
-              수정
-            </Button>
-          )}
+          {(onEdit || (showMoveOptions && categories.length > 0) || onDelete) && (
+            <div className="grid grid-cols-3 gap-2">
+              {onEdit && (
+                <Button
+                  onClick={() => onEdit(sheetMusic)}
+                  variant="outline"
+                  size="sm"
+                  className="min-w-0 w-full"
+                  aria-label={`${sheetMusic.title} 제목 수정`}
+                >
+                  수정
+                </Button>
+              )}
 
-          {showMoveOptions && categories.length > 0 && (
-            <div className="relative">
-              <Button
-                onClick={() => setShowMoveMenu(!showMoveMenu)}
-                variant="outline"
-                size="sm"
-                className="min-w-[3.5rem] flex-shrink-0"
-              >
-                이동
-              </Button>
-              
-              {showMoveMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-surface border border-rule rounded-md shadow-lg z-10 min-w-[150px]">
-                  <div className="py-1">
-                    <button
-                      onClick={() => handleMove(null)}
-                      className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-muted flex items-center gap-2"
-                    >
-                      📁 미분류
-                    </button>
-                    {categories.map((category) => (
-                      <button
-                        key={category.id}
-                        onClick={() => handleMove(category.id)}
-                        className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-muted flex items-center gap-2"
-                        disabled={sheetMusic.categoryId === category.id}
-                      >
-                        📁 {category.name}
-                        {sheetMusic.categoryId === category.id && (
-                          <span className="text-xs text-ink-muted">(현재)</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
+              {showMoveOptions && categories.length > 0 && (
+                <div className="relative">
+                  <Button
+                    onClick={() => setShowMoveMenu(!showMoveMenu)}
+                    variant="outline"
+                    size="sm"
+                    className="min-w-0 w-full"
+                  >
+                    이동
+                  </Button>
+
+                  {showMoveMenu && (
+                    <div className="absolute right-0 top-full mt-1 bg-surface border border-rule rounded-md shadow-lg z-10 min-w-[150px]">
+                      <div className="py-1">
+                        <button
+                          onClick={() => handleMove(null)}
+                          className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-muted flex items-center gap-2"
+                        >
+                          📁 미분류
+                        </button>
+                        {categories.map((category) => (
+                          <button
+                            key={category.id}
+                            onClick={() => handleMove(category.id)}
+                            className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-muted flex items-center gap-2"
+                            disabled={sheetMusic.categoryId === category.id}
+                          >
+                            📁 {category.name}
+                            {sheetMusic.categoryId === category.id && (
+                              <span className="text-xs text-ink-muted">(현재)</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          {onDelete && (
-            <Button
-              onClick={() => setShowDeleteDialog(true)}
-              variant="outline"
-              size="sm"
-              className="text-state-error hover:border-state-error min-w-[3.5rem] flex-shrink-0"
-            >
-              삭제
-            </Button>
+              {onDelete && (
+                <Button
+                  onClick={() => setShowDeleteDialog(true)}
+                  variant="outline"
+                  size="sm"
+                  className="min-w-0 w-full text-state-error hover:border-state-error"
+                >
+                  삭제
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>
