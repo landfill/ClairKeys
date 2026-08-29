@@ -1,6 +1,6 @@
 # DS-2 — 로그인 전 핵심 가치 전달
 
-Status: `IN_REVIEW`
+Status: `DONE`
 Depends on: DS-1
 Blocks: DS-6, DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 2단계
@@ -102,6 +102,38 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 2단계
   작업 중 두 가지가 드러났다 — 플레이어 전송 버튼에 접근 가능한 이름이 아예 없었고(D-027로 처리),
   `LoginButton`이 세션이 있을 때 렌더 중에 `router.push`를 호출하고 있었다.
   검증: Jest 67 suites / 643 tests, lint 무경고, `tsc`, build 성공, E2E chromium 5/5.
+- 2026-08-29 — CI Accessibility Check가 홈에서 axe 위반 7건을 잡아 `b0167ef`로 고쳤다. 전부 이
+  PR이 만든 것이 아니라, 인증 뒤에 있던 플레이어를 공개 홈에 올리면서 **드러난** 기존 결함이다.
+- 2026-08-29 — 사용자 지시로 Orca orchestration에서 **Codex 워커 리뷰**를 돌렸다
+  (Run `run_5ab1e33d11ff`, `--worktree current`). blocker 1 + major 3 + minor 2를 찾았고 보고를 그대로
+  받지 않고 직접 재검증한 뒤 1·2·4를 고쳤다.
+  - `1f0ee47` 오픈 리다이렉트 — URL 파서가 제거하는 탭·LF·CR로 우회됐다. 판정을 문자열 모양에서
+    파서 기준으로 바꿨다.
+  - `f9b7b73` seek 바 키보드 조작과 재생 상태 announce. **axe가 잡지 못한 결함**이다.
+    D-027에 2-a를 추가해 키보드 등가성이 범위 안임을 먼저 기록했다.
+  - `2ba8c3c` 최초 뷰포트 계약. **E2E가 조건을 검사하지 않고 통과하고 있었다** —
+    `toBeVisible`/`toBeAttached`는 화면 밖 요소에도 통과한다. `boundingBox` 실측으로 바꾸고 홈을
+    데스크톱 2단으로 재배치했다. DS0-1과 충돌하던 문구도 함께 좁혔다.
+- 2026-08-29 — CodeRabbit이 뒤늦게 5건을 남겼다. 2건은 위에서 이미 처리된 것(outdated),
+  2건은 수용(`6d24dc8`: `useId()`로 select id 충돌 제거, `LoginButtonProps` export),
+  1건은 **기각**(`flex-shrink-0`가 Tailwind v4에서 제거됐다는 전제가 이 저장소 빌드 산출물과 다르다 —
+  `.flex-shrink-0,.shrink-0{flex-shrink:0}` 별칭이 남아 있다). 5건 모두 답변·resolve했다.
+- 2026-08-29 — **DONE.** 사용자의 명시적 승인으로 PR
+  [#90](https://github.com/landfill/ClairKeys/pull/90)을 merge commit `a789dea`로 병합했다
+  (최종 head `6d24dc8`, 커밋 8개). 미해결 리뷰 스레드 0건. merge commit의 post-merge check-runs가
+  6/6 성공했고 Vercel Production이 `a789dea`로 배포됐다. 로컬·원격 작업 브랜치 tip이 main에
+  포함됨을 확인한 뒤 양쪽을 삭제했다. 최종 Jest **68 suites / 661 tests**.
+
+  **미처리로 넘긴 것**: Codex 리뷰 C5(`tempoSource: 'user'`가 "직접 입력"으로 표시돼 방문자가 입력한
+  것처럼 읽힌다)와 C6(홈 스크롤 가드가 매칭 0개라 vacuous). 아래 "이월된 지적" 참조.
+
+## 이월된 지적 (DS-2에서 처리하지 않음)
+
+| ID | 내용 | 담당 |
+|---|---|---|
+| C5 | `HOME_SAMPLE_ANIMATION.tempoSource: 'user'`가 화면에 "직접 입력"으로 표시된다. 값을 정한 것은 앱 작성자이지 방문자가 아니므로 홈에서 오해를 낳는다. 스키마에 fixture/manual 출처가 없다면 표시 계층에서 샘플 전용 문구를 쓰거나 D-013 계약 확장을 먼저 결정해야 한다 | DS-5(표시) 또는 별도 결정 |
+| C6 | `src/app/__tests__/page.test.tsx`의 가로 스크롤 가드가 매칭 0개라 루프가 0회 돈다. 현재 홈에 해당 요소가 없어 즉시 결함은 아니지만 회귀도 잡지 못한다 | DS-7(종단 접근성) |
+| — | `flex-shrink-*` 표기가 여러 파일에 남아 있다. 동작에는 문제가 없으나 일괄 현대화 대상 | P2-A |
 
 ## 검증 명령
 

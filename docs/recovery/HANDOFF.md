@@ -2,10 +2,23 @@
 
 Last updated: 2026-08-29 KST
 
-## #76 DS-2 IN_REVIEW — 로그인 전 핵심 가치 전달, PR #90 열림
+## #76 DS-2 DONE — 로그인 전 핵심 가치 전달 완료, 다음은 DS-3
 
-사용자 지시로 DS-2를 진행했다. PR [#90](https://github.com/landfill/ClairKeys/pull/90)이 열려 있고
-병합 승인을 받지 않았다. 커밋 3개다.
+사용자 지시로 DS-2를 진행했고, 명시적 승인으로 PR [#90](https://github.com/landfill/ClairKeys/pull/90)을
+merge commit `a789dea`로 병합했다(최종 head `6d24dc8`, 커밋 8개). 미해결 리뷰 스레드 0건,
+merge commit check-runs 6/6, Vercel Production `a789dea` 배포. 브랜치는 tip 포함 확인 후 삭제했다.
+
+**병합 승인 이후 CodeRabbit이 뒤늦게 5건을 남겨 그대로 병합하지 않고 먼저 처리했다.** 2건은 이미
+처리된 것, 2건 수용(`6d24dc8` — `useId()`로 select id 충돌 제거, `LoginButtonProps` export),
+**1건 기각** — `flex-shrink-0`가 Tailwind v4에서 제거됐다는 전제가 이 저장소 빌드 산출물과 다르다
+(`.flex-shrink-0,.shrink-0{flex-shrink:0}` 별칭이 남아 있다). 리뷰 도구의 일반 지식과 실제 빌드가
+다를 수 있으므로 판정 근거는 산출물이다.
+
+**이월**: C5(`tempoSource: 'user'`가 "직접 입력"으로 표시돼 방문자가 입력한 것처럼 읽힌다),
+C6(홈 스크롤 가드 vacuous), `flex-shrink-*` 표기 일괄 현대화. DS-2 phase 문서의 "이월된 지적" 표에 있다.
+
+**다음 행동**: **DS-3(업로드와 처리 상태)**. D-026이 정한 `progress` 매핑(0/10/30/60/100)과 실패
+4종 계약이 이미 확정돼 있다. 진입 조건과 완료 조건은 `docs/recovery/phases/DS-3-upload-processing.md`.
 
 **홈** — 이전 홈은 정지한 건반 그림과 기능 카드 세 장이었다. 히어로 다음에 실제로 움직이는 결과를
 뒀고, 운영 플레이어(`FallingNotesPlayer`)를 **그대로** 쓴다. 홈 전용 축소판을 만들면 첫 화면과 로그인
