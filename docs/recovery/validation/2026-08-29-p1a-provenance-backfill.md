@@ -30,6 +30,10 @@ carry an explicit warning before playback.
 | production backfill `--apply` | PASS | total 5; `omr=3`, `demo=0`, `unknown=2`, `fetchFailures=0` |
 | post-apply DB invariant query | PASS | `omr=3`, `unknown=2`; OMR rows lacking `omrJobId`: 0; migration `finished=true` |
 | post-review production dry-run | PASS | total 5; `omr=3`, `demo=0`, `unknown=2`, `fetchFailures=0` |
+| merge commit `2acc0b6` checks | PASS | post-merge build, E2E, two test jobs, lint, Security Audit: 6/6 |
+| Vercel Production | PASS | Ready deployment aliased to `https://clairkeys.vercel.app` |
+| production `/api/sheet/public` | PASS | normal response; 4 public rows; no demo row returned |
+| branch containment/cleanup | PASS | local and remote tips contained in main; both branches deleted |
 
 ## Baseline comparison
 
@@ -40,9 +44,9 @@ carry an explicit warning before playback.
 
 ## Manual checks
 
-- Confirmed the PR is review-ready and mergeable at head `2186cbc`.
-- Confirmed all hosted repository checks succeeded; Vercel Preview proves build only and does not
-  prove the production database migration.
+- Confirmed the PR was review-ready and mergeable at final head `a7745c3` before merge.
+- Confirmed all hosted repository checks, merge checks, and the Vercel Production deployment
+  succeeded.
 - The first migration attempt through transaction pooler port 6543 made no change; schema and
   migration history were both re-queried before retrying through session pooler port 5432.
 - Production migration and backfill then completed in the required order. No row was deleted.
@@ -56,8 +60,7 @@ carry an explicit warning before playback.
 
 - The production DB is ready before code deployment; do not reverse that ordering in rollback or
   future environments.
-- Production currently has no confirmed `demo` row, so the real-data warning screen cannot be
-  observed. Matcher, public-list exclusion, and warning rendering are fixed by regression tests.
-- PR #84 still requires explicit user approval before merge, followed by production public-list and
-  playback smoke checks.
+- Production currently has no confirmed `demo` row, so the real-data active warning cannot be
+  observed without manufacturing production content. Matcher, public-list exclusion, and warning
+  rendering are fixed by regression tests.
 - Never convert `unknown` to `demo` from the first-pass filter alone.

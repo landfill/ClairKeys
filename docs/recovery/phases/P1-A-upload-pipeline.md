@@ -1,9 +1,15 @@
 # P1-A — Upload Pipeline Consolidation
 
-Status: `IN_PROGRESS`
+Status: `DONE`
 Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
 
 ## Progress
+
+- 2026-08-29 — 사용자의 명시적 승인으로 PR #84를 `2acc0b6`으로 병합했다. merge commit checks
+  6/6 성공, Vercel Production Ready, 운영 `/api/sheet/public` 정상 응답과 demo 반환 0건을
+  확인했다. 로컬·원격 작업 브랜치는 두 tip의 main 포함을 확인한 뒤 삭제했다. 운영 데이터에
+  confirmed demo가 없어 실제 경고 화면은 관측할 수 없고 active playback 회귀 테스트가 계약을
+  고정한다. 모든 completion criteria를 충족해 상태를 `DONE`으로 닫는다.
 
 - 2026-08-29 — 마지막 completion criterion 구현이 PR
   [#84](https://github.com/landfill/ClairKeys/pull/84)로 열렸다. `SheetMusic.provenance` migration,
@@ -14,8 +20,8 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
   validation 통과. 이어서 운영 DB dry-run에서 총 5건을 `omr=3`, `demo=0`, `unknown=2`,
   `fetchFailures=0`으로 확인하고 additive migration과 `--apply`를 순서대로 실행했다. 사후에도
   `omr=3`, `unknown=2`이며 `omr` 중 `omrJobId`가 없는 행은 0건이다. criterion 3의 데이터
-  migration 검증은 충족했다. 상태는 PR #84 병합과 배포 후 공개 목록·경고 확인 전까지
-  `IN_PROGRESS`다. Evidence:
+  migration 검증은 충족했고, 당시에는 PR #84 병합과 배포 확인을 기다려 `IN_PROGRESS`였다.
+  위 최종 기록에서 병합·배포 검증을 마쳐 `DONE`으로 닫았다. Evidence:
   `docs/recovery/validation/2026-08-29-p1a-provenance-backfill.md`.
 
 - 2026-07-25 — Work stage 1 done. `src/app/api/__tests__/uploadPathInventory.test.ts` (6 tests)
@@ -35,11 +41,8 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
   the demo generator. Codex found that removing persistence turned an older `retryJob` defect into
   the normal case; `retryJob` now refuses `CONVERSION_UNAVAILABLE` failures. Evidence:
   `docs/recovery/validation/2026-07-25-p1a-canonical-upload-only.md`.
-- **Remaining for phase completion** — PR #84를 사용자의 명시적 승인 뒤 병합하고, 운영 배포에서
-  공개 목록이 `demo`만 제외하며 재생 전 경고 계약이 유지되는지 확인한다. 운영 데이터에는
-  확인된 `demo` 행이 0건이므로 경고의 실데이터 관측은 불가능하고 회귀 테스트를 근거로 삼는다.
-  Completion criterion 3의 migration/backfill은 2026-08-29 검증 완료했다. Criteria 1, 2, 4,
-  and 5 are met.
+- **Phase completion** — criteria 1–5 모두 충족. 운영 confirmed demo가 0건인 한계는 검증 기록에
+  명시했고, 분류·공개 제외·active playback 경고 계약은 회귀 테스트로 고정했다.
 - Note for stage 4: issue #20 (demo stub `pdfParser.ts`) is satisfied by this stage rather than
   separately. `/api/processing-queue` is a read-only listing endpoint, not an upload path.
 - 2026-07-26 — Issue #22 repository repair merged via PR
