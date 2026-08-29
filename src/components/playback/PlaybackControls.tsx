@@ -1,5 +1,6 @@
 'use client'
 
+import { useId } from 'react'
 import { Button } from '@/components/ui'
 
 interface PlaybackControlsProps {
@@ -33,6 +34,15 @@ export default function PlaybackControls({
   onModeChange,
   className = ''
 }: PlaybackControlsProps) {
+  /**
+   * 고정 문자열 id를 쓰면 한 문서에 두 인스턴스가 있을 때 id가 겹치고, 두 번째 `<label>`이 첫 번째
+   * `<select>`를 가리킨다. `AnimationPlayer`와 `AdvancedPlaybackControls`가 각각 이 컴포넌트를
+   * 렌더하므로 실제로 가능한 조합이다.
+   */
+  const instanceId = useId()
+  const speedSelectId = `${instanceId}-speed`
+  const modeSelectId = `${instanceId}-mode`
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
@@ -51,20 +61,58 @@ export default function PlaybackControls({
     onSeek(newTime)
   }
 
+  const clampToPiece = (time: number) => Math.min(Math.max(time, 0), duration)
+
+  const SEEK_STEP_SEC = 1
+  const SEEK_PAGE_SEC = 5
+
+  /**
+   * seek 바는 `onClick`만 달린 `div`라 마우스로만 조작할 수 있었다 (WCAG 2.1.1). axe는 이런
+   * 마우스 전용 인터랙션을 잡지 못한다 — 정적으로는 `div`에 핸들러가 붙었는지 알 수 없다.
+   * 슬라이더의 관례적인 키 조작을 그대로 따른다.
+   */
+  const handleProgressKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const move: Record<string, number | undefined> = {
+      ArrowRight: currentTime + SEEK_STEP_SEC,
+      ArrowUp: currentTime + SEEK_STEP_SEC,
+      ArrowLeft: currentTime - SEEK_STEP_SEC,
+      ArrowDown: currentTime - SEEK_STEP_SEC,
+      PageUp: currentTime + SEEK_PAGE_SEC,
+      PageDown: currentTime - SEEK_PAGE_SEC,
+      Home: 0,
+      End: duration,
+    }
+
+    const target = move[e.key]
+    if (target === undefined) return
+
+    e.preventDefault()
+    onSeek(clampToPiece(target))
+  }
+
   return (
     <div className={`playback-controls space-y-4 ${className}`}>
       {/* Progress Bar */}
       <div>
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+        <div className="flex items-center justify-between text-sm text-ink-muted mb-2">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>
-        <div 
-          className="w-full h-2 bg-gray-200 rounded-full cursor-pointer hover:bg-gray-300 transition-colors"
+        <div
+          role="slider"
+          aria-label="재생 위치"
+          aria-valuemin={0}
+          aria-valuemax={duration}
+          aria-valuenow={currentTime}
+          aria-valuetext={`${formatTime(currentTime)} / ${formatTime(duration)}`}
+          aria-disabled={duration > 0 ? undefined : true}
+          tabIndex={duration > 0 ? 0 : -1}
+          className="w-full h-2 bg-rule rounded-full cursor-pointer hover:brightness-95 transition-colors"
           onClick={handleProgressClick}
+          onKeyDown={handleProgressKeyDown}
         >
           <div
-            className="h-2 bg-blue-600 rounded-full transition-all duration-100"
+            className="h-2 bg-accent rounded-full transition-all duration-100"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
@@ -80,8 +128,9 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady || isPlaying}
             className="min-w-[60px] h-12"
+            aria-label="재생"
           >
-            <span className="text-xl">▶️</span>
+            <span className="text-xl" aria-hidden="true">▶️</span>
           </Button>
           
           {/* Pause Button */}
@@ -91,8 +140,9 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady || !isPlaying}
             className="min-w-[60px] h-12"
+            aria-label="일시정지"
           >
-            <span className="text-xl">⏸️</span>
+            <span className="text-xl" aria-hidden="true">⏸️</span>
           </Button>
           
           {/* Stop Button */}
@@ -102,20 +152,22 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady}
             className="min-w-[60px] h-12"
+            aria-label="정지"
           >
-            <span className="text-xl">⏹️</span>
+            <span className="text-xl" aria-hidden="true">⏹️</span>
           </Button>
         </div>
 
         {/* Speed Control */}
         <div className="flex items-center space-x-3">
-          <label className="text-sm text-gray-600 font-medium">
+          <label htmlFor={speedSelectId} className="text-sm text-ink-muted font-medium">
             속도:
           </label>
           <select
+            id={speedSelectId}
             value={playbackSpeed}
             onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-colors"
+            className="px-3 py-2 border border-rule-strong rounded-md text-sm bg-surface text-ink transition-colors"
             disabled={!isReady}
           >
             <option value={0.25}>0.25x</option>
@@ -132,13 +184,14 @@ export default function PlaybackControls({
       {/* Mode Control */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <label className="text-sm text-gray-600 font-medium">
+          <label htmlFor={modeSelectId} className="text-sm text-ink-muted font-medium">
             모드:
           </label>
           <select
+            id={modeSelectId}
             value={playbackMode}
             onChange={(e) => onModeChange(e.target.value as 'listen' | 'follow' | 'practice')}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-colors"
+            className="px-3 py-2 border border-rule-strong rounded-md text-sm bg-surface text-ink transition-colors"
             disabled={!isReady}
           >
             <option value="listen">🎵 듣기</option>
@@ -147,14 +200,28 @@ export default function PlaybackControls({
           </select>
         </div>
 
-        {/* Playback Status */}
-        <div className="text-sm text-gray-500">
+        {/*
+          문구는 이미 있었고 live region만 없었다. 재생·정지는 눈으로 보면 알지만 화면을 보지 않는
+          사용자에게는 아무 변화가 없었다.
+        */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-label="재생 상태"
+          className="text-sm text-ink-muted"
+        >
           {!isReady ? (
-            <span className="text-yellow-600">⏳ 로딩 중...</span>
+            <span className="text-state-progress">
+              <span aria-hidden="true">⏳ </span>로딩 중...
+            </span>
           ) : isPlaying ? (
-            <span className="text-green-600">▶️ 재생 중</span>
+            <span className="text-state-ready">
+              <span aria-hidden="true">▶️ </span>재생 중
+            </span>
           ) : (
-            <span className="text-gray-600">⏸️ 일시정지</span>
+            <span className="text-ink-muted">
+              <span aria-hidden="true">⏸️ </span>일시정지
+            </span>
           )}
         </div>
       </div>

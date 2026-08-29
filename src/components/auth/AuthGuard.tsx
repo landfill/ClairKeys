@@ -3,6 +3,8 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { currentReturnPath } from '@/lib/returnPath'
+import { LockIcon } from '@/components/ui'
 
 interface AuthGuardProps {
   children: React.ReactNode
@@ -22,17 +24,18 @@ export default function AuthGuard({
     if (status === 'loading') return // Still loading
 
     if (!session) {
-      const currentUrl = window.location.pathname + window.location.search
-      router.push(`${redirectTo}?callbackUrl=${encodeURIComponent(currentUrl)}`)
+      // `LoginButton`과 같은 규칙을 쓴다 (`src/lib/returnPath.ts`).
+      const returnTo = currentReturnPath()
+      router.push(`${redirectTo}?callbackUrl=${encodeURIComponent(returnTo)}`)
     }
   }, [session, status, router, redirectTo])
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-canvas">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">인증 확인 중...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto" />
+          <p className="mt-4 text-ink-muted">인증 확인 중...</p>
         </div>
       </div>
     )
@@ -40,15 +43,13 @@ export default function AuthGuard({
 
   if (!session) {
     return fallback || (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-canvas">
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 flex items-center justify-center text-4xl">
-            🔒
-          </div>
-          <h2 className="mt-4 text-xl font-semibold text-gray-900">
+          <LockIcon size={40} className="mx-auto text-ink-muted" />
+          <h2 className="mt-4 text-xl font-semibold text-ink">
             로그인이 필요합니다
           </h2>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-ink-muted">
             이 페이지에 접근하려면 로그인해주세요.
           </p>
         </div>

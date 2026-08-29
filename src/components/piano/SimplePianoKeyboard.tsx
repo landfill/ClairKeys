@@ -51,7 +51,7 @@ export default function SimplePianoKeyboard({
             {midi % 12 === 0 && (
               <span
                 aria-label={`C${Math.floor(midi / 12) - 1} octave marker`}
-                className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-slate-500"
+                className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-ink-muted"
                 style={{ fontSize: `${Math.max(7, 10 * decorationScale(pos.w, false))}px` }}
               >
                 C{Math.floor(midi / 12) - 1}

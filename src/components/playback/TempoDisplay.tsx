@@ -28,7 +28,7 @@ export default function TempoDisplay({
     >
       <span>{display.primary}</span>
       {display.secondary && (
-        <span className="ml-2 text-xs font-normal text-gray-500">{display.secondary}</span>
+        <span className="ml-2 text-xs font-normal text-ink-muted">{display.secondary}</span>
       )}
     </div>
   )
