@@ -2,6 +2,46 @@
 
 Last updated: 2026-08-29 KST
 
+## #76 DS-G1 IN_REVIEW — 처리 상태 출처 계약 확정, PR #88 열림
+
+사용자 지시로 DS-G1을 진행했다. UI 단계가 아니라 결정 gate이므로 **코드 변경 0건**이 완료 조건이고,
+산출물은 결정 문서다. PR [#88](https://github.com/landfill/ClairKeys/pull/88)이 열려 있고 병합 승인을
+받지 않았다. `DECISIONS.md` 신규 항목은 직접 커밋 예외가 아니라 PR로 올렸다.
+
+**조사가 선택지를 지웠다.** `ProcessingJob`의 유일한 writer는 `/api/processing` POST와
+`/api/upload-async`인데 **둘 다 P1-A가 `CONVERSION_UNAVAILABLE`로 무력화한 경로다**(D-010). 그
+테이블에 지금 쓸 수 있는 유일한 내용은 즉시 실패한 죽은 경로의 작업이므로, 상태 출처는
+`SheetMusic`뿐이다.
+
+조사에서 확인된 다른 사실(전부 코드 근거, DS-G1 문서에 파일·행 표로 있다):
+
+- `processingStatus` 쓰기가 전부 `omrJobId`로 행을 찾으므로 **`omrJobId` 없는 legacy 행은 스키마
+  default `'pending'`에 영원히 머문다.** 재생 가능한데도 원값을 그리면 "처리 중"이 된다.
+- **`omrJobId`를 클라이언트에 돌려주는 API가 없다.** 업로드 화면을 떠나면 폴링을 재개할 수 없다.
+- `/api/sheet`(목록)도 `/api/sheet/[id]`(상세)도 `processingStatus`를 반환하지 않는다.
+- 행 생성 시 `animationDataUrl`은 `''`이고 완료 시에만 채워진다.
+
+**결정 = [D-026](DECISIONS.md)**
+
+| ID | 결정 |
+|---|---|
+| G1-1 | 상태 출처는 `SheetMusic`. 화면은 원값이 아니라 **파생 상태**(연습 가능 / 처리 중 / 오류 / 알 수 없음)를 읽는다. 1차 기준 `animationDataUrl !== ''` |
+| G1-2 | 4단계는 **업로드 화면에서만**. `progress` 0/10/30/60/100 매핑. 떠나면 단계 없음 |
+| G1-3 | 별도 알림 시스템 없음. 업로드 인라인 + 내 악보 배지 |
+| G1-4 | **`/processing` 화면과 `처리 상태` 메뉴 제거.** 내비게이션 3개 확정 |
+| G1-5 | 실패 4종: 파일 거부 / 변환 실패 / 작업 유실 / 서비스 불가 |
+
+**DS-1이 풀렸다.** 진입 조건 3(내비게이션 구성)이 G1-4로 확정됐다. 대체 도달 경로(내 악보 배지)는
+DS-4가 만들므로 DS-1~DS-4 사이에 공백이 생기지만, 현재도 `/processing`은 빈 화면이라 잃는 정보가
+없다 — 이 공백이 의도된 것임을 DS-1의 검증 기록에 명시한다.
+`/api/processing`·`useBackgroundProcessing`·`ProcessingDashboard`의 **삭제는 P2-A 소유**다.
+
+**확인하지 못한 것**: 운영 데이터의 `processingStatus` 분포. 이 저장소의 Supabase 프로젝트
+(`ghgiqtinaxjsuotfzmcw`)가 사용 가능한 MCP 계정에 없다. `'pending'` + 빈 `animationDataUrl` 행의
+건수를 **DS-4 착수 전 확인 항목**으로 남겼다.
+
+**다음 행동**: PR #88 병합 승인 후 **DS-1** 착수.
+
 ## #76 2차 검토 반영 — DS-G1 → DS-1 직렬화, 완료 조건의 측정 가능성 교정
 
 사용자 2차 검토에서 "실행 가능한 수준이지만 네 가지를 정리하는 편이 좋다"는 지적을 받아 전부
