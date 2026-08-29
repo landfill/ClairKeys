@@ -1,7 +1,7 @@
 # Validation — DS-4/my-library
 
 Date: 2026-08-30
-Commit: `317d6b0` (branch `codex/ds-4-my-library`, PR [#92](https://github.com/landfill/ClairKeys/pull/92))
+Commit: `fc27178` (branch `codex/ds-4-my-library`, PR [#92](https://github.com/landfill/ClairKeys/pull/92))
 Environment: macOS (darwin 25.5.0), Node v22.18.0
 
 ## Claim being verified
@@ -15,7 +15,7 @@ Environment: macOS (darwin 25.5.0), Node v22.18.0
 |---|---|
 | `npm run lint` | PASS — warnings 0 |
 | `npx tsc --noEmit` | PASS — output 0 |
-| `npm test -- --runInBand` | PASS — **75 suites / 759 tests** |
+| `npm test -- --runInBand` | PASS — **75 suites / 760 tests** |
 | `npm run test:e2e` | PARTIAL — Chromium + Mobile Chrome **10/10 pass**; Firefox, WebKit, Mobile Safari 15개는 로컬 브라우저 실행 파일 부재로 시작 불가 |
 | `npm run build` | PASS — 33 static pages, `/library` 6.18 kB |
 | `rg -n 'alert\\(' src/components/library` | PASS — output 0 |
@@ -28,7 +28,8 @@ Environment: macOS (darwin 25.5.0), Node v22.18.0
 - 목록과 상세 API 회귀는 `availability`를 포함하고 `processingStatus`와 `omrJobId`를 포함하지
   않는 것을 확인한다.
 - 라이브러리 회귀는 네 상태 배지, 연습 링크, 오류/알 수 없음의 재업로드 링크, 제목 편집 dialog,
-  빈 상태의 업로드 링크를 확인한다.
+  빈 상태의 업로드 링크를 확인한다. 공백만 든 제목은 모달 내부 오류가 나타나고 API update를 호출하지
+  않는 회귀도 포함한다.
 
 ## Not run / known limits
 
