@@ -1,6 +1,6 @@
 # DS-3 — 업로드와 처리 상태
 
-Status: `NOT_STARTED`
+Status: `IN_REVIEW` — PR [#91](https://github.com/landfill/ClairKeys/pull/91), 병합 승인 대기
 Depends on: DS-1 (DS-1이 이미 **DS-G1**을 선행 조건으로 갖는다 — 처리 상태 출처 계약은 확정된 상태다)
 Blocks: DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 3단계
