@@ -11,9 +11,9 @@ Last updated: 2026-08-29 KST
 DS-0, DS-G1, DS-1, DS-2, **DS-3이 `DONE`**이고 **DS-4는 `IN_REVIEW`**, DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
 완료 조건 8개는 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 
-**Next action**: PR [#92](https://github.com/landfill/ClairKeys/pull/92)의 수정 head `fc27178` CI를
-확인하고, 두 CodeRabbit thread를 해결 처리한 뒤 세 리뷰 표면을 재확인한다. 사용자 병합 승인은 없다.
-DS-4는 D-026 결정 2·3의 **파생 상태 4종**(연습 가능 /
+**Next action**: PR [#92](https://github.com/landfill/ClairKeys/pull/92)은 head `fc27178`에서 CI 전부
+성공, `CLEAN`, 미해결 review thread 0건이다. **사용자의 명시적 병합 승인**을 기다린다. DS-4는
+D-026 결정 2·3의 **파생 상태 4종**(연습 가능 /
 처리 중 / 오류 / 알 수 없음)만 읽고, 단계 표시는 이 화면의 것이 아니다 (D-026 G1-2).
 
 **착수 전 선행 확인 완료**: 2026-08-29 KST 운영 DB 분포는 `processing` 2건,
