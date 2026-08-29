@@ -15,9 +15,10 @@ DS-0, DS-G1, DS-1, DS-2, **DS-3이 `DONE`**이고 DS-4~DS-7이 `NOT_STARTED`다.
 조건을 갖고 있고, 읽을 계약은 D-026 결정 2·3의 **파생 상태 4종**(연습 가능 / 처리 중 / 오류 /
 알 수 없음)이다. 단계 표시는 이 화면의 것이 아니다 (D-026 G1-2).
 
-**착수 전 선행 하나**: 운영 DB의 `processingStatus` 분포를 확인해야 한다 — `'pending'` + 빈
-`animationDataUrl` 행이 몇 건인지. 그 행들이 `알 수 없음`으로 분류되므로, 실제로 몇 명에게 보이는
-문제인지 모르면 그 상태의 문구를 정할 수 없다. 이 저장소의 Supabase 접근 권한이 없어 미확인이다.
+**착수 전 선행 확인 완료**: 2026-08-29 KST 운영 DB 분포는 `processing` 2건,
+`completed` 2건이다. 총 4건으로 확인됐고 `'pending'` + 빈 `animationDataUrl` 행은 0건이다.
+따라서 현재 운영 사용자에게 `알 수 없음` 상태가 보이지 않으며, DS-4는 그 상태를 미래/legacy
+데이터를 위한 계약으로 구현한다.
 
 DS-4·DS-5는 서로 독립이라 병렬로 열 수 있다.
 
@@ -68,7 +69,6 @@ DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항
 | DS0-2 잔여 | `/api/processing`·`/api/notifications`·`useBackgroundProcessing`·`ProcessingDashboard` 삭제. DS-1은 도달 경로만 없앴다 | P2-A |
 | — | `BackgroundFileUpload`의 `/processing` 링크 2곳 | P2-A |
 | DS-5 선행 | 구간 반복(DS0-9)과 이모지 교체는 **D-019 결정 8과 부딪힌다.** 착수 시 그 결정을 먼저 다룬다 | DS-5 |
-| DS-4 선행 | 운영 DB의 `processingStatus` 분포를 확인해야 한다(`'pending'` + 빈 `animationDataUrl` 건수). 이 저장소의 Supabase 프로젝트에 접근 권한이 없어 미확인 | DS-4 |
 | **DS3-1** | **업로드 한도 50MB가 Vercel Function 요청 본문 한도 4.5MB와 충돌한다.** 5MB PDF는 화면의 모든 검사를 통과하고 413으로 거부되며, 그 413이 "서비스 불가 → 잠시 후 재시도"로 분류돼 **성공할 수 없는 재시도**를 권한다. 홈(DS-2)과 업로드(DS-3) 모두 "최대 50MB"를 말한다. 한도를 낮추든 업로드 경로를 바꾸든 **제품 결정**이라 D-026·phase 문서 갱신이 선행한다 | **결정 필요, GitHub 이슈 미등록** |
 
 한 번도 실행하지 않은 검증: 초보자 관찰 테스트(완료 조건 1), 수동 접근성 검사(키보드 순회·포커스
