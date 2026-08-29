@@ -138,6 +138,13 @@ export async function GET(
           jobId,
           sheetMusicId: sheetMusic.id,
           status: 'failed',
+          // The screen has to tell a lost job apart from a score the converter
+          // could not read: they are different failures with different recovery
+          // actions (D-026 G1-5). The only other discriminator available is this
+          // Korean sentence, and matching on prose across the network boundary
+          // is a contract nothing enforces. Every failing branch in the upload
+          // route already names itself this way.
+          code: 'OMR_JOB_LOST',
           progress: 0,
           message: '변환 작업을 찾을 수 없습니다.',
           error: '변환 서비스가 재시작되어 진행 중이던 작업이 사라졌습니다. 다시 업로드해 주세요.',

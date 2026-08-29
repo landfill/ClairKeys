@@ -99,17 +99,6 @@ if (typeof navigator !== 'undefined') {
     configurable: true
   })
 }
-// Mock File API
-global.File = class File {
-  constructor(chunks, filename, options) {
-    this.chunks = chunks
-    this.name = filename
-    this.type = options?.type || ''
-    this.size = chunks?.reduce((acc, chunk) => acc + chunk.length, 0) || 0
-    this.lastModified = Date.now()
-  }
-}
-
 // Mock crypto for UUID generation
 Object.defineProperty(global, 'crypto', {
   value: {

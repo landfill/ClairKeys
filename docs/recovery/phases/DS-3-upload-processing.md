@@ -46,7 +46,9 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 3단계
 
 - 내 악보 목록의 상태 표시 (DS-4). 같은 계약을 읽지만 화면이 다르다
 - 완료 알림과 전역 진입점 (DS-7)
-- OMR 서비스·백엔드 변경. 이 단계는 UI다
+- OMR 서비스·백엔드 변경. 이 단계는 UI다. **예외 하나**: `/api/omr/status/[jobId]`의 404 분기에
+  실패 종류를 가를 `code`를 더한다 (D-028). 그 응답과 변환 실패 응답이 구분되지 않으면 실패 4종
+  계약을 화면에서 지킬 수 없다. 저장 동작과 HTTP 상태는 그대로다
 - 저해상도 PDF 인식 실패의 근본 해결 (이슈 #46). 사용자 대면 문구만 다룬다
 
 ## 변경 대상
@@ -56,6 +58,9 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 3단계
 | `src/app/upload/page.tsx` | 상태 분리, 안내 배치 |
 | `src/components/upload/OMRUploadForm.tsx` | 드롭존, 검증 상태, 제출 전 안내, 버튼 문구(`OMR` 용어 제거) |
 | `src/components/upload/OMRProcessingStatus.tsx` | 단계 표현, 이탈 안내, 이동 링크 |
+| `src/lib/upload/` (신규) | 단계 매핑·실패 문구·PDF 검사를 화면에서 분리한 계약 모듈 |
+| `src/app/api/omr/status/[jobId]/route.ts` | 404 분기에 `code: 'OMR_JOB_LOST'` 추가 (D-028) |
+| `jest.setup.js` | `slice`·`arrayBuffer`가 없는 `File` 대역 제거 — 바이트를 읽는 검사를 테스트할 수 없었다 |
 (`/processing`은 DS-1이 이미 제거했다 — D-026 G1-4. 이 단계는 그것을 되살리지 않는다.)
 
 ## 회귀 기준
