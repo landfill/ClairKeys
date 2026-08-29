@@ -72,7 +72,13 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-/* 포커스는 어느 화면에서나 같은 모양이다. 개별 컴포넌트가 다시 정의하지 않는다. */
+/*
+   포커스는 어느 화면에서나 같은 모양이다. 개별 컴포넌트가 다시 정의하지 않는다.
+
+   특히 `outline: none`을 어디에도 두지 않는다. `.playback-controls .slider:focus`가 그렇게 하고
+   있었는데, specificity가 이 규칙보다 높아 재생 슬라이더는 키보드로 포커스해도 아무 표시가 없었다.
+   `:focus`는 마우스 클릭에도 걸리므로, 링을 원하지 않는 상황이 있으면 `:focus-visible`로 좁힌다.
+*/
 :focus-visible {
   outline: 2px solid var(--ck-accent);
   outline-offset: 2px;
@@ -108,10 +114,6 @@ body.playback-rotated {
   cursor: pointer;
   border: 2px solid var(--ck-surface);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.playback-controls .slider:focus {
-  outline: none;
 }
 
 .playback-controls .slider::-webkit-slider-track {
@@ -168,12 +170,6 @@ body.playback-rotated {
 .category-item {
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(168, 69, 42, 0.1);
-}
-
-/* Focus styles for accessibility */
-.category-item:focus {
-  outline: 2px solid var(--ck-accent);
-  outline-offset: 2px;
 }
 
 /* 이전 사이드바 관련 CSS 제거됨 */

@@ -10,7 +10,7 @@
  */
 import type { SVGProps } from 'react'
 
-interface IconProps extends SVGProps<SVGSVGElement> {
+export interface IconProps extends SVGProps<SVGSVGElement> {
   /** 아이콘이 유일한 레이블일 때만 넘긴다. 넘기면 `img` role과 접근 가능한 이름이 생긴다. */
   title?: string
   size?: number
