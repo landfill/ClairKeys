@@ -66,18 +66,35 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 0단계
 | 완료 알림 | **실사용 경로에 없다.** 아래 "처리 상태 단절" 참조 | `src/app/api/omr/upload/route.ts` |
 | 내 악보의 처리 중·오류 | **표시하지 않는다.** 목록이 `processingStatus`를 렌더하지 않음 | `src/components/library/LibrarySheetMusicList.tsx` |
 
-### 인증 경계 — 로그인 전 체험을 막는 것은 두 겹이다
+### 인증 경계 — 막는 것은 화면이지 데이터가 아니다
 
-완료 조건 "로그인 전 실제 학습 결과를 최소 한 번 체험할 수 있다"는 현재 **두 지점**에서 막힌다.
-DS-2에서 한쪽만 풀면 화면은 열리고 데이터는 401이 된다.
+완료 조건 "로그인 전 실제 학습 결과를 최소 한 번 체험할 수 있다"의 실제 장애물은 **화면 한 겹뿐**이다.
+운영 확인(2026-08-29)으로 데이터는 이미 열려 있음이 확인됐다.
 
-1. `src/app/sheet/[id]/page.tsx:139,153,174` — 페이지 전체가 `AuthGuard`로 감싸여 있다. 로딩·오류·정상
-   렌더 세 분기 모두 동일하다.
-2. `src/app/api/files/animation/route.ts:88-95` — GET이 세션 없으면 401을 먼저 반환한다.
-   소유·공개 판별(`:110-118`)은 그 뒤에 온다.
+1. **막는 것**: `src/app/sheet/[id]/page.tsx:139,153,174` — 페이지 전체가 `AuthGuard`로 감싸여
+   있다. 로딩·오류·정상 렌더 세 분기 모두 동일하다.
+2. **막지 못하는 것**: `src/app/api/files/animation/route.ts:88-95`의 GET은 세션 없으면 401이지만
+   (`curl` 확인), 같은 데이터를 **우회해서 받을 수 있다.** `GET /api/sheet/[id]`
+   (`:53-58`)는 공개 악보를 세션 없이 허용하면서 응답 본문에 `animationDataUrl`을 그대로 담고,
+   그 URL은 Supabase **public** 버킷이라 익명으로 200을 준다.
 
-`src/app/api/sheet/[id]/route.ts:53-58`의 GET은 이미 공개 악보를 세션 없이 허용한다. 즉 메타데이터는
-열려 있고 애니메이션 데이터만 닫혀 있다.
+운영 확인:
+
+```
+curl -s https://clairkeys.vercel.app/api/sheet/28
+  -> 200, provenance=omr, animationDataUrl=.../storage/v1/object/public/animation-data/...
+curl -sI <그 URL>  -> 200 application/json
+curl -s https://clairkeys.vercel.app/api/files/animation?sheetMusicId=2
+  -> 401 {"error":"Unauthorized"}
+```
+
+**DS-2에 대한 함의**: 로그인 전 체험은 API 인증을 바꾸지 않고 구현할 수 있다. 페이지의 `AuthGuard`를
+풀고, 클라이언트가 `/api/files/animation` 대신 `/api/sheet/[id]`의 `animationDataUrl`을 쓰게 하면 된다.
+
+**별도로 확인된 접근 제어 간극** (DS 범위 밖, 이슈로 분리): 비공개 악보(`isPublic: false`)의 객체도
+같은 public 버킷에 있다. `GET /api/sheet/29`는 익명에게 `{"error":"Access denied"}`를 주지만,
+소유자로 얻은 URL을 자격증명 없이 요청하면 **200으로 78,518바이트가 내려온다.** 즉 비공개 악보의
+보호는 URL 은닉뿐이다.
 
 ### 처리 상태 단절 — `/processing`은 실제 업로드를 보지 않는다
 
@@ -98,6 +115,30 @@ Header의 `처리 상태` 메뉴는 `/processing` → `ProcessingDashboard` →
 존재하지만 canonical 경로가 채우지 않는다. 이슈 #76 3단계의 4개 처리 단계 문구를 이 enum에
 기대어 쓰면 안 된다.
 
+## 운영 화면 확인 (2026-08-29, 1440×900 데스크톱, 로그인 상태)
+
+코드 판정을 https://clairkeys.vercel.app 에서 대조했다. 어긋난 항목은 위 표에 반영했다.
+
+| 화면 | 확인된 것 |
+|---|---|
+| `/` | 히어로가 정적 건반. CTA `시작하기` / `공개 악보 탐색`. 코드와 일치 |
+| `/library` | 악보 5건. **처리 상태·오류 표시 없음**(연주·이동·삭제 3버튼뿐). 제목이 파일명(`Princess_Mononoke_`, `bach-wtk1-prelude1`, `Complete Score` ×2), 저작자에 `조`·`ㄴㅁㄹㄹㄴ`·`쇼핑` 같은 값이 그대로 노출 |
+| `/processing` | **`처리 작업 (0)` / `알림 (0)`.** 같은 계정에 악보 5건이 있는데도 비어 있다 — 코드 판정(단절)이 운영에서 확인됐다 |
+| `/upload` | 드롭존, 곡명, 저작자, **빠르기(BPM) 선택 입력**(이슈 #82), 카테고리, 공개 설정, `OMR 처리 시작`. **예상 처리 시간·백그라운드 처리 안내·예시 악보가 없다.** 버튼 문구에 `OMR` 기술 용어가 그대로 있다 |
+| `/explore` | 카드 제목이 파일명이라 넘침(`Princess_Mononoke_Ashitaka_and_San_print_30…`). `악보 미리보기`는 실제 미리보기가 아닌 플레이스홀더. 섹션 제목에 이모지(🌟·🔥) |
+| `/sheet/2` | `♩=120 (출처 미상)` 표시 확인(#82). 건반 C2–C7 라벨 확인(D-017 결정 4). 1차 컨트롤은 재생·일시정지·정지·속도·모드·음량 — **구간 반복 없음** |
+
+프로덕션 라우트 응답 코드 (익명, `curl`):
+
+```
+/demo-animation /demo-category /demo-playback /demo-practice      200
+/test-piano /test-finger /test-background-processing              200
+/admin/update-finger-data                                          200
+/processing                                                        200  (AuthGuard가 클라이언트에서 리다이렉트)
+```
+
+즉 데모·테스트·관리자 라우트 8개가 UI 유입 링크 0인 채 프로덕션에서 열려 있다.
+
 ## 기능 지원표
 
 | 기능 | 상태 | 근거 |
@@ -113,12 +154,12 @@ Header의 `처리 상태` 메뉴는 `/processing` → `ProcessingDashboard` →
 | 공개 악보 탐색·검색 | 지원 | `/explore` |
 | 로그인 후 원래 행동 복귀 | 부분 지원 | AuthGuard만. Header 로그인 버튼은 `callbackUrl='/'` 고정 |
 | 처리 진행 표시 | 부분 지원 | 업로드 화면에 머무는 동안만(`OMRProcessingStatus`). 이탈하면 추적 화면 없음 |
-| 구간 반복 | 미확인 | DS-5에서 `PlaybackControls` 실제 노출 여부를 확인한다 |
-| 로그인 전 학습 결과 체험 | 미지원 | AuthGuard + `/api/files/animation` 401 |
+| 구간 반복 | 미지원 | `PlaybackControls`에 loop 관련 코드가 없고 `FallingNotesPlayer`도 참조하지 않는다. 운영 재생 화면에도 없다 |
+| 로그인 전 학습 결과 체험 | 미지원 | 화면의 `AuthGuard`. 데이터는 이미 익명 접근 가능 (위 "인증 경계") |
 | 처리 상태 전용 화면 | 미지원 | `/processing`이 canonical 경로와 단절 |
 | 변환 완료 알림 | 미지원 | `ProcessingNotification`이 canonical 경로에서 생성되지 않음 |
 | 내 악보의 처리 중·오류 상태 | 미지원 | 목록이 `processingStatus`를 렌더하지 않음 |
-| 곡 제목 편집 | 미확인 | DS-4에서 `PATCH /api/sheet/[id]`(`:95`) 대비 UI 존재 여부 확인 |
+| 곡 제목 편집 | 미지원 (운영 기준) | `PATCH /api/sheet/[id]`와 `SheetMusicActions`의 `onEdit`은 있으나, `/library`가 쓰는 `LibrarySheetMusicList`에는 연주·이동·삭제뿐이다 |
 | 마지막 연습 위치 이어하기 | 미지원 | `PracticeSession`은 있으나 재생 위치 복원 경로 없음 |
 | 디자인 토큰 | 미지원 | `globals.css`는 `--background`/`--foreground` 2개뿐 (Tailwind v4) |
 | 다크 모드 | 부분 지원 | `prefers-color-scheme`가 body 색만 바꾼다. 화면은 `bg-white`·`text-gray-*` 하드코딩 |
@@ -199,5 +240,9 @@ DS-1~DS-7은 아래를 **시각 개편의 부수효과로 바꾸지 않는다.**
 
 - 2026-08-29 — Work stages 1~3을 `f184f28` 기준으로 완료했다. 근거는
   `docs/recovery/validation/2026-08-29-ds0-code-inventory.md`.
-  Work stage 4(운영 화면 캡처)는 로그인 후 화면에 사용자 계정 세션이 필요해 아직 수행하지 않았다.
-  Work stage 5는 4에 의존한다.
+- 2026-08-29 — Work stage 4 완료. 사용자의 로그인된 Chrome 세션으로 운영
+  https://clairkeys.vercel.app 의 홈·내 악보·처리 상태·업로드·탐색·플레이어를 1440×900에서 확인했다.
+  코드 판정 대부분이 확인됐고 **한 건이 뒤집혔다** — 로그인 전 체험을 막는 것은 화면 한 겹이며
+  애니메이션 데이터는 이미 익명 접근이 가능하다. `미확인`이던 구간 반복·곡 제목 편집도
+  `미지원`으로 확정했다. 근거는 `docs/recovery/validation/2026-08-29-ds0-production-walkthrough.md`.
+  Work stage 5(발견 결함의 이슈 등록)는 사용자 확인 대기 중이다.

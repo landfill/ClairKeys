@@ -4,6 +4,11 @@ Date: 2026-08-29
 Commit: `f184f28ac3123e7be4d24674e92a80659f7e9a47`
 Environment: macOS (Darwin 25.5.0), 저장소 정적 분석. 앱·DB·OMR 서비스를 실행하지 않았다.
 
+> **정정 (2026-08-29, 같은 날 운영 확인)**: 아래 "로그인 전 학습 결과 1회 체험" 판정의 *이유*가
+> 틀렸다. `/api/files/animation`의 401은 사실이지만 우회 경로가 있어, 실제로 막는 것은 화면의
+> `AuthGuard` 한 겹뿐이다. 근거는 `2026-08-29-ds0-production-walkthrough.md`.
+> `미확인`이던 구간 반복·곡 제목 편집도 그 문서에서 `미지원`으로 확정됐다.
+
 ## Claim being verified
 
 `docs/recovery/phases/DS-0-current-state-baseline.md`의 화면 인벤토리·여정 대조·기능 지원표가
