@@ -1,5 +1,6 @@
 import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
+import { isProtectedPath } from '@/lib/routeAccess'
 
 export default withAuth(
   function middleware() {
@@ -9,16 +10,8 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Define protected routes
-        // `/admin`은 API가 이미 ADMIN_EMAILS로 막고 있지만 화면 자체는 익명에게 열려 있었다.
-        // 도구를 없애는 대신 인증 뒤로 옮긴다 (DS0-3).
-        const protectedPaths = ['/library', '/upload', '/profile', '/admin']
-        const isProtectedPath = protectedPaths.some(path => 
-          req.nextUrl.pathname.startsWith(path)
-        )
-
         // Allow access to non-protected routes
-        if (!isProtectedPath) {
+        if (!isProtectedPath(req.nextUrl.pathname)) {
           return true
         }
 
