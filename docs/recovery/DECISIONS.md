@@ -941,3 +941,52 @@
 - Directive:
   - 이 결정을 장시간 백그라운드 처리나 자동 상태 변경의 live announcement 생략 근거로 넓히지 않는다.
 - Related: D-026, DS-4, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)
+
+## D-030: 이슈 #76에서 WCAG AA 요건을 제거한다
+
+- Date: 2026-08-30
+- Status: Accepted
+- Replaces: `docs/recovery/ROADMAP.md` 이슈 #76 완료 조건 7과 "조건 7의 판정 기준" 절
+- Narrows: DS-1·DS-2·DS-3·DS-4·DS-5·DS-6·DS-7의 "접근성·반응형 검증" 절
+- Context:
+  - 완료 조건 7은 전 화면 WCAG AA 위반 0건을 자동(axe)과 수동(키보드 순회·포커스 가시성·200%
+    확대·명도 대비) 양쪽에서 요구했고, DS-1이 기반을, DS-7이 종단을 판정하는 유일한 2단계
+    소유 조건이었다.
+  - 자동 검사는 `pr-checks.yml`의 `accessibility-check` job이 홈 한 화면에만 `@axe-core/cli`를
+    실행했다. `/upload`·`/library`·`/sheet/[id]`는 인증 뒤라 검사 범위 밖이었고, 수동 검사는
+    DS-0부터 한 번도 실행된 적이 없다.
+  - 사용자는 2026-08-30에 WCAG 요건을 문서·CI·구현 계약 전 층에서 제거하도록 명시했다.
+    선택 시점에 스크린리더·키보드 사용자에게 실제 기능 저하가 발생한다는 점을 함께 확인했다.
+- Decision:
+  1. 이슈 #76의 완료 조건에서 WCAG AA 항목을 제거한다. 완료 조건은 8개에서 7개가 되고,
+     기존 조건 8(종단 완주)이 조건 7이 된다.
+  2. 각 phase 문서의 "접근성·반응형 검증"에서 접근성 항목을 제거하고, 반응형 항목만 "반응형 검증"
+     으로 남긴다.
+  3. `accessibility-check` CI job과 그 job을 고정하던 `prChecksWorkflow.test.ts`의 검사 3건을
+     제거한다. 둘은 한 묶음이다 — job만 지우면 워크플로 YAML을 문자열로 파싱하는 그 테스트가
+     `undefined`로 터진다.
+  4. `PlaybackControls`의 슬라이더 ARIA 시맨틱·버튼 `aria-label`·재생 상태 live region,
+     `icons.tsx`의 `role`/`aria-hidden`, `OptimizedImage`의 로딩 `aria-label`을 제거하고
+     `playbackControlsA11y.test.tsx`와 `globalStyles.test.ts`의 포커스 계약 가드를 삭제한다.
+- Reason: 사용자의 제품 결정이다. 유지 근거가 아니라 지시가 판단의 출처이므로, 코드보다 결정과
+  계획 문서를 먼저 고쳐 다음 세션이 "문서와 코드 중 뭐가 맞나"를 묻지 않게 한다.
+- Rejected:
+  - 계획 문서에서만 제거하고 CI axe와 구현 계약은 유지한다 | 요건 없이 게이트만 남아 무엇을
+    근거로 통과·실패를 판정하는지가 사라진다. 사용자가 전 층 제거를 선택했다.
+  - `PlaybackControls`의 `tabIndex`·`onKeyDown`까지 제거한다 | 그것은 요건이 아니라 동작하는
+    기능이다. 요건 제거가 기능 삭제를 뜻하지 않는다.
+  - D-027·D-029를 함께 폐기한다 | 두 결정은 각각 DS-1 구조 고정과 DS-4 live announcement 범위를
+    다루며, 그 결론은 이 결정과 독립적으로 유효하다.
+- Consequence:
+  - DS-7은 종단 접근성 판정을 잃고 상태 통일과 종단 완주만 판정한다. 이월 항목 DS4-2(`/library`
+    반응형 근거 부재)의 담당이 사라지므로 반응형 항목으로만 남는다.
+  - PR마다 돌던 홈 axe 검사가 사라진다. `main` branch protection의 required check는
+    Lint·Security Audit·Run Tests·E2E Tests 4개이고 "Accessibility Check"는 포함되지 않았으므로,
+    PR 머지가 막히지는 않는다.
+  - 재생 컨트롤이 스크린리더에 이름·값·상태를 알리지 않는다. 키보드 조작 자체는 유지된다.
+- Directive:
+  - 이 결정을 "접근성 개선을 금지한다"로 읽지 않는다. 요건과 게이트를 제거한 것이고, 개별 개선은
+    여전히 각 단계의 판단이다.
+  - `e2e/application-smoke.spec.ts`의 확대 허용 검사와 DS-0의 회귀 계약은 이 결정의 대상이 아니다.
+    DS-0 "접근성·회귀 테스트" 절은 기하·전환 계약을 함께 고정하므로 유지한다.
+- Related: D-024, D-027, D-029, DS-1, DS-7, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)
