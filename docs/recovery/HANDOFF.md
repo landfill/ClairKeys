@@ -46,6 +46,16 @@ firefox·webkit은 로컬에 바이너리가 없어 CI가 실행한다.
 `text-blue-600`으로 남아 있는데, `src/app/page.tsx`는 DS-2 소유이고 E2E 스모크가 그 문구를 고정하므로
 DS-1이 건드리지 않았다. DS-2가 홈을 다시 만들 때 토큰으로 바뀐다.
 
+**리뷰 대응 (`d9c1c92`)**: CodeRabbit이 `startsWith('/admin')`은 `/administrator`·`/admin-tools`도
+보호 경로로 잡는다고 지적했다. 수용해 세그먼트 경계 판정으로 바꿨고, `/library`·`/upload`·
+`/profile`에도 같은 문제가 있어 목록 전체에 적용했다. 판정 로직을 `src/lib/routeAccess.ts`로 분리한
+이유는 `middleware.ts`를 임포트하면 테스트가 `next/server`를 끌고 와 edge 런타임의 `Request`를 찾다가
+죽기 때문이다. 회귀 13건 추가, 전체 **64 suites / 616 tests** 통과. 스레드는 답변 후 resolve했다.
+이 결함은 fail-closed(과보호) 방향이라 보안 구멍은 아니었다.
+
+PR CI는 전부 통과했다 — 코드 변경 PR이라 문서 PR에서 건너뛰던 Build Check·**Accessibility
+Check**·CodeQL·Security Scan·Unit Tests까지 실행됐다.
+
 **P2-A로 넘어가는 잔여**: `BackgroundFileUpload`의 `/processing` 링크 2곳,
 `/api/processing`·`/api/notifications`·`useBackgroundProcessing`·`ProcessingDashboard`의 삭제.
 이 PR은 사용자 도달 경로만 없앴다.
