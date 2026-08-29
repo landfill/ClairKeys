@@ -15,18 +15,32 @@ describe('Button Component', () => {
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
 
+  // DS-1이 팔레트를 토큰으로 옮겼다. 단언 대상은 색 이름에서 토큰 이름으로 바뀌었지만, 이 테스트가
+  // 지키는 것은 그대로다 — variant마다 서로 다른 표면·텍스트 조합이 실제로 적용되는지.
   test('applies variant styles correctly', () => {
-    const { rerender } = render(<Button variant="outline">Outline Button</Button>)
-    let button = screen.getByText('Outline Button')
-    expect(button).toHaveClass('border-gray-300', 'text-gray-700')
+    const { rerender } = render(<Button variant="primary">Primary Button</Button>)
+    let button = screen.getByText('Primary Button')
+    expect(button).toHaveClass('bg-accent', 'text-on-accent')
+
+    rerender(<Button variant="outline">Outline Button</Button>)
+    button = screen.getByText('Outline Button')
+    expect(button).toHaveClass('border-rule-strong', 'text-ink')
 
     rerender(<Button variant="secondary">Secondary Button</Button>)
     button = screen.getByText('Secondary Button')
-    expect(button).toHaveClass('bg-gray-600', 'text-white')
+    expect(button).toHaveClass('bg-surface-muted', 'text-ink')
 
     rerender(<Button variant="danger">Danger Button</Button>)
     button = screen.getByText('Danger Button')
-    expect(button).toHaveClass('bg-red-600', 'text-white')
+    expect(button).toHaveClass('bg-state-error', 'text-on-accent')
+  })
+
+  // 포커스 링은 globals.css의 전역 :focus-visible이 담당한다. 컴포넌트가 다시 정의하면 화면마다
+  // 포커스가 달라 보인다.
+  test('does not define its own focus ring', () => {
+    render(<Button>Focus Button</Button>)
+    const button = screen.getByText('Focus Button')
+    expect(button.className).not.toMatch(/focus:ring/)
   })
 
   test('applies size styles correctly', () => {

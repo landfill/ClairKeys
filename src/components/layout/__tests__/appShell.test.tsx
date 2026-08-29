@@ -23,7 +23,29 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
 }))
 
+/**
+ * `©`·`®`·`™`는 Extended_Pictographic이지만 이모지가 아니라 활자다. 이슈 #76이 없애라는 것은
+ * 그림 문자이므로 이 셋은 먼저 걷어내고 본다.
+ */
+const EMOJI = /\p{Extended_Pictographic}/u
+const stripTypographicMarks = (text: string) => text.replace(/[©®™]/g, '')
+
 const mockUseSession = useSession as jest.MockedFunction<typeof useSession>
+
+/**
+ * 로그인 상태의 Header는 `UserProfile`을 렌더하고, 그 컴포넌트가 effect에서 `/api/auth/is-admin`을
+ * 부른다. jsdom에는 `fetch`가 없어 셸과 무관한 이유로 렌더가 죽는다.
+ */
+beforeEach(() => {
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    json: async () => ({ isAdmin: false }),
+  }) as unknown as typeof fetch
+})
+
+afterEach(() => {
+  jest.restoreAllMocks()
+})
 
 const signedOut = { data: null, status: 'unauthenticated' as const, update: jest.fn() }
 const signedIn = {
@@ -78,7 +100,7 @@ describe('Header — 내비게이션 구성 (D-026 G1-4)', () => {
     const { container } = render(<Header />)
 
     // 이슈 #76: 이모지를 제거하고 일관된 선형 아이콘을 쓴다.
-    expect(container.textContent ?? '').not.toMatch(/\p{Extended_Pictographic}/u)
+    expect(stripTypographicMarks(container.textContent ?? '')).not.toMatch(EMOJI)
   })
 })
 
@@ -103,6 +125,6 @@ describe('Footer', () => {
 
   it('carries no emoji', () => {
     const { container } = render(<Footer />)
-    expect(container.textContent ?? '').not.toMatch(/\p{Extended_Pictographic}/u)
+    expect(stripTypographicMarks(container.textContent ?? '')).not.toMatch(EMOJI)
   })
 })

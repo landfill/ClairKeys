@@ -6,6 +6,7 @@ interface ContainerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
 }
 
+/** 최대 폭만 정한다. 색과 세로 여백은 쓰는 쪽이 토큰으로 정한다. */
 const sizeClasses = {
   sm: 'max-w-2xl',
   md: 'max-w-4xl', 
