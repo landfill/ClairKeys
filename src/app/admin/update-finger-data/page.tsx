@@ -304,16 +304,6 @@ export default function UpdateFingerDataPage() {
                 📄 Für Elise (Ludwig van Beethoven)
               </a>
             </div>
-            <div>
-              <a
-                href="/test-finger"
-                className="text-green-600 hover:text-green-800 underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                🧪 손가락 시각화 테스트 페이지
-              </a>
-            </div>
           </div>
         </div>
       </div>

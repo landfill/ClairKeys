@@ -16,14 +16,18 @@ export default function Header() {
   const { data: session, status } = useSession()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  // 내비게이션 구성 축소는 도달 경로 변경(B)이라 다음 커밋에서 한다. 이 커밋은 표현만 바꾼다.
+  /**
+   * `내 악보`·`새 악보`·`탐색` 세 개다 (D-026 G1-4). 홈은 워드마크가 맡는다.
+   *
+   * `처리 상태`가 빠진 이유는 화면을 정리해서가 아니다. 그 화면은 `ProcessingJob`을 읽는데
+   * canonical 업로드 경로가 그 테이블에 한 행도 쓰지 않아, 악보를 가진 계정에서도 비어 있었다.
+   * 대체 도달 경로는 내 악보의 상태 배지이며 DS-4가 만든다.
+   */
   const navItems = [
-    { href: '/', label: '홈' },
     ...(session
       ? [
           { href: '/library', label: '내 악보' },
-          { href: '/upload', label: '업로드' },
-          { href: '/processing', label: '처리 상태' },
+          { href: '/upload', label: '새 악보' },
         ]
       : []),
     { href: '/explore', label: '탐색' },
