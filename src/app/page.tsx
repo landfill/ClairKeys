@@ -1,90 +1,81 @@
-import Link from "next/link";
-import SimplePianoKeyboard from "@/components/piano/SimplePianoKeyboard";
-import { buildKeyLayout } from "@/utils/pianoLayout";
-import { Container } from "@/components/layout";
-import { Button, Card } from "@/components/ui";
+import Link from 'next/link'
+import { Container } from '@/components/layout'
+import { Button } from '@/components/ui'
+import HomeSamplePlayer from '@/components/home/HomeSamplePlayer'
 
+/**
+ * 로그인 전 방문자가 "내 PDF가 무엇이 되는지"를 첫 화면에서 보게 한다 (DS-2).
+ *
+ * 이전 홈은 정지한 건반 그림과 기능 카드 세 장이었다. 그것은 이 앱이 무엇을 하는지가 아니라 무엇을
+ * 가졌는지를 말한다. 히어로에는 실제로 움직이는 결과를 둔다.
+ */
 export default function Home() {
   return (
-    <div className="py-8">
-      {/* Hero Section */}
-      <section className="text-center py-16">
+    <div>
+      <section className="pt-14 pb-10">
         <Container>
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            <span className="text-blue-600">Clairkeys</span>로 시작하는<br />
-            스마트 피아노 학습
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            악보를 읽을 줄 몰라도 괜찮습니다. PDF 악보를 업로드하면 시각적인 피아노 애니메이션으로 변환하여 쉽게 피아노를 배울 수 있습니다.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/upload">
-              <Button size="lg" className="w-full sm:w-auto">
-                시작하기
-              </Button>
-            </Link>
-            <Link href="/explore">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                공개 악보 탐색
-              </Button>
-            </Link>
+          <div className="max-w-3xl">
+            <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-ink leading-tight">
+              가지고 있는 PDF 악보를
+              <br />
+              따라 치기 쉬운 연습으로
+            </h1>
+            <p className="mt-5 text-lg text-ink-muted max-w-xl">
+              악보를 읽지 못해도 괜찮습니다. 노트가 건반으로 떨어지는 것을 보고 그대로 누르면 됩니다.
+            </p>
+
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <Link href="/upload">
+                <Button size="lg" className="w-full sm:w-auto">
+                  내 악보로 시작하기
+                </Button>
+              </Link>
+              <Link href="/explore">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                  공개 악보 탐색
+                </Button>
+              </Link>
+            </div>
+
+            {/*
+              업로드를 누르기 전에 알아야 할 것을 CTA 옆에 둔다. 업로드 화면까지 가서야 50MB
+              제한이나 처리 시간을 알게 되면 그때 되돌아 나온다.
+            */}
+            <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-muted">
+              <li>PDF 파일, 최대 50MB</li>
+              <li>변환에 1~3분</li>
+              <li>내 악보는 나에게만 보입니다</li>
+            </ul>
           </div>
         </Container>
       </section>
 
-      {/* Demo Piano */}
-      <section className="py-16 bg-white">
-        <Container size="full">
-          <h2 className="text-2xl font-bold text-center mb-8">피아노 미리보기</h2>
-          <div className="max-w-6xl mx-auto">
-            <Card padding="lg" shadow="md">
-              <div
-                className="w-full overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                tabIndex={0}
-                role="region"
-                aria-label="피아노 건반 미리보기"
-              >
-                <div className="min-w-[800px] w-full" style={{ height: 180 }}>
-                  <SimplePianoKeyboard 
-                    layout={buildKeyLayout(24)} 
-                    activeKeys={new Set()}
-                  />
-                </div>
-              </div>
-            </Card>
-          </div>
+      <section className="pb-16">
+        <Container>
+          <HomeSamplePlayer />
         </Container>
       </section>
 
-      {/* Features */}
-      <section className="py-16">
+      <section className="pb-20">
         <Container>
-          <h2 className="text-3xl font-bold text-center mb-12">주요 기능</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="text-center">
-              <div className="text-4xl mb-4">📄</div>
-              <h3 className="text-xl font-semibold mb-2">PDF 업로드</h3>
-              <p className="text-gray-600">
-                PDF 악보를 업로드하면 자동으로 피아노 애니메이션 데이터로 변환됩니다.
-              </p>
-            </Card>
-            <Card className="text-center">
-              <div className="text-4xl mb-4">🎹</div>
-              <h3 className="text-xl font-semibold mb-2">시각적 학습</h3>
-              <p className="text-gray-600">
-                피아노 건반 위에서 애니메이션을 보며 직관적으로 연주를 배울 수 있습니다.
-              </p>
-            </Card>
-            <Card className="text-center">
-              <div className="text-4xl mb-4">⚡</div>
-              <h3 className="text-xl font-semibold mb-2">맞춤형 학습</h3>
-              <p className="text-gray-600">
-                속도 조절, 따라하기 모드 등 개인의 학습 속도에 맞춰 연습할 수 있습니다.
-              </p>
-            </Card>
-          </div>
+          <h2 className="text-sm font-semibold tracking-wide uppercase text-ink-muted mb-6">
+            어떻게 되나요
+          </h2>
+          <ol className="grid gap-6 md:grid-cols-3">
+            {[
+              { step: '1', title: 'PDF 악보를 올립니다', body: '가지고 있는 악보 파일을 그대로 올리면 됩니다.' },
+              { step: '2', title: 'AI가 음표를 읽습니다', body: '1~3분이 걸리고, 그동안 페이지를 닫아도 됩니다.' },
+              { step: '3', title: '보면서 연습합니다', body: '노트가 건반으로 떨어집니다. 속도를 늦춰 따라갈 수 있습니다.' },
+            ].map((item) => (
+              <li key={item.step} className="border-t border-rule pt-4">
+                <span className="text-sm font-mono text-accent">{item.step}</span>
+                <h3 className="mt-2 text-base font-semibold text-ink">{item.title}</h3>
+                <p className="mt-1 text-sm text-ink-muted">{item.body}</p>
+              </li>
+            ))}
+          </ol>
         </Container>
       </section>
     </div>
-  );
+  )
 }
