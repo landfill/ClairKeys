@@ -10,8 +10,6 @@ import {
 } from '@/types/animationContract'
 import { getAnimationEngine } from '@/services/animationEngine'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
-import { getTempoDisplay } from '@/utils/tempoDisplay'
-
 export { getTempoDisplay } from '@/utils/tempoDisplay'
 
 type AnimationPlayerData = Omit<PianoAnimationData, 'tempo'> & {
