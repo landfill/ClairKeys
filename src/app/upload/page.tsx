@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
 import AuthGuard from '@/components/auth/AuthGuard'
 import OMRUploadForm from '@/components/upload/OMRUploadForm'
@@ -15,40 +15,22 @@ interface ProcessingJob {
 export default function UploadPage() {
   const [processingJobs, setProcessingJobs] = useState<ProcessingJob[]>([])
 
-  const handleOMRUploadStart = (data: { sheetMusicId: number; jobId: string }) => {
-    // Add new job to processing list
-    setProcessingJobs(prev => [
-      ...prev,
-      {
-        sheetMusicId: data.sheetMusicId,
-        jobId: data.jobId
-      }
-    ])
-  }
-
-  const handleOMRJobComplete = (sheetMusicId: number) => {
-    // Remove completed job from processing list after a delay
-    setTimeout(() => {
-      setProcessingJobs(prev => prev.filter(job => job.sheetMusicId !== sheetMusicId))
-    }, 3000) // Keep for 3 seconds to show success message
-  }
-
-  const handleOMRJobError = (jobId: string, error: string) => {
-    console.error(`Job ${jobId} failed:`, error)
-    // Keep failed jobs in the list so user can see the error
-  }
-
-  const handleOMRUploadError = (error: string) => {
-    // Handle upload errors (not processing errors)
-    console.error('Upload error:', error)
-  }
+  const handleUploadStart = useCallback(
+    (data: { sheetMusicId: number; jobId: string; title: string }) => {
+      setProcessingJobs(prev => [
+        ...prev,
+        { sheetMusicId: data.sheetMusicId, jobId: data.jobId, title: data.title },
+      ])
+    },
+    []
+  )
 
   return (
     <AuthGuard>
       <MainLayout>
         <PageHeader
-          title="악보 업로드"
-          description="PDF 악보를 업로드하여 피아노 애니메이션으로 변환하세요"
+          title="새 악보 올리기"
+          description="PDF 악보를 올리면 따라 칠 수 있는 연주 화면으로 바꿔 드립니다."
         />
 
         <Container className="py-8" size="lg">
@@ -57,19 +39,16 @@ export default function UploadPage() {
             to sit beside this one produced a melody chosen by PDF file size,
             not by reading the score, and stored it as a real result — see D-010.
           */}
-          <div className="max-w-4xl mx-auto space-y-6">
-            <OMRUploadForm
-              onUploadStart={handleOMRUploadStart}
-              onUploadError={handleOMRUploadError}
-            />
+          <div className="mx-auto max-w-4xl space-y-6">
+            <OMRUploadForm onUploadStart={handleUploadStart} />
 
-            {processingJobs.length > 0 && (
-              <OMRProcessingStatus
-                jobs={processingJobs}
-                onJobComplete={handleOMRJobComplete}
-                onJobError={handleOMRJobError}
-              />
-            )}
+            {/*
+              끝난 작업도 목록에 남긴다. 예전에는 완료 3초 뒤에 지웠는데, 완료가 전달되는 통로는
+              두 개뿐이고(업로드 화면의 인라인 완료와 내 악보의 상태 배지 — D-026 결정 5) 그중
+              하나가 3초 만에 사라지면 잠깐 다른 탭을 보고 온 사용자에게는 아무 일도 일어나지 않은
+              것처럼 보인다. 연습하러 가는 링크도 함께 사라졌다.
+            */}
+            {processingJobs.length > 0 && <OMRProcessingStatus jobs={processingJobs} />}
           </div>
         </Container>
       </MainLayout>
