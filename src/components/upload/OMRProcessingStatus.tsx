@@ -1,8 +1,16 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { AlertIcon, Button, CheckIcon } from '@/components/ui'
+import { PROCESSING_STAGES, stageIndexForProgress } from '@/lib/upload/processingStages'
+import {
+  describeConversionFailure,
+  describeJobLost,
+  describeServiceUnavailable,
+  JOB_LOST_CODE,
+  type UploadFailure,
+} from '@/lib/upload/uploadFailures'
 
 interface ProcessingJob {
   sheetMusicId: number
@@ -12,238 +20,296 @@ interface ProcessingJob {
 
 interface OMRProcessingStatusProps {
   jobs: ProcessingJob[]
-  onJobComplete?: (sheetMusicId: number) => void
-  onJobError?: (jobId: string, error: string) => void
 }
 
-interface JobStatus {
-  jobId: string
-  status: 'pending' | 'processing' | 'completed' | 'failed'
+type JobPhase = 'processing' | 'completed' | 'failed'
+
+interface JobState {
+  phase: JobPhase
+  /** 서비스가 마지막으로 보고한 `progress`. 단계 문구는 여기서만 나온다. */
   progress: number
-  message: string
-  sheetMusic?: { id: number; title?: string; [key: string]: unknown }
-  error?: string
-  lastChecked: number
+  /** `failed`일 때의 실패 안내. 서버 문자열은 담기지 않는다. */
+  failure: UploadFailure | null
+  /**
+   * 상태를 확인하지 **못한** 동안의 안내.
+   *
+   * 실패와 구분해서 들고 있는 것이 이 컴포넌트에서 가장 중요한 구분이다. 닿지 못한 것은
+   * 실패가 아니고, 서버도 그렇게 동작한다 — `/api/omr/status/[jobId]`는 404에서만 행을 실패로
+   * 바꾸고 503·502에서는 저장된 상태를 그대로 둔다 (D-026 Directive). 예전 화면은 이 응답들을
+   * 모두 `failed`로 그려서, 서버가 "아직 모른다"고 말한 작업을 사용자에게 "실패했다"고 알렸다.
+   */
+  transient: UploadFailure | null
 }
 
-export default function OMRProcessingStatus({ 
-  jobs, 
-  onJobComplete, 
-  onJobError 
-}: OMRProcessingStatusProps) {
-  const router = useRouter()
-  const [jobStatuses, setJobStatuses] = useState<{ [jobId: string]: JobStatus }>({})
-  
-  // Initialize job statuses
+const POLL_INTERVAL_MS = 5000
+
+function initialState(): JobState {
+  return { phase: 'processing', progress: 0, failure: null, transient: null }
+}
+
+export default function OMRProcessingStatus({ jobs }: OMRProcessingStatusProps) {
+  const [states, setStates] = useState<Record<string, JobState>>({})
+  const statesRef = useRef(states)
+
   useEffect(() => {
-    const initialStatuses: { [jobId: string]: JobStatus } = {}
-    jobs.forEach(job => {
-      initialStatuses[job.jobId] = {
-        jobId: job.jobId,
-        status: 'pending',
-        progress: 0,
-        message: 'Starting OMR processing...',
-        lastChecked: Date.now()
+    statesRef.current = states
+  }, [states])
+
+  // 새 작업만 초기화한다. 예전 구현은 `jobs`가 바뀔 때마다 전체를 초기화해서, 두 번째 파일을
+  // 올리는 순간 첫 번째 작업의 진행 상태가 `대기 중`으로 되돌아갔다.
+  useEffect(() => {
+    setStates(prev => {
+      let changed = false
+      const next = { ...prev }
+      for (const job of jobs) {
+        if (!next[job.jobId]) {
+          next[job.jobId] = initialState()
+          changed = true
+        }
       }
+      return changed ? next : prev
     })
-    setJobStatuses(initialStatuses)
   }, [jobs])
 
-  // Poll job statuses
+  const applyPollResult = useCallback(
+    (job: ProcessingJob, update: (previous: JobState) => JobState) => {
+      setStates(prev => ({ ...prev, [job.jobId]: update(prev[job.jobId] ?? initialState()) }))
+    },
+    []
+  )
+
   useEffect(() => {
     if (jobs.length === 0) return
 
-    const pollInterval = setInterval(async () => {
-      for (const job of jobs) {
-        const currentStatus = jobStatuses[job.jobId]
-        
-        // Skip if already completed or failed
-        if (currentStatus && (currentStatus.status === 'completed' || currentStatus.status === 'failed')) {
-          continue
-        }
+    let cancelled = false
 
-        // Skip if checked recently (avoid too frequent polling)
-        if (currentStatus && (Date.now() - currentStatus.lastChecked) < 3000) {
-          continue
-        }
+    const pollOnce = async () => {
+      for (const job of jobs) {
+        if (cancelled) return
+
+        const current = statesRef.current[job.jobId]
+        if (current && current.phase !== 'processing') continue
 
         try {
-          const response = await fetch(`/api/omr/status/${job.jobId}`)
-          
+          const response = await fetch(`/api/omr/status/${encodeURIComponent(job.jobId)}`)
+
+          if (cancelled) return
+
           if (!response.ok) {
-            throw new Error(`Failed to check status: ${response.statusText}`)
+            const body = await response.json().catch(() => ({}))
+            const notConfigured =
+              body?.code === 'OMR_SERVICE_NOT_CONFIGURED' ||
+              body?.code === 'OMR_CALLBACK_NOT_CONFIGURED'
+
+            // 저장된 상태를 실패로 바꾸지 않는다. 다음 폴링에서 다시 물어본다.
+            applyPollResult(job, previous => ({
+              ...previous,
+              transient: describeServiceUnavailable(notConfigured),
+            }))
+            continue
           }
 
-          const statusData = await response.json()
-          
-          setJobStatuses(prev => ({
-            ...prev,
-            [job.jobId]: {
-              jobId: job.jobId,
-              status: statusData.status,
-              progress: statusData.progress || 0,
-              message: statusData.message || 'Processing...',
-              sheetMusic: statusData.sheetMusic,
-              error: statusData.error,
-              lastChecked: Date.now()
-            }
+          const data = await response.json()
+          if (cancelled) return
+
+          if (data.status === 'completed' && data.sheetMusic) {
+            applyPollResult(job, previous => ({
+              ...previous,
+              phase: 'completed',
+              progress: 100,
+              transient: null,
+            }))
+            continue
+          }
+
+          if (data.status === 'failed') {
+            // 어느 실패인지는 응답 코드로만 가른다. 서버가 보낸 문장은 읽지 않는다 —
+            // 변환 실패의 그 문장이 Java 스택 트레이스다 (이슈 #47).
+            const failure = data.code === JOB_LOST_CODE ? describeJobLost() : describeConversionFailure()
+
+            applyPollResult(job, previous => ({
+              ...previous,
+              phase: 'failed',
+              failure,
+              transient: null,
+            }))
+            continue
+          }
+
+          applyPollResult(job, previous => ({
+            ...previous,
+            phase: 'processing',
+            progress: typeof data.progress === 'number' ? data.progress : previous.progress,
+            transient: null,
           }))
-
-          // Handle completion
-          if (statusData.status === 'completed' && statusData.sheetMusic) {
-            if (onJobComplete) {
-              onJobComplete(statusData.sheetMusic.id)
-            }
-          }
-
-          // Handle failure
-          if (statusData.status === 'failed') {
-            const errorMessage = statusData.error || 'OMR processing failed'
-            if (onJobError) {
-              onJobError(job.jobId, errorMessage)
-            }
-          }
-
         } catch (error) {
-          console.error(`Error checking status for job ${job.jobId}:`, error)
-          
-          setJobStatuses(prev => ({
-            ...prev,
-            [job.jobId]: {
-              jobId: job.jobId,
-              status: 'failed',
-              progress: 0,
-              message: 'Failed to check processing status',
-              error: error instanceof Error ? error.message : 'Unknown error',
-              lastChecked: Date.now()
-            }
-          }))
+          if (cancelled) return
 
-          if (onJobError) {
-            onJobError(job.jobId, error instanceof Error ? error.message : 'Unknown error')
-          }
+          // 네트워크가 끊겼거나 응답을 해석하지 못한 경우다. 서버가 무엇을 알고 있는지는
+          // 여전히 모르므로, 모른다고 표시하고 폴링을 계속한다.
+          console.error(`Failed to read processing status for ${job.jobId}:`, error)
+          applyPollResult(job, previous => ({
+            ...previous,
+            transient: describeServiceUnavailable(),
+          }))
         }
       }
-    }, 5000) // Poll every 5 seconds
-
-    return () => clearInterval(pollInterval)
-  }, [jobs, jobStatuses, onJobComplete, onJobError])
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'text-green-600'
-      case 'failed':
-        return 'text-red-600'
-      case 'processing':
-        return 'text-blue-600'
-      default:
-        return 'text-gray-600'
     }
-  }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return '✅'
-      case 'failed':
-        return '❌'
-      case 'processing':
-        return '🔄'
-      default:
-        return '⏳'
+    void pollOnce()
+    const interval = setInterval(() => void pollOnce(), POLL_INTERVAL_MS)
+
+    return () => {
+      cancelled = true
+      clearInterval(interval)
     }
-  }
-
-  const handleViewSheet = (sheetMusicId: number) => {
-    router.push(`/sheet/${sheetMusicId}`)
-  }
+  }, [jobs, applyPollResult])
 
   if (jobs.length === 0) {
     return null
   }
 
+  const anyProcessing = jobs.some(job => (states[job.jobId] ?? initialState()).phase === 'processing')
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-      <h3 className="text-xl font-bold mb-4">OMR Processing Status</h3>
-      
-      <div className="space-y-4">
+    <section className="rounded-lg border border-rule bg-surface p-6" aria-labelledby="processing-heading">
+      <h2 id="processing-heading" className="text-lg font-semibold text-ink">
+        변환 상태
+      </h2>
+
+      {/*
+        처리가 남아 있는 동안에는 고정으로 보인다 — 접거나 잠시 뒤 감추지 않는다. 이 문장이 정작
+        필요한 사람은 창을 닫으려는 사람이고, 그 사람이 못 보면 문장이 없는 것과 같다.
+
+        남은 작업이 없을 때만 내린다. 전부 끝난 화면에서 "계속 처리됩니다"는 고정 노출이 아니라
+        사실이 아닌 문장이다.
+      */}
+      {anyProcessing && (
+        <p className="mt-1 text-sm text-ink-muted">이 페이지를 닫아도 계속 처리됩니다.</p>
+      )}
+
+      <ul className="mt-4 space-y-4">
         {jobs.map(job => {
-          const status = jobStatuses[job.jobId]
-          const jobTitle = job.title || status?.sheetMusic?.title || 'Processing...'
-          
+          const state = states[job.jobId] ?? initialState()
           return (
-            <div key={job.jobId} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-gray-900">
-                  {getStatusIcon(status?.status || 'pending')} {jobTitle}
-                </h4>
-                <span className={`text-sm font-medium ${getStatusColor(status?.status || 'pending')}`}>
-                  {status?.status?.toUpperCase() || 'PENDING'}
-                </span>
-              </div>
-              
-              {status && (
-                <>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {status.message}
-                  </p>
-                  
-                  {status.status !== 'completed' && status.status !== 'failed' && (
-                    <div className="mb-2">
-                      <div className="flex justify-between text-sm text-gray-600 mb-1">
-                        <span>Progress</span>
-                        <span>{status.progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${status.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
-                  {status.error && (
-                    <p className="text-sm text-red-600 mt-2">
-                      Error: {status.error}
-                    </p>
-                  )}
-                  
-                  {status.status === 'completed' && status.sheetMusic && (
-                    <div className="mt-3">
-                      <Button
-                        onClick={() => handleViewSheet(status.sheetMusic!.id)}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        View & Practice 🎹
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
-              
-              <div className="mt-2 text-xs text-gray-500">
-                Job ID: {job.jobId}
-              </div>
-            </div>
+            <li key={job.jobId} className="rounded-md border border-rule p-4">
+              <JobCard job={job} state={state} />
+            </li>
           )
         })}
+      </ul>
+
+      <div className="mt-6 flex flex-wrap gap-3 border-t border-rule pt-4">
+        <Link href="/library">
+          <Button variant="outline" size="sm">
+            내 악보로 이동
+          </Button>
+        </Link>
+        <Link href="/explore">
+          <Button variant="ghost" size="sm">
+            다른 악보 둘러보기
+          </Button>
+        </Link>
       </div>
-      
-      {/* Summary */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="flex justify-between text-sm text-gray-600">
-          <span>
-            Total jobs: {jobs.length}
-          </span>
-          <span>
-            Completed: {Object.values(jobStatuses).filter(s => s.status === 'completed').length} • 
-            Processing: {Object.values(jobStatuses).filter(s => s.status === 'processing' || s.status === 'pending').length} • 
-            Failed: {Object.values(jobStatuses).filter(s => s.status === 'failed').length}
-          </span>
+    </section>
+  )
+}
+
+function JobCard({ job, state }: { job: ProcessingJob; state: JobState }) {
+  const title = job.title?.trim() || '올린 악보'
+
+  if (state.phase === 'failed' && state.failure) {
+    return (
+      <div className="flex gap-3" role="alert">
+        <AlertIcon size={20} className="mt-0.5 shrink-0 text-state-error" aria-hidden="true" />
+        <div>
+          <h3 className="text-sm font-semibold text-ink">
+            {title} — {state.failure.title}
+          </h3>
+          <p className="mt-1 text-sm text-ink-muted">{state.failure.detail}</p>
+          <p className="mt-1 text-sm text-ink">{state.failure.action}</p>
         </div>
       </div>
+    )
+  }
+
+  if (state.phase === 'completed') {
+    return (
+      <div className="flex gap-3">
+        <CheckIcon size={20} className="mt-0.5 shrink-0 text-state-ready" aria-hidden="true" />
+        <div>
+          <h3 className="text-sm font-semibold text-ink">{title} — 연습할 수 있습니다</h3>
+          <p className="mt-1 text-sm text-ink-muted">변환이 끝났습니다.</p>
+          <div className="mt-3">
+            <Link href={`/sheet/${job.sheetMusicId}`}>
+              <Button size="sm">연습하러 가기</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return <ProcessingCard title={title} state={state} />
+}
+
+function ProcessingCard({ title, state }: { title: string; state: JobState }) {
+  const currentIndex = stageIndexForProgress(state.progress)
+  const currentStage = PROCESSING_STAGES[currentIndex]
+
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+
+      {/*
+        단계는 목록으로 보여준다. 진행 바 하나만 두면 "얼마나 남았는지"는 알려주지만 "지금 무엇을
+        하고 있는지"는 알려주지 못한다. 서비스가 보고하는 지점이 다섯뿐이라 막대가 한동안 멈춰
+        있는 것처럼 보이는데, 그때 이름이 붙은 단계가 그것이 고장이 아니라는 것을 말해 준다.
+      */}
+      <ol className="mt-3 space-y-1.5">
+        {PROCESSING_STAGES.map((stage, index) => {
+          const done = index < currentIndex
+          const active = index === currentIndex
+          return (
+            <li
+              key={stage.progress}
+              aria-current={active ? 'step' : undefined}
+              className={`flex items-center gap-2 text-sm ${
+                active ? 'font-semibold text-ink' : done ? 'text-ink-muted' : 'text-ink-muted opacity-60'
+              }`}
+            >
+              {/* 형태로도 구분한다 — 색만으로 상태를 나누지 않는다. */}
+              {done ? (
+                <CheckIcon size={16} className="shrink-0 text-state-ready" aria-hidden="true" />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className={`h-2 w-2 shrink-0 rounded-full ${
+                    active ? 'bg-state-progress' : 'bg-rule'
+                  }`}
+                />
+              )}
+              <span>{stage.label}</span>
+              {done && <span className="sr-only">완료</span>}
+              {active && <span className="sr-only">진행 중</span>}
+            </li>
+          )
+        })}
+      </ol>
+
+      <p aria-live="polite" className="sr-only">
+        {title} — {currentStage.label}
+      </p>
+
+      {state.transient && (
+        <div className="mt-3 flex gap-2 rounded-md border border-rule bg-surface-muted p-3">
+          <AlertIcon size={16} className="mt-0.5 shrink-0 text-state-progress" aria-hidden="true" />
+          <div>
+            <p className="text-sm text-ink">{state.transient.title}</p>
+            <p className="mt-0.5 text-sm text-ink-muted">{state.transient.detail}</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
