@@ -2,6 +2,63 @@
 
 Last updated: 2026-08-29 KST
 
+> 아래 "현재 상태"만 읽고 바로 시작할 수 있어야 한다. 그 아래 절들은 시간 역순 기록이며, 필요한
+> 맥락만 골라 읽는다.
+
+## 현재 상태
+
+**Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
+DS-0, DS-G1, DS-1, DS-2가 `DONE`이고 DS-3~DS-7이 `NOT_STARTED`다. 이슈 #76은 열려 있다 — 완료 조건
+8개는 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
+
+**Next action**: **DS-3 (업로드와 처리 상태)**. `docs/recovery/phases/DS-3-upload-processing.md`가
+범위·회귀 기준·완료 조건·검증 명령을 갖고 있다. 계약은 이미 확정돼 있어 다시 정할 것이 없다 —
+D-026이 `progress` 매핑(0/10/30/60/100 → 대기 중 / PDF 분석 / 음표 인식 / 연주 데이터 생성 /
+학습 화면 준비)과 사용자 대면 실패 4종(파일 거부 / 변환 실패 / 작업 유실 / 서비스 불가)을 정했다.
+
+DS-3·DS-4는 서로 독립이고 둘 다 DS-1만 기다린다. DS-5도 마찬가지다. 병렬로 열 수 있다.
+
+**저장소 상태**: `main`이 최신이고 워킹 트리 clean, 작업 브랜치 없음, 열린 PR 없음.
+
+### 이 트랙에서 배운 것 (반복하지 않기 위해)
+
+세 번 다 초록 CI가 침묵했다. DS-3 이후도 같은 함정을 만난다.
+
+- `toBeVisible`·`toBeAttached`는 **화면 밖 요소에도 통과한다.** "최초 뷰포트 안"을 검사하려면
+  `boundingBox`로 좌표를 재거나 `toBeInViewport()`를 쓴다.
+- axe는 정적 검사라 **`div`에 붙은 `onClick`을 보지 못한다.** 마우스 전용 인터랙션은 초록 CI를
+  통과한 채 남는다. 키보드 등가성은 따로 확인한다.
+- 방어 함수의 테스트를 **구현의 금지 목록에서 베끼면** 구현이 놓친 것을 함께 놓친다. 계약을 직접
+  거는 불변식을 하나 넣는다(예: "통과시킨 값은 반드시 같은 origin으로 해석된다").
+- 화면을 인증 뒤에서 공개로 옮기면 **그 화면의 기존 결함이 처음으로 검사 범위에 들어온다.**
+  DS-6이 `/sheet/[id]`를 열 때 같은 일이 반복된다.
+- **리뷰 도구도 틀린다.** CodeRabbit의 `flex-shrink-0` 지적은 전제가 이 저장소 빌드 산출물과 달라
+  기각했다. 수용도 기각도 근거는 산출물이다.
+- PR 리뷰 피드백은 **세 표면**을 모두 조회한다 — 리뷰 스레드, 리뷰 본문(`pulls/N/reviews[].body`의
+  접힌 블록), 일반 코멘트(`issues/N/comments`). PR #89에서 스레드만 보고 3건을 놓쳤다.
+
+### Known blockers / 이월된 것
+
+DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항목이다.
+
+| 항목 | 내용 | 담당 |
+|---|---|---|
+| **DS0-1** | 비공개 악보의 애니메이션 JSON이 익명으로 200(78KB). API의 403은 URL 은닉일 뿐이고 객체는 public 버킷에 있다 | **DS 범위 밖, GitHub 이슈 미등록** |
+| C5 | `HOME_SAMPLE_ANIMATION.tempoSource: 'user'`가 화면에 "직접 입력"으로 표시돼 방문자가 입력한 것처럼 읽힌다 | DS-5(표시) 또는 별도 결정 |
+| C6 | 홈의 가로 스크롤 가드가 매칭 0개라 vacuous | DS-7 |
+| — | `flex-shrink-*` 표기 일괄 현대화(동작 문제 없음) | P2-A |
+| DS0-2 잔여 | `/api/processing`·`/api/notifications`·`useBackgroundProcessing`·`ProcessingDashboard` 삭제. DS-1은 도달 경로만 없앴다 | P2-A |
+| — | `BackgroundFileUpload`의 `/processing` 링크 2곳 | P2-A |
+| DS-5 선행 | 구간 반복(DS0-9)과 이모지 교체는 **D-019 결정 8과 부딪힌다.** 착수 시 그 결정을 먼저 다룬다 | DS-5 |
+| DS-4 선행 | 운영 DB의 `processingStatus` 분포를 확인해야 한다(`'pending'` + 빈 `animationDataUrl` 건수). 이 저장소의 Supabase 프로젝트에 접근 권한이 없어 미확인 | DS-4 |
+
+한 번도 실행하지 않은 검증: 초보자 관찰 테스트(완료 조건 1), 수동 접근성 검사(키보드 순회·포커스
+가시성·200% 확대 — DS-7 종단 항목), 실기기 모바일.
+
+관련 열린 이슈: #83(readme), #73·#72·#71(OMR 콜백·finalize·NEXTAUTH_URL), #66(진행 바 고착),
+#65(모바일 건반), #61(샘플 음량), #58(검은건반 배치), #52(systemd 재시작), #47·#46(변환 실패 표시·
+저해상도 PDF — DS-3이 문구만 다룬다), #44(박자 어긋남).
+
 ## #76 DS-2 DONE — 로그인 전 핵심 가치 전달 완료, 다음은 DS-3
 
 사용자 지시로 DS-2를 진행했고, 명시적 승인으로 PR [#90](https://github.com/landfill/ClairKeys/pull/90)을
