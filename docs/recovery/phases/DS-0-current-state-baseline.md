@@ -1,6 +1,6 @@
 # DS-0 — 디자인 개편 착수 전 현재 상태와 제품 계약 고정
 
-Status: `IN_PROGRESS`
+Status: `IN_REVIEW`
 Depends on: P1-A (`DONE`)
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 0단계
 
@@ -165,6 +165,50 @@ Header의 `처리 상태` 메뉴는 `/processing` → `ProcessingDashboard` →
 | 다크 모드 | 부분 지원 | `prefers-color-scheme`가 body 색만 바꾼다. 화면은 `bg-white`·`text-gray-*` 하드코딩 |
 | 지원·개인정보 링크 | 미지원 | `Footer.tsx:47-59` 세 링크 모두 `href="#"` |
 
+## 발견된 결함 대장
+
+0단계 Work stage 5의 산출물이다. 사용자가 2026-08-29에 **GitHub 이슈를 새로 만들지 않고 이 문서에
+기록**하도록 지시했으므로, 여기가 이 결함들의 canonical 기록이다. 해당 단계에 진입할 때 이 표를
+먼저 읽는다. 기존 이슈가 있는 항목은 그 번호를 적었다.
+
+| ID | 결함 | 근거 | 담당 | 기존 이슈 |
+|---|---|---|---|---|
+| DS0-1 | 비공개 악보(`isPublic: false`)의 애니메이션 객체가 Supabase **public 버킷**에 있다. `GET /api/sheet/29`는 익명에게 403을 주지만, 소유자로 얻은 URL을 자격증명 없이 요청하면 200으로 78,518바이트가 내려온다. 비공개 악보의 보호가 URL 은닉뿐이다 | 운영 walkthrough | **DS 범위 밖.** 별도 보안 작업 | 없음 |
+| DS0-2 | `/processing` 화면과 `/api/notifications`가 canonical 업로드와 단절돼 있다. `/api/omr/upload`·`/api/omr/finalize`에 `ProcessingJob` 참조가 0건이라, 악보 5건을 가진 계정에서도 `처리 작업 (0)` / `알림 (0)`이다 | 코드 + 운영 | **DS-3, DS-7의 선행 조건.** 상태의 출처를 먼저 정한다 (D-024 결정 5) | 없음 |
+| DS0-3 | 데모·테스트·관리자 라우트 8개(`/demo-*` 4, `/test-*` 3, `/admin/update-finger-data`)가 UI 유입 링크 0인 채 프로덕션에서 200을 반환한다 | `curl` × 8 | **DS-1.** 정보 구조 결정에서 제거할지 격리할지 정한다 | 없음 |
+| DS0-4 | 공개 악보에 파일명과 미검증 메타데이터가 그대로 노출된다. 제목이 `Princess_Mononoke_Ashitaka_and_San_print_300dpi`, 저작자가 `ㄴㅁㄹㄹㄴ`·`조`·`쇼핑` | 운영 walkthrough | **DS-4** (제목 편집), **DS-6** (탐색 표현) | 없음 |
+| DS0-5 | Footer 지원 링크 3개가 전부 `href="#"`이고 저작권 표기가 `© 2024`다 | `Footer.tsx:47-59` | **DS-1** (공통 셸) | 없음 |
+| DS0-6 | 내 악보 목록이 `processingStatus`를 렌더하지 않는다. 처리 중·오류 상태를 화면에서 알 수 없다 | 코드 + 운영 | **DS-4** | 없음 |
+| DS0-7 | 업로드 화면에 예상 처리 시간·백그라운드 처리 안내·예시 악보가 없다. 버튼 문구가 `OMR 처리 시작`으로 기술 용어를 노출한다 | 운영 walkthrough | **DS-3** | 없음 |
+| DS0-8 | 곡 제목 편집 UI가 `SheetMusicActions`에 있으나 `/library`가 쓰는 `LibrarySheetMusicList`에는 없다. 고아 컴포넌트 계층의 사례다 | 코드 | **DS-4**, 정리는 P2-A | 없음 |
+| DS0-9 | 구간 반복이 운영 재생 경로에 없다. `PlaybackControls`에 loop 코드가 아예 없고, `loopStart`/`loopEnd`는 다른 플레이어(`animationEngine.ts`)에만 있다 | 코드 + 운영 | **DS-5** | 없음 |
+
+이미 이슈가 있는 것은 여기에 옮겨 적지 않는다 — 변환 실패의 Java 스택 트레이스([#47](https://github.com/landfill/ClairKeys/issues/47)),
+작은 페이지 PDF 인식 실패([#46](https://github.com/landfill/ClairKeys/issues/46)),
+진행 바 고착([#66](https://github.com/landfill/ClairKeys/issues/66)),
+모바일 건반 범위([#65](https://github.com/landfill/ClairKeys/issues/65)).
+
+## DS-1 진입 조건
+
+DS-1(디자인 토큰과 공통 셸)이 시작 시점에 **결정해야 할 대상** 목록이다. 이것이 확정돼야 DS-2 이후가
+각자 화면을 고칠 수 있다.
+
+1. **토큰 정의** — 현재 `globals.css`에는 `--background`/`--foreground` 둘뿐이다(Tailwind v4
+   `@theme inline`). 이슈 #76 비주얼 시스템의 배경(아이보리)·기본색(잉크/네이비)·강조색(테라코타)·
+   보조색(블루·세이지)과 상태 색(처리 중·연습 가능·오류)을 토큰으로 정의한다.
+2. **다크 모드 범위** — 현재는 `prefers-color-scheme`가 body 색만 바꾸고 화면은 `bg-white`·
+   `text-gray-*`가 하드코딩돼 있다. 이슈 #76은 다크 모드를 **플레이어에 우선** 적용하라고 한다.
+   전체 서비스와 플레이어의 적용 범위를 여기서 정한다.
+3. **내비게이션 구성** — 목표는 `내 악보`·`새 악보`·`탐색` 3개다. 현재 Header는 로그인 시
+   `홈`·`내 악보`·`업로드`·`처리 상태`·`탐색` 5개다. `처리 상태` 메뉴의 처리 방향(제거 후 내 악보
+   상태 표시로 흡수)은 DS0-2의 결론에 의존한다.
+4. **고아 라우트 처리** — DS0-3의 8개 라우트를 제거할지, 인증 뒤로 옮길지, 유지할지 정한다.
+5. **아이콘 체계** — 이슈 #76은 이모지 제거와 일관된 선형 아이콘을 요구한다. 현재 이모지가
+   Header 로고, Footer 로고, `/library` 탭(📚📁), `/explore` 탭(🏠🔍)과 섹션 제목(🌟🔥),
+   홈 기능 카드(📄🎹⚡), `AuthGuard`(🔒), 로그인 provider(🔍🐙)에 있다. 아이콘 세트와 도입
+   방식(인라인 SVG / 라이브러리)을 정한다.
+6. **`playback-chrome` 계약** — 새 Header·Footer도 이 클래스를 유지해야 한다 (D-024 Directive).
+
 ## 변경하지 않을 회귀 계약
 
 DS-1~DS-7은 아래를 **시각 개편의 부수효과로 바꾸지 않는다.** 바꿔야 할 이유가 생기면 해당 결정
@@ -226,14 +270,14 @@ DS-1~DS-7은 아래를 **시각 개편의 부수효과로 바꾸지 않는다.**
 2. 기능 지원표를 지원 / 부분 지원 / 미지원으로 분류한다.
 3. 회귀 계약을 결정 문서 참조와 함께 목록화한다.
 4. 운영(clairkeys.vercel.app) 화면을 로그인 전·후로 캡처해 1~2단계와 대조한다.
-5. 대조에서 나온 신규 결함을 별도 이슈로 등록하고 담당 단계를 지정한다.
+5. 대조에서 나온 신규 결함을 아래 "발견된 결함 대장"에 기록하고 담당 단계를 지정한다.
 
 ## Completion criteria
 
 - 모든 라우트의 인증 경계와 UI 진입점이 기록되어 있다.
 - 이슈 #76의 완료 조건 7개 각각에 대해 현재 상태가 지원 / 부분 지원 / 미지원으로 판정되어 있다.
 - 디자인 개편이 바꾸지 않을 계약이 결정 문서 번호와 함께 열거되어 있다.
-- 운영 화면 캡처가 코드 판정과 일치하거나, 불일치가 이슈로 등록되어 있다.
+- 운영 화면 확인이 코드 판정과 일치하거나, 불일치가 "발견된 결함 대장"에 기록되어 있다.
 - DS-1의 진입 조건(정보 구조 결정 대상 목록)이 확정되어 있다.
 
 ## Progress
@@ -245,4 +289,8 @@ DS-1~DS-7은 아래를 **시각 개편의 부수효과로 바꾸지 않는다.**
   코드 판정 대부분이 확인됐고 **한 건이 뒤집혔다** — 로그인 전 체험을 막는 것은 화면 한 겹이며
   애니메이션 데이터는 이미 익명 접근이 가능하다. `미확인`이던 구간 반복·곡 제목 편집도
   `미지원`으로 확정했다. 근거는 `docs/recovery/validation/2026-08-29-ds0-production-walkthrough.md`.
-  Work stage 5(발견 결함의 이슈 등록)는 사용자 확인 대기 중이다.
+  Work stage 5는 사용자 확인 대기 중이었다.
+- 2026-08-29 — Work stage 5 완료. 사용자가 GitHub 이슈를 새로 만들지 않고 문서에 기록하도록
+  지시해, 신규 결함 9건을 "발견된 결함 대장"에 담당 단계와 함께 남겼다. DS-1 진입 조건 6개도
+  확정했다. Work stages 1~5와 completion criteria를 모두 충족했으나, PR
+  [#87](https://github.com/landfill/ClairKeys/pull/87)이 아직 병합되지 않아 상태는 `IN_REVIEW`다.
