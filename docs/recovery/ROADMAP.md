@@ -17,6 +17,38 @@ ClairKeys의 우선순위는 제품 핵심 정확도, 실행 안전성, 운영 �
 
 P0-A와 P0-D는 서로 다른 파일 범위를 갖도록 설계하면 병렬 진행할 수 있다. 그 외 단계는 표의 선행 조건을 지킨다.
 
+## 디자인 개편 트랙 (이슈 [#76](https://github.com/landfill/ClairKeys/issues/76))
+
+복구 트랙(P0~P2)과 별개로, 초보자 중심 여정·브랜드 전면 개편을 8단계로 진행한다. 이슈 #76의 실행
+계획을 그대로 단계화한 것이며, 한 PR에서 홈·업로드·플레이어를 동시에 교체하지 않는다.
+
+| 순서 | ID | 단계 | 상태 | 권장 브랜치 | 선행 조건 |
+|---:|---|---|---|---|---|
+| 0 | DS-0 | 현재 상태와 제품 계약 고정 | IN_REVIEW | `codex/ds-0-current-state-baseline` | P1-A |
+| 1 | DS-1 | 디자인 토큰과 공통 셸 | NOT_STARTED | `codex/ds-1-design-foundation` | DS-0 |
+| 2 | DS-2 | 로그인 전 핵심 가치 전달 | NOT_STARTED | `codex/ds-2-prelogin-value` | DS-1 |
+| 3 | DS-3 | 업로드와 처리 상태 | NOT_STARTED | `codex/ds-3-upload-processing` | DS-1 |
+| 4 | DS-4 | 내 악보 | NOT_STARTED | `codex/ds-4-my-library` | DS-1 |
+| 5 | DS-5 | 학습 플레이어 | NOT_STARTED | `codex/ds-5-learning-player` | DS-1 |
+| 6 | DS-6 | 탐색과 공개 체험 | NOT_STARTED | `codex/ds-6-explore` | DS-2 |
+| 7 | DS-7 | 알림·빈 화면·오류 상태 완결 | NOT_STARTED | `codex/ds-7-states` | DS-3, DS-4 |
+
+DS-1은 나머지 전부의 선행 조건이다. 토큰 없이 개별 화면부터 고치면 색상·간격·대비가 화면마다
+흩어지고, DS-7에서 상태 표현을 통일할 근거가 사라진다.
+
+DS-3과 DS-7은 실제 백엔드 계약에 의존한다. DS-0이 확인한 대로 canonical 업로드 경로는
+`ProcessingJob`·`ProcessingNotification`을 쓰지 않으므로, 처리 단계 문구와 완료 알림은 UI 이전에
+**어느 상태를 어디서 읽을지**를 먼저 정해야 한다.
+
+### DS-0: 현재 상태와 제품 계약 고정
+
+- 라우트 인벤토리와 인증 경계 (middleware + `AuthGuard`, 그리고 그 경계가 실제로 막지 못하는 것)
+- 이슈 #76 완료 조건 7개에 대한 지원 / 부분 지원 / 미지원 판정
+- 디자인 개편이 바꾸지 않을 회귀 계약(D-013, D-017~D-023 등)
+- 신규 결함 9건의 대장과 담당 단계 배정 — GitHub 이슈가 아니라 phase 문서에 기록한다
+- DS-1 진입 조건 6개
+- 상세: [DS-0](phases/DS-0-current-state-baseline.md)
+
 ## 단계별 결과물
 
 ### DOC-1: 기본 브랜치 `main` 전환
