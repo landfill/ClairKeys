@@ -2,7 +2,7 @@
 
 Last updated: 2026-08-29 KST
 
-## PR #84 열림 — P1-A provenance 마감 구현, 운영 백필 자격증명 대기
+## PR #84 열림 — P1-A provenance 운영 migration·backfill 검증 완료
 
 2026-08-29, P1-A의 마지막 완료 조건을 구현한 review-ready PR
 [#84](https://github.com/landfill/ClairKeys/pull/84)를 열었다. Head `2186cbc`, 브랜치
@@ -21,11 +21,18 @@ Last updated: 2026-08-29 KST
 회귀는 구현 전에 4 suites 실패로 확인했다. 상세:
 `docs/recovery/validation/2026-08-29-p1a-provenance-backfill.md`.
 
-**P1-A는 아직 DONE이 아니다.** 실데이터 dry-run은 `DATABASE_URL` 부재로 DB 접속 전에
-중단됐다. Vercel CLI와 Supabase CLI도 로그인 자격증명이 없다. 다음 행동은 운영 자격증명을
-일시적으로 제공하거나 해당 CLI에 로그인한 뒤, (1) dry-run 개수 확인, (2) migration 적용,
-(3) `--apply`, (4) 사후 개수·공개 목록·demo 경고 확인 순서다. **migration보다 PR 코드를 먼저
-배포하면 Prisma가 존재하지 않는 컬럼을 읽으므로 순서를 바꾸지 않는다.**
+2026-08-29 운영 DB에서 먼저 dry-run해 총 5건을 `omr=3`, `demo=0`, `unknown=2`,
+`fetchFailures=0`으로 확인했다. 기존 migration 3건의 완료 상태와 provenance 컬럼 부재를 확인한
+뒤 `20260829012000_add_sheet_provenance`를 Supabase session pooler(5432)로 적용하고 같은 분류를
+`--apply`했다. 사후 집계는 `omr=3`, `unknown=2`; `omr`인데 `omrJobId`가 없는 행은 0건이고
+migration도 `finished=true`다. 행 삭제는 없었다. 비밀값은 임시 디렉터리에서만 사용했다.
+
+**P1-A는 아직 DONE이 아니다.** 운영 DB 선행 migration/backfill은 끝났지만 코드가 PR #84에
+있으므로 공개 목록 제외와 재생 경고는 아직 운영 배포되지 않았다. 다음 행동은 CodeRabbit의
+최종 결과와 현재 CI를 확인한 뒤 사용자의 **명시적 병합 승인**을 받는 것이다. 병합 뒤 운영
+`/api/sheet/public`과 demo 경고를 확인하고 phase를 `DONE`으로 닫는다. 현재 운영 데이터에는
+`demo` 행이 0건이라 실제 경고 화면의 운영 실데이터 검증은 불가능하며, 회귀 테스트가 그 계약을
+고정한다.
 
 ## PR #81 병합 완료 — 재생 화면 기하 종료 (실기기 확인됨)
 

@@ -2,7 +2,7 @@
 
 Date: 2026-08-29
 Commit: `2186cbc085c488b328cefefaac6375b06c202f07`
-Environment: macOS, Node 22.18.0, Prisma 6.19.3; production credentials unavailable
+Environment: macOS, Node 22.18.0, Prisma 6.19.3; Vercel production environment via temporary directory
 
 ## Claim being verified
 
@@ -22,9 +22,11 @@ carry an explicit warning before playback.
 | `npm run build` | PASS | production build and 41 static pages completed |
 | PR #84 hosted checks | PASS | Build, Unit, two E2E jobs, type/lint, accessibility, Security Scan/Audit, CodeQL, Vercel |
 | `DATABASE_URL=postgresql://user:pass@localhost:5432/clairkeys npx prisma validate` | PASS | schema valid |
-| `npm run backfill:sheet-provenance` | BLOCKED | Prisma stopped before querying: `DATABASE_URL` not present |
-| `vercel whoami` | BLOCKED | no existing credentials |
-| `supabase projects list` | BLOCKED | access token not provided |
+| production dry-run | PASS | total 5; `omr=3`, `demo=0`, `unknown=2`, `fetchFailures=0` |
+| production schema/history inspection | PASS | prior migrations 3/3 finished; provenance column absent before apply |
+| `prisma migrate deploy` via Supabase session pooler 5432 | PASS | `20260829012000_add_sheet_provenance` applied |
+| production backfill `--apply` | PASS | total 5; `omr=3`, `demo=0`, `unknown=2`, `fetchFailures=0` |
+| post-apply DB invariant query | PASS | `omr=3`, `unknown=2`; OMR rows lacking `omrJobId`: 0; migration `finished=true` |
 
 ## Baseline comparison
 
@@ -38,14 +40,18 @@ carry an explicit warning before playback.
 - Confirmed the PR is review-ready and mergeable at head `2186cbc`.
 - Confirmed all hosted repository checks succeeded; Vercel Preview proves build only and does not
   prove the production database migration.
-- No production row was changed. The backfill command failed before its first query.
+- The first migration attempt through transaction pooler port 6543 made no change; schema and
+  migration history were both re-queried before retrying through session pooler port 5432.
+- Production migration and backfill then completed in the required order. No row was deleted.
+- Vercel environment files were downloaded only under `/private/tmp` and were not written to the
+  repository.
 
 ## Gaps and risks
 
-- Candidate, confirmed-demo, OMR, unknown, and fetch-failure counts are unknown until credentials
-  are available.
-- Apply `prisma/migrations/20260829012000_add_sheet_provenance/migration.sql` before deploying code
-  that reads `provenance`.
-- After migration, run the script without `--apply` first. Review counts, then run with `--apply`
-  and repeat the dry-run plus public-list/playback checks.
+- The production DB is ready before code deployment; do not reverse that ordering in rollback or
+  future environments.
+- Production currently has no confirmed `demo` row, so the real-data warning screen cannot be
+  observed. Matcher, public-list exclusion, and warning rendering are fixed by regression tests.
+- PR #84 still requires explicit user approval before merge, followed by production public-list and
+  playback smoke checks.
 - Never convert `unknown` to `demo` from the first-pass filter alone.

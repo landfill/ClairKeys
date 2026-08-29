@@ -9,9 +9,11 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
   [#84](https://github.com/landfill/ClairKeys/pull/84)로 열렸다. `SheetMusic.provenance` migration,
   정확한 과거 demo 리터럴 matcher, dry-run 기본 backfill, 신규 OMR writer 표시, demo 공개 목록
   제외와 재생 경고를 포함한다. 로컬 Jest 62 suites / 589 tests, `tsc`, lint, build, Prisma
-  validation 통과. 운영 `DATABASE_URL`과 Supabase/Vercel CLI 자격증명이 없어 실데이터 dry-run과
-  migration/apply는 아직 실행하지 못했다. 따라서 상태는 `IN_PROGRESS`이고 criterion 3은
-  운영 실행·검증 전까지 미충족이다. Evidence:
+  validation 통과. 이어서 운영 DB dry-run에서 총 5건을 `omr=3`, `demo=0`, `unknown=2`,
+  `fetchFailures=0`으로 확인하고 additive migration과 `--apply`를 순서대로 실행했다. 사후에도
+  `omr=3`, `unknown=2`이며 `omr` 중 `omrJobId`가 없는 행은 0건이다. criterion 3의 데이터
+  migration 검증은 충족했다. 상태는 PR #84 병합과 배포 후 공개 목록·경고 확인 전까지
+  `IN_PROGRESS`다. Evidence:
   `docs/recovery/validation/2026-08-29-p1a-provenance-backfill.md`.
 
 - 2026-07-25 — Work stage 1 done. `src/app/api/__tests__/uploadPathInventory.test.ts` (6 tests)
@@ -31,10 +33,11 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
   the demo generator. Codex found that removing persistence turned an older `retryJob` defect into
   the normal case; `retryJob` now refuses `CONVERSION_UNAVAILABLE` failures. Evidence:
   `docs/recovery/validation/2026-07-25-p1a-canonical-upload-only.md`.
-- **Remaining for phase completion** — completion criterion 3 ("기존 사용자 데이터와 지원 클라이언트
-  migration이 검증된다"): the `provenance` backfill for rows stored before #35 (D-010 decision 5).
-  Its precondition is now met — the writers are closed, so a count is finally meaningful. Needs
-  real-data access and therefore the user's approval. Criteria 1, 2, 4, and 5 are met.
+- **Remaining for phase completion** — PR #84를 사용자의 명시적 승인 뒤 병합하고, 운영 배포에서
+  공개 목록이 `demo`만 제외하며 재생 전 경고 계약이 유지되는지 확인한다. 운영 데이터에는
+  확인된 `demo` 행이 0건이므로 경고의 실데이터 관측은 불가능하고 회귀 테스트를 근거로 삼는다.
+  Completion criterion 3의 migration/backfill은 2026-08-29 검증 완료했다. Criteria 1, 2, 4,
+  and 5 are met.
 - Note for stage 4: issue #20 (demo stub `pdfParser.ts`) is satisfied by this stage rather than
   separately. `/api/processing-queue` is a read-only listing endpoint, not an upload path.
 - 2026-07-26 — Issue #22 repository repair merged via PR
