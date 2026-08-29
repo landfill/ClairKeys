@@ -10,7 +10,7 @@ import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
-import { CompactPlaybackBar, PlaybackControls } from '@/components/playback'
+import { CompactPlaybackBar, PlaybackControls, TempoDisplay } from '@/components/playback'
 import { getActiveNotes } from '@/utils/visualUtils'
 
 /**
@@ -186,6 +186,15 @@ export default function FallingNotesPlayer({
       ].filter(Boolean).join(' ')}
       style={orientation.rotate ? rotatedRootStyle : undefined}
     >
+      <TempoDisplay
+        tempo={animationData.tempo}
+        tempoSource={animationData.tempoSource}
+        timingReferenceBpm={animationData.timingReferenceBpm}
+        scoreTempo={animationData.scoreTempo}
+        isPlaybackActive={isPlaying}
+        className={isPlaying ? '' : 'mb-4'}
+      />
+
       {isPlaying ? (
         /* One row instead of four. The landscape viewport this mode targets is
            390px tall in total; the stacked setup chrome cost 264px of it. */
