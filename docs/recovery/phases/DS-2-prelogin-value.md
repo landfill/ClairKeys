@@ -1,6 +1,6 @@
 # DS-2 — 로그인 전 핵심 가치 전달
 
-Status: `NOT_STARTED`
+Status: `IN_REVIEW`
 Depends on: DS-1
 Blocks: DS-6, DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 2단계
@@ -93,6 +93,15 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 2단계
 - `LoginButton`으로 로그인하면 로그인 전에 있던 경로로 돌아온다. 회귀 테스트로 고정한다.
 - 지원 파일 형식·예상 처리 시간·개인정보 안내가 CTA에서 한 화면 안에 보인다.
 - `/sheet/[id]`와 `src/components/animation/`에 diff가 없다.
+
+## Progress
+
+- 2026-08-29 — PR [#90](https://github.com/landfill/ClairKeys/pull/90)로 진행 중. 커밋 3개:
+  `a6a948c` 전송 버튼 접근 가능한 이름 + **D-027**, `d5a43e0` 복귀 계약,
+  `5575a15` 홈·로그인 화면과 저장소 내 샘플.
+  작업 중 두 가지가 드러났다 — 플레이어 전송 버튼에 접근 가능한 이름이 아예 없었고(D-027로 처리),
+  `LoginButton`이 세션이 있을 때 렌더 중에 `router.push`를 호출하고 있었다.
+  검증: Jest 67 suites / 643 tests, lint 무경고, `tsc`, build 성공, E2E chromium 5/5.
 
 ## 검증 명령
 
