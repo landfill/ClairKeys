@@ -40,8 +40,10 @@ PR #92·#93·#94의 작업 브랜치는 모두 local·remote tip이 `main`에 �
 삭제했다. PR #94 merge commit `cb42fe4`의 check-runs는 **6/6 성공**이다(마지막 완료 E2E Tests,
 2026-08-29T16:15:43Z). 리뷰 표면 3곳(스레드·리뷰 본문·일반 코멘트) 모두 actionable 0건이었다.
 
-**저장소 상태**: `main`이 `cb42fe4`로 최신, 워킹 트리 clean, 로컬 브랜치는 `main` 하나, worktree도
-`/Users/h0977/dev/ClairKeys` 하나(D-029 기록용 임시 worktree는 제거), 열린 PR 없음.
+**저장소 상태**: 워킹 트리 clean, 로컬 브랜치는 `main` 하나, worktree도
+`/Users/h0977/dev/ClairKeys` 하나(D-029 기록용 임시 worktree는 제거), 열린 PR 없음. `main`의
+최신 **코드** 반영은 PR #94의 merge commit `cb42fe4`이고, 그 뒤 커밋은 핸드오프 문서뿐이다 —
+sha를 여기 고정하지 않으니 세션 시작 시 `git fetch`로 확인한다.
 
 ### 이 트랙에서 배운 것 (반복하지 않기 위해)
 
