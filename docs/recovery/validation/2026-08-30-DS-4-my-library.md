@@ -39,3 +39,21 @@ Environment: macOS (darwin 25.5.0), Node v22.18.0
   실제 DB가 없는 로컬 환경에서는 운영 데이터로 인증 브라우저 측정을 수행하지 못했다.
 - `PracticeSession`에는 재생 위치를 저장하거나 복원하는 경로가 없다. ‘이어하기’는 거짓 UI가 되므로
   구현하지 않았다; 저장 계약을 정하는 후속 작업이 필요하다.
+
+## 병합 후 재확인 (2026-08-30 KST)
+
+DS-4는 PR #92 이후 #93(merge `d13bb23`), #94(merge `cb42fe4`)까지 병합됐다. 위 표는 PR #92의
+브랜치 커밋 `fc27178`에서 잰 값이므로, 병합된 `main` `cb42fe4`에서 계약 grep과 CI를 다시 확인했다.
+
+| 확인 | 명령 | 결과 |
+|---|---|---|
+| `alert()` 미사용 | `grep -rn 'alert(' src/components/library/` (`role="alert"` 제외) | 0건 |
+| 원값 미사용 | `grep -rn 'processingStatus' src/components/library/` | 0건 |
+| `omrJobId` 미노출 | `grep -rn 'omrJobId' src/app/api/sheet/` | 라우트 코드 0건. 3건은 모두 테스트 파일 — 2건은 `not.toHaveProperty('omrJobId')` 단언, 1건은 fixture 입력이다 |
+| 파생 상태 반환 | `grep -rn 'availability' src/app/api/sheet/` | `route.ts:72`, `[id]/route.ts:74`에서 `deriveSheetMusicAvailability` 호출 |
+| 오류 전달 유지 | `grep -rn 'role="alert"' src/components/library/` | 2건 (목록 오류, 제목 편집 오류) — D-029가 유지하기로 한 경로 |
+| merge commit CI | `gh api repos/landfill/ClairKeys/commits/cb42fe4/check-runs` | **6/6 성공** — Lint, Security Audit, Run Tests, Post-merge tests, Post-merge build, E2E Tests |
+
+**주의**: phase 문서의 검증 명령은 `grep -rn 'omrJobId' src/app/api/sheet/`가 0건일 것을 요구하지만,
+회귀 테스트가 "노출하지 않음"을 단언하려면 그 식별자를 반드시 언급해야 한다. 이 grep은 라우트
+**구현 코드**에 대한 기준으로 읽는다 — 0건이 되도록 테스트를 지우면 계약을 지키는 근거가 사라진다.

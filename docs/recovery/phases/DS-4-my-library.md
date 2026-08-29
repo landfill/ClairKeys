@@ -1,6 +1,6 @@
 # DS-4 — 내 악보
 
-Status: `IN_PROGRESS`
+Status: `DONE`
 Depends on: DS-1 (DS-1이 이미 **DS-G1**을 선행 조건으로 갖는다 — 처리 상태 출처 계약은 확정된 상태다)
 Blocks: DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 4단계
@@ -108,3 +108,21 @@ grep -rn 'omrJobId' src/app/api/sheet/                # 0건 — 노출하지 �
 - 2026-08-30 — PR #92는 merge commit `64aecb2`로 병합했다. 파생 상태·제목 편집·빈 상태·삭제 오류
   기준은 구현됐다. 반응형은 사용자가 수동 확인했다. D-029에 따라 목록 변경의 별도 live announcement는
   이 화면에 넣지 않는다. 단계 완료 상태와 최종 이슈 #76 판정은 DS-7이 담당한다.
+- 2026-08-30 — DS-4 `DONE`. 후속 PR 두 건이 더 병합됐다: PR #93(merge `d13bb23`)이 891px에서
+  관측된 뱃지·행동 과밀을 정리했고, PR #94(merge `cb42fe4`)가 D-029로 목록 성공 변경의 별도
+  `aria-live` 요구를 제거했다. 완료 기준 8개를 병합된 `main` 코드에 대조한 결과는 아래와 같다.
+
+| 완료 기준 | 근거 |
+|---|---|
+| 파생 상태 4종 구분, 원값 미사용 | `LibrarySheetMusicList.test.tsx`의 "distinguishes all derived availability states without exposing raw processing values"; `grep -rn processingStatus src/components/library/` 0건 |
+| API가 파생 상태 반환, 원값·`omrJobId` 미노출 | `src/app/api/sheet/route.ts:72`·`src/app/api/sheet/[id]/route.ts:74`의 `deriveSheetMusicAvailability`. 라우트 코드에 `omrJobId` 0건이고, 두 라우트 회귀가 `not.toHaveProperty('omrJobId')`를 건다 |
+| `'pending'` + 빈 `animationDataUrl` 운영 건수 기록 | 2026-08-29 KST 운영 DB 0건 (`processing` 2 / `completed` 2) |
+| 사용자 제목 우선·화면 편집 | 제목 편집 dialog 회귀 2건(키보드 편집, 공백 제목 거부) |
+| 빈 상태의 업로드 행동 | "offers an upload action for an empty library" 회귀 |
+| 이어하기 구현 또는 미구현 사유 기록 | `PracticeSession`에 재생 위치 필드·복원 소비자가 없어 미구현. 저장 계약을 정하는 후속 작업이 선행이다 |
+| 상태별 회귀 테스트 | 위 4종 + 빈 상태 |
+| `src/components/library/`에 `alert()` 없음 | `grep` 0건 (`role="alert"` 2곳은 오류 전달용으로 유지) |
+
+  접근성·반응형 항목 중 카드 그리드 1440·1024·390은 사용자가 2026-08-30에 수동 확인했고,
+  목록 변경의 `aria-live`는 D-029로 요구에서 제외했다. 오류 `role="alert"`는 남는다.
+  이슈 #76 종단 판정(완료 조건 7·8)은 여전히 DS-7 소유다.

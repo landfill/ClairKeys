@@ -8,39 +8,40 @@ Last updated: 2026-08-30 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
-DS-0, DS-G1, DS-1, DS-2, **DS-3이 `DONE`**이고 **DS-4는 `IN_PROGRESS`**, DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
+DS-0, DS-G1, DS-1, DS-2, DS-3, **DS-4까지 `DONE`**이고 DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
 완료 조건 8개는 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 
-**Next action**: PR [#94](https://github.com/landfill/ClairKeys/pull/94)의 CI·리뷰를 확인한다.
-사용자는 반응형을 수동 확인했고, D-029는 목록 변경의 별도 `aria-live` 요구를 제거한다. PR #94가
-병합되면 DS-4 완료 기준을 다시 대조한다. DS-4는
-D-026 결정 2·3의 **파생 상태 4종**(연습 가능 /
-처리 중 / 오류 / 알 수 없음)만 읽고, 단계 표시는 이 화면의 것이 아니다 (D-026 G1-2).
+**Next action**: **DS-5(학습 플레이어)를 연다** — `codex/ds-5-learning-player`. 선행 조건 DS-1은
+`DONE`이라 지금 착수 가능하다. **코드를 고치기 전에 D-019 결정 8을 먼저 처리한다**: "공유
+`PlaybackControls`는 수정하지 않는다"가 DS-5의 구간 반복(DS0-9) 추가와 정면으로 부딪힌다.
+AGENTS.md에 따라 결정 문서를 먼저 갱신하거나 별도 컨트롤로 분리하는 선택을 기록한 뒤 구현한다.
+이모지 교체도 같은 결정에 걸린다. DS-5는 실기기 보고로 세 번 고친 재생 기하(`PX_PER_SEC` 140 등
+7개 상수)를 **한 픽셀도 바꾸지 않는다** (D-024). DS-6은 DS-5를 선행 조건으로 두므로 병렬 착수
+대상이 아니다.
 
-**착수 전 선행 확인 완료**: 2026-08-29 KST 운영 DB 분포는 `processing` 2건,
-`completed` 2건이다. 총 4건으로 확인됐고 `'pending'` + 빈 `animationDataUrl` 행은 0건이다.
-따라서 현재 운영 사용자에게 `알 수 없음` 상태가 보이지 않으며, DS-4는 그 상태를 미래/legacy
-데이터를 위한 계약으로 구현한다.
+**DS-4는 PR 세 건으로 끝났다.** #92(merge `64aecb2`)가 구현, #93(merge `d13bb23`)이 891px 관측의
+카드 과밀 정리, #94(merge `cb42fe4`)가 D-029 결정 기록이다. 목록·상세 API는 `availability`만
+반환하고 `processingStatus`·`omrJobId`를 반환하지 않는다. 목록은 파생 상태 4종의 배지와 행동
+(연습 시작 / 처리 중 / 다시 업로드), 제목 편집, 빈 상태 업로드 CTA, 앱 내 삭제 오류를 갖는다.
+완료 기준 8개를 병합된 `main` 코드에 대조한 표는 `docs/recovery/phases/DS-4-my-library.md`의
+2026-08-30 Progress 항목에 있고, 검증 상세는
+`docs/recovery/validation/2026-08-30-DS-4-my-library.md`에 있다.
 
-DS-5는 DS-4와 독립이라 병렬로 열 수 있다.
+**착수 전 선행 확인 완료**: 2026-08-29 KST 운영 DB 분포는 `processing` 2건, `completed` 2건이다.
+총 4건이고 `'pending'` + 빈 `animationDataUrl` 행은 0건이다. 따라서 `알 수 없음`은 현재 운영
+사용자에게 보이지 않으며, DS-4는 그 상태를 미래/legacy 데이터를 위한 계약으로 구현했다.
 
-DS-4 구현은 PR #92가 merge commit `64aecb2`로 병합했다. 목록·상세 API는 `availability`만 반환하고
-`processingStatus`·`omrJobId`를 반환하지 않는다. 목록은 상태 배지와 행동(연습 시작 / 처리 중 /
-다시 업로드), 제목 편집, 빈 상태 업로드 CTA, 앱 내 삭제 오류를 갖는다. `PracticeSession`에는 재생
-위치 필드·복원 경로가 없으므로 ‘이어하기’ UI를 만들지 않았으며, 상세는
-`docs/recovery/validation/2026-08-30-DS-4-my-library.md`에 기록했다.
+**DS-4가 판정하지 못한 것**: 반응형 1440·1024·390은 사용자의 수동 확인이 근거이고 자동 검사는
+여전히 없다. `/library`는 인증 뒤 화면이라 공개 E2E와 axe가 지나가지 않는다 — DS-6의
+`/sheet/[id]`가 같은 사각에 있다. 이어하기는 `PracticeSession`에 재생 위치 필드·복원 소비자가
+없어 구현하지 않았고, 저장 계약을 정하는 후속 작업이 남는다(아래 이월 표 DS4-1).
 
-**DS-4 마감 근거**: 사용자는 2026-08-30에 반응형을 수동 확인했다. 목록 변경의 별도 `aria-live`
-안내는 D-029로 제거한다. 오류 `role="alert"`는 유지한다.
+PR #92·#93·#94의 작업 브랜치는 모두 local·remote tip이 `main`에 포함됨을 확인한 뒤 원격→로컬 순으로
+삭제했다. PR #94 merge commit `cb42fe4`의 check-runs는 **6/6 성공**이다(마지막 완료 E2E Tests,
+2026-08-29T16:15:43Z). 리뷰 표면 3곳(스레드·리뷰 본문·일반 코멘트) 모두 actionable 0건이었다.
 
-PR #92 브랜치는 병합 후 local·remote tip `fc27178`이 `main`에 포함됨을 확인하고 2026-08-30 KST에
-원격→로컬 순으로 삭제했다. 병합 commit `64aecb2`의 post-merge build/run-tests는 기록 시점에 실행 중이다.
-
-PR #93 head `e0bc537`은 공개 범위를 중립 뱃지로, 연습 가능을 상태 뱃지로 나누고 메타데이터 줄바꿈,
-전체 폭 주요 행동, 3열 관리 행동을 추가했고 merge commit `d13bb23`으로 병합됐다. 기존 행동·데이터
-계약은 바꾸지 않았다.
-
-**저장소 상태**: `main`이 `d859ce8`로 최신, 워킹 트리 clean, DS-4 작업 브랜치는 삭제됨, 열린 PR 없음.
+**저장소 상태**: `main`이 `cb42fe4`로 최신, 워킹 트리 clean, 로컬 브랜치는 `main` 하나, worktree도
+`/Users/h0977/dev/ClairKeys` 하나(D-029 기록용 임시 worktree는 제거), 열린 PR 없음.
 
 ### 이 트랙에서 배운 것 (반복하지 않기 위해)
 
@@ -81,6 +82,8 @@ DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항
 | 항목 | 내용 | 담당 |
 |---|---|---|
 | **DS0-1** | 비공개 악보의 애니메이션 JSON이 익명으로 200(78KB). API의 403은 URL 은닉일 뿐이고 객체는 public 버킷에 있다 | **DS 범위 밖, GitHub 이슈 미등록** |
+| **DS4-1** | **이어하기가 없다.** `PracticeSession`은 `durationSeconds`·`completedPercentage`만 저장하고 재생 위치 필드도 복원 소비자도 없다. UI를 만들기 전에 **무엇을 저장할지**를 정해야 한다 — 저장 계약이 선행이다 | **결정 필요, GitHub 이슈 미등록** |
+| DS4-2 | `/library`의 반응형 1440·1024·390 근거가 사용자의 수동 확인뿐이다. 인증 뒤 화면이라 공개 E2E·axe가 지나가지 않는다 | DS-7(종단 접근성) |
 | C5 | `HOME_SAMPLE_ANIMATION.tempoSource: 'user'`가 화면에 "직접 입력"으로 표시돼 방문자가 입력한 것처럼 읽힌다 | DS-5(표시) 또는 별도 결정 |
 | C6 | 홈의 가로 스크롤 가드가 매칭 0개라 vacuous | DS-7 |
 | — | `flex-shrink-*` 표기 일괄 현대화(동작 문제 없음) | P2-A |
