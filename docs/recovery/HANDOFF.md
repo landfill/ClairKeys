@@ -2,6 +2,22 @@
 
 Last updated: 2026-08-29 KST
 
+## PR #86 열림 — 이슈 #82 메트로놈 값·출처 표시 후속
+
+사용자가 P1-B는 후순위로 두고 이슈 [#82](https://github.com/landfill/ClairKeys/issues/82)를 권장
+범위로 진행하도록 지시했다. PR [#86](https://github.com/landfill/ClairKeys/pull/86)을 review-ready로
+열었고 head는 `2ce5e38`, 브랜치는 `codex/p1a-metronome-display`다.
+
+- OMR이 이미 생성하는 `tempo`, `tempoSource`, `scoreTempo`, `timingReferenceBpm`을 재사용한다.
+- 실제 운영 재생 경로인 `FallingNotesPlayer`에 재생 전 표시와 재생 중 fixed overlay를 추가했다.
+- DB schema/migration과 메트로놈 인식 로직은 변경하지 않는다. 재생 속도 배율과 악보 BPM을 혼동하지
+  않는다.
+- 구현 전 회귀는 1건 실패했고, 이후 focused 27 tests, 전체 Jest 62 suites/592 tests, `tsc`,
+  lint, build가 통과했다.
+
+P1-A는 DONE이고 P1-B는 여전히 NOT_STARTED다. PR #86은 사용자 명시적 병합 승인 전까지 병합하지
+않는다. physical device 표시와 실제 tempo metadata가 있는 production score는 아직 관측하지 않았다.
+
 ## #70 DONE — P1-B는 후순위, OMR job ID 무결성만 분리 완료
 
 사용자가 P1-B 전체(영속 큐·OMR 보안)는 후순위로 두고 이슈
