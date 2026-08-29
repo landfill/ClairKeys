@@ -150,6 +150,20 @@ describe('GET /api/omr/status/[jobId] — a job the service no longer has', () =
     expect(body.error.length).toBeGreaterThan(0)
   })
 
+  it('names the failure so the screen can tell it from a score it could not read', async () => {
+    // The upload screen shows a different recovery action for each of the four
+    // user-facing failures (D-026 G1-5): a lost job means "upload it again",
+    // an unreadable score means "try a sharper PDF". Without a code the only
+    // thing separating them in this payload is a Korean sentence, and matching
+    // on prose across the network boundary is a contract nothing enforces.
+    fetchSpy = respondWith(404, JSON.stringify({ detail: 'Job not found' }))
+
+    const { GET } = await loadRoute()
+    const body = await (await GET(statusRequest(), { params })).json()
+
+    expect(body.code).toBe('OMR_JOB_LOST')
+  })
+
   it('leaves the user title alone while failing the row', async () => {
     fetchSpy = respondWith(404, JSON.stringify({ detail: 'Job not found' }))
 
