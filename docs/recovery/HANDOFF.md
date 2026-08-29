@@ -2,6 +2,24 @@
 
 Last updated: 2026-08-29 KST
 
+## PR #85 열림 — P1-B는 후순위, #70 OMR job ID 무결성만 분리
+
+사용자가 P1-B 전체(영속 큐·OMR 보안)는 후순위로 두고 이슈
+[#70](https://github.com/landfill/ClairKeys/issues/70)만 처리하도록 지시했다. 이에 review-ready PR
+[#85](https://github.com/landfill/ClairKeys/pull/85)를 열었다. Head `ab09c36`, 브랜치
+`codex/p1b-omr-job-id-index`.
+
+- `SheetMusic.omrJobId`를 nullable unique key로 바꿔 non-null UUID가 유일하고 indexed임을 DB가
+  보장한다. PostgreSQL에서는 NULL 여러 개가 허용돼 OMR job ID를 받기 전 행은 유지된다.
+- `/api/omr/finalize`는 비결정적 `findFirst` 대신 `findUnique`로 callback 대상을 찾는다.
+- 운영 사전 점검: 총 5행, non-null `omrJobId` 3행, 중복 그룹 0개.
+- 회귀는 구현 전 `findUnique` 단언 실패를 확인했고, 이후 focused test, 전체 Jest 62 suites/591
+  tests, `tsc`, lint, build, Prisma schema validation을 통과했다.
+
+**P1-B는 여전히 `NOT_STARTED`다.** 이 PR은 persistent payload·worker lease·재시작 복구·CORS·파일
+  검사·callback URL hardening을 구현하지 않는다. CI·리뷰가 끝나도 사용자의 명시적 병합 승인이
+필요하며, migration은 production 중복 사전 점검을 다시 확인한 뒤 코드보다 먼저 적용해야 한다.
+
 ## P1-A DONE — provenance migration·backfill·운영 배포 완료
 
 2026-08-29, 사용자의 명시적 승인으로 PR

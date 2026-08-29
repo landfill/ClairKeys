@@ -9,6 +9,11 @@ Progress (2026-08-28): 이 phase는 아직 착수하지 않았다. 다만 인접
 OMR 프로세스 메모리에 있고, 재시작 복구·영속 idempotency key는 손대지 않았다. 근거:
 `docs/recovery/validation/2026-08-28-issue-55-page-leave-end-to-end.md`, D-018.
 
+Progress (2026-08-29): 사용자가 P1-B 전체를 후순위로 두고 이슈 #70만 분리하도록 지시했다. PR
+[#85](https://github.com/landfill/ClairKeys/pull/85)는 `omrJobId` nullable unique/index와 finalize
+`findUnique`만 다룬다. 이는 callback 대상의 DB 무결성·성능을 보완하지만 durable queue work stages
+1–6에는 착수하지 않는다. 따라서 Status는 `NOT_STARTED`를 유지한다.
+
 ## Objective
 
 P1-A의 canonical upload path를 재시작·수평 확장 가능한 작업 처리와 인증된 OMR 서비스 위에서 실행한다.
