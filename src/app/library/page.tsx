@@ -57,8 +57,8 @@ export default function LibraryPage() {
                 className={`
                   flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md text-sm font-medium transition-colors
                   ${activeTab === tab.id
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-surface text-accent shadow-sm'
+                    : 'text-ink-muted hover:text-ink'
                   }
                 `}
               >
@@ -78,10 +78,10 @@ export default function LibraryPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="곡명, 저작자로 검색..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-rule-strong bg-surface text-ink rounded-lg"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 text-ink-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
@@ -91,7 +91,7 @@ export default function LibraryPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'recent' | 'name' | 'created')}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white min-w-[140px]"
+                className="px-4 py-3 border border-rule-strong rounded-lg bg-surface text-ink min-w-[140px]"
               >
                 <option value="recent">최근 수정</option>
                 <option value="name">이름순</option>
@@ -118,7 +118,7 @@ export default function LibraryPage() {
           <div className="fixed bottom-6 right-6 z-10">
             <button
               onClick={() => router.push('/upload')}
-              className="w-14 h-14 fab-button text-white rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="w-14 h-14 fab-button text-on-accent rounded-full flex items-center justify-center"
               title="새 악보 업로드"
               aria-label="새 악보 업로드"
             >

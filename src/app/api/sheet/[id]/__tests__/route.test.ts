@@ -44,6 +44,8 @@ describe('/api/sheet/[id]', () => {
         isPublic: false,
         provenance: 'demo',
         animationDataUrl: 'http://example.com/data.json',
+        processingStatus: 'pending',
+        omrJobId: 'internal-job-id',
         createdAt: new Date(),
         updatedAt: new Date(),
         user: { id: 'user1', name: 'Test User', email: 'test@example.com' },
@@ -60,6 +62,9 @@ describe('/api/sheet/[id]', () => {
       expect(data.sheetMusic.title).toBe('Test Song')
       expect(data.sheetMusic.provenance).toBe('demo')
       expect(data.sheetMusic.owner).toBeTruthy()
+      expect(data.sheetMusic.availability).toBe('ready')
+      expect(data.sheetMusic).not.toHaveProperty('processingStatus')
+      expect(data.sheetMusic).not.toHaveProperty('omrJobId')
     })
 
     it('should return public sheet music for non-owner', async () => {

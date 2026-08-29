@@ -1,4 +1,5 @@
 import type { SheetMusicProvenance } from '@prisma/client'
+import type { SheetMusicAvailability } from '@/lib/sheetMusicAvailability'
 
 export interface SheetMusic {
   id: number
@@ -8,6 +9,8 @@ export interface SheetMusic {
   categoryId: number | null
   isPublic: boolean
   animationDataUrl: string
+  /** API-derived status for client display; persistence code must not supply it. */
+  availability?: SheetMusicAvailability
   provenance: SheetMusicProvenance
   createdAt: Date
   updatedAt: Date

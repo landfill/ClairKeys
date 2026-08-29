@@ -51,9 +51,11 @@ describe('/api/sheet', () => {
         {
           id: 1,
           title: 'Test Song',
-          composer: 'Test Composer',
-          isPublic: false,
-          createdAt: new Date(),
+        composer: 'Test Composer',
+        isPublic: false,
+        animationDataUrl: '',
+        processingStatus: 'processing',
+        createdAt: new Date(),
           updatedAt: new Date(),
           category: { id: 1, name: 'Classical' }
         }
@@ -68,6 +70,9 @@ describe('/api/sheet', () => {
       expect(data.success).toBe(true)
       expect(data.sheetMusic).toHaveLength(1)
       expect(data.sheetMusic[0].title).toBe('Test Song')
+      expect(data.sheetMusic[0].availability).toBe('processing')
+      expect(data.sheetMusic[0]).not.toHaveProperty('processingStatus')
+      expect(data.sheetMusic[0]).not.toHaveProperty('omrJobId')
     })
 
     it('should filter by category', async () => {

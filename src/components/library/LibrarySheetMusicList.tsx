@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { useSheetMusic } from '@/hooks/useSheetMusic'
 import { useCategories } from '@/hooks/useCategories'
 import { SheetMusicCard } from '@/components/sheet/SheetMusicCard'
+import type { SheetMusicWithCategory } from '@/types/sheet-music'
+import Button from '@/components/ui/Button'
 import Loading from '@/components/ui/Loading'
 
 interface LibrarySheetMusicListProps {
@@ -27,6 +29,10 @@ export function LibrarySheetMusicList({
 }: LibrarySheetMusicListProps) {
   const { sheetMusic, loading: sheetMusicLoading, fetchUserSheetMusic, updateSheetMusic, deleteSheetMusic } = useSheetMusic()
   const { categories, loading: categoriesLoading } = useCategories()
+  const [editingSheet, setEditingSheet] = useState<SheetMusicWithCategory | null>(null)
+  const [title, setTitle] = useState('')
+  const [titleError, setTitleError] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // 데이터 로드
   useEffect(() => {
@@ -86,9 +92,8 @@ export function LibrarySheetMusicList({
   }
 
   const handleDeleteSheetMusic = async (sheetMusicId: number) => {
-    if (!confirm('정말 이 악보를 삭제하시겠습니까?')) return
-    
     try {
+      setErrorMessage(null)
       await deleteSheetMusic(sheetMusicId)
       // 새로고침
       await fetchUserSheetMusic({
@@ -97,7 +102,32 @@ export function LibrarySheetMusicList({
       })
     } catch (error) {
       console.error('Failed to delete sheet music:', error)
-      alert('악보 삭제 중 오류가 발생했습니다.')
+      setErrorMessage('악보를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.')
+    }
+  }
+
+  const openTitleEditor = (sheet: SheetMusicWithCategory) => {
+    setTitle(sheet.title)
+    setTitleError(null)
+    setEditingSheet(sheet)
+  }
+
+  const saveTitle = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!editingSheet) return
+    if (!title.trim()) {
+      setTitleError('제목을 입력해 주세요.')
+      return
+    }
+
+    try {
+      setTitleError(null)
+      setErrorMessage(null)
+      await updateSheetMusic(editingSheet.id, { title: title.trim() })
+      setEditingSheet(null)
+    } catch (error) {
+      console.error('Failed to update sheet music title:', error)
+      setErrorMessage('제목을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.')
     }
   }
 
@@ -109,7 +139,7 @@ export function LibrarySheetMusicList({
   // 빈 상태
   if (filteredAndSortedSheetMusic.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-500">
+      <div className="text-center py-16 text-ink-muted">
         <div className="text-6xl mb-4">🎵</div>
         <h3 className="text-lg font-medium mb-2">
           {searchQuery ? '검색 결과가 없습니다' : '악보가 없습니다'}
@@ -117,12 +147,22 @@ export function LibrarySheetMusicList({
         <p className="text-sm">
           {searchQuery ? '다른 검색어로 시도해보세요' : '첫 번째 악보를 업로드해보세요!'}
         </p>
+        {!searchQuery && (
+          <a href="/upload" className="inline-flex mt-6 px-4 py-2 rounded-md bg-accent text-on-accent hover:bg-accent-hover">
+            새 악보 업로드
+          </a>
+        )}
       </div>
     )
   }
 
   return (
     <div className="space-y-8">
+      {errorMessage && (
+        <p role="alert" className="rounded-md border border-state-error bg-surface px-4 py-3 text-sm text-ink">
+          {errorMessage}
+        </p>
+      )}
       {/* 카테고리 선택 UI */}
       {showCategorySelector && (
         <div className="mb-8">
@@ -135,8 +175,8 @@ export function LibrarySheetMusicList({
                 className={`
                   p-3 rounded-lg border-2 transition-colors text-left
                   ${selectedCategoryId === category.id
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 bg-white hover:bg-gray-50'
+                    ? 'border-accent bg-surface-muted text-ink'
+                    : 'border-rule bg-surface hover:bg-surface-muted'
                   }
                 `}
               >
@@ -153,12 +193,12 @@ export function LibrarySheetMusicList({
       {/* 악보 그리드 */}
       <div>
         <div className="mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-ink">
             {selectedCategoryId === null 
               ? '전체 악보' 
               : categories.find(c => c.id === selectedCategoryId)?.name || '카테고리'
             }
-            <span className="ml-2 text-sm text-gray-500">
+            <span className="ml-2 text-sm text-ink-muted">
               ({filteredAndSortedSheetMusic.length}개)
             </span>
           </h3>
@@ -172,11 +212,42 @@ export function LibrarySheetMusicList({
               categories={categories}
               onMove={handleMoveSheetMusic}
               onDelete={handleDeleteSheetMusic}
+              onEdit={openTitleEditor}
+              availability={sheet.availability}
               showMoveOptions={true}
             />
           ))}
         </div>
       </div>
+
+      {editingSheet && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-sheet-title">
+          <form onSubmit={saveTitle} className="w-full max-w-md rounded-lg bg-surface p-6 shadow-xl">
+            <h2 id="edit-sheet-title" className="text-lg font-semibold text-ink">악보 제목 수정</h2>
+            <label className="mt-4 block text-sm font-medium text-ink" htmlFor="sheet-title">제목</label>
+            <input
+              id="sheet-title"
+              value={title}
+              onChange={(event) => {
+                setTitle(event.target.value)
+                setTitleError(null)
+              }}
+              className="mt-1 w-full rounded-md border border-rule-strong bg-surface px-3 py-2 text-ink"
+              autoFocus
+              required
+              aria-describedby={titleError ? 'sheet-title-error' : undefined}
+            />
+            {titleError && <p id="sheet-title-error" role="alert" className="mt-2 text-sm text-state-error">{titleError}</p>}
+            <div className="mt-6 flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={() => {
+                setTitleError(null)
+                setEditingSheet(null)
+              }}>취소</Button>
+              <Button type="submit">저장</Button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   )
 }
