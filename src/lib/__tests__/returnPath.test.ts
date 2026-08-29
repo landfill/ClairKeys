@@ -34,6 +34,42 @@ describe('toSafeReturnPath', () => {
     expect(toSafeReturnPath('\\\\evil.example')).toBe('/')
   })
 
+  /**
+   * 이 블록이 이 테스트에서 유일하게 중요한 부분이다. 나머지는 구현에 적어둔 금지 목록을 되읽는
+   * 것이라 구현이 놓친 것도 함께 놓친다 — 실제로 그랬다.
+   *
+   * URL 파서는 경로 앞뒤의 ASCII 탭·LF·CR을 **제거한 뒤** 해석한다. 그래서 `/<TAB>/evil.example`은
+   * 문자열로는 `/`로 시작하고 `//`도 아니고 백슬래시도 없지만, 브라우저에서는
+   * `https://evil.example`이 된다. 판정은 문자열 모양이 아니라 **파서가 어떻게 읽는지**를 따라야 한다.
+   */
+  it.each([
+    ['탭', '/\t/evil.example/x'],
+    ['LF', '/\n/evil.example/x'],
+    ['CR', '/\r/evil.example/x'],
+    ['탭 + 프로토콜 상대', '/\t//evil.example'],
+    ['앞쪽 공백과 탭', ' \t/\t/evil.example'],
+    ['NUL', '/\0/evil.example'],
+  ])('rejects a path the URL parser folds into another origin (%s)', (_label, candidate) => {
+    expect(toSafeReturnPath(candidate)).toBe('/')
+  })
+
+  it('resolves to the same origin for everything it accepts', () => {
+    // 통과시킨 값은 반드시 같은 origin으로 해석돼야 한다. 이것이 진짜 계약이다.
+    const base = 'https://clairkeys.example/auth/signin'
+    for (const candidate of [
+      '/library',
+      '/sheet/2',
+      '/explore?tab=search',
+      '/\t/evil.example/x',
+      '//evil.example',
+      'https://evil.example',
+      '/\\evil.example',
+    ]) {
+      const safe = toSafeReturnPath(candidate)
+      expect(new URL(safe, base).origin).toBe('https://clairkeys.example')
+    }
+  })
+
   it('rejects anything that is not a path', () => {
     expect(toSafeReturnPath('javascript:alert(1)')).toBe('/')
     expect(toSafeReturnPath('library')).toBe('/')

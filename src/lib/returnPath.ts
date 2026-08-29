@@ -11,16 +11,36 @@
 const DEFAULT_RETURN_PATH = '/'
 
 /**
- * 경로처럼 보이지만 브라우저가 외부 주소로 읽는 형태를 걸러낸다.
+ * 판정 기준이 되는 base. 실제 origin이 아니어도 된다 — 후보가 **같은 origin에 머무는지**만 본다.
+ */
+const PROBE_ORIGIN = 'https://return-path.invalid'
+
+/**
+ * 문자열 모양이 아니라 **URL 파서가 어떻게 읽는지**로 판정한다.
  *
- * - `//host` 는 프로토콜 상대 URL이라 현재 스킴의 절대 주소가 된다.
- * - `\` 는 일부 파서가 `/`로 접어서 `/\host`가 `//host`처럼 동작할 수 있다.
+ * 처음에는 `startsWith('/')`, `!startsWith('//')`, 백슬래시 부재만 봤다. 그 셋을 모두 통과하면서도
+ * 외부로 나가는 입력이 있다 — URL 파서는 ASCII 탭·LF·CR을 **제거한 뒤** 해석하므로
+ * `/<TAB>/evil.example`이 `https://evil.example`이 된다. 금지 목록을 늘리는 방식은 다음 문자를
+ * 또 놓치므로, 파서에게 직접 물어본다.
  */
 function isSameOriginPath(candidate: string): boolean {
+  // 파서가 무시하는 문자는 판정도 무시해선 안 된다. 정상 경로에는 나올 이유가 없다.
+  if (/[\u0000-\u001f\u007f]/.test(candidate)) return false
+  if (candidate.includes('\\')) return false
   if (!candidate.startsWith('/')) return false
   if (candidate.startsWith('//')) return false
-  if (candidate.includes('\\')) return false
-  return true
+
+  let resolved: URL
+  try {
+    resolved = new URL(candidate, PROBE_ORIGIN)
+  } catch {
+    return false
+  }
+  if (resolved.origin !== PROBE_ORIGIN) return false
+
+  // 파서가 읽은 결과가 원래 문자열과 같아야 한다. 다르면 파서와 우리가 서로 다른 것을 보고 있다는
+  // 뜻이고, 그 차이가 정확히 우회가 사는 자리다.
+  return `${resolved.pathname}${resolved.search}${resolved.hash}` === candidate
 }
 
 /**
