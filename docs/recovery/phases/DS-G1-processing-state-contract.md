@@ -1,6 +1,6 @@
 # DS-G1 — 처리 상태 출처 계약 확정 (결정 gate)
 
-Status: `IN_REVIEW`
+Status: `DONE`
 Depends on: DS-0 (`DONE`)
 Gates: **DS-1**(내비게이션 구성), DS-3, DS-4
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 3·7단계의 선행 결정
@@ -98,6 +98,13 @@ DS-0이 확인한 사실이 출발점이다.
 - 2026-08-29 — Work stages 1~3 완료. 조사에서 선택지 (b)·(c)가 사실상 배제됐다: `ProcessingJob`의
   유일한 writer 두 곳이 P1-A가 무력화한 경로여서, 그 테이블을 쓰는 것은 D-010을 되돌리는 일이다.
   결정을 **D-026**으로 기록하고 DS-1·DS-3·DS-4·DS-7 문서를 확정 문구로 교체했다. 코드 변경 0건.
+- 2026-08-29 — **DONE.** 사용자의 명시적 승인으로 PR
+  [#88](https://github.com/landfill/ClairKeys/pull/88)을 merge commit `57d07bb`로 병합했다
+  (최종 head `9c81212`). 필수 체크 4개 전부 통과, 리뷰 스레드 0건. 로컬·원격 작업 브랜치 tip이
+  main에 포함됨을 확인한 뒤 양쪽을 삭제했다. merge commit의 post-merge check-runs가 6/6 성공했다.
+  완료 조건의 핵심인 "코드 변경 0건"은
+  `git diff --stat origin/main`이 `docs/` 7개 파일만 보여주는 것으로 확인했다.
+  **DS-1의 진입 조건 3(내비게이션 구성)이 이 결정으로 해소됐다.**
 
 ## Completion criteria
 

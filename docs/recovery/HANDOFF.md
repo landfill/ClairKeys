@@ -2,11 +2,13 @@
 
 Last updated: 2026-08-29 KST
 
-## #76 DS-G1 IN_REVIEW — 처리 상태 출처 계약 확정, PR #88 열림
+## #76 DS-G1 DONE — 처리 상태 출처 계약 확정 완료, 다음은 DS-1
 
 사용자 지시로 DS-G1을 진행했다. UI 단계가 아니라 결정 gate이므로 **코드 변경 0건**이 완료 조건이고,
-산출물은 결정 문서다. PR [#88](https://github.com/landfill/ClairKeys/pull/88)이 열려 있고 병합 승인을
-받지 않았다. `DECISIONS.md` 신규 항목은 직접 커밋 예외가 아니라 PR로 올렸다.
+산출물은 결정 문서다. 사용자의 명시적 승인으로 PR [#88](https://github.com/landfill/ClairKeys/pull/88)을
+merge commit `57d07bb`로 병합했다(최종 head `9c81212`). 필수 체크 4개 전부 통과, 리뷰 스레드 0건.
+merge commit의 post-merge check-runs가 **6/6 성공**했다. 로컬·원격 작업 브랜치 tip이 main에
+포함됨을 확인한 뒤 양쪽을 삭제했다.
 
 **조사가 선택지를 지웠다.** `ProcessingJob`의 유일한 writer는 `/api/processing` POST와
 `/api/upload-async`인데 **둘 다 P1-A가 `CONVERSION_UNAVAILABLE`로 무력화한 경로다**(D-010). 그
@@ -40,7 +42,10 @@ DS-4가 만들므로 DS-1~DS-4 사이에 공백이 생기지만, 현재도 `/pro
 (`ghgiqtinaxjsuotfzmcw`)가 사용 가능한 MCP 계정에 없다. `'pending'` + 빈 `animationDataUrl` 행의
 건수를 **DS-4 착수 전 확인 항목**으로 남겼다.
 
-**다음 행동**: PR #88 병합 승인 후 **DS-1** 착수.
+**다음 행동**: **DS-1(디자인 토큰과 공통 셸)** 착수. 진입 조건 6개는
+`docs/recovery/phases/DS-1-design-foundation.md`에 있고, 그중 3번(내비게이션 구성)이 이 결정으로
+확정됐다. DS-1은 시각 변경(A)과 도달 경로 변경(B)을 **다른 커밋으로** 나누고, B에는 라우트 회귀
+검증(변경 전후 응답 코드 표, 제품 라우트 7개 불변)을 붙인다.
 
 ## #76 2차 검토 반영 — DS-G1 → DS-1 직렬화, 완료 조건의 측정 가능성 교정
 
