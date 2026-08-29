@@ -9,6 +9,7 @@ jest.mock('@/lib/prisma', () => ({
   prisma: {
     sheetMusic: {
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
   },
@@ -20,6 +21,7 @@ jest.mock('@/services/fileStorageService', () => ({
 }))
 
 const mockFindFirst = prisma.sheetMusic.findFirst as jest.Mock
+const mockFindUnique = prisma.sheetMusic.findUnique as jest.Mock
 const mockUpdate = prisma.sheetMusic.update as jest.Mock
 const mockGetInstance = FileStorageService.getInstance as jest.Mock
 
@@ -73,6 +75,7 @@ describe('POST /api/omr/finalize — server-owned completion trigger', () => {
     })
     mockGetInstance.mockReturnValue({ uploadOmrAnimationData })
     mockFindFirst.mockResolvedValue(row())
+    mockFindUnique.mockResolvedValue(row())
     mockUpdate.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => ({
       ...row(),
       ...data,
@@ -92,7 +95,8 @@ describe('POST /api/omr/finalize — server-owned completion trigger', () => {
     const response = await POST(callbackRequest())
 
     expect(response.status).toBe(200)
-    expect(mockFindFirst).toHaveBeenCalledWith({ where: { omrJobId: JOB_ID } })
+    expect(mockFindUnique).toHaveBeenCalledWith({ where: { omrJobId: JOB_ID } })
+    expect(mockFindFirst).not.toHaveBeenCalled()
     expect(uploadOmrAnimationData).toHaveBeenCalledWith(JOB_ID, 'user-1', ANIMATION)
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: 17 },
@@ -142,7 +146,7 @@ describe('POST /api/omr/finalize — server-owned completion trigger', () => {
   })
 
   it('is idempotent after another trigger has stored the result', async () => {
-    mockFindFirst.mockResolvedValue(
+    mockFindUnique.mockResolvedValue(
       row({
         animationDataUrl:
           `https://project.supabase.co/storage/v1/object/public/animation-data/user-1/omr_${JOB_ID}.json`,
@@ -160,7 +164,7 @@ describe('POST /api/omr/finalize — server-owned completion trigger', () => {
   })
 
   it('retries a row previously marked failed when storage becomes available', async () => {
-    mockFindFirst.mockResolvedValue(row({ processingStatus: 'failed' }))
+    mockFindUnique.mockResolvedValue(row({ processingStatus: 'failed' }))
 
     const { POST } = await import('../route')
     const response = await POST(callbackRequest())
