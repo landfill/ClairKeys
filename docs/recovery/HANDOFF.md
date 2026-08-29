@@ -2,14 +2,13 @@
 
 Last updated: 2026-08-29 KST
 
-## PR #85 열림 — P1-B는 후순위, #70 OMR job ID 무결성만 분리
+## #70 DONE — P1-B는 후순위, OMR job ID 무결성만 분리 완료
 
 사용자가 P1-B 전체(영속 큐·OMR 보안)는 후순위로 두고 이슈
-[#70](https://github.com/landfill/ClairKeys/issues/70)만 처리하도록 지시했다. 이에 review-ready PR
-[#85](https://github.com/landfill/ClairKeys/pull/85)를 열었다. Head `ab09c36`, 브랜치
-`codex/p1b-omr-job-id-index`, review-ready·mergeable. Build, Unit, 두 E2E, type/lint,
-접근성, Security Scan/Audit, CodeQL, Vercel Preview가 모두 성공했다. CodeRabbit은 저장소 정책상
-자동 리뷰를 skip했고 actionable feedback은 없다.
+[#70](https://github.com/landfill/ClairKeys/issues/70)만 처리하도록 지시했다. 사용자의 명시적
+승인으로 PR [#85](https://github.com/landfill/ClairKeys/pull/85)를 merge commit `5e36bbe`으로
+병합했고 이슈 #70도 닫았다. merge commit의 post-merge build, E2E, 두 test job, lint, Security
+Audit가 6/6 성공했다. Vercel Production 배포가 Ready다.
 
 - `SheetMusic.omrJobId`를 nullable unique key로 바꿔 non-null UUID가 유일하고 indexed임을 DB가
   보장한다. PostgreSQL에서는 NULL 여러 개가 허용돼 OMR job ID를 받기 전 행은 유지된다.
@@ -18,9 +17,13 @@ Last updated: 2026-08-29 KST
 - 회귀는 구현 전 `findUnique` 단언 실패를 확인했고, 이후 focused test, 전체 Jest 62 suites/591
   tests, `tsc`, lint, build, Prisma schema validation을 통과했다.
 
-**P1-B는 여전히 `NOT_STARTED`다.** 이 PR은 persistent payload·worker lease·재시작 복구·CORS·파일
-검사·callback URL hardening을 구현하지 않는다. 다음 행동은 사용자 명시적 병합 승인이다. 승인 뒤
-migration은 production 중복 사전 점검을 다시 확인한 후 코드보다 먼저 적용한다.
+운영 migration 직전에 non-null `omrJobId` 중복을 다시 확인해 0건을 확인했고, code deployment보다
+먼저 `20260829020000_make_omr_job_id_unique`를 적용했다. 사후에 migration `finished=true`와
+`SheetMusic_omrJobId_key` unique index 생성을 확인했다. 작업 브랜치의 로컬·원격 tip이 모두 main에
+포함됨을 확인한 뒤 양쪽 브랜치를 삭제했다.
+
+**P1-B는 여전히 `NOT_STARTED`다.** #70은 DB lookup 무결성만 보완했다. persistent payload·worker
+lease·재시작 복구·CORS·파일 검사·callback URL hardening은 여전히 구현하지 않았다.
 
 ## P1-A DONE — provenance migration·backfill·운영 배포 완료
 

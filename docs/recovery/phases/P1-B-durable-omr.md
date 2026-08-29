@@ -14,6 +14,10 @@ Progress (2026-08-29): 사용자가 P1-B 전체를 후순위로 두고 이슈 #7
 `findUnique`만 다룬다. 이는 callback 대상의 DB 무결성·성능을 보완하지만 durable queue work stages
 1–6에는 착수하지 않는다. 따라서 Status는 `NOT_STARTED`를 유지한다.
 
+Progress (2026-08-29): PR #85가 `5e36bbe`으로 병합됐고 운영 unique-index migration도 코드 배포 전에
+적용·검증됐다. 이슈 #70은 닫았고 로컬·원격 작업 브랜치도 정리됐다. 이는 P1-B work stages 1–6의
+진척이 아니므로 Status는 계속 `NOT_STARTED`다.
+
 ## Objective
 
 P1-A의 canonical upload path를 재시작·수평 확장 가능한 작업 처리와 인증된 OMR 서비스 위에서 실행한다.

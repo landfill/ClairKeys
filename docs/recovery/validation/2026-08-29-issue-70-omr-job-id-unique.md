@@ -22,6 +22,11 @@ uses that unique, indexed key. Rows that have not yet received an OMR job ID rem
 | `npm run build` | PASS | production build and 41 static pages completed |
 | production duplicate preflight | PASS | 5 rows total; 3 non-null OMR IDs; 0 duplicate non-null groups |
 | PR #85 hosted checks | PASS | Build, Unit, two E2E jobs, type/lint, accessibility, Security Scan/Audit, CodeQL, Vercel Preview |
+| production migration recheck | PASS | non-null duplicate groups: 0 immediately before apply |
+| `20260829020000_make_omr_job_id_unique` | PASS | migration `finished=true`; `SheetMusic_omrJobId_key` unique B-tree index exists |
+| PR #85 merge checks | PASS | post-merge build, E2E, two test jobs, lint, Security Audit: 6/6 |
+| Vercel Production | PASS | Ready deployment after merge |
+| branch containment/cleanup | PASS | local and remote tips contained in main; both branches deleted |
 
 ## Migration safety
 
@@ -32,7 +37,8 @@ non-null duplicate group exists.
 
 ## Not verified
 
-- Production migration application, deployment, and post-deploy callback smoke check; PR #85 is
-  review-ready and awaits explicit user merge approval.
+- A live callback lookup against a retained OMR service job: no such job can be safely manufactured
+  in production solely for this verification. The route behavior is covered by the focused
+  regression and merge checks.
 - P1-B durable queue, restart recovery, CORS/file hardening, and callback URL hardening are
   explicitly out of this issue's scope.
