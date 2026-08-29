@@ -53,8 +53,21 @@ DS-1이 건드리지 않았다. DS-2가 홈을 다시 만들 때 토큰으로 �
 죽기 때문이다. 회귀 13건 추가, 전체 **64 suites / 616 tests** 통과. 스레드는 답변 후 resolve했다.
 이 결함은 fail-closed(과보호) 방향이라 보안 구멍은 아니었다.
 
+**리뷰 대응 2차 (`5455810`, `448f894`)** — 처음에는 `reviewThreads`만 조회해 R1만 찾았고, 리뷰
+**본문**의 접힌 블록과 walkthrough 코멘트에 있던 세 건을 놓쳤다. 리뷰 피드백은 세 표면을 모두 봐야
+한다: 리뷰 스레드, 리뷰 본문(`pulls/N/reviews[].body`), 일반 코멘트(`issues/N/comments`).
+
+- **R2 (실제 결함)**: `.playback-controls .slider:focus { outline: none }`의 specificity가 이 단계가
+  도입한 전역 `:focus-visible`보다 높아 **재생 슬라이더는 키보드로 포커스해도 아무 표시가 없었다.**
+  "포커스를 공통 단계에서 고정한다"는 DS-1의 완료 조건이 그 요소에서만 조용히 깨져 있었다. 제거했고,
+  값이 같은 중복 `.category-item:focus`도 함께 정리했다.
+  CSS는 단위 테스트가 어려워 소스 패턴 가드를 뒀다 — `outline: none` 부재, 컴포넌트별 `:focus` 부재,
+  토큰 밖 hex 부재, `prefers-color-scheme` 부재. **가드를 되돌림 실험으로 검증했다(2건 실패 확인).**
+- **R3**: `IconProps` export.
+- **R4**: Docstring Coverage 20% → 아이콘 9개에 용도 문서화.
+
 PR CI는 전부 통과했다 — 코드 변경 PR이라 문서 PR에서 건너뛰던 Build Check·**Accessibility
-Check**·CodeQL·Security Scan·Unit Tests까지 실행됐다.
+Check**·CodeQL·Security Scan·Unit Tests까지 실행됐다. 최종 Jest는 **65 suites / 621 tests**다.
 
 **P2-A로 넘어가는 잔여**: `BackgroundFileUpload`의 `/processing` 링크 2곳,
 `/api/processing`·`/api/notifications`·`useBackgroundProcessing`·`ProcessingDashboard`의 삭제.
