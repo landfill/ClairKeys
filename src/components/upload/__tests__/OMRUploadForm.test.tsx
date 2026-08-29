@@ -1,5 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
+import { fileSignature } from '@/lib/upload/pdfInspection'
 import OMRUploadForm from '../OMRUploadForm'
 
 jest.mock('next-auth/react', () => ({ useSession: jest.fn() }))
@@ -76,18 +78,32 @@ describe('OMRUploadForm', () => {
       expect(screen.getByRole('button', { name: '변환 시작하기' })).toBeDisabled()
     })
 
-    it('드롭존을 키보드로 도달할 수 있고 파일 입력이 label과 연결돼 있다', async () => {
+    it('Tab만으로 파일 선택에 도달한다', async () => {
+      // 예전 판은 `disabled`/`hidden`이 없다는 것과 label이 있다는 것만 확인했다. 그건 도달
+      // 가능성의 **필요조건**일 뿐이라, tabindex를 -1로 바꾸거나 요소를 폼 밖으로 옮겨도 통과했다.
+      const user = userEvent.setup()
       render(<OMRUploadForm />)
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
 
       const input = fileInput()
-      // `sr-only`는 화면에서 가릴 뿐 포커스를 막지 않는다. `hidden`이나 `disabled`면 막힌다.
-      expect(input).not.toBeDisabled()
-      expect(input).not.toHaveAttribute('hidden')
+      let reached = false
+      for (let step = 0; step < 5 && !reached; step += 1) {
+        await user.tab()
+        reached = document.activeElement === input
+      }
 
-      const label = document.querySelector(`label[for="${input.id}"]`)
-      expect(label).not.toBeNull()
+      expect(reached).toBe(true)
+    })
+
+    it('포커스가 sr-only 입력에 있어도 드롭존에 보인다', async () => {
+      // 파일 입력은 `sr-only`라 그 자체에는 보이는 포커스 표시가 없다. 드롭존이 `focus-within`으로
+      // 받아 주지 않으면 키보드 사용자는 지금 어디에 있는지 알 수 없다 (WCAG 2.4.7).
+      render(<OMRUploadForm />)
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+      const label = document.querySelector(`label[for="${fileInput().id}"]`)!
       expect(label).toHaveTextContent('PDF 악보를 끌어다 놓거나 선택하세요')
+      expect(label.className).toMatch(/focus-within:/)
     })
 
     it('제출 전에 예상 처리 시간과 백그라운드 처리를 알린다', async () => {
@@ -193,6 +209,8 @@ describe('OMRUploadForm', () => {
         sheetMusicId: 7,
         jobId: 'job-7',
         title: '즉흥 환상곡',
+        // 어느 파일에서 나온 작업인지 페이지가 알아야 중복을 판정할 수 있다.
+        signature: fileSignature(pdfFile()),
       })
     })
 
@@ -214,22 +232,26 @@ describe('OMRUploadForm', () => {
       expect(body.has('tempo')).toBe(false)
     })
 
-    it('같은 파일을 다시 선택하면 중복이라고 알린다', async () => {
-      respondToUploadWith({ sheetMusicId: 9, jobId: 'job-9' })
-      const onUploadStart = jest.fn()
-      render(<OMRUploadForm onUploadStart={onUploadStart} />)
+    it('아직 변환 중인 파일을 다시 고르면 중복이라고 알린다', async () => {
+      // 폼은 "무엇이 아직 살아 있는가"를 스스로 알지 않는다. 그것은 처리 패널까지 보는 페이지가
+      // 판정하고, 끝난 작업이 목록에서 빠지는지는 `src/app/upload/__tests__/page.test.tsx`가 건다.
+      const inFlight = pdfFile('duplicate.pdf')
+      render(<OMRUploadForm activeSignatures={[fileSignature(inFlight)]} />)
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
-
-      await selectFile(pdfFile('duplicate.pdf'))
-      await fillRequiredFields()
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: '변환 시작하기' }))
-      })
-      await waitFor(() => expect(onUploadStart).toHaveBeenCalled())
 
       await selectFile(pdfFile('duplicate.pdf'))
 
       expect(await screen.findByText('이미 올린 파일입니다')).toBeInTheDocument()
+    })
+
+    it('변환 중이 아닌 파일은 다시 고를 수 있다', async () => {
+      render(<OMRUploadForm activeSignatures={[]} />)
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+      await selectFile(pdfFile('duplicate.pdf'))
+
+      expect(screen.queryByText('이미 올린 파일입니다')).not.toBeInTheDocument()
+      expect(await screen.findByText(/선택한 파일/)).toBeInTheDocument()
     })
 
     it('서비스에 닿지 못하면(503) 잠시 후 재시도하라고 안내한다', async () => {

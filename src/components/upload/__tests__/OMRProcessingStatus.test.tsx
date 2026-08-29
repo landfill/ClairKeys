@@ -226,6 +226,58 @@ describe('OMRProcessingStatus', () => {
     })
   })
 
+  describe('폴링 수명주기', () => {
+    it('앞선 조회가 끝나기 전에 다음 조회를 시작하지 않는다', async () => {
+      // `setInterval`은 응답을 기다려 주지 않는다. 조회가 5초보다 오래 걸리면 요청이 겹치고,
+      // 늦게 도착한 오래된 응답이 이미 완료된 작업을 다시 "처리 중"으로 되돌릴 수 있다.
+      jest.useFakeTimers()
+      const fetchMock = jest.fn().mockReturnValue(new Promise(() => {}))
+      global.fetch = fetchMock as never
+
+      render(<OMRProcessingStatus jobs={[JOB]} />)
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(0)
+      })
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(20000)
+      })
+
+      // 첫 응답이 오지 않았으므로 여전히 한 번이어야 한다.
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('시각 계약', () => {
+    it('단계 문구의 대비를 불투명도로 깎지 않는다', async () => {
+      // DS-1 토큰은 불투명도 1을 전제로 대비가 계산돼 있다. `opacity-60`을 씌우면
+      // `--ck-ink-muted`(흰 표면에서 6.69:1)가 2.71:1이 된다 — 토큰을 썼다는 사실이
+      // 대비를 지켰다는 뜻이 되지 못한다.
+      respondWith({ status: 'processing', progress: 30 })
+      const { container } = render(<OMRProcessingStatus jobs={[JOB]} />)
+
+      await waitFor(() => expect(global.fetch).toHaveBeenCalled())
+
+      // 단계 목록만 본다. `Button`의 `disabled:opacity-50`은 비활성 상태의 신호이지 본문
+      // 텍스트의 대비를 깎는 것이 아니다.
+      const stageList = container.querySelector('ol')!
+      expect(stageList.querySelectorAll('[class*="opacity-"]')).toHaveLength(0)
+      expect(stageList.className).not.toMatch(/opacity-/)
+    })
+
+    it('링크 안에 버튼을 넣지 않는다', async () => {
+      // `<a><button>`은 중첩 인터랙티브 요소다 — 키보드 포커스가 두 번 멈추고 스크린리더가
+      // 같은 동작을 둘로 읽는다.
+      respondWith({ status: 'completed', progress: 100, sheetMusic: { id: 42 } })
+      const { container } = render(<OMRProcessingStatus jobs={[JOB]} />)
+
+      await screen.findByRole('link', { name: '연습하러 가기' })
+      expect(container.querySelectorAll('a button, button a')).toHaveLength(0)
+    })
+  })
+
   it('사용자에게 보이는 문구에 기술 용어가 없다', async () => {
     respondWith({ status: 'processing', progress: 30 })
     render(<OMRProcessingStatus jobs={[JOB]} />)

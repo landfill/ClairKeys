@@ -12,7 +12,20 @@ import {
 } from '@/lib/upload/uploadFailures'
 
 interface OMRUploadFormProps {
-  onUploadStart?: (data: { sheetMusicId: number; jobId: string; title: string }) => void
+  onUploadStart?: (data: {
+    sheetMusicId: number
+    jobId: string
+    title: string
+    signature: string
+  }) => void
+  /**
+   * **아직 변환 중인** 파일들의 서명. 폼은 이 목록만으로 중복을 판정한다.
+   *
+   * 폼이 직접 들고 있으면 안 되는 이유가 있다. 작업이 끝났는지는 처리 패널만 알고, 끝난 작업의
+   * 서명을 계속 들고 있으면 "같은 파일을 다시 올려 주세요"라는 복구 안내를 **화면 스스로가**
+   * 막는다. 무엇이 살아 있는지는 두 컴포넌트를 모두 보는 페이지가 판정한다.
+   */
+  activeSignatures?: readonly string[]
 }
 
 /**
@@ -29,7 +42,10 @@ const PHASE_MESSAGE: Record<FormPhase, string> = {
   submitting: '변환을 요청하고 있습니다.',
 }
 
-export default function OMRUploadForm({ onUploadStart }: OMRUploadFormProps) {
+export default function OMRUploadForm({
+  onUploadStart,
+  activeSignatures = [],
+}: OMRUploadFormProps) {
   const { data: session } = useSession()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const fileInputId = useId()
@@ -47,11 +63,6 @@ export default function OMRUploadForm({ onUploadStart }: OMRUploadFormProps) {
   const [phase, setPhase] = useState<FormPhase>('idle')
   const [failure, setFailure] = useState<UploadFailure | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  /**
-   * 이 화면에서 이미 변환을 요청한 파일들. 서버는 중복 업로드를 막지 않아 같은 악보의 행이 둘
-   * 생기므로, 두 번째 선택을 여기서 알아본다.
-   */
-  const [submittedSignatures, setSubmittedSignatures] = useState<string[]>([])
 
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoadingCategories, setIsLoadingCategories] = useState(true)
@@ -159,7 +170,7 @@ export default function OMRUploadForm({ onUploadStart }: OMRUploadFormProps) {
       setFailure(null)
       setErrors(prev => ({ ...prev, file: '' }))
 
-      const inspection = await inspectPdfFile(file, { knownSignatures: submittedSignatures })
+      const inspection = await inspectPdfFile(file, { knownSignatures: activeSignatures })
 
       if (!inspection.ok) {
         setSelectedFile(null)
@@ -176,7 +187,7 @@ export default function OMRUploadForm({ onUploadStart }: OMRUploadFormProps) {
         prev.title ? prev : { ...prev, title: file.name.replace(/\.pdf$/i, '') }
       )
     },
-    [submittedSignatures]
+    [activeSignatures]
   )
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -279,12 +290,11 @@ export default function OMRUploadForm({ onUploadStart }: OMRUploadFormProps) {
         return
       }
 
-      setSubmittedSignatures(prev => [...prev, fileSignature(selectedFile!)])
-
       onUploadStart?.({
         sheetMusicId: result.sheetMusicId,
         jobId: result.jobId,
         title,
+        signature: fileSignature(selectedFile!),
       })
 
       setSelectedFile(null)

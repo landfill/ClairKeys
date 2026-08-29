@@ -20,6 +20,13 @@ interface ProcessingJob {
 
 interface OMRProcessingStatusProps {
   jobs: ProcessingJob[]
+  /**
+   * 한 작업이 끝났을 때(완료·실패) 한 번 알린다.
+   *
+   * 페이지가 "무엇이 아직 변환 중인가"를 판정하려면 이 신호가 필요하다. 끝난 작업을 계속 살아
+   * 있는 것으로 세면, 업로드 폼의 중복 가드가 이 화면이 방금 준 복구 안내를 막는다.
+   */
+  onJobSettled?: (jobId: string) => void
 }
 
 type JobPhase = 'processing' | 'completed' | 'failed'
@@ -47,7 +54,7 @@ function initialState(): JobState {
   return { phase: 'processing', progress: 0, failure: null, transient: null }
 }
 
-export default function OMRProcessingStatus({ jobs }: OMRProcessingStatusProps) {
+export default function OMRProcessingStatus({ jobs, onJobSettled }: OMRProcessingStatusProps) {
   const [states, setStates] = useState<Record<string, JobState>>({})
   const statesRef = useRef(states)
 
@@ -119,6 +126,7 @@ export default function OMRProcessingStatus({ jobs }: OMRProcessingStatusProps) 
               progress: 100,
               transient: null,
             }))
+            onJobSettled?.(job.jobId)
             continue
           }
 
@@ -133,6 +141,7 @@ export default function OMRProcessingStatus({ jobs }: OMRProcessingStatusProps) 
               failure,
               transient: null,
             }))
+            onJobSettled?.(job.jobId)
             continue
           }
 
@@ -156,14 +165,24 @@ export default function OMRProcessingStatus({ jobs }: OMRProcessingStatusProps) 
       }
     }
 
-    void pollOnce()
-    const interval = setInterval(() => void pollOnce(), POLL_INTERVAL_MS)
+    // `setInterval`이 아니라 **앞선 조회가 끝난 뒤에** 다음 조회를 예약한다. 간격 타이머는
+    // 응답을 기다려 주지 않아서, 조회가 간격보다 오래 걸리면 요청이 겹친다. 겹치면 늦게 도착한
+    // 오래된 응답이 이미 완료·실패로 정착한 작업을 다시 "처리 중"으로 되돌릴 수 있다.
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    const loop = async () => {
+      await pollOnce()
+      if (cancelled) return
+      timer = setTimeout(() => void loop(), POLL_INTERVAL_MS)
+    }
+
+    void loop()
 
     return () => {
       cancelled = true
-      clearInterval(interval)
+      if (timer) clearTimeout(timer)
     }
-  }, [jobs, applyPollResult])
+  }, [jobs, applyPollResult, onJobSettled])
 
   if (jobs.length === 0) {
     return null
@@ -200,13 +219,17 @@ export default function OMRProcessingStatus({ jobs }: OMRProcessingStatusProps) 
       </ul>
 
       <div className="mt-6 flex flex-wrap gap-3 border-t border-rule pt-4">
+        {/*
+          `Button`을 그대로 넣으면 `<a><button>`이 되어 중첩 인터랙티브 요소가 된다 — 포커스가 두
+          번 멈추고 보조기술이 같은 동작을 둘로 읽는다. `as="span"`이 그 목적으로 있다.
+        */}
         <Link href="/library">
-          <Button variant="outline" size="sm">
+          <Button as="span" variant="outline" size="sm">
             내 악보로 이동
           </Button>
         </Link>
         <Link href="/explore">
-          <Button variant="ghost" size="sm">
+          <Button as="span" variant="ghost" size="sm">
             다른 악보 둘러보기
           </Button>
         </Link>
@@ -242,7 +265,9 @@ function JobCard({ job, state }: { job: ProcessingJob; state: JobState }) {
           <p className="mt-1 text-sm text-ink-muted">변환이 끝났습니다.</p>
           <div className="mt-3">
             <Link href={`/sheet/${job.sheetMusicId}`}>
-              <Button size="sm">연습하러 가기</Button>
+              <Button as="span" size="sm">
+                연습하러 가기
+              </Button>
             </Link>
           </div>
         </div>
@@ -274,8 +299,11 @@ function ProcessingCard({ title, state }: { title: string; state: JobState }) {
             <li
               key={stage.progress}
               aria-current={active ? 'step' : undefined}
+              // 미도달 단계도 `--ck-ink-muted` 그대로 쓴다. 불투명도를 씌우면 DS-1이 계산해
+              // 둔 대비(흰 표면 6.69:1)가 2.71:1로 무너진다. 도달 여부는 색이 아니라 왼쪽
+              // 표식(체크 / 채운 점 / 빈 점)과 굵기가 말한다.
               className={`flex items-center gap-2 text-sm ${
-                active ? 'font-semibold text-ink' : done ? 'text-ink-muted' : 'text-ink-muted opacity-60'
+                active ? 'font-semibold text-ink' : 'text-ink-muted'
               }`}
             >
               {/* 형태로도 구분한다 — 색만으로 상태를 나누지 않는다. */}
@@ -285,7 +313,7 @@ function ProcessingCard({ title, state }: { title: string; state: JobState }) {
                 <span
                   aria-hidden="true"
                   className={`h-2 w-2 shrink-0 rounded-full ${
-                    active ? 'bg-state-progress' : 'bg-rule'
+                    active ? 'bg-state-progress' : 'border border-rule-strong'
                   }`}
                 />
               )}
