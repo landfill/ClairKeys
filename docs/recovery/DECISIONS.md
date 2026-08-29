@@ -732,3 +732,100 @@
   - 플레이어 시각화 영역의 검은 배경을 다크 모드 구현으로 표현하지 않는다.
 - Related: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76), D-024,
   `docs/recovery/phases/DS-0-current-state-baseline.md` (DS0-10)
+
+## D-026: 처리 상태는 `SheetMusic` 한 곳에서 읽고, 세부 단계는 아는 동안에만 보여준다
+
+- Date: 2026-08-29
+- Status: Accepted
+- Fulfills: DS-G1 (이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 3·7단계의 선행 결정)
+- Context:
+  - DS-0이 확인한 대로 `/processing` 화면과 `/api/notifications`는 `ProcessingJob`·
+    `ProcessingNotification`을 읽는데, canonical 업로드 경로(`/api/omr/upload`,
+    `/api/omr/finalize`)는 그 테이블에 한 행도 쓰지 않는다. 악보 5건을 가진 계정에서도
+    `처리 작업 (0)` / `알림 (0)`이다 (운영 확인).
+  - **`ProcessingJob`의 유일한 writer는 `/api/processing` POST와 `/api/upload-async`인데, 둘 다
+    P1-A가 `CONVERSION_UNAVAILABLE`로 무력화한 경로다(D-010).** 즉 이 테이블에 지금 쓸 수 있는
+    유일한 내용은 "즉시 실패한 죽은 경로의 작업"이다.
+  - 실제 상태는 `SheetMusic.processingStatus`에만 있다. 쓰는 값은 `'processing'`(행 생성 시),
+    `'completed'`, `'failed'` 셋이고, 스키마 default `'pending'`은 `/api/sheet` POST 경로로 만든
+    행에만 남는다. **그 행들은 이후 어떤 코드도 건드리지 않으므로 재생 가능한데도 영원히
+    `'pending'`이다.**
+  - `omrJobId`를 클라이언트에 돌려주는 API가 없다. 브라우저는 업로드 응답으로 받은 `jobId`를
+    그 화면에서만 갖는다. 화면을 떠나면 `/api/omr/status/[jobId]`를 다시 부를 방법이 없다.
+  - `/api/sheet`(목록)도 `/api/sheet/[id]`(상세)도 `processingStatus`를 반환하지 않는다.
+  - 행 생성 시 `animationDataUrl`은 `''`이고 완료 시에만 실제 URL로 채워진다.
+- Decision:
+  1. **G1-1 — 상태 출처는 `SheetMusic`이다.** `ProcessingJob`·`ProcessingNotification`은 이
+     트랙에서 읽지도 쓰지도 않는다. 죽은 경로의 산출물을 되살리는 것은 D-010을 되돌리는 일이다.
+  2. **화면이 읽는 것은 `processingStatus` 원값이 아니라 아래 파생 상태다.** `'pending'` 행이
+     재생 가능한 legacy를 포함하므로 원값을 그대로 그리면 영원한 "처리 중"이 생긴다.
+
+     | 파생 상태 | 판정 | 근거 |
+     |---|---|---|
+     | 연습 가능 | `animationDataUrl !== ''` | 완료 시에만 채워진다. legacy 행도 여기 들어온다 |
+     | 처리 중 | `animationDataUrl === ''` && `processingStatus === 'processing'` | |
+     | 오류 | `animationDataUrl === ''` && `processingStatus === 'failed'` | |
+     | 알 수 없음 | 그 외 (`''` + `'pending'`) | 값을 지어내지 않는다. 사용자에게는 오류와 같은 복구 행동을 준다 |
+
+  3. `/api/sheet`(목록)와 `/api/sheet/[id]`(상세)가 파생 상태를 반환한다. `processingStatus`
+     원값과 `omrJobId`는 노출하지 않는다 — 원값을 내보내면 화면마다 다시 해석하게 되고,
+     `omrJobId`는 목록 렌더마다 OMR 서비스를 찌르는 경로를 연다.
+  4. **G1-2 — 4개 처리 단계는 업로드 화면에서만 표시한다.** 그 화면만 `jobId`를 갖고,
+     서버는 단계를 저장하지 않는다. 매핑은 OMR 서비스가 실제로 보내는 `progress` 지점을 쓴다.
+
+     | OMR `progress` | 화면 문구 |
+     |---:|---|
+     | 0 (queued) | 대기 중 |
+     | 10 | PDF 분석 |
+     | 30 | 음표 인식 |
+     | 60 | 연주 데이터 생성 |
+     | 100 | 학습 화면 준비 |
+
+     **업로드 화면을 떠난 뒤에는 단계를 표시하지 않는다.** 내 악보에서는 파생 상태 3종만 쓴다.
+     단계를 어디서나 보이게 하려면 서버가 단계를 저장해야 하고, 그것은 컬럼 추가이므로 별도 결정
+     사안이다. 지금은 **모르는 것을 아는 것처럼 그리지 않는다**를 택한다.
+  5. **G1-3 — 별도 알림 시스템을 만들지 않는다.** 완료는 (1) 업로드 화면에 머무는 동안의 인라인
+     완료와 (2) 내 악보의 파생 상태 배지로 전달한다. `ProcessingNotification`은 `ProcessingJob`에
+     FK로 묶여 있어 결정 1과 충돌하고, 브라우저 알림은 권한 요청 비용이 이득보다 크다.
+  6. **G1-4 — `/processing` 화면과 Header의 `처리 상태` 메뉴를 제거한다.** 이슈 #76의 정보 구조
+     원안(`내 악보`·`새 악보`·`탐색`)과 일치하고, 유지하려면 결정 1이 쓰지 않기로 한 테이블을
+     되살려야 한다. 대체 도달 경로는 **내 악보의 파생 상태 배지**다. `/api/processing`,
+     `/api/notifications`, `useBackgroundProcessing`, `ProcessingDashboard`의 제거 여부는 P2-A가
+     정한다 — 이 결정은 사용자 도달 경로만 없앤다.
+  7. **G1-5 — 사용자 대면 실패는 네 가지다.** DS-3이 이 분류대로 문구와 복구 행동을 만든다.
+
+     | 유형 | 발생 지점 | 복구 행동 |
+     |---|---|---|
+     | 파일 거부 | 업로드 전 클라이언트 검증 (PDF 아님, 50MB 초과, 암호화 PDF) | 파일을 고쳐 다시 선택 |
+     | 변환 실패 | Audiveris가 악보를 읽지 못함 (이슈 #46 저해상도 포함) | 더 선명한 PDF로 재시도. **스택 트레이스를 보여주지 않는다** (이슈 #47) |
+     | 작업 유실 | OMR 서비스 재시작으로 job이 사라짐 (`/status`가 404) | 다시 업로드. 이미 한국어 문구가 있다 |
+     | 서비스 불가 | OMR 도달 불가 (503) | 잠시 후 재시도. **저장된 상태를 바꾸지 않는다** |
+
+- Reason: 지금 진실을 아는 곳은 `SheetMusic` 한 곳뿐이고, 다른 후보는 의도적으로 무력화한 경로의
+  잔해다. 두 출처를 유지하면 DS-3과 DS-4가 서로 다른 상태를 보여준다. 세부 단계를 화면마다
+  보여주지 않기로 한 것은 정보를 아끼려는 게 아니라 **서버가 그걸 모르기 때문**이다.
+- Rejected:
+  - canonical 경로가 `ProcessingJob`도 쓰게 한다 | 진실의 출처가 둘이 되고, `fileName`·`fileSize`·
+    `metadata`를 중복 저장한다. D-010이 죽인 경로의 테이블을 되살리는 방향이다.
+  - 두 출처를 유지하고 읽기 전용 뷰를 만든다 | 동기화 실패 시 어느 쪽이 맞는지 판정할 수 없다.
+  - `omrJobId`를 목록 API로 노출해 어디서나 단계를 폴링한다 | 목록 렌더마다 OMR 서비스를 찌르고,
+    서비스가 내려가면 목록 전체가 503이 된다.
+  - `processingStatus` 원값을 그대로 화면에 그린다 | legacy `'pending'` 행이 영원히 "처리 중"이 된다.
+  - 4단계를 포기하고 처리 중/완료/실패만 쓴다 | 업로드 화면에서는 실제로 알 수 있는 정보를 버린다.
+- Consequence:
+  - 내 악보에서는 "처리 중"까지만 보이고 어느 단계인지는 보이지 않는다. 업로드 화면에 머무는
+    사용자와 떠난 사용자가 다른 정밀도를 본다 — 이는 서버가 아는 것의 차이를 그대로 반영한 것이다.
+  - `'pending'` + `animationDataUrl === ''` 행은 `알 수 없음`으로 분류된다. 운영 데이터에 이런 행이
+    몇 건인지는 **확인하지 못했다** (이 저장소의 Supabase 프로젝트에 접근 권한이 없다).
+    DS-4 착수 전에 실제 분포를 확인한다.
+  - `/processing` 제거로 `useBackgroundProcessing`과 `ProcessingDashboard`가 호출자를 잃는다.
+    삭제는 P2-A 소유다.
+- Directive:
+  - 화면에서 `processingStatus` 원값을 읽지 않는다. 파생 상태만 읽는다.
+  - 업로드 화면 밖에서 처리 단계를 표시하지 않는다. 필요해지면 컬럼 추가를 별도 결정으로 다룬다.
+  - `ProcessingJob`·`ProcessingNotification`에 새 writer를 추가하지 않는다.
+  - OMR 서비스가 503일 때 저장된 상태를 실패로 바꾸지 않는다 (404만 유실로 처리한다).
+- Related: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76), D-010, D-018, D-024,
+  이슈 [#46](https://github.com/landfill/ClairKeys/issues/46),
+  이슈 [#47](https://github.com/landfill/ClairKeys/issues/47),
+  `docs/recovery/phases/DS-G1-processing-state-contract.md`

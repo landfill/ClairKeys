@@ -12,11 +12,31 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 4단계
 
 ## In scope
 
-- 처리 중 / 연습 가능 / 오류를 한 화면에서 구분 (DS0-6)
+- **파생 상태 4종**을 한 화면에서 구분 (DS0-6) — 아래 확정 계약
 - 파일명보다 사용자 제목 우선, 제목 편집 흐름 (DS0-4, DS0-8)
 - 마지막 연습 위치와 이어하기
 - 신규 업로드 CTA의 발견 가능한 배치
 - 빈 상태 (악보 0건)
+
+### 확정된 계약 (D-026)
+
+화면은 `processingStatus` **원값을 읽지 않는다.** 아래 파생 상태만 읽는다. 원값을 그대로 그리면
+legacy `'pending'` 행이 영원히 "처리 중"이 된다.
+
+| 파생 상태 | 판정 |
+|---|---|
+| 연습 가능 | `animationDataUrl !== ''` |
+| 처리 중 | `animationDataUrl === ''` && `processingStatus === 'processing'` |
+| 오류 | `animationDataUrl === ''` && `processingStatus === 'failed'` |
+| 알 수 없음 | 그 외 (`''` + `'pending'`). 값을 지어내지 않고, 오류와 같은 복구 행동을 준다 |
+
+`/api/sheet`(목록)와 `/api/sheet/[id]`(상세)가 **파생 상태를 반환하도록 확장한다.** 현재 둘 다
+`processingStatus`를 반환하지 않는다. 원값과 `omrJobId`는 노출하지 않는다.
+
+**이 화면은 `/processing`을 대체하는 도달 경로다** (D-026 G1-4). DS-1이 그 메뉴를 이미 제거했다.
+
+**착수 전 확인**: 운영 데이터에 `'pending'` + 빈 `animationDataUrl` 행이 몇 건인지 세어 본다.
+DS-G1 시점에 DB 접근 권한이 없어 확인하지 못했다.
 
 ## Out of scope
 
@@ -60,7 +80,9 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 4단계
 
 ## Completion criteria
 
-- 처리 중·연습 가능·오류 세 상태가 목록에서 구분된다. DS-G1이 정한 필드만 읽는다.
+- 파생 상태 4종이 목록에서 구분된다. 화면 코드가 `processingStatus` 원값을 읽지 않는다.
+- `/api/sheet` 목록과 상세가 파생 상태를 반환하고, 원값·`omrJobId`를 노출하지 않는다.
+- `'pending'` + 빈 `animationDataUrl` 행의 운영 건수가 확인·기록되어 있다.
 - 제목이 파일명이 아닌 사용자 제목이고, 화면에서 편집할 수 있다.
 - 빈 상태에 신규 업로드로 가는 행동이 있다.
 - 이어하기가 구현됐거나, 구현하지 않은 경우 그 이유와 필요한 선행 작업이 기록되어 있다.
@@ -72,5 +94,6 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 4단계
 ```bash
 npm run lint && npx tsc --noEmit && npm test && npm run test:e2e && npm run build
 grep -rn 'alert(' src/components/library/    # 0건
-grep -rn 'processingStatus' src/components/library/   # DS-G1이 정한 필드를 실제로 읽는다
+grep -rn 'processingStatus' src/components/library/   # 0건 — 원값이 아니라 파생 상태를 읽는다
+grep -rn 'omrJobId' src/app/api/sheet/                # 0건 — 노출하지 않는다
 ```
