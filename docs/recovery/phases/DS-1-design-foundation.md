@@ -1,6 +1,6 @@
 # DS-1 — 디자인 토큰과 공통 셸
 
-Status: `IN_REVIEW`
+Status: `DONE`
 Depends on: **DS-G1** (내비게이션 구성이 G1-4의 답을 요구한다). DS-G1은 DS-0에 의존한다
 Blocks: DS-2, DS-3, DS-4, DS-5, DS-6, DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 1단계
@@ -127,7 +127,22 @@ B는 의도적으로 도달 경로를 바꾸므로 "변하지 않음"이 아니�
   없었다는 것과, `MainLayout`의 `ProcessingStatusIndicator`가 죽은 API를 모든 페이지에서 폴링하며
   항상 `null`을 반환하고 있었다는 것을 발견해 함께 처리했다.
   검증: `docs/recovery/validation/2026-08-29-ds1-token-contrast.md`.
-  남은 것은 배포 프리뷰에서의 변경 후 라우트 응답 코드 실측과 병합 승인이다.
+  라우트 회귀는 배포 프리뷰에서 실측했다 — **제품 라우트 7개 전부 변경 전과 동일**, 고아 7개는 404,
+  `/admin`은 redirect.
+- 2026-08-29 — 리뷰 대응 3라운드. CodeRabbit 지적 4건을 모두 수용했다: R1 보호 경로 세그먼트 경계
+  판정(`d9c1c92`), R2 슬라이더 `outline: none`이 이 단계가 도입한 전역 포커스 링을 덮던 문제와
+  R3 `IconProps` export(`5455810`), R4 아이콘 docstring(`448f894`).
+  **R1만 리뷰 스레드에 있었고 R2·R3는 리뷰 본문의 접힌 블록, R4는 walkthrough 코멘트에 있었다** —
+  피드백은 세 표면을 모두 조회해야 한다. R2는 실제 결함이었고 하필 이 단계의 완료 조건을 한 요소에서
+  무효화하고 있었다. CSS는 단위 테스트가 어려워 소스 패턴 가드를 뒀고, 되돌림 실험으로 가드가
+  동작함을 확인했다.
+- 2026-08-29 — **DONE.** 사용자의 명시적 승인으로 PR
+  [#89](https://github.com/landfill/ClairKeys/pull/89)를 merge commit `fc09782`로 병합했다
+  (최종 head `448f894`, 커밋 6개). 미해결 리뷰 스레드 0건. merge commit의 post-merge check-runs가
+  6/6 성공했고 Vercel Production이 `fc09782`로 배포됐다. 로컬·원격 작업 브랜치 tip이 main에
+  포함됨을 확인한 뒤 양쪽을 삭제했다. 최종 검증은 lint 무경고, `tsc` 통과,
+  **Jest 65 suites / 621 tests**, build 성공, E2E 전 브라우저 통과, Accessibility Check 통과다.
+  다음 단계는 **DS-2**다.
 
 ## 검증 명령
 

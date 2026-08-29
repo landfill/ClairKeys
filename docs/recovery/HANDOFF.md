@@ -2,10 +2,13 @@
 
 Last updated: 2026-08-29 KST
 
-## #76 DS-1 IN_REVIEW — 디자인 토큰과 공통 셸, PR #89 열림
+## #76 DS-1 DONE — 디자인 토큰과 공통 셸 완료, 다음은 DS-2
 
-사용자 지시로 DS-1을 진행했다. PR [#89](https://github.com/landfill/ClairKeys/pull/89)가 열려 있고
-병합 승인을 받지 않았다. 커밋을 셋으로 나눴다 — 회귀 근거, **A 시각 변경**, **B 도달 경로 변경**.
+사용자 지시로 DS-1을 진행했고, 명시적 승인으로 PR
+[#89](https://github.com/landfill/ClairKeys/pull/89)를 merge commit `fc09782`로 병합했다
+(최종 head `448f894`, 커밋 6개). 미해결 리뷰 스레드 0건. merge commit의 post-merge check-runs가
+**6/6 성공**했고 Vercel Production이 `fc09782`로 배포됐다. 로컬·원격 작업 브랜치 tip이 main에
+포함됨을 확인한 뒤 양쪽을 삭제했다. 커밋을 셋으로 나눴다 — 회귀 근거, **A 시각 변경**, **B 도달 경로 변경**.
 A와 B를 나눈 것은 2차 검토 지적 4번을 따른 것으로, 고아 라우트 제거와 내비게이션 축소는 시각 개편이
 아니라 사용자 도달 경로를 없애는 기능 변경이기 때문이다.
 
@@ -75,6 +78,12 @@ Check**·CodeQL·Security Scan·Unit Tests까지 실행됐다. 최종 Jest는 **
 
 **대체 도달 경로 공백**: `처리 상태`를 대신할 내 악보 상태 배지는 DS-4가 만든다. 제거 전에도 그
 화면은 비어 있었으므로 잃는 정보는 없다.
+
+**다음 행동**: **DS-2(로그인 전 핵심 가치 전달)**. 홈에 `/sheet/[id]`를 쓰지 않는 자체 완결 샘플
+체험을 두고, CTA를 `내 악보로 시작하기`로 통일하며, 로그인 후 원래 행동 복귀 계약을 설계·구현한다.
+`src/app/page.tsx`는 아직 옛 파란색이고 E2E 스모크가 그 문구를 고정하고 있으므로, DS-2는 스모크
+기대값도 함께 갱신해야 한다. 진입 조건과 완료 조건은
+`docs/recovery/phases/DS-2-prelogin-value.md`에 있다.
 
 ## #76 DS-G1 DONE — 처리 상태 출처 계약 확정 완료, 다음은 DS-1
 
