@@ -42,6 +42,7 @@ describe('/api/sheet/[id]', () => {
         composer: 'Test Composer',
         userId: 'user1',
         isPublic: false,
+        provenance: 'demo',
         animationDataUrl: 'http://example.com/data.json',
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -57,6 +58,7 @@ describe('/api/sheet/[id]', () => {
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.sheetMusic.title).toBe('Test Song')
+      expect(data.sheetMusic.provenance).toBe('demo')
       expect(data.sheetMusic.owner).toBeTruthy()
     })
 
