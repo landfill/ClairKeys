@@ -16,6 +16,7 @@ export interface IconProps extends SVGProps<SVGSVGElement> {
   size?: number
 }
 
+/** 모든 아이콘이 공유하는 껍데기. 뷰박스·선 굵기·접근성 속성을 한 곳에서 정한다. */
 function Icon({ title, size = 20, children, ...props }: IconProps & { children: React.ReactNode }) {
   return (
     <svg
@@ -49,6 +50,7 @@ export function LogoMark(props: IconProps) {
   )
 }
 
+/** 내 악보. 책등이 늘어선 서가. */
 export function LibraryIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -58,6 +60,7 @@ export function LibraryIcon(props: IconProps) {
   )
 }
 
+/** 새 악보. 트레이 위로 올라가는 화살표. */
 export function UploadIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -68,6 +71,7 @@ export function UploadIcon(props: IconProps) {
   )
 }
 
+/** 탐색. 돋보기. */
 export function ExploreIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -77,6 +81,7 @@ export function ExploreIcon(props: IconProps) {
   )
 }
 
+/** 모바일 메뉴 열기. */
 export function MenuIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -85,6 +90,7 @@ export function MenuIcon(props: IconProps) {
   )
 }
 
+/** 모바일 메뉴 닫기. */
 export function CloseIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -93,6 +99,7 @@ export function CloseIcon(props: IconProps) {
   )
 }
 
+/** 로그인이 필요한 상태. `AuthGuard`의 자물쇠 이모지를 대체한다. */
 export function LockIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -102,6 +109,7 @@ export function LockIcon(props: IconProps) {
   )
 }
 
+/** 오류·경고 상태. 색상만으로 상태를 구분하지 않기 위한 형태 신호다. */
 export function AlertIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -112,6 +120,7 @@ export function AlertIcon(props: IconProps) {
   )
 }
 
+/** 완료·연습 가능 상태. 색상 외 구분을 위한 형태 신호다. */
 export function CheckIcon(props: IconProps) {
   return (
     <Icon {...props}>
