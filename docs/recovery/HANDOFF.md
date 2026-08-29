@@ -5,10 +5,9 @@ Last updated: 2026-08-29 KST
 ## PR #84 열림 — P1-A provenance 운영 migration·backfill 검증 완료
 
 2026-08-29, P1-A의 마지막 완료 조건을 구현한 review-ready PR
-[#84](https://github.com/landfill/ClairKeys/pull/84)를 열었다. Head `2186cbc`, 브랜치
+[#84](https://github.com/landfill/ClairKeys/pull/84)를 열었다. Head `a7745c3`, 브랜치
 `codex/p1a-provenance-backfill`, mergeable. GitHub Actions의 Build, Unit, 두 E2E, type/lint,
-접근성, Security Scan/Audit, CodeQL과 Vercel Preview가 모두 성공했다. CodeRabbit review만
-진행 중이다.
+접근성, Security Scan/Audit, CodeQL과 Vercel Preview가 모두 성공했다.
 
 - `SheetMusic.provenance`를 `omr | demo | unknown`으로 추가하는 additive migration.
 - `omrJobId`가 생긴 신규 행만 `omr`; 빠진 행은 추정하지 않는다.
@@ -17,7 +16,12 @@ Last updated: 2026-08-29 KST
 - 백필은 기본 dry-run이며 저장 JSON 다운로드를 설정된 Supabase origin으로 제한한다.
 - 행 삭제 없음. `unknown`은 표시·공개·재생 동작을 바꾸지 않는다.
 
-로컬 검증: Jest 62 suites / 589 tests, `tsc`, lint, build, Prisma schema validation 통과.
+CodeRabbit이 저장소 설정 오류가 행별 fetch 실패로 흡수되는 문제와 재생 중 demo 경고가 사라지는
+문제를 찾았다. 커밋 `a7745c3`에서 설정 검증을 fetch·transaction보다 앞으로 옮기고, 경고를 재생
+기하에 영향을 주지 않는 fixed overlay로 유지했다. 두 스레드 모두 근거를 답변하고 resolve했다.
+최종 head `a7745c3`은 review-ready·mergeable이며 모든 체크가 성공했다.
+
+로컬 검증: Jest 62 suites / 591 tests, `tsc`, lint, build, Prisma schema validation 통과.
 회귀는 구현 전에 4 suites 실패로 확인했다. 상세:
 `docs/recovery/validation/2026-08-29-p1a-provenance-backfill.md`.
 
@@ -28,8 +32,8 @@ Last updated: 2026-08-29 KST
 migration도 `finished=true`다. 행 삭제는 없었다. 비밀값은 임시 디렉터리에서만 사용했다.
 
 **P1-A는 아직 DONE이 아니다.** 운영 DB 선행 migration/backfill은 끝났지만 코드가 PR #84에
-있으므로 공개 목록 제외와 재생 경고는 아직 운영 배포되지 않았다. 다음 행동은 CodeRabbit의
-최종 결과와 현재 CI를 확인한 뒤 사용자의 **명시적 병합 승인**을 받는 것이다. 병합 뒤 운영
+있으므로 공개 목록 제외와 재생 경고는 아직 운영 배포되지 않았다. 다음 행동은 사용자의
+**명시적 병합 승인**을 받는 것이다. 병합 뒤 운영
 `/api/sheet/public`과 demo 경고를 확인하고 phase를 `DONE`으로 닫는다. 현재 운영 데이터에는
 `demo` 행이 0건이라 실제 경고 화면의 운영 실데이터 검증은 불가능하며, 회귀 테스트가 그 계약을
 고정한다.

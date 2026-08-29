@@ -8,7 +8,9 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
 - 2026-08-29 — 마지막 completion criterion 구현이 PR
   [#84](https://github.com/landfill/ClairKeys/pull/84)로 열렸다. `SheetMusic.provenance` migration,
   정확한 과거 demo 리터럴 matcher, dry-run 기본 backfill, 신규 OMR writer 표시, demo 공개 목록
-  제외와 재생 경고를 포함한다. 로컬 Jest 62 suites / 589 tests, `tsc`, lint, build, Prisma
+  제외와 재생 경고를 포함한다. CodeRabbit의 두 actionable 지적은 `a7745c3`에서 수정했다:
+  storage 설정은 fetch·write 전에 fail-closed하고, demo 경고는 재생 중에도 fixed overlay로 남는다.
+  두 스레드는 resolve됐고 최종 CI가 전부 성공했다. 로컬 Jest 62 suites / 591 tests, `tsc`, lint, build, Prisma
   validation 통과. 이어서 운영 DB dry-run에서 총 5건을 `omr=3`, `demo=0`, `unknown=2`,
   `fetchFailures=0`으로 확인하고 additive migration과 `--apply`를 순서대로 실행했다. 사후에도
   `omr=3`, `unknown=2`이며 `omr` 중 `omrJobId`가 없는 행은 0건이다. criterion 3의 데이터
