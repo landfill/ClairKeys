@@ -692,3 +692,43 @@
   - 없는 데이터를 전제로 화면을 그리지 않는다. 상태의 출처를 먼저 확인한다.
 - Related: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76), D-010, D-011, D-013, D-018,
   D-017~D-023, `docs/recovery/phases/DS-0-current-state-baseline.md`
+
+## D-025: 다크 모드는 이번 개편에서 구현하지 않는다
+
+- Date: 2026-08-29
+- Status: Accepted
+- Deviates from: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 비주얼 시스템의
+  "다크 모드는 전체 서비스보다 플레이어에 우선 적용"
+- Context:
+  - 사용자가 2026-08-29에 다크 모드는 현재 구현 계획이 없다고 지시했다. 이슈 #76 본문에는 남아
+    있으므로, 구현이 스펙과 달라야 하는 이유를 코드보다 먼저 기록한다 (AGENTS.md).
+  - 현재 상태는 "부분 지원"이 아니라 **죽은 코드**다. `globals.css`의 `prefers-color-scheme: dark`
+    블록이 `--background`/`--foreground`를 바꾸지만, `src/app/layout.tsx:100`의
+    `<main className="flex-1 bg-gray-50">`와 `bg-white` Header·Footer가 body를 완전히 덮어
+    화면에는 반영되지 않는다. 즉 지우든 두든 지금 보이는 화면은 같다.
+  - 이슈 #76의 최우선 목표는 PDF 업로드 전환율이다. 다크 모드는 그 지표에 직접 기여하지 않는
+    반면, 토큰을 두 벌(라이트·다크)로 정의하고 모든 화면에서 대비를 두 번 검증하는 비용을 DS-1~DS-7
+    전체에 부과한다.
+- Decision:
+  1. DS-1의 디자인 토큰은 **라이트 팔레트 한 벌만** 정의한다. `@media (prefers-color-scheme: dark)`
+     나 `[data-theme]` 분기를 새로 만들지 않는다.
+  2. `globals.css`의 기존 죽은 다크 블록(DS0-10)은 DS-1에서 처리한다. 남겨 둘 경우 다크 모드가
+     지원되는 것으로 오해되므로, 남긴다면 죽은 코드임을 주석으로 명시한다.
+  3. 플레이어의 어두운 시각화 영역(낙하 노트 배경의 검은 박스)은 다크 모드가 아니다. 그것은 노트
+     대비를 위한 **컴포넌트 고유의 배경**이며 이 결정의 대상이 아니다.
+  4. 이 결정은 다크 모드를 영구히 배제하지 않는다. 다시 하기로 하면 이 항목을 갱신하고 DS-1의
+     토큰 정의로 돌아간다.
+- Reason: 지금 상태가 부분 구현이 아니라 무효한 코드이므로, "이미 절반 됐으니 마저 하자"는 근거가
+  성립하지 않는다. 구현하지 않기로 하면 잃는 것은 없고, 하기로 하면 모든 단계에 검증 비용이 붙는다.
+- Rejected:
+  - 플레이어에만 다크 모드 적용 (이슈 #76 원안) | 플레이어는 이미 검은 시각화 영역을 갖고 있어
+    체감 이득이 작은 반면, 컨트롤·오버레이·TempoDisplay의 대비를 별도 팔레트로 재검증해야 한다.
+  - 죽은 블록을 그대로 둔다 | 새 토큰과 나란히 있으면 다음 세션이 다크 모드 지원으로 읽는다.
+- Consequence:
+  - 다크 OS 사용자는 라이트 화면을 본다. 현재도 동일하므로 회귀가 아니다.
+  - 이슈 #76 본문의 다크 모드 항목과 이 결정이 어긋난다. 이슈를 읽는 사람은 이 결정을 함께 본다.
+- Directive:
+  - DS-1~DS-7에서 다크 팔레트 토큰이나 `prefers-color-scheme` 분기를 새로 도입하지 않는다.
+  - 플레이어 시각화 영역의 검은 배경을 다크 모드 구현으로 표현하지 않는다.
+- Related: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76), D-024,
+  `docs/recovery/phases/DS-0-current-state-baseline.md` (DS0-10)

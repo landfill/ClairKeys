@@ -162,7 +162,7 @@ Header의 `처리 상태` 메뉴는 `/processing` → `ProcessingDashboard` →
 | 곡 제목 편집 | 미지원 (운영 기준) | `PATCH /api/sheet/[id]`와 `SheetMusicActions`의 `onEdit`은 있으나, `/library`가 쓰는 `LibrarySheetMusicList`에는 연주·이동·삭제뿐이다 |
 | 마지막 연습 위치 이어하기 | 미지원 | `PracticeSession`은 있으나 재생 위치 복원 경로 없음 |
 | 디자인 토큰 | 미지원 | `globals.css`는 `--background`/`--foreground` 2개뿐 (Tailwind v4) |
-| 다크 모드 | 부분 지원 | `prefers-color-scheme`가 body 색만 바꾼다. 화면은 `bg-white`·`text-gray-*` 하드코딩 |
+| 다크 모드 | 미지원 (사실상 dead code) | `globals.css`의 `prefers-color-scheme` 블록은 `--background`/`--foreground`만 바꾸는데, `src/app/layout.tsx:100`의 `<main className="flex-1 bg-gray-50">`와 `bg-white` Header·Footer가 body를 완전히 덮는다. **현 단계에서 구현 계획 없음 (D-025)** |
 | 지원·개인정보 링크 | 미지원 | `Footer.tsx:47-59` 세 링크 모두 `href="#"` |
 
 ## 발견된 결함 대장
@@ -182,6 +182,7 @@ Header의 `처리 상태` 메뉴는 `/processing` → `ProcessingDashboard` →
 | DS0-7 | 업로드 화면에 예상 처리 시간·백그라운드 처리 안내·예시 악보가 없다. 버튼 문구가 `OMR 처리 시작`으로 기술 용어를 노출한다 | 운영 walkthrough | **DS-3** | 없음 |
 | DS0-8 | 곡 제목 편집 UI가 `SheetMusicActions`에 있으나 `/library`가 쓰는 `LibrarySheetMusicList`에는 없다. 고아 컴포넌트 계층의 사례다 | 코드 | **DS-4**, 정리는 P2-A | 없음 |
 | DS0-9 | 구간 반복이 운영 재생 경로에 없다. `PlaybackControls`에 loop 코드가 아예 없고, `loopStart`/`loopEnd`는 다른 플레이어(`animationEngine.ts`)에만 있다 | 코드 + 운영 | **DS-5** | 없음 |
+| DS0-10 | `globals.css`의 `prefers-color-scheme: dark` 블록이 죽은 코드다. `--background`/`--foreground`만 바꾸는데 `layout.tsx:100`의 `bg-gray-50` main과 `bg-white` Header·Footer가 body를 덮어 화면에 반영되지 않는다. 다크 모드는 구현 계획이 없으므로(D-025) 이 블록의 존재가 지원 여부를 오해하게 만든다 | 코드. **다크 OS에서 실제 렌더는 미관측** | **DS-1** | 없음 |
 
 이미 이슈가 있는 것은 여기에 옮겨 적지 않는다 — 변환 실패의 Java 스택 트레이스([#47](https://github.com/landfill/ClairKeys/issues/47)),
 작은 페이지 PDF 인식 실패([#46](https://github.com/landfill/ClairKeys/issues/46)),
@@ -196,9 +197,9 @@ DS-1(디자인 토큰과 공통 셸)이 시작 시점에 **결정해야 할 대�
 1. **토큰 정의** — 현재 `globals.css`에는 `--background`/`--foreground` 둘뿐이다(Tailwind v4
    `@theme inline`). 이슈 #76 비주얼 시스템의 배경(아이보리)·기본색(잉크/네이비)·강조색(테라코타)·
    보조색(블루·세이지)과 상태 색(처리 중·연습 가능·오류)을 토큰으로 정의한다.
-2. **다크 모드 범위** — 현재는 `prefers-color-scheme`가 body 색만 바꾸고 화면은 `bg-white`·
-   `text-gray-*`가 하드코딩돼 있다. 이슈 #76은 다크 모드를 **플레이어에 우선** 적용하라고 한다.
-   전체 서비스와 플레이어의 적용 범위를 여기서 정한다.
+2. **다크 모드 잔재 처리** — 다크 모드는 **구현하지 않는다** (D-025). 결정할 것은 범위가 아니라
+   `globals.css`의 죽은 `prefers-color-scheme` 블록(DS0-10)을 제거할지 유지할지다. 토큰을 새로
+   정의하면서 이 블록을 살려 두면 다음 세션이 다크 모드가 지원되는 것으로 오해한다.
 3. **내비게이션 구성** — 목표는 `내 악보`·`새 악보`·`탐색` 3개다. 현재 Header는 로그인 시
    `홈`·`내 악보`·`업로드`·`처리 상태`·`탐색` 5개다. `처리 상태` 메뉴의 처리 방향(제거 후 내 악보
    상태 표시로 흡수)은 DS0-2의 결론에 의존한다.
