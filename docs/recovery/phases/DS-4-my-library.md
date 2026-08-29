@@ -1,6 +1,6 @@
 # DS-4 — 내 악보
 
-Status: `NOT_STARTED`
+Status: `IN_REVIEW`
 Depends on: DS-1 (DS-1이 이미 **DS-G1**을 선행 조건으로 갖는다 — 처리 상태 출처 계약은 확정된 상태다)
 Blocks: DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 4단계
@@ -97,3 +97,12 @@ grep -rn 'alert(' src/components/library/    # 0건
 grep -rn 'processingStatus' src/components/library/   # 0건 — 원값이 아니라 파생 상태를 읽는다
 grep -rn 'omrJobId' src/app/api/sheet/                # 0건 — 노출하지 않는다
 ```
+
+## Progress
+
+- 2026-08-30 — PR #92에서 구현 완료 후 CI·리뷰 대기. 운영 DB 분포는 `processing` 2건,
+  `completed` 2건이며 `'pending'` + 빈 `animationDataUrl` 행은 0건이다. `알 수 없음`은 현재
+  노출 대상은 없지만 D-026 계약과 legacy/미래 행을 위해 구현했다.
+- 2026-08-30 — `PracticeSession`은 `durationSeconds`·`completedPercentage`만 저장하고 재생 위치
+  필드와 복원 소비자가 없다. 따라서 이 단계는 이어하기 UI를 구현하지 않는다; 저장 계약이 확정된
+  후속 작업이 필요하다.

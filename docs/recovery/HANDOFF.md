@@ -8,19 +8,25 @@ Last updated: 2026-08-29 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
-DS-0, DS-G1, DS-1, DS-2, **DS-3이 `DONE`**이고 DS-4~DS-7이 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
+DS-0, DS-G1, DS-1, DS-2, **DS-3이 `DONE`**이고 **DS-4는 `IN_REVIEW`**, DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
 완료 조건 8개는 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 
-**Next action**: **DS-4(내 악보 목록)**. `docs/recovery/phases/DS-4-my-library.md`가 범위와 완료
-조건을 갖고 있고, 읽을 계약은 D-026 결정 2·3의 **파생 상태 4종**(연습 가능 / 처리 중 / 오류 /
-알 수 없음)이다. 단계 표시는 이 화면의 것이 아니다 (D-026 G1-2).
+**Next action**: PR [#92](https://github.com/landfill/ClairKeys/pull/92)의 CI와 세 리뷰 표면(스레드,
+리뷰 본문, 일반 코멘트)을 확인·처리한다. DS-4는 D-026 결정 2·3의 **파생 상태 4종**(연습 가능 /
+처리 중 / 오류 / 알 수 없음)만 읽고, 단계 표시는 이 화면의 것이 아니다 (D-026 G1-2).
 
 **착수 전 선행 확인 완료**: 2026-08-29 KST 운영 DB 분포는 `processing` 2건,
 `completed` 2건이다. 총 4건으로 확인됐고 `'pending'` + 빈 `animationDataUrl` 행은 0건이다.
 따라서 현재 운영 사용자에게 `알 수 없음` 상태가 보이지 않으며, DS-4는 그 상태를 미래/legacy
 데이터를 위한 계약으로 구현한다.
 
-DS-4·DS-5는 서로 독립이라 병렬로 열 수 있다.
+DS-5는 DS-4와 독립이라 병렬로 열 수 있다.
+
+DS-4 구현은 PR #92 head `317d6b0`에 있다. 목록·상세 API는 `availability`만 반환하고
+`processingStatus`·`omrJobId`를 반환하지 않는다. 목록은 상태 배지와 행동(연습 시작 / 처리 중 /
+다시 업로드), 제목 편집, 빈 상태 업로드 CTA, 앱 내 삭제 오류를 갖는다. `PracticeSession`에는 재생
+위치 필드·복원 경로가 없으므로 ‘이어하기’ UI를 만들지 않았으며, 상세는
+`docs/recovery/validation/2026-08-30-DS-4-my-library.md`에 기록했다.
 
 **저장소 상태**: `main`이 `f8c2249`로 최신, 워킹 트리 clean, 작업 브랜치 없음, 열린 PR 없음.
 
