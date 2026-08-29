@@ -1,7 +1,8 @@
 # Validation — DS-3/upload-processing
 
 Date: 2026-08-29
-Commit: `eace453` (브랜치 `codex/ds-3-upload-processing` head, PR [#91](https://github.com/landfill/ClairKeys/pull/91))
+Commit: `bb08e7f` (브랜치 `codex/ds-3-upload-processing` head, PR [#91](https://github.com/landfill/ClairKeys/pull/91))
+최초 검증은 `eace453`, 리뷰 대응 후 재실행이 `bb08e7f`다.
 Environment: macOS(darwin 25.5.0), Node v22.18.0, 로컬 프로덕션 빌드(`npm start`)
 
 ## Claim being verified
@@ -16,14 +17,15 @@ Environment: macOS(darwin 25.5.0), Node v22.18.0, 로컬 프로덕션 빌드(`np
 |---|---|
 | `npm run lint` | PASS — 경고 0 |
 | `npx tsc --noEmit` | PASS — 출력 없음 |
-| `npm test` | PASS — **72 suites / 736 tests** |
+| `npm test` | PASS — **72 suites / 739 tests** (`eace453`에서는 736건) |
 | `npm run build` | PASS — 33개 정적 페이지 생성, `/upload` 7.58 kB |
 | `npx playwright test --project=chromium --project='Mobile Chrome'` | PASS — 10/10 |
 
-DS-2 종료 시점 기준선은 68 suites / 647 tests였다. **신규 회귀 89건**이 늘었다.
+DS-2 종료 시점 기준선은 68 suites / 647 tests였다. **신규 회귀 92건**이 늘었다.
 
-- `src/lib/upload/__tests__/` 42건 (단계 매핑 불변식, 실제 PDF 바이트 fixture, 실패 4종 분류)
-- `src/components/upload/__tests__/OMRUploadForm.test.tsx` 17건
+- `src/lib/upload/__tests__/` 44건 (단계 매핑 불변식, 실제 PDF 바이트 fixture, 실패 4종 분류,
+  같은 이름·크기의 다른 파일)
+- `src/components/upload/__tests__/OMRUploadForm.test.tsx` 18건
 - `src/components/upload/__tests__/OMRProcessingStatus.test.tsx` 17건 (+ 이탈 안내 2건)
 - `src/app/api/omr/status/[jobId]/__tests__/lostJob.test.ts` 1건 (`OMR_JOB_LOST`)
 - 기존 `OMRUploadForm` 테스트 2건은 문구 변경에 맞춰 갱신했다(내용은 유지 — D-013 빠르기 계약).

@@ -12,9 +12,9 @@ DS-0, DS-G1, DS-1, DS-2가 `DONE`, **DS-3이 `IN_REVIEW`**(PR [#91](https://gith
 DS-4~DS-7이 `NOT_STARTED`다. 이슈 #76은 열려 있다 — 완료 조건 8개는 `docs/recovery/ROADMAP.md`의
 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 
-**Next action**: **PR #91의 병합 승인을 받는 것.** 15개 체크가 전부 성공했고 미해결 리뷰는 없다.
-CodeRabbit 자동 리뷰는 이 저장소가 별 10개 미만이라 건너뛰었고 수동 요청을 넣어 둔 상태다 —
-응답이 오면 `docs/recovery/reviews/PR-91.md`에 기록하고 처리한다. 승인 전에는 병합하지 않는다.
+**Next action**: **PR #91의 병합 승인을 받는 것.** 17개 체크가 전부 성공했고, CodeRabbit 리뷰
+4건을 처리해 미해결 스레드가 0건이다(2건 수용 `bb08e7f`, 2건 기각 — 근거는
+`docs/recovery/reviews/PR-91.md`). 승인 전에는 병합하지 않는다.
 
 병합 뒤 다음 코드 작업은 **DS-4(내 악보 목록)**다. 착수 전에 운영 DB의 `processingStatus` 분포를
 확인해야 한다(아래 blocker 표). DS-4·DS-5는 서로 독립이라 병렬로 열 수 있다.
@@ -72,9 +72,9 @@ DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항
 
 ## #76 DS-3 IN_REVIEW — 업로드 화면이 아는 것만 말하게 했다 (PR #91)
 
-사용자 지시로 DS-3을 진행했다. 브랜치 `codex/ds-3-upload-processing`, 커밋 5개, head `eace453`,
-PR [#91](https://github.com/landfill/ClairKeys/pull/91). **CI 15개 전부 성공.** 미병합 —
-사용자의 명시적 병합 승인을 기다린다.
+사용자 지시로 DS-3을 진행했다. 브랜치 `codex/ds-3-upload-processing`, 커밋 6개, head `bb08e7f`,
+PR [#91](https://github.com/landfill/ClairKeys/pull/91). **CI 17개 전부 성공, 미해결 리뷰 스레드
+0건.** 미병합 — 사용자의 명시적 병합 승인을 기다린다.
 
 **계약은 옮기기만 하면 됐지만, 옮기는 과정에서 결함 셋이 드러났다.**
 
@@ -112,8 +112,16 @@ PR [#91](https://github.com/landfill/ClairKeys/pull/91). **CI 15개 전부 성�
 완료 / 변환 실패 / 작업 유실 / 서비스 불가 다섯 상태를 API를 가로채 렌더해 확인했고, 스택 트레이스가
 담긴 응답에서도 화면에는 나타나지 않았다.
 
-검증: Jest **72 suites / 736 tests** 통과(신규 회귀 89건), lint 무경고, `tsc` 통과, build 성공,
-E2E chromium+Mobile Chrome 10/10, CI 15/15. 상세는
+**CodeRabbit 리뷰 4건을 받아 2건 수용·2건 기각했다** (`bb08e7f`). 수용한 둘은 공교롭게도 **안내를
+따르면 상황이 나빠지는** 경로였다 — 중복 판정이 `name:size`뿐이라 같은 이름·크기의 다른 악보를
+막던 것, 업로드 성공 뒤 본문을 읽지 못하면 "잠시 후 다시 시도"가 나가 같은 악보의 행이 둘 생기던
+것. 기각한 둘은 근거를 산출물에 두었다: 인터페이스를 `src/types/`로 옮기라는 지적은 이 저장소의
+실제 관행(`src/lib/analytics.ts`·`cache.ts`·`src/services/*`)과 다르고, phase 문서의 "4단계"는
+오기가 아니라 D-026 G1-2와 같은 표기다(표의 첫 행 `0 (queued)`는 단계 이전 상태다). 판정 근거는
+`docs/recovery/reviews/PR-91.md`에 있다.
+
+검증: Jest **72 suites / 739 tests** 통과(신규 회귀 92건), lint 무경고, `tsc` 통과, build 성공,
+E2E chromium+Mobile Chrome 10/10, CI 17/17. 상세는
 `docs/recovery/validation/2026-08-29-DS-3-upload-processing.md`.
 
 **실행하지 못한 것**: 실제 PDF를 운영 OMR 서비스에 올리는 수동 검증(로컬에 DB·OMR 서비스 없음),
