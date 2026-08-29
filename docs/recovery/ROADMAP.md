@@ -19,35 +19,145 @@ P0-A와 P0-D는 서로 다른 파일 범위를 갖도록 설계하면 병렬 진
 
 ## 디자인 개편 트랙 (이슈 [#76](https://github.com/landfill/ClairKeys/issues/76))
 
-복구 트랙(P0~P2)과 별개로, 초보자 중심 여정·브랜드 전면 개편을 8단계로 진행한다. 이슈 #76의 실행
-계획을 그대로 단계화한 것이며, 한 PR에서 홈·업로드·플레이어를 동시에 교체하지 않는다.
+복구 트랙(P0~P2)과 별개로, 초보자 중심 여정·브랜드 전면 개편을 진행한다. 이슈 #76의 실행 계획을
+**D-024·D-025 결정에 맞게 조정해** 단계화한 것이며(다크 모드는 D-025로 제외됐다), 한 PR에서
+홈·업로드·플레이어를 동시에 교체하지 않는다.
 
 | 순서 | ID | 단계 | 상태 | 권장 브랜치 | 선행 조건 |
 |---:|---|---|---|---|---|
 | 0 | DS-0 | 현재 상태와 제품 계약 고정 | DONE | `codex/ds-0-current-state-baseline` | P1-A |
 | 1 | DS-1 | 디자인 토큰과 공통 셸 | NOT_STARTED | `codex/ds-1-design-foundation` | DS-0 |
-| 2 | DS-2 | 로그인 전 핵심 가치 전달 | NOT_STARTED | `codex/ds-2-prelogin-value` | DS-1 |
-| 3 | DS-3 | 업로드와 처리 상태 | NOT_STARTED | `codex/ds-3-upload-processing` | DS-1 |
-| 4 | DS-4 | 내 악보 | NOT_STARTED | `codex/ds-4-my-library` | DS-1 |
+| — | **DS-G1** | **처리 상태 출처 계약 확정 (결정 gate)** | NOT_STARTED | `codex/ds-g1-processing-state-contract` | DS-0 |
+| 2 | DS-2 | 로그인 전 핵심 가치 전달 (홈·샘플·복귀 계약) | NOT_STARTED | `codex/ds-2-prelogin-value` | DS-1 |
+| 3 | DS-3 | 업로드와 처리 상태 | NOT_STARTED | `codex/ds-3-upload-processing` | DS-1, **DS-G1** |
+| 4 | DS-4 | 내 악보 | NOT_STARTED | `codex/ds-4-my-library` | DS-1, **DS-G1** |
 | 5 | DS-5 | 학습 플레이어 | NOT_STARTED | `codex/ds-5-learning-player` | DS-1 |
-| 6 | DS-6 | 탐색과 공개 체험 | NOT_STARTED | `codex/ds-6-explore` | DS-2 |
-| 7 | DS-7 | 알림·빈 화면·오류 상태 완결 | NOT_STARTED | `codex/ds-7-states` | DS-3, DS-4 |
+| 6 | DS-6 | 탐색과 공개 체험 (`/sheet/[id]` 로그인 전 접근 포함) | NOT_STARTED | `codex/ds-6-explore` | DS-2, **DS-5** |
+| 7 | DS-7 | 알림·빈 화면·오류 상태 완결 | NOT_STARTED | `codex/ds-7-states` | **DS-2 ~ DS-6 전부** |
 
-DS-1은 나머지 전부의 선행 조건이다. 토큰 없이 개별 화면부터 고치면 색상·간격·대비가 화면마다
+### 의존성의 이유
+
+**DS-1이 나머지 전부의 선행 조건이다.** 토큰 없이 개별 화면부터 고치면 색상·간격·대비가 화면마다
 흩어지고, DS-7에서 상태 표현을 통일할 근거가 사라진다.
 
-DS-3과 DS-7은 실제 백엔드 계약에 의존한다. DS-0이 확인한 대로 canonical 업로드 경로는
-`ProcessingJob`·`ProcessingNotification`을 쓰지 않으므로, 처리 단계 문구와 완료 알림은 UI 이전에
-**어느 상태를 어디서 읽을지**를 먼저 정해야 한다.
+**DS-G1은 UI 단계가 아니라 결정 gate다.** DS-0이 확인한 대로 canonical 업로드 경로
+(`/api/omr/upload`, `/api/omr/finalize`)는 `ProcessingJob`·`ProcessingNotification`을 만들지 않고,
+실제 상태는 `SheetMusic.processingStatus`(자유 문자열)에만 있다(DS0-2). DS-3의 "처리 단계 표시"와
+DS-4의 "처리 중·오류 표시"는 **같은 계약**을 읽으므로, 두 단계가 각자 다른 출처를 가정하면 화면마다
+다른 상태가 나온다. DS-G1은 코드를 바꾸지 않고 **어느 상태를 어디서 읽을지**만 결정 문서로 확정한다.
+P1-B(영속 큐) 전체가 선행될 필요는 없다 — 필요한 것은 상태 출처의 결정이지 큐의 재구현이 아니다.
+
+**DS-5가 DS-6보다 앞선다.** 둘 다 `/sheet/[id]`를 건드리지만 소유 범위가 다르다(아래 표). DS-6이
+그 화면의 인증 경계를 푸는 시점에 플레이어의 형태가 이미 확정돼 있어야, "로그인 전에 본 화면"과
+"로그인 후 연습 화면"이 같은 화면이 된다.
+
+**DS-7은 DS-2~DS-6 전부를 선행 조건으로 둔다.** DS-7의 범위가 "각 핵심 화면의 빈 상태·오류 상태·복구
+행동을 통일"이므로, 통일 대상 화면이 모두 확정되기 전에 끝낼 수 없다. DS-3·DS-4만 의존하면 DS-2·
+DS-5·DS-6의 화면이 나중에 들어오면서 통일이 다시 깨진다.
+
+### 화면 소유 범위 (파일 충돌 방지)
+
+같은 파일을 두 단계가 건드리는 지점만 적는다. 여기에 없는 파일은 해당 화면 단계가 소유한다.
+
+| 파일 | 소유 단계 | 다른 단계가 하지 않을 것 |
+|---|---|---|
+| `src/app/sheet/[id]/page.tsx` — `AuthGuard`, 데이터 로딩 경로 | **DS-6** | DS-5는 이 파일의 인증·fetch 분기를 건드리지 않는다 |
+| `src/components/animation/FallingNotesPlayer.tsx`, `src/components/playback/*` | **DS-5** | DS-6은 플레이어 내부 레이아웃·컨트롤을 바꾸지 않는다 |
+| 홈의 로그인 전 샘플 체험 | **DS-2** | DS-2는 `/sheet/[id]`를 사용하지 않는다. 자체 완결된 샘플 데이터를 쓴다 |
+| 로그인 후 복귀 계약 (`LoginButton`의 `callbackUrl`) | **DS-2**가 설계·구현 | DS-6은 그 계약을 `/sheet/[id]` 진입에 적용만 한다 |
+| `src/app/globals.css`, `src/app/layout.tsx`, `Header`/`Footer`/`Container`/`PageHeader` | **DS-1** | 이후 단계는 토큰을 소비만 하고 새 토큰을 추가하지 않는다 |
+| `src/components/library/LibrarySheetMusicList.tsx` | **DS-4** | DS-7은 이 목록의 빈 상태 문구만 통일한다 |
+| `src/components/upload/OMRUploadForm.tsx`, `OMRProcessingStatus.tsx` | **DS-3** | DS-7은 오류 문구·복구 행동만 통일한다 |
 
 ### DS-0: 현재 상태와 제품 계약 고정
 
 - 라우트 인벤토리와 인증 경계 (middleware + `AuthGuard`, 그리고 그 경계가 실제로 막지 못하는 것)
 - 이슈 #76 완료 조건 7개에 대한 지원 / 부분 지원 / 미지원 판정
 - 디자인 개편이 바꾸지 않을 회귀 계약(D-013, D-017~D-023 등)
-- 신규 결함 9건의 대장과 담당 단계 배정 — GitHub 이슈가 아니라 phase 문서에 기록한다
+- 신규 결함 10건(DS0-1~DS0-10)의 대장과 담당 단계 배정 — GitHub 이슈가 아니라 phase 문서에 기록한다
 - DS-1 진입 조건 6개
 - 상세: [DS-0](phases/DS-0-current-state-baseline.md)
+
+### DS-G1: 처리 상태 출처 계약 확정 (결정 gate)
+
+- 실제 업로드의 진행·완료·실패를 **어느 필드에서 읽을지** 확정 (`SheetMusic.processingStatus` vs `ProcessingJob`)
+- 이슈 #76이 요구하는 4개 처리 단계와 실제 OMR `progress`/`message`의 대응 정의
+- 완료 알림의 트리거와 저장 위치 결정
+- 코드는 바꾸지 않는다. 산출물은 결정 문서 한 건
+- 상세: [DS-G1](phases/DS-G1-processing-state-contract.md)
+
+### DS-1: 디자인 토큰과 공통 셸
+
+- 라이트 팔레트 한 벌의 색·타이포·간격·상태 토큰 (D-025로 다크는 제외)
+- Header, Footer, Container, PageHeader와 3개 내비게이션
+- 포커스·키보드 탐색·명도 대비·색상 외 상태 구분을 공통 컴포넌트에서 고정
+- DS0-3(고아 라우트), DS0-5(죽은 링크·2024 저작권), DS0-10(죽은 다크 CSS) 처리
+- 상세: [DS-1](phases/DS-1-design-foundation.md)
+
+### DS-2: 로그인 전 핵심 가치 전달
+
+- 홈의 **자체 완결 샘플 체험** (`/sheet/[id]`를 쓰지 않는다)
+- CTA를 `내 악보로 시작하기`로 통일
+- 로그인 화면의 이유 설명과 **로그인 후 원래 행동 복귀 계약** 설계·구현
+- 상세: [DS-2](phases/DS-2-prelogin-value.md)
+
+### DS-3: 업로드와 처리 상태
+
+- PDF 선택 / 파일 검증 / 변환 요청을 서로 다른 상태로 분리
+- DS-G1이 정한 출처로 처리 단계 표시
+- 이탈해도 처리가 계속됨과 예상 대기 시간 명시 (DS0-7)
+- 실패 시 Java 스택 트레이스 대신 사용자가 취할 행동 (이슈 #47)
+- 상세: [DS-3](phases/DS-3-upload-processing.md)
+
+### DS-4: 내 악보
+
+- 처리 중 / 연습 가능 / 오류를 한 화면에서 구분 (DS0-6)
+- 파일명보다 사용자 제목 우선, 편집 흐름 (DS0-4, DS0-8)
+- 이어하기와 신규 업로드 CTA
+- 상세: [DS-4](phases/DS-4-my-library.md)
+
+### DS-5: 학습 플레이어
+
+- 떨어지는 노트와 건반을 최우선 시각 영역으로 유지
+- 재생·정지, 속도, **구간 반복**을 1차 컨트롤로 (DS0-9)
+- 메트로놈 값·출처를 재생 전과 재생 중 모두 확인 가능하게 (이슈 #82)
+- 재생 기하(D-017, D-020~D-023)와 가로 전환(D-019) 회귀 검증
+- 상세: [DS-5](phases/DS-5-learning-player.md)
+
+### DS-6: 탐색과 공개 체험
+
+- 공개 악보를 곡명·작곡가·난이도·재생 시간 중심으로 정리 (DS0-4)
+- `/sheet/[id]`의 로그인 전 접근과 미리보기, 로그인 후 원래 곡 복귀
+- 검증된 샘플 콘텐츠만 사회적 증거로 사용 (P1-A provenance)
+- 상세: [DS-6](phases/DS-6-explore.md)
+
+### DS-7: 알림·빈 화면·오류 상태 완결
+
+- 변환 완료 알림과 전역 상태 진입점 (DS-G1의 결정을 따른다)
+- DS-2~DS-6이 확정한 **모든** 핵심 화면의 빈 상태·오류 상태·복구 행동 통일
+- 홈 → 업로드 → 이탈 → 완료 → 첫 재생 종단 검증
+- 상세: [DS-7](phases/DS-7-states.md)
+
+## 이슈 #76 전체 완료 조건
+
+DS-1~DS-7이 전부 `DONE`이고 아래를 모두 충족할 때 이슈 #76을 닫는다. 각 항목은 담당 단계가 자기
+phase 문서의 완료 조건에서 검증하고, 여기서는 종단 판정만 한다.
+
+| # | 조건 | 최종 판정 단계 |
+|---|---|---|
+| 1 | 신규 방문자가 홈에서 PDF가 무엇으로 변환되는지 5초 안에 설명할 수 있다 | DS-2 |
+| 2 | 주요 CTA가 `내 악보로 시작하기`로 일관된다 | DS-2 |
+| 3 | 로그인 전에 실제 학습 결과를 최소 한 번 체험할 수 있다 | DS-2(홈 샘플), DS-6(공개 악보) |
+| 4 | 업로드 후 현재 처리 단계와 예상 대기 시간을 알 수 있다 | DS-3 |
+| 5 | 페이지를 떠나도 처리가 계속된다는 사실을 화면에서 이해할 수 있다 | DS-3 |
+| 6 | 첫 플레이어 진입 후 별도 설명 없이 재생과 속도 조절을 할 수 있다 | DS-5 |
+| 7 | 키보드 탐색·명도 대비·색상 외 상태 구분이 WCAG AA를 충족한다 | DS-1(기반), DS-7(종단) |
+| 8 | 홈 → 업로드 → 페이지 이탈 → 완료 → 첫 재생을 설명 없이 끝낼 수 있다 | DS-7 |
+
+DS-0의 "변경하지 않을 회귀 계약"이 종료 시점에도 그대로여야 한다. 재생 기하 상수 7개, D-019의 가로
+전환 조건식, `playback-chrome` 계약, D-010·D-011·D-018의 저장 경계가 대상이다.
+
+DS0-1(비공개 악보 public 버킷 노출)은 이 완료 조건에 포함되지 않는다. DS 범위 밖의 별도 보안 작업이다.
 
 ## 단계별 결과물
 
