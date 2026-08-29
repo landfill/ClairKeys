@@ -99,13 +99,6 @@ export default function PlaybackControls({
           <span>{formatTime(duration)}</span>
         </div>
         <div
-          role="slider"
-          aria-label="재생 위치"
-          aria-valuemin={0}
-          aria-valuemax={duration}
-          aria-valuenow={currentTime}
-          aria-valuetext={`${formatTime(currentTime)} / ${formatTime(duration)}`}
-          aria-disabled={duration > 0 ? undefined : true}
           tabIndex={duration > 0 ? 0 : -1}
           className="w-full h-2 bg-rule rounded-full cursor-pointer hover:brightness-95 transition-colors"
           onClick={handleProgressClick}
@@ -128,9 +121,8 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady || isPlaying}
             className="min-w-[60px] h-12"
-            aria-label="재생"
           >
-            <span className="text-xl" aria-hidden="true">▶️</span>
+            <span className="text-xl">▶️</span>
           </Button>
           
           {/* Pause Button */}
@@ -140,9 +132,8 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady || !isPlaying}
             className="min-w-[60px] h-12"
-            aria-label="일시정지"
           >
-            <span className="text-xl" aria-hidden="true">⏸️</span>
+            <span className="text-xl">⏸️</span>
           </Button>
           
           {/* Stop Button */}
@@ -152,9 +143,8 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady}
             className="min-w-[60px] h-12"
-            aria-label="정지"
           >
-            <span className="text-xl" aria-hidden="true">⏹️</span>
+            <span className="text-xl">⏹️</span>
           </Button>
         </div>
 
@@ -200,27 +190,18 @@ export default function PlaybackControls({
           </select>
         </div>
 
-        {/*
-          문구는 이미 있었고 live region만 없었다. 재생·정지는 눈으로 보면 알지만 화면을 보지 않는
-          사용자에게는 아무 변화가 없었다.
-        */}
-        <div
-          role="status"
-          aria-live="polite"
-          aria-label="재생 상태"
-          className="text-sm text-ink-muted"
-        >
+        <div className="text-sm text-ink-muted">
           {!isReady ? (
             <span className="text-state-progress">
-              <span aria-hidden="true">⏳ </span>로딩 중...
+              <span>⏳ </span>로딩 중...
             </span>
           ) : isPlaying ? (
             <span className="text-state-ready">
-              <span aria-hidden="true">▶️ </span>재생 중
+              <span>▶️ </span>재생 중
             </span>
           ) : (
             <span className="text-ink-muted">
-              <span aria-hidden="true">⏸️ </span>일시정지
+              <span>⏸️ </span>일시정지
             </span>
           )}
         </div>

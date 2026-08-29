@@ -6,7 +6,7 @@
  * 함께 데려온다.
  *
  * 모든 아이콘은 `currentColor`를 쓴다. 색은 부모의 텍스트 색에서 오므로 토큰이 그대로 적용된다.
- * 기본값은 장식용(`aria-hidden`)이다. 아이콘만으로 의미를 전달해야 하면 `title`을 넘긴다.
+ * 아이콘만으로 의미를 전달해야 하면 `title`을 넘긴다.
  */
 import type { SVGProps } from 'react'
 
@@ -16,7 +16,7 @@ export interface IconProps extends SVGProps<SVGSVGElement> {
   size?: number
 }
 
-/** 모든 아이콘이 공유하는 껍데기. 뷰박스·선 굵기·접근성 속성을 한 곳에서 정한다. */
+/** 모든 아이콘이 공유하는 껍데기. 뷰박스·선 굵기를 한 곳에서 정한다. */
 function Icon({ title, size = 20, children, ...props }: IconProps & { children: React.ReactNode }) {
   return (
     <svg
@@ -28,8 +28,6 @@ function Icon({ title, size = 20, children, ...props }: IconProps & { children: 
       strokeWidth={1.75}
       strokeLinecap="round"
       strokeLinejoin="round"
-      role={title ? 'img' : undefined}
-      aria-hidden={title ? undefined : true}
       focusable="false"
       {...props}
     >
