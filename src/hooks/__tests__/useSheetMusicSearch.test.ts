@@ -10,6 +10,7 @@ const makeSheetMusic = (id: number): SheetMusicWithOwner => ({
   categoryId: null,
   isPublic: true,
   animationDataUrl: `/scores/${id}.json`,
+  provenance: 'omr',
   createdAt: new Date(2026, 0, id),
   updatedAt: new Date(2026, 0, id),
   category: null,

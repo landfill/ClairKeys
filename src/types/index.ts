@@ -1,5 +1,7 @@
 // Clairkeys - Core types for the piano learning app
 
+import type { SheetMusicProvenance } from '@prisma/client'
+
 export interface User {
   id: string
   name?: string | null
@@ -23,6 +25,7 @@ export interface SheetMusic {
   categoryId?: number | null
   isPublic: boolean
   animationDataUrl: string
+  provenance: SheetMusicProvenance
   createdAt: Date
   updatedAt: Date
   category?: Category

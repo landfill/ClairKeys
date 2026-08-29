@@ -184,6 +184,33 @@ describe('POST /api/omr/upload — failure is visible, not silent', () => {
     expect((requestInit?.body as FormData).get('tempo')).toBe('72')
   })
 
+  it('marks a row as OMR only after the service returns a job identifier', async () => {
+    process.env.OMR_SERVICE_URL = 'https://omr.example.invalid'
+    fetchSpy.mockResolvedValue(
+      new Response(JSON.stringify({ job_id: 'job-1', status: 'processing' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    )
+
+    const { POST } = await loadRoute()
+    const response = await POST(uploadRequest())
+
+    expect(response.status).toBe(200)
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.not.objectContaining({ provenance: 'omr' }),
+      })
+    )
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: CREATED_ROW_ID },
+      data: expect.objectContaining({
+        omrJobId: 'job-1',
+        provenance: 'omr',
+      }),
+    })
+  })
+
   it('gives the service a server callback that survives browser navigation', async () => {
     process.env.OMR_SERVICE_URL = 'https://omr.example.invalid'
     fetchSpy.mockResolvedValue(

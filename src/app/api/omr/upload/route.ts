@@ -226,6 +226,7 @@ export async function POST(request: NextRequest) {
       where: { id: sheetMusic.id },
       data: {
         omrJobId: omrResult.job_id,
+        provenance: 'omr',
         updatedAt: new Date()
       }
     })

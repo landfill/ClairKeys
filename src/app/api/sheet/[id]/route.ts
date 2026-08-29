@@ -69,6 +69,7 @@ export async function GET(
         categoryId: sheetMusic.categoryId,
         category: sheetMusic.category?.name || null,
         isPublic: sheetMusic.isPublic,
+        provenance: sheetMusic.provenance,
         createdAt: sheetMusic.createdAt,
         updatedAt: sheetMusic.updatedAt,
         animationDataUrl: sheetMusic.animationDataUrl,
