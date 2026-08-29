@@ -80,8 +80,9 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady || isPlaying}
             className="min-w-[60px] h-12"
+            aria-label="재생"
           >
-            <span className="text-xl">▶️</span>
+            <span className="text-xl" aria-hidden="true">▶️</span>
           </Button>
           
           {/* Pause Button */}
@@ -91,8 +92,9 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady || !isPlaying}
             className="min-w-[60px] h-12"
+            aria-label="일시정지"
           >
-            <span className="text-xl">⏸️</span>
+            <span className="text-xl" aria-hidden="true">⏸️</span>
           </Button>
           
           {/* Stop Button */}
@@ -102,8 +104,9 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady}
             className="min-w-[60px] h-12"
+            aria-label="정지"
           >
-            <span className="text-xl">⏹️</span>
+            <span className="text-xl" aria-hidden="true">⏹️</span>
           </Button>
         </div>
 
