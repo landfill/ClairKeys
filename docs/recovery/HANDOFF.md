@@ -7,7 +7,9 @@ Last updated: 2026-08-29 KST
 사용자가 P1-B 전체(영속 큐·OMR 보안)는 후순위로 두고 이슈
 [#70](https://github.com/landfill/ClairKeys/issues/70)만 처리하도록 지시했다. 이에 review-ready PR
 [#85](https://github.com/landfill/ClairKeys/pull/85)를 열었다. Head `ab09c36`, 브랜치
-`codex/p1b-omr-job-id-index`.
+`codex/p1b-omr-job-id-index`, review-ready·mergeable. Build, Unit, 두 E2E, type/lint,
+접근성, Security Scan/Audit, CodeQL, Vercel Preview가 모두 성공했다. CodeRabbit은 저장소 정책상
+자동 리뷰를 skip했고 actionable feedback은 없다.
 
 - `SheetMusic.omrJobId`를 nullable unique key로 바꿔 non-null UUID가 유일하고 indexed임을 DB가
   보장한다. PostgreSQL에서는 NULL 여러 개가 허용돼 OMR job ID를 받기 전 행은 유지된다.
@@ -17,8 +19,8 @@ Last updated: 2026-08-29 KST
   tests, `tsc`, lint, build, Prisma schema validation을 통과했다.
 
 **P1-B는 여전히 `NOT_STARTED`다.** 이 PR은 persistent payload·worker lease·재시작 복구·CORS·파일
-  검사·callback URL hardening을 구현하지 않는다. CI·리뷰가 끝나도 사용자의 명시적 병합 승인이
-필요하며, migration은 production 중복 사전 점검을 다시 확인한 뒤 코드보다 먼저 적용해야 한다.
+검사·callback URL hardening을 구현하지 않는다. 다음 행동은 사용자 명시적 병합 승인이다. 승인 뒤
+migration은 production 중복 사전 점검을 다시 확인한 후 코드보다 먼저 적용한다.
 
 ## P1-A DONE — provenance migration·backfill·운영 배포 완료
 

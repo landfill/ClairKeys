@@ -21,6 +21,7 @@ uses that unique, indexed key. Rows that have not yet received an OMR job ID rem
 | `npm test -- --runInBand` | PASS | 62 suites, 591 tests |
 | `npm run build` | PASS | production build and 41 static pages completed |
 | production duplicate preflight | PASS | 5 rows total; 3 non-null OMR IDs; 0 duplicate non-null groups |
+| PR #85 hosted checks | PASS | Build, Unit, two E2E jobs, type/lint, accessibility, Security Scan/Audit, CodeQL, Vercel Preview |
 
 ## Migration safety
 
@@ -31,7 +32,7 @@ non-null duplicate group exists.
 
 ## Not verified
 
-- Production migration application, deployment, and post-deploy callback smoke check; PR #85 is not
-  merged.
+- Production migration application, deployment, and post-deploy callback smoke check; PR #85 is
+  review-ready and awaits explicit user merge approval.
 - P1-B durable queue, restart recovery, CORS/file hardening, and callback URL hardening are
   explicitly out of this issue's scope.
