@@ -20,6 +20,7 @@ carry an explicit warning before playback.
 | `npx tsc --noEmit` | PASS | exit 0 |
 | `npm run lint` | PASS | no warnings or errors |
 | `npm run build` | PASS | production build and 41 static pages completed |
+| PR #84 hosted checks | PASS | Build, Unit, two E2E jobs, type/lint, accessibility, Security Scan/Audit, CodeQL, Vercel |
 | `DATABASE_URL=postgresql://user:pass@localhost:5432/clairkeys npx prisma validate` | PASS | schema valid |
 | `npm run backfill:sheet-provenance` | BLOCKED | Prisma stopped before querying: `DATABASE_URL` not present |
 | `vercel whoami` | BLOCKED | no existing credentials |
@@ -35,8 +36,8 @@ carry an explicit warning before playback.
 ## Manual checks
 
 - Confirmed the PR is review-ready and mergeable at head `2186cbc`.
-- Confirmed Vercel Preview succeeded; this proves build only and does not prove the production
-  database migration.
+- Confirmed all hosted repository checks succeeded; Vercel Preview proves build only and does not
+  prove the production database migration.
 - No production row was changed. The backfill command failed before its first query.
 
 ## Gaps and risks

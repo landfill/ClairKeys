@@ -6,8 +6,9 @@ Last updated: 2026-08-29 KST
 
 2026-08-29, P1-A의 마지막 완료 조건을 구현한 review-ready PR
 [#84](https://github.com/landfill/ClairKeys/pull/84)를 열었다. Head `2186cbc`, 브랜치
-`codex/p1a-provenance-backfill`, mergeable. 초기 CI는 실행 중이며 Vercel Preview와 Detect
-changes는 성공했다.
+`codex/p1a-provenance-backfill`, mergeable. GitHub Actions의 Build, Unit, 두 E2E, type/lint,
+접근성, Security Scan/Audit, CodeQL과 Vercel Preview가 모두 성공했다. CodeRabbit review만
+진행 중이다.
 
 - `SheetMusic.provenance`를 `omr | demo | unknown`으로 추가하는 additive migration.
 - `omrJobId`가 생긴 신규 행만 `omr`; 빠진 행은 추정하지 않는다.
