@@ -11,8 +11,9 @@ Last updated: 2026-08-30 KST
 DS-0, DS-G1, DS-1, DS-2, **DS-3이 `DONE`**이고 **DS-4는 `IN_PROGRESS`**, DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
 완료 조건 8개는 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 
-**Next action**: DS-4 마감 후속 PR을 연다. PR #92는 병합됐지만 단계 완료 기준 중 (1) 목록 갱신의
-`aria-live` 전달, (2) 인증 뒤 `/library`의 1440·1024·390 실제 반응형 측정이 아직 없다. DS-4는
+**Next action**: PR [#93](https://github.com/landfill/ClairKeys/pull/93)의 CI·세 리뷰 표면을
+확인한다. 이 PR은 891px 관측에서 드러난 카드 뱃지·행동 과밀을 고친다. 병합 뒤 DS-4 마감 기준인
+(1) 목록 갱신의 `aria-live` 전달, (2) 인증 뒤 `/library`의 1440·1024·390 실제 반응형 측정이 남는다. DS-4는
 D-026 결정 2·3의 **파생 상태 4종**(연습 가능 /
 처리 중 / 오류 / 알 수 없음)만 읽고, 단계 표시는 이 화면의 것이 아니다 (D-026 G1-2).
 
@@ -35,6 +36,9 @@ DS-4 구현은 PR #92가 merge commit `64aecb2`로 병합했다. 목록·상세 
 
 PR #92 브랜치는 병합 후 local·remote tip `fc27178`이 `main`에 포함됨을 확인하고 2026-08-30 KST에
 원격→로컬 순으로 삭제했다. 병합 commit `64aecb2`의 post-merge build/run-tests는 기록 시점에 실행 중이다.
+
+PR #93 head `e0bc537`은 공개 범위를 중립 뱃지로, 연습 가능을 상태 뱃지로 나누고 메타데이터 줄바꿈,
+전체 폭 주요 행동, 3열 관리 행동을 추가한다. 기존 행동·데이터 계약은 바꾸지 않았다.
 
 **저장소 상태**: `main`이 `d859ce8`로 최신, 워킹 트리 clean, DS-4 작업 브랜치는 삭제됨, 열린 PR 없음.
 
