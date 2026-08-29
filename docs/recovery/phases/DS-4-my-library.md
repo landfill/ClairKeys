@@ -1,6 +1,6 @@
 # DS-4 — 내 악보
 
-Status: `IN_REVIEW`
+Status: `IN_PROGRESS`
 Depends on: DS-1 (DS-1이 이미 **DS-G1**을 선행 조건으로 갖는다 — 처리 상태 출처 계약은 확정된 상태다)
 Blocks: DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 4단계
@@ -106,3 +106,6 @@ grep -rn 'omrJobId' src/app/api/sheet/                # 0건 — 노출하지 �
 - 2026-08-30 — `PracticeSession`은 `durationSeconds`·`completedPercentage`만 저장하고 재생 위치
   필드와 복원 소비자가 없다. 따라서 이 단계는 이어하기 UI를 구현하지 않는다; 저장 계약이 확정된
   후속 작업이 필요하다.
+- 2026-08-30 — PR #92는 merge commit `64aecb2`로 병합했다. 파생 상태·제목 편집·빈 상태·삭제 오류
+  기준은 구현됐지만, 목록 갱신의 `aria-live`와 인증 뒤 반응형 1440·1024·390 측정은 아직 없다.
+  따라서 이 단계는 `DONE`이 아니라 후속 마감 PR을 기다리는 `IN_PROGRESS`다.

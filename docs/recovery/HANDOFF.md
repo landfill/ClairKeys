@@ -8,11 +8,11 @@ Last updated: 2026-08-29 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
-DS-0, DS-G1, DS-1, DS-2, **DS-3이 `DONE`**이고 **DS-4는 `IN_REVIEW`**, DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
+DS-0, DS-G1, DS-1, DS-2, **DS-3이 `DONE`**이고 **DS-4는 `IN_PROGRESS`**, DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
 완료 조건 8개는 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 
-**Next action**: PR [#92](https://github.com/landfill/ClairKeys/pull/92)은 head `fc27178`에서 CI 전부
-성공, `CLEAN`, 미해결 review thread 0건이다. **사용자의 명시적 병합 승인**을 기다린다. DS-4는
+**Next action**: DS-4 마감 후속 PR을 연다. PR #92는 병합됐지만 단계 완료 기준 중 (1) 목록 갱신의
+`aria-live` 전달, (2) 인증 뒤 `/library`의 1440·1024·390 실제 반응형 측정이 아직 없다. DS-4는
 D-026 결정 2·3의 **파생 상태 4종**(연습 가능 /
 처리 중 / 오류 / 알 수 없음)만 읽고, 단계 표시는 이 화면의 것이 아니다 (D-026 G1-2).
 
@@ -23,11 +23,15 @@ D-026 결정 2·3의 **파생 상태 4종**(연습 가능 /
 
 DS-5는 DS-4와 독립이라 병렬로 열 수 있다.
 
-DS-4 구현은 PR #92 head `317d6b0`에 있다. 목록·상세 API는 `availability`만 반환하고
+DS-4 구현은 PR #92가 merge commit `64aecb2`로 병합했다. 목록·상세 API는 `availability`만 반환하고
 `processingStatus`·`omrJobId`를 반환하지 않는다. 목록은 상태 배지와 행동(연습 시작 / 처리 중 /
 다시 업로드), 제목 편집, 빈 상태 업로드 CTA, 앱 내 삭제 오류를 갖는다. `PracticeSession`에는 재생
 위치 필드·복원 경로가 없으므로 ‘이어하기’ UI를 만들지 않았으며, 상세는
 `docs/recovery/validation/2026-08-30-DS-4-my-library.md`에 기록했다.
+
+**병합 뒤 남은 DS-4 기준**: 목록 변경을 `aria-live`로 알려야 하고, 인증 쿠키를 발급한 실제 브라우저로
+1440·1024·390에서 카드 그리드·긴 제목·가로 스크롤을 측정해야 한다. PR #92의 로컬/CI E2E는 공개
+경로만 검사하므로 이 둘의 근거가 아니다. 후속은 별도 `codex/ds-4-*` 브랜치·PR로 한다.
 
 **저장소 상태**: `main`이 `f8c2249`로 최신, 워킹 트리 clean, 작업 브랜치 없음, 열린 PR 없음.
 
