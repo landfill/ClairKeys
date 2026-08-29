@@ -113,7 +113,7 @@ export default function CompactPlaybackBar({
       {/* The two readouts are the first things to go on a narrow box: the
           transport, the seek bar and the two inputs all have to keep working
           before a number is worth a column of width. */}
-      <span className="hidden shrink-0 text-xs font-mono tabular-nums text-gray-600 sm:inline">
+      <span className="hidden shrink-0 text-xs font-mono tabular-nums text-ink-muted sm:inline">
         {formatTime(currentTime)} / {formatTime(duration)}
       </span>
 
@@ -157,7 +157,7 @@ export default function CompactPlaybackBar({
         aria-label="음량 (master gain)"
         className="w-20 shrink-0"
       />
-      <span className="hidden shrink-0 w-10 text-right text-xs font-mono tabular-nums text-gray-500 sm:inline">
+      <span className="hidden shrink-0 w-10 text-right text-xs font-mono tabular-nums text-ink-muted sm:inline">
         {volume.toFixed(2)}
       </span>
     </div>

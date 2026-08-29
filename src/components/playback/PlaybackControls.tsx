@@ -55,7 +55,7 @@ export default function PlaybackControls({
     <div className={`playback-controls space-y-4 ${className}`}>
       {/* Progress Bar */}
       <div>
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+        <div className="flex items-center justify-between text-sm text-ink-muted mb-2">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>
@@ -112,13 +112,14 @@ export default function PlaybackControls({
 
         {/* Speed Control */}
         <div className="flex items-center space-x-3">
-          <label className="text-sm text-gray-600 font-medium">
+          <label htmlFor="playback-speed" className="text-sm text-ink-muted font-medium">
             속도:
           </label>
           <select
+            id="playback-speed"
             value={playbackSpeed}
             onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-colors"
+            className="px-3 py-2 border border-rule-strong rounded-md text-sm bg-surface text-ink transition-colors"
             disabled={!isReady}
           >
             <option value={0.25}>0.25x</option>
@@ -135,13 +136,14 @@ export default function PlaybackControls({
       {/* Mode Control */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <label className="text-sm text-gray-600 font-medium">
+          <label htmlFor="playback-mode" className="text-sm text-ink-muted font-medium">
             모드:
           </label>
           <select
+            id="playback-mode"
             value={playbackMode}
             onChange={(e) => onModeChange(e.target.value as 'listen' | 'follow' | 'practice')}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-colors"
+            className="px-3 py-2 border border-rule-strong rounded-md text-sm bg-surface text-ink transition-colors"
             disabled={!isReady}
           >
             <option value="listen">🎵 듣기</option>
@@ -151,13 +153,13 @@ export default function PlaybackControls({
         </div>
 
         {/* Playback Status */}
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-ink-muted">
           {!isReady ? (
             <span className="text-yellow-600">⏳ 로딩 중...</span>
           ) : isPlaying ? (
-            <span className="text-green-600">▶️ 재생 중</span>
+            <span className="text-state-ready">▶️ 재생 중</span>
           ) : (
-            <span className="text-gray-600">⏸️ 일시정지</span>
+            <span className="text-ink-muted">⏸️ 일시정지</span>
           )}
         </div>
       </div>

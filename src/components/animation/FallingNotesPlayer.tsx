@@ -217,7 +217,7 @@ export default function FallingNotesPlayer({
         <>
           {/* Usage Instructions */}
           <div className="mb-4">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-ink-muted">
               노트의 아랫변이 히트라인(건반 상단)에 닿는 순간이 연주 타이밍입니다.
             </p>
           </div>
@@ -244,7 +244,7 @@ export default function FallingNotesPlayer({
               gain value; whatever setting sounds right here is the number to lock in
               as DEFAULT_MASTER_GAIN in useFallingNotesAudio. */}
           <div className="mb-4 flex items-center gap-3">
-            <label htmlFor="master-volume" className="text-xs text-gray-600 whitespace-nowrap">
+            <label htmlFor="master-volume" className="text-xs text-ink-muted whitespace-nowrap">
               음량
             </label>
             <input
@@ -258,7 +258,7 @@ export default function FallingNotesPlayer({
               className="flex-1 max-w-xs"
               aria-label="음량 (master gain)"
             />
-            <span className="text-xs font-mono text-gray-500 tabular-nums w-10 text-right">
+            <span className="text-xs font-mono text-ink-muted tabular-nums w-10 text-right">
               {volume.toFixed(2)}
             </span>
           </div>
@@ -271,7 +271,7 @@ export default function FallingNotesPlayer({
       <div
         role="status"
         aria-live="polite"
-        className={isPlaying ? 'sr-only' : 'mb-4 text-xs text-gray-600'}
+        className={isPlaying ? 'sr-only' : 'mb-4 text-xs text-ink-muted'}
       >
         {sampleStatus === 'idle' && '녹음 피아노 샘플은 첫 재생 때 준비됩니다.'}
         {sampleStatus === 'loading' && '녹음 피아노 샘플을 준비 중입니다.'}
