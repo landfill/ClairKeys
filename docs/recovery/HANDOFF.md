@@ -9,7 +9,9 @@ Last updated: 2026-08-30 KST
 
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
 DS-0, DS-G1, DS-1, DS-2, DS-3, **DS-4까지 `DONE`**이고 DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
-완료 조건 8개는 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
+완료 조건은 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
+**2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 8개 → 7개다** (D-030,
+PR [#95](https://github.com/landfill/ClairKeys/pull/95) 리뷰 대기).
 
 **Next action**: **DS-5(학습 플레이어)를 연다** — `codex/ds-5-learning-player`. 선행 조건 DS-1은
 `DONE`이라 지금 착수 가능하다. **코드를 고치기 전에 D-019 결정 8을 먼저 처리한다**: "공유
@@ -18,6 +20,15 @@ AGENTS.md에 따라 결정 문서를 먼저 갱신하거나 별도 컨트롤로 
 이모지 교체도 같은 결정에 걸린다. DS-5는 실기기 보고로 세 번 고친 재생 기하(`PX_PER_SEC` 140 등
 7개 상수)를 **한 픽셀도 바꾸지 않는다** (D-024). DS-6은 DS-5를 선행 조건으로 두므로 병렬 착수
 대상이 아니다.
+
+**열린 PR [#95](https://github.com/landfill/ClairKeys/pull/95) — WCAG 요건 제거 (D-030).** 사용자
+지시로 이슈 #76의 WCAG AA 요건을 문서·CI·구현 계약 세 층에서 제거했다. 완료 조건 7 삭제와 조건 8 →
+7 재번호, DS-1~DS-7의 "접근성·반응형 검증" → "반응형 검증", `accessibility-check` CI job과
+`prChecksWorkflow.test.ts` 검사 3건 제거, `PlaybackControls`·`icons.tsx`·`OptimizedImage`의 ARIA
+계약과 `playbackControlsA11y.test.tsx`·`globalStyles.test.ts` 포커스 가드 삭제다. 로컬 검증은
+tsc 통과 / lint 0건 / jest **75 suite·745 test 전부 통과**. `main` required check 4개
+(`Lint`·`Security Audit`·`Run Tests`·`E2E Tests`)에 "Accessibility Check"가 없어 머지를 막지
+않는다. **병합 승인은 아직 없다.** 상세는 `docs/recovery/reviews/PR-95.md`.
 
 **DS-4는 PR 세 건으로 끝났다.** #92(merge `64aecb2`)가 구현, #93(merge `d13bb23`)이 891px 관측의
 카드 과밀 정리, #94(merge `cb42fe4`)가 D-029 결정 기록이다. 목록·상세 API는 `availability`만
@@ -85,7 +96,7 @@ DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항
 |---|---|---|
 | **DS0-1** | 비공개 악보의 애니메이션 JSON이 익명으로 200(78KB). API의 403은 URL 은닉일 뿐이고 객체는 public 버킷에 있다 | **DS 범위 밖, GitHub 이슈 미등록** |
 | **DS4-1** | **이어하기가 없다.** `PracticeSession`은 `durationSeconds`·`completedPercentage`만 저장하고 재생 위치 필드도 복원 소비자도 없다. UI를 만들기 전에 **무엇을 저장할지**를 정해야 한다 — 저장 계약이 선행이다 | **결정 필요, GitHub 이슈 미등록** |
-| DS4-2 | `/library`의 반응형 1440·1024·390 근거가 사용자의 수동 확인뿐이다. 인증 뒤 화면이라 공개 E2E·axe가 지나가지 않는다 | DS-7(종단 접근성) |
+| DS4-2 | `/library`의 반응형 1440·1024·390 근거가 사용자의 수동 확인뿐이다. 인증 뒤 화면이라 공개 E2E가 지나가지 않는다. D-030으로 접근성 담당이 사라져 **반응형 항목으로만 남는다** | DS-7(종단 반응형) |
 | C5 | `HOME_SAMPLE_ANIMATION.tempoSource: 'user'`가 화면에 "직접 입력"으로 표시돼 방문자가 입력한 것처럼 읽힌다 | DS-5(표시) 또는 별도 결정 |
 | C6 | 홈의 가로 스크롤 가드가 매칭 0개라 vacuous | DS-7 |
 | — | `flex-shrink-*` 표기 일괄 현대화(동작 문제 없음) | P2-A |
@@ -94,8 +105,9 @@ DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항
 | DS-5 선행 | 구간 반복(DS0-9)과 이모지 교체는 **D-019 결정 8과 부딪힌다.** 착수 시 그 결정을 먼저 다룬다 | DS-5 |
 | **DS3-1** | **업로드 한도 50MB가 Vercel Function 요청 본문 한도 4.5MB와 충돌한다.** 5MB PDF는 화면의 모든 검사를 통과하고 413으로 거부되며, 그 413이 "서비스 불가 → 잠시 후 재시도"로 분류돼 **성공할 수 없는 재시도**를 권한다. 홈(DS-2)과 업로드(DS-3) 모두 "최대 50MB"를 말한다. 한도를 낮추든 업로드 경로를 바꾸든 **제품 결정**이라 D-026·phase 문서 갱신이 선행한다 | **결정 필요, GitHub 이슈 미등록** |
 
-한 번도 실행하지 않은 검증: 초보자 관찰 테스트(완료 조건 1), 수동 접근성 검사(키보드 순회·포커스
-가시성·200% 확대 — DS-7 종단 항목), 실기기 모바일.
+한 번도 실행하지 않은 검증: 초보자 관찰 테스트(완료 조건 1), 실기기 모바일. 수동 접근성 검사
+(키보드 순회·포커스 가시성·200% 확대)는 D-030으로 **요건에서 빠졌다** — 미실행이지만 더 이상
+이슈 #76의 완료를 막지 않는다.
 
 관련 열린 이슈: #83(readme), #73·#72·#71(OMR 콜백·finalize·NEXTAUTH_URL), #66(진행 바 고착),
 #65(모바일 건반), #61(샘플 음량), #58(검은건반 배치), #52(systemd 재시작), #47·#46(변환 실패 표시·
