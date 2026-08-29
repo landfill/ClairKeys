@@ -31,6 +31,7 @@ export function LibrarySheetMusicList({
   const { categories, loading: categoriesLoading } = useCategories()
   const [editingSheet, setEditingSheet] = useState<SheetMusicWithCategory | null>(null)
   const [title, setTitle] = useState('')
+  const [titleError, setTitleError] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   // 데이터 로드
@@ -107,14 +108,20 @@ export function LibrarySheetMusicList({
 
   const openTitleEditor = (sheet: SheetMusicWithCategory) => {
     setTitle(sheet.title)
+    setTitleError(null)
     setEditingSheet(sheet)
   }
 
   const saveTitle = async (event: FormEvent) => {
     event.preventDefault()
-    if (!editingSheet || !title.trim()) return
+    if (!editingSheet) return
+    if (!title.trim()) {
+      setTitleError('제목을 입력해 주세요.')
+      return
+    }
 
     try {
+      setTitleError(null)
       setErrorMessage(null)
       await updateSheetMusic(editingSheet.id, { title: title.trim() })
       setEditingSheet(null)
@@ -221,13 +228,21 @@ export function LibrarySheetMusicList({
             <input
               id="sheet-title"
               value={title}
-              onChange={(event) => setTitle(event.target.value)}
+              onChange={(event) => {
+                setTitle(event.target.value)
+                setTitleError(null)
+              }}
               className="mt-1 w-full rounded-md border border-rule-strong bg-surface px-3 py-2 text-ink"
               autoFocus
               required
+              aria-describedby={titleError ? 'sheet-title-error' : undefined}
             />
+            {titleError && <p id="sheet-title-error" role="alert" className="mt-2 text-sm text-state-error">{titleError}</p>}
             <div className="mt-6 flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setEditingSheet(null)}>취소</Button>
+              <Button type="button" variant="outline" onClick={() => {
+                setTitleError(null)
+                setEditingSheet(null)
+              }}>취소</Button>
               <Button type="submit">저장</Button>
             </div>
           </form>

@@ -58,6 +58,17 @@ describe('LibrarySheetMusicList', () => {
     await waitFor(() => expect(updateSheetMusic).toHaveBeenCalledWith(1, { title: '새 제목' }))
   })
 
+  it('explains why a whitespace-only title cannot be saved', async () => {
+    render(<LibrarySheetMusicList />)
+
+    fireEvent.click(screen.getByRole('button', { name: '연습 가능 제목 수정' }))
+    fireEvent.change(screen.getByLabelText('제목'), { target: { value: '   ' } })
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+
+    expect(await screen.findByText('제목을 입력해 주세요.')).toBeInTheDocument()
+    expect(updateSheetMusic).not.toHaveBeenCalled()
+  })
+
   it('offers an upload action for an empty library', () => {
     mockUseSheetMusic.mockReturnValue({
       ...mockUseSheetMusic(),

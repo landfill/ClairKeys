@@ -9,7 +9,7 @@ import Card from '@/components/ui/Card'
 import { DeleteConfirmDialog } from '@/components/ui/ConfirmDialog'
 import type { SheetMusicAvailability } from '@/lib/sheetMusicAvailability'
 
-interface SheetMusicCardProps {
+export interface SheetMusicCardProps {
   sheetMusic: SheetMusicWithCategory
   showMoveOptions?: boolean
   categories?: Category[]
