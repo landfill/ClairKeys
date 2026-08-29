@@ -29,7 +29,7 @@ P0-A와 P0-D는 서로 다른 파일 범위를 갖도록 설계하면 병렬 진
 | 1 | **DS-G1** | **처리 상태 출처 계약 확정 (결정 gate)** | DONE | `codex/ds-g1-processing-state-contract` | DS-0 |
 | 2 | DS-1 | 디자인 토큰과 공통 셸 | DONE | `codex/ds-1-design-foundation` | **DS-G1** |
 | 3 | DS-2 | 로그인 전 핵심 가치 전달 (홈·샘플·복귀 계약) | DONE | `codex/ds-2-prelogin-value` | DS-1 |
-| 4 | DS-3 | 업로드와 처리 상태 | IN_REVIEW (PR [#91](https://github.com/landfill/ClairKeys/pull/91)) | `codex/ds-3-upload-processing` | DS-1 |
+| 4 | DS-3 | 업로드와 처리 상태 | DONE | `codex/ds-3-upload-processing` | DS-1 |
 | 5 | DS-4 | 내 악보 | NOT_STARTED | `codex/ds-4-my-library` | DS-1 |
 | 6 | DS-5 | 학습 플레이어 | NOT_STARTED | `codex/ds-5-learning-player` | DS-1 |
 | 7 | DS-6 | 탐색과 공개 체험 (`/sheet/[id]` 로그인 전 접근 포함) | NOT_STARTED | `codex/ds-6-explore` | DS-2, **DS-5** |

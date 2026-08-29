@@ -8,24 +8,24 @@ Last updated: 2026-08-29 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
-DS-0, DS-G1, DS-1, DS-2가 `DONE`, **DS-3이 `IN_REVIEW`**(PR [#91](https://github.com/landfill/ClairKeys/pull/91)),
-DS-4~DS-7이 `NOT_STARTED`다. 이슈 #76은 열려 있다 — 완료 조건 8개는 `docs/recovery/ROADMAP.md`의
-"이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
+DS-0, DS-G1, DS-1, DS-2, **DS-3이 `DONE`**이고 DS-4~DS-7이 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
+완료 조건 8개는 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 
-**Next action**: **PR #91의 병합 승인을 받는 것.** 17개 체크가 전부 성공했고 미해결 리뷰가 없다.
-리뷰는 두 번 돌았다 — CodeRabbit 4건(2건 수용 `bb08e7f`, 2건 기각)과 Orca 오케스트레이션 Codex
-워커 7건(6건 수용 `12575c0`·`6a5eeea`, 1건 이월). 판정 근거는 전부
-`docs/recovery/reviews/PR-91.md`에 있다. 승인 전에는 병합하지 않는다.
+**Next action**: **DS-4(내 악보 목록)**. `docs/recovery/phases/DS-4-my-library.md`가 범위와 완료
+조건을 갖고 있고, 읽을 계약은 D-026 결정 2·3의 **파생 상태 4종**(연습 가능 / 처리 중 / 오류 /
+알 수 없음)이다. 단계 표시는 이 화면의 것이 아니다 (D-026 G1-2).
 
-병합 뒤 다음 코드 작업은 **DS-4(내 악보 목록)**다. 착수 전에 운영 DB의 `processingStatus` 분포를
-확인해야 한다(아래 blocker 표). DS-4·DS-5는 서로 독립이라 병렬로 열 수 있다.
+**착수 전 선행 하나**: 운영 DB의 `processingStatus` 분포를 확인해야 한다 — `'pending'` + 빈
+`animationDataUrl` 행이 몇 건인지. 그 행들이 `알 수 없음`으로 분류되므로, 실제로 몇 명에게 보이는
+문제인지 모르면 그 상태의 문구를 정할 수 없다. 이 저장소의 Supabase 접근 권한이 없어 미확인이다.
 
-**저장소 상태**: `main`은 최신이고 워킹 트리 clean. 작업 브랜치 `codex/ds-3-upload-processing`이
-원격에 있고 PR #91이 열려 있다 — 병합 승인 전까지 삭제하지 않는다.
+DS-4·DS-5는 서로 독립이라 병렬로 열 수 있다.
+
+**저장소 상태**: `main`이 `f8c2249`로 최신, 워킹 트리 clean, 작업 브랜치 없음, 열린 PR 없음.
 
 ### 이 트랙에서 배운 것 (반복하지 않기 위해)
 
-세 번 다 초록 CI가 침묵했다. DS-3 이후도 같은 함정을 만난다.
+네 번 다 초록 CI가 침묵했다. DS-4 이후도 같은 함정을 만난다.
 
 - `toBeVisible`·`toBeAttached`는 **화면 밖 요소에도 통과한다.** "최초 뷰포트 안"을 검사하려면
   `boundingBox`로 좌표를 재거나 `toBeInViewport()`를 쓴다.
@@ -78,11 +78,12 @@ DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항
 #65(모바일 건반), #61(샘플 음량), #58(검은건반 배치), #52(systemd 재시작), #47·#46(변환 실패 표시·
 저해상도 PDF — DS-3이 문구만 다룬다), #44(박자 어긋남).
 
-## #76 DS-3 IN_REVIEW — 업로드 화면이 아는 것만 말하게 했다 (PR #91)
+## #76 DS-3 DONE — 업로드 화면이 아는 것만 말하게 했다 (PR #91 병합)
 
-사용자 지시로 DS-3을 진행했다. 브랜치 `codex/ds-3-upload-processing`, 커밋 8개, head `6a5eeea`,
-PR [#91](https://github.com/landfill/ClairKeys/pull/91). **CI 17개 전부 성공, 미해결 리뷰 스레드
-0건, `mergeStateStatus: CLEAN`.** 미병합 — 사용자의 명시적 병합 승인을 기다린다.
+사용자 지시로 DS-3을 진행했고, 명시적 승인으로 PR [#91](https://github.com/landfill/ClairKeys/pull/91)을
+merge commit `f8c2249`로 병합했다(최종 head `6a5eeea`, 커밋 8개). 병합 직전 재확인에서 CI 17/17,
+미해결 리뷰 스레드 0건, `MERGEABLE`/`CLEAN`이었고, merge commit check-runs 6/6 성공. 로컬·원격
+브랜치 tip이 모두 `main`에 포함됨을 확인한 뒤 삭제했다.
 
 **계약은 옮기기만 하면 됐지만, 옮기는 과정에서 결함 셋이 드러났다.**
 
@@ -149,8 +150,13 @@ E2E chromium+Mobile Chrome 10/10, CI 17/17. 로컬 실제 브라우저로 네 �
 **실행하지 못한 것**: 실제 PDF를 운영 OMR 서비스에 올리는 수동 검증(로컬에 DB·OMR 서비스 없음),
 실제 암호화 PDF(Acrobat 산출물) fixture, Firefox·WebKit 로컬 E2E(브라우저 미설치 — CI가 판정했다).
 
-**다음 행동**: PR #91 병합 승인. 병합 뒤에는 DS-4(내 악보 목록)이고, 착수 전 운영 DB의
-`processingStatus` 분포 확인이 선행이다.
+**이슈 #76 완료 조건 4는 DS-3이 판정하지 못했다.** 그 조건("업로드 후 현재 처리 단계와 예상 대기
+시간이 화면에 있다")의 판정 방법은 **실제 업로드 1회**인데, 로컬에 DB도 OMR 서비스도 없어 실행하지
+못했다. 화면이 그것을 보여준다는 것은 회귀 테스트와 로컬 실제 브라우저(API를 가로챈 상태)로
+확인했지만, **운영 파이프라인을 한 번 통과시킨 증거는 없다.** 조건 5(이탈 안내 고정 노출)는 관측으로
+충족했다. DS-7이 종단 판정할 때 조건 4를 실제 업로드로 채워야 한다.
+
+**다음 행동**: DS-4(내 악보 목록). 착수 전 운영 DB의 `processingStatus` 분포 확인이 선행이다.
 
 ## #76 DS-2 DONE — 로그인 전 핵심 가치 전달 완료, 다음은 DS-3
 

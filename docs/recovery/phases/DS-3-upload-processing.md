@@ -1,6 +1,6 @@
 # DS-3 — 업로드와 처리 상태
 
-Status: `IN_REVIEW` — PR [#91](https://github.com/landfill/ClairKeys/pull/91), 병합 승인 대기
+Status: `DONE` — PR [#91](https://github.com/landfill/ClairKeys/pull/91) 병합 (merge commit `f8c2249`, 2026-08-29)
 Depends on: DS-1 (DS-1이 이미 **DS-G1**을 선행 조건으로 갖는다 — 처리 상태 출처 계약은 확정된 상태다)
 Blocks: DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 3단계
@@ -96,6 +96,17 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 3단계
 - 실패 화면에 스택 트레이스가 노출되지 않는다 (실패 fixture로 회귀 테스트).
 - 버튼·안내 문구에 `OMR` 같은 기술 용어가 없다.
 - 각 상태(선택 전 / 검사 중 / 요청됨 / 처리 중 / 완료 / 실패)의 회귀 테스트가 있다.
+
+## 완료 판정 (2026-08-29)
+
+phase 완료 조건 10개를 모두 충족했다. 근거는
+`docs/recovery/validation/2026-08-29-DS-3-upload-processing.md`.
+
+**다만 이슈 #76 완료 조건 4는 이 단계가 판정하지 못했다.** 그 조건의 판정 방법은 "실제 업로드
+1회"인데, 로컬에 DB도 OMR 서비스도 없어 실행하지 못했다. 화면이 예상 대기 시간과 처리 단계를
+보여준다는 것은 회귀 테스트와 로컬 실제 브라우저(API를 가로챈 상태)로 확인했지만, **운영
+파이프라인을 한 번 통과시킨 증거는 없다.** 조건 5(이탈 안내 고정 노출)는 관측으로 충족했다.
+DS-7이 종단 판정할 때 이 항목을 실제 업로드로 채워야 한다.
 
 ## 검증 명령
 
