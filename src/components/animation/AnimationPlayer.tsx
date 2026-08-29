@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { PlaybackControls } from '@/components/playback'
+import { PlaybackControls, TempoDisplay } from '@/components/playback'
 import { PracticeGuideControls, PracticeKeyHighlight } from '@/components/practice'
 import { AnimationEvent, PianoAnimationData, PracticeState } from '@/types/animation'
 import {
@@ -58,20 +58,6 @@ export default function AnimationPlayer({
     }),
     [animationData]
   )
-  const tempoDisplay = useMemo(
-    () =>
-      getTempoDisplay({
-        tempo: animationData.tempo,
-        tempoSource: animationData.tempoSource ?? 'unknown',
-        timingReferenceBpm:
-          animationData.timingReferenceBpm ??
-          animationData.tempo ??
-          DEFAULT_TIMING_REFERENCE_BPM,
-        scoreTempo: animationData.scoreTempo,
-      }),
-    [animationData]
-  )
-  
   // Performance optimization: Throttle state updates
   const updateThrottleRef = useRef<number | null>(null)
   const THROTTLE_MS = 16 // ~60fps
@@ -303,10 +289,18 @@ export default function AnimationPlayer({
         <p className="text-gray-600">
           {animationData.composer} • {animationData.timeSignature}
         </p>
-        <p className="mt-1 text-sm font-medium text-gray-700">{tempoDisplay.primary}</p>
-        {tempoDisplay.secondary && (
-          <p className="text-xs text-gray-500">{tempoDisplay.secondary}</p>
-        )}
+        <TempoDisplay
+          tempo={animationData.tempo}
+          tempoSource={animationData.tempoSource ?? 'unknown'}
+          timingReferenceBpm={
+            animationData.timingReferenceBpm ??
+            animationData.tempo ??
+            DEFAULT_TIMING_REFERENCE_BPM
+          }
+          scoreTempo={animationData.scoreTempo}
+          isPlaybackActive={isPlaying}
+          className="mt-1"
+        />
       </div>
 
       {/* Controls - Switch based on mode */}

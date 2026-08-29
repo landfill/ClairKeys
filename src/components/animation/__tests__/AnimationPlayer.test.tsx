@@ -8,6 +8,7 @@ jest.mock('@/services/animationEngine', () => ({
 }))
 
 jest.mock('@/components/playback', () => ({
+  ...jest.requireActual('@/components/playback'),
   PlaybackControls: ({ currentTime }: { currentTime: number }) => (
     <div data-testid="current-time">{currentTime}</div>
   )
@@ -73,6 +74,12 @@ describe('AnimationPlayer', () => {
 
   afterEach(() => {
     jest.useRealTimers()
+  })
+
+  it('renders the shared tempo display in the alternate player', () => {
+    render(<AnimationPlayer animationData={animationData} />)
+
+    expect(screen.getByTestId('tempo-display')).toHaveTextContent('♩=120 (출처 미상)')
   })
 
   it('captures the time value before the throttled callback runs', () => {
