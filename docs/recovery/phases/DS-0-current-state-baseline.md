@@ -1,6 +1,6 @@
 # DS-0 — 디자인 개편 착수 전 현재 상태와 제품 계약 고정
 
-Status: `IN_REVIEW`
+Status: `DONE`
 Depends on: P1-A (`DONE`)
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 0단계
 
@@ -292,6 +292,14 @@ DS-1~DS-7은 아래를 **시각 개편의 부수효과로 바꾸지 않는다.**
   `미지원`으로 확정했다. 근거는 `docs/recovery/validation/2026-08-29-ds0-production-walkthrough.md`.
   Work stage 5는 사용자 확인 대기 중이었다.
 - 2026-08-29 — Work stage 5 완료. 사용자가 GitHub 이슈를 새로 만들지 않고 문서에 기록하도록
-  지시해, 신규 결함 9건을 "발견된 결함 대장"에 담당 단계와 함께 남겼다. DS-1 진입 조건 6개도
-  확정했다. Work stages 1~5와 completion criteria를 모두 충족했으나, PR
-  [#87](https://github.com/landfill/ClairKeys/pull/87)이 아직 병합되지 않아 상태는 `IN_REVIEW`다.
+  지시해, 신규 결함을 "발견된 결함 대장"에 담당 단계와 함께 남겼다. DS-1 진입 조건 6개도 확정했다.
+- 2026-08-29 — 사용자 지시로 다크 모드를 구현 대상에서 제외했다(**D-025**). 현재 상태가 부분 구현이
+  아니라 죽은 코드임을 확인해 지원표 판정을 `미지원`으로 고치고 DS0-10을 대장에 추가했다.
+- 2026-08-29 — **DONE.** 사용자의 명시적 승인으로 PR
+  [#87](https://github.com/landfill/ClairKeys/pull/87)을 merge commit `52f518e`로 병합했다.
+  최종 head는 `cea20ce`이고 커밋 4개(`15c95b3`, `6114579`, `0e45c9b`, `cea20ce`)를 담는다.
+  필수 체크 4개(Lint, Security Audit, Run Tests, E2E Tests) 전부 통과했고 리뷰 스레드는 없었다
+  (CodeRabbit은 이 저장소에서 리뷰를 건너뛴다). merge commit `52f518e`의 post-merge check-runs가
+  6/6 성공했고 Vercel Production이 `52f518e`로 배포됐다. 로컬·원격 작업 브랜치 tip이 모두
+  `cea20ce`로 main에 포함됨을 확인한 뒤 양쪽을 삭제했다. Work stages 1~5와 completion criteria를 모두 충족했다.
+  다음 단계는 **DS-1**이며 위 "DS-1 진입 조건" 6개가 그 진입점이다.

@@ -2,12 +2,18 @@
 
 Last updated: 2026-08-29 KST
 
-## #76 DS-0 IN_REVIEW — 디자인 개편 착수 전 계약 고정, PR #87 열림 (CI 전부 통과)
+## #76 DS-0 DONE — 디자인 개편 착수 전 계약 고정 완료, 다음은 DS-1
 
 사용자가 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)(초보자 중심 여정·브랜드 전면
 개편) 중 **0단계**를 진행하도록 지시했다. 0단계는 코드나 화면을 바꾸지 않고 현재 상태와 제품 계약을
-고정하는 단계다. PR [#87](https://github.com/landfill/ClairKeys/pull/87)이 열려 있고 병합 승인을
-받지 않았다.
+고정하는 단계다. 사용자의 명시적 승인으로 PR [#87](https://github.com/landfill/ClairKeys/pull/87)을
+merge commit `52f518e`로 병합했다(최종 head `cea20ce`, 커밋 4개). 필수 체크 4개 전부 통과했고 리뷰
+스레드는 없었다. merge commit의 post-merge check-runs가 **6/6 성공**했고 Vercel Production이
+`52f518e`로 배포됐다. 로컬·원격 작업 브랜치 tip이 모두 main에 포함됨을 확인한 뒤 양쪽을 삭제했다.
+
+**이슈 #76 자체는 열려 있다** — 0단계만 끝났고 DS-1~DS-7이 남았다. 다음 행동은 **DS-1(디자인 토큰과
+공통 셸)**이며, 진입 조건 6개는 `docs/recovery/phases/DS-0-current-state-baseline.md`의 "DS-1 진입
+조건" 절에 있다. DS-1은 나머지 전 단계의 선행 조건이다(D-024 결정 4).
 
 이 PR은 새 트랙 DS-0~DS-7을 ROADMAP에 추가하고, DS-0 phase 문서·검증 기록·결정 D-024를 남긴다.
 `ROADMAP.md`의 단계 구성 변경과 `DECISIONS.md` 신규 항목은 직접 커밋 예외가 아니므로 PR에 포함했다.
@@ -68,8 +74,7 @@ DS-1 진입 조건 6개도 확정했다 — 토큰 정의, 다크 모드 잔재 
 (다크 OS 실제 렌더는 미관측). DS-1은 라이트 팔레트 **한 벌만** 정의하고, 죽은 블록(DS0-10) 처리를
 정한다.
 
-DS-0는 Work stages 1~5와 completion criteria를 모두 충족했다. PR #87이 병합되지 않아 상태는
-`IN_REVIEW`이며, **병합은 사용자의 명시적 승인을 기다린다.**
+DS-0는 Work stages 1~5와 completion criteria를 모두 충족해 `DONE`이다.
 
 미완: 실기기 모바일 확인, WCAG 자동 검사, 실제 업로드 실행은 하지 않았다.
 

@@ -24,7 +24,7 @@ P0-A와 P0-D는 서로 다른 파일 범위를 갖도록 설계하면 병렬 진
 
 | 순서 | ID | 단계 | 상태 | 권장 브랜치 | 선행 조건 |
 |---:|---|---|---|---|---|
-| 0 | DS-0 | 현재 상태와 제품 계약 고정 | IN_REVIEW | `codex/ds-0-current-state-baseline` | P1-A |
+| 0 | DS-0 | 현재 상태와 제품 계약 고정 | DONE | `codex/ds-0-current-state-baseline` | P1-A |
 | 1 | DS-1 | 디자인 토큰과 공통 셸 | NOT_STARTED | `codex/ds-1-design-foundation` | DS-0 |
 | 2 | DS-2 | 로그인 전 핵심 가치 전달 | NOT_STARTED | `codex/ds-2-prelogin-value` | DS-1 |
 | 3 | DS-3 | 업로드와 처리 상태 | NOT_STARTED | `codex/ds-3-upload-processing` | DS-1 |
