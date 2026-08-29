@@ -19,7 +19,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#2563eb'
+  themeColor: '#a8452a'
 }
 
 export const metadata: Metadata = {
@@ -97,7 +97,7 @@ export default function RootLayout({
       >
         <SessionProvider>
           <Header />
-          <main className="flex-1 bg-gray-50">
+          <main className="flex-1 bg-canvas">
             {children}
           </main>
           <Footer />

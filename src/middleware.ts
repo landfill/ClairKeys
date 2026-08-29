@@ -1,5 +1,6 @@
 import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
+import { isProtectedPath } from '@/lib/routeAccess'
 
 export default withAuth(
   function middleware() {
@@ -9,14 +10,8 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Define protected routes
-        const protectedPaths = ['/library', '/upload', '/profile']
-        const isProtectedPath = protectedPaths.some(path => 
-          req.nextUrl.pathname.startsWith(path)
-        )
-
         // Allow access to non-protected routes
-        if (!isProtectedPath) {
+        if (!isProtectedPath(req.nextUrl.pathname)) {
           return true
         }
 

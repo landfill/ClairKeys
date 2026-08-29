@@ -14,7 +14,7 @@ export default function PageHeader({
   breadcrumbs 
 }: PageHeaderProps) {
   return (
-    <div className="bg-white border-b border-gray-200">
+    <div className="bg-surface border-b border-rule">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {breadcrumbs && (
           <nav className="flex mb-4" aria-label="Breadcrumb">
@@ -23,7 +23,7 @@ export default function PageHeader({
                 <li key={index} className="flex items-center">
                   {index > 0 && (
                     <svg
-                      className="flex-shrink-0 h-4 w-4 text-gray-400 mx-2"
+                      className="flex-shrink-0 h-4 w-4 text-ink-muted mx-2"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -37,12 +37,12 @@ export default function PageHeader({
                   {crumb.href ? (
                     <a
                       href={crumb.href}
-                      className="text-sm font-medium text-gray-500 hover:text-gray-700"
+                      className="text-sm font-medium text-ink-muted hover:text-ink"
                     >
                       {crumb.label}
                     </a>
                   ) : (
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-ink">
                       {crumb.label}
                     </span>
                   )}
@@ -54,9 +54,9 @@ export default function PageHeader({
         
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-ink">{title}</h1>
             {description && (
-              <p className="mt-2 text-sm text-gray-600">{description}</p>
+              <p className="mt-2 text-sm text-ink-muted">{description}</p>
             )}
           </div>
           {actions && (
