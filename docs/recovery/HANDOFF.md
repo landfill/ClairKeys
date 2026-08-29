@@ -2,6 +2,50 @@
 
 Last updated: 2026-08-29 KST
 
+## #76 DS-1 IN_REVIEW — 디자인 토큰과 공통 셸, PR #89 열림
+
+사용자 지시로 DS-1을 진행했다. PR [#89](https://github.com/landfill/ClairKeys/pull/89)가 열려 있고
+병합 승인을 받지 않았다. 커밋을 셋으로 나눴다 — 회귀 근거, **A 시각 변경**, **B 도달 경로 변경**.
+A와 B를 나눈 것은 2차 검토 지적 4번을 따른 것으로, 고아 라우트 제거와 내비게이션 축소는 시각 개편이
+아니라 사용자 도달 경로를 없애는 기능 변경이기 때문이다.
+
+**A (`e9aa371`)** — 색을 고르기 전에 모든 사용 조합의 명도 대비를 계산했다. 19개 조합 전부 통과,
+최소 3.48(`--ck-rule-strong`). 아이보리 `#faf6ee`, 잉크 `#1b1f2a`, 테라코타 `#a8452a`, 블루·세이지,
+상태 색 3종. 라이트 한 벌만 만든다 (D-025).
+
+작업 중 두 가지가 드러났다.
+
+- `globals.css`의 다크 블록은 `--background`만 바꾸는데 `<main>`의 `bg-gray-50`이 body를 덮어
+  **한 번도 화면에 나온 적이 없었다** (DS0-10 확인) → 제거했다.
+- body가 Arial을 하드코딩하고 있어 `layout.tsx`가 불러오는 **Geist가 쓰인 적이 없었다** → 수정했다.
+
+그 외 포커스 링을 전역 `:focus-visible`로 통일(Button은 variant마다 다른 링 색을 갖고 있었다),
+Footer 죽은 링크 3개 제거와 저작권 연도 계산(DS0-5), 이모지 → 인라인 SVG 선형 아이콘.
+
+**B (`cb8a74b`)** — 내비게이션 `내 악보`·`새 악보`·`탐색` 3개(D-026 G1-4). `/processing` 제거.
+고아 라우트 7개(demo 4, test 3) 제거, `/admin/update-finger-data`는 API가 이미 `ADMIN_EMAILS`로
+막고 있어 제거 대신 middleware `protectedPaths`에 `/admin`을 넣어 격리했다.
+
+**셸 안에 숨어 있던 두 번째 도달 경로를 발견했다.** `MainLayout`의 `ProcessingStatusIndicator`가
+같은 죽은 `ProcessingJob`을 읽어 **항상 `null`을 반환하면서** 그 레이아웃을 쓰는 모든 페이지에서
+`/api/processing`과 `/api/notifications`를 폴링했고, 유일한 행동이 `/processing`으로 가는 것이었다.
+마운트 지점이 하나뿐이라 컴포넌트째로 제거했다.
+
+검증: 명도 대비 19/19, lint 무경고, `tsc` 통과, **Jest 63 suites / 603 tests 전부 통과**,
+`npm run build` 성공(라우트 목록에서 demo·test·processing 사라짐), E2E chromium 3/3.
+firefox·webkit은 로컬에 바이너리가 없어 CI가 실행한다.
+기록: `docs/recovery/validation/2026-08-29-ds1-token-contrast.md`.
+
+**남은 확인**: 변경 후 라우트 응답 코드를 배포 프리뷰에서 실측해야 한다. 변경 전 기준선은 기록돼
+있다 — 제품 7개(200/307)는 불변, 고아 8개는 200 → 404(제거)/307(격리)이 의도된 변화다.
+
+**P2-A로 넘어가는 잔여**: `BackgroundFileUpload`의 `/processing` 링크 2곳,
+`/api/processing`·`/api/notifications`·`useBackgroundProcessing`·`ProcessingDashboard`의 삭제.
+이 PR은 사용자 도달 경로만 없앴다.
+
+**대체 도달 경로 공백**: `처리 상태`를 대신할 내 악보 상태 배지는 DS-4가 만든다. 제거 전에도 그
+화면은 비어 있었으므로 잃는 정보는 없다.
+
 ## #76 DS-G1 DONE — 처리 상태 출처 계약 확정 완료, 다음은 DS-1
 
 사용자 지시로 DS-G1을 진행했다. UI 단계가 아니라 결정 gate이므로 **코드 변경 0건**이 완료 조건이고,

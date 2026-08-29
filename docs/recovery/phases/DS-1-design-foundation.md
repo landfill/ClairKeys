@@ -1,6 +1,6 @@
 # DS-1 — 디자인 토큰과 공통 셸
 
-Status: `NOT_STARTED`
+Status: `IN_REVIEW`
 Depends on: **DS-G1** (내비게이션 구성이 G1-4의 답을 요구한다). DS-G1은 DS-0에 의존한다
 Blocks: DS-2, DS-3, DS-4, DS-5, DS-6, DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 1단계
@@ -115,6 +115,19 @@ B는 의도적으로 도달 경로를 바꾸므로 "변하지 않음"이 아니�
 - 시각 변경(A)과 도달 경로 변경(B)이 서로 다른 커밋에 있다.
 - DS0-10의 죽은 다크 블록이 제거됐거나, 남긴 경우 죽은 코드임이 주석에 있다.
 - 재생 화면에 진입해 재생을 시작하면 Header·Footer가 숨겨진다 (수동 확인, 근거 기록).
+
+## Progress
+
+- 2026-08-29 — PR [#89](https://github.com/landfill/ClairKeys/pull/89)로 진행 중. 커밋 3개로 나눴다:
+  `3fe3c12` 회귀 근거(셸 계약 테스트, 이 시점 3 pass / 6 fail), `e9aa371` **A 시각 변경**,
+  `cb8a74b` **B 도달 경로 변경**. 진입 조건 6개를 전부 결정했다 — 토큰은 명도 대비 19개 조합을
+  계산해 통과하는 값만 채택(최소 3.48), 죽은 다크 블록은 제거(DS0-10), 내비게이션은 D-026 G1-4대로
+  3개, 고아 라우트는 demo·test 7개 제거 + `/admin` 격리(DS0-3), 아이콘은 인라인 SVG,
+  `playback-chrome`은 회귀 테스트로 고정. 작업 중 body가 Arial을 하드코딩해 Geist가 쓰인 적이
+  없었다는 것과, `MainLayout`의 `ProcessingStatusIndicator`가 죽은 API를 모든 페이지에서 폴링하며
+  항상 `null`을 반환하고 있었다는 것을 발견해 함께 처리했다.
+  검증: `docs/recovery/validation/2026-08-29-ds1-token-contrast.md`.
+  남은 것은 배포 프리뷰에서의 변경 후 라우트 응답 코드 실측과 병합 승인이다.
 
 ## 검증 명령
 
