@@ -1,6 +1,30 @@
 # Current Handoff
 
-Last updated: 2026-08-28 KST
+Last updated: 2026-08-29 KST
+
+## PR #84 열림 — P1-A provenance 마감 구현, 운영 백필 자격증명 대기
+
+2026-08-29, P1-A의 마지막 완료 조건을 구현한 review-ready PR
+[#84](https://github.com/landfill/ClairKeys/pull/84)를 열었다. Head `2186cbc`, 브랜치
+`codex/p1a-provenance-backfill`, mergeable. 초기 CI는 실행 중이며 Vercel Preview와 Detect
+changes는 성공했다.
+
+- `SheetMusic.provenance`를 `omr | demo | unknown`으로 추가하는 additive migration.
+- `omrJobId`가 생긴 신규 행만 `omr`; 빠진 행은 추정하지 않는다.
+- 과거 `pdfParser`의 세 고정 멜로디·120 BPM·4/4와 **정확히 일치**할 때만 `demo`.
+- `demo`만 공개 목록에서 제외하고 재생 전에 실제 변환 결과가 아니라는 경고를 표시한다.
+- 백필은 기본 dry-run이며 저장 JSON 다운로드를 설정된 Supabase origin으로 제한한다.
+- 행 삭제 없음. `unknown`은 표시·공개·재생 동작을 바꾸지 않는다.
+
+로컬 검증: Jest 62 suites / 589 tests, `tsc`, lint, build, Prisma schema validation 통과.
+회귀는 구현 전에 4 suites 실패로 확인했다. 상세:
+`docs/recovery/validation/2026-08-29-p1a-provenance-backfill.md`.
+
+**P1-A는 아직 DONE이 아니다.** 실데이터 dry-run은 `DATABASE_URL` 부재로 DB 접속 전에
+중단됐다. Vercel CLI와 Supabase CLI도 로그인 자격증명이 없다. 다음 행동은 운영 자격증명을
+일시적으로 제공하거나 해당 CLI에 로그인한 뒤, (1) dry-run 개수 확인, (2) migration 적용,
+(3) `--apply`, (4) 사후 개수·공개 목록·demo 경고 확인 순서다. **migration보다 PR 코드를 먼저
+배포하면 Prisma가 존재하지 않는 컬럼을 읽으므로 순서를 바꾸지 않는다.**
 
 ## PR #81 병합 완료 — 재생 화면 기하 종료 (실기기 확인됨)
 

@@ -5,6 +5,15 @@ Depends on: P0-A, P0-B, P0-C, P0-D (all `DONE`)
 
 ## Progress
 
+- 2026-08-29 — 마지막 completion criterion 구현이 PR
+  [#84](https://github.com/landfill/ClairKeys/pull/84)로 열렸다. `SheetMusic.provenance` migration,
+  정확한 과거 demo 리터럴 matcher, dry-run 기본 backfill, 신규 OMR writer 표시, demo 공개 목록
+  제외와 재생 경고를 포함한다. 로컬 Jest 62 suites / 589 tests, `tsc`, lint, build, Prisma
+  validation 통과. 운영 `DATABASE_URL`과 Supabase/Vercel CLI 자격증명이 없어 실데이터 dry-run과
+  migration/apply는 아직 실행하지 못했다. 따라서 상태는 `IN_PROGRESS`이고 criterion 3은
+  운영 실행·검증 전까지 미충족이다. Evidence:
+  `docs/recovery/validation/2026-08-29-p1a-provenance-backfill.md`.
+
 - 2026-07-25 — Work stage 1 done. `src/app/api/__tests__/uploadPathInventory.test.ts` (6 tests)
   pins each path's converter and callers. Only `/api/omr/upload` converts a score;
   `/api/upload-async`, `/api/processing`, and the caller-less `/api/upload` reach
