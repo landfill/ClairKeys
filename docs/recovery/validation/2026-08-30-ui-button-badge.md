@@ -3,7 +3,8 @@
 Date: 2026-08-30 KST
 Branch: `codex/ui-button-badge`
 Initial commit: `7ba646cfbb5da16c74ce2b191925db7baf3c04ed`
-Latest fix: `6a8c5dd59bf252fbed89529722ffad3fad85ff69`
+Previous fix: `6a8c5dd59bf252fbed89529722ffad3fad85ff69`
+Latest fix: `31b7241bdee0781ac52c10bf81aa30d7cbbb5daa`
 Pull request: [#100](https://github.com/landfill/ClairKeys/pull/100)
 
 ## Scope
@@ -16,6 +17,8 @@ Pull request: [#100](https://github.com/landfill/ClairKeys/pull/100)
 - 브라우저 피드백 2: 재생 속도 선택 상자를 pill형 표면과 사용자 정의 화살표로 정리했다.
 - 브라우저 피드백 3: `전체 설정` disclosure를 둥근 설정 패널과 분리된 내부 영역으로 정리했다.
 - 모바일 compact playback bar에도 동일한 버튼 크기·역할 구분·속도 선택 규칙을 적용했다.
+- 재생·일시정지·중지 버튼에 아이콘과 함께 명시적 텍스트를 표시하고, A/B도 `A 시작`·`B 종료`로 풀어 썼다.
+- compact playback bar는 화면 폭을 보존하면서 명확한 aria-label과 tooltip을 제공한다.
 
 ## Verification
 
@@ -27,7 +30,8 @@ Pull request: [#100](https://github.com/landfill/ClairKeys/pull/100)
 | `npm run build` | PASS — Next.js production build completed |
 | `git diff --check` | PASS |
 
-브라우저 댓글 1·2·3은 PR #100의 최신 커밋 `6a8c5dd`에서 모두 수정했다. PR의 Vercel preview
+브라우저 댓글 1·2·3은 PR #100의 커밋 `6a8c5dd`에서 수정했고, 후속 브라우저 댓글은 최신 커밋
+`31b7241`에서 수정했다. PR의 Vercel preview
 재확인은 GitHub live state에서 확인한다.
 
 ## Not tested
