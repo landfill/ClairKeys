@@ -69,14 +69,10 @@ DS-6(탐색·상세)의 화면이 나중에 들어오면서 통일이 다시 깨
 npm run lint && npx tsc --noEmit && npm test && npm run test:e2e && npm run build
 git diff origin/main -- src/utils/playbackGeometry.ts src/utils/pianoLayout.ts src/hooks/usePlaybackOrientation.ts
 # ↑ DS 트랙 전체 범위에서 비어 있어야 한다 (DS-5가 D-019를 갱신한 경우는 예외로 기록)
-npx @axe-core/cli <배포 프리뷰 URL>   # 또는 프로젝트가 채택한 동등 도구 — 위반 0건
 ```
 
 수동 (자동 검사로 대체 불가):
 
 1. 종단 시나리오를 시크릿 창에서 1회 완주하고 각 단계의 화면을 기록한다.
-2. 전 화면을 키보드만으로 순회한다 — 트랩 없음, 포커스 항상 가시.
-3. 브라우저 200% 확대에서 전 화면을 확인한다 — 내용·기능 손실 없음.
-4. 상태를 표시하는 모든 요소가 색상 외 수단을 동반하는지 확인한다.
 
 결과는 `docs/recovery/validation/`에 검사별 통과 여부와 함께 기록한다.
