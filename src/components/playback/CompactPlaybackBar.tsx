@@ -110,15 +110,15 @@ export default function CompactPlaybackBar({
         aria-label="일시정지"
         variant="outline"
         size="md"
-        className="h-10 w-10 shrink-0 p-0 text-lg leading-none"
+        className="h-10 w-10 shrink-0 p-0 !px-0 !py-0 text-lg leading-none"
       >
         ⏸️
       </Button>
       {onLoopStart && onLoopEnd && onLoopClear && (
         <div className="flex shrink-0 gap-1" data-testid="compact-loop-controls">
-          <Button type="button" onClick={onLoopStart} disabled={!isReady} variant="outline" size="sm" className="h-10 w-10 p-0 border-hand-left text-xs text-hand-left" title="현재 위치를 A로 설정">A</Button>
-          <Button type="button" onClick={onLoopEnd} disabled={!isReady || loopStart === null} variant="outline" size="sm" className="h-10 w-10 p-0 border-hand-right text-xs text-hand-right" title="현재 위치를 B로 설정">B</Button>
-          <Button type="button" onClick={onLoopClear} disabled={!isReady || loopStart === null} variant={loopEnd !== null ? 'primary' : 'ghost'} size="sm" className="h-10 w-10 p-0 text-xs" aria-label="루프 초기화">↻</Button>
+          <Button type="button" onClick={onLoopStart} disabled={!isReady} variant="outline" size="sm" className="h-10 w-10 p-0 !px-0 !py-0 border-hand-left text-xs text-hand-left" title="구간 시작 A 설정" aria-label="구간 시작 A 설정">A</Button>
+          <Button type="button" onClick={onLoopEnd} disabled={!isReady || loopStart === null} variant="outline" size="sm" className="h-10 w-10 p-0 !px-0 !py-0 border-hand-right text-xs text-hand-right" title="구간 끝 B 설정" aria-label="구간 끝 B 설정">B</Button>
+          <Button type="button" onClick={onLoopClear} disabled={!isReady || loopStart === null} variant={loopEnd !== null ? 'primary' : 'ghost'} size="sm" className="h-10 w-10 p-0 !px-0 !py-0 text-xs" aria-label="A-B 구간 반복 초기화" title="A-B 구간 반복 초기화">↻</Button>
         </div>
       )}
       <Button

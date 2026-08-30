@@ -130,10 +130,12 @@ export default function PlaybackControls({
             variant="primary"
             size="lg"
             disabled={!isReady || isPlaying}
-            className="h-12 w-12 p-0"
+            className="h-12 w-20 gap-1 p-0 !px-0 !py-0 text-xs"
+            aria-label="재생"
             data-testid="playback-play"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="m8 5 11 7-11 7V5Z" /></svg>
+            <span>재생</span>
           </Button>
           
           {/* Pause Button */}
@@ -142,10 +144,12 @@ export default function PlaybackControls({
             variant="outline"
             size="lg"
             disabled={!isReady || !isPlaying}
-            className="h-12 w-12 p-0"
+            className="h-12 w-20 gap-1 p-0 !px-0 !py-0 text-xs"
+            aria-label="일시정지"
             data-testid="playback-pause"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M7 5h3v14H7zm7 0h3v14h-3z" /></svg>
+            <span>일시정지</span>
           </Button>
           
           {/* Stop Button */}
@@ -154,18 +158,21 @@ export default function PlaybackControls({
             variant="outline"
             size="lg"
             disabled={!isReady}
-            className="h-12 w-12 p-0"
+            className="h-12 w-20 gap-1 p-0 !px-0 !py-0 text-xs"
+            aria-label="중지"
             data-testid="playback-stop"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><rect x="6" y="6" width="12" height="12" rx="1" /></svg>
+            <span>중지</span>
           </Button>
 
           {onLoopStart && onLoopEnd && onLoopClear && (
             <div className="flex items-center gap-1 rounded-full border border-rule bg-surface-muted p-1" data-testid="playback-loop">
-              <Button onClick={onLoopStart} variant="outline" size="lg" disabled={!isReady || duration <= 0} className="h-12 w-12 p-0 border-hand-left text-hand-left" title="현재 위치를 A로 설정">A</Button>
-              <Button onClick={onLoopEnd} variant="outline" size="lg" disabled={!isReady || duration <= 0 || loopStart === null} className="h-12 w-12 p-0 border-hand-right text-hand-right" title="현재 위치를 B로 설정">B</Button>
-              <Button onClick={onLoopClear} variant={loopEnd !== null ? 'primary' : 'ghost'} size="lg" disabled={!isReady || loopStart === null} className="h-12 w-12 p-0" title="A-B 구간 반복 해제">
+              <Button onClick={onLoopStart} variant="outline" size="lg" disabled={!isReady || duration <= 0} className="h-12 w-20 p-0 !px-0 !py-0 border-hand-left text-hand-left text-xs" title="구간 시작 A 설정" aria-label="A 시작">A 시작</Button>
+              <Button onClick={onLoopEnd} variant="outline" size="lg" disabled={!isReady || duration <= 0 || loopStart === null} className="h-12 w-20 p-0 !px-0 !py-0 border-hand-right text-hand-right text-xs" title="구간 끝 B 설정" aria-label="B 종료">B 종료</Button>
+              <Button onClick={onLoopClear} variant={loopEnd !== null ? 'primary' : 'ghost'} size="lg" disabled={!isReady || loopStart === null} className="h-12 w-20 gap-1 p-0 !px-0 !py-0 text-xs" title="A-B 구간 반복 초기화" aria-label="A-B 구간 반복 초기화">
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 2l4 4-4 4" /><path d="M3 11V9a3 3 0 0 1 3-3h15" /><path d="m7 22-4-4 4-4" /><path d="M21 13v2a3 3 0 0 1-3 3H3" /></svg>
+                <span>초기화</span>
               </Button>
             </div>
           )}
@@ -200,7 +207,7 @@ export default function PlaybackControls({
       </div>
       {onLoopStart && onLoopEnd && (
         <p className="text-xs text-ink-muted">
-          구간 반복: A {loopStart === null ? '미설정' : formatTime(loopStart)} · B {loopEnd === null ? '미설정' : formatTime(loopEnd)}
+          구간 반복: A(시작) {loopStart === null ? '미설정' : formatTime(loopStart)} · B(종료) {loopEnd === null ? '미설정' : formatTime(loopEnd)}
         </p>
       )}
 

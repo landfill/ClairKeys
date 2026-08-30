@@ -91,9 +91,9 @@ describe('CompactPlaybackBar', () => {
 
     const controls = [
       screen.getByLabelText('일시정지'),
-      screen.getByText('A'),
-      screen.getByText('B'),
-      screen.getByLabelText('루프 초기화'),
+      screen.getByLabelText('구간 시작 A 설정'),
+      screen.getByLabelText('구간 끝 B 설정'),
+      screen.getByLabelText('A-B 구간 반복 초기화'),
       screen.getByLabelText('정지'),
     ]
 
