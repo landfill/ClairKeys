@@ -7,6 +7,6 @@
 - `npm run build`: PASS
 - focused geometry/player tests: PASS; geometry and `src/app/sheet` diffs are empty.
 
-Local E2E requires injected CI env because `.env*` is ignored and missing `NEXTAUTH_SECRET` causes NextAuth log saturation. Check port 3000 first: Playwright reuses orphan `npm start` servers locally; install matching Firefox/WebKit builds with `npx playwright install firefox webkit`.
+Local E2E requires injected CI env because `.env*` is ignored and missing `NEXTAUTH_SECRET` causes NextAuth log saturation. Check port 3000 first: Playwright reuses orphan `npm start` servers locally; install matching Firefox/WebKit builds with `npx playwright install firefox webkit`. A saturated orphan server does not die on SIGTERM — the log loop starves its signal handler, so plain `kill` reports success while the process keeps burning a core. Confirmed 2026-08-30: PID 13860 survived `kill` at 29 minutes and 99% CPU while no longer listening on 3000, and only `kill -9` on it and its `npm start` parent ended it.
 
 Not run: physical-device landscape rotation, compact controls, and 1.15 falling/keyboard ratio.
