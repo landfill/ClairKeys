@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import type { FallingNote } from '@/types/fallingNotes'
 import { useFallingNotesAudio, DEFAULT_MASTER_GAIN } from './useFallingNotesAudio'
 import { calculateSongLength, shouldAutoStop } from '@/utils/visualUtils'
@@ -149,12 +149,18 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     setLookAheadSec(Math.max(1, Math.min(5, newLookAheadSec)))
   }, [])
 
-  const loopSection = createLoopSection(loopStart, loopEnd, totalLength)
+  const loopSection = useMemo(
+    () => createLoopSection(loopStart, loopEnd, totalLength),
+    [loopStart, loopEnd, totalLength]
+  )
   const markLoopStart = useCallback(() => {
     setLoopStart(currentTime)
     setLoopEnd(null)
   }, [currentTime])
-  const markLoopEnd = useCallback(() => setLoopEnd(currentTime), [currentTime])
+  const markLoopEnd = useCallback(() => {
+    const section = createLoopSection(loopStart, currentTime, totalLength)
+    if (section) setLoopEnd(section.end)
+  }, [currentTime, loopStart, totalLength])
   const clearLoop = useCallback(() => {
     setLoopStart(null)
     setLoopEnd(null)

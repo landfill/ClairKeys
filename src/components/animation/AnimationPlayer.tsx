@@ -221,8 +221,10 @@ export default function AnimationPlayer({
   const applyLoopEnd = useCallback(() => {
     const engine = animationEngineRef.current
     const section = createLoopSection(loopStart, currentTime, animationData.duration)
-    setLoopEnd(currentTime)
-    if (section) engine.setLoopSection(section.start, section.end)
+    if (!section) return
+
+    setLoopEnd(section.end)
+    engine.setLoopSection(section.start, section.end)
   }, [animationData.duration, currentTime, loopStart])
 
   const applyLoopStart = useCallback(() => {

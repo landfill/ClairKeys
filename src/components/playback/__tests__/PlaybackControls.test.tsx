@@ -1,20 +1,25 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { useState } from 'react'
 import PlaybackControls from '../PlaybackControls'
+
+const renderControlsProps = {
+  isPlaying: false,
+  isReady: true,
+  currentTime: 10,
+  duration: 60,
+  playbackSpeed: 1,
+  playbackMode: 'listen' as const,
+  onPlay: jest.fn(),
+  onPause: jest.fn(),
+  onStop: jest.fn(),
+  onSeek: jest.fn(),
+  onSpeedChange: jest.fn(),
+  onModeChange: jest.fn(),
+}
 
 function renderControls(overrides: Partial<React.ComponentProps<typeof PlaybackControls>> = {}) {
   const props = {
-    isPlaying: false,
-    isReady: true,
-    currentTime: 10,
-    duration: 60,
-    playbackSpeed: 1,
-    playbackMode: 'listen' as const,
-    onPlay: jest.fn(),
-    onPause: jest.fn(),
-    onStop: jest.fn(),
-    onSeek: jest.fn(),
-    onSpeedChange: jest.fn(),
-    onModeChange: jest.fn(),
+    ...renderControlsProps,
     loopStart: null,
     loopEnd: null,
     onLoopStart: jest.fn(),
@@ -28,10 +33,40 @@ function renderControls(overrides: Partial<React.ComponentProps<typeof PlaybackC
 
 describe('PlaybackControls', () => {
   it('makes learner-selected A and B markers first-class controls', () => {
-    const props = renderControls()
-    fireEvent.click(screen.getByTitle('현재 위치를 A로 설정'))
-    expect(props.onLoopStart).toHaveBeenCalled()
-    expect(screen.getByTitle('현재 위치를 B로 설정')).toBeDisabled()
+    function LoopHarness() {
+      const [loopStart, setLoopStart] = useState<number | null>(null)
+      const [loopEnd, setLoopEnd] = useState<number | null>(null)
+
+      return (
+        <PlaybackControls
+          {...renderControlsProps}
+          loopStart={loopStart}
+          loopEnd={loopEnd}
+          onLoopStart={() => {
+            setLoopStart(10)
+            setLoopEnd(null)
+          }}
+          onLoopEnd={() => setLoopEnd(20)}
+          onLoopClear={() => {
+            setLoopStart(null)
+            setLoopEnd(null)
+          }}
+        />
+      )
+    }
+
+    render(<LoopHarness />)
+    const start = screen.getByTitle('현재 위치를 A로 설정')
+    const end = screen.getByTitle('현재 위치를 B로 설정')
+    const clear = screen.getByTitle('A-B 구간 반복 해제')
+
+    expect(end).toBeDisabled()
+    fireEvent.click(start)
+    expect(end).toBeEnabled()
+    fireEvent.click(end)
+    expect(clear).toHaveClass('bg-accent')
+    fireEvent.click(clear)
+    expect(end).toBeDisabled()
   })
 
   it('keeps play, stop, and speed alongside loop as primary controls', () => {

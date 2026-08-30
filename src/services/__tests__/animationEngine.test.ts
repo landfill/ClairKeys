@@ -372,6 +372,14 @@ describe('AnimationEngine', () => {
       expect(mockAudioService.releaseNote).toHaveBeenCalledWith('C4')
       expect(mockAudioService.playNote).toHaveBeenCalledWith('D4', 0.7)
     })
+
+    it('preserves the validated learner-selected loop boundaries', () => {
+      engine.setLoopSection(9.8, 10)
+      expect(engine.getLoopSection()).toEqual({ start: 9.8, end: 10 })
+
+      engine.setLoopSection(10, 10)
+      expect(engine.getLoopSection()).toBeNull()
+    })
   })
 
   describe('follow mode', () => {

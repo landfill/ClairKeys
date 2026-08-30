@@ -586,7 +586,15 @@ export class AnimationEngine implements IAnimationEngine {
     if (!this.animationData) return
     
     const clampedStart = Math.max(0, Math.min(startTime, this.animationData.duration))
-    const clampedEnd = Math.max(clampedStart + 1, Math.min(endTime, this.animationData.duration))
+    const clampedEnd = Math.max(0, Math.min(endTime, this.animationData.duration))
+
+    // The player validates A–B markers before it calls the engine. Do not
+    // silently widen that learner-selected interval here: doing so can extend
+    // the loop past the score duration near its end.
+    if (clampedEnd <= clampedStart) {
+      this.loopSection = null
+      return
+    }
     
     this.loopSection = {
       start: clampedStart,
@@ -665,4 +673,4 @@ export function getAnimationEngine(): AnimationEngine {
     animationEngineInstance = new AnimationEngine()
   }
   return animationEngineInstance
-} 
+}

@@ -114,7 +114,7 @@ export default function CompactPlaybackBar({
         <div className="flex shrink-0 gap-1" data-testid="compact-loop-controls">
           <button type="button" onClick={onLoopStart} disabled={!isReady} className="h-10 w-8 rounded-md border border-gray-300 bg-white text-xs">A</button>
           <button type="button" onClick={onLoopEnd} disabled={!isReady || loopStart === null} className="h-10 w-8 rounded-md border border-gray-300 bg-white text-xs">B</button>
-          <button type="button" onClick={onLoopClear} disabled={!isReady || loopStart === null} className={`h-10 w-8 rounded-md border text-xs ${loopEnd !== null ? 'border-accent bg-accent text-white' : 'border-gray-300 bg-white'}`}>↻</button>
+          <button type="button" onClick={onLoopClear} disabled={!isReady || loopStart === null} aria-label="루프 초기화" className={`h-10 w-8 rounded-md border text-xs ${loopEnd !== null ? 'border-accent bg-accent text-white' : 'border-gray-300 bg-white'}`}>↻</button>
         </div>
       )}
       <button
