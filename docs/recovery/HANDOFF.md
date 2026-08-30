@@ -18,6 +18,36 @@ PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `081
 
 **Next action**: 이슈 #76의 후속 작업 후보를 우선순위화한다. DS-7의 7개 조건과 PR #99 CI는 결착됐고,
 상세 근거는 `docs/recovery/validation/2026-08-30-DS-7-states.md`와 `docs/recovery/reviews/PR-99.md`에 있다.
+README 재작성 중 확인된 후속 작업 후보 네 건이 아래 #83 절에 있다.
+
+**이슈 [#83](https://github.com/landfill/ClairKeys/issues/83) README 재작성 완료 (2026-08-30)**:
+커밋 `632a08ff60dfd6e9ec0a0ff2a361c6b9a71711ec`, `main` 직접 push. 사용자가 "리드미 수정은 PR 없이
+처리"라고 지시해 브랜치·PR 없이 커밋했다 — README와 새 `docs/*.md`는 AGENTS.md의 직접 커밋 예외
+목록에 없으므로, 이 지시 없이 같은 방식을 반복하지 않는다. 애플리케이션 코드는 변경하지 않았다.
+push 직후 check-runs 6개(Lint, Run Tests, E2E Tests, Security Audit, Post-merge tests,
+Post-merge build)가 모두 success다.
+
+README를 578줄에서 200줄로 줄이고, 걷어낸 상세를 `docs/architecture.md`, `docs/environment.md`,
+`docs/limitations.md`, `docs/security.md`, `docs/testing.md`, `docs/deployment.md` 여섯 문서로
+옮겼다. 옛 README의 사실 오류를 코드 대조로 바로잡았다: Next 14/React 18 표기(실제 15.5.21/19.2.1),
+없는 npm 스크립트 3개, 없는 `.env.example` 참조, `your-username` URL, 폴링 3초(실제 5초),
+"88키 풀 피아노"(실제로는 곡 음역을 흰건반 경계로 스냅), Tone.js 기반 재생(실제는 Web Audio API +
+31개 mp3 샘플), MIT/LICENSE 참조(파일도 package.json license 필드도 없음).
+
+**미구현 판정의 기준은 파일 존재가 아니라 라우트로부터의 도달 가능성으로 삼았다.** 이 기준으로
+지원 기능에서 제한사항으로 옮긴 것: PWA 설치 프롬프트·푸시 알림(`src/components/pwa/*`가 어디에도
+import되지 않음), 전체화면·터치 제스처(`src/components/mobile/*` 동일), 연습·따라하기 모드
+(`FallingNotesPlayer.handleModeChange`가 로그만 남기고 반환), WCAG AA·axe-core·Lighthouse CI
+(근거 코드 없음), `AnimationPlayer`(`/sheet/[id]`는 `FallingNotesPlayer`를 쓴다).
+
+README 재작성 중 확인된 후속 작업 후보 네 건 (이번 커밋 범위 밖, 코드·설정 변경이라 PR 필요):
+
+1. `.env.example`이 없다. 새 기여자는 환경변수를 `docs/environment.md`에서 옮겨 적어야 한다.
+2. `LICENSE` 파일과 `package.json`의 `license` 필드가 둘 다 없다. 옛 README는 MIT라고 적었으나
+   근거가 없어 "라이선스 파일 없음"으로 바꿨다. 실제 의도를 정해 파일로 고정해야 한다.
+3. `vercel.json`의 `/dashboard` → `/app` 리다이렉트가 존재하지 않는 라우트를 가리킨다.
+4. 루트의 `README.production.md`, `DATA_FLOW_EXPLAINED.md`, `SUPABASE_STORAGE_SETUP.md`가
+   `docs/`의 새 문서와 범위가 겹친다. 정합성 확인 후 통합하거나 삭제할지 판단이 필요하다.
 
 **DS-7 코드·검증**: PR #99, 코드 커밋 `42069a4c6c7f5eedbf8894836d2a80df1497bba2`, merge
 commit `3eaee81`. 공용
