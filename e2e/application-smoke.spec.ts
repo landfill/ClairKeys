@@ -7,21 +7,40 @@ test.describe('Public application smoke checks', () => {
       tempo: 100, tempoSource: 'score', timingReferenceBpm: 100, timeSignature: '4/4',
       notes: [{ midi: 60, start: 0, duration: 1 }],
     }
+    await page.addInitScript(({ animation }) => {
+      const originalFetch = window.fetch
+      window.fetch = async (input, init) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        if (url.includes('/api/sheet/public')) {
+          return new Response(JSON.stringify({ success: true, sheetMusic: [{ id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: { id: 1, name: '클래식' }, categoryId: 1, isPublic: true, provenance: 'omr', animationDataUrl: '/public.json', createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', userId: 'owner', owner: { id: 'owner', name: '작곡가' } }], pagination: { total: 1, limit: 8, offset: 0, hasMore: false } }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+        }
+        if (url.match(/\/api\/sheet\/1/)) {
+          return new Response(JSON.stringify({ success: true, sheetMusic: { id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: '클래식', categoryId: 1, isPublic: true, provenance: 'omr', availability: 'ready', animationDataUrl: '/public.json', createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', owner: null } }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+        }
+        if (url.endsWith('/public.json')) {
+          return new Response(JSON.stringify(animation), { status: 200, headers: { 'Content-Type': 'application/json' } })
+        }
+        return originalFetch(input, init)
+      }
+    }, { animation })
+    await page.route(/public\.json/, async route => route.fulfill({
+      status: 200, contentType: 'application/json', body: JSON.stringify(animation)
+    }))
     await page.route(/\/api\/sheet\/public\?/, async route => route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ success: true, sheetMusic: [{
         id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: { id: 1, name: '클래식' },
-        categoryId: 1, isPublic: true, provenance: 'omr', animationDataUrl: 'data:application/json,' + encodeURIComponent(JSON.stringify(animation)),
+        categoryId: 1, isPublic: true, provenance: 'omr', animationDataUrl: '/public.json',
         createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', userId: 'owner',
         owner: { id: 'owner', name: '작곡가' },
       }], pagination: { total: 1, limit: 8, offset: 0, hasMore: false } })
     }))
-    await page.route('**/api/sheet/1', async route => route.fulfill({
+    await page.route(/\/api\/sheet\/1/, async route => route.fulfill({
       status: 200, contentType: 'application/json',
       body: JSON.stringify({ success: true, sheetMusic: {
         id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: '클래식', categoryId: 1,
-        isPublic: true, provenance: 'omr', availability: 'ready', animationDataUrl: 'data:application/json,' + encodeURIComponent(JSON.stringify(animation)),
+        isPublic: true, provenance: 'omr', availability: 'ready', animationDataUrl: '/public.json',
         createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', owner: null,
       } })
     }))
