@@ -1,6 +1,6 @@
 # DS-7 — 알림·빈 화면·오류 상태 완결
 
-Status: `NOT_STARTED`
+Status: `IN_REVIEW`
 Depends on: **DS-2, DS-3, DS-4, DS-5, DS-6 전부**
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 7단계
 
@@ -76,3 +76,14 @@ git diff origin/main -- src/utils/playbackGeometry.ts src/utils/pianoLayout.ts s
 1. 종단 시나리오를 시크릿 창에서 1회 완주하고 각 단계의 화면을 기록한다.
 
 결과는 `docs/recovery/validation/`에 검사별 통과 여부와 함께 기록한다.
+
+## Progress (2026-08-30)
+
+- PR #99 (`0dd0b4e`)에서 공용 `StatusState`를 도입하고 업로드·내 악보·탐색·검색·상세·로그인
+  오류/빈 상태를 문제와 다음 행동 구조로 통일했다.
+- `admin/update-finger-data`는 DS-2~DS-6 대상 화면 표에 없는 관리자 유지보수 화면이므로 범위에서
+  제외했다. 관리자 작업 결과 표는 일반 사용자 상태·복구 여정과 계약이 다르며, 이를 포함하면 DS-7의
+  화면 소유 경계를 넓히게 된다.
+- 전체 완료 조건 7개 판정과 수동 체크리스트는 `validation/2026-08-30-DS-7-states.md`에 기록했다.
+- 조건 3·7 사용자 확인 전까지 DS-7은 `DONE`으로 올리지 않는다. 두 수동 확인 완료와 리뷰·CI 해결이
+  `DONE` 전환 조건이다.

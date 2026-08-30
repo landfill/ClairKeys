@@ -8,15 +8,20 @@ Last updated: 2026-08-30 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
-DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, DS-5, **DS-6까지 `DONE`**, DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
+DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, DS-5, **DS-6까지 `DONE`**, DS-7은 `IN_REVIEW`다. 이슈 #76은 열려 있다 —
 완료 조건은 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 **2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 7개다** — D-030,
 PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `08100c7`).
 
-**Next action**: DS-7(알림·빈 화면·오류 상태 완결)을 시작한다. DS-2~DS-6 전부가 선행 조건이며 이제
-모두 `DONE`이므로 진입 조건을 충족했다. 새 코드 작업은 최신 `main`에서 `codex/ds-7-states` 브랜치를
-만들어 시작하고, DS-6의 사용자 확인(시크릿 창 탐색 → 상세 → 미리보기 → 로그인 → 같은 곡 복귀)을
-먼저 완료한다.
+**Next action**: PR #99의 CI·리뷰를 결착하고, 사용자에게 조건 3(시크릿 창 공개 악보 실제 재생)과
+조건 7(홈 → 업로드 → 이탈 → 완료 → 첫 재생) 수동 체크리스트를 실행받는다. 두 조건의 확인 기록이
+`docs/recovery/validation/2026-08-30-DS-7-states.md`에 추가되고 리뷰·CI가 해결되기 전에는 DS-7을
+`DONE`으로 올리지 않는다.
+
+**DS-7 코드·검증**: PR #99, 코드 커밋 `0dd0b4e4c4ed6d7f1893cb5efad666636a72287d`. 공용
+`StatusState`로 업로드·내 악보·탐색·검색·상세·로그인 오류/빈 상태를 통일했다. 전체 Jest 80 suites/
+755 tests, build, 5개 프로젝트 E2E 25 tests, lint, typecheck가 통과했고 보호 재생 파일 diff는 비어 있다.
+관리자 `admin/update-finger-data`는 대상 화면 표 밖의 유지보수 화면이라 제외했다.
 
 **DS-6 병합 완료**: PR #98은 merge commit `8dd593fe2905fb364d05a0a0df4b722b38e6236b`로 병합됐고,
 병합 커밋 check-runs 6개가 모두 성공했다. `codex/ds-6-explore`는 원격 삭제 후 로컬 삭제했으며
