@@ -13,12 +13,13 @@ DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, DS-5, **DS-6까지 `DONE`**, DS-7은 `IN_RE
 **2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 7개다** — D-030,
 PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `08100c7`).
 
-**Next action**: PR #99의 CI·리뷰를 결착하고, 사용자에게 조건 3(시크릿 창 공개 악보 실제 재생)과
-조건 7(홈 → 업로드 → 이탈 → 완료 → 첫 재생) 수동 체크리스트를 실행받는다. 두 조건의 확인 기록이
+**Next action**: PR #99의 CI·리뷰를 결착하고, 사용자에게 조건 3(시크릿 창 공개 악보 실제 재생),
+조건 4(실제 PDF 업로드 후 운영 OMR 처리 단계·예상 대기 시간), 조건 7(홈 → 업로드 → 이탈 → 완료 → 첫 재생)
+수동 체크리스트를 실행받는다. 세 조건의 확인 기록이
 `docs/recovery/validation/2026-08-30-DS-7-states.md`에 추가되고 리뷰·CI가 해결되기 전에는 DS-7을
 `DONE`으로 올리지 않는다.
 
-**DS-7 코드·검증**: PR #99, 코드 커밋 `0dd0b4e4c4ed6d7f1893cb5efad666636a72287d`. 공용
+**DS-7 코드·검증**: PR #99, 코드 커밋 `42069a4c6c7f5eedbf8894836d2a80df1497bba2`. 공용
 `StatusState`로 업로드·내 악보·탐색·검색·상세·로그인 오류/빈 상태를 통일했다. 전체 Jest 80 suites/
 755 tests, build, 5개 프로젝트 E2E 25 tests, lint, typecheck가 통과했고 보호 재생 파일 diff는 비어 있다.
 관리자 `admin/update-finger-data`는 대상 화면 표 밖의 유지보수 화면이라 제외했다.
