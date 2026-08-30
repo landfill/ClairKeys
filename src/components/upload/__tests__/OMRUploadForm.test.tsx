@@ -72,6 +72,16 @@ describe('OMRUploadForm', () => {
   })
 
   describe('선택 전', () => {
+    it('uses the same rounded field surface for score metadata', async () => {
+      render(<OMRUploadForm />)
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+      expect(screen.getByLabelText(/곡명/)).toHaveClass('rounded-2xl')
+      expect(screen.getByLabelText(/저작자/)).toHaveClass('rounded-2xl')
+      expect(screen.getByLabelText('빠르기 (BPM)')).toHaveClass('rounded-2xl')
+      expect(screen.getByLabelText('카테고리')).toHaveClass('rounded-2xl')
+    })
+
     it('파일이 없으면 변환을 시작할 수 없다', async () => {
       render(<OMRUploadForm />)
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))

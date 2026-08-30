@@ -343,7 +343,7 @@ export default function OMRUploadForm({
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-6 py-10 text-center transition-colors focus-within:border-accent ${
+            className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors focus-within:border-accent ${
               isDragging ? 'border-accent bg-surface-muted' : 'border-rule-strong hover:bg-surface-muted'
             }`}
           >
@@ -393,7 +393,7 @@ export default function OMRUploadForm({
             value={formData.title}
             onChange={(e) => handleInputChange('title', e.target.value)}
             aria-invalid={Boolean(errors.title)}
-            className={`w-full rounded-md border px-3 py-2 ${
+            className={`w-full rounded-2xl border px-3 py-2 transition-colors focus:border-accent ${
               errors.title ? 'border-state-error' : 'border-rule-strong'
             }`}
             placeholder="곡명을 입력하세요"
@@ -413,7 +413,7 @@ export default function OMRUploadForm({
             value={formData.composer}
             onChange={(e) => handleInputChange('composer', e.target.value)}
             aria-invalid={Boolean(errors.composer)}
-            className={`w-full rounded-md border px-3 py-2 ${
+            className={`w-full rounded-2xl border px-3 py-2 transition-colors focus:border-accent ${
               errors.composer ? 'border-state-error' : 'border-rule-strong'
             }`}
             placeholder="작곡가 또는 저작자를 입력하세요"
@@ -437,7 +437,7 @@ export default function OMRUploadForm({
             onChange={(e) => handleInputChange('tempo', e.target.value)}
             aria-describedby="tempo-help"
             aria-invalid={Boolean(errors.tempo)}
-            className={`w-full rounded-md border px-3 py-2 ${
+            className={`w-full rounded-2xl border px-3 py-2 transition-colors focus:border-accent ${
               errors.tempo ? 'border-state-error' : 'border-rule-strong'
             }`}
             placeholder="예: 60"
@@ -461,7 +461,7 @@ export default function OMRUploadForm({
               onChange={(e) =>
                 handleInputChange('categoryId', e.target.value ? parseInt(e.target.value) : null)
               }
-              className="w-full rounded-md border border-rule-strong px-3 py-2"
+              className="w-full rounded-2xl border border-rule-strong px-3 py-2 transition-colors focus:border-accent"
               disabled={isBusy || isLoadingCategories}
             >
               <option value="">카테고리 선택 (선택사항)</option>
@@ -492,7 +492,7 @@ export default function OMRUploadForm({
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   placeholder="새 카테고리 이름"
-                  className="flex-1 rounded-md border border-rule-strong px-3 py-2"
+                  className="flex-1 rounded-2xl border border-rule-strong px-3 py-2 transition-colors focus:border-accent"
                   disabled={isCreatingCategory}
                 />
                 <Button

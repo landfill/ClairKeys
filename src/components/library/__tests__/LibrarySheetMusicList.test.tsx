@@ -80,4 +80,15 @@ describe('LibrarySheetMusicList', () => {
     expect(screen.getByText('악보가 없습니다')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '새 악보 업로드' })).toHaveAttribute('href', '/upload')
   })
+
+  it('uses a rounded category control surface', () => {
+    mockUseCategories.mockReturnValue({
+      categories: [{ id: 1, name: 'classic', userId: 'user-1', createdAt: new Date() }],
+      loading: false, error: null, fetchCategories: jest.fn(), createCategory: jest.fn(), updateCategory: jest.fn(), deleteCategory: jest.fn(),
+    })
+
+    render(<LibrarySheetMusicList showCategorySelector />)
+
+    expect(screen.getByRole('button', { name: '📁 classic' })).toHaveClass('rounded-2xl')
+  })
 })
