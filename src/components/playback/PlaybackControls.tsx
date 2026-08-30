@@ -16,6 +16,11 @@ interface PlaybackControlsProps {
   onSeek: (time: number) => void
   onSpeedChange: (speed: number) => void
   onModeChange: (mode: 'listen' | 'follow' | 'practice') => void
+  loopStart?: number | null
+  loopEnd?: number | null
+  onLoopStart?: () => void
+  onLoopEnd?: () => void
+  onLoopClear?: () => void
   className?: string
 }
 
@@ -32,6 +37,11 @@ export default function PlaybackControls({
   onSeek,
   onSpeedChange,
   onModeChange,
+  loopStart = null,
+  loopEnd = null,
+  onLoopStart,
+  onLoopEnd,
+  onLoopClear,
   className = ''
 }: PlaybackControlsProps) {
   /**
@@ -112,8 +122,8 @@ export default function PlaybackControls({
       </div>
 
       {/* Main Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center space-x-3">
           {/* Play Button */}
           <Button
             onClick={onPlay}
@@ -123,7 +133,7 @@ export default function PlaybackControls({
             className="min-w-[60px] h-12"
             data-testid="playback-play"
           >
-            <span className="text-xl">▶️</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="m8 5 11 7-11 7V5Z" /></svg>
           </Button>
           
           {/* Pause Button */}
@@ -135,7 +145,7 @@ export default function PlaybackControls({
             className="min-w-[60px] h-12"
             data-testid="playback-pause"
           >
-            <span className="text-xl">⏸️</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M7 5h3v14H7zm7 0h3v14h-3z" /></svg>
           </Button>
           
           {/* Stop Button */}
@@ -147,8 +157,18 @@ export default function PlaybackControls({
             className="min-w-[60px] h-12"
             data-testid="playback-stop"
           >
-            <span className="text-xl">⏹️</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><rect x="6" y="6" width="12" height="12" rx="1" /></svg>
           </Button>
+
+          {onLoopStart && onLoopEnd && onLoopClear && (
+            <div className="flex items-center gap-1 rounded-md border border-rule p-1" data-testid="playback-loop">
+              <Button onClick={onLoopStart} variant="outline" size="sm" disabled={!isReady || duration <= 0} title="현재 위치를 A로 설정">A</Button>
+              <Button onClick={onLoopEnd} variant="outline" size="sm" disabled={!isReady || duration <= 0 || loopStart === null} title="현재 위치를 B로 설정">B</Button>
+              <Button onClick={onLoopClear} variant={loopEnd !== null ? 'primary' : 'outline'} size="sm" disabled={!isReady || loopStart === null} title="A-B 구간 반복 해제">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 2l4 4-4 4" /><path d="M3 11V9a3 3 0 0 1 3-3h15" /><path d="m7 22-4-4 4-4" /><path d="M21 13v2a3 3 0 0 1-3 3H3" /></svg>
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Speed Control */}
@@ -173,9 +193,16 @@ export default function PlaybackControls({
           </select>
         </div>
       </div>
+      {onLoopStart && onLoopEnd && (
+        <p className="text-xs text-ink-muted">
+          구간 반복: A {loopStart === null ? '미설정' : formatTime(loopStart)} · B {loopEnd === null ? '미설정' : formatTime(loopEnd)}
+        </p>
+      )}
 
-      {/* Mode Control */}
-      <div className="flex items-center justify-between">
+      {/* Secondary settings stay out of the first-action path. */}
+      <details className="rounded-lg border border-rule bg-surface px-3 py-2">
+        <summary className="cursor-pointer text-sm font-medium text-ink-muted">전체 설정</summary>
+        <div className="mt-3 flex items-center justify-between gap-3">
         <div className="flex items-center space-x-3">
           <label htmlFor={modeSelectId} className="text-sm text-ink-muted font-medium">
             모드:
@@ -208,16 +235,16 @@ export default function PlaybackControls({
             </span>
           )}
         </div>
-      </div>
-
-      {/* Follow Mode Instructions */}
-      {playbackMode === 'follow' && (
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800">
-            🎹 <strong>따라하기 모드:</strong> 피아노 건반을 눌러 연주를 따라해보세요.
-          </p>
         </div>
-      )}
+
+        {playbackMode === 'follow' && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>따라하기 모드:</strong> 피아노 건반을 눌러 연주를 따라해보세요.
+            </p>
+          </div>
+        )}
+      </details>
     </div>
   )
 }

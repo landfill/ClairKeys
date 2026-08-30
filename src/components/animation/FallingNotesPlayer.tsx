@@ -65,6 +65,11 @@ export default function FallingNotesPlayer({
     seek,
     setTempoScale,
     setVolume,
+    loopStart,
+    loopEnd,
+    markLoopStart,
+    markLoopEnd,
+    clearLoop,
   } = useFallingNotesPlayer(notes)
 
   // Constants
@@ -178,7 +183,7 @@ export default function FallingNotesPlayer({
       ref={rootRef}
       className={[
         'w-full mx-auto',
-        isPlaying ? 'max-w-none flex flex-col' : 'max-w-5xl',
+        isPlaying ? 'max-w-none flex flex-col' : 'max-w-6xl',
         // An explicit cross-axis height replaces min-h while rotated; keeping
         // both would constrain the box along the wrong axis.
         isPlaying && !orientation.rotate ? 'min-h-[100dvh]' : '',
@@ -211,6 +216,11 @@ export default function FallingNotesPlayer({
             onSeek={seek}
             onSpeedChange={setTempoScale}
             onVolumeChange={setVolume}
+            loopStart={loopStart}
+            loopEnd={loopEnd}
+            onLoopStart={markLoopStart}
+            onLoopEnd={markLoopEnd}
+            onLoopClear={clearLoop}
           />
         </div>
       ) : (
@@ -218,7 +228,7 @@ export default function FallingNotesPlayer({
           {/* Usage Instructions */}
           <div className="mb-4">
             <p className="text-xs text-ink-muted">
-              노트의 아랫변이 히트라인(건반 상단)에 닿는 순간이 연주 타이밍입니다.
+              1. 노트의 아랫변이 히트라인(건반 상단)에 닿을 때 건반을 누르세요. 2. 속도를 고르세요. 3. 어려운 곳은 A와 B로 반복하세요.
             </p>
           </div>
 
@@ -237,6 +247,11 @@ export default function FallingNotesPlayer({
               onSeek={seek}
               onSpeedChange={setTempoScale}
               onModeChange={handleModeChange}
+              loopStart={loopStart}
+              loopEnd={loopEnd}
+              onLoopStart={markLoopStart}
+              onLoopEnd={markLoopEnd}
+              onLoopClear={clearLoop}
             />
           </div>
 

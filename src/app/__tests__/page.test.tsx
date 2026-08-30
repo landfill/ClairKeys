@@ -8,20 +8,7 @@
  */
 import { render, screen } from '@testing-library/react'
 import Home from '../page'
-import { HOME_SAMPLE_ANIMATION } from '@/fixtures/homeSample'
 import { MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
-
-/**
- * 플레이어 자체는 DS-5 소유이고 자기 테스트가 있다. 여기서는 홈이 그것을 **샘플 데이터와 함께**
- * 놓는지만 본다. jsdom에는 레이아웃도 오디오도 없어 실물을 렌더하면 이 테스트가 홈이 아니라
- * 플레이어를 시험하게 된다.
- */
-jest.mock('@/components/animation/FallingNotesPlayer', () => ({
-  __esModule: true,
-  default: ({ animationData }: { animationData: { title: string } }) => (
-    <div data-testid="falling-notes-player" data-title={animationData.title} />
-  ),
-}))
 
 describe('Home — 로그인 전 가치 전달 (DS-2)', () => {
   it('leads with what the user gets, not with the product name', () => {
@@ -39,17 +26,10 @@ describe('Home — 로그인 전 가치 전달 (DS-2)', () => {
     )
   })
 
-  it('plays a real sample rather than a still image', () => {
+  it('reserves a first-screen area for a falling-notes result without mounting a player', () => {
     render(<Home />)
-    const player = screen.getByTestId('falling-notes-player')
-    expect(player).toHaveAttribute('data-title', HOME_SAMPLE_ANIMATION.title)
-  })
-
-  it('names the sample piece so it is not mistaken for the visitor\'s own score', () => {
-    render(<Home />)
-    expect(
-      screen.getByText(new RegExp(`샘플: ${HOME_SAMPLE_ANIMATION.title}`))
-    ).toBeInTheDocument()
+    expect(screen.getByTestId('falling-notes-result-area')).toBeInTheDocument()
+    expect(screen.queryByTestId('falling-notes-player')).not.toBeInTheDocument()
   })
 
   it('states the file limit and the wait before the visitor commits', () => {

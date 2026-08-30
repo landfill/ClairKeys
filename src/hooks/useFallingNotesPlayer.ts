@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import type { FallingNote } from '@/types/fallingNotes'
 import { useFallingNotesAudio, DEFAULT_MASTER_GAIN } from './useFallingNotesAudio'
 import { calculateSongLength, shouldAutoStop } from '@/utils/visualUtils'
+import { createLoopSection } from '@/utils/loopSection'
 
 /**
  * Main hook for falling notes player with audio-visual synchronization
@@ -17,6 +18,8 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
   const [mute, setMute] = useState(false)
   const [lookAheadSec, setLookAheadSec] = useState(1.5)
   const [volume, setVolumeState] = useState(DEFAULT_MASTER_GAIN)
+  const [loopStart, setLoopStart] = useState<number | null>(null)
+  const [loopEnd, setLoopEnd] = useState<number | null>(null)
 
   // Audio management
   const {
@@ -146,6 +149,17 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     setLookAheadSec(Math.max(1, Math.min(5, newLookAheadSec)))
   }, [])
 
+  const loopSection = createLoopSection(loopStart, loopEnd, totalLength)
+  const markLoopStart = useCallback(() => {
+    setLoopStart(currentTime)
+    setLoopEnd(null)
+  }, [currentTime])
+  const markLoopEnd = useCallback(() => setLoopEnd(currentTime), [currentTime])
+  const clearLoop = useCallback(() => {
+    setLoopStart(null)
+    setLoopEnd(null)
+  }, [])
+
   /**
    * Change master volume live. The audio hook clamps to a headroom-safe ceiling
    * and applies it to the running bus; this mirrors the accepted value into
@@ -174,6 +188,11 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
       const currentAudioTime = getCurrentTime()
       setCurrentTime(currentAudioTime)
 
+      if (loopSection && currentAudioTime >= loopSection.end) {
+        void handleSeek(loopSection.start)
+        return
+      }
+
       // Auto-stop when song ends
       if (shouldAutoStop(currentAudioTime, totalLength, 2)) {
         handleStop()
@@ -191,7 +210,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
         rafRef.current = null
       }
     }
-  }, [isPlaying, totalLength, getCurrentTime, handleStop])
+  }, [isPlaying, totalLength, getCurrentTime, handleStop, handleSeek, loopSection])
 
   return {
     // State
@@ -201,6 +220,8 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     mute,
     lookAheadSec,
     volume,
+    loopStart,
+    loopEnd,
     sampleStatus,
     totalLength,
 
@@ -213,6 +234,9 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     setMute: handleMuteChange,
     setLookAheadSec: handleLookAheadChange,
     setVolume: handleVolumeChange,
+    markLoopStart,
+    markLoopEnd,
+    clearLoop,
 
     // Combined play/pause toggle
     togglePlayPause: isPlaying ? handlePause : handlePlay

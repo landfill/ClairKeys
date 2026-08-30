@@ -10,6 +10,7 @@ import {
 } from '@/types/animationContract'
 import { getAnimationEngine } from '@/services/animationEngine'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { createLoopSection } from '@/utils/loopSection'
 export { getTempoDisplay } from '@/utils/tempoDisplay'
 
 type AnimationPlayerData = Omit<PianoAnimationData, 'tempo'> & {
@@ -41,6 +42,8 @@ export default function AnimationPlayer({
   const [activeNotes, setActiveNotes] = useState<Set<string>>(new Set())
   const [isReady, setIsReady] = useState(false)
   const [practiceState, setPracticeState] = useState<PracticeState | null>(null)
+  const [loopStart, setLoopStart] = useState<number | null>(null)
+  const [loopEnd, setLoopEnd] = useState<number | null>(null)
 
   const animationEngineRef = useRef(getAnimationEngine())
   
@@ -215,6 +218,25 @@ export default function AnimationPlayer({
     }
   }, [])
 
+  const applyLoopEnd = useCallback(() => {
+    const engine = animationEngineRef.current
+    const section = createLoopSection(loopStart, currentTime, animationData.duration)
+    setLoopEnd(currentTime)
+    if (section) engine.setLoopSection(section.start, section.end)
+  }, [animationData.duration, currentTime, loopStart])
+
+  const applyLoopStart = useCallback(() => {
+    animationEngineRef.current.clearLoopSection()
+    setLoopStart(currentTime)
+    setLoopEnd(null)
+  }, [currentTime])
+
+  const clearLoop = useCallback(() => {
+    animationEngineRef.current.clearLoopSection()
+    setLoopStart(null)
+    setLoopEnd(null)
+  }, [])
+
   // Practice mode handlers (optimized with useCallback)
   const handleStartPractice = useCallback((startTempo: number = 0.5, targetTempo: number = 1.0) => {
     const engine = animationEngineRef.current
@@ -327,6 +349,11 @@ export default function AnimationPlayer({
             onSeek={handleSeek}
             onSpeedChange={handleSpeedChange}
             onModeChange={handleModeChange}
+            loopStart={loopStart}
+            loopEnd={loopEnd}
+            onLoopStart={applyLoopStart}
+            onLoopEnd={applyLoopEnd}
+            onLoopClear={clearLoop}
           />
         </div>
       )}
