@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       // Show public sheets + user's private sheets
       if (session?.user?.id) {
         where.OR = [
-          { isPublic: true },
+          { isPublic: true, provenance: { not: 'demo' } },
           { userId: session.user.id }
         ]
       } else {
@@ -135,10 +135,10 @@ export async function GET(request: NextRequest) {
               sheetMusic: {
                 where: session?.user?.id ? {
                   OR: [
-                    { isPublic: true },
+                    { isPublic: true, provenance: { not: 'demo' } },
                     { userId: session.user.id }
                   ]
-                } : { isPublic: true }
+                } : { isPublic: true, provenance: { not: 'demo' } }
               }
             }
           }
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
     
     // Get public/private counts
     const [totalPublic, totalPrivate] = await Promise.all([
-      prisma.sheetMusic.count({ where: { isPublic: true } }),
+      prisma.sheetMusic.count({ where: { isPublic: true, provenance: { not: 'demo' } } }),
       session?.user?.id ? 
         prisma.sheetMusic.count({ 
           where: { 

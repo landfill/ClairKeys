@@ -26,7 +26,7 @@ test.describe('Public application smoke checks', () => {
     await page.route(/public\.json/, async route => route.fulfill({
       status: 200, contentType: 'application/json', body: JSON.stringify(animation)
     }))
-    await page.route(/\/api\/sheet\/public\?/, async route => route.fulfill({
+    await page.route(url => url.pathname === '/api/sheet/public', async route => route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ success: true, sheetMusic: [{
@@ -36,7 +36,7 @@ test.describe('Public application smoke checks', () => {
         owner: { id: 'owner', name: '작곡가' },
       }], pagination: { total: 1, limit: 8, offset: 0, hasMore: false } })
     }))
-    await page.route(/\/api\/sheet\/1/, async route => route.fulfill({
+    await page.route(url => url.pathname === '/api/sheet/1', async route => route.fulfill({
       status: 200, contentType: 'application/json',
       body: JSON.stringify({ success: true, sheetMusic: {
         id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: '클래식', categoryId: 1,
@@ -44,12 +44,18 @@ test.describe('Public application smoke checks', () => {
         createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', owner: null,
       } })
     }))
+    let privateAnimationRequests = 0
+    await page.route(url => url.pathname === '/api/files/animation', async route => {
+      privateAnimationRequests += 1
+      await route.continue()
+    })
     await page.goto('/explore')
     await page.getByText('공개 연습곡').first().click()
     await expect(page).toHaveURL(/\/sheet\/1$/)
     await expect(page.getByText('검증된 작곡가', { exact: true })).toBeVisible()
     await expect(page.getByText('미리보기')).toBeVisible()
     await expect(page.getByTestId('playback-play')).toBeVisible()
+    expect(privateAnimationRequests).toBe(0)
   })
 
   test('renders the real home page with accessible navigation', async ({ page }) => {
