@@ -34,6 +34,16 @@ Pull request: [#100](https://github.com/landfill/ClairKeys/pull/100)
 `31b7241`에서 수정했다. PR의 Vercel preview
 재확인은 GitHub live state에서 확인한다.
 
+## Merge verification
+
+- User-approved merge completed on 2026-08-30 KST as merge commit
+  `bff1cc07b92d219c0250f3685f67feb019a75890`.
+- Post-merge `Lint`, `Security Audit`, `Run Tests`, `Post-merge tests`, `Post-merge build`, and
+  `E2E Tests` all completed successfully.
+- `origin/main` contains the feature tip; `origin/codex/ui-button-badge` and local
+  `codex/ui-button-badge` were deleted after verification.
+- Temporary local branch `codex/ui-playback-controls` had 0 unique commits and was deleted.
+
 ## Not tested
 
 물리 모바일 기기에서의 수동 시각 확인은 실행하지 않았다. 카드·입력 필드·메뉴·재생 기하의
