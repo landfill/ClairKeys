@@ -1004,3 +1004,61 @@
   - `e2e/application-smoke.spec.ts`의 확대 허용 검사와 DS-0의 회귀 계약은 이 결정의 대상이 아니다.
     DS-0 "접근성·회귀 테스트" 절은 기하·전환 계약을 함께 고정하므로 유지한다.
 - Related: D-024, D-027, D-029, DS-1, DS-7, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)
+
+## D-031: 홈은 재생기를 걷어내고 자리만 잡는다
+
+- Date: 2026-08-30
+- Status: Accepted
+- Replaces: 이슈 #76 완료 조건 1의 ① (`실제 낙하 노트 결과` → `결과가 들어갈 영역의 확보`)
+- Narrows: 완료 조건 3의 판정 단계에서 DS-2를 제외한다
+- Supersedes: **D-019 결정 8** ("공유 `PlaybackControls`는 수정하지 않는다") — 근거가 소멸한다
+- Context:
+  - 홈은 `HomeSamplePlayer` → `FallingNotesPlayer` → `PlaybackControls`로 실제 재생기를 올린다.
+    로그인 전 방문자에게 결과를 보여주려는 것이었다.
+  - 사용자는 2026-08-30에 홈 샘플을 **정적 예시(GIF 등)로 바꾸기로** 했고, 그 전 단계로 **재생기를
+    걷어내고 영역만 확보**하도록 지시했다. 작업은 DS-5에서 함께 처리한다.
+  - **`PlaybackControls`의 실사용처는 둘뿐이다.** `AnimationPlayer`(악보 상세)와
+    `FallingNotesPlayer`(홈). `AdvancedPlaybackControls`는 배럴과 `LazyComponent`가 export만 할 뿐
+    렌더하는 화면이 0곳인 죽은 코드다. D-019 결정 8의 원래 근거였던 demo 페이지는 DS-1이 이미
+    제거했다(D-027).
+  - 따라서 홈이 빠지면 `PlaybackControls`는 **공유 컴포넌트가 아니게 된다.**
+- Decision:
+  1. DS-5는 홈에서 재생기를 제거하고 그 자리에 **낙하 노트 결과가 들어갈 영역만 확보**한다.
+     정적 예시(GIF 등)를 채우는 것은 이 결정의 범위가 아니며 후속 작업이다.
+  2. 완료 조건 1의 ①을 `실제 낙하 노트 결과`에서 **`낙하 노트 결과가 들어갈 영역이 첫 화면에
+     확보됨`**으로 바꾼다. 이슈 #76 종료가 정적 예시 도입을 기다리지 않는다.
+  3. 완료 조건 3(로그인 없이 실제 학습 결과 재생)의 판정 단계에서 **DS-2를 뺀다.** DS-6의 공개
+     악보가 단독으로 판정한다.
+  4. 홈이 빠지면 D-019 결정 8은 지킬 대상이 없다. DS-5는 `PlaybackControls`에 구간 반복(DS0-9)을
+     **props 플래그나 별도 컴포넌트 없이 직접** 추가하고 이모지를 아이콘으로 교체한다.
+- Reason: 홈에서 재생기가 하던 일은 "결과를 보여주는 것"이고, 그것은 정적 예시로 더 싸고 안정적으로
+  된다. 재생기를 유지하는 대가는 크다 — 홈 첫 화면 높이 예산, 공유 컴포넌트 제약(D-019 결정 8),
+  샘플 전용 결함(C5), 그리고 재생 경로 전체가 로그인 전 공개 표면에 노출되는 것이다.
+- Rejected:
+  - 홈 재생기를 유지한 채 구간 반복만 조건부로 숨긴다 | `showLoop` 같은 플래그가 쌓이면 컴포넌트가
+    분기 덩어리가 된다. 홈이 곧 빠지는데 그 대가를 치를 이유가 없다.
+  - DS-5 전에 정적 예시부터 넣는다 | 예시 제작은 별개 작업이고, 그것을 기다리면 DS-5가 D-019
+    결정 8에 계속 묶인다.
+  - 완료 조건 1의 ①을 아예 삭제한다 | 이슈 #76의 원래 문제의식이 "결과를 보여주지 않는 홈"이다.
+    자리조차 없으면 그 문제로 되돌아간다.
+- Consequence:
+  - **깨지는 검사** — DS-5가 함께 처리한다.
+    - `e2e/application-smoke.spec.ts`의 `lets a signed-out visitor play the sample without
+      logging in` (완료 조건 3). 누를 재생 버튼이 사라진다. 조건 3이 DS-6 단독 판정이 되므로
+      이 검사는 DS-6의 공개 악보 경로로 옮기거나 DS-6이 도입할 때까지 제거한다.
+    - 같은 파일 첫 화면 검사의 `낙하 노트 건반`(`[aria-label$="octave marker"]`). 확보된 영역을
+      재는 검사로 바꾼다.
+    - `src/app/__tests__/page.test.tsx`의 `샘플: {제목} · {작곡가}` 표시 검사.
+  - **자동으로 소멸하는 이월 항목** — C5(`HOME_SAMPLE_ANIMATION.tempoSource: 'user'`가 "직접
+    입력"으로 표시돼 방문자가 입력한 것처럼 읽힘). 그 표시는 재생기 안 `TempoDisplay`다.
+  - `HOME_SAMPLE_ANIMATION` fixture는 소비자를 잃는다. 정적 예시를 만들 소스로 쓸 수 있으므로
+    DS-5는 삭제하지 않고 남긴다.
+  - DS-2는 `DONE`을 유지한다. 그 단계는 당시 계획대로 샘플 체험을 만들었고, 이 결정은 그것을
+    되돌리는 것이 아니라 다음 단계에서 대체하는 것이다.
+- Directive:
+  - 영역만 확보하는 것과 정적 예시를 넣는 것을 한 PR에 묶지 않는다. 전자는 DS-5, 후자는 후속이다.
+  - `AdvancedPlaybackControls`와 `LazyAdvancedPlaybackControls`는 죽은 코드다. 이 결정의 근거로
+    쓰이지만 제거 자체는 DS-5 범위가 아니다 — 별도 정리 대상으로 이월한다.
+  - 홈에서 재생기를 뺀다고 재생 코드를 지우지 않는다. 악보 상세가 같은 경로를 쓴다.
+- Related: D-019 결정 8, D-027, D-030, DS-2, DS-5, DS-6, DS0-9,
+  이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)

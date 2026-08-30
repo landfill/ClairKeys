@@ -13,6 +13,8 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 5단계
 ## In scope
 
 - 떨어지는 노트와 건반을 최우선 시각 영역으로 유지
+- **홈에서 재생기를 걷어내고 낙하 노트 결과가 들어갈 영역만 확보한다** (D-031). 정적 예시(GIF 등)를
+  채우는 것은 후속 작업이고 이 단계가 하지 않는다
 - 1차 컨트롤: 재생·정지, 속도, **구간 반복** (DS0-9 — 현재 없다)
 - 첫 진입 안내 3단계 이하
 - 원본 악보 보기와 전체 설정을 보조 패널로 이동
@@ -29,6 +31,7 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 5단계
 
 | 경로 | 변경 |
 |---|---|
+| `src/app/page.tsx`, `src/components/home/HomeSamplePlayer.tsx` | 재생기 제거, 영역만 확보 (D-031) |
 | `src/components/animation/FallingNotesPlayer.tsx` | 레이아웃, 컨트롤 배치, 첫 진입 안내 |
 | `src/components/playback/PlaybackControls.tsx` | 1차 컨트롤 구성, 구간 반복 추가 |
 | `src/components/playback/CompactPlaybackBar.tsx` | 압축 모드 (D-019 결정 6·7 준수) |
@@ -72,14 +75,22 @@ D-019를 갱신**하거나 별도 컨트롤로 분리한다 (AGENTS.md).
 
 ## Completion criteria
 
-- 구간 반복이 1차 컨트롤에 있고 동작한다. D-019 결정 8과의 충돌이 결정 문서 갱신 또는 컨트롤 분리로
-  해소되어 있다.
+- **홈에 재생기가 없고, 낙하 노트 결과가 들어갈 영역이 1440×900 첫 화면 안에 확보돼 있다**
+  (완료 조건 1의 ①). `HOME_SAMPLE_ANIMATION` fixture는 정적 예시의 소스로 남긴다 (D-031).
+- 구간 반복이 1차 컨트롤에 있고 동작한다. **D-019 결정 8은 D-031이 해소했다** — 홈이 빠지면
+  `PlaybackControls`의 실사용처가 `AnimationPlayer` 하나이므로 공유 제약이 없다. props 플래그나
+  별도 컴포넌트를 만들지 않고 직접 고친다.
 - 위 상수 7개가 `git diff`에 나타나지 않는다.
 - `playbackGeometry.test.ts`, `pianoLayout.test.ts`, `FallingNotesPlayer.test.tsx`,
   `CompactPlaybackBar.test.tsx`가 수정 없이 통과한다.
 - 메트로놈 값·출처가 재생 전과 재생 중 모두 보인다.
 - 폰 가로 실기기에서 낙하/건반 비율이 1.15이고 건반이 뭉툭해지지 않는다 (실측값 기록).
 - 첫 진입 안내가 3단계 이하다.
+- **홈 재생기 제거로 깨지는 검사 3건이 처리돼 있다** (D-031 Consequence):
+  `e2e/application-smoke.spec.ts`의 `lets a signed-out visitor play the sample without logging
+  in`(완료 조건 3이 DS-6 단독 판정이 되므로 DS-6으로 옮기거나 제거), 같은 파일 첫 화면 검사의
+  `낙하 노트 건반`(확보된 영역을 재는 검사로 교체), `src/app/__tests__/page.test.tsx`의
+  `샘플: {제목} · {작곡가}` 표시 검사.
 
 ## 검증 명령
 
