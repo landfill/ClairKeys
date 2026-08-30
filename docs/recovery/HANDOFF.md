@@ -16,14 +16,14 @@ PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `081
 **Next action**: **DS-5(학습 플레이어)를 연다** — `codex/ds-5-learning-player`. 선행 조건 DS-1은
 `DONE`이라 지금 착수 가능하다. **D-019 결정 8 매듭은 D-031이 풀었다** — 홈에서 재생기가 빠지면
 `PlaybackControls`의 실사용처가 `AnimationPlayer` 하나라 공유 제약이 없다. 구간 반복(DS0-9)과
-이모지 교체를 props 플래그나 별도 컴포넌트 없이 직접 넣는다. **단, D-031을 담은 PR
-[#96](https://github.com/landfill/ClairKeys/pull/96)이 아직 병합되지 않았다** — 병합 전에는
-착수하지 않는다. DS-5는 홈 재생기 제거와 영역 확보도 함께 하며, 그때 깨지는 검사 3건이 DS-5 완료
-조건에 적혀 있다. 실기기 보고로 세 번 고친 재생 기하(`PX_PER_SEC` 140 등 7개 상수)는 **한 픽셀도
+이모지 교체를 props 플래그나 별도 컴포넌트 없이 직접 넣는다. **D-031을 담은 PR
+[#96](https://github.com/landfill/ClairKeys/pull/96)이 병합돼(merge `e53ad0f`) 계획이 확정됐으므로
+지금 착수 가능하다.** DS-5는 홈 재생기 제거와 영역 확보도 함께 하며, 그때 깨지는 검사 3건이 DS-5
+완료 조건에 적혀 있다. 실기기 보고로 세 번 고친 재생 기하(`PX_PER_SEC` 140 등 7개 상수)는 **한 픽셀도
 바꾸지 않는다** (D-024). DS-6은 DS-5를 선행 조건으로 두므로 병렬 착수 대상이 아니다.
 
-**열린 PR [#96](https://github.com/landfill/ClairKeys/pull/96) — 홈은 재생기를 걷어내고 자리만
-잡는다 (D-031).** 사용자가 홈 샘플을 정적 예시(GIF 등)로 바꾸기로 했고, 그 전 단계로 재생기를
+**#76 계획 개정 완료 — PR [#96](https://github.com/landfill/ClairKeys/pull/96) 병합
+(merge `e53ad0f`). 홈은 재생기를 걷어내고 자리만 잡는다 (D-031).** 사용자가 홈 샘플을 정적 예시(GIF 등)로 바꾸기로 했고, 그 전 단계로 재생기를
 제거하고 영역만 확보한다. 구현은 DS-5가 하므로 이 PR은 **결정과 계획만** 바꾼다(코드 0건).
 
 이 결정이 **D-019 결정 8을 해소한다.** `PlaybackControls`의 실사용처를 세어보니 둘뿐이었다 —
@@ -35,7 +35,10 @@ export만 하고 렌더하는 화면이 0곳인 **죽은 코드**다. 원래 근
 으로 완화(사용자 선택)되고 판정자가 `DS-2(②③), DS-5(①)`이 된다. 조건 3은 판정자에서 DS-2가
 빠져 **DS-6 공개 악보 단독**이 된다. 이월 항목 C5는 재생기와 함께 사라진다.
 
-**병합 승인은 아직 없다.** 상세는 `docs/recovery/reviews/PR-96.md`.
+merge commit check-runs **6/6 성공**(마지막 완료 E2E Tests, 2026-08-30T01:49:53Z), Vercel
+`success`. 로컬·원격 tip이 모두 `main`에 포함됨을 확인한 뒤 원격 → 로컬 순으로 삭제했다.
+CodeRabbit은 "별 10개 미만 저장소" 정책으로 **리뷰를 실행하지 않았다** — 지적이 0건인 것과 리뷰가
+없는 것은 다른 상태다. 상세는 `docs/recovery/reviews/PR-96.md`.
 
 **#76 WCAG 요건 제거 완료 — PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합
 (merge `08100c7`).** 사용자 지시로 WCAG AA 요건을 계획 문서·CI·구현 계약 세 층에서 제거했다.
@@ -78,9 +81,9 @@ PR #92·#93·#94의 작업 브랜치는 모두 local·remote tip이 `main`에 �
 2026-08-29T16:15:43Z). 리뷰 표면 3곳(스레드·리뷰 본문·일반 코멘트) 모두 actionable 0건이었다.
 
 **저장소 상태**: 워킹 트리 clean, 로컬 브랜치는 `main` 하나, worktree도
-`/Users/h0977/dev/ClairKeys` 하나, 열린 PR 없음. `main`의 최신 **코드** 반영은 PR #95의 merge
-commit `08100c7`이고, 그 뒤 커밋은 핸드오프 문서뿐이다 — sha를 여기 고정하지 않으니 세션 시작 시
-`git fetch`로 확인한다.
+`/Users/h0977/dev/ClairKeys` 하나, 열린 PR 없음. `main`의 최신 **코드** 반영은 여전히 PR #95의
+merge commit `08100c7`이다 — PR #96은 문서 전용이라 코드를 바꾸지 않았다. sha를 여기 고정하지
+않으니 세션 시작 시 `git fetch`로 확인한다.
 
 ### 이 트랙에서 배운 것 (반복하지 않기 위해)
 
@@ -144,7 +147,7 @@ DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항
 | DS0-2 잔여 | `/api/processing`·`/api/notifications`·`useBackgroundProcessing`·`ProcessingDashboard` 삭제. DS-1은 도달 경로만 없앴다 | P2-A |
 | — | `BackgroundFileUpload`의 `/processing` 링크 2곳 | P2-A |
 | — | **`AdvancedPlaybackControls`와 `LazyAdvancedPlaybackControls`가 죽은 코드다.** 배럴과 `LazyComponent`가 export만 하고 렌더하는 화면이 0곳이다 (D-031에서 확인) | P2-A |
-| DS-5 선행 | ~~구간 반복(DS0-9)과 이모지 교체가 D-019 결정 8과 부딪힌다~~ → **D-031이 해소.** PR #96 병합이 DS-5 착수의 선행이다 | DS-5 |
+| ~~DS-5 선행~~ | ~~구간 반복(DS0-9)과 이모지 교체가 D-019 결정 8과 부딪힌다~~ → **D-031이 해소하고 PR #96이 병합돼 선행 조건이 없다** | **해소됨** |
 | **DS3-1** | **업로드 한도 50MB가 Vercel Function 요청 본문 한도 4.5MB와 충돌한다.** 5MB PDF는 화면의 모든 검사를 통과하고 413으로 거부되며, 그 413이 "서비스 불가 → 잠시 후 재시도"로 분류돼 **성공할 수 없는 재시도**를 권한다. 홈(DS-2)과 업로드(DS-3) 모두 "최대 50MB"를 말한다. 한도를 낮추든 업로드 경로를 바꾸든 **제품 결정**이라 D-026·phase 문서 갱신이 선행한다 | **결정 필요, GitHub 이슈 미등록** |
 
 한 번도 실행하지 않은 검증: 초보자 관찰 테스트(완료 조건 1), 실기기 모바일. 수동 접근성 검사
