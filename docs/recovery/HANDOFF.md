@@ -20,7 +20,8 @@ PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `081
 상세 근거는 `docs/recovery/validation/2026-08-30-DS-7-states.md`와 `docs/recovery/reviews/PR-99.md`에 있다.
 README 재작성 중 확인된 후속 작업 후보 네 건이 아래 #83 절에 있다.
 
-**이슈 [#83](https://github.com/landfill/ClairKeys/issues/83) README 재작성 완료 (2026-08-30)**:
+**이슈 [#83](https://github.com/landfill/ClairKeys/issues/83) README 재작성 완료, 2026-08-30 `CLOSED`**:
+사용자 지시로 종단 요약을 [코멘트](https://github.com/landfill/ClairKeys/issues/83#issuecomment-5468608101)로 남긴 뒤 닫았다.
 커밋 `632a08ff60dfd6e9ec0a0ff2a361c6b9a71711ec`, `main` 직접 push. 사용자가 "리드미 수정은 PR 없이
 처리"라고 지시해 브랜치·PR 없이 커밋했다 — README와 새 `docs/*.md`는 AGENTS.md의 직접 커밋 예외
 목록에 없으므로, 이 지시 없이 같은 방식을 반복하지 않는다. 애플리케이션 코드는 변경하지 않았다.
