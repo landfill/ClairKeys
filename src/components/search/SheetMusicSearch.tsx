@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui'
+import { useState, useEffect, useRef } from 'react'
+import { Button, StatusState } from '@/components/ui'
 import { useSheetMusicSearch } from '@/hooks/useSheetMusicSearch'
 import { SheetMusicWithOwner } from '@/types/sheet-music'
 import { useCategories } from '@/hooks/useCategories'
@@ -23,6 +23,7 @@ export default function SheetMusicSearch({
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>()
   const [publicFilter, setPublicFilter] = useState<boolean | undefined>(defaultPublicOnly ? true : undefined)
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'composer'>('newest')
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const { categories } = useCategories()
   
@@ -81,6 +82,7 @@ export default function SheetMusicSearch({
             <div className="flex-1">
               <input
                 type="text"
+                ref={searchInputRef}
                 placeholder="곡명 또는 저작자로 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -172,9 +174,7 @@ export default function SheetMusicSearch({
 
       {/* Error State */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800">검색 중 오류가 발생했습니다: {error}</p>
-        </div>
+        <StatusState className="mb-4" title="악보를 검색하지 못했습니다" detail="검색 서비스에 잠시 문제가 있습니다. 다시 시도해 주세요." tone="error" action={<Button variant="outline" size="sm" onClick={triggerSearch}>다시 시도</Button>} />
       )}
 
       {/* Results */}
@@ -253,9 +253,13 @@ export default function SheetMusicSearch({
             )}
           </>
         ) : !loading && (
-          <div className="text-center py-8 text-gray-500">
-            {searchQuery ? '검색 결과가 없습니다' : '검색어를 입력해보세요'}
-          </div>
+          <StatusState
+            title={searchQuery ? '검색 결과가 없습니다' : '검색어를 입력해 주세요'}
+            detail={searchQuery ? '다른 검색어로 다시 찾아보세요.' : '곡명이나 저작자로 악보를 찾아보세요.'}
+            action={searchQuery
+              ? <Button variant="outline" size="sm" onClick={() => setSearchQuery('')}>검색어 지우기</Button>
+              : <Button variant="outline" size="sm" onClick={() => searchInputRef.current?.focus()}>검색어 입력하기</Button>}
+          />
         )}
       </div>
 

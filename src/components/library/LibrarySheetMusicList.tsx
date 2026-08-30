@@ -7,6 +7,7 @@ import { SheetMusicCard } from '@/components/sheet/SheetMusicCard'
 import type { SheetMusicWithCategory } from '@/types/sheet-music'
 import Button from '@/components/ui/Button'
 import Loading from '@/components/ui/Loading'
+import StatusState from '@/components/ui/StatusState'
 
 interface LibrarySheetMusicListProps {
   selectedCategoryId?: number | null
@@ -139,20 +140,11 @@ export function LibrarySheetMusicList({
   // 빈 상태
   if (filteredAndSortedSheetMusic.length === 0) {
     return (
-      <div className="text-center py-16 text-ink-muted">
-        <div className="text-6xl mb-4">🎵</div>
-        <h3 className="text-lg font-medium mb-2">
-          {searchQuery ? '검색 결과가 없습니다' : '악보가 없습니다'}
-        </h3>
-        <p className="text-sm">
-          {searchQuery ? '다른 검색어로 시도해보세요' : '첫 번째 악보를 업로드해보세요!'}
-        </p>
-        {!searchQuery && (
-          <a href="/upload" className="inline-flex mt-6 px-4 py-2 rounded-md bg-accent text-on-accent hover:bg-accent-hover">
-            새 악보 업로드
-          </a>
-        )}
-      </div>
+      <StatusState
+        title={searchQuery ? '검색 결과가 없습니다' : '악보가 없습니다'}
+        detail={searchQuery ? '다른 검색어로 다시 찾아보세요.' : '연습할 PDF 악보를 올려 보세요.'}
+        action={!searchQuery ? <a href="/upload" className="inline-flex rounded-md bg-accent px-4 py-2 text-sm text-on-accent hover:bg-accent-hover">새 악보 업로드</a> : <a href="/library" className="inline-flex rounded-md border border-rule-strong bg-surface px-4 py-2 text-sm text-ink hover:bg-surface-muted">검색 초기화</a>}
+      />
     )
   }
 

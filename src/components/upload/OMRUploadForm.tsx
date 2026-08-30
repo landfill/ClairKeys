@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { AlertIcon, Button, UploadIcon } from '@/components/ui'
+import { Button, StatusState, UploadIcon } from '@/components/ui'
 import type { Category } from '@/types/category'
 import { fileSignature, inspectPdfFile, MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
 import {
@@ -379,17 +379,7 @@ export default function OMRUploadForm({
 
         {/* 실패 안내. 색이 아니라 아이콘과 문장이 상태를 말한다. */}
         {failure && (
-          <div
-            role="alert"
-            className="flex gap-3 rounded-md border border-state-error bg-surface-muted p-4"
-          >
-            <AlertIcon size={20} className="mt-0.5 shrink-0 text-state-error" aria-hidden="true" />
-            <div>
-              <p className="text-sm font-semibold text-ink">{failure.title}</p>
-              <p className="mt-1 text-sm text-ink-muted">{failure.detail}</p>
-              <p className="mt-1 text-sm text-ink">{failure.action}</p>
-            </div>
-          </div>
+          <StatusState title={failure.title} detail={failure.detail} action={failure.action} tone="error" />
         )}
 
         {/* 곡명 */}
