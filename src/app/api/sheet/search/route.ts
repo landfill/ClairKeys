@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     // Public/Private filter
     if (isPublic === 'true') {
       where.isPublic = true
+      where.provenance = { not: 'demo' }
     } else if (isPublic === 'false') {
       // Only show user's private sheets if logged in
       if (!session?.user?.id) {
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
         ]
       } else {
         where.isPublic = true
+        where.provenance = { not: 'demo' }
       }
     }
     
@@ -169,6 +171,7 @@ export async function GET(request: NextRequest) {
         categoryId: sheet.categoryId,
         category: sheet.category,
         isPublic: sheet.isPublic,
+        provenance: sheet.provenance,
         animationDataUrl: sheet.animationDataUrl,
         createdAt: sheet.createdAt,
         updatedAt: sheet.updatedAt,

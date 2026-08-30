@@ -1160,3 +1160,30 @@
     본문이고, 본문에는 우리가 세지 않은 것이 들어 있다.
   - `title`·`composer`에 `maxLength`가 없다. 한도를 다시 좁힐 일이 생기면 이것부터 확인한다.
 - Related: D-032, D-026 결정 7, DS-3, `src/lib/upload/pdfInspection.ts`
+
+## D-034: CI 공개 체험은 라우트 fixture로 고정한다
+
+- Date: 2026-08-30
+- Status: Accepted
+- Applies to: DS-6 공개 악보 탐색·상세·미리보기 회귀 검증
+- Context:
+  - CI E2E job은 Prisma 스키마만 만들고 seed하지 않아 공개 악보가 없으며, 해당 job에는 Supabase 환경 변수도 없다.
+    따라서 실제 DB 행과 저장소 URL에 의존한 E2E는 CI에서 재현되지 않는다.
+  - DS-6은 이슈 #76 완료 조건 3의 단독 판정자지만, 실제 배포본에서의 익명 재생은 시크릿 창 수동 확인으로 판정한다.
+- Decision:
+  1. CI E2E는 Playwright route fixture로 검증된 공개 곡의 목록·상세 응답과 canonical animation JSON을 주입한다.
+  2. 공개 상세 화면이 `/api/files/animation`을 호출하지 않고 상세 응답의 `animationDataUrl`을 사용하는지 fixture로 고정한다.
+  3. 공개/비공개 권한과 demo provenance 제외는 기존 API route 테스트로 고정하고, 실제 공개 배포본 재생은 수동 확인 항목으로 남긴다.
+- Reason: 외부 DB·스토리지 의존을 제거하면서도 탐색에서 상세와 실제 플레이어 mount까지의 사용자 경로를 CI에서 재현할 수 있다.
+- Rejected:
+  - CI에 seed와 Supabase를 추가한다 | 테스트가 외부 저장소 자격 증명과 데이터 수명주기에 결합되어 PR마다 불안정하다.
+  - 통합/유닛 테스트만 사용한다 | 브라우저의 탐색→상세→플레이어 연결과 로그인 복귀 링크를 검증하지 못한다.
+  - 검사를 생략하고 수동 확인만 기록한다 | 완료 조건 3의 회귀 근거가 약해지고 공개 경로 변경을 자동으로 감지하지 못한다.
+- Constraint: fixture 성공은 배포 데이터·스토리지 설정의 유효성을 증명하지 않으며, 시크릿 창 수동 확인이 필요하다.
+- Confidence: high
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: `src/app/api/files/animation/route.ts` 인증 분기와 플레이어 내부 구현은 이 전략을 위해 변경하지 않는다.
+- Tested: Decision recorded before implementation; fixture and route test results to be added with DS-6 implementation.
+- Not-tested: CI's real database and Supabase storage contents.
+- Related: DS-6, D-030, D-031, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)

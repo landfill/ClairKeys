@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
 import { Card, Loading } from '@/components/ui'
-import AuthGuard from '@/components/auth/AuthGuard'
+import LoginButton from '@/components/auth/LoginButton'
 import FallingNotesPlayer from '@/components/animation/FallingNotesPlayer'
 import DemoProvenanceNotice from '@/components/sheet/DemoProvenanceNotice'
 import type { SheetMusicProvenance } from '@prisma/client'
@@ -56,33 +56,17 @@ export default function SheetMusicPage() {
         // Load animation data from file storage
         try {
           console.log(`🔍 Fetching animation data for sheet music ID: ${id}`)
-          const animationResponse = await fetch(`/api/files/animation?sheetMusicId=${id}`)
-          
-          console.log(`📡 Animation API response status: ${animationResponse.status}`)
-          
-          if (!animationResponse.ok) {
-            console.error(`❌ Animation API failed with status ${animationResponse.status}`)
-            if (animationResponse.status === 404) {
-              setError('애니메이션 데이터를 찾을 수 없습니다.')
-            } else {
-              setError('애니메이션 데이터를 불러오는 중 오류가 발생했습니다.')
-            }
-            return
-          }
-
-          const animationUrlData = await animationResponse.json()
-          console.log(`📄 Animation URL data received:`, animationUrlData)
-          
-          if (!animationUrlData.url) {
-            console.error('❌ No URL found in animation response:', animationUrlData)
+          const animationUrl = data.sheetMusic.animationDataUrl
+          if (!animationUrl) {
+            console.error('❌ No animation URL found in sheet response')
             setError('애니메이션 데이터 URL이 없습니다.')
             return
           }
           
-          console.log(`🔗 Fetching animation file from: ${animationUrlData.url}`)
+          console.log(`🔗 Fetching animation file from: ${animationUrl}`)
           
           // Fetch the actual animation JSON file
-          const jsonResponse = await fetch(animationUrlData.url)
+          const jsonResponse = await fetch(animationUrl)
           
           console.log(`📡 Animation file response status: ${jsonResponse.status}`)
           
@@ -136,43 +120,33 @@ export default function SheetMusicPage() {
 
   if (loading) {
     return (
-      <AuthGuard>
-        <MainLayout>
-          <Container className="py-8" size="lg">
-            <div className="flex justify-center">
-              <Loading size="lg" />
-            </div>
-          </Container>
-        </MainLayout>
-      </AuthGuard>
+      <MainLayout>
+        <Container className="py-8" size="lg">
+          <div className="flex justify-center">
+            <Loading size="lg" />
+          </div>
+        </Container>
+      </MainLayout>
     )
   }
 
   if (error || !sheetMusic || !animationData) {
     return (
-      <AuthGuard>
-        <MainLayout>
-          <Container className="py-8" size="lg">
-            <Card padding="lg">
-              <div className="text-center">
-                <div className="text-4xl mb-4">❌</div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  오류가 발생했습니다
-                </h2>
-                <p className="text-gray-600">
-                  {error || '알 수 없는 오류가 발생했습니다.'}
-                </p>
-              </div>
-            </Card>
-          </Container>
-        </MainLayout>
-      </AuthGuard>
+      <MainLayout>
+        <Container className="py-8" size="lg">
+          <Card padding="lg">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-ink mb-2">오류가 발생했습니다</h2>
+              <p className="text-ink-muted">{error || '알 수 없는 오류가 발생했습니다.'}</p>
+            </div>
+          </Card>
+        </Container>
+      </MainLayout>
     )
   }
 
   return (
-    <AuthGuard>
-      <MainLayout>
+    <MainLayout>
         {!isPlaybackActive && (
           <PageHeader
             title={sheetMusic.title}
@@ -195,6 +169,15 @@ export default function SheetMusicPage() {
 
           {/* Sheet Music Info */}
           {!isPlaybackActive && <Card padding="lg">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-accent">짧은 미리보기</p>
+                <p className="mt-1 text-sm text-ink-muted">전체 연습은 로그인 후 이 곡에서 계속할 수 있습니다.</p>
+              </div>
+              <LoginButton callbackUrl={`/sheet/${id}`}>
+                로그인하고 계속 연습하기
+              </LoginButton>
+            </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">악보 정보</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -227,6 +210,5 @@ export default function SheetMusicPage() {
           </Card>}
         </Container>
       </MainLayout>
-    </AuthGuard>
   )
 }

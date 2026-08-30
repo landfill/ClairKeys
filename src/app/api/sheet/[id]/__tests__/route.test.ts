@@ -30,6 +30,33 @@ describe('/api/sheet/[id]', () => {
   })
 
   describe('GET', () => {
+    it('returns a public sheet music record without a session', async () => {
+      mockGetServerSession.mockResolvedValue(null)
+      const mockSheetMusic = {
+        id: 1,
+        title: '공개 연습곡',
+        composer: '검증된 작곡가',
+        userId: 'owner-1',
+        isPublic: true,
+        provenance: 'omr',
+        animationDataUrl: 'https://storage.example/public.json',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        user: { id: 'owner-1', name: '작곡가', email: 'owner@example.com' },
+        category: { id: 1, name: '클래식' }
+      }
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(mockSheetMusic as any)
+
+      const request = new NextRequest('http://localhost:3000/api/sheet/1')
+      const response = await GET(request, { params: Promise.resolve({ id: '1' }) })
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.sheetMusic.title).toBe('공개 연습곡')
+      expect(data.sheetMusic.animationDataUrl).toBe('https://storage.example/public.json')
+      expect(data.sheetMusic.owner).toBeNull()
+    })
+
     it('should return sheet music for owner', async () => {
       const mockSession = {
         user: { id: 'user1', email: 'test@example.com' }

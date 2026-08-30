@@ -83,7 +83,7 @@ export default function PublicSheetMusicBrowser({
       {showSections.includes('featured') && popularSheets.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">🌟 추천 악보</h2>
+            <h2 className="text-2xl font-bold text-ink">추천 악보</h2>
             <Button variant="outline" size="sm">
               전체 보기
             </Button>
@@ -99,7 +99,7 @@ export default function PublicSheetMusicBrowser({
                 {/* Placeholder for sheet music preview image */}
                 <div className="h-40 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-3xl mb-2">🎼</div>
+                    <div className="text-sm font-medium text-accent mb-2">SHEET MUSIC</div>
                     <p className="text-sm text-gray-600">악보 미리보기</p>
                   </div>
                 </div>
@@ -139,7 +139,7 @@ export default function PublicSheetMusicBrowser({
       {showSections.includes('popular') && popularSheets.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">🔥 인기 악보</h2>
+            <h2 className="text-2xl font-bold text-ink">인기 악보</h2>
             <Button variant="outline" size="sm">
               전체 보기
             </Button>
@@ -201,7 +201,7 @@ export default function PublicSheetMusicBrowser({
       {showSections.includes('recent') && recentSheets.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">🆕 최신 악보</h2>
+            <h2 className="text-2xl font-bold text-ink">최신 악보</h2>
             <Button variant="outline" size="sm">
               전체 보기
             </Button>
@@ -216,7 +216,7 @@ export default function PublicSheetMusicBrowser({
               >
                 <div className="text-center mb-3">
                   <div className="w-12 h-12 mx-auto bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center text-lg mb-2">
-                    🎵
+                    <span className="text-sm font-medium text-accent">곡</span>
                   </div>
                   <div className="text-xs text-gray-500">
                     {formatDate(sheetMusic.createdAt)}
@@ -246,7 +246,6 @@ export default function PublicSheetMusicBrowser({
       {/* Empty State */}
       {recentSheets.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">🎼</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             아직 공개된 악보가 없습니다
           </h3>
