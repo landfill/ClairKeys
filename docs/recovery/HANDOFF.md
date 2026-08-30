@@ -28,8 +28,10 @@ AGENTS.md에 따라 결정 문서를 먼저 갱신하거나 별도 컨트롤로 
 계약과 `playbackControlsA11y.test.tsx`·`globalStyles.test.ts` 포커스 가드 삭제다. 로컬 검증은
 tsc 통과 / lint 0건 / jest **75 suite·745 test 전부 통과**. `main` required check 4개
 (`Lint`·`Security Audit`·`Run Tests`·`E2E Tests`)에 "Accessibility Check"가 없어 머지를 막지
-않는다. head `93d74ac`에서 **CI 16/16 초록**, GitHub 리뷰 세 표면 actionable **0건**.
-Codex 워커 리뷰(Orca `run_a12df4b89111`)에서 should-fix 1건이 나와 반영했다.
+않는다. head `b9a0652`에서 **CI 16/16 초록**, 미해결 인라인 스레드 0건.
+Codex 워커 리뷰(Orca `run_a12df4b89111`)에서 should-fix 1건이 나와 반영했고,
+**CodeRabbit 3건은 2건 수용·1건 기각**했다 — ARIA 복원 요구는 D-030이 기록한 사용자 결정을
+되돌리라는 것이라 기각 근거를 D-030 Directive에 남겼다.
 **병합 승인은 아직 없다.** 상세는 `docs/recovery/reviews/PR-95.md`.
 
 **PR #95가 잡아낸 것 — 접근성 속성이 테스트 선택자였다.** 첫 푸시에서 E2E가 5개 브라우저 전부
@@ -94,6 +96,13 @@ sha를 여기 고정하지 않으니 세션 시작 시 `git fetch`로 확인한�
   2.71:1이었다. "DS-1 토큰만 사용한다"는 회귀 기준은 이 경우를 잡지 못한다.
 - **컴포넌트 단위 테스트가 둘 다 통과해도 합친 화면은 틀릴 수 있다.** 상태가 두 컴포넌트에 걸치면
   (여기서는 중복 가드와 작업의 끝) 회귀를 페이지 수준에 둔다.
+- **CodeRabbit의 outside-diff 지적은 인라인 스레드에 없다.** PR #95에서 스레드는 `totalCount=0`
+  인데 리뷰 **본문**에 3건이 들어 있었다. 플랫폼 제약으로 diff 밖 지적은 인라인에 못 붙는다 —
+  PR #89에서 스레드만 보고 3건을 놓친 것과 정확히 같은 경로다. 세 표면을 다 본다는 규칙은
+  이래서 있다.
+- **자동 리뷰는 결정 맥락을 보지 못한다.** CodeRabbit이 D-030으로 의도적으로 제거한 ARIA를
+  Major로 복원하라고 했다. 도구는 diff의 기술적 타당성만 본다. 기각할 때는 결정 문서에 근거를
+  남겨 다음 세션이 같은 판단을 다시 하지 않게 한다.
 - **이 저장소의 phase 문서는 같은 요건을 최대 네 곳에 반복한다** — `In scope`,
   `접근성·반응형 검증`, `Completion criteria`, `검증 명령`. D-030에서 두 번째 절만 지웠더니
   DS-7은 "요건은 없는데 axe를 돌려 위반 0건을 확인하라"고 스스로 모순됐고, DS-5는 지웠다고 믿은
