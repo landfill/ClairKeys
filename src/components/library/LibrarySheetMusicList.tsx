@@ -143,7 +143,7 @@ export function LibrarySheetMusicList({
       <StatusState
         title={searchQuery ? '검색 결과가 없습니다' : '악보가 없습니다'}
         detail={searchQuery ? '다른 검색어로 다시 찾아보세요.' : '연습할 PDF 악보를 올려 보세요.'}
-        action={!searchQuery ? <a href="/upload" className="inline-flex rounded-md bg-accent px-4 py-2 text-sm text-on-accent hover:bg-accent-hover">새 악보 업로드</a> : undefined}
+        action={!searchQuery ? <a href="/upload" className="inline-flex rounded-md bg-accent px-4 py-2 text-sm text-on-accent hover:bg-accent-hover">새 악보 업로드</a> : <a href="/library" className="inline-flex rounded-md border border-rule-strong bg-surface px-4 py-2 text-sm text-ink hover:bg-surface-muted">검색 초기화</a>}
       />
     )
   }

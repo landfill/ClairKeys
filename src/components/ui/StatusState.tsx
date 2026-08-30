@@ -4,7 +4,7 @@ import { AlertIcon } from './icons'
 interface StatusStateProps {
   title: string
   detail: string
-  action?: ReactNode
+  action: ReactNode
   tone?: 'neutral' | 'error'
   className?: string
 }
@@ -24,7 +24,7 @@ export default function StatusState({
       {tone === 'error' && <AlertIcon size={20} className="mx-auto mb-3 text-state-error" />}
       <h2 className={`text-lg font-semibold ${titleClass}`}>{title}</h2>
       <p className="mt-2 text-sm text-ink-muted">{detail}</p>
-      {action && <div className="mt-5 flex justify-center">{action}</div>}
+      <div className="mt-5 flex justify-center">{action}</div>
     </section>
   )
 }

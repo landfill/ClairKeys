@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
 import { Card, Loading, StatusState } from '@/components/ui'
 import LoginButton from '@/components/auth/LoginButton'
@@ -137,8 +138,11 @@ export default function SheetMusicPage() {
           <Card padding="lg">
             <StatusState
               title={error?.includes('권한') ? '이 악보에 접근할 수 없습니다' : '악보를 불러오지 못했습니다'}
-              detail={error || '잠시 후 다시 시도해 주세요.'}
+              detail={error || '악보 정보를 확인할 수 없습니다.'}
               tone="error"
+              action={error?.includes('권한')
+                ? <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(`/sheet/${id}`)}`} className="inline-flex rounded-md bg-accent px-4 py-2 text-sm text-on-accent hover:bg-accent-hover">로그인하고 계속하기</Link>
+                : <Link href="/explore" className="inline-flex rounded-md border border-rule-strong bg-surface px-4 py-2 text-sm text-ink hover:bg-surface-muted">공개 악보 둘러보기</Link>}
             />
           </Card>
         </Container>

@@ -115,7 +115,12 @@ function SignInContent() {
         </div>
 
         {error && (
-          <StatusState title="로그인하지 못했습니다" detail={`${getErrorMessage(error)} 다시 시도해 주세요.`} tone="error" />
+          <StatusState
+            title="로그인하지 못했습니다"
+            detail={getErrorMessage(error)}
+            tone="error"
+            action={<Link href={callbackUrl} className="inline-flex rounded-md border border-rule-strong bg-surface px-4 py-2 text-sm text-ink hover:bg-surface-muted">다시 로그인하기</Link>}
+          />
         )}
         {/*
           <div className="rounded-md border border-state-error/40 bg-surface p-4">

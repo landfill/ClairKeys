@@ -240,7 +240,11 @@ export default function PublicSheetMusicBrowser({
 
       {/* Empty State */}
       {recentSheets.length === 0 && (
-        <StatusState title="아직 공개된 악보가 없습니다" detail="공개 악보가 올라오면 여기에서 함께 연습할 수 있습니다." />
+        <StatusState
+          title="아직 공개된 악보가 없습니다"
+          detail="공개 악보가 올라오면 여기에서 함께 연습할 수 있습니다."
+          action={<a href="/upload" className="inline-flex rounded-md bg-accent px-4 py-2 text-sm text-on-accent hover:bg-accent-hover">첫 악보 올리기</a>}
+        />
       )}
     </div>
   )
