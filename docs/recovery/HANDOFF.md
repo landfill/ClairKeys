@@ -18,6 +18,10 @@ PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `081
 
 **Next action**: 이슈 #76의 후속 작업 후보를 우선순위화한다. DS-7의 7개 조건과 PR #99 CI는 결착됐고,
 상세 근거는 `docs/recovery/validation/2026-08-30-DS-7-states.md`와 `docs/recovery/reviews/PR-99.md`에 있다.
+2026-08-30에는 버튼·뱃지·정보 라벨의 시각 일관성 후속 작업을 시작했다. 코드와 테스트는 PR
+[#100](https://github.com/landfill/ClairKeys/pull/100)에 있고, 검증 근거는
+`docs/recovery/validation/2026-08-30-ui-button-badge.md`에 있다. PR의 현재 상태와 리뷰 결과는
+`docs/recovery/reviews/PR-100.md` 및 GitHub live state에서 확인한다.
 README 재작성 중 확인된 후속 작업 후보 네 건이 아래 #83 절에 있다.
 
 **이슈 #65·#66 종결 (2026-08-30 KST)**: 사용자가 실제 기기에서 두 재생 결함을 실측해 통과했다고
