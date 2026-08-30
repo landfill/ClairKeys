@@ -1,6 +1,6 @@
 # DS-7 — 알림·빈 화면·오류 상태 완결
 
-Status: `IN_REVIEW`
+Status: `DONE`
 Depends on: **DS-2, DS-3, DS-4, DS-5, DS-6 전부**
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 7단계
 
@@ -79,11 +79,24 @@ git diff origin/main -- src/utils/playbackGeometry.ts src/utils/pianoLayout.ts s
 
 ## Progress (2026-08-30)
 
-- PR #99 (`0dd0b4e`)에서 공용 `StatusState`를 도입하고 업로드·내 악보·탐색·검색·상세·로그인
+- PR #99 (`42069a4`)에서 공용 `StatusState`를 도입하고 업로드·내 악보·탐색·검색·상세·로그인
   오류/빈 상태를 문제와 다음 행동 구조로 통일했다.
 - `admin/update-finger-data`는 DS-2~DS-6 대상 화면 표에 없는 관리자 유지보수 화면이므로 범위에서
   제외했다. 관리자 작업 결과 표는 일반 사용자 상태·복구 여정과 계약이 다르며, 이를 포함하면 DS-7의
   화면 소유 경계를 넓히게 된다.
-- 전체 완료 조건 7개 판정과 수동 체크리스트는 `validation/2026-08-30-DS-7-states.md`에 기록했다.
-- 조건 3·7 사용자 확인 전까지 DS-7은 `DONE`으로 올리지 않는다. 두 수동 확인 완료와 리뷰·CI 해결이
-  `DONE` 전환 조건이다.
+- 병합된 `main`(merge `3eaee81`)에 완료 기준을 대조한 결과:
+
+  | 완료 기준 | 병합된 main 대조 결과 |
+  |---|---|
+  | 빈/오류 상태가 문제와 다음 행동 구조를 따른다 | 공용 `StatusState`와 대상 화면 회귀 테스트로 충족 |
+  | 완료 전달이 업로드 인라인·내 악보 배지에서 일관된다 | D-026 G1-3 계약 및 전체 Jest PASS로 충족 |
+  | 홈 → 업로드 → 이탈 → 완료 → 첫 재생 종단 | 사용자가 2026-08-30 수동 확인을 수행하고 통과를 보고했다 |
+  | 이슈 #76 완료 조건 7개 판정 | `validation/2026-08-30-DS-7-states.md`에 7개 모두 충족 기록 |
+  | DS-0 회귀 계약 유지 | 기하 상수 7개, D-019, `playback-chrome`, D-010·D-011·D-018을 항목별 대조해 충족 |
+
+- PR #99의 merge commit check-runs 6개(Lint, Security Audit, Run Tests, Post-merge build,
+  Post-merge tests, E2E Tests)가 모두 성공으로 결착됐다. `codex/ds-7-states`는 local/remote tip이
+  모두 `main`에 포함된 것을 확인한 뒤 원격→로컬 순서로 삭제했다.
+- 조건 3·4·7은 사용자가 2026-08-30 수동 확인을 수행하고 통과를 보고했다는 근거로 충족 판정했다.
+- DS-0 회귀 계약의 상세 명령·결과와 이슈 #76 7개 조건 판정은
+  `validation/2026-08-30-DS-7-states.md`에 기록했다.
