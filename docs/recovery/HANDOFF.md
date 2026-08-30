@@ -24,6 +24,9 @@ merge commit `bff1cc07b92d219c0250f3685f67feb019a75890`에 병합했다. 브라�
 [#100](https://github.com/landfill/ClairKeys/pull/100)에 있고, 검증 근거는
 `docs/recovery/validation/2026-08-30-ui-button-badge.md`에 있다. PR의 현재 상태와 리뷰 결과는
 `docs/recovery/reviews/PR-100.md` 및 GitHub live state에서 확인한다.
+후속 브라우저 피드백으로 내 악보와 새 악보 업로드의 검색·정렬·카테고리·메타데이터 필드 라운드도
+정리했고, 코드·테스트는 PR [#101](https://github.com/landfill/ClairKeys/pull/101), 검증 근거는
+`docs/recovery/validation/2026-08-30-ui-library-controls.md`에 있다.
 README 재작성 중 확인된 후속 작업 후보 네 건이 아래 #83 절에 있다.
 
 **이슈 #65·#66 종결 (2026-08-30 KST)**: 사용자가 실제 기기에서 두 재생 결함을 실측해 통과했다고
