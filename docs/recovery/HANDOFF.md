@@ -8,12 +8,12 @@ Last updated: 2026-08-30 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
-DS-0, DS-G1, DS-1, DS-2, DS-3, **DS-4까지 `DONE`**, DS-5는 `IN_REVIEW`, DS-6~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
+DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, **DS-5까지 `DONE`**, DS-6~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
 완료 조건은 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 **2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 7개다** — D-030,
 PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `08100c7`).
 
-**Next action**: DS-5 PR [#97](https://github.com/landfill/ClairKeys/pull/97)은 required CI와 actionable review가 모두 정리됐다. 사용자 병합 승인을 기다린다. 원본 PDF 보조 패널은 URL·권한 계약이 없어 DS-6으로 이월했고, 실기기 가로 회전·압축·1.15 비율은 사용자 확인이 필요하다.
+**Next action**: **DS-6(탐색과 공개 체험)를 최신 `main`에서 시작한다** — DS-2의 복귀 계약과 DS-5의 플레이어 형태라는 선행 조건이 이제 모두 `DONE`이다. 먼저 `docs/recovery/phases/DS-6-explore.md`의 공개 악보 경로를 확인하고, `/sheet/[id]`의 `AuthGuard`·데이터 로딩을 공개 악보에만 전환한다. `/api/files/animation`의 인증 분기와 DS-5 소유 플레이어 내부는 건드리지 않는다. 원본 PDF 보조 패널은 URL·권한 계약과 함께 이 단계에서 구현한다.
 
 **Previous action**: **DS-5(학습 플레이어)를 연다** — `codex/ds-5-learning-player`. 선행 조건 DS-1은
 `DONE`이라 지금 착수 가능하다. **D-019 결정 8 매듭은 D-031이 풀었다** — 홈에서 재생기가 빠지면
@@ -148,6 +148,14 @@ merge commit `08100c7`이다 — PR #96은 문서 전용이라 코드를 바꾸�
   무너진다. 살아 있는 요건의 검사에는 `data-testid` 같은 전용 훅을 쓴다.
 - **`setInterval` + async 콜백은 요청을 겹치게 한다.** 앞선 호출이 끝난 뒤 다음을 예약하면 늦게 온
   응답이 정착한 상태를 되돌리는 경합 자체가 사라진다.
+- 로컬 `npm run test:e2e`는 `.gitignore:34`가 `.env*`를 무시하므로 CI와 같은 환경 변수를 주입해야
+  한다. 그렇지 않으면 NextAuth `NO_SECRET` 로그 폭주가 서버를 먹통으로 만든다.
+- `playwright.config.ts:69`의 `reuseExistingServer: !process.env.CI`는 중단된 실행의 고아 서버도
+  재사용한다. 그 서버는 SIGTERM을 받지 못할 수 있어 `kill -9`가 필요하며, 상세 근거는 `2f92264`다.
+- `animationEngine.setLoopSection`의 `clampedStart + 1`은 원래 최소 1초 루프 보장이었지만 A–B
+  마커 뒤에는 학습자가 고른 경계를 몰래 넓히는 결함이 됐다. 새 기능이 기존 코드의 의미를 바꾼 사례다.
+- CodeRabbit의 ARIA 복원 지적은 D-030 Directive로 기각했고, **CodeRabbit이 `DECISIONS.md`를 직접
+  조회해 근거를 검증한 뒤 철회했다.** 결정 문서를 근거로 제시하는 방식이 실제로 작동했다.
 
 ### Known blockers / 이월된 것
 
@@ -158,7 +166,8 @@ DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항
 | **DS0-1** | 비공개 악보의 애니메이션 JSON이 익명으로 200(78KB). API의 403은 URL 은닉일 뿐이고 객체는 public 버킷에 있다 | **DS 범위 밖, GitHub 이슈 미등록** |
 | **DS4-1** | **이어하기가 없다.** `PracticeSession`은 `durationSeconds`·`completedPercentage`만 저장하고 재생 위치 필드도 복원 소비자도 없다. UI를 만들기 전에 **무엇을 저장할지**를 정해야 한다 — 저장 계약이 선행이다 | **결정 필요, GitHub 이슈 미등록** |
 | DS4-2 | `/library`의 반응형 1440·1024·390 근거가 사용자의 수동 확인뿐이다. 인증 뒤 화면이라 공개 E2E가 지나가지 않는다. D-030으로 접근성 담당이 사라져 **반응형 항목으로만 남는다** | DS-7(종단 반응형) |
-| C5 | `HOME_SAMPLE_ANIMATION.tempoSource: 'user'`가 화면에 "직접 입력"으로 표시돼 방문자가 입력한 것처럼 읽힌다. **D-031로 홈 재생기가 빠지면 자동 소멸** — 그 표시는 재생기 안 `TempoDisplay`다 | DS-5(재생기 제거로 소멸) |
+| **DS5-1** | **실기기 수동 확인 미실행**: 폰 가로 재생의 회전, 컨트롤 압축, 낙하/건반 1.15 비율. 자동 검사가 이를 대체하지 않으며 사용자 확인이 필요하다 | 사용자 확인 필요 |
+| ~~C5~~ | ~~`HOME_SAMPLE_ANIMATION.tempoSource: 'user'`가 "직접 입력"으로 읽히던 문제~~ → DS-5가 홈 재생기를 제거해 자동 소멸 | 해소됨 |
 | C6 | 홈의 가로 스크롤 가드가 매칭 0개라 vacuous | DS-7 |
 | — | `flex-shrink-*` 표기 일괄 현대화(동작 문제 없음) | P2-A |
 | DS0-2 잔여 | `/api/processing`·`/api/notifications`·`useBackgroundProcessing`·`ProcessingDashboard` 삭제. DS-1은 도달 경로만 없앴다 | P2-A |

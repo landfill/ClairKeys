@@ -1,6 +1,6 @@
 # DS-5 — 학습 플레이어
 
-Status: `IN_REVIEW`
+Status: `DONE`
 Depends on: DS-1
 Blocks: DS-6, DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 5단계
@@ -106,8 +106,19 @@ git diff --stat origin/main -- src/app/sheet                                    
 
 ## 2026-08-30 Progress
 
-- a) 메트로놈: 기존 `TempoDisplay`가 유휴/재생(fixed) 모두에서 값·출처를 렌더하며 기존 컴포넌트 테스트가 두 상태를 확인한다.
-- b) 구현: 첫 진입 안내는 타이밍·속도·A-B 반복의 3단계다.
-- c) 제외: 원본 PDF URL은 현재 API/계약이 제공하지 않고 sheet 데이터 로딩은 DS-6 소유다. DS-6에서 URL·권한 계약 뒤 보조 패널을 구현한다.
-- d) 구현: 유휴 폭을 `max-w-6xl`로 넓히고 낙하/건반 시각화 컬럼을 우선 유지했다. 기하 상수는 변경하지 않았다.
-- 압축 모드에도 A/B/해제 반복을 추가했다. 실기기 가로 회전·압축·1.15 비율은 사용자 수동 확인이 필요하다.
+PR [#97](https://github.com/landfill/ClairKeys/pull/97)은 2026-08-30에 merge commit
+`d970fae`로 병합됐다. 완료 기준을 병합된 `main` 코드와 대조한 결과는 아래와 같다.
+
+| 완료 기준 | 병합된 `main` 근거 / 판정 |
+|---|---|
+| 홈 재생기 제거·1440×900 첫 화면 결과 영역 | `HomeSamplePlayer`가 재생기를 렌더하지 않고 결과 영역만 유지하며, `e2e/application-smoke.spec.ts`가 1440×900에서 해당 영역의 첫 뷰포트 배치를 회귀로 확인한다. 이슈 #76 완료 조건 1의 ①은 **충족**이다. |
+| 구간 반복 1차 컨트롤 | `PlaybackControls`와 `CompactPlaybackBar`의 A/B/해제, `AnimationPlayer`·`useFallingNotesPlayer`의 검증된 구간 전달이 병합됐다. `loopSection`·컨트롤·hook·engine 회귀가 경계값과 상태 전이를 확인한다. |
+| 기하 상수 7개 불변 | PR diff와 병합 후 `git diff`에서 `src/utils/playbackGeometry.ts`, `src/utils/pianoLayout.ts` 변경이 없다. |
+| 기하·플레이어 회귀 | `playbackGeometry.test.ts`, `pianoLayout.test.ts`, animation/playback focused Jest가 CI 및 브랜치 검증에서 통과했다. |
+| 메트로놈 값·출처 | 기존 `TempoDisplay`가 유휴/재생(fixed) 모두에서 값·출처를 렌더하며 기존 테스트가 두 상태를 확인한다. |
+| 폰 가로 1.15 비율·건반 선명도 | **미실행** — 실기기 회전·컨트롤 압축·비율 측정은 사용자 수동 확인 항목으로 남는다. |
+| 첫 진입 안내 3단계 이하 | `FallingNotesPlayer`가 타이밍·속도·A-B 반복의 3단계 안내를 렌더한다. |
+| 홈 제거로 깨진 검사 3건 처리 | 로그인 전 홈 재생 E2E는 DS-6 공개 악보 체험으로 이월/제거했고, 첫 화면 검사는 결과 영역을 확인하도록 교체했으며, 홈 제목·작곡가 표기 unit 검사는 제거했다. |
+
+원본 악보 보기는 URL·권한 계약과 `src/app/sheet/[id]` 데이터 로딩이 필요해 DS-6으로 이월됐다. 이는
+DS-5가 완료로 판정되는 범위 밖이며 숨기지 않는 미이행 항목이다.

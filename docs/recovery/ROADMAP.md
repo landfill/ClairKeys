@@ -31,7 +31,7 @@ P0-A와 P0-D는 서로 다른 파일 범위를 갖도록 설계하면 병렬 진
 | 3 | DS-2 | 로그인 전 핵심 가치 전달 (홈·샘플·복귀 계약) | DONE | `codex/ds-2-prelogin-value` | DS-1 |
 | 4 | DS-3 | 업로드와 처리 상태 | DONE | `codex/ds-3-upload-processing` | DS-1 |
 | 5 | DS-4 | 내 악보 | DONE | `codex/ds-4-my-library` | DS-1 |
-| 6 | DS-5 | 학습 플레이어 | NOT_STARTED | `codex/ds-5-learning-player` | DS-1 |
+| 6 | DS-5 | 학습 플레이어 | DONE | `codex/ds-5-learning-player` | DS-1 |
 | 7 | DS-6 | 탐색과 공개 체험 (`/sheet/[id]` 로그인 전 접근 포함) | NOT_STARTED | `codex/ds-6-explore` | DS-2, **DS-5** |
 | 8 | DS-7 | 알림·빈 화면·오류 상태 완결 | NOT_STARTED | `codex/ds-7-states` | **DS-2 ~ DS-6 전부** |
 
@@ -163,6 +163,9 @@ phase 문서의 완료 조건에서 검증하고, 여기서는 종단 판정만 
 | 5 | 처리 중 화면에 이탈해도 계속된다는 문구가 고정 노출된다 | 관측 가능 | DS-3 |
 | 6 | 첫 플레이어 진입 후 안내 없이 재생·속도 조절 컨트롤에 도달할 수 있다 | 1차 컨트롤 구성 확인 | DS-5 |
 | 7 | 홈 → 업로드 → 페이지 이탈 → 완료 → 첫 재생을 안내 없이 완주한다 | 종단 수동 1회 | DS-7 |
+
+2026-08-30 — DS-5 PR #97 병합(`d970fae`)으로 조건 1의 ①(홈 최초 뷰포트의 낙하 노트 결과 영역)은
+충족됐다. ②·③은 이미 DONE인 DS-2의 판정 범위이며, 조건 1 전체는 두 단계의 근거를 함께 읽는다.
 
 ### 조건 1이 측정하지 않는 것
 
