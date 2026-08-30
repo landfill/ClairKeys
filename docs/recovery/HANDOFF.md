@@ -10,8 +10,8 @@ Last updated: 2026-08-30 KST
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
 DS-0, DS-G1, DS-1, DS-2, DS-3, **DS-4까지 `DONE`**이고 DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
 완료 조건은 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
-**2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 8개 → 7개다** (D-030,
-PR [#95](https://github.com/landfill/ClairKeys/pull/95) 리뷰 대기).
+**2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 7개다** — D-030,
+PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `08100c7`).
 
 **Next action**: **DS-5(학습 플레이어)를 연다** — `codex/ds-5-learning-player`. 선행 조건 DS-1은
 `DONE`이라 지금 착수 가능하다. **코드를 고치기 전에 D-019 결정 8을 먼저 처리한다**: "공유
@@ -21,27 +21,26 @@ AGENTS.md에 따라 결정 문서를 먼저 갱신하거나 별도 컨트롤로 
 7개 상수)를 **한 픽셀도 바꾸지 않는다** (D-024). DS-6은 DS-5를 선행 조건으로 두므로 병렬 착수
 대상이 아니다.
 
-**열린 PR [#95](https://github.com/landfill/ClairKeys/pull/95) — WCAG 요건 제거 (D-030).** 사용자
-지시로 이슈 #76의 WCAG AA 요건을 문서·CI·구현 계약 세 층에서 제거했다. 완료 조건 7 삭제와 조건 8 →
-7 재번호, DS-1~DS-7의 "접근성·반응형 검증" → "반응형 검증", `accessibility-check` CI job과
-`prChecksWorkflow.test.ts` 검사 3건 제거, `PlaybackControls`·`icons.tsx`·`OptimizedImage`의 ARIA
-계약과 `playbackControlsA11y.test.tsx`·`globalStyles.test.ts` 포커스 가드 삭제다. 로컬 검증은
-tsc 통과 / lint 0건 / jest **75 suite·745 test 전부 통과**. `main` required check 4개
-(`Lint`·`Security Audit`·`Run Tests`·`E2E Tests`)에 "Accessibility Check"가 없어 머지를 막지
-않는다. head `b9a0652`에서 **CI 16/16 초록**, 미해결 인라인 스레드 0건.
-Codex 워커 리뷰(Orca `run_a12df4b89111`)에서 should-fix 1건이 나와 반영했고,
-**CodeRabbit 3건은 2건 수용·1건 기각**했다 — ARIA 복원 요구는 D-030이 기록한 사용자 결정을
-되돌리라는 것이라 기각 근거를 D-030 Directive에 남겼다.
-**병합 승인은 아직 없다.** 상세는 `docs/recovery/reviews/PR-95.md`.
+**#76 WCAG 요건 제거 완료 — PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합
+(merge `08100c7`).** 사용자 지시로 WCAG AA 요건을 계획 문서·CI·구현 계약 세 층에서 제거했다.
+완료 조건 7 삭제와 조건 8 → 7 재번호, DS-1~DS-7의 접근성 요건 제거, `accessibility-check` CI
+job과 `prChecksWorkflow.test.ts` 검사 3건 제거, `PlaybackControls`·`icons.tsx`·`OptimizedImage`의
+ARIA 계약과 `playbackControlsA11y.test.tsx`·`globalStyles.test.ts` 포커스 가드 삭제다.
+merge commit check-runs **6/6 성공**(마지막 완료 E2E Tests, 2026-08-30T00:54:24Z), Vercel
+`success`. 로컬·원격 tip이 모두 `main`에 포함됨을 확인한 뒤 원격 → 로컬 순으로 삭제했다.
+검증 상세는 `docs/recovery/validation/2026-08-30-D-030-wcag-requirement-removal.md`,
+리뷰 기록은 `docs/recovery/reviews/PR-95.md`.
 
-**PR #95가 잡아낸 것 — 접근성 속성이 테스트 선택자였다.** 첫 푸시에서 E2E가 5개 브라우저 전부
-실패했다. 공개 스모크의 "로그인 없이 샘플 재생"이 재생 버튼을 `getByRole('button', { name: /재생/ })`
-으로 찾는데, 그 이름의 유일한 출처가 제거한 `aria-label`이었다. 그 검사는 **완료 조건 3**을 지키고
-그 조건은 살아 있으므로, ARIA를 되살리지 않고 `data-testid`로 잡도록 고쳤다. **스모크에는
-`[aria-label$="octave marker"]`(낙하 노트 건반, 완료 조건 1)가 아직 남아 있다** — 건반 ARIA를
-손대면 같은 방식으로 무너진다.
+**제거가 두 번 불완전했다.** Codex 워커 리뷰가 DS-7 `검증 명령`의 axe·수동 검사 잔재를 잡았고,
+직접 대조에서 DS-5의 `In scope`·`Completion criteria` 2건이 더 나왔다. CodeRabbit이 DS-2의 C6
+담당과 DS-4 완료 기록의 조건 번호가 폐기된 판정을 가리키는 것을 잡았다. **원인은 요건이 한 절에만
+있다고 가정한 것** — 이 저장소의 phase 문서는 같은 요건을 네 곳에 반복한다.
 
-**DS-4는 PR 세 건으로 끝났다.** #92(merge `64aecb2`)가 구현, #93(merge `d13bb23`)이 891px 관측의
+**CodeRabbit의 ARIA 복원 요구(Major)는 기각했다.** D-030이 기록한 사용자 결정을 되돌리라는
+요구다. 같은 지적이 반복될 것이므로 기각 근거를 **D-030 Directive**에 남겼다 — 결정을 바꾸려면
+사용자에게 묻고 D-030을 대체하는 새 결정을 기록한다.
+
+**DS-4는 PR 세 건으로 끝났다.****DS-4는 PR 세 건으로 끝났다.** #92(merge `64aecb2`)가 구현, #93(merge `d13bb23`)이 891px 관측의
 카드 과밀 정리, #94(merge `cb42fe4`)가 D-029 결정 기록이다. 목록·상세 API는 `availability`만
 반환하고 `processingStatus`·`omrJobId`를 반환하지 않는다. 목록은 파생 상태 4종의 배지와 행동
 (연습 시작 / 처리 중 / 다시 업로드), 제목 편집, 빈 상태 업로드 CTA, 앱 내 삭제 오류를 갖는다.
@@ -63,9 +62,9 @@ PR #92·#93·#94의 작업 브랜치는 모두 local·remote tip이 `main`에 �
 2026-08-29T16:15:43Z). 리뷰 표면 3곳(스레드·리뷰 본문·일반 코멘트) 모두 actionable 0건이었다.
 
 **저장소 상태**: 워킹 트리 clean, 로컬 브랜치는 `main` 하나, worktree도
-`/Users/h0977/dev/ClairKeys` 하나(D-029 기록용 임시 worktree는 제거), 열린 PR 없음. `main`의
-최신 **코드** 반영은 PR #94의 merge commit `cb42fe4`이고, 그 뒤 커밋은 핸드오프 문서뿐이다 —
-sha를 여기 고정하지 않으니 세션 시작 시 `git fetch`로 확인한다.
+`/Users/h0977/dev/ClairKeys` 하나, 열린 PR 없음. `main`의 최신 **코드** 반영은 PR #95의 merge
+commit `08100c7`이고, 그 뒤 커밋은 핸드오프 문서뿐이다 — sha를 여기 고정하지 않으니 세션 시작 시
+`git fetch`로 확인한다.
 
 ### 이 트랙에서 배운 것 (반복하지 않기 위해)
 
