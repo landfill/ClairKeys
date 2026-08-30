@@ -1187,3 +1187,30 @@
 - Tested: Decision recorded before implementation; fixture and route test results to be added with DS-6 implementation.
 - Not-tested: CI's real database and Supabase storage contents.
 - Related: DS-6, D-030, D-031, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)
+
+## D-035: 공개 악보 카드의 재생 시간 요건을 제외하고 보안 열거 문제는 별도 작업으로 이월한다
+
+- Date: 2026-08-30
+- Status: Accepted
+- Applies to: DS-6 공개 악보 탐색·상세·미리보기 완료 조건
+- Context:
+  - `PublicSheetMusicBrowser` 카드와 `/api/sheet/public` 응답에는 곡명·작곡가·소유자·생성일·카테고리만 있고 재생 시간이 없다.
+  - `SheetMusic` 모델에도 재생 시간 컬럼이 없으며, 값은 Supabase Storage의 애니메이션 JSON 안에만 있다. 목록 카드마다 JSON을 가져오는 것은 목록 성능과 저장소 결합을 악화시킨다.
+  - `/api/sheet/[id]`는 존재 여부에 따라 익명 요청에 404 또는 403을 반환한다. 이 구분은 DS-6 UI 이전부터 존재했으며 DS-6이 열거 동작을 도입한 것은 아니다.
+- Decision:
+  1. DS-6 완료 조건과 반복된 로드맵·phase 표현에서 카드 재생 시간 요구를 제거하고 곡명·작곡가 중심으로 판정한다.
+  2. `/api/sheet/[id]`의 403/404 열거 가능성은 DS-6에서 수정하지 않고 별도 보안 작업 후보로 이월한다. DS0-1(비공개 악보 public 버킷 노출)과 같은 범위 밖 보안 바구니에서 다룬다.
+- Reason: 현재 데이터 모델에 카드용 재생 시간 값이 없으므로 DS-6에서 이를 완료 조건으로 유지하면 구현이 데이터 결정 없이 불가능하다. API 동작을 바꾸면 기존 소유자 흐름과 테스트에 영향을 주므로, 원인과 범위를 분리해 기록하는 것이 안전하다.
+- Rejected:
+  - `SheetMusic`에 duration 컬럼을 추가한다 | 스키마 비정규화와 생성·갱신 계약이 필요한 별도 데이터 결정이며 DS-6 범위를 넓힌다.
+  - 목록 카드마다 애니메이션 JSON을 fetch해 duration을 표시한다 | 목록이 곡별 저장소 요청과 큰 JSON 전송에 결합되고 성능·실패 표면이 커진다.
+  - `/api/sheet/[id]`의 403/404 동작을 DS-6에서 통합한다 | DS-6 이전부터 존재한 보안 문제이며 API 계약 변경이 기존 소유자 흐름과 테스트에 영향을 준다.
+- Consequence: 사용자는 공개 목록 카드에서 곡 길이를 비교할 수 없다. 후속 작업 후보로 duration의 정규화·조회 계약과 리소스 열거 방어를 남긴다.
+- Constraint: DS-6은 기존 `SheetMusic` 모델과 `/api/sheet/[id]` 인증 동작을 변경하지 않는다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 후속 duration 작업은 저장 시점·갱신 시점·목록 조회 비용을 함께 결정한 뒤 구현한다. 보안 작업은 DS0-1과 함께 API 응답·저장소 공개 범위를 별도로 재검토한다.
+- Tested: 코드·스키마·목록 응답 대조; DS-6 E2E fixture가 카드·상세·미리보기를 검증하도록 갱신됨.
+- Not-tested: duration 정규화 구현과 실제 배포본의 열거 방어.
+- Related: DS-6, DS0-1, D-030, D-034, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)

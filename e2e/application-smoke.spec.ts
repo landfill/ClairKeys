@@ -7,54 +7,57 @@ test.describe('Public application smoke checks', () => {
       tempo: 100, tempoSource: 'score', timingReferenceBpm: 100, timeSignature: '4/4',
       notes: [{ midi: 60, start: 0, duration: 1 }],
     }
-    await page.addInitScript(({ animation }) => {
-      const originalFetch = window.fetch
-      window.fetch = async (input, init) => {
-        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
-        if (url.includes('/api/sheet/public')) {
-          return new Response(JSON.stringify({ success: true, sheetMusic: [{ id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: { id: 1, name: '클래식' }, categoryId: 1, isPublic: true, provenance: 'omr', animationDataUrl: '/public.json', createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', userId: 'owner', owner: { id: 'owner', name: '작곡가' } }], pagination: { total: 1, limit: 8, offset: 0, hasMore: false } }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+    await page.addInitScript(() => {
+      // The app's service worker would otherwise serve a stale 404 before Playwright's route fixture.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register = async () => {
+          throw new Error('service worker disabled for route fixture')
         }
-        if (url.match(/\/api\/sheet\/1/)) {
-          return new Response(JSON.stringify({ success: true, sheetMusic: { id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: '클래식', categoryId: 1, isPublic: true, provenance: 'omr', availability: 'ready', animationDataUrl: '/public.json', createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', owner: null } }), { status: 200, headers: { 'Content-Type': 'application/json' } })
-        }
-        if (url.endsWith('/public.json')) {
-          return new Response(JSON.stringify(animation), { status: 200, headers: { 'Content-Type': 'application/json' } })
-        }
-        return originalFetch(input, init)
       }
-    }, { animation })
-    await page.route(/public\.json/, async route => route.fulfill({
-      status: 200, contentType: 'application/json', body: JSON.stringify(animation)
-    }))
-    await page.route(url => url.pathname === '/api/sheet/public', async route => route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ success: true, sheetMusic: [{
-        id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: { id: 1, name: '클래식' },
-        categoryId: 1, isPublic: true, provenance: 'omr', animationDataUrl: '/public.json',
-        createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', userId: 'owner',
-        owner: { id: 'owner', name: '작곡가' },
-      }], pagination: { total: 1, limit: 8, offset: 0, hasMore: false } })
-    }))
-    await page.route(url => url.pathname === '/api/sheet/1', async route => route.fulfill({
-      status: 200, contentType: 'application/json',
-      body: JSON.stringify({ success: true, sheetMusic: {
-        id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: '클래식', categoryId: 1,
-        isPublic: true, provenance: 'omr', availability: 'ready', animationDataUrl: '/public.json',
-        createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', owner: null,
-      } })
-    }))
+    })
     let privateAnimationRequests = 0
-    await page.route(url => url.pathname === '/api/files/animation', async route => {
-      privateAnimationRequests += 1
-      await route.continue()
+    await page.route('**/*', async route => {
+      const pathname = new URL(route.request().url()).pathname
+      if (pathname === '/public.json') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(animation) })
+      } else if (pathname === '/api/sheet/public') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ success: true, sheetMusic: [{
+            id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: { id: 1, name: '클래식' },
+            categoryId: 1, isPublic: true, provenance: 'omr', animationDataUrl: '/public.json',
+            createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', userId: 'owner',
+            owner: { id: 'owner', name: '작곡가' },
+          }], pagination: { total: 1, limit: 8, offset: 0, hasMore: false } })
+        })
+      } else if (pathname === '/api/sheet/1') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ success: true, sheetMusic: {
+            id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: '클래식', categoryId: 1,
+            isPublic: true, provenance: 'omr', availability: 'ready', animationDataUrl: '/public.json',
+            createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', owner: null,
+          } })
+        })
+      } else if (pathname === '/api/files/animation') {
+        privateAnimationRequests += 1
+        await route.continue()
+      } else {
+        await route.continue()
+      }
     })
     await page.goto('/explore')
     await page.getByText('공개 연습곡').first().click()
     await expect(page).toHaveURL(/\/sheet\/1$/)
-    await expect(page.getByText('검증된 작곡가', { exact: true })).toBeVisible()
+    await expect(page.getByText(/검증된 작곡가/).first()).toBeInViewport()
     await expect(page.getByText('미리보기')).toBeVisible()
-    await expect(page.getByTestId('playback-play')).toBeVisible()
+    const playButton = page.getByTestId('playback-play')
+    const pauseButton = page.getByTestId('playback-pause')
+    await expect(playButton).toBeInViewport()
+    await expect(playButton).toBeEnabled()
+    await expect(pauseButton).toBeDisabled()
+    await playButton.click()
+    await expect(pauseButton).toBeEnabled({ timeout: 15000 })
     expect(privateAnimationRequests).toBe(0)
   })
 
