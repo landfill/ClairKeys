@@ -13,7 +13,9 @@ DS-0, DS-G1, DS-1, DS-2, DS-3, **DS-4까지 `DONE`**이고 DS-5~DS-7은 `NOT_STA
 **2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 7개다** — D-030,
 PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `08100c7`).
 
-**Next action**: **DS-5(학습 플레이어)를 연다** — `codex/ds-5-learning-player`. 선행 조건 DS-1은
+**Next action**: DS-5 PR [#97](https://github.com/landfill/ClairKeys/pull/97)의 CI·리뷰를 확인하고 사용자 병합 승인을 기다린다. 실기기 가로 회전·압축·1.15 비율 확인이 필요하다.
+
+**Previous action**: **DS-5(학습 플레이어)를 연다** — `codex/ds-5-learning-player`. 선행 조건 DS-1은
 `DONE`이라 지금 착수 가능하다. **D-019 결정 8 매듭은 D-031이 풀었다** — 홈에서 재생기가 빠지면
 `PlaybackControls`의 실사용처가 `AnimationPlayer` 하나라 공유 제약이 없다. 구간 반복(DS0-9)과
 이모지 교체를 props 플래그나 별도 컴포넌트 없이 직접 넣는다. **D-031을 담은 PR

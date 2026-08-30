@@ -1,6 +1,6 @@
 # DS-5 — 학습 플레이어
 
-Status: `NOT_STARTED`
+Status: `IN_REVIEW`
 Depends on: DS-1
 Blocks: DS-6, DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 5단계
@@ -103,3 +103,11 @@ git diff --stat origin/main -- src/app/sheet                                    
 ```
 
 수동(실기기): 폰 가로 재생 — 회전, 컨트롤 압축, 낙하/건반 비율. 데스크톱 — 회전하지 않음.
+
+## 2026-08-30 Progress
+
+- a) 메트로놈: 기존 `TempoDisplay`가 유휴/재생(fixed) 모두에서 값·출처를 렌더하며 기존 컴포넌트 테스트가 두 상태를 확인한다.
+- b) 구현: 첫 진입 안내는 타이밍·속도·A-B 반복의 3단계다.
+- c) 제외: 원본 PDF URL은 현재 API/계약이 제공하지 않고 sheet 데이터 로딩은 DS-6 소유다. DS-6에서 URL·권한 계약 뒤 보조 패널을 구현한다.
+- d) 구현: 유휴 폭을 `max-w-6xl`로 넓히고 낙하/건반 시각화 컬럼을 우선 유지했다. 기하 상수는 변경하지 않았다.
+- 압축 모드에도 A/B/해제 반복을 추가했다. 실기기 가로 회전·압축·1.15 비율은 사용자 수동 확인이 필요하다.
