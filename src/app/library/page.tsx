@@ -75,7 +75,7 @@ export default function LibraryPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="곡명, 저작자로 검색..."
-                  className="w-full pl-10 pr-4 py-3 border border-rule-strong bg-surface text-ink rounded-lg"
+                  className="w-full rounded-2xl border border-rule-strong bg-surface py-3 pl-10 pr-4 text-ink shadow-sm transition-colors"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <svg className="h-5 w-5 text-ink-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,15 +85,21 @@ export default function LibraryPage() {
               </div>
               
               {/* Sort Dropdown */}
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'recent' | 'name' | 'created')}
-                className="px-4 py-3 border border-rule-strong rounded-lg bg-surface text-ink min-w-[140px]"
-              >
-                <option value="recent">최근 수정</option>
-                <option value="name">이름순</option>
-                <option value="created">생성일순</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'recent' | 'name' | 'created')}
+                  className="h-12 min-w-[160px] appearance-none rounded-full border border-rule-strong bg-surface pl-4 pr-10 text-ink shadow-sm transition-colors hover:bg-surface-muted"
+                  aria-label="악보 정렬"
+                >
+                  <option value="recent">최근 수정</option>
+                  <option value="name">이름순</option>
+                  <option value="created">생성일순</option>
+                </select>
+                <svg aria-hidden="true" viewBox="0 0 20 20" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted">
+                  <path d="m5.5 7.5 4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                </svg>
+              </div>
             </div>
           </div>
 

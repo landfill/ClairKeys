@@ -167,7 +167,7 @@ export function LibrarySheetMusicList({
                 key={category.id}
                 onClick={() => onCategorySelect?.(category.id)}
                 className={`
-                  p-3 rounded-lg border-2 transition-colors text-left
+                  p-3 rounded-2xl border-2 transition-colors text-left
                   ${selectedCategoryId === category.id
                     ? 'border-accent bg-surface-muted text-ink'
                     : 'border-rule bg-surface hover:bg-surface-muted'
