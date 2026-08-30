@@ -8,12 +8,12 @@ Last updated: 2026-08-30 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
-DS-0, DS-G1, DS-1, DS-2, DS-3, **DS-4까지 `DONE`**이고 DS-5~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
+DS-0, DS-G1, DS-1, DS-2, DS-3, **DS-4까지 `DONE`**, DS-5는 `IN_REVIEW`, DS-6~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
 완료 조건은 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 **2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 7개다** — D-030,
 PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `08100c7`).
 
-**Next action**: DS-5 PR [#97](https://github.com/landfill/ClairKeys/pull/97)의 CI·리뷰를 확인하고 사용자 병합 승인을 기다린다. 실기기 가로 회전·압축·1.15 비율 확인이 필요하다.
+**Next action**: DS-5 PR [#97](https://github.com/landfill/ClairKeys/pull/97)은 required CI와 actionable review가 모두 정리됐다. 사용자 병합 승인을 기다린다. 원본 PDF 보조 패널은 URL·권한 계약이 없어 DS-6으로 이월했고, 실기기 가로 회전·압축·1.15 비율은 사용자 확인이 필요하다.
 
 **Previous action**: **DS-5(학습 플레이어)를 연다** — `codex/ds-5-learning-player`. 선행 조건 DS-1은
 `DONE`이라 지금 착수 가능하다. **D-019 결정 8 매듭은 D-031이 풀었다** — 홈에서 재생기가 빠지면
