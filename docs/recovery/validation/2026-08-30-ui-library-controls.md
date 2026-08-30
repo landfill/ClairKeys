@@ -27,3 +27,12 @@ Pull request: [#101](https://github.com/landfill/ClairKeys/pull/101)
 
 물리 기기에서의 수동 시각 확인은 실행하지 않았다. 입력 동작, 검색·정렬 로직, 업로드 API 계약은
 변경하지 않았다.
+
+## Merge verification
+
+- User-approved merge completed on 2026-08-30 KST as merge commit
+  `2f35a99900528d61743c0376080e4e34c8f91053`.
+- Post-merge `Lint`, `Security Audit`, `Run Tests`, `Post-merge tests`, `Post-merge build`, and
+  `E2E Tests` all completed successfully.
+- `origin/main` and local `main` contain the feature tip; `origin/codex/ui-library-controls` and
+  local `codex/ui-library-controls` were deleted after verification.
