@@ -27,6 +27,11 @@ export interface CompactPlaybackBarProps {
   onSeek: (time: number) => void
   onSpeedChange: (speed: number) => void
   onVolumeChange: (volume: number) => void
+  loopStart?: number | null
+  loopEnd?: number | null
+  onLoopStart?: () => void
+  onLoopEnd?: () => void
+  onLoopClear?: () => void
   className?: string
 }
 
@@ -52,6 +57,11 @@ export default function CompactPlaybackBar({
   onSeek,
   onSpeedChange,
   onVolumeChange,
+  loopStart = null,
+  loopEnd = null,
+  onLoopStart,
+  onLoopEnd,
+  onLoopClear,
   className = '',
 }: CompactPlaybackBarProps) {
   const progress = duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0
@@ -100,6 +110,13 @@ export default function CompactPlaybackBar({
       >
         ⏸️
       </button>
+      {onLoopStart && onLoopEnd && onLoopClear && (
+        <div className="flex shrink-0 gap-1" data-testid="compact-loop-controls">
+          <button type="button" onClick={onLoopStart} disabled={!isReady} className="h-10 w-8 rounded-md border border-gray-300 bg-white text-xs">A</button>
+          <button type="button" onClick={onLoopEnd} disabled={!isReady || loopStart === null} className="h-10 w-8 rounded-md border border-gray-300 bg-white text-xs">B</button>
+          <button type="button" onClick={onLoopClear} disabled={!isReady || loopStart === null} aria-label="루프 초기화" className={`h-10 w-8 rounded-md border text-xs ${loopEnd !== null ? 'border-accent bg-accent text-white' : 'border-gray-300 bg-white'}`}>↻</button>
+        </div>
+      )}
       <button
         type="button"
         onClick={onStop}

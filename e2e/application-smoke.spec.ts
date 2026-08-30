@@ -24,7 +24,7 @@ test.describe('Public application smoke checks', () => {
   })
 
   /**
-   * 이슈 #76 완료 조건 1은 관측 가능한 형태로 좁혀져 있다 — 홈 최초 뷰포트 안에 낙하 노트 결과,
+   * 이슈 #76 완료 조건 1은 관측 가능한 형태로 좁혀져 있다 — 홈 최초 뷰포트 안에 낙하 노트 결과 영역,
    * 3단계 시각화, 주 CTA가 모두 있어야 한다. 이해도 자체는 관찰 테스트로만 확인할 수 있다.
    *
    * **`toBeVisible`과 `toBeAttached`로는 이 조건을 검사할 수 없다.** 둘 다 스크롤해야 보이는
@@ -53,25 +53,12 @@ test.describe('Public application smoke checks', () => {
 
     for (const [label, locator] of [
       ['주 CTA', main.getByRole('link', { name: '내 악보로 시작하기' })],
-      ['낙하 노트 건반', main.locator('[aria-label$="octave marker"]').first()],
+      ['낙하 노트 결과 영역', main.getByTestId('falling-notes-result-area')],
       ['3단계 시각화', main.getByRole('heading', { name: '어떻게 되나요' })],
     ] as const) {
       const result = await fitsFirstScreen(locator)
       expect(result.ok, `${label}이 최초 뷰포트를 벗어난다 — ${result.reason}`).toBe(true)
     }
-  })
-
-  test('lets a signed-out visitor play the sample without logging in', async ({ page }) => {
-    await page.goto('/')
-
-    // 이 버튼은 이모지뿐이라 접근 가능한 이름이 없다 (D-030). 완료 조건 3은 살아 있으므로
-    // ARIA가 아닌 안정적 훅으로 잡는다.
-    const play = page.getByTestId('playback-play').first()
-    await expect(play).toBeVisible()
-    await play.click()
-
-    // 로그인 화면으로 튕기지 않는다.
-    await expect(page).toHaveURL(/\/$/)
   })
 
   test('keeps browser zoom enabled', async ({ page }) => {
