@@ -121,6 +121,7 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady || isPlaying}
             className="min-w-[60px] h-12"
+            data-testid="playback-play"
           >
             <span className="text-xl">▶️</span>
           </Button>
@@ -132,6 +133,7 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady || !isPlaying}
             className="min-w-[60px] h-12"
+            data-testid="playback-pause"
           >
             <span className="text-xl">⏸️</span>
           </Button>
@@ -143,6 +145,7 @@ export default function PlaybackControls({
             size="lg"
             disabled={!isReady}
             className="min-w-[60px] h-12"
+            data-testid="playback-stop"
           >
             <span className="text-xl">⏹️</span>
           </Button>

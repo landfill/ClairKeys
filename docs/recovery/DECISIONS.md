@@ -984,9 +984,16 @@
     Lint·Security Audit·Run Tests·E2E Tests 4개이고 "Accessibility Check"는 포함되지 않았으므로,
     PR 머지가 막히지는 않는다.
   - 재생 컨트롤이 스크린리더에 이름·값·상태를 알리지 않는다. 키보드 조작 자체는 유지된다.
+  - `e2e/application-smoke.spec.ts`의 "로그인 없이 샘플 재생" 검사가 재생 버튼을
+    `getByRole('button', { name: /재생|play/i })`로 찾고 있었다. 그 이름의 유일한 출처가
+    제거한 `aria-label`이라 검사가 5개 브라우저에서 전부 실패했다. 이 검사는 **완료 조건 3**을
+    지키는 것이고 WCAG 요건이 아니므로, ARIA를 되살리지 않고 `data-testid`로 잡는다.
 - Directive:
   - 이 결정을 "접근성 개선을 금지한다"로 읽지 않는다. 요건과 게이트를 제거한 것이고, 개별 개선은
     여전히 각 단계의 판단이다.
+  - 접근성 속성을 테스트 선택자로 쓰면 요건을 제거할 때 무관한 검사가 함께 죽는다. 남은 예로
+    스모크의 `[aria-label$="octave marker"]`(낙하 노트 건반)가 있다 — 이 결정은 그것을 건드리지
+    않았지만, 다음에 건반 ARIA를 손대면 완료 조건 1 검사가 같은 방식으로 무너진다.
   - `e2e/application-smoke.spec.ts`의 확대 허용 검사와 DS-0의 회귀 계약은 이 결정의 대상이 아니다.
     DS-0 "접근성·회귀 테스트" 절은 기하·전환 계약을 함께 고정하므로 유지한다.
 - Related: D-024, D-027, D-029, DS-1, DS-7, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)
