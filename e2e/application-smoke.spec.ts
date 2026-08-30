@@ -64,7 +64,9 @@ test.describe('Public application smoke checks', () => {
   test('lets a signed-out visitor play the sample without logging in', async ({ page }) => {
     await page.goto('/')
 
-    const play = page.getByRole('button', { name: /재생|play/i }).first()
+    // 이 버튼은 이모지뿐이라 접근 가능한 이름이 없다 (D-030). 완료 조건 3은 살아 있으므로
+    // ARIA가 아닌 안정적 훅으로 잡는다.
+    const play = page.getByTestId('playback-play').first()
     await expect(play).toBeVisible()
     await play.click()
 

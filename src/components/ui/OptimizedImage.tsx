@@ -88,7 +88,6 @@ export function OptimizedImage({
         ref={imgRef}
         className={`bg-gray-200 animate-pulse ${className}`}
         style={{ width, height }}
-        aria-label={`Loading ${alt}`}
       />
     )
   }

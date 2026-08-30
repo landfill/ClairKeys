@@ -941,3 +941,66 @@
 - Directive:
   - 이 결정을 장시간 백그라운드 처리나 자동 상태 변경의 live announcement 생략 근거로 넓히지 않는다.
 - Related: D-026, DS-4, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)
+
+## D-030: 이슈 #76에서 WCAG AA 요건을 제거한다
+
+- Date: 2026-08-30
+- Status: Accepted
+- Replaces: `docs/recovery/ROADMAP.md` 이슈 #76 완료 조건 7과 "조건 7의 판정 기준" 절
+- Narrows: DS-1·DS-2·DS-3·DS-4·DS-5·DS-6·DS-7의 "접근성·반응형 검증" 절
+- Context:
+  - 완료 조건 7은 전 화면 WCAG AA 위반 0건을 자동(axe)과 수동(키보드 순회·포커스 가시성·200%
+    확대·명도 대비) 양쪽에서 요구했고, DS-1이 기반을, DS-7이 종단을 판정하는 유일한 2단계
+    소유 조건이었다.
+  - 자동 검사는 `pr-checks.yml`의 `accessibility-check` job이 홈 한 화면에만 `@axe-core/cli`를
+    실행했다. `/upload`·`/library`·`/sheet/[id]`는 인증 뒤라 검사 범위 밖이었고, 수동 검사는
+    DS-0부터 한 번도 실행된 적이 없다.
+  - 사용자는 2026-08-30에 WCAG 요건을 문서·CI·구현 계약 전 층에서 제거하도록 명시했다.
+    선택 시점에 스크린리더·키보드 사용자에게 실제 기능 저하가 발생한다는 점을 함께 확인했다.
+- Decision:
+  1. 이슈 #76의 완료 조건에서 WCAG AA 항목을 제거한다. 완료 조건은 8개에서 7개가 되고,
+     기존 조건 8(종단 완주)이 조건 7이 된다.
+  2. 각 phase 문서에서 접근성 요건을 제거한다. "접근성·반응형 검증" 절은 반응형 항목만 남겨
+     "반응형 검증"이 되고, `In scope`·`Completion criteria`·`검증 명령`에 흩어져 있던 같은
+     요건(DS-5의 색상 외 구분, DS-7의 axe 실행과 키보드·200% 확대·색상 외 수동 검사)도 함께
+     지운다. 요건이 한 절에만 있지 않았다 — 절 하나만 지우면 문서가 스스로 모순된다.
+  3. `accessibility-check` CI job과 그 job을 고정하던 `prChecksWorkflow.test.ts`의 검사 3건을
+     제거한다. 둘은 한 묶음이다 — job만 지우면 워크플로 YAML을 문자열로 파싱하는 그 테스트가
+     `undefined`로 터진다.
+  4. `PlaybackControls`의 슬라이더 ARIA 시맨틱·버튼 `aria-label`·재생 상태 live region,
+     `icons.tsx`의 `role`/`aria-hidden`, `OptimizedImage`의 로딩 `aria-label`을 제거하고
+     `playbackControlsA11y.test.tsx`와 `globalStyles.test.ts`의 포커스 계약 가드를 삭제한다.
+- Reason: 사용자의 제품 결정이다. 유지 근거가 아니라 지시가 판단의 출처이므로, 코드보다 결정과
+  계획 문서를 먼저 고쳐 다음 세션이 "문서와 코드 중 뭐가 맞나"를 묻지 않게 한다.
+- Rejected:
+  - 계획 문서에서만 제거하고 CI axe와 구현 계약은 유지한다 | 요건 없이 게이트만 남아 무엇을
+    근거로 통과·실패를 판정하는지가 사라진다. 사용자가 전 층 제거를 선택했다.
+  - `PlaybackControls`의 `tabIndex`·`onKeyDown`까지 제거한다 | 그것은 요건이 아니라 동작하는
+    기능이다. 요건 제거가 기능 삭제를 뜻하지 않는다.
+  - D-027·D-029를 함께 폐기한다 | 두 결정은 각각 DS-1 구조 고정과 DS-4 live announcement 범위를
+    다루며, 그 결론은 이 결정과 독립적으로 유효하다.
+- Consequence:
+  - DS-7은 종단 접근성 판정을 잃고 상태 통일과 종단 완주만 판정한다. 이월 항목 DS4-2(`/library`
+    반응형 근거 부재)의 담당이 사라지므로 반응형 항목으로만 남는다.
+  - PR마다 돌던 홈 axe 검사가 사라진다. `main` branch protection의 required check는
+    Lint·Security Audit·Run Tests·E2E Tests 4개이고 "Accessibility Check"는 포함되지 않았으므로,
+    PR 머지가 막히지는 않는다.
+  - 재생 컨트롤이 스크린리더에 이름·값·상태를 알리지 않는다. 키보드 조작 자체는 유지된다.
+  - `e2e/application-smoke.spec.ts`의 "로그인 없이 샘플 재생" 검사가 재생 버튼을
+    `getByRole('button', { name: /재생|play/i })`로 찾고 있었다. 그 이름의 유일한 출처가
+    제거한 `aria-label`이라 검사가 5개 브라우저에서 전부 실패했다. 이 검사는 **완료 조건 3**을
+    지키는 것이고 WCAG 요건이 아니므로, ARIA를 되살리지 않고 `data-testid`로 잡는다.
+- Directive:
+  - 이 결정을 "접근성 개선을 금지한다"로 읽지 않는다. 요건과 게이트를 제거한 것이고, 개별 개선은
+    여전히 각 단계의 판단이다.
+  - **자동 리뷰 도구는 이 변경을 결함으로 신고한다.** PR #95에서 CodeRabbit이
+    `PlaybackControls`의 `role="slider"`·`aria-value*`·버튼 이름·`role="status"`를 전부
+    복원하라고 Major로 지적했다. 도구는 diff의 기술적 타당성만 보고 결정 맥락을 보지 못한다 —
+    이 저하는 사용자가 명시적으로 선택한 결과이므로 기각한다. 같은 지적이 다시 오면 이 항목을
+    근거로 기각하고, 결정을 바꾸려면 사용자에게 물어 D-030을 대체하는 새 결정을 기록한다.
+  - 접근성 속성을 테스트 선택자로 쓰면 요건을 제거할 때 무관한 검사가 함께 죽는다. 남은 예로
+    스모크의 `[aria-label$="octave marker"]`(낙하 노트 건반)가 있다 — 이 결정은 그것을 건드리지
+    않았지만, 다음에 건반 ARIA를 손대면 완료 조건 1 검사가 같은 방식으로 무너진다.
+  - `e2e/application-smoke.spec.ts`의 확대 허용 검사와 DS-0의 회귀 계약은 이 결정의 대상이 아니다.
+    DS-0 "접근성·회귀 테스트" 절은 기하·전환 계약을 함께 고정하므로 유지한다.
+- Related: D-024, D-027, D-029, DS-1, DS-7, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)
