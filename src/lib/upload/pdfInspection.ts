@@ -23,8 +23,20 @@ export type PdfRejectionReason =
 
 export type PdfInspection = { ok: true } | { ok: false; reason: PdfRejectionReason }
 
-/** `/api/omr/upload`가 거부하는 경계와 같은 값이다. 한쪽만 바꾸지 않는다. */
-export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+/**
+ * Vercel Function의 요청 본문 한도가 4.5MB다. 그보다 큰 파일은 라우트 코드가 실행되기도 전에
+ * 플랫폼이 413으로 끊으므로, 화면이 통과시킨 파일이 서버에 닿지 못하는 구간이 생긴다 (D-032).
+ *
+ * `/api/omr/upload`도 이 상수를 쓴다. 예전에는 라우트가 같은 값을 따로 적어 두 곳이 어긋날 수
+ * 있었다 — 그것이 50MB 한도가 남아 있던 이유다. 한쪽만 바꾸지 않는다.
+ */
+export const MAX_UPLOAD_BYTES = 4.5 * 1024 * 1024
+
+/**
+ * 화면 문구용. 바이트 상수와 따로 적으면 값을 바꿀 때 한쪽만 바뀐다 — 실제로 홈·업로드 폼·오류
+ * 문구 네 곳이 각자 "50MB"를 적고 있었다.
+ */
+export const MAX_UPLOAD_MB = MAX_UPLOAD_BYTES / (1024 * 1024)
 
 /** `%PDF-` 헤더는 파일 앞 1KB 안에 있어야 한다 (PDF 명세가 허용하는 범위). */
 const HEADER_WINDOW_BYTES = 1024
@@ -33,7 +45,7 @@ const HEADER_WINDOW_BYTES = 1024
  * 암호화 여부를 판정할 꼬리 구간.
  *
  * `/Encrypt`는 trailer 딕셔너리(또는 xref 스트림 딕셔너리)의 키이고 둘 다 파일 끝에 있다.
- * 파일 전체를 읽으면 50MB를 메모리에 올려야 하므로 꼬리만 본다.
+ * 파일 전체를 읽으면 한도만큼을 메모리에 올려야 하므로 꼬리만 본다.
  */
 const TRAILER_WINDOW_BYTES = 64 * 1024
 
@@ -45,7 +57,7 @@ const TRAILER_WINDOW_BYTES = 64 * 1024
  * 파일을 손에 쥐게 된다 — 중복을 놓치는 것보다 나쁜 실패다. 브라우저는 같은 파일에 대해 같은
  * `lastModified`를 주므로 진짜 중복은 그대로 잡힌다.
  *
- * 내용 해시가 더 정확하지만 50MB를 읽어야 하고, 여기서 막으려는 것은 실수로 같은 파일을 두 번
+ * 내용 해시가 더 정확하지만 파일 전체를 읽어야 하고, 여기서 막으려는 것은 실수로 같은 파일을 두 번
  * 고르는 일이지 위조가 아니다.
  */
 export function fileSignature(file: File): string {

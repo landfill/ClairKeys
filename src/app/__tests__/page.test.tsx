@@ -9,6 +9,7 @@
 import { render, screen } from '@testing-library/react'
 import Home from '../page'
 import { HOME_SAMPLE_ANIMATION } from '@/fixtures/homeSample'
+import { MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
 
 /**
  * 플레이어 자체는 DS-5 소유이고 자기 테스트가 있다. 여기서는 홈이 그것을 **샘플 데이터와 함께**
@@ -53,7 +54,7 @@ describe('Home — 로그인 전 가치 전달 (DS-2)', () => {
 
   it('states the file limit and the wait before the visitor commits', () => {
     render(<Home />)
-    expect(screen.getByText(/최대 50MB/)).toBeInTheDocument()
+    expect(screen.getByText(new RegExp(`최대 ${MAX_UPLOAD_MB}MB`))).toBeInTheDocument()
     // 대기 시간은 CTA 옆 사실 목록과 3단계 설명 양쪽에 나온다. 둘 다 있어야 한다.
     expect(screen.getAllByText(/1~3분/).length).toBeGreaterThanOrEqual(2)
   })

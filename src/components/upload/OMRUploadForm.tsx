@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { AlertIcon, Button, UploadIcon } from '@/components/ui'
 import type { Category } from '@/types/category'
-import { fileSignature, inspectPdfFile } from '@/lib/upload/pdfInspection'
+import { fileSignature, inspectPdfFile, MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
 import {
   classifyUploadResponse,
   describeFileRejection,
@@ -352,7 +352,7 @@ export default function OMRUploadForm({
               PDF 악보를 끌어다 놓거나 선택하세요
             </span>
             <span className="text-sm text-ink-muted">
-              PDF 파일, 최대 50MB, 암호가 걸리지 않은 파일
+              PDF 파일, 최대 {MAX_UPLOAD_MB}MB, 암호가 걸리지 않은 파일
             </span>
             <input
               id={fileInputId}

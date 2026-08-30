@@ -98,13 +98,13 @@ describe('inspectPdfFile', () => {
     })
   })
 
-  it('50MB를 넘는 파일을 거부한다', async () => {
+  it('한도를 넘는 파일을 거부한다', async () => {
     const oversized = { name: 'big.pdf', size: MAX_UPLOAD_BYTES + 1 } as File
     await expect(inspectPdfFile(oversized)).resolves.toEqual({ ok: false, reason: 'too-large' })
   })
 
-  it('경계값인 50MB 정각은 통과시킨다', async () => {
-    // 서버의 거부 조건도 `> 50MB`다. 한쪽만 엄격하면 화면과 서버가 다른 말을 한다.
+  it('경계값인 한도 정각은 통과시킨다', async () => {
+    // 서버의 거부 조건도 `> MAX_UPLOAD_BYTES`다. 한쪽만 엄격하면 화면과 서버가 다른 말을 한다.
     const bytes = pdfBytes()
     const exact = pdfFile(bytes)
     Object.defineProperty(exact, 'size', { value: MAX_UPLOAD_BYTES })

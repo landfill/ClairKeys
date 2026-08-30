@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { Button } from '@/components/ui'
 import HomeSamplePlayer from '@/components/home/HomeSamplePlayer'
+import { MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
 
 const STEPS = [
   { step: '1', title: 'PDF 악보를 올립니다', body: '가지고 있는 악보 파일을 그대로.' },
@@ -47,11 +48,11 @@ export default function Home() {
               </div>
 
               {/*
-                업로드를 누르기 전에 알아야 할 것을 CTA 옆에 둔다. 업로드 화면까지 가서야 50MB
+                업로드를 누르기 전에 알아야 할 것을 CTA 옆에 둔다. 업로드 화면까지 가서야 크기
                 제한이나 처리 시간을 알게 되면 그때 되돌아 나온다.
               */}
               <ul className="mt-4 space-y-1 text-sm text-ink-muted">
-                <li>PDF 파일, 최대 50MB</li>
+                <li>PDF 파일, 최대 {MAX_UPLOAD_MB}MB</li>
                 <li>변환에 1~3분, 페이지를 닫아도 계속됩니다</li>
                 <li>공개로 설정하기 전까지 목록에 노출되지 않습니다</li>
               </ul>

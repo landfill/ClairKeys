@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
 import { getOmrServiceUrl, omrAuthHeaders, OmrServiceNotConfiguredError } from '@/lib/omr/serviceUrl'
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
 
 /**
  * Marks a row this request created as failed.
@@ -98,10 +99,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check file size (limit to 50MB)
-    if (file.size > 50 * 1024 * 1024) {
+    // 한도는 `MAX_UPLOAD_BYTES` 한 곳에서 온다. 여기에 숫자를 다시 적으면 화면과 서버가
+    // 어긋난다 (D-032).
+    if (file.size > MAX_UPLOAD_BYTES) {
       return NextResponse.json(
-        { error: 'File size must be less than 50MB' },
+        { error: `File size must be less than ${MAX_UPLOAD_MB}MB` },
         { status: 400 }
       )
     }

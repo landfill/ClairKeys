@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { useSession } from 'next-auth/react'
 import { fileSignature } from '@/lib/upload/pdfInspection'
 import OMRUploadForm from '../OMRUploadForm'
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
 
 jest.mock('next-auth/react', () => ({ useSession: jest.fn() }))
 
@@ -119,7 +120,7 @@ describe('OMRUploadForm', () => {
       render(<OMRUploadForm />)
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
 
-      expect(screen.getByText(/최대 50MB/)).toBeInTheDocument()
+      expect(screen.getByText(new RegExp(`최대 ${MAX_UPLOAD_MB}MB`))).toBeInTheDocument()
       expect(screen.getByText(/암호가 걸리지 않은/)).toBeInTheDocument()
     })
   })
@@ -147,12 +148,12 @@ describe('OMRUploadForm', () => {
       expect(await screen.findByText('이 파일은 올릴 수 없습니다')).toBeInTheDocument()
     })
 
-    it('50MB를 넘는 파일을 되돌려 준다', async () => {
+    it('한도를 넘는 파일을 되돌려 준다', async () => {
       render(<OMRUploadForm />)
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
 
       const big = pdfFile('big.pdf')
-      Object.defineProperty(big, 'size', { value: 50 * 1024 * 1024 + 1 })
+      Object.defineProperty(big, 'size', { value: MAX_UPLOAD_BYTES + 1 })
       await selectFile(big)
 
       expect(await screen.findByText('파일이 너무 큽니다')).toBeInTheDocument()

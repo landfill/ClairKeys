@@ -11,7 +11,7 @@
  * 고쳐서 될 일이 아니고, 저장된 상태를 건드리지 않는다.
  */
 
-import type { PdfRejectionReason } from './pdfInspection'
+import { MAX_UPLOAD_MB, type PdfRejectionReason } from './pdfInspection'
 
 export type UploadFailureKind =
   | 'file-rejected'
@@ -42,7 +42,7 @@ const FILE_REJECTIONS: Record<PdfRejectionReason, Omit<UploadFailure, 'kind'>> =
   },
   'too-large': {
     title: '파일이 너무 큽니다',
-    detail: '한 번에 올릴 수 있는 크기는 50MB까지입니다.',
+    detail: `한 번에 올릴 수 있는 크기는 ${MAX_UPLOAD_MB}MB까지입니다.`,
     action: '페이지를 나누거나 해상도를 낮춰 다시 내보낸 뒤 선택해 주세요.',
   },
   encrypted: {
@@ -139,7 +139,7 @@ export function classifyUploadResponse(status: number, code?: unknown): UploadFa
     return {
       kind: 'file-rejected',
       title: '이 파일은 올릴 수 없습니다',
-      detail: '서버가 이 파일을 받지 않았습니다. PDF 파일, 50MB 이하만 올릴 수 있습니다.',
+      detail: `서버가 이 파일을 받지 않았습니다. PDF 파일, ${MAX_UPLOAD_MB}MB 이하만 올릴 수 있습니다.`,
       action: '파일을 확인한 뒤 다시 선택해 주세요.',
     }
   }
