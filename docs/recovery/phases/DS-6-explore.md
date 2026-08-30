@@ -12,9 +12,9 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 6단계
 
 ## 2026-08-30 Progress
 
-PR [#98](https://github.com/landfill/ClairKeys/pull/98)이 review-ready로 생성됐다. 공개 상세는 화면 인증 가드를 풀고
+PR [#98](https://github.com/landfill/ClairKeys/pull/98)이 review-ready로 생성됐다(HEAD `340c595`, required checks 전체 통과). 공개 상세는 화면 인증 가드를 풀고
 `/api/sheet/[id]`의 `animationDataUrl`을 사용한다. D-034에 따라 CI fixture를 추가했고 5개 Playwright 프로젝트 전체
-25/25가 통과했다. PR required checks도 모두 통과했으나 실제 배포 시크릿 창과 반응형 확인은 사용자 확인 필요 항목이다.
+25/25가 통과했다. fixture는 단일 pathname dispatcher로 동작하며 `useFallingNotesPlayer.ts:59` 오디오 결속 때문에 E2E는 실제 재생을 증명하지 않는다. PR required checks도 모두 통과했으나 실제 배포 시크릿 창과 반응형 확인은 사용자 확인 필요 항목이다.
 
 ## In scope
 
