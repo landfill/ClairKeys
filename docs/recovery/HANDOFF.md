@@ -14,12 +14,28 @@ DS-0, DS-G1, DS-1, DS-2, DS-3, **DS-4까지 `DONE`**이고 DS-5~DS-7은 `NOT_STA
 PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `08100c7`).
 
 **Next action**: **DS-5(학습 플레이어)를 연다** — `codex/ds-5-learning-player`. 선행 조건 DS-1은
-`DONE`이라 지금 착수 가능하다. **코드를 고치기 전에 D-019 결정 8을 먼저 처리한다**: "공유
-`PlaybackControls`는 수정하지 않는다"가 DS-5의 구간 반복(DS0-9) 추가와 정면으로 부딪힌다.
-AGENTS.md에 따라 결정 문서를 먼저 갱신하거나 별도 컨트롤로 분리하는 선택을 기록한 뒤 구현한다.
-이모지 교체도 같은 결정에 걸린다. DS-5는 실기기 보고로 세 번 고친 재생 기하(`PX_PER_SEC` 140 등
-7개 상수)를 **한 픽셀도 바꾸지 않는다** (D-024). DS-6은 DS-5를 선행 조건으로 두므로 병렬 착수
-대상이 아니다.
+`DONE`이라 지금 착수 가능하다. **D-019 결정 8 매듭은 D-031이 풀었다** — 홈에서 재생기가 빠지면
+`PlaybackControls`의 실사용처가 `AnimationPlayer` 하나라 공유 제약이 없다. 구간 반복(DS0-9)과
+이모지 교체를 props 플래그나 별도 컴포넌트 없이 직접 넣는다. **단, D-031을 담은 PR
+[#96](https://github.com/landfill/ClairKeys/pull/96)이 아직 병합되지 않았다** — 병합 전에는
+착수하지 않는다. DS-5는 홈 재생기 제거와 영역 확보도 함께 하며, 그때 깨지는 검사 3건이 DS-5 완료
+조건에 적혀 있다. 실기기 보고로 세 번 고친 재생 기하(`PX_PER_SEC` 140 등 7개 상수)는 **한 픽셀도
+바꾸지 않는다** (D-024). DS-6은 DS-5를 선행 조건으로 두므로 병렬 착수 대상이 아니다.
+
+**열린 PR [#96](https://github.com/landfill/ClairKeys/pull/96) — 홈은 재생기를 걷어내고 자리만
+잡는다 (D-031).** 사용자가 홈 샘플을 정적 예시(GIF 등)로 바꾸기로 했고, 그 전 단계로 재생기를
+제거하고 영역만 확보한다. 구현은 DS-5가 하므로 이 PR은 **결정과 계획만** 바꾼다(코드 0건).
+
+이 결정이 **D-019 결정 8을 해소한다.** `PlaybackControls`의 실사용처를 세어보니 둘뿐이었다 —
+`AnimationPlayer`와 `FallingNotesPlayer`. `AdvancedPlaybackControls`는 배럴과 `LazyComponent`가
+export만 하고 렌더하는 화면이 0곳인 **죽은 코드**다. 원래 근거였던 demo 페이지는 DS-1이 이미
+제거했다(D-027). 홈까지 빠지면 실사용처가 하나라 공유 컴포넌트가 아니게 된다.
+
+**완료 조건 2개가 바뀐다.** 조건 1의 ①은 `실제 낙하 노트 결과` → `낙하 노트 결과가 들어갈 영역`
+으로 완화(사용자 선택)되고 판정자가 `DS-2(②③), DS-5(①)`이 된다. 조건 3은 판정자에서 DS-2가
+빠져 **DS-6 공개 악보 단독**이 된다. 이월 항목 C5는 재생기와 함께 사라진다.
+
+**병합 승인은 아직 없다.** 상세는 `docs/recovery/reviews/PR-96.md`.
 
 **#76 WCAG 요건 제거 완료 — PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합
 (merge `08100c7`).** 사용자 지시로 WCAG AA 요건을 계획 문서·CI·구현 계약 세 층에서 제거했다.
@@ -122,12 +138,13 @@ DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항
 | **DS0-1** | 비공개 악보의 애니메이션 JSON이 익명으로 200(78KB). API의 403은 URL 은닉일 뿐이고 객체는 public 버킷에 있다 | **DS 범위 밖, GitHub 이슈 미등록** |
 | **DS4-1** | **이어하기가 없다.** `PracticeSession`은 `durationSeconds`·`completedPercentage`만 저장하고 재생 위치 필드도 복원 소비자도 없다. UI를 만들기 전에 **무엇을 저장할지**를 정해야 한다 — 저장 계약이 선행이다 | **결정 필요, GitHub 이슈 미등록** |
 | DS4-2 | `/library`의 반응형 1440·1024·390 근거가 사용자의 수동 확인뿐이다. 인증 뒤 화면이라 공개 E2E가 지나가지 않는다. D-030으로 접근성 담당이 사라져 **반응형 항목으로만 남는다** | DS-7(종단 반응형) |
-| C5 | `HOME_SAMPLE_ANIMATION.tempoSource: 'user'`가 화면에 "직접 입력"으로 표시돼 방문자가 입력한 것처럼 읽힌다 | DS-5(표시) 또는 별도 결정 |
+| C5 | `HOME_SAMPLE_ANIMATION.tempoSource: 'user'`가 화면에 "직접 입력"으로 표시돼 방문자가 입력한 것처럼 읽힌다. **D-031로 홈 재생기가 빠지면 자동 소멸** — 그 표시는 재생기 안 `TempoDisplay`다 | DS-5(재생기 제거로 소멸) |
 | C6 | 홈의 가로 스크롤 가드가 매칭 0개라 vacuous | DS-7 |
 | — | `flex-shrink-*` 표기 일괄 현대화(동작 문제 없음) | P2-A |
 | DS0-2 잔여 | `/api/processing`·`/api/notifications`·`useBackgroundProcessing`·`ProcessingDashboard` 삭제. DS-1은 도달 경로만 없앴다 | P2-A |
 | — | `BackgroundFileUpload`의 `/processing` 링크 2곳 | P2-A |
-| DS-5 선행 | 구간 반복(DS0-9)과 이모지 교체는 **D-019 결정 8과 부딪힌다.** 착수 시 그 결정을 먼저 다룬다 | DS-5 |
+| — | **`AdvancedPlaybackControls`와 `LazyAdvancedPlaybackControls`가 죽은 코드다.** 배럴과 `LazyComponent`가 export만 하고 렌더하는 화면이 0곳이다 (D-031에서 확인) | P2-A |
+| DS-5 선행 | ~~구간 반복(DS0-9)과 이모지 교체가 D-019 결정 8과 부딪힌다~~ → **D-031이 해소.** PR #96 병합이 DS-5 착수의 선행이다 | DS-5 |
 | **DS3-1** | **업로드 한도 50MB가 Vercel Function 요청 본문 한도 4.5MB와 충돌한다.** 5MB PDF는 화면의 모든 검사를 통과하고 413으로 거부되며, 그 413이 "서비스 불가 → 잠시 후 재시도"로 분류돼 **성공할 수 없는 재시도**를 권한다. 홈(DS-2)과 업로드(DS-3) 모두 "최대 50MB"를 말한다. 한도를 낮추든 업로드 경로를 바꾸든 **제품 결정**이라 D-026·phase 문서 갱신이 선행한다 | **결정 필요, GitHub 이슈 미등록** |
 
 한 번도 실행하지 않은 검증: 초보자 관찰 테스트(완료 조건 1), 실기기 모바일. 수동 접근성 검사
