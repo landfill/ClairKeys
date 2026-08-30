@@ -6,6 +6,7 @@ import { MainLayout, PageHeader, Container } from '@/components/layout'
 import { SheetMusicSearch } from '@/components/search'
 import { PublicSheetMusicBrowser } from '@/components/browse'
 import { SheetMusicWithOwner } from '@/types/sheet-music'
+import { Button } from '@/components/ui'
 
 export default function ExplorePage() {
   const [activeTab, setActiveTab] = useState<'browse' | 'search'>('browse')
@@ -30,21 +31,17 @@ export default function ExplorePage() {
       
       <Container className="py-8">
         {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-8 p-1 bg-gray-100 rounded-lg max-w-md mx-auto">
+        <div className="flex space-x-1 mb-8 p-1 bg-surface-muted rounded-full max-w-md mx-auto">
           {tabs.map((tab) => (
-            <button
+            <Button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`
-                flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md text-sm font-medium transition-colors
-                ${activeTab === tab.id
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-                }
-              `}
+              variant={activeTab === tab.id ? 'outline' : 'ghost'}
+              size="sm"
+              className="flex-1"
             >
               <span>{tab.label}</span>
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -87,13 +84,13 @@ export default function ExplorePage() {
         {/* Quick Actions */}
         <div className="fixed bottom-6 right-6">
           <div className="flex flex-col space-y-2">
-            <button
+            <Button
               onClick={() => router.push('/upload')}
-              className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+              className="h-14 w-14 p-0 text-xl shadow-lg"
               title="악보 업로드"
             >
-              <span className="text-xl">+</span>
-            </button>
+              +
+            </Button>
           </div>
         </div>
       </Container>

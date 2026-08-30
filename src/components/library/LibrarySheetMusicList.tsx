@@ -143,7 +143,9 @@ export function LibrarySheetMusicList({
       <StatusState
         title={searchQuery ? '검색 결과가 없습니다' : '악보가 없습니다'}
         detail={searchQuery ? '다른 검색어로 다시 찾아보세요.' : '연습할 PDF 악보를 올려 보세요.'}
-        action={!searchQuery ? <a href="/upload" className="inline-flex rounded-md bg-accent px-4 py-2 text-sm text-on-accent hover:bg-accent-hover">새 악보 업로드</a> : <a href="/library" className="inline-flex rounded-md border border-rule-strong bg-surface px-4 py-2 text-sm text-ink hover:bg-surface-muted">검색 초기화</a>}
+        action={!searchQuery
+          ? <a href="/upload"><Button as="span">새 악보 업로드</Button></a>
+          : <a href="/library"><Button as="span" variant="outline">검색 초기화</Button></a>}
       />
     )
   }
@@ -151,7 +153,7 @@ export function LibrarySheetMusicList({
   return (
     <div className="space-y-8">
       {errorMessage && (
-        <p role="alert" className="rounded-md border border-state-error bg-surface px-4 py-3 text-sm text-ink">
+        <p role="alert" className="rounded-lg border border-state-error bg-surface px-4 py-3 text-sm text-ink">
           {errorMessage}
         </p>
       )}

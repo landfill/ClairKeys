@@ -4,6 +4,7 @@ import { Category } from '@/types/category'
 import { SheetMusicCardBase } from './SheetMusicCardBase'
 import { SheetMusicActions } from './SheetMusicActions'
 import { SheetMusicMoveMenu } from './SheetMusicMoveMenu'
+import Badge from '@/components/ui/Badge'
 import { 
   SheetMusicCardCoreProps,
   SheetMusicActionableProps,
@@ -82,18 +83,14 @@ export function SheetMusicCardRefactored({
           <p className="text-xs text-gray-600 truncate">{sheetMusic.composer}</p>
         </div>
         <div className="col-span-2 flex items-center text-xs">
-          <span className="px-2 py-1 bg-gray-100 rounded-full truncate">
+          <Badge className="truncate">
             📁 {sheetMusic.category?.name || '미분류'}
-          </span>
+          </Badge>
         </div>
         <div className="col-span-2 flex items-center text-xs">
-          <span className={`px-2 py-1 rounded-full ${
-            sheetMusic.isPublic 
-              ? 'bg-green-100 text-green-700' 
-              : 'bg-gray-100 text-gray-700'
-          }`}>
+          <Badge>
             {sheetMusic.isPublic ? '🌍 공개' : '🔒 비공개'}
-          </span>
+          </Badge>
         </div>
         <div className="col-span-2 flex items-center text-xs text-gray-500">
           {new Date(sheetMusic.createdAt).toLocaleDateString('ko-KR')}

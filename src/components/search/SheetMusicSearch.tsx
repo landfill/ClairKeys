@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Button, StatusState } from '@/components/ui'
+import { Badge, Button, StatusState } from '@/components/ui'
 import { useSheetMusicSearch } from '@/hooks/useSheetMusicSearch'
 import { SheetMusicWithOwner } from '@/types/sheet-music'
 import { useCategories } from '@/hooks/useCategories'
@@ -198,18 +198,14 @@ export default function SheetMusicSearch({
                     
                     <div className="flex items-center space-x-4 text-sm text-gray-500">
                       {sheetMusic.category && (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                        <Badge tone="info">
                           {sheetMusic.category.name}
-                        </span>
+                        </Badge>
                       )}
                       
-                      <span className={`px-2 py-1 rounded ${
-                        sheetMusic.isPublic 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
+                      <Badge>
                         {sheetMusic.isPublic ? '공개' : '비공개'}
-                      </span>
+                      </Badge>
                       
                       {sheetMusic.owner && (
                         <span>

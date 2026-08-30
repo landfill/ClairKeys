@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button, StatusState } from '@/components/ui'
+import { Badge, Button, StatusState } from '@/components/ui'
 import { SheetMusicWithOwner } from '@/types/sheet-music'
 
 interface PublicSheetMusicBrowserProps {
@@ -118,9 +118,9 @@ export default function PublicSheetMusicBrowser({
                   
                   {sheetMusic.category && (
                     <div className="mt-2">
-                      <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                      <Badge tone="info">
                         {sheetMusic.category.name}
-                      </span>
+                      </Badge>
                     </div>
                   )}
                 </div>
@@ -227,9 +227,9 @@ export default function PublicSheetMusicBrowser({
                 
                 <div className="mt-3 text-center">
                   {sheetMusic.category && (
-                    <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                    <Badge>
                       {sheetMusic.category.name}
-                    </span>
+                    </Badge>
                   )}
                 </div>
               </div>
@@ -243,7 +243,7 @@ export default function PublicSheetMusicBrowser({
         <StatusState
           title="아직 공개된 악보가 없습니다"
           detail="공개 악보가 올라오면 여기에서 함께 연습할 수 있습니다."
-          action={<a href="/upload" className="inline-flex rounded-md bg-accent px-4 py-2 text-sm text-on-accent hover:bg-accent-hover">첫 악보 올리기</a>}
+          action={<a href="/upload"><Button>첫 악보 올리기</Button></a>}
         />
       )}
     </div>

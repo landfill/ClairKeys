@@ -35,6 +35,16 @@ describe('Button Component', () => {
     expect(button).toHaveClass('bg-state-error', 'text-on-accent')
   })
 
+  test('uses a pill shape consistently across variants', () => {
+    const { rerender } = render(<Button variant="primary">Primary Button</Button>)
+    let button = screen.getByText('Primary Button')
+    expect(button).toHaveClass('rounded-full')
+
+    rerender(<Button variant="outline">Outline Button</Button>)
+    button = screen.getByText('Outline Button')
+    expect(button).toHaveClass('rounded-full')
+  })
+
   // 포커스 링은 globals.css의 전역 :focus-visible이 담당한다. 컴포넌트가 다시 정의하면 화면마다
   // 포커스가 달라 보인다.
   test('does not define its own focus ring', () => {

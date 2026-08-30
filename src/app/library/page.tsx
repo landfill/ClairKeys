@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
 import AuthGuard from '@/components/auth/AuthGuard'
 import { LibrarySheetMusicList } from '@/components/library/LibrarySheetMusicList'
+import { Button } from '@/components/ui'
 
 export default function LibraryPage() {
   const router = useRouter()
@@ -44,9 +45,9 @@ export default function LibraryPage() {
         
         <Container className="py-8" size="full">
           {/* Tab Navigation */}
-          <div className="flex space-x-1 mb-8 p-1 tab-navigation rounded-lg max-w-md">
+          <div className="flex space-x-1 mb-8 p-1 tab-navigation rounded-full max-w-md">
             {tabs.map((tab) => (
-              <button
+              <Button
                 key={tab.id}
                 onClick={() => {
                   setActiveTab(tab.id)
@@ -54,17 +55,13 @@ export default function LibraryPage() {
                     setSelectedCategoryId(null)
                   }
                 }}
-                className={`
-                  flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md text-sm font-medium transition-colors
-                  ${activeTab === tab.id
-                    ? 'bg-surface text-accent shadow-sm'
-                    : 'text-ink-muted hover:text-ink'
-                  }
-                `}
+                variant={activeTab === tab.id ? 'outline' : 'ghost'}
+                size="sm"
+                className="flex-1"
               >
                 <span>{tab.icon}</span>
                 <span>{tab.label}</span>
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -116,14 +113,14 @@ export default function LibraryPage() {
 
           {/* Floating Action Button */}
           <div className="fixed bottom-6 right-6 z-10">
-            <button
+            <Button
               onClick={() => router.push('/upload')}
-              className="w-14 h-14 fab-button text-on-accent rounded-full flex items-center justify-center"
+              className="h-14 w-14 p-0 text-xl fab-button"
               title="새 악보 업로드"
               aria-label="새 악보 업로드"
             >
-              <span className="text-xl">+</span>
-            </button>
+              +
+            </Button>
           </div>
         </Container>
       </MainLayout>

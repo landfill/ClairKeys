@@ -1,6 +1,7 @@
 'use client'
 
 import Card from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
 import { 
   SheetMusicDisplayProps, 
   SheetMusicInteractiveProps 
@@ -42,16 +43,12 @@ export function SheetMusicInfo({
       {/* Category and visibility info */}
       {showMetadata && (
         <div className="flex items-center gap-2 text-xs">
-          <span className="px-2 py-1 bg-gray-100 rounded-full">
+          <Badge>
             📁 {sheetMusic.category?.name || '미분류'}
-          </span>
-          <span className={`px-2 py-1 rounded-full ${
-            sheetMusic.isPublic 
-              ? 'bg-green-100 text-green-700' 
-              : 'bg-gray-100 text-gray-700'
-          }`}>
+          </Badge>
+          <Badge>
             {sheetMusic.isPublic ? '🌍 공개' : '🔒 비공개'}
-          </span>
+          </Badge>
         </div>
       )}
 
