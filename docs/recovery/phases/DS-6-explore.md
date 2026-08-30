@@ -1,6 +1,6 @@
 # DS-6 — 탐색과 공개 체험
 
-Status: `IN_REVIEW`
+Status: `DONE`
 Depends on: DS-2 (복귀 계약), **DS-5** (플레이어 형태 확정)
 Blocks: DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 6단계
@@ -11,6 +11,23 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 6단계
 퍼널을 완성한다.
 
 ## 2026-08-30 Progress
+
+PR [#98](https://github.com/landfill/ClairKeys/pull/98)은 merge commit
+`8dd593fe2905fb364d05a0a0df4b722b38e6236b`로 `main`에 병합됐다. 병합된 `main` 코드에 완료 기준을
+대조한 결과는 다음과 같다.
+
+| 완료 기준 | 병합된 `main` 대조 결과 |
+|---|---|
+| 로그아웃 상태에서 `/explore` → 상세 → 미리보기 재생 | `e2e/application-smoke.spec.ts:4-59`가 공개 목록·상세·미리보기 버튼 클릭과 비공개 API 미호출을 고정한다. 실제 재생은 시크릿 창 수동 판정이 남았다. |
+| 미리보기 후 로그인하면 같은 곡으로 복귀 | `src/app/sheet/[id]/page.tsx:177`의 `callbackUrl={\`/sheet/${id}\`}` 및 PR 회귀 테스트로 고정했다. |
+| 비공개 악보 익명 403 | `src/app/api/sheet/[id]/__tests__/route.test.ts`의 회귀 테스트가 유지한다. |
+| 카드에 곡명·작곡가 표시 | `src/components/browse/PublicSheetMusicBrowser.tsx:108-113`이 제목·작곡가를 표시한다. 재생 시간은 D-035로 이월했다. |
+| `/api/files/animation` 인증 분기 무변경 | 병합 diff에 해당 라우트 변경이 없다. |
+| animation/playback 내부 무변경 | 병합 diff에 `src/components/animation/`·`src/components/playback/` 변경이 없다. |
+
+실제 배포 시크릿 창의 재생·동일 곡 복귀 및 1440·1024·390 반응형, DS-5에서 이월된 실기기 확인은
+미이행 사용자 확인 항목이다. 카드 재생 시간 정규화(D-035)와 `/sheet/[id]` 403/404 열거는 별도
+후속 보안·데이터 작업으로 이월한다.
 
 PR [#98](https://github.com/landfill/ClairKeys/pull/98)이 review-ready로 생성됐다(HEAD `340c595`, required checks 전체 통과). 공개 상세는 화면 인증 가드를 풀고
 `/api/sheet/[id]`의 `animationDataUrl`을 사용한다. D-034에 따라 CI fixture를 추가했고 5개 Playwright 프로젝트 전체
