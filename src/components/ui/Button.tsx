@@ -20,7 +20,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   }, ref) => {
     // 포커스 링은 `globals.css`의 전역 `:focus-visible`이 담당한다. variant마다 다른 링 색을
     // 두면 화면마다 포커스가 달라 보인다.
-    const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+    const baseClasses = 'inline-flex items-center justify-center font-medium rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
 
     const variantClasses = {
       primary: 'bg-accent text-on-accent hover:bg-accent-hover',

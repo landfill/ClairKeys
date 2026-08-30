@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { SheetMusicWithCategory } from '@/types/sheet-music'
 import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 
 interface SheetMusicListProps {
@@ -83,9 +84,9 @@ export function SheetMusicList({
                 {sheet.title}
               </h3>
               {sheet.isPublic && (
-                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">
+                <Badge tone="success" className="ml-2">
                   Public
-                </span>
+                </Badge>
               )}
             </div>
             

@@ -79,4 +79,25 @@ describe('CompactPlaybackBar', () => {
     fireEvent.change(screen.getByLabelText('음량 (master gain)'), { target: { value: '0.4' } })
     expect(props.onVolumeChange).toHaveBeenCalledWith(0.4)
   })
+
+  it('keeps compact transport and loop controls the same size', () => {
+    renderBar({
+      loopStart: null,
+      loopEnd: null,
+      onLoopStart: jest.fn(),
+      onLoopEnd: jest.fn(),
+      onLoopClear: jest.fn(),
+    })
+
+    const controls = [
+      screen.getByLabelText('일시정지'),
+      screen.getByLabelText('구간 시작 A 설정'),
+      screen.getByLabelText('구간 끝 B 설정'),
+      screen.getByLabelText('A-B 구간 반복 초기화'),
+      screen.getByLabelText('정지'),
+    ]
+
+    controls.forEach(control => expect(control).toHaveClass('h-10', 'w-10', 'rounded-full'))
+    expect(screen.getByLabelText('재생 속도')).toHaveClass('rounded-full')
+  })
 })

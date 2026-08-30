@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { SheetMusicWithCategory } from '@/types/sheet-music'
 import { Category } from '@/types/category'
 import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import { DeleteConfirmDialog } from '@/components/ui/ConfirmDialog'
 import type { SheetMusicAvailability } from '@/lib/sheetMusicAvailability'
@@ -45,10 +46,10 @@ export function SheetMusicCard({
   }
 
   const availabilityDetails = availability && {
-    ready: { label: '연습 가능', icon: '✓', className: 'bg-state-ready text-on-accent' },
-    processing: { label: '처리 중', icon: '◌', className: 'bg-state-progress text-on-accent' },
-    failed: { label: '변환 오류', icon: '!', className: 'bg-state-error text-on-accent' },
-    unknown: { label: '확인 필요', icon: '?', className: 'bg-surface-muted text-ink' },
+    ready: { label: '연습 가능', icon: '✓', tone: 'success' as const },
+    processing: { label: '처리 중', icon: '◌', tone: 'warning' as const },
+    failed: { label: '변환 오류', icon: '!', tone: 'danger' as const },
+    unknown: { label: '확인 필요', icon: '?', tone: 'neutral' as const },
   }[availability]
 
   return (
@@ -64,21 +65,17 @@ export function SheetMusicCard({
 
         {/* Category and visibility info */}
         <div className="flex flex-wrap items-center gap-1.5 text-xs flex-shrink-0">
-          <span className="max-w-full px-2 py-1 bg-surface-muted rounded-full truncate">
+          <Badge className="truncate">
             📁 {sheetMusic.category?.name || '미분류'}
-          </span>
-          <span className={`px-2 py-1 rounded-full ${
-            sheetMusic.isPublic 
-              ? 'bg-surface-muted text-ink'
-              : 'bg-surface-muted text-ink'
-          }`}>
+          </Badge>
+          <Badge>
             {sheetMusic.isPublic ? '🌍 공개' : '🔒 비공개'}
-          </span>
+          </Badge>
           {availabilityDetails && (
-            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${availabilityDetails.className}`}>
+            <Badge tone={availabilityDetails.tone}>
               <span aria-hidden="true">{availabilityDetails.icon}</span>
               {availabilityDetails.label}
-            </span>
+            </Badge>
           )}
         </div>
 

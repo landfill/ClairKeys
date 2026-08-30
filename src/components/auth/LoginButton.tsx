@@ -20,7 +20,7 @@ export interface LoginButtonProps {
  * 세션으로 이미 정하고 있으므로 여기서 이동시킬 이유가 없다.
  */
 export default function LoginButton({
-  className = 'bg-accent text-on-accent px-4 py-2 rounded-md text-sm hover:bg-accent-hover transition-colors',
+  className = 'bg-accent text-on-accent px-4 py-2 rounded-full text-sm hover:bg-accent-hover transition-colors',
   children = '로그인',
   callbackUrl,
 }: LoginButtonProps) {

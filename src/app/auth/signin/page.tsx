@@ -5,7 +5,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { toSafeReturnPath } from '@/lib/returnPath'
-import { CheckIcon, LogoMark, StatusState } from '@/components/ui'
+import { Button, CheckIcon, LogoMark, StatusState } from '@/components/ui'
 
 interface Provider {
   id: string
@@ -119,7 +119,7 @@ function SignInContent() {
             title="로그인하지 못했습니다"
             detail={getErrorMessage(error)}
             tone="error"
-            action={<Link href={callbackUrl} className="inline-flex rounded-md border border-rule-strong bg-surface px-4 py-2 text-sm text-ink hover:bg-surface-muted">다시 로그인하기</Link>}
+            action={<Link href={callbackUrl}><Button as="span" variant="outline">다시 로그인하기</Button></Link>}
           />
         )}
         {/*
@@ -144,12 +144,14 @@ function SignInContent() {
         <div className="mt-8 space-y-4">
           {providers && Object.values(providers).map((provider) => (
             <div key={provider.name}>
-              <button
+              <Button
                 onClick={() => handleSignIn(provider.id)}
-                className="w-full flex justify-center py-3 px-4 border border-rule-strong text-sm font-medium rounded-md text-ink bg-surface hover:bg-surface-muted transition-colors"
+                variant="outline"
+                size="lg"
+                className="w-full"
               >
                 {provider.name}로 계속하기
-              </button>
+              </Button>
             </div>
           ))}
         </div>

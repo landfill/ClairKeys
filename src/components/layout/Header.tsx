@@ -105,7 +105,7 @@ export default function Header() {
               ) : session ? (
                 <UserProfile showDropdown={false} />
               ) : (
-                <LoginButton className="w-full bg-accent text-on-accent px-4 py-2 rounded-md text-sm hover:bg-accent-hover transition-colors" />
+                <LoginButton className="w-full bg-accent text-on-accent px-4 py-2 rounded-full text-sm hover:bg-accent-hover transition-colors" />
               )}
             </div>
           </div>

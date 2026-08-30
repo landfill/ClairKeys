@@ -123,17 +123,19 @@ export default function PlaybackControls({
 
       {/* Main Controls */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-3">
           {/* Play Button */}
           <Button
             onClick={onPlay}
             variant="primary"
             size="lg"
             disabled={!isReady || isPlaying}
-            className="min-w-[60px] h-12"
+            className="h-12 w-20 gap-1 p-0 !px-0 !py-0 text-xs"
+            aria-label="재생"
             data-testid="playback-play"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="m8 5 11 7-11 7V5Z" /></svg>
+            <span>재생</span>
           </Button>
           
           {/* Pause Button */}
@@ -142,10 +144,12 @@ export default function PlaybackControls({
             variant="outline"
             size="lg"
             disabled={!isReady || !isPlaying}
-            className="min-w-[60px] h-12"
+            className="h-12 w-20 gap-1 p-0 !px-0 !py-0 text-xs"
+            aria-label="일시정지"
             data-testid="playback-pause"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M7 5h3v14H7zm7 0h3v14h-3z" /></svg>
+            <span>일시정지</span>
           </Button>
           
           {/* Stop Button */}
@@ -154,18 +158,21 @@ export default function PlaybackControls({
             variant="outline"
             size="lg"
             disabled={!isReady}
-            className="min-w-[60px] h-12"
+            className="h-12 w-20 gap-1 p-0 !px-0 !py-0 text-xs"
+            aria-label="중지"
             data-testid="playback-stop"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><rect x="6" y="6" width="12" height="12" rx="1" /></svg>
+            <span>중지</span>
           </Button>
 
           {onLoopStart && onLoopEnd && onLoopClear && (
-            <div className="flex items-center gap-1 rounded-md border border-rule p-1" data-testid="playback-loop">
-              <Button onClick={onLoopStart} variant="outline" size="sm" disabled={!isReady || duration <= 0} title="현재 위치를 A로 설정">A</Button>
-              <Button onClick={onLoopEnd} variant="outline" size="sm" disabled={!isReady || duration <= 0 || loopStart === null} title="현재 위치를 B로 설정">B</Button>
-              <Button onClick={onLoopClear} variant={loopEnd !== null ? 'primary' : 'outline'} size="sm" disabled={!isReady || loopStart === null} title="A-B 구간 반복 해제">
+            <div className="flex items-center gap-1 rounded-full border border-rule bg-surface-muted p-1" data-testid="playback-loop">
+              <Button onClick={onLoopStart} variant="outline" size="lg" disabled={!isReady || duration <= 0} className="h-12 w-20 p-0 !px-0 !py-0 border-hand-left text-hand-left text-xs" title="구간 시작 A 설정" aria-label="A 시작">A 시작</Button>
+              <Button onClick={onLoopEnd} variant="outline" size="lg" disabled={!isReady || duration <= 0 || loopStart === null} className="h-12 w-20 p-0 !px-0 !py-0 border-hand-right text-hand-right text-xs" title="구간 끝 B 설정" aria-label="B 종료">B 종료</Button>
+              <Button onClick={onLoopClear} variant={loopEnd !== null ? 'primary' : 'ghost'} size="lg" disabled={!isReady || loopStart === null} className="h-12 w-20 gap-1 p-0 !px-0 !py-0 text-xs" title="A-B 구간 반복 초기화" aria-label="A-B 구간 반복 초기화">
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 2l4 4-4 4" /><path d="M3 11V9a3 3 0 0 1 3-3h15" /><path d="m7 22-4-4 4-4" /><path d="M21 13v2a3 3 0 0 1-3 3H3" /></svg>
+                <span>초기화</span>
               </Button>
             </div>
           )}
@@ -176,48 +183,61 @@ export default function PlaybackControls({
           <label htmlFor={speedSelectId} className="text-sm text-ink-muted font-medium">
             속도:
           </label>
-          <select
-            id={speedSelectId}
-            value={playbackSpeed}
-            onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
-            className="px-3 py-2 border border-rule-strong rounded-md text-sm bg-surface text-ink transition-colors"
-            disabled={!isReady}
-          >
-            <option value={0.25}>0.25x</option>
-            <option value={0.5}>0.5x</option>
-            <option value={0.75}>0.75x</option>
-            <option value={1.0}>1.0x</option>
-            <option value={1.25}>1.25x</option>
-            <option value={1.5}>1.5x</option>
-            <option value={2.0}>2.0x</option>
-          </select>
+          <div className="relative">
+            <select
+              id={speedSelectId}
+              value={playbackSpeed}
+              onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
+              className="h-12 min-w-[104px] appearance-none rounded-full border border-rule-strong bg-surface pl-4 pr-9 text-sm text-ink shadow-sm transition-colors hover:bg-surface-muted"
+              disabled={!isReady}
+            >
+              <option value={0.25}>0.25x</option>
+              <option value={0.5}>0.5x</option>
+              <option value={0.75}>0.75x</option>
+              <option value={1.0}>1.0x</option>
+              <option value={1.25}>1.25x</option>
+              <option value={1.5}>1.5x</option>
+              <option value={2.0}>2.0x</option>
+            </select>
+            <svg aria-hidden="true" viewBox="0 0 20 20" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 fill-current text-ink-muted">
+              <path d="m5.5 7.5 4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+            </svg>
+          </div>
         </div>
       </div>
       {onLoopStart && onLoopEnd && (
         <p className="text-xs text-ink-muted">
-          구간 반복: A {loopStart === null ? '미설정' : formatTime(loopStart)} · B {loopEnd === null ? '미설정' : formatTime(loopEnd)}
+          구간 반복: A(시작) {loopStart === null ? '미설정' : formatTime(loopStart)} · B(종료) {loopEnd === null ? '미설정' : formatTime(loopEnd)}
         </p>
       )}
 
       {/* Secondary settings stay out of the first-action path. */}
-      <details className="rounded-lg border border-rule bg-surface px-3 py-2">
-        <summary className="cursor-pointer text-sm font-medium text-ink-muted">전체 설정</summary>
-        <div className="mt-3 flex items-center justify-between gap-3">
-        <div className="flex items-center space-x-3">
+      <details className="overflow-hidden rounded-2xl border border-rule bg-surface">
+        <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-medium text-ink hover:bg-surface-muted [&::-webkit-details-marker]:hidden">
+          <span>전체 설정</span>
+          <span aria-hidden="true" className="text-lg leading-none text-ink-muted">⌄</span>
+        </summary>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule px-4 py-4">
+        <div className="flex items-center gap-3">
           <label htmlFor={modeSelectId} className="text-sm text-ink-muted font-medium">
             모드:
           </label>
-          <select
-            id={modeSelectId}
-            value={playbackMode}
-            onChange={(e) => onModeChange(e.target.value as 'listen' | 'follow' | 'practice')}
-            className="px-3 py-2 border border-rule-strong rounded-md text-sm bg-surface text-ink transition-colors"
-            disabled={!isReady}
-          >
-            <option value="listen">🎵 듣기</option>
-            <option value="follow">🎹 따라하기</option>
-            <option value="practice">📚 연습 가이드</option>
-          </select>
+          <div className="relative">
+            <select
+              id={modeSelectId}
+              value={playbackMode}
+              onChange={(e) => onModeChange(e.target.value as 'listen' | 'follow' | 'practice')}
+              className="h-10 min-w-[148px] appearance-none rounded-full border border-rule-strong bg-surface pl-4 pr-9 text-sm text-ink shadow-sm transition-colors hover:bg-surface-muted"
+              disabled={!isReady}
+            >
+              <option value="listen">🎵 듣기</option>
+              <option value="follow">🎹 따라하기</option>
+              <option value="practice">📚 연습 가이드</option>
+            </select>
+            <svg aria-hidden="true" viewBox="0 0 20 20" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 fill-current text-ink-muted">
+              <path d="m5.5 7.5 4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+            </svg>
+          </div>
         </div>
 
         <div className="text-sm text-ink-muted">
