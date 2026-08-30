@@ -20,6 +20,11 @@ PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `081
 상세 근거는 `docs/recovery/validation/2026-08-30-DS-7-states.md`와 `docs/recovery/reviews/PR-99.md`에 있다.
 README 재작성 중 확인된 후속 작업 후보 네 건이 아래 #83 절에 있다.
 
+**이슈 #65·#66 종결 (2026-08-30 KST)**: 사용자가 실제 기기에서 두 재생 결함을 실측해 통과했다고
+확인했다. #65는 PR #67·#74·#75로 구현된 반응형 건반·재생 중 가로 전환을, #66은 현재 재생 진행 표시를
+각각 종결 근거로 삼아 종단 코멘트를 남기고 `COMPLETED`로 닫았다. #65의 남은 모바일 스택 정리와 인증 E2E
+fixture는 제품 결함을 다시 열지 않는 별도 후속 작업 후보로 유지한다.
+
 **이슈 [#83](https://github.com/landfill/ClairKeys/issues/83) README 재작성 완료, 2026-08-30 `CLOSED`**:
 사용자 지시로 종단 요약을 [코멘트](https://github.com/landfill/ClairKeys/issues/83#issuecomment-5468608101)로 남긴 뒤 닫았다.
 커밋 `632a08ff60dfd6e9ec0a0ff2a361c6b9a71711ec`, `main` 직접 push. 사용자가 "리드미 수정은 PR 없이
