@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui'
+import { Button, StatusState } from '@/components/ui'
 import { useSheetMusicSearch } from '@/hooks/useSheetMusicSearch'
 import { SheetMusicWithOwner } from '@/types/sheet-music'
 import { useCategories } from '@/hooks/useCategories'
@@ -172,9 +172,7 @@ export default function SheetMusicSearch({
 
       {/* Error State */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800">검색 중 오류가 발생했습니다: {error}</p>
-        </div>
+        <StatusState className="mb-4" title="악보를 검색하지 못했습니다" detail="검색 서비스에 잠시 문제가 있습니다. 다시 시도해 주세요." tone="error" action={<Button variant="outline" size="sm" onClick={triggerSearch}>다시 시도</Button>} />
       )}
 
       {/* Results */}
@@ -253,9 +251,7 @@ export default function SheetMusicSearch({
             )}
           </>
         ) : !loading && (
-          <div className="text-center py-8 text-gray-500">
-            {searchQuery ? '검색 결과가 없습니다' : '검색어를 입력해보세요'}
-          </div>
+          <StatusState title={searchQuery ? '검색 결과가 없습니다' : '검색어를 입력해 주세요'} detail={searchQuery ? '다른 검색어로 다시 찾아보세요.' : '곡명이나 저작자로 악보를 찾아보세요.'} />
         )}
       </div>
 

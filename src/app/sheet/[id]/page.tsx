@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
-import { Card, Loading } from '@/components/ui'
+import { Card, Loading, StatusState } from '@/components/ui'
 import LoginButton from '@/components/auth/LoginButton'
 import FallingNotesPlayer from '@/components/animation/FallingNotesPlayer'
 import DemoProvenanceNotice from '@/components/sheet/DemoProvenanceNotice'
@@ -135,10 +135,11 @@ export default function SheetMusicPage() {
       <MainLayout>
         <Container className="py-8" size="lg">
           <Card padding="lg">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-ink mb-2">오류가 발생했습니다</h2>
-              <p className="text-ink-muted">{error || '알 수 없는 오류가 발생했습니다.'}</p>
-            </div>
+            <StatusState
+              title={error?.includes('권한') ? '이 악보에 접근할 수 없습니다' : '악보를 불러오지 못했습니다'}
+              detail={error || '잠시 후 다시 시도해 주세요.'}
+              tone="error"
+            />
           </Card>
         </Container>
       </MainLayout>

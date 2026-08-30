@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui'
+import { Button, StatusState } from '@/components/ui'
 import { SheetMusicWithOwner } from '@/types/sheet-music'
 
 interface PublicSheetMusicBrowserProps {
@@ -63,17 +63,12 @@ export default function PublicSheetMusicBrowser({
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <p className="text-red-800">오류가 발생했습니다: {error}</p>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={loadPublicSheets}
-          className="mt-3"
-        >
-          다시 시도
-        </Button>
-      </div>
+      <StatusState
+        title="공개 악보를 불러오지 못했습니다"
+        detail="잠시 연결이 끊겼습니다. 다시 시도해 주세요."
+        tone="error"
+        action={<Button variant="outline" size="sm" onClick={loadPublicSheets}>다시 시도</Button>}
+      />
     )
   }
 
@@ -245,14 +240,7 @@ export default function PublicSheetMusicBrowser({
 
       {/* Empty State */}
       {recentSheets.length === 0 && (
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            아직 공개된 악보가 없습니다
-          </h3>
-          <p className="text-gray-600">
-            첫 번째 악보를 업로드하고 다른 사용자들과 공유해보세요!
-          </p>
-        </div>
+        <StatusState title="아직 공개된 악보가 없습니다" detail="공개 악보가 올라오면 여기에서 함께 연습할 수 있습니다." />
       )}
     </div>
   )
