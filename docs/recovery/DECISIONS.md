@@ -1212,5 +1212,5 @@
 - Reversibility: clean
 - Directive: 후속 duration 작업은 저장 시점·갱신 시점·목록 조회 비용을 함께 결정한 뒤 구현한다. 보안 작업은 DS0-1과 함께 API 응답·저장소 공개 범위를 별도로 재검토한다.
 - Tested: 코드·스키마·목록 응답 대조; DS-6 E2E fixture가 카드·상세·미리보기를 검증하도록 갱신됨.
-- Not-tested: duration 정규화 구현과 실제 배포본의 열거 방어.
+- Not-tested: duration 정규화 구현과 실제 배포본의 열거 방어; CI의 headless Web Audio 생성·resume은 5개 프로젝트에서 재생 상태를 증명하지 못하므로 실제 오디오 재생은 수동 확인으로 남긴다.
 - Related: DS-6, DS0-1, D-030, D-034, 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76)
