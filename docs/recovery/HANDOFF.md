@@ -8,8 +8,11 @@ Last updated: 2026-08-30 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
-DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, DS-5, DS-6, **DS-7까지 `DONE`**이다. 이슈 #76은 열려 있다 —
-완료 조건 7개 모두 충족으로 판정했으며 닫는 것은 사용자가 결정한다.
+DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, DS-5, DS-6, **DS-7까지 `DONE`**이고, **이슈 #76은
+2026-08-30 `COMPLETED`로 닫혔다** — 사용자 지시로 종단 판정 요약을
+[코멘트](https://github.com/landfill/ClairKeys/issues/76#issuecomment-5468480106)로 남긴 뒤 닫았다.
+완료 조건 7개 판정은 `docs/recovery/validation/2026-08-30-DS-7-states.md`에 있고, 조건 3·4·7은
+자동 검사가 아니라 사용자 수동 확인이 근거다.
 **2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 7개다** — D-030,
 PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `08100c7`).
 
