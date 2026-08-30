@@ -1,6 +1,6 @@
 # DS-6 — 탐색과 공개 체험
 
-Status: `NOT_STARTED`
+Status: `IN_REVIEW`
 Depends on: DS-2 (복귀 계약), **DS-5** (플레이어 형태 확정)
 Blocks: DS-7
 Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 6단계
@@ -9,6 +9,12 @@ Issue: [#76](https://github.com/landfill/ClairKeys/issues/76) 6단계
 
 공개 악보를 로그인 전 제품 체험의 통로로 만든다. `탐색 → 곡 상세·짧은 미리보기 → 로그인 → 전체 연습`
 퍼널을 완성한다.
+
+## 2026-08-30 Progress
+
+PR [#98](https://github.com/landfill/ClairKeys/pull/98)이 review-ready로 생성됐다. 공개 상세는 화면 인증 가드를 풀고
+`/api/sheet/[id]`의 `animationDataUrl`을 사용한다. D-034에 따라 CI fixture를 추가했고 5개 Playwright 프로젝트 전체
+25/25가 통과했다. PR required checks도 모두 통과했으나 실제 배포 시크릿 창과 반응형 확인은 사용자 확인 필요 항목이다.
 
 ## In scope
 

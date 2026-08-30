@@ -8,12 +8,12 @@ Last updated: 2026-08-30 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
-DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, **DS-5까지 `DONE`**, DS-6~DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
+DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, **DS-5까지 `DONE`**, DS-6은 PR #98 검토 중이며 DS-7은 `NOT_STARTED`다. 이슈 #76은 열려 있다 —
 완료 조건은 `docs/recovery/ROADMAP.md`의 "이슈 #76 전체 완료 조건"에 있고 DS-7이 종단 판정한다.
 **2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 7개다** — D-030,
 PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `08100c7`).
 
-**Next action**: **DS-6(탐색과 공개 체험)를 최신 `main`에서 시작한다** — DS-2의 복귀 계약과 DS-5의 플레이어 형태라는 선행 조건이 이제 모두 `DONE`이다. 먼저 `docs/recovery/phases/DS-6-explore.md`의 공개 악보 경로를 확인하고, `/sheet/[id]`의 `AuthGuard`·데이터 로딩을 공개 악보에만 전환한다. `/api/files/animation`의 인증 분기와 DS-5 소유 플레이어 내부는 건드리지 않는다. 원본 PDF 보조 패널은 URL·권한 계약과 함께 이 단계에서 구현한다.
+**Next action**: PR #98의 사용자 명시적 병합 승인을 기다린다. required CI 4개와 양쪽 E2E job은 모두 통과했으며, 실제 배포 시크릿 창에서 탐색 → 상세 → 미리보기 → 로그인 → 같은 곡 복귀 및 1440·1024·390 반응형 확인이 필요하다. 승인 전에는 병합하지 않는다.
 
 **Previous action**: **DS-5(학습 플레이어)를 연다** — `codex/ds-5-learning-player`. 선행 조건 DS-1은
 `DONE`이라 지금 착수 가능하다. **D-019 결정 8 매듭은 D-031이 풀었다** — 홈에서 재생기가 빠지면
