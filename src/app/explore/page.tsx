@@ -17,8 +17,8 @@ export default function ExplorePage() {
   }
 
   const tabs = [
-    { id: 'browse' as const, label: '탐색', icon: '🏠' },
-    { id: 'search' as const, label: '검색', icon: '🔍' }
+    { id: 'browse' as const, label: '탐색' },
+    { id: 'search' as const, label: '검색' }
   ]
 
   return (
@@ -43,7 +43,6 @@ export default function ExplorePage() {
                 }
               `}
             >
-              <span>{tab.icon}</span>
               <span>{tab.label}</span>
             </button>
           ))}

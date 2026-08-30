@@ -18,7 +18,7 @@ PR [#98](https://github.com/landfill/ClairKeys/pull/98)이 review-ready로 생�
 
 ## In scope
 
-- 곡명·작곡가·난이도·재생 시간 중심의 콘텐츠 정리 (DS0-4)
+- 곡명·작곡가·난이도 중심의 콘텐츠 정리 (DS0-4)
 - 곡 상세와 **짧은 미리보기**
 - **`/sheet/[id]`의 로그인 전 접근** — 이 화면의 인증 경계와 데이터 로딩 경로는 이 단계 소유다
 - 로그인 후 해당 곡으로 복귀 (DS-2가 만든 계약을 적용)
@@ -86,7 +86,7 @@ DS-5가 제거하는 E2E 검사 `lets a signed-out visitor play the sample witho
 - 로그아웃 상태에서 `/explore` → 곡 상세 → 미리보기 재생이 가능하다 (시크릿 창 수동 확인).
 - 미리보기 후 로그인하면 **그 곡으로** 돌아온다. 회귀 테스트로 고정한다.
 - 비공개 악보가 익명에게 403을 유지한다 (회귀 테스트).
-- 카드에 파일명이 아니라 곡명·작곡가·재생 시간이 보인다.
+- 카드에 파일명이 아니라 곡명·작곡가가 보인다.
 - `/api/files/animation`의 인증 분기에 diff가 없다.
 - `src/components/animation/`과 `src/components/playback/`에 diff가 없다 (DS-5 소유).
 

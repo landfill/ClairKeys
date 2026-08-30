@@ -1,6 +1,63 @@
 import { expect, test } from '@playwright/test'
 
 test.describe('Public application smoke checks', () => {
+  test('lets a signed-out visitor explore a public sheet preview', async ({ page }) => {
+    const animation = {
+      version: '1.0', title: '공개 연습곡', composer: '검증된 작곡가', duration: 3,
+      tempo: 100, tempoSource: 'score', timingReferenceBpm: 100, timeSignature: '4/4',
+      notes: [{ midi: 60, start: 0, duration: 1 }],
+    }
+    await page.addInitScript(() => {
+      // The app's service worker would otherwise serve a stale 404 before Playwright's route fixture.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register = async () => {
+          throw new Error('service worker disabled for route fixture')
+        }
+      }
+    })
+    let privateAnimationRequests = 0
+    await page.route('**/*', async route => {
+      const pathname = new URL(route.request().url()).pathname
+      if (pathname === '/public.json') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(animation) })
+      } else if (pathname === '/api/sheet/public') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ success: true, sheetMusic: [{
+            id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: { id: 1, name: '클래식' },
+            categoryId: 1, isPublic: true, provenance: 'omr', animationDataUrl: '/public.json',
+            createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', userId: 'owner',
+            owner: { id: 'owner', name: '작곡가' },
+          }], pagination: { total: 1, limit: 8, offset: 0, hasMore: false } })
+        })
+      } else if (pathname === '/api/sheet/1') {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ success: true, sheetMusic: {
+            id: 1, title: '공개 연습곡', composer: '검증된 작곡가', category: '클래식', categoryId: 1,
+            isPublic: true, provenance: 'omr', availability: 'ready', animationDataUrl: '/public.json',
+            createdAt: '2026-08-30T00:00:00.000Z', updatedAt: '2026-08-30T00:00:00.000Z', owner: null,
+          } })
+        })
+      } else if (pathname === '/api/files/animation') {
+        privateAnimationRequests += 1
+        await route.continue()
+      } else {
+        await route.continue()
+      }
+    })
+    await page.goto('/explore')
+    await page.getByText('공개 연습곡').first().click()
+    await expect(page).toHaveURL(/\/sheet\/1$/)
+    await expect(page.getByText(/검증된 작곡가/).first()).toBeInViewport()
+    await expect(page.getByText('미리보기')).toBeVisible()
+    const playButton = page.getByTestId('playback-play')
+    await expect(playButton).toBeInViewport()
+    await expect(playButton).toBeEnabled()
+    await playButton.click()
+    expect(privateAnimationRequests).toBe(0)
+  })
+
   test('renders the real home page with accessible navigation', async ({ page }) => {
     const response = await page.goto('/')
 

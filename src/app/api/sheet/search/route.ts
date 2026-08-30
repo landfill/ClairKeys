@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     // Public/Private filter
     if (isPublic === 'true') {
       where.isPublic = true
+      where.provenance = { not: 'demo' }
     } else if (isPublic === 'false') {
       // Only show user's private sheets if logged in
       if (!session?.user?.id) {
@@ -39,11 +40,12 @@ export async function GET(request: NextRequest) {
       // Show public sheets + user's private sheets
       if (session?.user?.id) {
         where.OR = [
-          { isPublic: true },
+          { isPublic: true, provenance: { not: 'demo' } },
           { userId: session.user.id }
         ]
       } else {
         where.isPublic = true
+        where.provenance = { not: 'demo' }
       }
     }
     
@@ -133,10 +135,10 @@ export async function GET(request: NextRequest) {
               sheetMusic: {
                 where: session?.user?.id ? {
                   OR: [
-                    { isPublic: true },
+                    { isPublic: true, provenance: { not: 'demo' } },
                     { userId: session.user.id }
                   ]
-                } : { isPublic: true }
+                } : { isPublic: true, provenance: { not: 'demo' } }
               }
             }
           }
@@ -149,7 +151,7 @@ export async function GET(request: NextRequest) {
     
     // Get public/private counts
     const [totalPublic, totalPrivate] = await Promise.all([
-      prisma.sheetMusic.count({ where: { isPublic: true } }),
+      prisma.sheetMusic.count({ where: { isPublic: true, provenance: { not: 'demo' } } }),
       session?.user?.id ? 
         prisma.sheetMusic.count({ 
           where: { 
@@ -169,6 +171,7 @@ export async function GET(request: NextRequest) {
         categoryId: sheet.categoryId,
         category: sheet.category,
         isPublic: sheet.isPublic,
+        provenance: sheet.provenance,
         animationDataUrl: sheet.animationDataUrl,
         createdAt: sheet.createdAt,
         updatedAt: sheet.updatedAt,
