@@ -78,4 +78,28 @@ describe('PlaybackControls', () => {
     expect(props.onStop).toHaveBeenCalled()
     expect(props.onSpeedChange).toHaveBeenCalledWith(1.5)
   })
+
+  it('keeps transport and loop controls the same size while differentiating their roles', () => {
+    renderControls()
+
+    const controls = [
+      screen.getByTestId('playback-play'),
+      screen.getByTestId('playback-pause'),
+      screen.getByTestId('playback-stop'),
+      screen.getByTitle('현재 위치를 A로 설정'),
+      screen.getByTitle('현재 위치를 B로 설정'),
+      screen.getByTitle('A-B 구간 반복 해제'),
+    ]
+
+    controls.forEach(control => expect(control).toHaveClass('h-12', 'w-12', 'p-0'))
+    expect(screen.getByTestId('playback-play')).toHaveClass('bg-accent')
+    expect(screen.getByTestId('playback-stop')).toHaveClass('border-rule-strong')
+  })
+
+  it('presents speed and secondary settings as matching rounded controls', () => {
+    renderControls()
+
+    expect(screen.getByLabelText('속도:')).toHaveClass('rounded-full')
+    expect(screen.getByText('전체 설정').closest('details')).toHaveClass('rounded-2xl')
+  })
 })

@@ -1,5 +1,7 @@
 'use client'
 
+import { Button } from '@/components/ui'
+
 /**
  * One-row transport for a screen that is being watched rather than set up.
  *
@@ -101,31 +103,35 @@ export default function CompactPlaybackBar({
       data-testid="compact-playback-bar"
       className={`flex items-center gap-3 h-14 px-1 ${className}`}
     >
-      <button
+      <Button
         type="button"
         onClick={onPause}
         disabled={!isReady}
         aria-label="일시정지"
-        className="h-10 w-10 shrink-0 rounded-md border border-gray-300 bg-white text-lg leading-none hover:border-gray-400 disabled:opacity-50"
+        variant="outline"
+        size="md"
+        className="h-10 w-10 shrink-0 p-0 text-lg leading-none"
       >
         ⏸️
-      </button>
+      </Button>
       {onLoopStart && onLoopEnd && onLoopClear && (
         <div className="flex shrink-0 gap-1" data-testid="compact-loop-controls">
-          <button type="button" onClick={onLoopStart} disabled={!isReady} className="h-10 w-8 rounded-md border border-gray-300 bg-white text-xs">A</button>
-          <button type="button" onClick={onLoopEnd} disabled={!isReady || loopStart === null} className="h-10 w-8 rounded-md border border-gray-300 bg-white text-xs">B</button>
-          <button type="button" onClick={onLoopClear} disabled={!isReady || loopStart === null} aria-label="루프 초기화" className={`h-10 w-8 rounded-md border text-xs ${loopEnd !== null ? 'border-accent bg-accent text-white' : 'border-gray-300 bg-white'}`}>↻</button>
+          <Button type="button" onClick={onLoopStart} disabled={!isReady} variant="outline" size="sm" className="h-10 w-10 p-0 border-hand-left text-xs text-hand-left" title="현재 위치를 A로 설정">A</Button>
+          <Button type="button" onClick={onLoopEnd} disabled={!isReady || loopStart === null} variant="outline" size="sm" className="h-10 w-10 p-0 border-hand-right text-xs text-hand-right" title="현재 위치를 B로 설정">B</Button>
+          <Button type="button" onClick={onLoopClear} disabled={!isReady || loopStart === null} variant={loopEnd !== null ? 'primary' : 'ghost'} size="sm" className="h-10 w-10 p-0 text-xs" aria-label="루프 초기화">↻</Button>
         </div>
       )}
-      <button
+      <Button
         type="button"
         onClick={onStop}
         disabled={!isReady}
         aria-label="정지"
-        className="h-10 w-10 shrink-0 rounded-md border border-gray-300 bg-white text-lg leading-none hover:border-gray-400 disabled:opacity-50"
+        variant="outline"
+        size="md"
+        className="h-10 w-10 shrink-0 p-0 text-lg leading-none"
       >
         ⏹️
-      </button>
+      </Button>
 
       {/* The two readouts are the first things to go on a narrow box: the
           transport, the seek bar and the two inputs all have to keep working
@@ -153,7 +159,7 @@ export default function CompactPlaybackBar({
         value={playbackSpeed}
         onChange={event => onSpeedChange(parseFloat(event.target.value))}
         aria-label="재생 속도"
-        className="h-10 shrink-0 rounded-md border border-gray-300 bg-white px-2 text-xs"
+        className="h-10 shrink-0 rounded-full border border-rule-strong bg-surface px-3 text-xs text-ink shadow-sm"
       >
         {SPEEDS.map(speed => (
           <option key={speed} value={speed}>
