@@ -15,9 +15,11 @@ VM으로 교체할 때 저장소만으로 재구축할 수 있는지 점검했�
 바꾸지 않았다. 검증 근거는 `docs/recovery/validation/2026-08-31-omr-vm-replacement-guide.md`, PR
 상태는 `docs/recovery/reviews/PR-102.md`와 GitHub live state에서 확인한다.
 
-**Next action**: PR #102의 CI와 리뷰 세 표면을 확인해 actionable feedback을 처리하고, 모두 결착된
-뒤에도 사용자의 명시적 병합 승인을 기다린다. 실제 VM 생성·Vercel 환경변수 변경·절체는 이번 문서
-PR 범위가 아니며 운영자 권한과 새 VM이 생긴 시점에 가이드대로 수행한다.
+**Next action**: PR #102의 필수 CI는 모두 성공했고 세 리뷰 표면에는 현재 actionable feedback이 없다.
+별 수 정책 때문에 생략된 CodeRabbit을 수동 트리거했으며 현재 `Review in progress`이므로, 완료 뒤 세
+표면을 다시 확인해 지적을 처리한다. 모두 결착된 뒤에도 사용자의 명시적 병합 승인을 기다린다. 실제 VM
+생성·Vercel 환경변수 변경·절체는 이번 문서 PR 범위가 아니며 운영자 권한과 새 VM이 생긴 시점에
+가이드대로 수행한다.
 
 **Previous completed track**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
 DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, DS-5, DS-6, **DS-7까지 `DONE`**이고, **이슈 #76은
