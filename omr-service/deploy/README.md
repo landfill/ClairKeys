@@ -1,24 +1,28 @@
-# Deploying the OMR service on the NAVER Cloud VM
+# Deploying the OMR service on the allocated VM
 
 Applied 2026-08-23 to `vm-naver-20260820145930` (Rocky Linux 8.8, podman 4.4.1).
+For a fresh OS-only VM allocated by 모두의AI, follow
+[`docs/vm-replacement.md`](../../docs/vm-replacement.md) first. That is the canonical guide for
+validating the new PEM and host fingerprint, requesting network access, bootstrapping the OS,
+cutting over Vercel, rolling back, and returning the old VM. This file explains the service-specific
+layout and repeat deployment on an already prepared host.
 The decision behind the shape of this — plain HTTP without TLS, and why that is
 acceptable *for now and not later* — is **D-012** in `docs/recovery/DECISIONS.md`.
 Read it before changing anything here.
 
 ## What runs
 
-```
-Vercel ──HTTP──> 0.0.0.0:3000 ──> container :8000
-                 101.79.16.73
+```text
+Vercel ──HTTP──> <VM_PUBLIC_IP>:3000 ──> container :8000
 ```
 
 - **No TLS.** Test phase only; D-012 records what that accepts and the condition
   for ending it.
 - **No storage credentials on this host** (D-011). The service converts and hands
   the JSON back through `GET /result/{job_id}`; Vercel stores it.
-- Port **3000** rather than 8000 or 80: 8000 is not open in the cloud ACG, and
-  80/443 are deliberately left free so TLS can be added in front later without
-  touching the container.
+- Port **3000** rather than 8000 or 80: provider network access is requested through 모두의AI, and
+  80/443 are deliberately left free so TLS can be added in front later without touching the
+  container.
 
 ## Files
 
@@ -69,23 +73,23 @@ provisioned at 4 GB (PR #36) and nothing has re-measured it since.
 ## Confirming it actually works
 
 From **outside** the VM, which is the only vantage point that proves anything —
-`127.0.0.1` says nothing about whether the ACG lets Vercel in:
+`127.0.0.1` says nothing about whether the provider network lets Vercel in:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' http://101.79.16.73:3000/health   # 200
+curl -s -o /dev/null -w '%{http_code}\n' http://<VM_PUBLIC_IP>:3000/health   # 200
 curl -s -o /dev/null -w '%{http_code}\n' -X POST \
-     http://101.79.16.73:3000/process                                      # 401
+     http://<VM_PUBLIC_IP>:3000/process                                      # 401
 ```
 
 `200` then `401` is the pair that matters: the service is reachable **and** the
 shared secret gate is on. A `401` on `/health` would mean the secret is
-misconfigured; a timeout on both means the ACG is closed.
+misconfigured; a timeout on both means the allocated address or provider network policy is wrong.
 
 A full conversion, with the secret:
 
 ```bash
 SECRET=$(grep '^OMR_SHARED_SECRET=' /etc/clairkeys-omr.env | cut -d= -f2)
-curl -s -X POST http://101.79.16.73:3000/process \
+curl -s -X POST http://<VM_PUBLIC_IP>:3000/process \
   -H "X-ClairKeys-Token: $SECRET" \
   -F "file=@/data/testpdf/wtk1-prelude1-a4.pdf" \
   -F "title=…" -F "composer=…" -F "user_id=…" -F "sheet_music_id=…"
@@ -104,7 +108,7 @@ sends unauthenticated requests and every call answers 401 — which reads like a
 service fault rather than a missing variable.
 
 ```
-OMR_SERVICE_URL    = http://101.79.16.73:3000
+OMR_SERVICE_URL    = http://<VM_PUBLIC_IP>:3000
 OMR_SHARED_SECRET  = <the exact value in /etc/clairkeys-omr.env>
 ```
 
@@ -124,8 +128,9 @@ being stranded, but they are still lost work, so rotate when nothing is running.
 
 The exit condition in D-012. Nothing here has to move:
 
-- `101.79.16.73.sslip.io` already resolves to this host with no registration.
-- Ports 80 and 443 are already open in the ACG and nothing is bound to them.
+- `<VM_PUBLIC_IP>.sslip.io` resolves to the host with no registration (replace the placeholder
+  with the dotted IPv4 address).
+- Ask 모두의AI to open ports 80 and 443 for the TLS cutover; bind nothing else to them.
 - nginx terminates TLS and proxies to `127.0.0.1:3000`; the container's published
   port becomes `127.0.0.1:3000` instead of `0.0.0.0:3000`, a one-line unit edit.
 - Only `OMR_SERVICE_URL` changes on Vercel. No application code changes.

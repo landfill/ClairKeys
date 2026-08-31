@@ -8,7 +8,7 @@ Optical Music Recognition service for converting PDF sheet music to ClairKeys an
 - MusicXML to ClairKeys animation data format conversion
 - Returns the converted animation data to its caller; it holds no storage credential (D-011)
 - Asynchronous processing with status tracking
-- Container image; deployed on a NAVER Cloud VM with podman (see `deploy/`)
+- Container image; deployed with podman on an OS-only VM allocated by 모두의AI (see `deploy/`)
 
 ## Development Setup
 
