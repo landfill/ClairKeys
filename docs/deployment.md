@@ -40,9 +40,10 @@ npm run db:push       # 개발용 즉시 반영
 Storage 버킷(`animation-data`)은 `npm run init-storage`로 만든다. 정합성 점검은
 `npm run check-data-status`.
 
-## OMR 서비스 (NAVER Cloud VM)
+## OMR 서비스 (모두의AI 할당 VM)
 
-새 VM 생성부터 Vercel 절체·롤백·구 VM 폐기까지는
+모두의AI에서 OS만 설치된 VM과 새 PEM을 할당받은 뒤의 접속 확인부터 Vercel 절체·롤백·구 VM
+반납까지는
 [VM 교체 가이드](vm-replacement.md)를 따른다. 기존 VM에 merged `main` 이미지를 다시 배포하는 세부
 명령과 systemd unit 설명은 [omr-service/deploy/README.md](../omr-service/deploy/README.md)에 있다.
 아래는 구조 요약이다.
@@ -53,8 +54,8 @@ Vercel ──HTTP──> VM :3000 ──> 컨테이너 :8000
 
 - 검증 기준은 Rocky Linux 8.8 x86_64, 2 vCPU, 15GiB RAM, podman 4.4.1, systemd unit
   `clairkeys-omr.service`다.
-- 포트 3000을 쓴다. 8000은 클라우드 ACG에서 열려 있지 않고, 80/443은 나중에 TLS를 앞단에 붙일 때
-  컨테이너를 건드리지 않도록 비워 둔다.
+- 포트 3000을 쓴다. 필요한 inbound/outbound 변경은 NAVER Cloud 콘솔이 아니라 모두의AI 지원 경로로
+  요청한다. 80/443은 나중에 TLS를 앞단에 붙일 때 컨테이너를 건드리지 않도록 비워 둔다.
 - 시크릿은 unit 파일이 아니라 `/etc/clairkeys-omr.env`(권한 600)에 둔다. `podman generate systemd --new`가
   만든 unit은 644라서 `-e`로 넘기면 모든 로컬 사용자에게 노출된다.
 - 이 호스트에는 Supabase 자격증명을 두지 않는다(**D-011**).

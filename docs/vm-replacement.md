@@ -1,31 +1,46 @@
 # OMR VM 교체 가이드
 
-이 문서는 NAVER Cloud VM을 새로 받은 뒤 ClairKeys의 OMR 서비스를 **빈 서버에서 운영 절체까지**
-복구하는 canonical 체크리스트다. 기존 VM 안의 파일이나 개인 메모가 없어도 저장소와 각 서비스의
-관리자 권한만으로 완료할 수 있어야 한다.
+이 문서는 **모두의AI에 신청해 OS만 설치된 새 VM과 접속정보를 할당받은 시점**부터 ClairKeys의 OMR
+서비스를 운영 절체하는 canonical 체크리스트다. VM·공인 IP·클라우드 방화벽은 모두의AI가 준비하며,
+이 문서의 작업자는 NAVER Cloud 콘솔에서 서버를 생성하지 않는다. 기존 VM 안의 파일이나 개인 메모가
+없어도 저장소, 새 VM 접속정보, Vercel 권한만으로 완료할 수 있어야 한다.
 
 > 현재 운영 방식은 D-012가 허용한 테스트 단계의 평문 HTTP다. 실사용자 트래픽을 받기 전에는
 > `docs/recovery/DECISIONS.md`의 D-012 exit condition에 따라 TLS로 전환해야 한다.
 
-> **안전 게이트:** 이 문서의 `http://<NEW_PUBLIC_IP>:3000` 절체는 격리된 테스트 단계에만 허용된다.
+> **안전 게이트:** 이 문서의 `http://<NEW_VM_HOST>:3000` 절체는 격리된 테스트 단계에만 허용된다.
 > 실사용자 트래픽을 받는 운영 절체라면 여기서 중단하고 먼저 TLS를 구성한 뒤
 > `OMR_SERVICE_URL=https://...`로 절체한다. D-012를 대체하는 새 결정 없이 이 조건을 완화하지 않는다.
 
-## 0. 교체 전에 확보할 것
+## 0. 모두의AI 신청·할당 체크리스트
 
-다음 권한과 값이 필요하다. 실제 비밀값을 이 문서, 이슈, 커밋, 채팅에 붙이지 않는다.
+모두의AI 신청 시 아래 기준의 VM을 요청하고, 할당 답변에서 모든 값을 확보한다. 비밀값을 이 문서,
+이슈, 커밋, 채팅에 붙이지 않는다.
 
-- NAVER Cloud Platform: Server, Public IP, ACG를 생성·변경할 권한
-- 새 VM 전용 NAVER Cloud 인증키(PEM)를 생성·보관할 수 있는 권한과 SSH를 허용할 운영자 공인 IP
+| 받아야 할 항목 | 확인 기준 |
+|---|---|
+| 신청/할당 식별자 | 문의와 반납에 사용할 신청 번호 또는 VM 이름 |
+| 사용기한 | 절대 날짜와 시간대. 다음 교체 준비일도 함께 정함 |
+| 공인 접속 주소 | 새 IP 또는 hostname. 아래 `<NEW_VM_HOST>`로 표기 |
+| SSH 정보 | 포트(기본 22), 관리자 사용자명, sudo/root 가능 여부 |
+| 새 PEM | **이번 VM에 할당된 파일**. 구 VM PEM을 재사용하지 않음 |
+| SSH host key fingerprint | 새 서버 진위 확인용. PEM fingerprint와 다른 값 |
+| OS·아키텍처 | Rocky Linux 8.8 계열, x86_64 |
+| 사양 | 기존 검증값 2 vCPU, 15GiB RAM, root disk 약 100GB |
+| 네트워크 | SSH 22, 테스트 서비스 3000 또는 TLS 443 inbound 상태; DNS·HTTP·HTTPS outbound 가능 |
+| 지원 경로 | 포트 변경, 접속 장애, VM 반납을 요청할 모두의AI 연락 경로 |
+
+추가로 필요한 권한과 준비물:
+
 - GitHub 저장소 읽기 권한(이 저장소는 public이므로 현재는 별도 토큰 불필요)
 - Vercel ClairKeys 프로젝트의 Settings·Deployments 변경 권한
 - Supabase, Google OAuth, GitHub OAuth 관리자 권한 또는 기존 Vercel 값을 유지할 수 있는 권한
 - 실제 악보 PDF 1개(4MB 이하). 서비스 전체 변환 검증용이며 저장소의
   `e2e/fixtures/sample-sheet.pdf`는 글자만 그린 합성 PDF라 OMR 검증에 쓰지 않는다
 
-기존 VM이 아직 살아 있다면 절체 시각까지 유지한다. 처리 중 job은 프로세스 메모리에만 있으므로 VM을
-재시작하거나 반환하면 복구되지 않는다. `/data`는 변환 중 임시 파일용이고 영속 데이터의 원본이 아니다.
-사용자 악보 메타데이터와 결과 JSON의 원본은 각각 Supabase PostgreSQL과 Storage에 있다.
+기존 VM과 **구 PEM**은 절체·롤백 검증이 끝날 때까지 유지한다. 처리 중 job은 프로세스 메모리에만
+있으므로 VM을 재시작하거나 반납하면 복구되지 않는다. `/data`는 변환 중 임시 파일용이고 영속 데이터의
+원본이 아니다. 사용자 악보 메타데이터와 결과 JSON의 원본은 각각 Supabase PostgreSQL과 Storage에 있다.
 
 ## 1. 기준 구성
 
@@ -34,7 +49,7 @@
 
 | 항목 | 기준 |
 |---|---|
-| 위치 | NAVER Cloud VPC, Public Subnet, 인터넷 게이트웨이 연결 |
+| 공급 | 모두의AI가 OS 설치와 공인 접속정보를 완료해 할당 |
 | OS | Rocky Linux 8.8 x86_64 또는 저장소 컨테이너를 실행할 수 있는 호환 Rocky 8 계열 |
 | 사양 | 기존 검증값 2 vCPU, 15GiB RAM, root disk 약 100GB |
 | 런타임 | podman 4.x, systemd |
@@ -42,80 +57,62 @@
 | 영속 데이터 | 없음. `/data`는 작업 중 임시 볼륨 |
 | 서비스 자격증명 | `OMR_SHARED_SECRET`만 사용. Supabase 키는 절대 두지 않음 |
 
-NAVER Cloud 공식 흐름은 Server 생성 → 공인 IP 할당 → ACG 설정 순서다.
+사양이나 OS가 기준과 다르면 임의로 절차를 변형하지 말고 모두의AI에 재할당 또는 변경을 요청한다.
+특히 `uname -m`이 `x86_64`가 아니면 pinned Audiveris `.deb`를 사용할 수 없다.
 
-- [서버 생성](https://guide.ncloud-docs.com/docs/server-create-vpc)
-- [서버 관리: 관리자 비밀번호·인증키](https://guide.ncloud-docs.com/docs/server-manage-vpc)
-- [서버 접속](https://guide.ncloud-docs.com/docs/server-access-vpc)
-- [공인 IP](https://guide.ncloud-docs.com/docs/server-publicip-vpc)
-- [ACG](https://guide.ncloud-docs.com/docs/server-acg-vpc)
+## 2. 새 PEM·SSH·네트워크 확인
 
-## 2. VM·네트워크 생성
-
-1. `Compute > Server`에서 Public Subnet에 Rocky Linux VM을 만든다.
-2. 인증키 단계에서 **기존 VM 키를 재사용하지 말고 새 VM 전용 키**를 만든다. 이름에는 용도와 생성
-   날짜를 넣는다(예: `clairkeys-omr-20260831`). `[인증키 생성 및 저장]`으로 내려받은 `.pem`은 이때
-   바로 안전한 자격증명 보관소에 넣고, 별도 암호화 백업 1개를 둔다.
-
-   NAVER Cloud Server의 PEM은 SSH private key가 아니라 **콘솔에서 초기 관리자 이름·비밀번호를
-   확인하는 인증키**다. `ssh -i new-vm.pem ...`에 넣는 파일로 오해하지 않는다. PEM 본문은 저장소,
-   VM, 이슈, 채팅, 일반 클라우드 드라이브에 복사하지 않는다. Mac/Linux의 로컬 사본은 권한도 줄인다.
+1. 모두의AI가 전달한 **새 PEM**을 자격증명 보관소에 넣고 암호화 백업 1개를 둔다. PEM 본문은
+   저장소, VM, 이슈, 채팅, 일반 클라우드 드라이브에 복사하지 않는다. Mac/Linux 로컬 사본의 권한을
+   제한한다.
 
 ```bash
-chmod 400 /secure/path/clairkeys-omr-20260831.pem
+chmod 400 /secure/path/<NEW_VM_PEM>.pem
 ```
 
-3. 서버 반환 보호를 켠다.
-4. `Public IP`에서 새 공인 IP를 신청해 VM에 할당한다. 아래에서는 이를
-   `<NEW_PUBLIC_IP>`로 표기한다.
-5. 전용 ACG를 연결하고 다음 inbound 규칙만 둔다.
-
-| 프로토콜 | 출발지 | 포트 | 이유 |
-|---|---|---:|---|
-| TCP | 운영자 공인 IP `/32` | 22 | SSH |
-| TCP | `0.0.0.0/0` | 3000 | D-012의 격리된 테스트 단계 전용 OMR HTTP; 실사용자 운영 금지 |
-
-80·443은 TLS 전환을 실제로 수행할 때 연다. TLS 전환 뒤에는 3000을 외부에 열지 않고 unit을
-`127.0.0.1:3000:8000`으로 바꾼다. outbound HTTPS(443)는 GitHub clone, 이미지 빌드 의존성 다운로드,
-Vercel 완료 콜백에 필요하다.
-
-6. NACL을 별도로 제한했다면 22·3000 inbound와 DNS/HTTP/HTTPS outbound/return traffic도 허용한다.
-7. 서버가 `운영중`이 되면 Server 목록에서 새 VM을 선택하고
-   `서버 관리 및 설정 변경 > 관리자 비밀번호 확인`을 연다. **새 VM PEM**을 업로드해 콘솔이 보여 주는
-   관리자 이름과 초기 비밀번호를 안전한 자격증명 보관소에 저장한다. 구 VM PEM으로는 이 값을 확인할
-   수 없다.
-8. 콘솔이 알려 준 관리자 이름과 초기 비밀번호로 접속한 뒤 root shell로 전환하고, 초기 관리자
-   비밀번호를 즉시 바꾼다.
+2. 새 VM이 구 VM과 같은 IP를 재사용하면 로컬 `known_hosts`에 구 host key가 남아 접속 경고가 난다.
+   경고를 끄거나 `StrictHostKeyChecking=no`로 우회하지 않는다. 먼저 모두의AI가 전달한 새 SSH host key
+   fingerprint와 접속 화면의 fingerprint를 대조한다. 일치할 때만 해당 주소의 옛 항목을 제거한다.
 
 ```bash
-ssh <ADMIN_USER>@<NEW_PUBLIC_IP>
-sudo -i
-passwd
+ssh-keygen -F <NEW_VM_HOST>
+ssh-keygen -R <NEW_VM_HOST>
 ```
 
-콘솔이 알려 준 관리자가 `root`면 `sudo -i`는 생략한다.
-
-9. 일상 접속은 NCP PEM이나 관리자 비밀번호에 의존하지 않도록 운영자 SSH public key를 등록한다.
-   아래 파일에는 운영자의 **public key 한 줄**만 넣고 private key는 VM에 복사하지 않는다.
+3. 새 PEM과 할당받은 관리자 사용자명으로 접속한다. 구 PEM이 성공하더라도 사용하지 않는다.
 
 ```bash
-install -d -m 700 /root/.ssh
-vi /root/.ssh/authorized_keys
-chmod 600 /root/.ssh/authorized_keys
+ssh -i /secure/path/<NEW_VM_PEM>.pem -p <SSH_PORT> <ADMIN_USER>@<NEW_VM_HOST>
 ```
 
-현재 세션을 닫기 전에 두 번째 터미널에서 운영자 SSH key로 새 접속이 되는지 확인한다. 이것이 실패하면
-ACG나 비밀번호 접속을 닫지 말고 먼저 복구한다.
+첫 접속에서 표시되는 host key fingerprint가 사전에 받은 값과 일치할 때만 등록한다. 접속 후 sudo 권한과
+OS·아키텍처·사양·디스크를 실측한다.
 
 ```bash
-ssh -i <OPERATOR_SSH_PRIVATE_KEY> root@<NEW_PUBLIC_IP>
+sudo -n true
+cat /etc/os-release
+uname -m
+nproc
+free -h
+df -h /
 ```
 
-접속 확인 뒤에만 조직 보안 정책에 따라 password SSH를 끈다. NCP PEM은 SSH를 꺼도 향후 관리자
-비밀번호 확인·초기화에 필요하므로 VM 수명 동안 보관한다. PEM을 분실했다면 구 키를 추측하거나 복사해
-쓰지 않는다. 공식 복구 절차대로 VM을 정지하고
-`서버 관리 및 설정 변경 > 서버 인증키 변경`에서 새 키를 만든다. 이 작업은 **관리자 비밀번호도 함께
-바꾸며 서버 중단이 필요**하므로, 변경 뒤 비밀번호 확인과 SSH 접속을 다시 검증한다.
+`sudo -n true`가 실패하더라도 비밀번호 입력형 sudo가 제공됐을 수 있다. `sudo -i`를 직접 확인하고,
+root 권한을 얻을 수 없으면 설치를 시작하지 말고 모두의AI에 권한 수정을 요청한다.
+
+4. 모두의AI 할당정보에 22·3000/443 포트 상태가 없거나 외부 검사가 timeout이면 직접 ACG/NACL을
+   변경하지 않는다. 다음 내용을 모두의AI에 요청한다.
+
+| 방향 | 포트 | 요청 내용 |
+|---|---:|---|
+| inbound | SSH 포트(기본 22) | 운영자 접속 가능. 가능하면 운영자 공인 IP로 제한 |
+| inbound | 3000 | D-012 격리 테스트에만 외부 공개 |
+| inbound | 443 | TLS 전환 시 공개. 그때 외부 3000은 닫음 |
+| outbound | 53, 80, 443 | DNS, 패키지/이미지 다운로드, Vercel 완료 callback |
+
+5. 새 PEM은 새 VM이 살아 있는 동안 보관한다. 분실·노출 시 임의 키로 복구하려 하지 말고 모두의AI에
+   VM 접속키 재발급 또는 재할당을 요청한다. 재발급 뒤에는 새 PEM과 새 SSH host fingerprint를 다시
+   확인한다.
 
 ## 3. OS 부트스트랩과 저장소 배치
 
@@ -209,13 +206,14 @@ curl -sS -o /dev/null -w '%{http_code}\n' \
 순서대로 `200`, `401`이어야 한다. 그다음 운영자 PC처럼 **VM 밖**에서 같은 검사를 실행한다.
 
 ```bash
-curl -sS -o /dev/null -w '%{http_code}\n' http://<NEW_PUBLIC_IP>:3000/health
+curl -sS -o /dev/null -w '%{http_code}\n' http://<NEW_VM_HOST>:3000/health
 curl -sS -o /dev/null -w '%{http_code}\n' \
-  -X POST http://<NEW_PUBLIC_IP>:3000/process
+  -X POST http://<NEW_VM_HOST>:3000/process
 ```
 
-여기도 `200`, `401`이어야 한다. 내부만 성공하면 ACG/Public IP/NACL 문제이고, `/process`가 401이
-아니면 공유 시크릿 게이트가 정상적으로 켜지지 않은 것이다.
+여기도 `200`, `401`이어야 한다. 내부만 성공하면 모두의AI 측 inbound 정책 또는 할당 주소 문제이므로
+할당 식별자와 함께 지원 경로로 문의한다. `/process`가 401이 아니면 공유 시크릿 게이트가 정상적으로
+켜지지 않은 것이다.
 
 완료 콜백의 outbound 경로도 확인한다.
 
@@ -247,7 +245,7 @@ Vercel 공식 [Environment variables](https://vercel.com/docs/environment-variab
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase Project URL | 공개 | 아니오 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key | 공개 | 아니오 |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | **예** | 아니오 |
-| `OMR_SERVICE_URL` | D-012 테스트 단계는 `http://<NEW_PUBLIC_IP>:3000`; 실사용자 운영은 TLS를 먼저 구성한 `https://...` | 아니오 | **예** |
+| `OMR_SERVICE_URL` | D-012 테스트 단계는 `http://<NEW_VM_HOST>:3000`; 실사용자 운영은 TLS를 먼저 구성한 `https://...` | 아니오 | **예** |
 | `OMR_SHARED_SECRET` | 새 VM `/etc/clairkeys-omr.env`와 정확히 같은 값 | **예** | **예** |
 
 `OMR_SERVICE_URL`과 `OMR_SHARED_SECRET`은 한 deployment에서 함께 바꾼다. URL만 바꾸면 새 VM이 401을
@@ -341,15 +339,13 @@ Vercel의 Instant Rollback은 예전 build의 환경변수를 그대로 사용�
 
 1. 구 VM에 처리 중 job이 없는지 확인한다. 재시작·반환하면 job은 유실된다.
 2. 필요한 운영 로그만 비밀값 없이 회수한다. `/data`는 영속 백업으로 취급하지 않는다.
-3. 구 VM의 `/etc/clairkeys-omr.env`를 폐기하고 서버를 반환한다.
-4. 구 Public IP를 서버에서 해제한 뒤 반납한다. 미할당 IP도 보유 중이면 요금이 발생한다.
-5. 구 서버 전용 ACG 규칙과 SSH 접근을 제거한다.
-6. `서버 관리 및 설정 변경 > 인증키 관리`에서 구 VM 인증키가 다른 서버에 할당되지 않았는지 확인한
-   뒤 삭제한다. 새 VM 전용 PEM은 새 VM이 살아 있는 동안 유지한다. 구 PEM의 로컬 사본과 암호화 백업도
-   안전하게 폐기하되, 키가 다른 서버와 공유된 경우에는 삭제하지 말고 먼저 사용처를 분리한다.
-7. 자격증명 보관소의 운영 인벤토리에 새 VM ID, Public IP, 인증키 이름, 생성일, 보관 책임자를 기록한다.
-   PEM 내용과 관리자 비밀번호는 저장소의 validation 문서에 적지 않는다.
-8. `docs/recovery/validation/`에 날짜, 새 VM 식별자, 배포 commit, image ID, 비밀값을 제외한 검증
+3. 구 VM의 `/etc/clairkeys-omr.env`를 폐기한 뒤 모두의AI 지원 경로로 구 VM 반납을 요청하고 완료를
+   확인한다. 작업자가 Public IP·ACG·NACL을 직접 삭제하지 않는다.
+4. 반납 완료 뒤 구 PEM의 로컬 사본과 암호화 백업을 안전하게 폐기한다. 새 PEM은 새 VM이 살아 있는
+   동안 유지한다.
+5. 자격증명 보관소의 운영 인벤토리에 모두의AI 할당 식별자, 사용기한, 접속 주소, PEM 파일 식별자,
+   SSH host key fingerprint, 보관 책임자를 기록한다. PEM 내용은 저장소의 validation 문서에 적지 않는다.
+6. `docs/recovery/validation/`에 날짜, 새 VM 식별자, 배포 commit, image ID, 비밀값을 제외한 검증
    결과를 기록한다.
 
 ## 11. 이후 재배포

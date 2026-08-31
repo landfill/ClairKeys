@@ -31,7 +31,7 @@ flowchart LR
   subgraph V["Vercel · Next.js"]
     R["API 라우트<br/>업로드 · 폴링 · 저장"]
   end
-  subgraph M["NAVER Cloud VM · podman"]
+  subgraph M["모두의AI 할당 VM · podman"]
     F["FastAPI"] --> A["Audiveris<br/>PDF → MusicXML"] --> C["converter.py<br/>MusicXML → JSON"]
   end
   subgraph S["Supabase"]
@@ -63,7 +63,7 @@ flowchart LR
 | 인증 | NextAuth.js 4 (Google · GitHub, JWT 세션) |
 | 오디오·렌더링 | Web Audio API, 샘플 음원 mp3 |
 | 악보 인식 | Audiveris 5.11, Tesseract 5.5.2 (Python FastAPI 서비스) |
-| 인프라 | Vercel, Supabase (DB + Storage), NAVER Cloud VM (podman) |
+| 인프라 | Vercel, Supabase (DB + Storage), 모두의AI 할당 VM (podman) |
 | 테스트 | Jest, Playwright, GitHub Actions |
 
 ## 빠른 시작

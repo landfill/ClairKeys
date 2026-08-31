@@ -6,7 +6,7 @@ ClairKeys는 세 곳에서 나뉘어 실행된다. 나눈 기준은 **어느 자
 | 구성 요소 | 실행 위치 | 하는 일 | 필요한 환경변수 |
 |---|---|---|---|
 | Next.js 앱 | Vercel (서버리스) | 업로드 접수, 상태 폴링, 결과 저장, 재생 화면 | `SUPABASE_SERVICE_ROLE_KEY`, `OMR_SERVICE_URL`, `OMR_SHARED_SECRET` |
-| OMR 서비스 | NAVER Cloud VM (podman) | PDF → MusicXML → 애니메이션 JSON 변환 | `OMR_SHARED_SECRET`(요청 검증용), `ENVIRONMENT` |
+| OMR 서비스 | 모두의AI 할당 VM (podman) | PDF → MusicXML → 애니메이션 JSON 변환 | `OMR_SHARED_SECRET`(요청 검증용), `ENVIRONMENT` |
 | Supabase | 관리형 | PostgreSQL(메타데이터) + Storage(JSON 파일) | — |
 
 ```mermaid
@@ -20,7 +20,7 @@ flowchart TB
     R3["/sheet/:id"]
   end
 
-  subgraph M["NAVER Cloud VM · podman"]
+  subgraph M["모두의AI 할당 VM · podman"]
     direction LR
     F["FastAPI :8000"] --> A["Audiveris<br/>PDF → MusicXML"] --> C["converter.py<br/>MusicXML → JSON"]
     A -.->|"TEXTS 단계"| T["Tesseract OCR"]
