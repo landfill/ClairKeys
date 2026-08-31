@@ -16,7 +16,7 @@
 다음 권한과 값이 필요하다. 실제 비밀값을 이 문서, 이슈, 커밋, 채팅에 붙이지 않는다.
 
 - NAVER Cloud Platform: Server, Public IP, ACG를 생성·변경할 권한
-- 서버 인증키(PEM)와 SSH 접속 허용에 사용할 운영자 공인 IP
+- 새 VM 전용 NAVER Cloud 인증키(PEM)를 생성·보관할 수 있는 권한과 SSH를 허용할 운영자 공인 IP
 - GitHub 저장소 읽기 권한(이 저장소는 public이므로 현재는 별도 토큰 불필요)
 - Vercel ClairKeys 프로젝트의 Settings·Deployments 변경 권한
 - Supabase, Google OAuth, GitHub OAuth 관리자 권한 또는 기존 Vercel 값을 유지할 수 있는 권한
@@ -45,16 +45,30 @@
 NAVER Cloud 공식 흐름은 Server 생성 → 공인 IP 할당 → ACG 설정 순서다.
 
 - [서버 생성](https://guide.ncloud-docs.com/docs/server-create-vpc)
+- [서버 관리: 관리자 비밀번호·인증키](https://guide.ncloud-docs.com/docs/server-manage-vpc)
+- [서버 접속](https://guide.ncloud-docs.com/docs/server-access-vpc)
 - [공인 IP](https://guide.ncloud-docs.com/docs/server-publicip-vpc)
 - [ACG](https://guide.ncloud-docs.com/docs/server-acg-vpc)
 
 ## 2. VM·네트워크 생성
 
 1. `Compute > Server`에서 Public Subnet에 Rocky Linux VM을 만든다.
-2. 서버 반환 보호를 켜고 인증키 PEM을 안전하게 보관한다.
-3. `Public IP`에서 새 공인 IP를 신청해 VM에 할당한다. 아래에서는 이를
+2. 인증키 단계에서 **기존 VM 키를 재사용하지 말고 새 VM 전용 키**를 만든다. 이름에는 용도와 생성
+   날짜를 넣는다(예: `clairkeys-omr-20260831`). `[인증키 생성 및 저장]`으로 내려받은 `.pem`은 이때
+   바로 안전한 자격증명 보관소에 넣고, 별도 암호화 백업 1개를 둔다.
+
+   NAVER Cloud Server의 PEM은 SSH private key가 아니라 **콘솔에서 초기 관리자 이름·비밀번호를
+   확인하는 인증키**다. `ssh -i new-vm.pem ...`에 넣는 파일로 오해하지 않는다. PEM 본문은 저장소,
+   VM, 이슈, 채팅, 일반 클라우드 드라이브에 복사하지 않는다. Mac/Linux의 로컬 사본은 권한도 줄인다.
+
+```bash
+chmod 400 /secure/path/clairkeys-omr-20260831.pem
+```
+
+3. 서버 반환 보호를 켠다.
+4. `Public IP`에서 새 공인 IP를 신청해 VM에 할당한다. 아래에서는 이를
    `<NEW_PUBLIC_IP>`로 표기한다.
-4. 전용 ACG를 연결하고 다음 inbound 규칙만 둔다.
+5. 전용 ACG를 연결하고 다음 inbound 규칙만 둔다.
 
 | 프로토콜 | 출발지 | 포트 | 이유 |
 |---|---|---:|---|
@@ -65,13 +79,43 @@ NAVER Cloud 공식 흐름은 Server 생성 → 공인 IP 할당 → ACG 설정 �
 `127.0.0.1:3000:8000`으로 바꾼다. outbound HTTPS(443)는 GitHub clone, 이미지 빌드 의존성 다운로드,
 Vercel 완료 콜백에 필요하다.
 
-5. NACL을 별도로 제한했다면 22·3000 inbound와 DNS/HTTP/HTTPS outbound/return traffic도 허용한다.
-6. 콘솔이 알려주는 관리자 계정과 비밀번호 또는 키로 접속한 뒤 root shell로 전환한다.
+6. NACL을 별도로 제한했다면 22·3000 inbound와 DNS/HTTP/HTTPS outbound/return traffic도 허용한다.
+7. 서버가 `운영중`이 되면 Server 목록에서 새 VM을 선택하고
+   `서버 관리 및 설정 변경 > 관리자 비밀번호 확인`을 연다. **새 VM PEM**을 업로드해 콘솔이 보여 주는
+   관리자 이름과 초기 비밀번호를 안전한 자격증명 보관소에 저장한다. 구 VM PEM으로는 이 값을 확인할
+   수 없다.
+8. 콘솔이 알려 준 관리자 이름과 초기 비밀번호로 접속한 뒤 root shell로 전환하고, 초기 관리자
+   비밀번호를 즉시 바꾼다.
 
 ```bash
 ssh <ADMIN_USER>@<NEW_PUBLIC_IP>
 sudo -i
+passwd
 ```
+
+콘솔이 알려 준 관리자가 `root`면 `sudo -i`는 생략한다.
+
+9. 일상 접속은 NCP PEM이나 관리자 비밀번호에 의존하지 않도록 운영자 SSH public key를 등록한다.
+   아래 파일에는 운영자의 **public key 한 줄**만 넣고 private key는 VM에 복사하지 않는다.
+
+```bash
+install -d -m 700 /root/.ssh
+vi /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+```
+
+현재 세션을 닫기 전에 두 번째 터미널에서 운영자 SSH key로 새 접속이 되는지 확인한다. 이것이 실패하면
+ACG나 비밀번호 접속을 닫지 말고 먼저 복구한다.
+
+```bash
+ssh -i <OPERATOR_SSH_PRIVATE_KEY> root@<NEW_PUBLIC_IP>
+```
+
+접속 확인 뒤에만 조직 보안 정책에 따라 password SSH를 끈다. NCP PEM은 SSH를 꺼도 향후 관리자
+비밀번호 확인·초기화에 필요하므로 VM 수명 동안 보관한다. PEM을 분실했다면 구 키를 추측하거나 복사해
+쓰지 않는다. 공식 복구 절차대로 VM을 정지하고
+`서버 관리 및 설정 변경 > 서버 인증키 변경`에서 새 키를 만든다. 이 작업은 **관리자 비밀번호도 함께
+바꾸며 서버 중단이 필요**하므로, 변경 뒤 비밀번호 확인과 SSH 접속을 다시 검증한다.
 
 ## 3. OS 부트스트랩과 저장소 배치
 
@@ -300,7 +344,13 @@ Vercel의 Instant Rollback은 예전 build의 환경변수를 그대로 사용�
 3. 구 VM의 `/etc/clairkeys-omr.env`를 폐기하고 서버를 반환한다.
 4. 구 Public IP를 서버에서 해제한 뒤 반납한다. 미할당 IP도 보유 중이면 요금이 발생한다.
 5. 구 서버 전용 ACG 규칙과 SSH 접근을 제거한다.
-6. `docs/recovery/validation/`에 날짜, 새 VM 식별자, 배포 commit, image ID, 검증 결과를 기록한다.
+6. `서버 관리 및 설정 변경 > 인증키 관리`에서 구 VM 인증키가 다른 서버에 할당되지 않았는지 확인한
+   뒤 삭제한다. 새 VM 전용 PEM은 새 VM이 살아 있는 동안 유지한다. 구 PEM의 로컬 사본과 암호화 백업도
+   안전하게 폐기하되, 키가 다른 서버와 공유된 경우에는 삭제하지 말고 먼저 사용처를 분리한다.
+7. 자격증명 보관소의 운영 인벤토리에 새 VM ID, Public IP, 인증키 이름, 생성일, 보관 책임자를 기록한다.
+   PEM 내용과 관리자 비밀번호는 저장소의 validation 문서에 적지 않는다.
+8. `docs/recovery/validation/`에 날짜, 새 VM 식별자, 배포 commit, image ID, 비밀값을 제외한 검증
+   결과를 기록한다.
 
 ## 11. 이후 재배포
 
