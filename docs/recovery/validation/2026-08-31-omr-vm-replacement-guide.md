@@ -38,6 +38,10 @@ NAVER Cloud의 Server/Public IP/ACG 절차와 Vercel 환경변수 변경 후 새
 | local documentation target `test -f` checks | PASS |
 | `cd omr-service && python3 -m unittest tests.test_audiveris_runtime` | PASS — 13 tests |
 
+CodeRabbit 리뷰로 절체·롤백 drain과 HTTP 안전 게이트를 보강한 `9c43d35`에서도 `git diff --check`와
+같은 OMR deployment-contract 13 tests가 다시 통과했다. 실제 두 VM 사이의 drain은 외부 상태를
+바꾸는 운영 작업이므로 여전히 미실행이다.
+
 첫 OMR test 호출은 저장소 루트에서 `python3 -m unittest omr-service/tests/test_audiveris_runtime.py`로
 실행해 `ModuleNotFoundError: No module named 'omr'`가 났다. 테스트 실패가 아니라 documented module
 root와 다른 작업 디렉터리에서 실행한 호출 오류였고, `omr-service/`에서 다시 실행해 13개가 통과했다.
@@ -50,4 +54,3 @@ root와 다른 작업 디렉터리에서 실행한 호출 오류였고, `omr-ser
 
 이 항목들은 새 VM과 운영자 권한이 있어야 하며 이번 문서 작성 범위에서 외부 상태를 변경하지 않았다.
 실행 시 이 문서가 아니라 새 날짜의 운영 검증 기록을 별도로 남긴다.
-
