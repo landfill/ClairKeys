@@ -1,13 +1,25 @@
 # Current Handoff
 
-Last updated: 2026-08-30 KST
+Last updated: 2026-08-31 KST
 
 > 아래 "현재 상태"만 읽고 바로 시작할 수 있어야 한다. 그 아래 절들은 시간 역순 기록이며, 필요한
 > 맥락만 골라 읽는다.
 
 ## 현재 상태
 
-**Current phase**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
+**Current phase**: OMR VM 교체 운영 문서 보강. 시간 제한이 있는 NAVER Cloud VM을 동일 환경의 새
+VM으로 교체할 때 저장소만으로 재구축할 수 있는지 점검했고, 기존 문서가 이미 준비된 호스트에서
+시작해 VM·공인 IP·ACG 생성, OS bootstrap, Vercel 전체 변수, 절체·롤백·폐기를 다루지 않는 것을
+확인했다. canonical A–Z 가이드 `docs/vm-replacement.md`와 진입 링크를 PR
+[#102](https://github.com/landfill/ClairKeys/pull/102)에 추가했다. 애플리케이션·OMR 런타임·배포 설정은
+바꾸지 않았다. 검증 근거는 `docs/recovery/validation/2026-08-31-omr-vm-replacement-guide.md`, PR
+상태는 `docs/recovery/reviews/PR-102.md`와 GitHub live state에서 확인한다.
+
+**Next action**: PR #102의 CI와 리뷰 세 표면을 확인해 actionable feedback을 처리하고, 모두 결착된
+뒤에도 사용자의 명시적 병합 승인을 기다린다. 실제 VM 생성·Vercel 환경변수 변경·절체는 이번 문서
+PR 범위가 아니며 운영자 권한과 새 VM이 생긴 시점에 가이드대로 수행한다.
+
+**Previous completed track**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
 DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, DS-5, DS-6, **DS-7까지 `DONE`**이고, **이슈 #76은
 2026-08-30 `COMPLETED`로 닫혔다** — 사용자 지시로 종단 판정 요약을
 [코멘트](https://github.com/landfill/ClairKeys/issues/76#issuecomment-5468480106)로 남긴 뒤 닫았다.
@@ -16,7 +28,7 @@ DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, DS-5, DS-6, **DS-7까지 `DONE`**이고, **
 **2026-08-30 사용자 지시로 WCAG AA 요건(구 조건 7)을 제거해 완료 조건은 7개다** — D-030,
 PR [#95](https://github.com/landfill/ClairKeys/pull/95) 병합 완료(merge `08100c7`).
 
-**Next action**: 이슈 #76의 후속 작업 후보를 우선순위화한다. DS-7의 7개 조건과 PR #99 CI는 결착됐고,
+**이전 트랙의 next action**: 이슈 #76의 후속 작업 후보를 우선순위화한다. DS-7의 7개 조건과 PR #99 CI는 결착됐고,
 상세 근거는 `docs/recovery/validation/2026-08-30-DS-7-states.md`와 `docs/recovery/reviews/PR-99.md`에 있다.
 2026-08-30에는 버튼·뱃지·정보 라벨의 시각 일관성 후속 작업을 시작했고, 사용자 승인으로 PR #100을
 merge commit `bff1cc07b92d219c0250f3685f67feb019a75890`에 병합했다. 브라우저 피드백으로 재생
