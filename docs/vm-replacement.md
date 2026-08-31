@@ -7,6 +7,10 @@
 > 현재 운영 방식은 D-012가 허용한 테스트 단계의 평문 HTTP다. 실사용자 트래픽을 받기 전에는
 > `docs/recovery/DECISIONS.md`의 D-012 exit condition에 따라 TLS로 전환해야 한다.
 
+> **안전 게이트:** 이 문서의 `http://<NEW_PUBLIC_IP>:3000` 절체는 격리된 테스트 단계에만 허용된다.
+> 실사용자 트래픽을 받는 운영 절체라면 여기서 중단하고 먼저 TLS를 구성한 뒤
+> `OMR_SERVICE_URL=https://...`로 절체한다. D-012를 대체하는 새 결정 없이 이 조건을 완화하지 않는다.
+
 ## 0. 교체 전에 확보할 것
 
 다음 권한과 값이 필요하다. 실제 비밀값을 이 문서, 이슈, 커밋, 채팅에 붙이지 않는다.
@@ -55,7 +59,7 @@ NAVER Cloud 공식 흐름은 Server 생성 → 공인 IP 할당 → ACG 설정 �
 | 프로토콜 | 출발지 | 포트 | 이유 |
 |---|---|---:|---|
 | TCP | 운영자 공인 IP `/32` | 22 | SSH |
-| TCP | `0.0.0.0/0` | 3000 | 현재 D-012 테스트용 OMR HTTP |
+| TCP | `0.0.0.0/0` | 3000 | D-012의 격리된 테스트 단계 전용 OMR HTTP; 실사용자 운영 금지 |
 
 80·443은 TLS 전환을 실제로 수행할 때 연다. TLS 전환 뒤에는 3000을 외부에 열지 않고 unit을
 `127.0.0.1:3000:8000`으로 바꾼다. outbound HTTPS(443)는 GitHub clone, 이미지 빌드 의존성 다운로드,
@@ -199,7 +203,7 @@ Vercel 공식 [Environment variables](https://vercel.com/docs/environment-variab
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase Project URL | 공개 | 아니오 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key | 공개 | 아니오 |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | **예** | 아니오 |
-| `OMR_SERVICE_URL` | `http://<NEW_PUBLIC_IP>:3000` | 아니오 | **예** |
+| `OMR_SERVICE_URL` | D-012 테스트 단계는 `http://<NEW_PUBLIC_IP>:3000`; 실사용자 운영은 TLS를 먼저 구성한 `https://...` | 아니오 | **예** |
 | `OMR_SHARED_SECRET` | 새 VM `/etc/clairkeys-omr.env`와 정확히 같은 값 | **예** | **예** |
 
 `OMR_SERVICE_URL`과 `OMR_SHARED_SECRET`은 한 deployment에서 함께 바꾼다. URL만 바꾸면 새 VM이 401을
@@ -229,10 +233,24 @@ Production에서 다음 두 주소가 provider에 등록돼 있어야 하며 VM 
 
 ## 8. 절체
 
-1. 새 VM이 6절의 `200`/`401` 검사를 통과한 상태에서 Vercel의 `OMR_SERVICE_URL`과
+이 절의 HTTP 절체는 D-012의 격리된 테스트 deployment에만 적용한다. 실사용자 운영이라면 먼저 TLS를
+구성하고 외부 3000을 닫은 상태에서 같은 drain·절체 순서를 `https://...` 주소로 수행한다.
+
+1. 변경 시간을 공지하고 새 PDF 업로드를 중지한다. 현재 애플리케이션에는 maintenance switch나 job
+   목록 endpoint가 없으므로, 업로드할 수 있는 테스트 사용자를 통제하고 구 VM journal에서 그 시간까지
+   수락한 job ID를 기록한다.
+2. 구 VM이 기록한 모든 job에 대해 `Successfully completed job ...`와
+   `Delivered completed job ...` 로그가 모두 나타날 때까지 기다린다. 각 악보가 Supabase에 저장되고
+   `processingStatus=completed`인지 확인한다. 실패·처리 중 job이 하나라도 있으면 절체하지 않는다.
+
+```bash
+journalctl -u clairkeys-omr --since '<CHANGE_WINDOW_START>' --no-pager
+```
+
+3. 새 VM이 6절의 `200`/`401` 검사를 통과한 상태에서 Vercel의 `OMR_SERVICE_URL`과
    `OMR_SHARED_SECRET`을 함께 갱신한다.
-2. 최신 Production deployment를 **Redeploy**한다. 환경변수 저장만으로 기존 deployment는 바뀌지 않는다.
-3. deployment가 Ready가 된 뒤 공개 앱이 응답하는지 확인한다.
+4. 최신 Production deployment를 **Redeploy**한다. 환경변수 저장만으로 기존 deployment는 바뀌지 않는다.
+5. deployment가 Ready가 된 뒤 공개 앱이 응답하는지 확인한다.
 
 ```bash
 curl --fail --silent --output /dev/null https://clairkeys.vercel.app/
@@ -241,10 +259,12 @@ curl --fail --silent --output /dev/null https://clairkeys.vercel.app/
 `/api/health`는 선택 변수 `SUPABASE_URL`·`SUPABASE_ANON_KEY`가 없으면 의도적으로 degraded/503을
 반환하므로 VM 절체의 단독 성공 판정으로 쓰지 않는다.
 
-4. 브라우저에서 로그인 → 실제 PDF(4MB 이하) 업로드 → 처리 완료 → 악보 첫 재생까지 수행한다.
-5. 업로드 직후 화면을 벗어나도 완료되는지 한 번 더 확인한다. 이는 새 VM에서 Vercel
+6. 브라우저에서 로그인 → 실제 PDF(4MB 이하) 업로드 → 처리 완료 → 악보 첫 재생까지 수행한다.
+7. 업로드 직후 화면을 벗어나도 완료되는지 한 번 더 확인한다. 이는 새 VM에서 Vercel
    `/api/omr/finalize`로 나가는 콜백까지 검증한다.
-6. VM journal에서 해당 요청이 401/403이 아니라 처리·콜백 완료로 끝나는지 확인한다.
+8. VM journal에서 해당 요청이 401/403이 아니라 처리·콜백 완료로 끝나는지 확인한다. Vercel 로그와
+   Supabase 행도 대조해 `/api/omr/finalize`가 2xx였고 결과 저장과 `processingStatus=completed`가
+   끝났는지 확인한다.
 
 ```bash
 journalctl -u clairkeys-omr --since '30 minutes ago' --no-pager
@@ -257,10 +277,15 @@ Supabase Storage에 저장하고 해당 악보가 재생되는 것이다.
 
 새 VM 또는 새 deployment에 문제가 있으면 구 VM을 반환하기 전에 다음 순서로 되돌린다.
 
-1. Vercel의 `OMR_SERVICE_URL`과 `OMR_SHARED_SECRET`을 **둘 다** 구 값으로 복원한다.
-2. 새 Production deployment를 만든다.
-3. 구 VM의 외부 `/health` 200, 무토큰 `/process` 401, 실제 업로드를 다시 확인한다.
-4. 새 VM은 원인 분석 동안 중지하지 말고 journal과 이미지 태그를 보존한다.
+1. 새 업로드를 다시 중지한다.
+2. 새 VM이 이미 수락한 모든 job의 변환과 완료 callback이 2xx로 끝나고, Supabase 결과 저장과
+   `processingStatus=completed`가 확인될 때까지 기다린다. 처리 중 job이 있으면 URL·시크릿을 먼저
+   되돌리지 않는다.
+3. Vercel의 `OMR_SERVICE_URL`과 `OMR_SHARED_SECRET`을 **둘 다** 구 값으로 복원한다.
+4. 새 Production deployment를 만든다.
+5. 구 VM의 외부 `/health` 200, 무토큰 `/process` 401, 실제 업로드를 다시 확인한다.
+6. 구 VM에서 수락한 rollback 후 job도 callback 2xx와 Supabase 저장까지 확인한다.
+7. 새 VM은 원인 분석 동안 중지하지 말고 journal과 이미지 태그를 보존한다.
 
 Vercel의 Instant Rollback은 예전 build의 환경변수를 그대로 사용하므로, 환경변수 절체 장애를 해결하는
 수단으로 단독 사용하지 않는다. 어떤 URL·시크릿 쌍이 배포에 들어갔는지 함께 복원해야 한다.

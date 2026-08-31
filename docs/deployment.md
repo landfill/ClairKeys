@@ -47,7 +47,7 @@ Storage 버킷(`animation-data`)은 `npm run init-storage`로 만든다. 정합�
 명령과 systemd unit 설명은 [omr-service/deploy/README.md](../omr-service/deploy/README.md)에 있다.
 아래는 구조 요약이다.
 
-```
+```text
 Vercel ──HTTP──> VM :3000 ──> 컨테이너 :8000
 ```
 

@@ -11,9 +11,8 @@ Read it before changing anything here.
 
 ## What runs
 
-```
-Vercel ──HTTP──> 0.0.0.0:3000 ──> container :8000
-                 <VM_PUBLIC_IP>
+```text
+Vercel ──HTTP──> <VM_PUBLIC_IP>:3000 ──> container :8000
 ```
 
 - **No TLS.** Test phase only; D-012 records what that accepts and the condition
