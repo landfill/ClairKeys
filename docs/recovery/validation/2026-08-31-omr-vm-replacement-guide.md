@@ -72,3 +72,14 @@ root와 다른 작업 디렉터리에서 실행한 호출 오류였고, `omr-ser
 
 이 항목들은 새 VM과 운영자 권한이 있어야 하며 이번 문서 작성 범위에서 외부 상태를 변경하지 않았다.
 실행 시 이 문서가 아니라 새 날짜의 운영 검증 기록을 별도로 남긴다.
+
+## Merge verification
+
+- User-approved PR #102 merge completed on 2026-08-31 KST as merge commit
+  `941d897ddc998cca2f958c948b79ee99764757dc`.
+- Merge commit checks `Lint`, `Run Tests`, `Security Audit`, `Post-merge tests`,
+  `Post-merge build`, and `E2E Tests` all completed successfully.
+- `origin/main` and local `main` contain feature tip
+  `0dad6470c21db7099752466b3ceac19009612b21`.
+- The remote and local `codex/ops-vm-replacement-guide` branches were deleted after both tip
+  ancestry checks passed and the worktree remained clean.

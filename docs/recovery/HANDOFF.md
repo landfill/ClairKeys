@@ -7,21 +7,27 @@ Last updated: 2026-08-31 KST
 
 ## 현재 상태
 
-**Current phase**: OMR VM 교체 운영 문서 보강. 모두의AI가 OS만 설치된 새 VM과 접속정보를 할당한
+**Current phase**: OMR VM 교체 운영 문서 보강 **완료**. 모두의AI가 OS만 설치된 새 VM과 접속정보를 할당한
 시점부터 저장소만으로 재구축할 수 있는지 점검했고, 기존 문서가 이미 준비된 호스트에서 시작해 새
 PEM·host fingerprint·OS/사양/권한 검수, provider 포트 요청, Vercel 전체 변수, 절체·롤백·반납을
 다루지 않는 것을 확인했다. canonical A–Z 가이드 `docs/vm-replacement.md`와 진입 링크를 PR
 [#102](https://github.com/landfill/ClairKeys/pull/102)에 추가했다. 애플리케이션·OMR 런타임·배포 설정은
 바꾸지 않았다. 검증 근거는 `docs/recovery/validation/2026-08-31-omr-vm-replacement-guide.md`, PR
-상태는 `docs/recovery/reviews/PR-102.md`와 GitHub live state에서 확인한다.
+상태는 `docs/recovery/reviews/PR-102.md`에서 확인한다. 사용자 승인으로 PR #102를 merge commit
+`941d897ddc998cca2f958c948b79ee99764757dc`에 병합했고 post-merge checks 6개가 모두 성공했다.
 
-**Next action**: 사용자가 두 번 전제를 바로잡았다. 첫째 VM마다 PEM이 바뀐다. 둘째 작업자가 NAVER
+**Next action**: 실제 모두의AI VM 교체 요청이 생기면 병합된 `docs/vm-replacement.md`의 0절부터
+실행하고 새 날짜의 운영 validation을 남긴다. 이번 문서 작업에서 외부 VM·Vercel 상태는 바꾸지 않았다.
+작업 브랜치 `codex/ops-vm-replacement-guide`는 local/remote tip이 main에 포함된 것을 확인한 뒤
+원격→로컬 순서로 삭제했으며 현재 worktree는 clean main이다.
+
+**이번 작업의 전제 수정 기록**: 사용자가 두 번 전제를 바로잡았다. 첫째 VM마다 PEM이 바뀐다. 둘째 작업자가 NAVER
 Cloud에서 VM을 만들지 않고 모두의AI 신청으로 OS-only VM·주소·SSH PEM을 할당받는다. NCP 인증키
 생성·관리자 비밀번호 확인이라는 잘못된 전제를 제거하고, 모두의AI 할당 체크리스트·새 SSH PEM·host
 fingerprint·OS/사양/권한 확인·provider 포트 요청·구 VM/PEM 반납으로 커밋 `0dad647`을 push했다.
 최신 head의 Lint, Lint and Type Check, Run Tests, Security Audit, E2E Tests, Vercel, aggregate checks가
-모두 성공했고 PR은 `MERGEABLE`/`CLEAN`이다. 사용자가 문서 PR에는 CodeRabbit 리뷰를 요청하지 말라고
-지시해 이번 head에는 수동 리뷰를 요청하지 않았다. 이제 사용자의 명시적 병합 승인을 기다린다.
+모두 성공했고 병합 직전 `MERGEABLE`/`CLEAN`이었다. 사용자가 문서 PR에는 CodeRabbit 리뷰를 요청하지
+말라고 지시해 이번 head에는 수동 리뷰를 요청하지 않았다.
 그 직전 head `9c43d35`까지의 CI는 모두 성공했다. 수동 CodeRabbit 리뷰 4건을 처리했고 reviewer가 네 건
 모두 addressed로 확인했으며 미해결 스레드는 0건이다. fence 태그·공개 주소·절체 drain은 수용했고,
 현재 테스트 deployment에서 3000/HTTP를 제거하라는 요구는 D-012를 사용자 결정 없이 뒤집으므로
