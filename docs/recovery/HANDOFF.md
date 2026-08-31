@@ -19,14 +19,14 @@ PEM·host fingerprint·OS/사양/권한 검수, provider 포트 요청, Vercel �
 Cloud에서 VM을 만들지 않고 모두의AI 신청으로 OS-only VM·주소·SSH PEM을 할당받는다. NCP 인증키
 생성·관리자 비밀번호 확인이라는 잘못된 전제를 제거하고, 모두의AI 할당 체크리스트·새 SSH PEM·host
 fingerprint·OS/사양/권한 확인·provider 포트 요청·구 VM/PEM 반납으로 커밋 `0dad647`을 push했다.
-최신 head의 일반 CI 결착이 다음 행동이다. 사용자가 문서 PR에는 CodeRabbit 리뷰를 요청하지 말라고
-지시했으므로 이번 head에 수동 리뷰를 요청하지 않는다.
+최신 head의 Lint, Lint and Type Check, Run Tests, Security Audit, E2E Tests, Vercel, aggregate checks가
+모두 성공했고 PR은 `MERGEABLE`/`CLEAN`이다. 사용자가 문서 PR에는 CodeRabbit 리뷰를 요청하지 말라고
+지시해 이번 head에는 수동 리뷰를 요청하지 않았다. 이제 사용자의 명시적 병합 승인을 기다린다.
 그 직전 head `9c43d35`까지의 CI는 모두 성공했다. 수동 CodeRabbit 리뷰 4건을 처리했고 reviewer가 네 건
 모두 addressed로 확인했으며 미해결 스레드는 0건이다. fence 태그·공개 주소·절체 drain은 수용했고,
 현재 테스트 deployment에서 3000/HTTP를 제거하라는 요구는 D-012를 사용자 결정 없이 뒤집으므로
 기각하되 격리 테스트 전용 안전 게이트와 실사용자 TLS 필수를 더 명확히 했다. 네 스레드는 모두 해결
-상태다. 최신 head의 CI가 결착되면 PR은 review-ready `OPEN` 상태에서 사용자의 명시적 병합 승인을
-기다린다. 실제 모두의AI VM 신청·Vercel 환경변수 변경·절체는 이번 문서 PR 범위가 아니다.
+상태다. 실제 모두의AI VM 신청·Vercel 환경변수 변경·절체는 이번 문서 PR 범위가 아니다.
 
 **Previous completed track**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
 DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, DS-5, DS-6, **DS-7까지 `DONE`**이고, **이슈 #76은

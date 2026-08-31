@@ -56,6 +56,10 @@ OS-only VM과 새 SSH PEM을 할당한다고 바로잡아 `0dad647`이 이를 su
 `0dad647`에서 `git diff --check`와 OMR deployment-contract 13 tests가 다시 통과했다. 실제 할당·PEM
 접속·포트 요청·반납은 모두의AI가 새 VM을 할당한 시점에 검증한다.
 
+PR head `0dad647`의 Lint, Lint and Type Check, Run Tests, Security Audit, E2E Tests, Vercel, aggregate
+checks도 모두 성공했다. 사용자의 명시적 지시에 따라 이 문서 head에는 CodeRabbit 리뷰를 수동 요청하지
+않았다(`Review skipped: manual review required` 상태를 그대로 유지).
+
 첫 OMR test 호출은 저장소 루트에서 `python3 -m unittest omr-service/tests/test_audiveris_runtime.py`로
 실행해 `ModuleNotFoundError: No module named 'omr'`가 났다. 테스트 실패가 아니라 documented module
 root와 다른 작업 디렉터리에서 실행한 호출 오류였고, `omr-service/`에서 다시 실행해 13개가 통과했다.
