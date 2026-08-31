@@ -21,6 +21,14 @@ PEM·host fingerprint·OS/사양/권한 검수, provider 포트 요청, Vercel �
 작업 브랜치 `codex/ops-vm-replacement-guide`는 local/remote tip이 main에 포함된 것을 확인한 뒤
 원격→로컬 순서로 삭제했으며 현재 worktree는 clean main이다.
 
+**2026-08-31 신규 후속 이슈 3건 등록**: 악보 재생의 모든 노트에 손가락 번호를 제공하는 데이터·표시
+계약은 이슈 [#103](https://github.com/landfill/ClairKeys/issues/103), 마이페이지를 공통 앱 셸과 디자인
+시스템에 맞추는 작업은 이슈 [#104](https://github.com/landfill/ClairKeys/issues/104), 운영 `/library`
+진입과 `/explore` 검색 탭의 응답 지연을 계측해 원인을 확정하고 개선하는 작업은 이슈
+[#105](https://github.com/landfill/ClairKeys/issues/105)에 각각 기록했다. #105 본문의 코드 관찰은 확정
+원인이 아니라 운영 waterfall·서버·DB 계측으로 검증할 조사 후보로 구분했다. 세 이슈 모두 구현은
+시작하지 않았고 애플리케이션·운영 환경은 변경하지 않았다.
+
 **이번 작업의 전제 수정 기록**: 사용자가 두 번 전제를 바로잡았다. 첫째 VM마다 PEM이 바뀐다. 둘째 작업자가 NAVER
 Cloud에서 VM을 만들지 않고 모두의AI 신청으로 OS-only VM·주소·SSH PEM을 할당받는다. NCP 인증키
 생성·관리자 비밀번호 확인이라는 잘못된 전제를 제거하고, 모두의AI 할당 체크리스트·새 SSH PEM·host
