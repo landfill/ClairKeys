@@ -42,6 +42,17 @@ CodeRabbit 리뷰로 절체·롤백 drain과 HTTP 안전 게이트를 보강한 
 같은 OMR deployment-contract 13 tests가 다시 통과했다. 실제 두 VM 사이의 drain은 외부 상태를
 바꾸는 운영 작업이므로 여전히 미실행이다.
 
+사용자 피드백으로 PEM 수명주기를 보강한 `c7c4013`에서도 같은 두 검증이 통과했다. NAVER Cloud
+공식 Server 생성·관리·접속 가이드와 대조해 다음 플랫폼 계약을 문서에 반영했다.
+
+- 새 VM 전용 인증키를 생성하고 `.pem`을 안전하게 저장한다.
+- Server PEM은 SSH identity가 아니라 콘솔에서 초기 관리자 이름·비밀번호를 확인하는 키다.
+- 분실 시 서버를 정지하고 인증키를 변경해야 하며 관리자 비밀번호도 함께 바뀐다.
+- 인증키는 할당되지 않은 상태에서만 삭제한다. 따라서 구 VM 반환 뒤 할당 목록을 확인하고 폐기한다.
+
+실제 PEM 생성·관리자 비밀번호 확인·SSH public key 등록·구 키 삭제는 운영자 권한이 없어 실행하지
+않았다. PEM 내용이나 비밀번호는 검증 기록에 남기지 않는 것이 계약이다.
+
 첫 OMR test 호출은 저장소 루트에서 `python3 -m unittest omr-service/tests/test_audiveris_runtime.py`로
 실행해 `ModuleNotFoundError: No module named 'omr'`가 났다. 테스트 실패가 아니라 documented module
 root와 다른 작업 디렉터리에서 실행한 호출 오류였고, `omr-service/`에서 다시 실행해 13개가 통과했다.
