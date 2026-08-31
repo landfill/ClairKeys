@@ -4,6 +4,10 @@
 
 ## Next.js 앱 (로컬 개발 · Vercel)
 
+Vercel Production에 실제로 등록할 값, 환경별 적용 범위, VM 교체 때 함께 바꿔야 하는 값은
+[OMR VM 교체 가이드](vm-replacement.md#7-vercel에-등록할-환경변수)에 있다. 환경변수를 바꾼 뒤에는
+기존 deployment에 소급되지 않으므로 새 deployment가 필요하다.
+
 ### 필수
 
 | 변수 | 용도 | 얻는 곳 |

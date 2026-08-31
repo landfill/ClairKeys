@@ -185,6 +185,7 @@ ClairKeys/
 | [docs/security.md](docs/security.md) | 자격증명 배치, 서비스 간 인증, 공개 버킷 |
 | [docs/testing.md](docs/testing.md) | 테스트 실행 방법과 범위, CI 구성 |
 | [docs/deployment.md](docs/deployment.md) | Vercel, Supabase, OMR 서비스 배포 |
+| [docs/vm-replacement.md](docs/vm-replacement.md) | OMR VM 생성, Vercel 절체, 검증, 롤백, 구 VM 폐기 |
 | [omr-service/README.md](omr-service/README.md) | OMR 서비스 개발·컨테이너 실행 |
 | [docs/recovery/](docs/recovery/) | 설계 결정 기록, 단계별 계획, 검증 로그 |
 
