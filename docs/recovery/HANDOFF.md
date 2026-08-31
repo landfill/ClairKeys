@@ -7,24 +7,26 @@ Last updated: 2026-08-31 KST
 
 ## 현재 상태
 
-**Current phase**: OMR VM 교체 운영 문서 보강. 시간 제한이 있는 NAVER Cloud VM을 동일 환경의 새
-VM으로 교체할 때 저장소만으로 재구축할 수 있는지 점검했고, 기존 문서가 이미 준비된 호스트에서
-시작해 VM·공인 IP·ACG 생성, OS bootstrap, Vercel 전체 변수, 절체·롤백·폐기를 다루지 않는 것을
-확인했다. canonical A–Z 가이드 `docs/vm-replacement.md`와 진입 링크를 PR
+**Current phase**: OMR VM 교체 운영 문서 보강. 모두의AI가 OS만 설치된 새 VM과 접속정보를 할당한
+시점부터 저장소만으로 재구축할 수 있는지 점검했고, 기존 문서가 이미 준비된 호스트에서 시작해 새
+PEM·host fingerprint·OS/사양/권한 검수, provider 포트 요청, Vercel 전체 변수, 절체·롤백·반납을
+다루지 않는 것을 확인했다. canonical A–Z 가이드 `docs/vm-replacement.md`와 진입 링크를 PR
 [#102](https://github.com/landfill/ClairKeys/pull/102)에 추가했다. 애플리케이션·OMR 런타임·배포 설정은
 바꾸지 않았다. 검증 근거는 `docs/recovery/validation/2026-08-31-omr-vm-replacement-guide.md`, PR
 상태는 `docs/recovery/reviews/PR-102.md`와 GitHub live state에서 확인한다.
 
-**Next action**: 사용자가 "VM이 바뀌면 PEM도 바뀐다"는 누락을 지적해 새 VM 전용 NCP 인증키 생성,
-관리자 비밀번호 확인, 별도 운영자 SSH key 등록, PEM 분실 시 중단을 수반하는 인증키 변경, 구 PEM
-할당 확인·폐기를 커밋 `c7c4013`으로 보강했다. 이 head의 CI도 전부 성공했고 세 리뷰 표면 재확인에서
-새 지적이 없으며 미해결 스레드는 0건이다.
+**Next action**: 사용자가 두 번 전제를 바로잡았다. 첫째 VM마다 PEM이 바뀐다. 둘째 작업자가 NAVER
+Cloud에서 VM을 만들지 않고 모두의AI 신청으로 OS-only VM·주소·SSH PEM을 할당받는다. NCP 인증키
+생성·관리자 비밀번호 확인이라는 잘못된 전제를 제거하고, 모두의AI 할당 체크리스트·새 SSH PEM·host
+fingerprint·OS/사양/권한 확인·provider 포트 요청·구 VM/PEM 반납으로 커밋 `0dad647`을 push했다.
+최신 head의 일반 CI 결착이 다음 행동이다. 사용자가 문서 PR에는 CodeRabbit 리뷰를 요청하지 말라고
+지시했으므로 이번 head에 수동 리뷰를 요청하지 않는다.
 그 직전 head `9c43d35`까지의 CI는 모두 성공했다. 수동 CodeRabbit 리뷰 4건을 처리했고 reviewer가 네 건
 모두 addressed로 확인했으며 미해결 스레드는 0건이다. fence 태그·공개 주소·절체 drain은 수용했고,
 현재 테스트 deployment에서 3000/HTTP를 제거하라는 요구는 D-012를 사용자 결정 없이 뒤집으므로
 기각하되 격리 테스트 전용 안전 게이트와 실사용자 TLS 필수를 더 명확히 했다. 네 스레드는 모두 해결
-상태다. PR은 review-ready `OPEN` 상태에서 사용자의 명시적 병합 승인을 기다린다. 실제 VM 생성·Vercel
-환경변수 변경·절체는 이번 문서 PR 범위가 아니며 운영자 권한과 새 VM이 생긴 시점에 가이드대로 수행한다.
+상태다. 최신 head의 CI가 결착되면 PR은 review-ready `OPEN` 상태에서 사용자의 명시적 병합 승인을
+기다린다. 실제 모두의AI VM 신청·Vercel 환경변수 변경·절체는 이번 문서 PR 범위가 아니다.
 
 **Previous completed track**: 이슈 [#76](https://github.com/landfill/ClairKeys/issues/76) 디자인 개편 트랙.
 DS-0, DS-G1, DS-1, DS-2, DS-3, DS-4, DS-5, DS-6, **DS-7까지 `DONE`**이고, **이슈 #76은
