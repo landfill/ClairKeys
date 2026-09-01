@@ -85,7 +85,7 @@ model SheetMusic {
 
   @@index([provenance])
   @@index([userId, updatedAt])
-  @@index([isPublic, provenance, createdAt])
+  @@index([isPublic, createdAt])
   @@index([categoryId, isPublic, provenance])
 }
 

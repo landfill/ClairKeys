@@ -37,7 +37,7 @@ export async function GET() {
       return NextResponse.json(cachedCategories, {
         headers: {
           'X-Cache': 'HIT',
-          'X-Database-Queries': '0',
+          'X-Category-Queries': '0',
           'Server-Timing': [
             `auth;dur=${authDurationMs.toFixed(1)}`,
             `cache;dur=${cacheDurationMs.toFixed(1)};desc="hit"`,
@@ -69,7 +69,7 @@ export async function GET() {
     return NextResponse.json(categories, {
       headers: {
         'X-Cache': 'MISS',
-        'X-Database-Queries': '1',
+        'X-Category-Queries': '1',
         'Server-Timing': [
           `auth;dur=${authDurationMs.toFixed(1)}`,
           `cache;dur=${cacheDurationMs.toFixed(1)};desc="miss"`,

@@ -29,7 +29,8 @@ describe('GET /api/categories timing surface', () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get('X-Cache')).toBe('HIT')
-    expect(response.headers.get('X-Database-Queries')).toBe('0')
+    expect(response.headers.get('X-Category-Queries')).toBe('0')
+    expect(response.headers.get('X-Database-Queries')).toBeNull()
     expect(response.headers.get('Server-Timing')).toContain('cache;dur=')
     expect(prisma.category.findMany).not.toHaveBeenCalled()
   })
@@ -42,7 +43,8 @@ describe('GET /api/categories timing surface', () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get('X-Cache')).toBe('MISS')
-    expect(response.headers.get('X-Database-Queries')).toBe('1')
+    expect(response.headers.get('X-Category-Queries')).toBe('1')
+    expect(response.headers.get('X-Database-Queries')).toBeNull()
     expect(response.headers.get('Server-Timing')).toContain('db;dur=')
   })
 })

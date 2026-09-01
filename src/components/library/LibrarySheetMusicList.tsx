@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button'
 import Loading from '@/components/ui/Loading'
 import StatusState from '@/components/ui/StatusState'
 
-interface LibrarySheetMusicListProps {
+export interface LibrarySheetMusicListProps {
   selectedCategoryId?: number | null
   searchQuery?: string
   sortBy?: 'recent' | 'name' | 'created'

@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
           `db;dur=${databaseDurationMs.toFixed(1)};desc="1 query"`,
           `total;dur=${totalDurationMs.toFixed(1)}`
         ].join(', '),
-        'X-Database-Queries': '1'
+        'X-Sheet-Queries': '1'
       }
     })
 

@@ -66,7 +66,8 @@ describe('GET /api/sheet/search public provenance boundary', () => {
     expect(response.headers.get('Cache-Control')).toBe(
       'public, s-maxage=60, stale-while-revalidate=300'
     )
-    expect(response.headers.get('X-Database-Queries')).toBe('4')
+    expect(response.headers.get('X-Search-Queries')).toBe('4')
+    expect(response.headers.get('X-Database-Queries')).toBeNull()
     expect(response.headers.get('Server-Timing')).toContain('db;dur=')
   })
 })

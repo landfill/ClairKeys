@@ -7,6 +7,16 @@ interface UseSheetMusicSearchOptions {
   debounceMs?: number
 }
 
+const paramsKey = (params: SearchSheetMusicParams) => JSON.stringify([
+  params.search ?? null,
+  params.categoryId ?? null,
+  params.isPublic ?? null,
+  params.limit ?? null,
+  params.offset ?? null,
+  params.sortBy ?? null,
+  params.sortOrder ?? null,
+])
+
 export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
   const {
     initialParams = {},
@@ -20,6 +30,8 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
   const [error, setError] = useState<string | null>(null)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hasStartedAutoSearchRef = useRef(false)
+  const lastAutoSearchKeyRef = useRef<string | null>(null)
+  const queuedAutoSearchKeyRef = useRef<string | null>(null)
   const latestRequestRef = useRef(0)
   const paramsRef = useRef(params)
 
@@ -82,14 +94,26 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
   useEffect(() => {
     if (!autoSearch) return
 
+    const currentParamsKey = paramsKey(params)
+    if (
+      lastAutoSearchKeyRef.current === currentParamsKey ||
+      queuedAutoSearchKeyRef.current === currentParamsKey
+    ) {
+      return
+    }
+
     if (!hasStartedAutoSearchRef.current) {
       hasStartedAutoSearchRef.current = true
+      lastAutoSearchKeyRef.current = currentParamsKey
       void search(params)
       return
     }
 
+    queuedAutoSearchKeyRef.current = currentParamsKey
     debounceTimerRef.current = setTimeout(() => {
       debounceTimerRef.current = null
+      queuedAutoSearchKeyRef.current = null
+      lastAutoSearchKeyRef.current = currentParamsKey
       void search(params)
     }, debounceMs)
 
@@ -97,6 +121,9 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current)
         debounceTimerRef.current = null
+      }
+      if (queuedAutoSearchKeyRef.current === currentParamsKey) {
+        queuedAutoSearchKeyRef.current = null
       }
     }
   }, [params, search, autoSearch, debounceMs])
@@ -125,6 +152,8 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
       clearTimeout(debounceTimerRef.current)
       debounceTimerRef.current = null
     }
+    queuedAutoSearchKeyRef.current = null
+    lastAutoSearchKeyRef.current = paramsKey(paramsRef.current)
     void search(paramsRef.current)
   }, [search])
 

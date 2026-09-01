@@ -181,7 +181,7 @@ export async function GET(request: NextRequest) {
         `db;dur=${databaseDurationMs.toFixed(1)};desc="${databaseQueryCount} queries"`,
         `total;dur=${totalDurationMs.toFixed(1)}`
       ].join(', '),
-      'X-Database-Queries': String(databaseQueryCount)
+      'X-Search-Queries': String(databaseQueryCount)
     }
     if (publicOnly) {
       headers['Cache-Control'] = 'public, s-maxage=60, stale-while-revalidate=300'
