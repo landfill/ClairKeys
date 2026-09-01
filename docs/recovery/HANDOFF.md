@@ -7,7 +7,23 @@ Last updated: 2026-09-01 KST
 
 ## 현재 상태
 
-**Current phase**: OMR VM 교체 운영 문서 보강 **완료**. 모두의AI가 OS만 설치된 새 VM과 접속정보를 할당한
+**Current phase**: 이슈 [#105](https://github.com/landfill/ClairKeys/issues/105) `/library`·`/explore`
+검색 지연 개선 **IN_REVIEW**. 변경 전 운영 측정에서 `/library` 앱 셸 뒤 목록 데이터 대기가
+1.50~1.59초, 검색 탭 입력 UI 뒤 결과 대기가 3.07~3.27초였고, 공개 검색 API TTFB는 5회
+2.87~6.86초였다. 공개 검색의 불필요한 세션·사용자 카테고리 요청, 500ms 초기 debounce, DB 질의의
+두 파형 실행, 라이브러리의 검색·mutation 중복 요청과 카테고리 로딩 결속을 해소한 PR
+[#106](https://github.com/landfill/ClairKeys/pull/106)을 review-ready로 열었다. 코드 head는
+`3aeee65ae62eb0eeeda599eee23d1ee639f9a2aa`, 검증은
+`docs/recovery/validation/2026-09-01-issue-105-performance.md`, 리뷰 상태는
+`docs/recovery/reviews/PR-106.md`에서 확인한다.
+
+**Next action**: PR #106의 CI와 세 리뷰 표면을 확인하고 actionable feedback을 처리한다. Vercel preview가
+열리면 public-only 검색의 `Server-Timing`, `X-Database-Queries`, cache hit와 응답 시간을 변경 전과
+같은 조건으로 측정한다. 병합에는 사용자 명시적 승인이 필요하다. 병합·배포 뒤 production after-value와
+실제 `/library` waterfall을 다시 재고, 새 복합 인덱스 3개가 운영 DB에 적용됐는지 별도로 확인해야
+이슈 #105를 닫을 수 있다. 현재 운영 DB·Vercel production은 변경하지 않았다.
+
+**Previous completed operational track**: OMR VM 교체 운영 문서 보강 **완료**. 모두의AI가 OS만 설치된 새 VM과 접속정보를 할당한
 시점부터 저장소만으로 재구축할 수 있는지 점검했고, 기존 문서가 이미 준비된 호스트에서 시작해 새
 PEM·host fingerprint·OS/사양/권한 검수, provider 포트 요청, Vercel 전체 변수, 절체·롤백·반납을
 다루지 않는 것을 확인했다. canonical A–Z 가이드 `docs/vm-replacement.md`와 진입 링크를 PR
@@ -16,7 +32,7 @@ PEM·host fingerprint·OS/사양/권한 검수, provider 포트 요청, Vercel �
 상태는 `docs/recovery/reviews/PR-102.md`에서 확인한다. 사용자 승인으로 PR #102를 merge commit
 `941d897ddc998cca2f958c948b79ee99764757dc`에 병합했고 post-merge checks 6개가 모두 성공했다.
 
-**Next action**: 실제 모두의AI VM 교체 요청이 생기면 병합된 `docs/vm-replacement.md`의 0절부터
+**VM 교체 트랙의 next action**: 실제 모두의AI VM 교체 요청이 생기면 병합된 `docs/vm-replacement.md`의 0절부터
 실행하고 새 날짜의 운영 validation을 남긴다. 이번 문서 작업에서 외부 VM·Vercel 상태는 바꾸지 않았다.
 작업 브랜치 `codex/ops-vm-replacement-guide`는 local/remote tip이 main에 포함된 것을 확인한 뒤
 원격→로컬 순서로 삭제했으며 현재 worktree는 clean main이다.
