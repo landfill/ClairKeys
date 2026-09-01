@@ -106,3 +106,26 @@ validates request count and rendering, not a local real-DB latency. CI supplies 
 - authenticated `/library` request header timing after deployment
 
 These are completion gates for issue #105, not evidence already obtained.
+
+## Vercel preview after measurement
+
+Preview: `clairkeys-git-codex-issue-105-performance-landfills-projects.vercel.app`
+
+Direct unauthenticated `curl` received Vercel protection 302, so response headers could not be read that way.
+The logged-in Vercel browser session could open the preview application. The preview application itself was signed
+out, which is sufficient for public search but not authenticated `/library`.
+
+| sample | input visible | results visible | result wait after input |
+|---|---:|---:|---:|
+| first/cold | 326 ms | 2,624 ms | 2,298 ms |
+| warm 1 | 323 ms | 340 ms | 17 ms |
+| warm 2 | 327 ms | 343 ms | 16 ms |
+| warm 3 | 232 ms | 451 ms | 219 ms |
+
+Compared with production before-values, the first result wait improved from 3.068~3.270 seconds to 2.298 seconds.
+Warm-cache result wait was 16~219 ms. The shared-cache behavior is therefore observable in the user journey, while
+the exact `Server-Timing` and `X-Database-Queries` preview headers remain covered by route tests rather than direct
+preview header capture.
+
+Authenticated `/library` after-values remain a production post-deploy gate because OAuth cookies do not cross from
+`clairkeys.vercel.app` to the branch preview domain.

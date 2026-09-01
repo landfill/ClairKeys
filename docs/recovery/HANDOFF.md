@@ -17,11 +17,18 @@ Last updated: 2026-09-01 KST
 `docs/recovery/validation/2026-09-01-issue-105-performance.md`, 리뷰 상태는
 `docs/recovery/reviews/PR-106.md`에서 확인한다.
 
-**Next action**: PR #106의 CI와 세 리뷰 표면을 확인하고 actionable feedback을 처리한다. Vercel preview가
-열리면 public-only 검색의 `Server-Timing`, `X-Database-Queries`, cache hit와 응답 시간을 변경 전과
-같은 조건으로 측정한다. 병합에는 사용자 명시적 승인이 필요하다. 병합·배포 뒤 production after-value와
+**Next action**: PR #106의 수동 CodeRabbit 리뷰가 결착되면 세 리뷰 표면을 다시 확인하고 actionable
+feedback을 처리한다. 병합에는 사용자 명시적 승인이 필요하다. 병합·배포 뒤 production after-value와
 실제 `/library` waterfall을 다시 재고, 새 복합 인덱스 3개가 운영 DB에 적용됐는지 별도로 확인해야
 이슈 #105를 닫을 수 있다. 현재 운영 DB·Vercel production은 변경하지 않았다.
+
+**2026-09-01 PR #106 CI·preview 상태**: 필수 CI와 change-aware checks는 모두 성공했다 — Lint,
+Lint and Type Check, Run Tests, Unit Tests, Security Audit, Security Scan, Build Check, E2E Tests 두 개,
+CodeQL, Vercel, aggregate checks가 모두 초록이다. Vercel preview 첫 검색 결과 대기는 2.298초로 운영
+기준 3.068~3.270초보다 줄었고, 이어진 3회 warm-cache 결과 대기는 17ms·16ms·219ms였다. 입력 UI는
+232~327ms에 보였다. preview 도메인은 production OAuth 세션을 공유하지 않아 인증 `/library`는
+after-value를 재지 못했다. 수동 CodeRabbit 리뷰를 요청했고 17개 파일을 검토 중이며, 약 10분간
+세 리뷰 표면에 finding은 아직 0건이지만 check가 `Review in progress`라 결착으로 표시하지 않는다.
 
 **Previous completed operational track**: OMR VM 교체 운영 문서 보강 **완료**. 모두의AI가 OS만 설치된 새 VM과 접속정보를 할당한
 시점부터 저장소만으로 재구축할 수 있는지 점검했고, 기존 문서가 이미 준비된 호스트에서 시작해 새
