@@ -13,21 +13,12 @@ export default function LibraryPage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'recent' | 'name' | 'created'>('recent')
-  const [refreshKey, setRefreshKey] = useState(0)
 
   const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategoryId(categoryId)
     if (categoryId !== null) {
       setActiveTab('categories')
     }
-  }
-
-  const handleSheetMusicMove = (_sheetMusicId: number, _newCategoryId: number | null) => {
-    setRefreshKey(prev => prev + 1)
-  }
-
-  const handleCategoryChange = () => {
-    setRefreshKey(prev => prev + 1)
   }
 
   const tabs = [
@@ -111,9 +102,6 @@ export default function LibraryPage() {
               sortBy={sortBy}
               showCategorySelector={activeTab === 'categories'}
               onCategorySelect={handleCategorySelect}
-              onSheetMusicMove={handleSheetMusicMove}
-              onCategoryChange={handleCategoryChange}
-              key={refreshKey}
             />
           </div>
 

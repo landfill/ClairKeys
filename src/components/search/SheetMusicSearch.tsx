@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react'
 import { Badge, Button, StatusState } from '@/components/ui'
 import { useSheetMusicSearch } from '@/hooks/useSheetMusicSearch'
 import { SheetMusicWithOwner } from '@/types/sheet-music'
-import { useCategories } from '@/hooks/useCategories'
 
 interface SheetMusicSearchProps {
   onResultClick?: (sheetMusic: SheetMusicWithOwner) => void
@@ -25,8 +24,6 @@ export default function SheetMusicSearch({
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'composer'>('newest')
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const { categories } = useCategories()
-  
   const {
     data,
     loading,
@@ -42,11 +39,14 @@ export default function SheetMusicSearch({
       isPublic: publicFilter,
       limit: 10,
       sortBy,
-      sortOrder: 'desc'
+      sortOrder: 'desc',
+      offset: 0
     },
     autoSearch: true,
     debounceMs: 500
   })
+
+  const categories = data?.filters?.categories ?? []
 
   // Update search parameters when filters change
   useEffect(() => {
@@ -112,7 +112,7 @@ export default function SheetMusicSearch({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">전체 카테고리</option>
-                  {categories?.map(category => (
+                  {categories.map(category => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>

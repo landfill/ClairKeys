@@ -8,7 +8,10 @@ import { deriveSheetMusicAvailability } from '@/lib/sheetMusicAvailability'
 // GET /api/sheet - Get user's sheet music list
 export async function GET(request: NextRequest) {
   try {
+    const requestStartedAt = performance.now()
+    const authStartedAt = performance.now()
     const session = await getServerSession(authOptions)
+    const authDurationMs = performance.now() - authStartedAt
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -45,6 +48,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get sheet music list
+    const databaseStartedAt = performance.now()
     const sheetMusic = await prisma.sheetMusic.findMany({
       where,
       include: {
@@ -59,6 +63,8 @@ export async function GET(request: NextRequest) {
         updatedAt: 'desc'
       }
     })
+    const databaseDurationMs = performance.now() - databaseStartedAt
+    const totalDurationMs = performance.now() - requestStartedAt
 
     return NextResponse.json({
       success: true,
@@ -73,6 +79,15 @@ export async function GET(request: NextRequest) {
         createdAt: sheet.createdAt,
         updatedAt: sheet.updatedAt
       }))
+    }, {
+      headers: {
+        'Server-Timing': [
+          `auth;dur=${authDurationMs.toFixed(1)}`,
+          `db;dur=${databaseDurationMs.toFixed(1)};desc="1 query"`,
+          `total;dur=${totalDurationMs.toFixed(1)}`
+        ].join(', '),
+        'X-Database-Queries': '1'
+      }
     })
 
   } catch (error) {
