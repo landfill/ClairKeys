@@ -9,14 +9,13 @@ import Button from '@/components/ui/Button'
 import Loading from '@/components/ui/Loading'
 import StatusState from '@/components/ui/StatusState'
 
-interface LibrarySheetMusicListProps {
+export interface LibrarySheetMusicListProps {
   selectedCategoryId?: number | null
   searchQuery?: string
   sortBy?: 'recent' | 'name' | 'created'
   showCategorySelector?: boolean
   onCategorySelect?: (categoryId: number | null) => void
   onSheetMusicMove?: (sheetMusicId: number, newCategoryId: number | null) => void
-  onCategoryChange?: () => void
 }
 
 export function LibrarySheetMusicList({
@@ -25,23 +24,31 @@ export function LibrarySheetMusicList({
   sortBy = 'recent',
   showCategorySelector = false,
   onCategorySelect,
-  onSheetMusicMove,
-  onCategoryChange: _onCategoryChange
+  onSheetMusicMove
 }: LibrarySheetMusicListProps) {
   const { sheetMusic, loading: sheetMusicLoading, fetchUserSheetMusic, updateSheetMusic, deleteSheetMusic } = useSheetMusic()
-  const { categories, loading: categoriesLoading } = useCategories()
+  const { categories } = useCategories()
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery)
   const [editingSheet, setEditingSheet] = useState<SheetMusicWithCategory | null>(null)
   const [title, setTitle] = useState('')
   const [titleError, setTitleError] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  // 데이터 로드
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery])
+
+  // 데이터 로드. 카테고리 변경은 즉시 반영하고 키 입력만 debounce한다.
   useEffect(() => {
     const loadData = async () => {
       try {
         await fetchUserSheetMusic({
           categoryId: selectedCategoryId || undefined,
-          search: searchQuery || undefined
+          search: debouncedSearchQuery || undefined
         })
       } catch (error) {
         console.error('Failed to load sheet music:', error)
@@ -49,7 +56,7 @@ export function LibrarySheetMusicList({
     }
     
     loadData()
-  }, [selectedCategoryId, searchQuery, fetchUserSheetMusic])
+  }, [selectedCategoryId, debouncedSearchQuery, fetchUserSheetMusic])
 
   // 필터링 및 정렬
   const filteredAndSortedSheetMusic = sheetMusic
@@ -82,10 +89,10 @@ export function LibrarySheetMusicList({
     try {
       await updateSheetMusic(sheetMusicId, { categoryId: newCategoryId })
       onSheetMusicMove?.(sheetMusicId, newCategoryId)
-      // 새로고침
+      // 선택된 카테고리에서 이동한 항목을 제거하기 위해 한 번만 새로고침한다.
       await fetchUserSheetMusic({
         categoryId: selectedCategoryId || undefined,
-        search: searchQuery || undefined
+        search: debouncedSearchQuery || undefined
       })
     } catch (error) {
       console.error('Failed to move sheet music:', error)
@@ -96,11 +103,6 @@ export function LibrarySheetMusicList({
     try {
       setErrorMessage(null)
       await deleteSheetMusic(sheetMusicId)
-      // 새로고침
-      await fetchUserSheetMusic({
-        categoryId: selectedCategoryId || undefined,
-        search: searchQuery || undefined
-      })
     } catch (error) {
       console.error('Failed to delete sheet music:', error)
       setErrorMessage('악보를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.')
@@ -133,7 +135,7 @@ export function LibrarySheetMusicList({
   }
 
   // 로딩 상태
-  if (sheetMusicLoading || categoriesLoading) {
+  if (sheetMusicLoading) {
     return <Loading />
   }
 

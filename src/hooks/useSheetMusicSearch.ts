@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { SearchSheetMusicParams, SearchSheetMusicResponse } from '@/types/sheet-music'
 
 interface UseSheetMusicSearchOptions {
@@ -6,6 +6,16 @@ interface UseSheetMusicSearchOptions {
   autoSearch?: boolean
   debounceMs?: number
 }
+
+const paramsKey = (params: SearchSheetMusicParams) => JSON.stringify([
+  params.search ?? null,
+  params.categoryId ?? null,
+  params.isPublic ?? null,
+  params.limit ?? null,
+  params.offset ?? null,
+  params.sortBy ?? null,
+  params.sortOrder ?? null,
+])
 
 export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
   const {
@@ -18,10 +28,22 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
   const [data, setData] = useState<SearchSheetMusicResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const hasStartedAutoSearchRef = useRef(false)
+  const lastAutoSearchKeyRef = useRef<string | null>(null)
+  const queuedAutoSearchKeyRef = useRef<string | null>(null)
+  const latestRequestRef = useRef(0)
+  const paramsRef = useRef(params)
+
+  useEffect(() => {
+    paramsRef.current = params
+  }, [params])
 
   // Debounced search function
   const search = useCallback(
     async (searchParams: SearchSheetMusicParams, append = false) => {
+      const requestId = latestRequestRef.current + 1
+      latestRequestRef.current = requestId
       setLoading(true)
       setError(null)
 
@@ -43,6 +65,8 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
         }
 
         const result: SearchSheetMusicResponse = await response.json()
+        if (requestId !== latestRequestRef.current) return
+
         setData(previous => {
           if (!append || !previous) return result
 
@@ -53,11 +77,14 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
         })
         
       } catch (err) {
+        if (requestId !== latestRequestRef.current) return
         const errorMessage = err instanceof Error ? err.message : 'Search failed'
         setError(errorMessage)
         setData(null)
       } finally {
-        setLoading(false)
+        if (requestId === latestRequestRef.current) {
+          setLoading(false)
+        }
       }
     },
     []
@@ -67,16 +94,49 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
   useEffect(() => {
     if (!autoSearch) return
 
-    const timeoutId = setTimeout(() => {
-      search(params)
+    const currentParamsKey = paramsKey(params)
+    if (
+      lastAutoSearchKeyRef.current === currentParamsKey ||
+      queuedAutoSearchKeyRef.current === currentParamsKey
+    ) {
+      return
+    }
+
+    if (!hasStartedAutoSearchRef.current) {
+      hasStartedAutoSearchRef.current = true
+      lastAutoSearchKeyRef.current = currentParamsKey
+      void search(params)
+      return
+    }
+
+    queuedAutoSearchKeyRef.current = currentParamsKey
+    debounceTimerRef.current = setTimeout(() => {
+      debounceTimerRef.current = null
+      queuedAutoSearchKeyRef.current = null
+      lastAutoSearchKeyRef.current = currentParamsKey
+      void search(params)
     }, debounceMs)
 
-    return () => clearTimeout(timeoutId)
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
+      if (queuedAutoSearchKeyRef.current === currentParamsKey) {
+        queuedAutoSearchKeyRef.current = null
+      }
+    }
   }, [params, search, autoSearch, debounceMs])
 
   // Update search parameters
   const updateParams = useCallback((newParams: Partial<SearchSheetMusicParams>) => {
-    setParams(prev => ({ ...prev, ...newParams }))
+    setParams(prev => {
+      const next = { ...prev, ...newParams }
+      const changed = Object.keys(next).some(key => (
+        next[key as keyof SearchSheetMusicParams] !== prev[key as keyof SearchSheetMusicParams]
+      ))
+      return changed ? next : prev
+    })
   }, [])
 
   // Reset search
@@ -88,8 +148,14 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
 
   // Manual search trigger
   const triggerSearch = useCallback(() => {
-    search(params)
-  }, [search, params])
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+    queuedAutoSearchKeyRef.current = null
+    lastAutoSearchKeyRef.current = paramsKey(paramsRef.current)
+    void search(paramsRef.current)
+  }, [search])
 
   // Load more results (pagination)
   const loadMore = useCallback(async () => {

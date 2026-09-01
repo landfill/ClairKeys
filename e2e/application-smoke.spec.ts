@@ -141,4 +141,74 @@ test.describe('Public application smoke checks', () => {
       page.getByRole('heading', { level: 1, name: '공개 악보 탐색' })
     ).toBeVisible()
   })
+
+  test('opens search with one public request and no user-category request', async ({ page }) => {
+    let searchRequests = 0
+    let categoryRequests = 0
+
+    await page.addInitScript(() => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register = async () => {
+          throw new Error('service worker disabled for route fixture')
+        }
+      }
+    })
+
+    await page.route('**/api/sheet/public**', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          sheetMusic: [],
+          pagination: { total: 0, limit: 8, offset: 0, hasMore: false },
+        }),
+      })
+    })
+    await page.route('**/api/sheet/search**', async route => {
+      searchRequests += 1
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          sheetMusic: [{
+            id: 105,
+            title: '검색 성능 검증곡',
+            composer: '검증 작곡가',
+            userId: 'owner',
+            categoryId: 1,
+            category: { id: 1, name: '클래식' },
+            isPublic: true,
+            provenance: 'omr',
+            animationDataUrl: '/public.json',
+            createdAt: '2026-09-01T00:00:00.000Z',
+            updatedAt: '2026-09-01T00:00:00.000Z',
+            owner: { id: 'owner', name: '검증자' },
+          }],
+          pagination: { total: 1, limit: 10, offset: 0, hasMore: false },
+          filters: {
+            categories: [{ id: 1, name: '클래식', count: 1 }],
+            totalPublic: 1,
+            totalPrivate: 0,
+          },
+        }),
+      })
+    })
+    await page.route('**/api/categories**', async route => {
+      categoryRequests += 1
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+    })
+
+    await page.goto('/explore')
+    await page.getByRole('button', { name: '검색', exact: true }).click()
+
+    await expect(page.getByPlaceholder('곡명 또는 저작자로 검색...')).toBeVisible()
+    await expect(page.getByText('검색 성능 검증곡')).toBeVisible()
+    // The previous mount-time parameter rewrite scheduled a second request at
+    // 500 ms. Wait past that boundary before asserting the request count.
+    await page.waitForTimeout(650)
+    expect(searchRequests).toBe(1)
+    expect(categoryRequests).toBe(0)
+  })
 })

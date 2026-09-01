@@ -7,7 +7,7 @@ import { authOptions } from '@/lib/auth/config'
 // GET /api/sheet/search - Enhanced search functionality
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const requestStartedAt = performance.now()
     const { searchParams } = new URL(request.url)
     
     // Parse search parameters
@@ -18,6 +18,13 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
     const sortBy = searchParams.get('sortBy') as 'newest' | 'oldest' | 'title' | 'composer' || 'newest'
     const sortOrder = searchParams.get('sortOrder') as 'asc' | 'desc' || 'desc'
+    const publicOnly = isPublic === 'true'
+
+    // Public-only results are independent of the viewer. Avoid the session
+    // lookup entirely so this path can be cached and does not pay auth latency.
+    const authStartedAt = performance.now()
+    const session = publicOnly ? null : await getServerSession(authOptions)
+    const authDurationMs = performance.now() - authStartedAt
     
     // Build where clause
     const where: Prisma.SheetMusicWhereInput = {}
@@ -100,8 +107,19 @@ export async function GET(request: NextRequest) {
         break
     }
     
-    // Execute queries in parallel
-    const [sheetMusic, total, categoryStats] = await Promise.all([
+    const categoryVisibilityWhere = session?.user?.id ? {
+      OR: [
+        { isPublic: true, provenance: { not: 'demo' as const } },
+        { userId: session.user.id }
+      ]
+    } : { isPublic: true, provenance: { not: 'demo' as const } }
+
+    // Dispatch results, pagination, filter metadata, and counts in one database
+    // wave. Previously the public/private counts started only after the first
+    // three queries completed, adding a full extra round trip.
+    const databaseStartedAt = performance.now()
+    const databaseQueryCount = session?.user?.id ? 5 : 4
+    const [sheetMusic, total, categoryStats, totalPublic, totalPrivate] = await Promise.all([
       // Main search results
       prisma.sheetMusic.findMany({
         where,
@@ -133,12 +151,7 @@ export async function GET(request: NextRequest) {
           _count: {
             select: {
               sheetMusic: {
-                where: session?.user?.id ? {
-                  OR: [
-                    { isPublic: true, provenance: { not: 'demo' } },
-                    { userId: session.user.id }
-                  ]
-                } : { isPublic: true, provenance: { not: 'demo' } }
+                where: categoryVisibilityWhere
               }
             }
           }
@@ -146,21 +159,34 @@ export async function GET(request: NextRequest) {
         orderBy: {
           name: 'asc'
         }
-      })
-    ])
-    
-    // Get public/private counts
-    const [totalPublic, totalPrivate] = await Promise.all([
+      }),
+
       prisma.sheetMusic.count({ where: { isPublic: true, provenance: { not: 'demo' } } }),
-      session?.user?.id ? 
-        prisma.sheetMusic.count({ 
-          where: { 
-            isPublic: false, 
-            userId: session.user.id 
-          } 
-        }) : 0
+
+      session?.user?.id
+        ? prisma.sheetMusic.count({
+            where: {
+              isPublic: false,
+              userId: session.user.id
+            }
+          })
+        : Promise.resolve(0)
     ])
-    
+    const databaseDurationMs = performance.now() - databaseStartedAt
+    const totalDurationMs = performance.now() - requestStartedAt
+
+    const headers: Record<string, string> = {
+      'Server-Timing': [
+        `auth;dur=${authDurationMs.toFixed(1)}`,
+        `db;dur=${databaseDurationMs.toFixed(1)};desc="${databaseQueryCount} queries"`,
+        `total;dur=${totalDurationMs.toFixed(1)}`
+      ].join(', '),
+      'X-Search-Queries': String(databaseQueryCount)
+    }
+    if (publicOnly) {
+      headers['Cache-Control'] = 'public, s-maxage=60, stale-while-revalidate=300'
+    }
+
     return NextResponse.json({
       success: true,
       sheetMusic: sheetMusic.map(sheet => ({
@@ -192,7 +218,7 @@ export async function GET(request: NextRequest) {
         totalPublic,
         totalPrivate
       }
-    })
+    }, { headers })
     
   } catch (error) {
     console.error('Search sheet music error:', error)

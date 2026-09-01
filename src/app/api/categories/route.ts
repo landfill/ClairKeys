@@ -7,9 +7,10 @@ import { cacheService } from '@/lib/cache'
 // GET /api/categories - Get user's categories (with caching)
 export async function GET() {
   try {
+    const requestStartedAt = performance.now()
+    const authStartedAt = performance.now()
     const session = await getServerSession(authOptions)
-    
-    console.log('Session in categories GET API:', session)
+    const authDurationMs = performance.now() - authStartedAt
     
     if (!session?.user) {
       console.log('No session or user found in GET')
@@ -24,21 +25,30 @@ export async function GET() {
     const cacheKey = `categories_${userId}`
     
     // Try to get from cache first
+    const cacheStartedAt = performance.now()
     const cachedCategories = await cacheService.get(cacheKey, {
       ttl: 60 * 1000, // 1 minute cache
       version: '1.0'
     })
+    const cacheDurationMs = performance.now() - cacheStartedAt
     
     if (cachedCategories) {
-      console.log('Returning cached categories')
+      const totalDurationMs = performance.now() - requestStartedAt
       return NextResponse.json(cachedCategories, {
         headers: {
-          'X-Cache': 'HIT'
+          'X-Cache': 'HIT',
+          'X-Category-Queries': '0',
+          'Server-Timing': [
+            `auth;dur=${authDurationMs.toFixed(1)}`,
+            `cache;dur=${cacheDurationMs.toFixed(1)};desc="hit"`,
+            `total;dur=${totalDurationMs.toFixed(1)}`
+          ].join(', ')
         }
       })
     }
 
     // Fetch from database
+    const databaseStartedAt = performance.now()
     const categories = await prisma.category.findMany({
       where: {
         userId: userId,
@@ -47,16 +57,25 @@ export async function GET() {
         name: 'asc',
       },
     })
+    const databaseDurationMs = performance.now() - databaseStartedAt
 
     // Cache the result
     await cacheService.set(cacheKey, categories, {
       ttl: 60 * 1000, // 1 minute cache
       version: '1.0'
     })
+    const totalDurationMs = performance.now() - requestStartedAt
 
     return NextResponse.json(categories, {
       headers: {
-        'X-Cache': 'MISS'
+        'X-Cache': 'MISS',
+        'X-Category-Queries': '1',
+        'Server-Timing': [
+          `auth;dur=${authDurationMs.toFixed(1)}`,
+          `cache;dur=${cacheDurationMs.toFixed(1)};desc="miss"`,
+          `db;dur=${databaseDurationMs.toFixed(1)};desc="1 query"`,
+          `total;dur=${totalDurationMs.toFixed(1)}`
+        ].join(', ')
       }
     })
   } catch (error) {

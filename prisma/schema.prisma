@@ -84,6 +84,9 @@ model SheetMusic {
   user             User              @relation(fields: [userId], references: [id])
 
   @@index([provenance])
+  @@index([userId, updatedAt])
+  @@index([isPublic, createdAt])
+  @@index([categoryId, isPublic, provenance])
 }
 
 enum SheetMusicProvenance {

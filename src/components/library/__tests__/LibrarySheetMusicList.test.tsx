@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { LibrarySheetMusicList } from '../LibrarySheetMusicList'
 import { useSheetMusic } from '@/hooks/useSheetMusic'
 import { useCategories } from '@/hooks/useCategories'
@@ -21,6 +21,7 @@ describe('LibrarySheetMusicList', () => {
   const updateSheetMusic = jest.fn().mockResolvedValue({})
 
   beforeEach(() => {
+    jest.useRealTimers()
     jest.clearAllMocks()
     mockUseSheetMusic.mockReturnValue({
       sheetMusic: sheets,
@@ -90,5 +91,38 @@ describe('LibrarySheetMusicList', () => {
     render(<LibrarySheetMusicList showCategorySelector />)
 
     expect(screen.getByRole('button', { name: '📁 classic' })).toHaveClass('rounded-2xl')
+  })
+
+  it('shows loaded sheets without waiting for the category request', () => {
+    mockUseCategories.mockReturnValue({
+      categories: [], loading: true, error: null, fetchCategories: jest.fn(), createCategory: jest.fn(), updateCategory: jest.fn(), deleteCategory: jest.fn(),
+    })
+
+    render(<LibrarySheetMusicList />)
+
+    expect(screen.getAllByText('연습 가능')).toHaveLength(2)
+  })
+
+  it('debounces rapid library search requests after the initial load', () => {
+    jest.useFakeTimers()
+    const { rerender } = render(<LibrarySheetMusicList searchQuery="" />)
+    expect(fetchUserSheetMusic).toHaveBeenCalledTimes(1)
+    fetchUserSheetMusic.mockClear()
+
+    rerender(<LibrarySheetMusicList searchQuery="b" />)
+    rerender(<LibrarySheetMusicList searchQuery="ba" />)
+    rerender(<LibrarySheetMusicList searchQuery="bach" />)
+
+    expect(fetchUserSheetMusic).not.toHaveBeenCalled()
+
+    act(() => {
+      jest.advanceTimersByTime(300)
+    })
+
+    expect(fetchUserSheetMusic).toHaveBeenCalledTimes(1)
+    expect(fetchUserSheetMusic).toHaveBeenCalledWith({
+      categoryId: undefined,
+      search: 'bach'
+    })
   })
 })
