@@ -13,12 +13,12 @@ Last updated: 2026-09-01 KST
 2.87~6.86초였다. 공개 검색의 불필요한 세션·사용자 카테고리 요청, 500ms 초기 debounce, DB 질의의
 두 파형 실행, 라이브러리의 검색·mutation 중복 요청과 카테고리 로딩 결속을 해소한 PR
 [#106](https://github.com/landfill/ClairKeys/pull/106)을 review-ready로 열었다. 코드 head는
-`3aeee65ae62eb0eeeda599eee23d1ee639f9a2aa`, 검증은
+`356891f0d7640ee3762a837141f29048307c2a3c`, 검증은
 `docs/recovery/validation/2026-09-01-issue-105-performance.md`, 리뷰 상태는
 `docs/recovery/reviews/PR-106.md`에서 확인한다.
 
-**Next action**: PR #106의 수동 CodeRabbit 리뷰가 결착되면 세 리뷰 표면을 다시 확인하고 actionable
-feedback을 처리한다. 병합에는 사용자 명시적 승인이 필요하다. 병합·배포 뒤 production after-value와
+**Next action**: PR #106은 최신 head의 모든 CI와 review thread가 결착됐고 `MERGEABLE`/`CLEAN`이다.
+사용자의 명시적 병합 승인을 기다린다. 병합·배포 뒤 production after-value와
 실제 `/library` waterfall을 다시 재고, 새 복합 인덱스 3개가 운영 DB에 적용됐는지 별도로 확인해야
 이슈 #105를 닫을 수 있다. 현재 운영 DB·Vercel production은 변경하지 않았다.
 
@@ -27,8 +27,12 @@ Lint and Type Check, Run Tests, Unit Tests, Security Audit, Security Scan, Build
 CodeQL, Vercel, aggregate checks가 모두 초록이다. Vercel preview 첫 검색 결과 대기는 2.298초로 운영
 기준 3.068~3.270초보다 줄었고, 이어진 3회 warm-cache 결과 대기는 17ms·16ms·219ms였다. 입력 UI는
 232~327ms에 보였다. preview 도메인은 production OAuth 세션을 공유하지 않아 인증 `/library`는
-after-value를 재지 못했다. 수동 CodeRabbit 리뷰를 요청했고 17개 파일을 검토 중이며, 약 10분간
-세 리뷰 표면에 finding은 아직 0건이지만 check가 `Review in progress`라 결착으로 표시하지 않는다.
+after-value를 재지 못했다. 수동 CodeRabbit 리뷰는 actionable 4건과 diff 밖 props-export 1건을 냈다.
+동시 인덱스, public 정렬 인덱스, route-scoped query header, Strict Mode 중복 예약, props export를
+수용했고 `userId, updatedAt`을 `createdAt`으로 바꾸라는 부분은 실제 `/api/sheet`의 `updatedAt desc`
+근거로 부분 기각했다. reviewer가 이 기각 근거와 나머지 수정 4건을 모두 확인했고 review thread 4개는
+전부 resolved다. 리뷰 수정 head에서 migration 주석을 실행문으로 센 테스트 때문에 hosted Run Tests와
+Unit Tests가 한 번 실패했으나 행 시작 정규식으로 고친 `356891f`에서 모든 CI가 다시 성공했다.
 
 **Previous completed operational track**: OMR VM 교체 운영 문서 보강 **완료**. 모두의AI가 OS만 설치된 새 VM과 접속정보를 할당한
 시점부터 저장소만으로 재구축할 수 있는지 점검했고, 기존 문서가 이미 준비된 호스트에서 시작해 새

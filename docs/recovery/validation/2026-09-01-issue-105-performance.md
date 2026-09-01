@@ -2,7 +2,8 @@
 
 Date: 2026-09-01 KST
 Branch: `codex/issue-105-performance`
-Commits: `453224ed840b594155a95ad3ad4eca14ef445f86`, `3aeee65ae62eb0eeeda599eee23d1ee639f9a2aa`
+Commits: `453224ed840b594155a95ad3ad4eca14ef445f86`, `3aeee65ae62eb0eeeda599eee23d1ee639f9a2aa`,
+`b8de02991536d29bde08c1eddcf034dec0a32484`, `356891f0d7640ee3762a837141f29048307c2a3c`
 Pull request: [#106](https://github.com/landfill/ClairKeys/pull/106)
 
 ## Scope
@@ -10,7 +11,8 @@ Pull request: [#106](https://github.com/landfill/ClairKeys/pull/106)
 - `/library` 앱 셸, 악보 API, 카테고리 API의 대기 결속과 중복 요청을 분리했다.
 - `/explore` 검색 탭의 초기 debounce, 사용자 카테고리 요청, 공개 검색의 세션·DB 질의 파형을 측정했다.
 - 공개 검색에만 짧은 shared cache를 허용하고, viewer에 따라 달라지는 mixed/private 응답은 캐시하지 않는다.
-- API가 `Server-Timing`과 `X-Database-Queries`를 반환해 preview·production에서도 auth/DB 시간을
+- API가 `Server-Timing`과 route-scoped query headers(`X-Search-Queries`, `X-Sheet-Queries`,
+  `X-Category-Queries`)를 반환해 preview·production에서도 auth/DB 시간을
   다시 측정할 수 있게 했다.
 - 사용자 목록·공개 최신순·카테고리 집계가 데이터 증가 시 사용할 복합 인덱스 3개를 migration으로 추가했다.
 
@@ -124,8 +126,32 @@ out, which is sufficient for public search but not authenticated `/library`.
 
 Compared with production before-values, the first result wait improved from 3.068~3.270 seconds to 2.298 seconds.
 Warm-cache result wait was 16~219 ms. The shared-cache behavior is therefore observable in the user journey, while
-the exact `Server-Timing` and `X-Database-Queries` preview headers remain covered by route tests rather than direct
+the exact `Server-Timing` and route-scoped query headers remain covered by route tests rather than direct
 preview header capture.
 
 Authenticated `/library` after-values remain a production post-deploy gate because OAuth cookies do not cross from
 `clairkeys.vercel.app` to the branch preview domain.
+
+## Review and hosted-CI closure
+
+CodeRabbit reviewed the original 17 changed files and emitted four inline actionable comments plus one outside-diff
+props-interface comment.
+
+- Accepted: all three production indexes now use `CREATE INDEX CONCURRENTLY`; the custom migration has no
+  `BEGIN`/`COMMIT` and documents the non-transaction requirement.
+- Partially accepted: the public newest-order index changed from `(isPublic, provenance, createdAt)` to
+  `(isPublic, createdAt)` because the provenance inequality interrupts the sort key. The requested user index change
+  to `(userId, createdAt)` was rejected because the measured `/api/sheet` route orders by `updatedAt desc`; the
+  reviewer rechecked this path and withdrew that portion.
+- Accepted: generic `X-Database-Queries` became route-scoped headers so optional auth callback queries are not
+  misrepresented.
+- Accepted: the search hook now tracks searched and queued parameter keys across Strict Mode effect replay.
+- Accepted: `LibrarySheetMusicListProps` is exported.
+
+All four inline threads are resolved after CodeRabbit confirmed the implementation or withdrew its mismatched route
+assumption. No new actionable item appeared in the review body or general comments.
+
+Hosted CI on `b8de029` failed Run Tests and Unit Tests because `queryIndexes.test.ts` counted the migration warning
+comment's SQL phrase as a fourth executable index. Commit `356891f` anchors the matcher to SQL line starts. Focused
+and full local tests passed before push; the latest hosted Run Tests, Unit Tests, both E2E jobs, type/lint, build,
+security, CodeQL, Vercel, and aggregate checks all passed.
