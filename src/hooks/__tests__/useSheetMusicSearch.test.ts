@@ -1,4 +1,5 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
+import { createElement, StrictMode, type ReactNode } from 'react'
 import { useSheetMusicSearch } from '../useSheetMusicSearch'
 import { SearchSheetMusicResponse, SheetMusicWithOwner } from '@/types/sheet-music'
 
@@ -36,6 +37,7 @@ describe('useSheetMusicSearch', () => {
   const mockFetch = jest.fn()
 
   beforeEach(() => {
+    jest.useRealTimers()
     global.fetch = mockFetch as unknown as typeof fetch
     mockFetch.mockImplementation(async (input: RequestInfo | URL) => {
       const url = new URL(String(input), 'http://localhost')
@@ -75,6 +77,101 @@ describe('useSheetMusicSearch', () => {
       limit: 2,
       offset: 2,
       hasMore: false
+    })
+  })
+
+  it('starts the initial automatic search without paying the typing debounce', async () => {
+    jest.useFakeTimers()
+
+    renderHook(() => useSheetMusicSearch({
+      autoSearch: true,
+      debounceMs: 500,
+      initialParams: { isPublic: true, limit: 10 }
+    }))
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+  })
+
+  it('does not search again when parameter values did not change', async () => {
+    jest.useFakeTimers()
+    const { result } = renderHook(() => useSheetMusicSearch({
+      autoSearch: true,
+      debounceMs: 500,
+      initialParams: { isPublic: true, limit: 10, sortBy: 'newest', offset: 0 }
+    }))
+
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    act(() => {
+      result.current.updateParams({ isPublic: true, sortBy: 'newest', offset: 0 })
+      jest.advanceTimersByTime(500)
+    })
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not duplicate the initial request when Strict Mode replays effects', async () => {
+    jest.useFakeTimers()
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      createElement(StrictMode, null, children)
+    )
+
+    renderHook(() => useSheetMusicSearch({
+      autoSearch: true,
+      debounceMs: 500,
+      initialParams: { isPublic: true, limit: 10 }
+    }), { wrapper })
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    act(() => {
+      jest.advanceTimersByTime(500)
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+  })
+
+  it('cancels a pending debounced search when the user submits manually', async () => {
+    jest.useFakeTimers()
+    const { result } = renderHook(() => useSheetMusicSearch({
+      autoSearch: true,
+      debounceMs: 500,
+      initialParams: { isPublic: true, limit: 10 }
+    }))
+
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+
+    act(() => {
+      result.current.updateParams({ search: 'bach' })
+    })
+    act(() => {
+      result.current.triggerSearch()
+      jest.advanceTimersByTime(500)
+    })
+
+    expect(mockFetch).toHaveBeenCalledTimes(2)
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
     })
   })
 })
