@@ -17,6 +17,6 @@ describe('sheet lookup indexes', () => {
     expect(migration).toContain('"SheetMusic_userId_updatedAt_idx"')
     expect(migration).toContain('"SheetMusic_isPublic_createdAt_idx"')
     expect(migration).toContain('"SheetMusic_categoryId_isPublic_provenance_idx"')
-    expect(migration.match(/CREATE INDEX CONCURRENTLY/g)).toHaveLength(3)
+    expect(migration.match(/^CREATE INDEX CONCURRENTLY/gm)).toHaveLength(3)
   })
 })
