@@ -132,6 +132,17 @@ preview header capture.
 Authenticated `/library` after-values remain a production post-deploy gate because OAuth cookies do not cross from
 `clairkeys.vercel.app` to the branch preview domain.
 
+## Merge and post-merge verification
+
+- User-approved PR #106 merged on 2026-09-01 KST as merge commit
+  `f559402d1e07bd8c18b1064a95b2f59ce413db40`.
+- The feature tip `356891f0d7640ee3762a837141f29048307c2a3c` is an ancestor of `main`; remote and local
+  `codex/issue-105-performance` branches were deleted after verification.
+- Post-merge `Lint`, `Run Tests`, `Security Audit`, `Post-merge tests`, `Post-merge build`, and `E2E Tests`
+  all completed successfully.
+- Issue #105 remains open because authenticated production `/library` after-values and production application of
+  the three lookup indexes have not been verified.
+
 ## Review and hosted-CI closure
 
 CodeRabbit reviewed the original 17 changed files and emitted four inline actionable comments plus one outside-diff

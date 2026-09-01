@@ -8,7 +8,7 @@ Last updated: 2026-09-01 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#105](https://github.com/landfill/ClairKeys/issues/105) `/library`·`/explore`
-검색 지연 개선 **IN_REVIEW**. 변경 전 운영 측정에서 `/library` 앱 셸 뒤 목록 데이터 대기가
+검색 지연 개선 **코드 병합 완료 / 운영 검증 대기**. 변경 전 운영 측정에서 `/library` 앱 셸 뒤 목록 데이터 대기가
 1.50~1.59초, 검색 탭 입력 UI 뒤 결과 대기가 3.07~3.27초였고, 공개 검색 API TTFB는 5회
 2.87~6.86초였다. 공개 검색의 불필요한 세션·사용자 카테고리 요청, 500ms 초기 debounce, DB 질의의
 두 파형 실행, 라이브러리의 검색·mutation 중복 요청과 카테고리 로딩 결속을 해소한 PR
@@ -17,10 +17,10 @@ Last updated: 2026-09-01 KST
 `docs/recovery/validation/2026-09-01-issue-105-performance.md`, 리뷰 상태는
 `docs/recovery/reviews/PR-106.md`에서 확인한다.
 
-**Next action**: PR #106은 최신 head의 모든 CI와 review thread가 결착됐고 `MERGEABLE`/`CLEAN`이다.
-사용자의 명시적 병합 승인을 기다린다. 병합·배포 뒤 production after-value와
-실제 `/library` waterfall을 다시 재고, 새 복합 인덱스 3개가 운영 DB에 적용됐는지 별도로 확인해야
-이슈 #105를 닫을 수 있다. 현재 운영 DB·Vercel production은 변경하지 않았다.
+**Next action**: 병합 커밋 `f559402d1e07bd8c18b1064a95b2f59ce413db40`의 post-merge checks 6개가 모두
+성공했다. production 배포 뒤 `/library` 인증 waterfall과 `/explore` 검색의 after-value를 같은 조건으로
+재고, `20260901060000_add_sheet_lookup_indexes`의 3개 인덱스가 운영 DB에 적용됐는지 확인한다. 이슈
+#105는 이 검증이 끝나야 닫을 수 있다. 현재 운영 DB·Vercel production은 아직 확인·변경하지 않았다.
 
 **2026-09-01 PR #106 CI·preview 상태**: 필수 CI와 change-aware checks는 모두 성공했다 — Lint,
 Lint and Type Check, Run Tests, Unit Tests, Security Audit, Security Scan, Build Check, E2E Tests 두 개,
