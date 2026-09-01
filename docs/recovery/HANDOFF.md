@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-08-31 KST
+Last updated: 2026-09-01 KST
 
 > 아래 "현재 상태"만 읽고 바로 시작할 수 있어야 한다. 그 아래 절들은 시간 역순 기록이며, 필요한
 > 맥락만 골라 읽는다.
@@ -28,6 +28,16 @@ PEM·host fingerprint·OS/사양/권한 검수, provider 포트 요청, Vercel �
 [#105](https://github.com/landfill/ClairKeys/issues/105)에 각각 기록했다. #105 본문의 코드 관찰은 확정
 원인이 아니라 운영 waterfall·서버·DB 계측으로 검증할 조사 후보로 구분했다. 세 이슈 모두 구현은
 시작하지 않았고 애플리케이션·운영 환경은 변경하지 않았다.
+
+**2026-09-01 이슈 #44 후순위 전환 및 조사 게이트 보강**: 사용자가 OMR 박자 오류 작업은 난도가 높아
+작업 순서를 뒤로 미루기로 했다. 이슈 [#44](https://github.com/landfill/ClairKeys/issues/44) 본문을
+갱신해 즉시 구현 대상이 아닌 후순위 조사 작업임을 명시했다. 기존 근거는 보존된 MusicXML의 불가능한
+마디 길이와 서비스·로컬 변환의 요약 수치 일치까지만 증명하며, 실제 서빙 JSON과 OMR `/result`의 전체
+이벤트 동일성이나 원본 PDF→MusicXML→JSON의 원인 분리는 증명하지 못했다. 착수 전 원본 PDF,
+MusicXML, `/result`, Supabase 서빙 JSON의 식별자·SHA-256을 연결하고, JSON의 박자·템포가 추출값인지
+fallback인지 구분하며, 마디/part/staff/voice/divisions 진단 sidecar로 노트 시간을 대조하는 조건을
+추가했다. 이 증거 게이트 전에는 Audiveris 조정·변환기 보정·비정상 마디 차단 중 해결책을 선택하지
+않는다. 코드·운영 환경은 변경하지 않았다.
 
 **이번 작업의 전제 수정 기록**: 사용자가 두 번 전제를 바로잡았다. 첫째 VM마다 PEM이 바뀐다. 둘째 작업자가 NAVER
 Cloud에서 VM을 만들지 않고 모두의AI 신청으로 OS-only VM·주소·SSH PEM을 할당받는다. NCP 인증키
