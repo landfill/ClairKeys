@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import ProfilePage from '../page'
+import { formatJoinDate } from '@/lib/profile/joinDate'
 
 const mockSession = {
   data: {
@@ -48,6 +49,31 @@ beforeEach(() => {
 afterEach(() => {
   global.fetch = originalFetch
   jest.clearAllMocks()
+})
+
+describe('formatJoinDate', () => {
+  /**
+   * Runs in whatever zone the suite is started in, and asserts against the same
+   * zone's calendar rather than a written-out date, so it holds everywhere.
+   * Pinning the formatter to UTC — as review suggested — would break this in
+   * KST and every other zone east of UTC: 23:00Z is already the next day there,
+   * and the account really was created on that later day.
+   */
+  it('reports the day the reader own calendar shows, not the UTC one', () => {
+    const iso = '2026-03-11T23:00:00.000Z'
+    const local = new Date(iso)
+
+    const formatted = formatJoinDate(iso)
+
+    expect(formatted).toContain(`${local.getFullYear()}년`)
+    expect(formatted).toContain(`${local.getMonth() + 1}월`)
+    expect(formatted).toContain(`${local.getDate()}일`)
+  })
+
+  it('returns null for a value it cannot parse instead of a fallback date', () => {
+    expect(formatJoinDate('not-a-date')).toBeNull()
+    expect(formatJoinDate('')).toBeNull()
+  })
 })
 
 describe('profile page shell', () => {

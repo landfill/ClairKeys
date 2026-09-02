@@ -6,23 +6,8 @@ import { useEffect, useState } from 'react'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
 import Card from '@/components/ui/Card'
 import Loading from '@/components/ui/Loading'
+import { formatJoinDate } from '@/lib/profile/joinDate'
 import Image from 'next/image'
-
-/**
- * Renders a join date only once it is known. An unparseable or missing value
- * leaves the row out entirely rather than falling back to something plausible —
- * the page previously displayed the literal "2024년 1월 1일" (issue #104).
- */
-function formatJoinDate(isoDate: string): string | null {
-  const parsed = new Date(isoDate)
-  if (Number.isNaN(parsed.getTime())) return null
-
-  return new Intl.DateTimeFormat('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }).format(parsed)
-}
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
