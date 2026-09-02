@@ -36,7 +36,8 @@ Last updated: 2026-09-02 KST
 
 로컬 검증 Jest 85 / **796**, tsc, lint, build 통과. 근거
 `docs/recovery/validation/2026-09-02-issue-58-black-key-geometry.md`, 리뷰 `docs/recovery/reviews/PR-111.md`.
-**미검증**: 실제 브라우저·실기기 육안 확인(변경 폭이 keyWidth 24에서 2~4px).
+**육안 확인 완료 (2026-09-02, 사용자)**: 병합 후 사용자가 실측해 통과를 보고했다. 이로써 이 phase의
+유일한 미검증 항목이 해소됐다 — 자동 검사는 좌표만 판정했고 화면이 어색하지 않다는 근거는 이 확인뿐이다.
 
 **2026-09-02 리뷰 처리**: **CodeRabbit이 이 PR을 두 번 다 건너뛰었다** — 처음엔
 `Review skipped: manual review required for this OSS repository`(PR #96과 같은 OSS 정책), 수동
