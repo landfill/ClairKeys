@@ -3,6 +3,10 @@
 import React from 'react'
 import type { SimplePianoKeyboardProps } from '@/types/fallingNotes'
 import { Z_INDICES } from '@/utils/visualUtils'
+import {
+  BASE_PLAYBACK_KEY_WIDTH,
+  BLACK_KEY_WIDTH_RATIO
+} from '@/utils/pianoLayout'
 
 /**
  * Simple Piano Keyboard Component (HTML/CSS based)
@@ -16,8 +20,16 @@ export default function SimplePianoKeyboard({
 }: SimplePianoKeyboardProps) {
   const { byMidi, totalWidth } = layout;
 
+  // Borders and shadows shrink with the keys. The reference widths are the ones
+  // a key has at the base density, so they are derived rather than written out —
+  // a literal here silently stops matching when the black-key ratio changes.
+  const referenceWidth = (black: boolean) =>
+    black
+      ? BASE_PLAYBACK_KEY_WIDTH * BLACK_KEY_WIDTH_RATIO
+      : BASE_PLAYBACK_KEY_WIDTH;
+
   const decorationScale = (width: number, black: boolean) =>
-    Math.min(1, width / (black ? 14.4 : 24));
+    Math.min(1, width / referenceWidth(black));
 
   return (
     <div 
