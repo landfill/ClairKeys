@@ -50,8 +50,15 @@ function blackKeyLeftOffset(whites: number, blacks: number, index: number): numb
   return index * backWhiteWidth + (index - 1) * BLACK_KEY_WIDTH_RATIO - (index - 1);
 }
 
-/** pitch class -> [white keys in group, black keys in group, index in group] */
-const BLACK_KEY_GROUP_POSITION: Record<number, [number, number, number]> = {
+type BlackPitchClass = 1 | 3 | 6 | 8 | 10;
+
+/**
+ * pitch class -> [white keys in group, black keys in group, index in group]
+ *
+ * Keyed by the black pitch classes exactly, so the table and `isBlack` cannot
+ * disagree about which notes are black without failing to compile.
+ */
+const BLACK_KEY_GROUP_POSITION: Record<BlackPitchClass, [number, number, number]> = {
   1: [3, 2, 1],   // C#
   3: [3, 2, 2],   // D#
   6: [4, 3, 1],   // F#
@@ -108,17 +115,15 @@ export function buildKeyLayout(
     const black = isBlack(midi);
     
     if (black) {
-      const pitchClass = midi % 12;
+      // Safe because isBlack() admits exactly the five keys of the table.
+      const pitchClass = (midi % 12) as BlackPitchClass;
 
       // Find the white key to the left
       const leftWhiteKeys = keys.filter(k => !k.black && k.midi < midi);
       const leftWhiteIndex = leftWhiteKeys.length - 1;
       const baseX = Math.max(0, leftWhiteIndex) * keyWidth;
 
-      const groupPosition = BLACK_KEY_GROUP_POSITION[pitchClass];
-      const offset = groupPosition
-        ? blackKeyLeftOffset(...groupPosition)
-        : 0.5;
+      const offset = blackKeyLeftOffset(...BLACK_KEY_GROUP_POSITION[pitchClass]);
 
       const x = baseX + offset * keyWidth;
       keys.push({ midi, black: true, x, w: keyWidth * BLACK_KEY_WIDTH_RATIO });
