@@ -7,7 +7,40 @@ Last updated: 2026-09-02 KST
 
 ## 현재 상태
 
-**Current phase**: 이슈 [#71](https://github.com/landfill/ClairKeys/issues/71) 콜백 주소 fail-closed
+**Current phase**: 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58) 검은건반 기하 —
+**PR [#111](https://github.com/landfill/ClairKeys/pull/111) review-ready, 병합 승인 대기**.
+브랜치 `codex/issue-58-black-key-geometry`, head `072e919`.
+
+`pianoLayout.ts`의 흑건 오프셋 다섯 개가 전부 균일한 좌측 편향이라 **D#·A#가 실제와 반대 방향**이었고,
+흑건 폭도 0.6(실제 0.583)이었다. 값을 소수로 적지 않고 **표준 치수(백건 23.5mm · 흑건 13.7mm)에서
+유도**하게 바꿨다 — 유도가 코드에 있어야 실제 악기로 검산할 수 있고, 이슈 #56 spec의 "이 표는 맞다"는
+근거 없는 주장이 다시 붙지 않는다. **D-024가 `pianoLayout.ts`를 회귀 계약 절에 명시하므로 D-037을 코드와
+같은 커밋(`072e919`)에 넣었다.** 흑건 오프셋·폭 자체는 DS-0 고정 상수 7개에 **포함되지 않으며**,
+`PX_PER_SEC` 등 그 일곱 개는 한 픽셀도 바뀌지 않았다.
+
+**착수 전 사용자가 두 결정을 확정했다**: (1) 기준은 표준 치수 유도값, (2) 범위는 `pianoLayout.ts`만.
+
+**이슈 본문의 전제 하나가 현재 코드와 달랐다.** 이슈는 `PianoKeyboard.tsx`를 "모바일 전체화면·가로모드·
+데모가 사용"한다고 적었으나 **라우트에서 도달할 수 없다** — 유일한 소비자 `FullScreenPiano.tsx`·
+`LandscapePianoInterface.tsx`를 import하는 파일이 `src/components/mobile/` 밖에 0개다. 실제 재생 경로는
+`FallingNotesPlayer` → `SimplePianoKeyboard` → `buildKeyLayout()` 하나다. 따라서 이슈 할 일 3(두 구현
+통일)은 수행하지 않고 **아래 이월 표의 P2-A 죽은 코드 정리로 이관**했다(D-037 결정 4).
+
+기존 유일한 흑건 위치 검사가 `|중심 − 경계| ≤ 0.35 * keyWidth`라는 **절대값 상한**이라 부호를 보지 않아
+방향 오류를 통과시키고 있었다. 회귀 `1664afd`가 방향 불변식·유도값·흑건 폭 3건으로 수정 전 실패를
+관측했고, 기대값은 **구현에서 import하지 않고 표준 치수에서 테스트가 직접 유도한다.** 함께 고친 파생
+상수 하나: `SimplePianoKeyboard`의 `decorationScale` 기준값 `14.4`(= 24 × 0.6)가 흑건 폭과 같아야 하는데
+리터럴이었다(테두리·그림자 두께 전용, 좌표 영향 없음).
+
+로컬 검증 Jest 85 / **796**, tsc, lint, build 통과. 근거
+`docs/recovery/validation/2026-09-02-issue-58-black-key-geometry.md`, 리뷰 `docs/recovery/reviews/PR-111.md`.
+**미검증**: 실제 브라우저·실기기 육안 확인(변경 폭이 keyWidth 24에서 2~4px).
+
+**Next action**: (1) PR #111 head `072e919`의 hosted CI를 확인한다. (2) CodeRabbit 수동 리뷰를 요청하고,
+PR #109처럼 `Review rate limited`로 끝나면 독립 리뷰(`/code-review 111 high`)로 대체한다.
+(3) **사용자의 명시적 병합 승인 후에만 병합한다.** (4) 그다음 후보는 #104(마이페이지 앱 셸 — 범위가 넓음).
+
+**Previous phase**: 이슈 [#71](https://github.com/landfill/ClairKeys/issues/71) 콜백 주소 fail-closed
 **완료 — PR #109 병합 (`f2cbb9e`, 2026-09-02 11:01 KST), 이슈 CLOSED**. 후속 이슈
 [#110](https://github.com/landfill/ClairKeys/issues/110)(`omr-service` 호스트 검증, #71 선택 항목 2)을 열었다.
 다음 코드 작업은 아직 시작하지 않았다. 아래는 이 phase의 진행 기록이다.
@@ -407,6 +440,7 @@ DS 트랙을 막지는 않지만 담당이 정해져 있거나 아직 없는 항
 | DS0-2 잔여 | `/api/processing`·`/api/notifications`·`useBackgroundProcessing`·`ProcessingDashboard` 삭제. DS-1은 도달 경로만 없앴다 | P2-A |
 | — | `BackgroundFileUpload`의 `/processing` 링크 2곳 | P2-A |
 | — | **`AdvancedPlaybackControls`와 `LazyAdvancedPlaybackControls`가 죽은 코드다.** 배럴과 `LazyComponent`가 export만 하고 렌더하는 화면이 0곳이다 (D-031에서 확인) | P2-A |
+| **DS58-1** | **`PianoKeyboard.tsx`·`FullScreenPiano.tsx`·`LandscapePianoInterface.tsx`가 죽은 코드다.** 뒤 둘을 import하는 파일이 `src/components/mobile/` 밖에 0개다(2026-09-02 확인). `PianoKeyboard.tsx`는 실제의 2배 이상 과장된 흑건 편차를 그리며, **이슈 #58 할 일 3(두 구현 통일)이 여기로 이관됐다** — 도달 불가라 회귀를 관측할 수 없고, 죽은 코드는 통일이 아니라 제거가 맞다. 되살린다면 D-037의 유도를 쓴다 | P2-A |
 | ~~DS-5 선행~~ | ~~구간 반복(DS0-9)과 이모지 교체가 D-019 결정 8과 부딪힌다~~ → **D-031이 해소하고 PR #96이 병합돼 선행 조건이 없다** | **해소됨** |
 | ~~DS3-1~~ | ~~업로드 한도 50MB가 Vercel 요청 본문 한도 4.5MB와 충돌~~ → **D-032로 한도를 4.5MB로 낮춰 해소.** 숫자는 `MAX_UPLOAD_BYTES` 한 곳에서 온다 | **해소됨** |
 | ~~DS3-2~~ | ~~한도가 4.5MB 정각이라 근접 파일이 여전히 413~~ → **D-033으로 4MB 여유를 둬 해소.** 실제 위험은 오버헤드(2KB)가 아니라 MB 해석 차이(218KB)였다. `uploadFailures.ts`의 `status === 413` 분기 부재는 남지만, 크기로 413에 도달하는 경로가 사실상 없어져 견고성 항목이다 | **해소됨** (413 분기는 견고성 잔여) |
