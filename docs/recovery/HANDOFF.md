@@ -22,8 +22,17 @@ Last updated: 2026-09-02 KST
 `docs/recovery/validation/2026-09-02-issue-72-finalize-route.md`, 리뷰 상태는
 `docs/recovery/reviews/PR-107.md`.
 
-**Next action**: PR #107 hosted CI·CodeQL·CodeRabbit 결과를 확인하고 actionable 항목이 있으면 처리한다.
-사용자의 명시적 병합 승인 후에만 병합한다. 병합 뒤 다음 후보는 #71(`upload/route.ts:135`의
+**Blocker (외부)**: PR #107의 Security Audit·Security Scan이 실패한다. 원인은 이 PR이 아니라 2026-09-01
+16:42Z에 공개된 `browserslist <=4.28.6` high advisory(GHSA-c83g-rgw3-j3cx)다 — 두 체크 모두
+`npm audit --audit-level high`이고, `main`의 마지막 성공은 같은 날 06:12Z(`c9019b4`), 이 날짜의 핸드오프
+직접 커밋 `6ed651b`에서도 같은 체크가 실패한다. lockfile만 바꾸는 PR
+[#108](https://github.com/landfill/ClairKeys/pull/108)(`npm audit fix`, `--force` 없이, transitive 7개
+patch/minor, audit 0건, Jest 777·tsc·lint·build 통과)로 분리했다. 기록은
+`docs/recovery/reviews/PR-108.md`. **#108이 병합되기 전에는 어떤 PR도 이 두 체크를 통과할 수 없다.**
+
+**Next action**: (1) #108 hosted CI 확인 후 사용자 승인으로 먼저 병합. (2) `codex/issue-72-finalize-route`에
+`main`을 merge해 #107의 Security 체크를 재실행. (3) #107의 CodeRabbit 수동 리뷰(2026-09-02 09:50 KST 요청)
+결과를 처리. (4) 사용자의 명시적 병합 승인 후에만 #107 병합. 병합 뒤 다음 후보는 #71(`upload/route.ts:135`의
 `NEXTAUTH_URL` fallback을 503 `OMR_CALLBACK_NOT_CONFIGURED`로 — 이슈의 선택 항목 2번은 `omr-service/`
 변경이라 제외), 그다음 #58(검은건반 기하 — 기준 결정을 `DECISIONS.md`에 먼저 남겨야 함).
 
