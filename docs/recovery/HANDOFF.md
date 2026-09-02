@@ -8,7 +8,7 @@ Last updated: 2026-09-02 KST
 ## 현재 상태
 
 **Current phase**: 헤더 계정 메뉴 정리 — **PR [#115](https://github.com/landfill/ClairKeys/pull/115)
-review-ready, 병합 승인 대기**. 브랜치 `codex/ui-header-user-menu`, head `7db90eb`.
+review-ready, 병합 승인 대기**. 브랜치 `codex/ui-header-user-menu`, head `4a2288c`.
 **GitHub 이슈 없이 사용자의 브라우저 피드백에서 바로 온 작업**이다(PR #100·#101과 같은 경로).
 
 `/profile` 운영 확인 중 헤더 계정 드롭다운의 UI가 앱과 어긋나고 긴 이메일이 넘친다는 피드백이 왔다.
@@ -33,9 +33,35 @@ review-ready, 병합 승인 대기**. 브랜치 `codex/ui-header-user-menu`, hea
 로컬 검증 Jest 88 / **825**(신규 10), tsc, lint, build 통과. 리뷰 `docs/recovery/reviews/PR-115.md`.
 **미검증**: 브라우저 확인 없음, 관리자 링크는 admin 세션 전용이라 미실행.
 
-**Next action**: (1) PR #115의 hosted CI와 리뷰를 확인한다 — CodeRabbit 수동 요청 + 독립 리뷰
-(`/code-review high 115`, **인자 순서 주의**). (2) **사용자의 명시적 병합 승인 후에만 병합한다.**
-(3) 병합 뒤 운영에서 헤더 메뉴를 눈으로 확인한다 — jsdom이 판정하지 못한 넘침과 시각 일관성이 대상이다.
+**2026-09-02 리뷰 처리 (2라운드)**: **CodeRabbit은 `Review rate limited`** — PR #111과 같은 결말이라
+이 PR의 리뷰는 독립 리뷰뿐이다. 1차에서 5건이 나왔고 **전부 이 PR이 고치겠다고 주장한 접근성 영역**이었다.
+
+**둘은 자기모순이었다.** (1) 트리거의 커스텀 포커스 링을 "전역 `:focus-visible`이 담당한다"며 지웠는데
+메뉴에 `overflow-hidden`을 줘서 **그 전역 링을 항목마다 잘라내고** 있었다. (2) `role="menu"`를 선언했지만
+화살표 키·roving tabindex가 없고 신원 블록·로그아웃이 `menuitem`이 아니라 **스크린리더가 메뉴 모드에서
+로그아웃에 도달하지 못한다.** role을 유지한 채 전부 menuitem으로 만드는 대신 **role을 제거**했다 —
+구현하지 않은 패턴을 선언하지 않는다는 점에서 `/profile`에서 목업을 걷어낸 것과 같은 원칙이다.
+
+**그 지적이 결함 하나를 드러냈다 — 모바일에서 로그아웃할 방법이 없었다.** 로그아웃은 데스크톱 드롭다운
+에만 있었고 모바일 메뉴가 쓰는 compact 변형은 아바타와 이름만 렌더했다. 보고에도 최초 구현에도 없던
+것이며 **이 PR이 추가한다** — 병합 시 모바일 메뉴 레이아웃이 바뀐다.
+
+나머지 셋: WCAG 2.5.3 위반(`aria-label`이 보이는 이름을 덮어씀), Escape 후 포커스가 `<body>`로 떨어짐,
+act 경고 20건.
+
+**2차 리뷰가 3건을 더 냈고 그중 둘이 배울 점이다.** (1) `aria-haspopup="true"`는 `"menu"`와 동등해서,
+`role="menu"`를 뺐는데도 여전히 "menu button"이라 알리고 Arrow Down을 유도하고 있었다 — **1차 수정이 넣은
+회귀가 그 잘못된 상태를 고정하고 있었다. 회귀가 항상 안전망인 것은 아니다.** (2) **PR 본문과 리뷰 로그가
+stale했다** — AGENTS.md 단계 4("리뷰 수정마다 `reviews/PR-<번호>.md`를 갱신한다") 위반이고, 그 결과
+**모바일에 파괴적 컨트롤이 추가된다는 사실을 어느 기록에서도 볼 수 없었다.** 코드가 아니라 인계의 결함
+이며 이 PR에서 가장 값어치 있는 지적이다. 본문과 로그를 현재 head 기준으로 다시 썼다.
+
+재검증 Jest 88 / **833**, tsc, lint, build 통과. 전체 분류는 `docs/recovery/reviews/PR-115.md`
+Iteration 2·3.
+
+**Next action**: (1) head `4a2288c`의 hosted CI를 확인한다. (2) **사용자의 명시적 병합 승인 후에만
+병합한다.** (3) 병합 뒤 운영에서 헤더 메뉴를 눈으로 확인한다 — jsdom이 판정하지 못한 것이 넷이다:
+넘침, 포커스 링 클리핑, 줄바꿈된 긴 이름의 높이, **로그아웃이 추가된 모바일 계정 행**.
 
 **Previous phase**: 이슈 [#104](https://github.com/landfill/ClairKeys/issues/104) 마이페이지 앱 셸
 **완료 — PR [#113](https://github.com/landfill/ClairKeys/pull/113) 병합 (`0c0712f`, 2026-09-02),
