@@ -1229,9 +1229,11 @@
   - PR #68은 "callback authentication fails closed"를 원칙으로 세웠고 실제로 비밀 미설정은 503, 불일치는
     401, 잘못된 URL은 503으로 닫힌다. 미설정 `NEXTAUTH_URL`만 조용히 추측하는 반대 방향이었다 (PR #68
     리뷰 R10, 이슈 #71).
-  - 지금 열린 구멍은 아니다. `NEXTAUTH_URL`은 필수로 문서화돼 운영에 설정돼 있고(2026-08-28 종단 확인에서
-    콜백이 `https://clairkeys.vercel.app/api/omr/finalize`로 나감), `/process`는 공유 비밀 뒤에 있다.
-    설정 실수 증폭기이지 독립 취약점이 아니다.
+  - 지금 열린 구멍은 아니다. `NEXTAUTH_URL`은 필수로 문서화돼 있고, 2026-09-02 `vercel env ls`로
+    **Production·Preview 양쪽에 설정돼 있음을 이름 기준으로 확인**했다(389일 전 등록). 2026-08-28 종단 확인의
+    콜백 주소 `https://clairkeys.vercel.app/api/omr/finalize`는 fallback이었어도 같은 값이 나오므로 그것만으로는
+    설정 여부를 증명하지 못한다 — 독립 리뷰가 지적한 대로다. `/process`는 공유 비밀 뒤에 있다. 설정 실수
+    증폭기이지 독립 취약점이 아니다.
   - 업로드 라우트 테스트 11건 전부가 `NEXTAUTH_URL` 없이 통과하고 있었다 — 스위트가 줄곧 fallback 경로를
     검증해 온 셈이다.
 - Decision:
@@ -1239,6 +1241,10 @@
   2. 미설정·공백은 잘못된 절대 URL과 같은 분기 — 503 `OMR_CALLBACK_NOT_CONFIGURED`, 행 생성 전 — 로
      보낸다. 행 생성 전 검증이라는 D-018 Directive의 순서는 그대로다.
   3. 업로드 라우트 테스트 fixture는 `NEXTAUTH_URL`을 명시한다. 설정 없는 성공 경로는 더 이상 존재하지 않는다.
+  4. 검증 규칙은 `src/lib/omr/serviceUrl.ts`의 `getOmrCallbackUrl()` 한 곳에 둔다. `getOmrServiceUrl()`과 같은
+     파서를 공유하므로 trim·절대 URL·http(s) 스킴·값 비노출 규칙이 두 변수 사이에서 어긋날 수 없다. 처음 PR
+     본문에 있던 인라인 구현은 스킴을 검사하지 않았고 `ERR_INVALID_URL`을 통째로 로그해 raw 값을 노출했다 —
+     독립 리뷰가 잡았다.
 - Reason: 실패 경로가 모두 닫히는데 한 곳만 열려 있으면 그 한 곳이 설정 실수의 출구가 된다. 비밀이 갈
   주소를 외부가 모양 지을 수 있는 헤더에서 유도할 이유는 없고, 운영은 이미 설정값에 의존하고 있다.
 - Rejected:
@@ -1249,7 +1255,11 @@
 - Consequence:
   - `NEXTAUTH_URL` 없는 배포(로컬 개발 포함)에서는 업로드가 503으로 거부된다. 문서상 필수 변수이므로 새 요구가
     아니라 기존 요구의 집행이다.
+  - Vercel Preview는 영향이 없다 — 2026-09-02 확인에서 Preview에도 `NEXTAUTH_URL`이 설정돼 있어 이 결정
+    전에도 fallback을 타지 않았다. `docs/vm-replacement.md`의 "Production 필수값" 표는 Preview에 없다는 뜻이 아니다.
   - `request.nextUrl`은 이 라우트에서 더 이상 읽지 않는다.
+  - `NEXTAUTH_URL`에 path 접두가 있으면(`https://host/app`) `/api/omr/finalize`가 그것을 덮어쓴다. 이 저장소는
+    basePath를 쓰지 않으므로 현재 영향은 없고, 이 결정 전에도 같았다.
 - Constraint: D-018의 나머지 결정(callback 인증, DB에서 읽은 `omrJobId`를 fetch target으로, 행 생성 전 검증)은
   바뀌지 않는다.
 - Confidence: high
@@ -1257,6 +1267,8 @@
 - Reversibility: clean
 - Directive: 콜백 주소나 그 밖에 공유 비밀이 향하는 주소를 요청 헤더에서 유도하지 않는다. 설정이 없으면 거부한다.
 - Tested: `npx jest src/app/api/omr/upload` — 회귀 2건(unset, blank)이 수정 전 `OMR_SERVICE_UNAVAILABLE`로 실패하고
-  수정 후 13/13 통과.
-- Not-tested: 운영 배포에서의 동작 변화 — `NEXTAUTH_URL`이 설정돼 있으므로 관측 가능한 차이가 없어야 한다.
+  수정 후 통과; 리뷰 후 스킴·자격증명 유출 회귀 2건이 인라인 구현에서 실패하고 헬퍼로 통과. `npx jest src/lib/omr`
+  `getOmrCallbackUrl` 11건. `vercel env ls production|preview`에 `NEXTAUTH_URL` 존재.
+- Not-tested: 운영 배포에서의 동작 변화 — 설정돼 있으므로 관측 가능한 차이가 없어야 한다. `vercel env ls`는 이름만
+  보여주므로 값이 `https://clairkeys.vercel.app`인지는 확인하지 않았다(값을 내려받지 않기로 했다).
 - Related: D-018, 이슈 [#71](https://github.com/landfill/ClairKeys/issues/71), PR #68 리뷰 R10
