@@ -7,8 +7,18 @@ Last updated: 2026-09-02 KST
 
 ## 현재 상태
 
-**Current phase**: 이슈 [#72](https://github.com/landfill/ClairKeys/issues/72) finalize 라우트 불일치
-수정 **완료 — PR #107 병합 (`8df8bfd`, 2026-09-02), 이슈 CLOSED**. 다음 코드 작업은 아직 시작하지 않았다. 2026-09-02 열린 이슈 11건을 "난이도 중·하, 범위 명확, 시스템 영향도 하,
+**Current phase**: 이슈 [#71](https://github.com/landfill/ClairKeys/issues/71) 콜백 주소 fail-closed
+**PR [#109](https://github.com/landfill/ClairKeys/pull/109) 생성 / CI·리뷰 대기** (2026-09-02 10:24 KST).
+`upload/route.ts`가 `NEXTAUTH_URL` 미설정·공백을 잘못된 URL과 같게 503 `OMR_CALLBACK_NOT_CONFIGURED`로
+거부하고 `request.nextUrl`을 더 이상 읽지 않는다. **D-018 Decision 1을 개정하는 결정 변경**이라 D-036을 같은
+커밋(`dd6f62b`)에 넣었다. 회귀 `dea17cc`는 수정 전 `OMR_SERVICE_UNAVAILABLE`(행 생성 후)로 실패를 관측했다.
+기존 업로드 테스트 11건이 전부 `NEXTAUTH_URL` 없이 통과하고 있었으므로 fixture가 이제 명시한다. 로컬 검증
+Jest 85 / 781, tsc, lint, build 통과. 근거 `docs/recovery/validation/2026-09-02-issue-71-callback-fail-closed.md`,
+리뷰 `docs/recovery/reviews/PR-109.md`. 이슈 #71 선택 항목 2(`omr-service` 호스트 검증)는 VM 배포 필요로 제외 —
+#71 닫힐 때 후속 이슈로 분리한다.
+
+**Previous phase**: 이슈 [#72](https://github.com/landfill/ClairKeys/issues/72) finalize 라우트 불일치
+수정 **완료 — PR #107 병합 (`8df8bfd`, 2026-09-02), 이슈 CLOSED**. post-merge 6/6 success. 2026-09-02 열린 이슈 11건을 "난이도 중·하, 범위 명확, 시스템 영향도 하,
 독립 진행 가능" 기준으로 트리아지해 #72 → #71 → #58 → #104 순으로 골랐다(`omr-service/` 변경이 필요한
 #47·#52·#73은 VM 배포 없이 완료를 주장할 수 없어 제외, #61은 #60 선행 조건, #46은 선택지 미결정, #44는
 본문에 후순위 명시). PR [#107](https://github.com/landfill/ClairKeys/pull/107)은 PR #68 리뷰 R8·R11을
@@ -22,7 +32,7 @@ Last updated: 2026-09-02 KST
 `docs/recovery/validation/2026-09-02-issue-72-finalize-route.md`, 리뷰 상태는
 `docs/recovery/reviews/PR-107.md`.
 
-**Blocker 해소 (2026-09-02 10:20 KST)**: PR #108이 사용자 승인으로 `e2c6f9e`에 병합됐고 `main`의 post-merge
+**Blocker 해소 (2026-09-02 09:57 KST)**: PR #108이 사용자 승인으로 `e2c6f9e`에 병합됐고 `main`의 post-merge
 Security Audit이 success로 돌아왔다. `codex/issue-72-finalize-route`에 `main`을 merge(`9658721`)해 #107의 hosted
 checks가 재실행 중이다. 원격·로컬 `codex/deps-browserslist-audit`는 정리했다. 아래는 해소 전 기록이다.
 
@@ -34,18 +44,26 @@ checks가 재실행 중이다. 원격·로컬 `codex/deps-browserslist-audit`는
 patch/minor, audit 0건, Jest 777·tsc·lint·build 통과)로 분리했다. 기록은
 `docs/recovery/reviews/PR-108.md`. **#108이 병합되기 전에는 어떤 PR도 이 두 체크를 통과할 수 없다.**
 
-**2026-09-02 10:45 KST**: #107 `9658721`의 hosted checks 17/17 pass(Security Audit·Scan·CodeQL 포함). CodeRabbit
+**2026-09-02 10:03 KST**: #107 `9658721`의 hosted checks 17/17 pass(Security Audit·Scan·CodeQL 포함). CodeRabbit
 수동 리뷰 actionable 1건(R1: R11 보정 update가 try 밖) — ACCEPT, 회귀 먼저 추가해 reject를 관측한 뒤 자체
 try/catch로 라우트 JSON 500을 반환하게 고쳐 `56d189a`를 push했다. 기록은 `docs/recovery/reviews/PR-107.md`
 Iteration 4.
 
-**2026-09-02 11:20 KST 병합**: 사용자 승인으로 #107을 `8df8bfd`에 병합했다. `56d189a`에서 hosted checks 전부
+**2026-09-02 10:18 KST 병합**: 사용자 승인으로 #107을 `8df8bfd`에 병합했다. `56d189a`에서 hosted checks 전부
 pass, CodeRabbit R1 스레드 resolved, `MERGEABLE`/`CLEAN`을 재확인했다. post-merge Lint·Security Audit success,
 Run Tests·Post-merge tests는 기록 시점에 진행 중. 원격·로컬 `codex/issue-72-finalize-route` 삭제. worktree는
 clean `main`. 최종 근거는 `docs/recovery/validation/2026-09-02-issue-72-finalize-route.md`,
 `docs/recovery/reviews/PR-107.md` Iteration 6.
 
-**Next action**: 트리아지 순서의 다음 후보는 이슈 [#71](https://github.com/landfill/ClairKeys/issues/71) —
+**Next action**: (1) PR #109 hosted CI·CodeRabbit 결과를 확인하고 actionable을 처리한다. (2) 사용자의 명시적 병합
+승인 후에만 병합한다. (3) 병합 뒤 `omr-service` 호스트 검증 후속 이슈를 연다. (4) 그다음 후보는 #58(검은건반
+기하 — 기준 결정을 `DECISIONS.md`에 먼저 남겨야 함), #104.
+
+**타임스탬프 정정 (2026-09-02 10:24 KST)**: 이 날짜의 앞선 핸드오프 기록에 적힌 09:50·10:05·10:20·10:45·11:05·11:20은
+시계를 확인하지 않은 추정값이었다. `main` 커밋 타임스탬프(09:35·09:39·09:57·10:03·10:08·10:18)로 바로잡았다.
+내용은 바뀌지 않았다.
+
+**(원래 next action, 이제 착수됨)**: 트리아지 순서의 다음 후보는 이슈 [#71](https://github.com/landfill/ClairKeys/issues/71) —
 `src/app/api/omr/upload/route.ts:135`의 `NEXTAUTH_URL` 미설정 fallback을 잘못된 URL과 같게 503
 `OMR_CALLBACK_NOT_CONFIGURED`로 보낸다. 이슈의 선택 항목 2번(`omr-service/notify_completion` 호스트 검증)은
 VM 배포가 필요하므로 이 트랙에서 제외한다. **주의**: D-018 Decision 1이 "없으면 현재 요청 origin을 쓴다"를
