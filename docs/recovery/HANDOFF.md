@@ -55,7 +55,14 @@ Run Tests·Post-merge tests는 기록 시점에 진행 중. 원격·로컬 `code
 clean `main`. 최종 근거는 `docs/recovery/validation/2026-09-02-issue-72-finalize-route.md`,
 `docs/recovery/reviews/PR-107.md` Iteration 6.
 
-**Next action**: (1) PR #109 hosted CI·CodeRabbit 결과를 확인하고 actionable을 처리한다. (2) 사용자의 명시적 병합
+**2026-09-02 10:55 KST 리뷰 처리**: CodeRabbit이 `Review rate limited`로 끝나 PR #68 선례대로 독립 리뷰
+(`/code-review 109 high`)를 돌렸다. 9건 중 2건이 첫 구현의 실제 결함이었다 — 스킴 미검사(`ftp://` 통과)와
+`ERR_INVALID_URL` 객체 로그로 raw `NEXTAUTH_URL` 유출. 둘 다 회귀로 관측(`24424e7`)한 뒤 `getOmrCallbackUrl()`을
+`serviceUrl.ts`에 `getOmrServiceUrl()`과 같은 파서로 추가해 고쳤다(`0dd2e07`). 리뷰가 지적한 "운영 `NEXTAUTH_URL`
+설정 근거 부족"은 `vercel env ls`로 Production·Preview 존재를 확인해 해소했다(값은 내려받지 않음). 전체 분류는
+`docs/recovery/reviews/PR-109.md` Iteration 2. Jest 85 / 793, tsc, lint, build 통과.
+
+**Next action**: (1) PR #109 head `0dd2e07`의 hosted CI를 확인한다. CodeRabbit 재요청 결과가 오면 처리한다. (2) 사용자의 명시적 병합
 승인 후에만 병합한다. (3) 병합 뒤 `omr-service` 호스트 검증 후속 이슈를 연다. (4) 그다음 후보는 #58(검은건반
 기하 — 기준 결정을 `DECISIONS.md`에 먼저 남겨야 함), #104.
 

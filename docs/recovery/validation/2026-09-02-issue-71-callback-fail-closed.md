@@ -2,7 +2,7 @@
 
 Date: 2026-09-02 KST
 Branch: `codex/issue-71-callback-fail-closed`
-Commits: `dea17cc` (regression), `dd6f62b` (fix + D-036)
+Commits: `dea17cc` (regression), `dd6f62b` (fix + D-036), `24424e7` (review regression), `0dd2e07` (helper)
 Pull request: [#109](https://github.com/landfill/ClairKeys/pull/109)
 Environment: macOS (Darwin 25.5.0), Node/npm from repo lockfile, no database or OMR service reachable
 
@@ -40,6 +40,37 @@ Tests: 2 failed, 11 passed, 13 total
 | `git diff --check` | PASS | clean |
 | `grep -n "nextUrl" src/app/api/omr/upload/route.ts` | PASS | no match |
 
+## Review-driven second pass (at `0dd2e07`)
+
+독립 리뷰가 첫 구현에서 두 결함을 찾았다. 둘 다 `24424e7`에서 실패로 관측한 뒤 고쳤다.
+
+| Case | Before (`dd6f62b`) | After (`0dd2e07`) |
+|---|---|---|
+| `NEXTAUTH_URL=ftp://app.example.test` | 200 — 행 생성, 서비스 호출 | 503 `OMR_CALLBACK_NOT_CONFIGURED`, 행 없음 |
+| `NEXTAUTH_URL=https://admin:hunter2@app.example.test with space` | 503이지만 `console.error`에 `hunter2` 포함 | 503, 로그에 값 없음 |
+
+| Command | Result | Evidence |
+|---|---|---|
+| `npx jest src/app/api/omr src/lib/omr` | PASS | 5 suites / 64 tests |
+| `npm test -- --runInBand` | PASS | 85 suites / 793 tests |
+| `npx tsc --noEmit` | PASS | exit 0 |
+| `npm run lint` | PASS | clean |
+| `npm run build` | PASS | Compiled successfully |
+
+## Production configuration check
+
+`vercel env ls production` and `vercel env ls preview` (names only, values not pulled):
+
+| Variable | Production | Preview |
+|---|---|---|
+| `NEXTAUTH_URL` | present (389d) | present (389d) |
+| `OMR_SERVICE_URL` | present | present |
+| `OMR_SHARED_SECRET` | present | present |
+
+리뷰 R2가 지적한 대로, 2026-08-28의 콜백 주소 관측은 fallback이었어도 같은 값을 내므로 설정 여부의 증거가 아니었다.
+위 조회가 그 자리를 대신한다. 값이 `https://clairkeys.vercel.app`인지는 확인하지 않았다 — `vercel env pull`은 값을
+로컬에 내려받으므로 하지 않았다.
+
 ## Baseline comparison
 
 - Fixed failures: 없음 — 기존 실패는 이미 해소된 상태
@@ -55,7 +86,6 @@ Tests: 2 failed, 11 passed, 13 total
 
 ## Gaps and risks
 
-- 운영 `NEXTAUTH_URL`이 설정돼 있음은 2026-08-28 종단 확인 기록에 의존한다. 이번 세션에서 Vercel 환경변수를 다시
-  조회하지 않았다. 설정돼 있다면 관측 가능한 변화가 없고, 없다면 업로드가 503으로 거부된다 — 후자는 의도된
-  동작이다.
+- 운영 `NEXTAUTH_URL`의 존재는 확인했지만 값은 확인하지 않았다. 값이 잘못돼 있다면 업로드가 503으로 거부된다 —
+  의도된 동작이며 운영자가 고칠 문제다.
 - 이슈 #71 선택 항목 2(`omr-service` 호스트 검증)는 하지 않았다. D-036 Rejected 참조.
