@@ -5,6 +5,36 @@ import type { FallingNote, KeyLayout } from '@/types/fallingNotes';
 const KEY_WIDTH = 20;
 const BLACK_KEY_PITCH_CLASSES = new Set([1, 3, 6, 8, 10]);
 
+/**
+ * Standard piano dimensions, restated here rather than imported. Deriving the
+ * expectation from the implementation's own constants would only prove that the
+ * implementation equals itself.
+ */
+const WHITE_KEY_MM = 23.5;
+const BLACK_KEY_MM = 13.7;
+const BLACK_WIDTH = BLACK_KEY_MM / WHITE_KEY_MM;
+
+/**
+ * Where a black key's centre sits relative to the boundary of the two white
+ * keys it divides, in white-key widths. Positive is right of the boundary.
+ *
+ * Within a group the white key's back portions are equal, so the k-th black key
+ * of a group with `whites` white keys and `blacks` black keys has its centre at
+ * `k * t + (k - 0.5) * B` where `t = 1 - blacks * B / whites`. Subtracting the
+ * boundary at `k` leaves `B * ((k - 0.5) - k * blacks / whites)`.
+ */
+const centerDeviation = (whites: number, blacks: number, k: number) =>
+  BLACK_WIDTH * (k - 0.5 - (k * blacks) / whites);
+
+/** pitch class -> [white keys in group, black keys in group, index in group] */
+const BLACK_KEY_GROUP_POSITION: Record<number, [number, number, number]> = {
+  1: [3, 2, 1],   // C#
+  3: [3, 2, 2],   // D#
+  6: [4, 3, 1],   // F#
+  8: [4, 3, 2],   // G#
+  10: [4, 3, 3]   // A#
+};
+
 describe('buildKeyLayout', () => {
   const layout = buildKeyLayout(KEY_WIDTH);
   const keys = [...layout.byMidi.entries()].map(([midi, position]) => ({
@@ -46,6 +76,49 @@ describe('buildKeyLayout', () => {
         KEY_WIDTH * 0.35
       );
       expect(rightWhiteKey!.x).toBe(boundary);
+    }
+  });
+
+  it('leans each black key the way a real piano does', () => {
+    const boundaryOf = (blackKey: { midi: number }) => {
+      const leftWhiteKey = layout.byMidi.get(blackKey.midi - 1)!;
+      return leftWhiteKey.x + leftWhiteKey.w;
+    };
+    const deviationOf = (blackKey: { midi: number; x: number; w: number }) =>
+      blackKey.x + blackKey.w / 2 - boundaryOf(blackKey);
+
+    for (const blackKey of blackKeys) {
+      const pitchClass = blackKey.midi % 12;
+      const deviation = deviationOf(blackKey);
+
+      if (pitchClass === 1 || pitchClass === 6) {
+        // C#, F# sit left of the boundary.
+        expect(deviation).toBeLessThan(0);
+      } else if (pitchClass === 3 || pitchClass === 10) {
+        // D#, A# sit right of it — the direction the old table had backwards.
+        expect(deviation).toBeGreaterThan(0);
+      } else {
+        // G# is the axis of the three-black-key group and lands on it.
+        expect(deviation).toBeCloseTo(0, 6);
+      }
+    }
+  });
+
+  it('places black keys at the offsets standard piano dimensions imply', () => {
+    for (const blackKey of blackKeys) {
+      const leftWhiteKey = layout.byMidi.get(blackKey.midi - 1)!;
+      const boundary = leftWhiteKey.x + leftWhiteKey.w;
+      const [whites, blacks, index] =
+        BLACK_KEY_GROUP_POSITION[blackKey.midi % 12];
+
+      const expected = centerDeviation(whites, blacks, index) * KEY_WIDTH;
+      expect(blackKey.x + blackKey.w / 2 - boundary).toBeCloseTo(expected, 6);
+    }
+  });
+
+  it('gives every black key the real black-key width', () => {
+    for (const blackKey of blackKeys) {
+      expect(blackKey.w).toBeCloseTo(BLACK_WIDTH * KEY_WIDTH, 6);
     }
   });
 
