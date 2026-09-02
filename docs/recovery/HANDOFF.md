@@ -7,7 +7,47 @@ Last updated: 2026-09-02 KST
 
 ## 현재 상태
 
-**Current phase**: 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58) 검은건반 기하
+**Current phase**: 이슈 [#104](https://github.com/landfill/ClairKeys/issues/104) 마이페이지 앱 셸 —
+**PR [#113](https://github.com/landfill/ClairKeys/pull/113) review-ready, 병합 승인 대기**.
+브랜치 `codex/issue-104-profile-shell`, head `93bda76`.
+
+**이슈는 디자인 정렬을 요구했지만 `/profile`은 거의 전체가 목업이었다.** 컨트롤 7개 중 동작하는 것이
+**0개**였다 — 사진 변경·저장·비밀번호 변경·알림 토글 2개·계정 삭제에 `onClick`이 없었고, 가입일은
+문자열 `"2024년 1월 1일"` 하드코딩이었다. 뒷받침할 API도 하나도 없다. **비밀번호 변경은 미구현이 아니라
+존재할 수 없는 항목이다** — 인증이 Google/GitHub OAuth 전용이다.
+
+**사용자가 "거짓말하는 것부터 제거"를 선택했다.** 시각만 고치면 가짜 컨트롤이 더 진짜처럼 보이게 되고,
+계정 삭제는 눌러도 아무 일이 없어 "삭제했다"고 믿게 만든다. DS-3이 업로드 화면에 적용한 원칙과 같다.
+남긴 것은 세션과 DB가 뒷받침하는 것뿐이다 — 아바타·이름·이메일·**실제 가입일**. `User.createdAt`은
+스키마에 처음부터 있었고(`schema.prisma:42`) 읽는 API가 없었을 뿐이라 `GET /api/user/profile`을 추가했다.
+**id 파라미터가 없어 호출자는 자기 행만 읽는다.** 요청이 실패하면 가입일 행을 추측하지 않고 생략한다.
+`ProfileSettings.tsx`는 재스타일링이 아니라 **삭제**했다 — 목업을 걷어내면 남는 내용이 없었다.
+
+셸은 `MainLayout` + `PageHeader` + `Container`로 내 악보·탐색과 같아졌고 `Card`와 ink/surface/rule
+토큰을 쓴다. 제거한 기능과 되살리기 위한 선행 조건은 후속 이슈
+[#112](https://github.com/landfill/ClairKeys/issues/112)에 분리했다(계정 삭제는 스토리지 객체·공개 악보
+처리 때문에 별도 설계 필요).
+
+**두 가지가 검사 방식 자체를 고치게 했다.** (1) 셸 검사를 h1 개수로 걸었더니 **통과했다** — 옛 페이지도
+h1을 가져서 셸에 들어가지 않고도 만족된다. `MainLayout`의 `<main>` 랜드마크를 보도록 바꿔야 의도대로
+실패했다(C6와 같은 vacuous 함정). (2) 첫 구현에서 Jest 전체가 통과하는데 `tsc`만 실패했다 — 아바타
+경로를 **어떤 테스트도 타지 않고 있었다**. 테스트를 추가하니 `OptimizedImage`가 기본 lazy라 페이지
+최상단 요소가 스크롤을 기다리는 **실제 결함**이 나왔다(`priority`/`lazy={false}`로 수정).
+
+회귀 `bd6f001`이 수정 전 10건 실패를 관측했다. 로컬 검증 Jest 87 / **813**(신규 17), tsc, lint, build
+통과. 근거 `docs/recovery/validation/2026-09-02-issue-104-profile-shell.md`,
+리뷰 `docs/recovery/reviews/PR-113.md`.
+
+**미검증**: 브라우저·실기기 확인이 **전혀 없다.** 이슈 완료 조건 4(1440·1024·390), 5(긴 이름·긴 이메일·
+이미지 없음), 7(인접 화면 비교)이 **미충족**이다 — `/profile`은 인증 뒤 화면이라 공개 E2E·axe가 지나가지
+않는 이 저장소의 알려진 사각지대(DS-4·DS-6과 같은 자리)다. 새 라우트에 실제 요청을 보낸 적도 없다.
+
+**Next action**: (1) PR #113의 hosted CI를 확인한다. (2) CodeRabbit은 OSS 정책으로 자동 리뷰를 건너뛰므로
+수동 요청하고, PR #111처럼 rate limited면 독립 리뷰(`/code-review 113 high`)로 대체한다. (3) **사용자의
+명시적 병합 승인 후에만 병합한다.** (4) 완료 조건 4·5·7은 사용자의 수동 확인이 필요하다 — 병합 전후로
+요청한다.
+
+**Previous phase**: 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58) 검은건반 기하
 **완료 — PR [#111](https://github.com/landfill/ClairKeys/pull/111) 병합 (`c410281`, 2026-09-02),
 이슈 CLOSED**. 최종 head `b3d2f29`, post-merge 6/6 success (E2E, build, tests, lint, Security Audit).
 원격·로컬 `codex/issue-58-black-key-geometry` 삭제, worktree clean `main`. 다음 코드 작업은 아직
