@@ -7,9 +7,12 @@ Last updated: 2026-09-02 KST
 
 ## 현재 상태
 
-**Current phase**: 이슈 [#104](https://github.com/landfill/ClairKeys/issues/104) 마이페이지 앱 셸 —
-**PR [#113](https://github.com/landfill/ClairKeys/pull/113) review-ready, 병합 승인 대기**.
-브랜치 `codex/issue-104-profile-shell`, head `abd1109` (CI 16/16 pass, `MERGEABLE`/`CLEAN`).
+**Current phase**: 이슈 [#104](https://github.com/landfill/ClairKeys/issues/104) 마이페이지 앱 셸
+**코드 병합 완료 / 운영 확인 대기 — PR [#113](https://github.com/landfill/ClairKeys/pull/113) 병합
+(`0c0712f`, 2026-09-02), 이슈 CLOSED**. 최종 head `abd1109`, post-merge 6/6 success, Vercel
+**Production 배포 `0c0712f` success**. 원격·로컬 `codex/issue-104-profile-shell` 삭제, worktree clean `main`.
+
+**단, 이슈 완료 조건 4·5·7은 아직 미충족이다** — 사용자가 운영에서 확인하기로 했다(아래 Next action).
 
 **이슈는 디자인 정렬을 요구했지만 `/profile`은 거의 전체가 목업이었다.** 컨트롤 7개 중 동작하는 것이
 **0개**였다 — 사진 변경·저장·비밀번호 변경·알림 토글 2개·계정 삭제에 `onClick`이 없었고, 가입일은
@@ -38,7 +41,7 @@ h1을 가져서 셸에 들어가지 않고도 만족된다. `MainLayout`의 `<ma
 통과. 근거 `docs/recovery/validation/2026-09-02-issue-104-profile-shell.md`,
 리뷰 `docs/recovery/reviews/PR-113.md`.
 
-**미검증**: 브라우저·실기기 확인이 **전혀 없다.** 이슈 완료 조건 4(1440·1024·390), 5(긴 이름·긴 이메일·
+**미검증 (병합 시점)**: 브라우저·실기기 확인이 **전혀 없다.** 이슈 완료 조건 4(1440·1024·390), 5(긴 이름·긴 이메일·
 이미지 없음), 7(인접 화면 비교)이 **미충족**이다 — `/profile`은 인증 뒤 화면이라 공개 E2E·axe가 지나가지
 않는 이 저장소의 알려진 사각지대(DS-4·DS-6과 같은 자리)다. 새 라우트에 실제 요청을 보낸 적도 없다.
 
@@ -69,11 +72,20 @@ h1을 가져서 셸에 들어가지 않고도 만족된다. `MainLayout`의 `<ma
 재검증 Jest 87 / **815**, tsc, lint, build 통과. 프로필 스위트는 UTC·Asia/Seoul·America/Los_Angeles·
 Pacific/Kiritimati 네 곳에서 각각 통과.
 
-**Next action**: (1) **사용자의 명시적 병합 승인 후에만 병합한다** — CI 16/16 pass, 리뷰 지적은 모두
-처리됐고 미해결 스레드는 CodeRabbit R1(기각, 근거 답글 완료) 하나다. (2) 이슈 완료 조건 4(1440·1024·390),
-5(긴 이름·긴 이메일·이미지 없음), 7(인접 화면 비교)은 **자동 검사로 대체할 수 없어 사용자의 수동 확인이
-필요하다.** 특히 **아바타가 원형으로 보이는지**는 R1이 코드 독해로 잡은 것이라 눈으로 확인해야 한다.
-(3) 그다음 후보는 #114(중첩 main, 이번에 분리), #112(제거한 프로필 기능), #103(손가락 번호).
+**Next action**: **사용자가 운영 `/profile`에서 아래를 확인한다.** `/profile`은 인증 뒤 화면이라 공개
+E2E·axe가 지나가지 않으므로 자동 검사가 이를 대체하지 않는다.
+
+| 확인 | 근거가 필요한 이유 |
+|---|---|
+| 1440·1024·390 레이아웃 (완료 조건 4) | 자동 검사 없음 |
+| 긴 이름·긴 이메일·이미지 없음(이니셜 아바타) (완료 조건 5) | 자동 검사 없음 |
+| 내 악보·탐색과 시각 일관성 (완료 조건 7) | 자동 검사 없음 |
+| **아바타가 원형인가** | 독립 리뷰 R1이 코드 독해로 사각형 렌더를 잡아 `next/image`로 고쳤다. 실제 화면이 유일한 확인 수단이다 |
+| **가입일이 실제 값으로, 사용자 시간대 기준으로 뜨는가** | 새 `GET /api/user/profile`에 실제 요청을 보낸 적이 없다(목 기반 검증뿐) |
+
+확인이 끝나면 결과를 이 HANDOFF와 `docs/recovery/validation/2026-09-02-issue-104-profile-shell.md`에
+기록한다. 그다음 코드 작업 후보는 #114(중첩 main, 이번에 분리), #112(제거한 프로필 기능),
+#103(손가락 번호)이며 사용자가 착수를 지시한 뒤 시작한다.
 
 **Previous phase**: 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58) 검은건반 기하
 **완료 — PR [#111](https://github.com/landfill/ClairKeys/pull/111) 병합 (`c410281`, 2026-09-02),
