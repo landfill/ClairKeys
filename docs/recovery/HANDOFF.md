@@ -1,13 +1,33 @@
 # Current Handoff
 
-Last updated: 2026-09-01 KST
+Last updated: 2026-09-02 KST
 
 > 아래 "현재 상태"만 읽고 바로 시작할 수 있어야 한다. 그 아래 절들은 시간 역순 기록이며, 필요한
 > 맥락만 골라 읽는다.
 
 ## 현재 상태
 
-**Current phase**: 이슈 [#105](https://github.com/landfill/ClairKeys/issues/105) `/library`·`/explore`
+**Current phase**: 이슈 [#72](https://github.com/landfill/ClairKeys/issues/72) finalize 라우트 불일치
+수정 **PR 생성 / CI·리뷰 대기**. 2026-09-02 열린 이슈 11건을 "난이도 중·하, 범위 명확, 시스템 영향도 하,
+독립 진행 가능" 기준으로 트리아지해 #72 → #71 → #58 → #104 순으로 골랐다(`omr-service/` 변경이 필요한
+#47·#52·#73은 VM 배포 없이 완료를 주장할 수 없어 제외, #61은 #60 선행 조건, #46은 선택지 미결정, #44는
+본문에 후순위 명시). PR [#107](https://github.com/landfill/ClairKeys/pull/107)은 PR #68 리뷰 R8·R11을
+처리한다: `/result` fetch 위 주석이 DB 왕복을 SSRF 방어로 설명하던 것을 실제 sanitizer(`UUID_PATTERN` +
+`encodeURIComponent`)를 가리키게 고쳤고, nullable `omrJobId`의 409 분기를 finalize·status 두 라우트에서
+타입 좁히기라고 표기했으며, `alreadyStored` 단축 경로가 `processingStatus !== 'completed'`인 행을
+`completed`로 보정하게 했다. **D-018 Decision 3·Directive가 DB에서 읽은 `omrJobId`를 fetch target으로
+못 박고 있고 그 왕복이 PR #68에서 CodeQL request-forgery를 닫은 taint 경계이므로, 왕복·409 분기는 제거하지
+않고 유지했다.** 회귀 `e77e4a5`(수정 전 1 failed / 6 passed 관측) → 수정 `bac8cdd`. 로컬 검증 Jest
+85 suites / 778 tests, tsc, lint, build 통과. 근거는
+`docs/recovery/validation/2026-09-02-issue-72-finalize-route.md`, 리뷰 상태는
+`docs/recovery/reviews/PR-107.md`.
+
+**Next action**: PR #107 hosted CI·CodeQL·CodeRabbit 결과를 확인하고 actionable 항목이 있으면 처리한다.
+사용자의 명시적 병합 승인 후에만 병합한다. 병합 뒤 다음 후보는 #71(`upload/route.ts:135`의
+`NEXTAUTH_URL` fallback을 503 `OMR_CALLBACK_NOT_CONFIGURED`로 — 이슈의 선택 항목 2번은 `omr-service/`
+변경이라 제외), 그다음 #58(검은건반 기하 — 기준 결정을 `DECISIONS.md`에 먼저 남겨야 함).
+
+**Previous phase (still open for operational verification)**: 이슈 [#105](https://github.com/landfill/ClairKeys/issues/105) `/library`·`/explore`
 검색 지연 개선 **코드 병합 완료 / 운영 검증 대기**. 변경 전 운영 측정에서 `/library` 앱 셸 뒤 목록 데이터 대기가
 1.50~1.59초, 검색 탭 입력 UI 뒤 결과 대기가 3.07~3.27초였고, 공개 검색 API TTFB는 5회
 2.87~6.86초였다. 공개 검색의 불필요한 세션·사용자 카테고리 요청, 500ms 초기 debounce, DB 질의의
