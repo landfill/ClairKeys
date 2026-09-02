@@ -8,7 +8,7 @@ Last updated: 2026-09-02 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#72](https://github.com/landfill/ClairKeys/issues/72) finalize 라우트 불일치
-수정 **PR 생성 / CI·리뷰 대기**. 2026-09-02 열린 이슈 11건을 "난이도 중·하, 범위 명확, 시스템 영향도 하,
+수정 **완료 — PR #107 병합 (`8df8bfd`, 2026-09-02), 이슈 CLOSED**. 다음 코드 작업은 아직 시작하지 않았다. 2026-09-02 열린 이슈 11건을 "난이도 중·하, 범위 명확, 시스템 영향도 하,
 독립 진행 가능" 기준으로 트리아지해 #72 → #71 → #58 → #104 순으로 골랐다(`omr-service/` 변경이 필요한
 #47·#52·#73은 VM 배포 없이 완료를 주장할 수 없어 제외, #61은 #60 선행 조건, #46은 선택지 미결정, #44는
 본문에 후순위 명시). PR [#107](https://github.com/landfill/ClairKeys/pull/107)은 PR #68 리뷰 R8·R11을
@@ -39,9 +39,18 @@ patch/minor, audit 0건, Jest 777·tsc·lint·build 통과)로 분리했다. 기
 try/catch로 라우트 JSON 500을 반환하게 고쳐 `56d189a`를 push했다. 기록은 `docs/recovery/reviews/PR-107.md`
 Iteration 4.
 
-**Next action**: (1) #107 head `56d189a`의 hosted checks 재실행 결과를 확인한다. (2) reviewer가 R1을 확인하면
-스레드가 resolved인지 본다. (3) 사용자의 명시적 병합 승인 후에만 #107을 병합한다. (4) 병합 뒤 다음 후보는 #71,
-그다음 #58 (위 순서 근거 참조). 병합 뒤 다음 후보는 #71(`upload/route.ts:135`의
+**2026-09-02 11:20 KST 병합**: 사용자 승인으로 #107을 `8df8bfd`에 병합했다. `56d189a`에서 hosted checks 전부
+pass, CodeRabbit R1 스레드 resolved, `MERGEABLE`/`CLEAN`을 재확인했다. post-merge Lint·Security Audit success,
+Run Tests·Post-merge tests는 기록 시점에 진행 중. 원격·로컬 `codex/issue-72-finalize-route` 삭제. worktree는
+clean `main`. 최종 근거는 `docs/recovery/validation/2026-09-02-issue-72-finalize-route.md`,
+`docs/recovery/reviews/PR-107.md` Iteration 6.
+
+**Next action**: 트리아지 순서의 다음 후보는 이슈 [#71](https://github.com/landfill/ClairKeys/issues/71) —
+`src/app/api/omr/upload/route.ts:135`의 `NEXTAUTH_URL` 미설정 fallback을 잘못된 URL과 같게 503
+`OMR_CALLBACK_NOT_CONFIGURED`로 보낸다. 이슈의 선택 항목 2번(`omr-service/notify_completion` 호스트 검증)은
+VM 배포가 필요하므로 이 트랙에서 제외한다. **주의**: D-018 Decision 1이 "없으면 현재 요청 origin을 쓴다"를
+명시하므로, 이 변경은 결정 변경이다 — `DECISIONS.md`에 D-018 개정 항목을 코드와 같은 브랜치·PR에서 함께
+커밋해야 한다. 사용자가 착수를 지시한 뒤 시작한다. 그다음 후보는 #58(검은건반 기하, 역시 기준 결정 선행). 병합 뒤 다음 후보는 #71(`upload/route.ts:135`의
 `NEXTAUTH_URL` fallback을 503 `OMR_CALLBACK_NOT_CONFIGURED`로 — 이슈의 선택 항목 2번은 `omr-service/`
 변경이라 제외), 그다음 #58(검은건반 기하 — 기준 결정을 `DECISIONS.md`에 먼저 남겨야 함).
 

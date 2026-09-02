@@ -2,7 +2,9 @@
 
 Date: 2026-09-02 KST
 Branch: `codex/issue-72-finalize-route`
-Commits: `e77e4a52e3fdc7fc42c2c572618c7a3db6de0212` (regression), `bac8cdd5b2f1602bdb2a0845cb322d086fa87dc5` (fix)
+Commits: `e77e4a52e3fdc7fc42c2c572618c7a3db6de0212` (regression), `bac8cdd5b2f1602bdb2a0845cb322d086fa87dc5` (fix),
+`56d189a` (review R1: repair write inside the route's JSON 500 contract)
+Merged: `8df8bfd` on `main`, 2026-09-02
 Pull request: [#107](https://github.com/landfill/ClairKeys/pull/107)
 Environment: macOS (Darwin 25.5.0), Node/npm from repo lockfile, no database or OMR service reachable
 
@@ -50,6 +52,16 @@ Tests: 1 failed, 6 passed, 7 total
   사용한다"를 명시. 왕복 제거는 결정 변경이므로 하지 않았다.
 - `src/app/api/omr/status/[jobId]/route.ts:187-190` — status 라우트의 대응 단축 경로가 이미
   `processingStatus = 'completed'`를 쓰고 있음을 확인. finalize의 새 동작은 이것과 일치한다.
+
+## Hosted verification (after PR #108 cleared the audit gate)
+
+| Head | Result |
+|---|---|
+| `9658721` (main merged in) | 17/17 pass incl. Security Audit, Security Scan, CodeQL, E2E ×2 |
+| `56d189a` (R1 fix) | all pass, non-pass 0; CodeRabbit thread resolved by reviewer |
+
+R1 regression at `56d189a`: `npx jest src/app/api/omr` 4 suites / 34 tests (33 → 34); the new case observed a
+rejected handler before the fix.
 
 ## Gaps and risks
 
