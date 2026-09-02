@@ -163,6 +163,32 @@ describe('POST /api/omr/finalize — server-owned completion trigger', () => {
     expect(mockUpdate).not.toHaveBeenCalled()
   })
 
+  it('repairs a stored row whose status drifted away from completed', async () => {
+    // Storage succeeded but the follow-up status write did not, leaving a row
+    // with an animationDataUrl and processingStatus 'failed'. The status poll
+    // already answers this by re-marking the row completed; the callback must
+    // not report completed while leaving the row as it was (issue #72, R11).
+    mockFindUnique.mockResolvedValue(
+      row({
+        animationDataUrl:
+          `https://project.supabase.co/storage/v1/object/public/animation-data/user-1/omr_${JOB_ID}.json`,
+        processingStatus: 'failed',
+      })
+    )
+
+    const { POST } = await import('../route')
+    const response = await POST(callbackRequest())
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ status: 'completed', alreadyStored: true })
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(uploadOmrAnimationData).not.toHaveBeenCalled()
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: 17 },
+      data: expect.objectContaining({ processingStatus: 'completed' }),
+    })
+  })
+
   it('retries a row previously marked failed when storage becomes available', async () => {
     mockFindUnique.mockResolvedValue(row({ processingStatus: 'failed' }))
 
