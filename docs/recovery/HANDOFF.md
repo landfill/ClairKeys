@@ -7,9 +7,11 @@ Last updated: 2026-09-02 KST
 
 ## 현재 상태
 
-**Current phase**: 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58) 검은건반 기하 —
-**PR [#111](https://github.com/landfill/ClairKeys/pull/111) review-ready, 병합 승인 대기**.
-브랜치 `codex/issue-58-black-key-geometry`, head `072e919`.
+**Current phase**: 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58) 검은건반 기하
+**완료 — PR [#111](https://github.com/landfill/ClairKeys/pull/111) 병합 (`c410281`, 2026-09-02),
+이슈 CLOSED**. 최종 head `b3d2f29`, post-merge 6/6 success (E2E, build, tests, lint, Security Audit).
+원격·로컬 `codex/issue-58-black-key-geometry` 삭제, worktree clean `main`. 다음 코드 작업은 아직
+시작하지 않았다. 아래는 이 phase의 진행 기록이다.
 
 `pianoLayout.ts`의 흑건 오프셋 다섯 개가 전부 균일한 좌측 편향이라 **D#·A#가 실제와 반대 방향**이었고,
 흑건 폭도 0.6(실제 0.583)이었다. 값을 소수로 적지 않고 **표준 치수(백건 23.5mm · 흑건 13.7mm)에서
@@ -36,9 +38,24 @@ Last updated: 2026-09-02 KST
 `docs/recovery/validation/2026-09-02-issue-58-black-key-geometry.md`, 리뷰 `docs/recovery/reviews/PR-111.md`.
 **미검증**: 실제 브라우저·실기기 육안 확인(변경 폭이 keyWidth 24에서 2~4px).
 
-**Next action**: (1) PR #111 head `072e919`의 hosted CI를 확인한다. (2) CodeRabbit 수동 리뷰를 요청하고,
-PR #109처럼 `Review rate limited`로 끝나면 독립 리뷰(`/code-review 111 high`)로 대체한다.
-(3) **사용자의 명시적 병합 승인 후에만 병합한다.** (4) 그다음 후보는 #104(마이페이지 앱 셸 — 범위가 넓음).
+**2026-09-02 리뷰 처리**: **CodeRabbit이 이 PR을 두 번 다 건너뛰었다** — 처음엔
+`Review skipped: manual review required for this OSS repository`(PR #96과 같은 OSS 정책), 수동
+`@coderabbitai review` 요청 후엔 `Review rate limited`(PR #68·#109와 같은 결말). **체크가 초록인 것과
+리뷰가 있는 것은 다른 상태다.** PR #68·#109 선례대로 독립 리뷰(`/code-review 111 high`)를 돌렸고 1건이
+나왔다 — `blackKeyLeftOffset` 호출부의 `: 0.5` fallback이 도달 불가(옛 `?? 0.5`의 잔재)라는 지적이다.
+분기를 지우는 대신 테이블 키를 `number`에서 `1 | 3 | 6 | 8 | 10`으로 좁혀 항목이 빠지면 **컴파일이
+실패**하게 고쳤다(`b3d2f29`, 동작 변화 없음). 리뷰가 유도식을 손으로 검산해 구현의
+`k*t + (k-1)*B - (k-1)`과 테스트의 독립 공식 `B*(k - 0.5 - k*blacks/whites)`가 모든 pitch class에서
+일치함(G# 정확히 0)을 확인했고, 정확성 결함은 0건이었다. 전체 분류는
+`docs/recovery/reviews/PR-111.md` Iteration 2.
+
+**2026-09-02 병합**: `b3d2f29` hosted checks 16/16 pass, 리뷰 세 표면(인라인 스레드 0건, 리뷰 본문 없음,
+일반 코멘트) 모두 actionable 0건, `MERGEABLE`/`CLEAN` 재확인 후 사용자 승인으로 병합했다.
+
+**Next action**: 다음 후보는 #104(마이페이지 앱 셸 — 범위가 넓어 단계 분할이 필요하다). 사용자가 착수를
+지시한 뒤 시작한다. #110·#73·#52·#47은 `omr-service` 변경이라 VM 배포가 필요하고, #61은 #60 선행,
+#46은 선택지 미결정, #44는 후순위 명시, #103은 트리아지 미실시다. 이번에 이관한 **DS58-1**(죽은 건반
+컴포넌트 3개 제거)은 이월 표의 P2-A에 있다.
 
 **Previous phase**: 이슈 [#71](https://github.com/landfill/ClairKeys/issues/71) 콜백 주소 fail-closed
 **완료 — PR #109 병합 (`f2cbb9e`, 2026-09-02 11:01 KST), 이슈 CLOSED**. 후속 이슈
