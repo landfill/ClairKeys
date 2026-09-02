@@ -84,6 +84,9 @@ describe('POST /api/omr/upload — failure is visible, not silent', () => {
     } as never)
     mockCreate.mockResolvedValue({ id: CREATED_ROW_ID } as never)
     mockUpdate.mockResolvedValue({ id: CREATED_ROW_ID } as never)
+    // The callback address is configuration, not something derived from the
+    // request (D-036). Every case that reaches the service needs it set.
+    process.env.NEXTAUTH_URL = 'https://app.example.test'
     fetchSpy = jest.spyOn(global, 'fetch')
   })
 
@@ -226,21 +229,43 @@ describe('POST /api/omr/upload — failure is visible, not silent', () => {
     expect(response.status).toBe(200)
     const [, requestInit] = fetchSpy.mock.calls[0]
     expect((requestInit?.body as FormData).get('callback_url')).toBe(
-      'http://localhost:3000/api/omr/finalize'
+      'https://app.example.test/api/omr/finalize'
     )
   })
 
-  it('refuses an invalid public app URL before creating a row', async () => {
+  it.each([
+    ['unset', undefined],
+    ['blank', '   '],
+    ['not an absolute URL', 'not an absolute URL'],
+    ['a non-HTTP scheme', 'ftp://app.example.test'],
+    ['carrying credentials and malformed', 'https://admin:hunter2@app.example.test with space'],
+  ])('refuses before creating a row when NEXTAUTH_URL is %s', async (_label, value) => {
+    // The shared secret travels to whatever address this route hands the
+    // service. Guessing that address from the request Host header when the
+    // configuration is missing was the one place the callback chain failed
+    // open (issue #71); missing, blank, malformed and non-HTTP values now take
+    // the same 503 before any row exists (D-036).
     process.env.OMR_SERVICE_URL = 'https://omr.example.invalid'
-    process.env.NEXTAUTH_URL = 'not an absolute URL'
+    if (value === undefined) delete process.env.NEXTAUTH_URL
+    else process.env.NEXTAUTH_URL = value
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 
-    const { POST } = await loadRoute()
-    const response = await POST(uploadRequest())
-    const data = await response.json()
+    try {
+      const { POST } = await loadRoute()
+      const response = await POST(uploadRequest())
+      const data = await response.json()
 
-    expect(response.status).toBe(503)
-    expect(data.code).toBe('OMR_CALLBACK_NOT_CONFIGURED')
-    expect(mockCreate).not.toHaveBeenCalled()
-    expect(fetchSpy).not.toHaveBeenCalled()
+      expect(response.status).toBe(503)
+      expect(data.code).toBe('OMR_CALLBACK_NOT_CONFIGURED')
+      expect(mockCreate).not.toHaveBeenCalled()
+      expect(fetchSpy).not.toHaveBeenCalled()
+      // A URL can carry credentials; the log must diagnose the problem
+      // without echoing the value.
+      const logged = JSON.stringify(consoleError.mock.calls)
+      expect(logged).not.toContain('hunter2')
+      expect(logged).not.toContain('with space')
+    } finally {
+      consoleError.mockRestore()
+    }
   })
 })

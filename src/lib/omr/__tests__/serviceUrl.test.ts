@@ -1,7 +1,12 @@
 /**
  * @jest-environment node
  */
-import { getOmrServiceUrl, OmrServiceNotConfiguredError } from '../serviceUrl'
+import {
+  getOmrCallbackUrl,
+  getOmrServiceUrl,
+  OmrCallbackNotConfiguredError,
+  OmrServiceNotConfiguredError,
+} from '../serviceUrl'
 
 /**
  * `OMR_SERVICE_URL` is typed into a Vercel dashboard by a person, so the
@@ -100,5 +105,60 @@ describe('getOmrServiceUrl', () => {
         expect(message).not.toContain('101.79.16.73')
       }
     })
+  })
+})
+
+describe('getOmrCallbackUrl', () => {
+  /**
+   * The OMR service POSTs the shared secret to whatever address this returns,
+   * so the address has to come from configuration alone (D-036). The rules
+   * are the ones `getOmrServiceUrl` already applies — trim, absolute, http or
+   * https, and never echo the value — and they live in one place so the two
+   * cannot drift apart.
+   */
+  const original = process.env.NEXTAUTH_URL
+
+  afterEach(() => {
+    if (original === undefined) delete process.env.NEXTAUTH_URL
+    else process.env.NEXTAUTH_URL = original
+  })
+
+  it('builds the finalize route on the configured origin', () => {
+    process.env.NEXTAUTH_URL = 'https://clairkeys.vercel.app'
+    expect(getOmrCallbackUrl()).toBe('https://clairkeys.vercel.app/api/omr/finalize')
+  })
+
+  it('trims whitespace and tolerates a trailing slash', () => {
+    process.env.NEXTAUTH_URL = '  https://clairkeys.vercel.app/  '
+    expect(getOmrCallbackUrl()).toBe('https://clairkeys.vercel.app/api/omr/finalize')
+  })
+
+  it.each([
+    ['unset', undefined],
+    ['whitespace only', '   '],
+    ['a bare path', '/'],
+    ['a host with no scheme', 'clairkeys.vercel.app'],
+    ['a non-HTTP scheme', 'ftp://clairkeys.vercel.app'],
+    ['a websocket scheme', 'ws://clairkeys.vercel.app'],
+    ['a file URL', 'file:///tmp'],
+  ])('throws OmrCallbackNotConfiguredError for %s', (_label, value) => {
+    if (value === undefined) delete process.env.NEXTAUTH_URL
+    else process.env.NEXTAUTH_URL = value
+
+    expect(() => getOmrCallbackUrl()).toThrow(OmrCallbackNotConfiguredError)
+  })
+
+  it('omits userinfo from the message', () => {
+    process.env.NEXTAUTH_URL = 'ftp://admin:hunter2@clairkeys.vercel.app'
+
+    try {
+      getOmrCallbackUrl()
+      throw new Error('expected getOmrCallbackUrl to throw')
+    } catch (error) {
+      expect(error).toBeInstanceOf(OmrCallbackNotConfiguredError)
+      const message = (error as Error).message
+      expect(message).not.toContain('hunter2')
+      expect(message).not.toContain('admin')
+    }
   })
 })

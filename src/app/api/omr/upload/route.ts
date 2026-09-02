@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
-import { getOmrServiceUrl, omrAuthHeaders, OmrServiceNotConfiguredError } from '@/lib/omr/serviceUrl'
+import {
+  getOmrCallbackUrl,
+  getOmrServiceUrl,
+  omrAuthHeaders,
+  OmrCallbackNotConfiguredError,
+  OmrServiceNotConfiguredError
+} from '@/lib/omr/serviceUrl'
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
 
 /**
@@ -130,12 +136,15 @@ export async function POST(request: NextRequest) {
     // Resolve the callback before creating a row for the same reason as the
     // service URL above: a malformed deployment URL is knowable now, while a
     // row created first would have no job and no trigger capable of moving it.
+    // The address comes from configuration only (D-036, issue #71); the helper
+    // states why and refuses a missing value the same way as a malformed one.
     let callbackUrl: string
     try {
-      const callbackBaseUrl = process.env.NEXTAUTH_URL?.trim() || request.nextUrl.origin
-      callbackUrl = new URL('/api/omr/finalize', callbackBaseUrl).toString()
+      callbackUrl = getOmrCallbackUrl()
     } catch (error) {
-      console.error('OMR callback refused: public application URL is invalid', error)
+      if (!(error instanceof OmrCallbackNotConfiguredError)) throw error
+
+      console.error('OMR callback refused:', error.message)
       return NextResponse.json(
         {
           error: '완료 알림 주소가 설정되지 않았습니다. 관리자에게 문의해 주세요.',

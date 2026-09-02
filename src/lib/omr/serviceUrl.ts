@@ -27,6 +27,35 @@ export class OmrServiceNotConfiguredError extends Error {
   }
 }
 
+/**
+ * Why a configured URL is unusable, phrased for the operator and never
+ * carrying the value. The caller turns it into its own error class.
+ */
+type HttpUrlProblem = 'not-absolute' | `scheme:${string}`
+
+/**
+ * Parses a value typed into a deployment dashboard as an absolute http(s)
+ * URL. Shared by every variable that names an address this application will
+ * send something to, so the rules cannot drift between them.
+ */
+function parseHttpUrl(value: string): { url: URL } | { problem: HttpUrlProblem } {
+  let parsed: URL
+  try {
+    parsed = new URL(value)
+  } catch {
+    return { problem: 'not-absolute' }
+  }
+
+  // Parsing alone is not enough. `new URL('example.com:3000')` succeeds by
+  // reading `example.com:` as the scheme, so a hostname typed without one can
+  // arrive here looking well formed and then fail at `fetch`.
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return { problem: `scheme:${parsed.protocol}` }
+  }
+
+  return { url: parsed }
+}
+
 export function getOmrServiceUrl(): string {
   const configured = process.env.OMR_SERVICE_URL?.trim()
 
@@ -34,29 +63,55 @@ export function getOmrServiceUrl(): string {
     throw new OmrServiceNotConfiguredError()
   }
 
-  let parsed: URL
-  try {
-    parsed = new URL(configured)
-  } catch {
+  const result = parseHttpUrl(configured)
+  if ('problem' in result) {
     // Deliberately without the value. The caller logs this error and echoes its
     // message in development, and a URL can carry credentials — putting the raw
     // value here would put a password in a log to diagnose a typo.
     throw new OmrServiceNotConfiguredError(
-      'OMR_SERVICE_URL is not an absolute URL. It must include a scheme, ' +
-        'for example http://host:port.'
-    )
-  }
-
-  // Parsing alone is not enough. `new URL('example.com:3000')` succeeds by
-  // reading `example.com:` as the scheme, so a hostname typed without one can
-  // arrive here looking well formed and then fail at `fetch`.
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    throw new OmrServiceNotConfiguredError(
-      `OMR_SERVICE_URL must use http: or https:, not ${parsed.protocol}`
+      result.problem === 'not-absolute'
+        ? 'OMR_SERVICE_URL is not an absolute URL. It must include a scheme, ' +
+            'for example http://host:port.'
+        : `OMR_SERVICE_URL must use http: or https:, not ${result.problem.slice('scheme:'.length)}`
     )
   }
 
   return configured.replace(/\/+$/, '')
+}
+
+/**
+ * The upload route hands this address to the OMR service, and the service
+ * POSTs the shared secret to it when a job completes. D-036: it comes from
+ * configuration only — never from the request, whose Host header is the one
+ * input here an outside party can shape — and a missing value is refused the
+ * same way a malformed one is. The rules are the ones `getOmrServiceUrl`
+ * applies, for the same reasons.
+ */
+export class OmrCallbackNotConfiguredError extends Error {
+  constructor(reason = 'NEXTAUTH_URL is not set.') {
+    super(`${reason} The conversion callback address is not configured for this deployment.`)
+    this.name = 'OmrCallbackNotConfiguredError'
+  }
+}
+
+export function getOmrCallbackUrl(): string {
+  const configured = process.env.NEXTAUTH_URL?.trim()
+
+  if (!configured) {
+    throw new OmrCallbackNotConfiguredError()
+  }
+
+  const result = parseHttpUrl(configured)
+  if ('problem' in result) {
+    throw new OmrCallbackNotConfiguredError(
+      result.problem === 'not-absolute'
+        ? 'NEXTAUTH_URL is not an absolute URL. It must include a scheme, ' +
+            'for example https://host.'
+        : `NEXTAUTH_URL must use http: or https:, not ${result.problem.slice('scheme:'.length)}`
+    )
+  }
+
+  return new URL('/api/omr/finalize', result.url).toString()
 }
 
 /**
