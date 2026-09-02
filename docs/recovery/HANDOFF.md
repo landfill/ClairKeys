@@ -9,7 +9,7 @@ Last updated: 2026-09-02 KST
 
 **Current phase**: 이슈 [#104](https://github.com/landfill/ClairKeys/issues/104) 마이페이지 앱 셸 —
 **PR [#113](https://github.com/landfill/ClairKeys/pull/113) review-ready, 병합 승인 대기**.
-브랜치 `codex/issue-104-profile-shell`, head `93bda76`.
+브랜치 `codex/issue-104-profile-shell`, head `abd1109` (CI 16/16 pass, `MERGEABLE`/`CLEAN`).
 
 **이슈는 디자인 정렬을 요구했지만 `/profile`은 거의 전체가 목업이었다.** 컨트롤 7개 중 동작하는 것이
 **0개**였다 — 사진 변경·저장·비밀번호 변경·알림 토글 2개·계정 삭제에 `onClick`이 없었고, 가입일은
@@ -42,10 +42,38 @@ h1을 가져서 셸에 들어가지 않고도 만족된다. `MainLayout`의 `<ma
 이미지 없음), 7(인접 화면 비교)이 **미충족**이다 — `/profile`은 인증 뒤 화면이라 공개 E2E·axe가 지나가지
 않는 이 저장소의 알려진 사각지대(DS-4·DS-6과 같은 자리)다. 새 라우트에 실제 요청을 보낸 적도 없다.
 
-**Next action**: (1) PR #113의 hosted CI를 확인한다. (2) CodeRabbit은 OSS 정책으로 자동 리뷰를 건너뛰므로
-수동 요청하고, PR #111처럼 rate limited면 독립 리뷰(`/code-review 113 high`)로 대체한다. (3) **사용자의
-명시적 병합 승인 후에만 병합한다.** (4) 완료 조건 4·5·7은 사용자의 수동 확인이 필요하다 — 병합 전후로
-요청한다.
+**2026-09-02 리뷰 처리**: **CodeRabbit이 이번엔 실제로 리뷰를 실행했다** — PR #111에서 두 번 다
+건너뛴 것과 다르다. 독립 리뷰도 함께 돌렸는데 **첫 실행이 low effort로 잡혀 테스트 파일을 건너뛴 채
+`(none)`을 냈다.** 출력의 프롬프트를 직접 읽어서 알았고 인자를 바꿔 재실행하니 4건이 나왔다 —
+**지적 0건과 리뷰 없음이 다른 상태인 것처럼, 얕게 돈 리뷰도 세 번째 상태다.**
+
+수용 4건, 기각 1건. **R1·R3는 뿌리가 같았다** — 80px 고정 아바타를 반응형 이미지 도구
+(`OptimizedImage`)에 넣은 것이다. className이 wrapper로 가는데 `overflow-hidden`이 없어 **아바타가
+사각형으로 렌더**됐고(삭제한 `ProfileSettings` 대비 시각 회귀), 뷰포트 `sizes` 하드코딩으로 80px
+아바타에 폰 너비 변형을 preload했으며, 처음 만난 lazy 문제도 같은 뿌리였다. `next/image`로 되돌려
+한꺼번에 해소했다(`405d877`).
+
+**R5는 기각했다.** CodeRabbit이 타임존 의존의 처방으로 `formatJoinDate`에 `timeZone: 'UTC'` 고정을
+요구했으나 방향이 반대다 — KST 08:00 가입은 UTC로 전날 23:00이라 **하루 전 날짜를 보여주게 된다.**
+의존성은 동작이 아니라 fixture에 있었고 그쪽을 고쳤다. **기각 근거가 검사되는지 확인했다**: 제안대로
+바꾸면 새 회귀가 `TZ=Asia/Seoul`에서 실패하고, 원래대로면 네 타임존에서 모두 통과한다(`abd1109`).
+포맷터는 `src/lib/profile/joinDate.ts`로 분리했다(Next.js 페이지는 default 외 export 불가, DS-3의
+업로드 계약 분리와 같은 방식). 근거는 docstring·커밋 Directive·CodeRabbit 스레드 답글 세 곳에 남겼다.
+
+**R4로 PR 본문의 주장 하나가 과했음이 드러났다.** 루트 레이아웃이 이미 `<main>`을 렌더하는데
+`MainLayout`이 또 렌더해 **중첩 랜드마크**가 생긴다 — `library`·`explore`·`upload`·`sheet/[id]`도 같다.
+따라서 셸 회귀는 실제 DOM이 아니라 페이지 컴포넌트를 서술한다(테스트가 루트 레이아웃 없이 렌더하므로).
+이 PR이 도입한 결함이 아니라 저장소 전역 패턴이라 이슈
+[#114](https://github.com/landfill/ClairKeys/issues/114)로 분리하고 테스트 주석에 명시했다.
+
+재검증 Jest 87 / **815**, tsc, lint, build 통과. 프로필 스위트는 UTC·Asia/Seoul·America/Los_Angeles·
+Pacific/Kiritimati 네 곳에서 각각 통과.
+
+**Next action**: (1) **사용자의 명시적 병합 승인 후에만 병합한다** — CI 16/16 pass, 리뷰 지적은 모두
+처리됐고 미해결 스레드는 CodeRabbit R1(기각, 근거 답글 완료) 하나다. (2) 이슈 완료 조건 4(1440·1024·390),
+5(긴 이름·긴 이메일·이미지 없음), 7(인접 화면 비교)은 **자동 검사로 대체할 수 없어 사용자의 수동 확인이
+필요하다.** 특히 **아바타가 원형으로 보이는지**는 R1이 코드 독해로 잡은 것이라 눈으로 확인해야 한다.
+(3) 그다음 후보는 #114(중첩 main, 이번에 분리), #112(제거한 프로필 기능), #103(손가락 번호).
 
 **Previous phase**: 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58) 검은건반 기하
 **완료 — PR [#111](https://github.com/landfill/ClairKeys/pull/111) 병합 (`c410281`, 2026-09-02),
