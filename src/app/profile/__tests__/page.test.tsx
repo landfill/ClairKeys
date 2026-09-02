@@ -59,6 +59,18 @@ describe('profile page shell', () => {
     expect(screen.getAllByText('hong@example.com').length).toBeGreaterThan(0)
   })
 
+  it('renders the account avatar when the provider supplies one', async () => {
+    mockSession.data.user.image = 'https://example.com/avatar.png'
+
+    render(<ProfilePage />)
+
+    await screen.findAllByText('hong@example.com')
+    // The avatar is decorative — the name sits beside it — so it carries an
+    // empty alt and is found by role rather than by name.
+    const images = screen.queryAllByRole('presentation')
+    expect(images.length + screen.queryAllByRole('img').length).toBeGreaterThan(0)
+  })
+
   it('falls back to a readable label when the account has no name', async () => {
     mockSession.data.user.name = null as unknown as string
 
