@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import LogoutButton from './LogoutButton'
 
 interface UserProfileProps {
@@ -16,6 +16,9 @@ const MENU_LINKS = [
   { href: '/library', label: '내 악보' }
 ]
 
+const ITEM_CLASSES =
+  'block px-4 py-2 text-sm text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink'
+
 export default function UserProfile({
   showDropdown = true,
   className = ""
@@ -23,6 +26,7 @@ export default function UserProfile({
   const { data: session, status } = useSession()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   // Check admin status when user is logged in
   useEffect(() => {
@@ -37,12 +41,16 @@ export default function UserProfile({
   }, [session])
 
   // The backdrop closes the menu on a click, but a keyboard user has no way to
-  // reach it. Escape is the one that matters for them.
+  // reach it. Escape also has to hand focus back: if it closes while focus is
+  // on a menu item, that element unmounts and focus falls to <body>, so the
+  // next Tab restarts from the top of the document instead of the header.
   useEffect(() => {
     if (!isDropdownOpen) return
 
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsDropdownOpen(false)
+      if (event.key !== 'Escape') return
+      setIsDropdownOpen(false)
+      triggerRef.current?.focus()
     }
 
     document.addEventListener('keydown', closeOnEscape)
@@ -78,14 +86,20 @@ export default function UserProfile({
 
   if (!showDropdown) {
     return (
-      <div className={`flex min-w-0 items-center gap-2 ${className}`}>
+      <div className={`flex min-w-0 items-center gap-3 ${className}`}>
         {avatar}
         <span
           data-testid="account-menu-label"
-          className="truncate text-sm text-ink"
+          className="min-w-0 flex-1 truncate text-sm text-ink"
         >
           {label}
         </span>
+        {/*
+          Logout used to live only in the desktop dropdown, so the mobile menu —
+          which renders this variant and nothing else for the account — offered
+          no way to sign out at all.
+        */}
+        <LogoutButton className="shrink-0 text-sm text-state-error transition-colors hover:brightness-90" />
       </div>
     )
   }
@@ -93,11 +107,15 @@ export default function UserProfile({
   return (
     <div className={`relative ${className}`}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        aria-haspopup="menu"
+        aria-haspopup="true"
         aria-expanded={isDropdownOpen}
-        aria-label="계정 메뉴"
+        // The visible name has to survive into the accessible name (WCAG 2.5.3):
+        // a bare "계정 메뉴" label leaves voice control unable to address the
+        // control the user is looking at, and hides which account is signed in.
+        aria-label={`${label} 계정 메뉴`}
         // The focus ring comes from the global :focus-visible rule, as it does
         // for Button — a per-component ring makes focus differ page to page.
         className="flex max-w-[14rem] items-center gap-2 rounded-full p-1 text-sm text-ink-muted transition-colors hover:text-ink"
@@ -105,6 +123,7 @@ export default function UserProfile({
         {avatar}
         <span
           data-testid="account-menu-label"
+          aria-hidden="true"
           className="max-w-[9rem] truncate"
         >
           {label}
@@ -128,10 +147,21 @@ export default function UserProfile({
             onClick={() => setIsDropdownOpen(false)}
           />
 
+          {/*
+            Deliberately not role="menu". That role obliges arrow-key navigation
+            and a roving tabindex, neither of which is implemented here, and it
+            may only own menuitems — which drops the identity block and the
+            logout button for screen-reader users in menu mode. Plain links and
+            a button, reached by Tab, are what this actually is.
+
+            No `overflow-hidden` either: globals.css draws focus as an outline
+            with a positive offset, and the full-width items have no room for it
+            inside a clipped box. Hiding the global ring right after deleting
+            this component's own one would leave keyboard users worse off.
+          */}
           <div
-            role="menu"
-            aria-label="계정"
-            className="absolute right-0 z-20 mt-2 w-64 overflow-hidden rounded-lg border border-rule bg-surface py-1 shadow-lg"
+            data-testid="account-menu"
+            className="absolute right-0 z-20 mt-2 w-64 rounded-lg border border-rule bg-surface py-1 shadow-lg"
           >
             <div className="border-b border-rule px-4 py-3">
               {user.name && (
@@ -155,8 +185,7 @@ export default function UserProfile({
               <Link
                 key={link.href}
                 href={link.href}
-                role="menuitem"
-                className="block px-4 py-2 text-sm text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+                className={ITEM_CLASSES}
                 onClick={() => setIsDropdownOpen(false)}
               >
                 {link.label}
@@ -166,7 +195,6 @@ export default function UserProfile({
             {isAdmin && (
               <Link
                 href="/admin/update-finger-data"
-                role="menuitem"
                 className="block px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-surface-muted"
                 onClick={() => setIsDropdownOpen(false)}
               >
@@ -174,8 +202,10 @@ export default function UserProfile({
               </Link>
             )}
 
-            <div className="border-t border-rule px-4 py-2">
-              <LogoutButton className="text-sm text-state-error transition-colors hover:brightness-90" />
+            <div className="mt-1 border-t border-rule pt-1">
+              <LogoutButton
+                className={`w-full text-left ${ITEM_CLASSES} text-state-error hover:text-state-error`}
+              />
             </div>
           </div>
         </>
