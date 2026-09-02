@@ -81,10 +81,17 @@ export async function POST(request: NextRequest) {
     // leaves the row drifted; the status poll repairs it on its own
     // short-circuit, and answering `completed` here must do the same.
     if (sheetMusic.processingStatus !== 'completed') {
-      await prisma.sheetMusic.update({
-        where: { id: sheetMusic.id },
-        data: { processingStatus: 'completed', updatedAt: new Date() },
-      })
+      try {
+        await prisma.sheetMusic.update({
+          where: { id: sheetMusic.id },
+          data: { processingStatus: 'completed', updatedAt: new Date() },
+        })
+      } catch (error) {
+        // Same shape as the catch below: the service retries 5xx, so the next
+        // callback gets another chance to repair the row.
+        console.error('OMR callback status repair failed:', jobId, error)
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+      }
     }
 
     return NextResponse.json({

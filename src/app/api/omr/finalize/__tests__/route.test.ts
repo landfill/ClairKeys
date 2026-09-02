@@ -189,6 +189,32 @@ describe('POST /api/omr/finalize — server-owned completion trigger', () => {
     })
   })
 
+  it('answers the route JSON 500 when the status repair itself fails', async () => {
+    // The repair write sits outside the try that shapes every other failure,
+    // so a rejected update must still come back as this route's error JSON
+    // (a 5xx the OMR service will retry), not as a rejected handler.
+    mockFindUnique.mockResolvedValue(
+      row({
+        animationDataUrl:
+          `https://project.supabase.co/storage/v1/object/public/animation-data/user-1/omr_${JOB_ID}.json`,
+        processingStatus: 'failed',
+      })
+    )
+    mockUpdate.mockRejectedValue(new Error('connection reset'))
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+
+    try {
+      const { POST } = await import('../route')
+      const response = await POST(callbackRequest())
+
+      expect(response.status).toBe(500)
+      expect(await response.json()).toEqual({ error: 'Internal server error' })
+      expect(fetchSpy).not.toHaveBeenCalled()
+    } finally {
+      consoleError.mockRestore()
+    }
+  })
+
   it('retries a row previously marked failed when storage becomes available', async () => {
     mockFindUnique.mockResolvedValue(row({ processingStatus: 'failed' }))
 
