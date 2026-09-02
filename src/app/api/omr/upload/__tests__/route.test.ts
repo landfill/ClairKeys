@@ -84,6 +84,9 @@ describe('POST /api/omr/upload — failure is visible, not silent', () => {
     } as never)
     mockCreate.mockResolvedValue({ id: CREATED_ROW_ID } as never)
     mockUpdate.mockResolvedValue({ id: CREATED_ROW_ID } as never)
+    // The callback address is configuration, not something derived from the
+    // request (D-036). Every case that reaches the service needs it set.
+    process.env.NEXTAUTH_URL = 'https://app.example.test'
     fetchSpy = jest.spyOn(global, 'fetch')
   })
 
@@ -226,8 +229,30 @@ describe('POST /api/omr/upload — failure is visible, not silent', () => {
     expect(response.status).toBe(200)
     const [, requestInit] = fetchSpy.mock.calls[0]
     expect((requestInit?.body as FormData).get('callback_url')).toBe(
-      'http://localhost:3000/api/omr/finalize'
+      'https://app.example.test/api/omr/finalize'
     )
+  })
+
+  it.each([
+    ['unset', undefined],
+    ['blank', '   '],
+  ])('refuses before creating a row when NEXTAUTH_URL is %s', async (_label, value) => {
+    // The shared secret travels to whatever address this route hands the
+    // service. Guessing that address from the request Host header when the
+    // configuration is missing is the one place the callback chain failed
+    // open (issue #71); it now fails closed like an invalid URL does.
+    process.env.OMR_SERVICE_URL = 'https://omr.example.invalid'
+    if (value === undefined) delete process.env.NEXTAUTH_URL
+    else process.env.NEXTAUTH_URL = value
+
+    const { POST } = await loadRoute()
+    const response = await POST(uploadRequest())
+    const data = await response.json()
+
+    expect(response.status).toBe(503)
+    expect(data.code).toBe('OMR_CALLBACK_NOT_CONFIGURED')
+    expect(mockCreate).not.toHaveBeenCalled()
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 
   it('refuses an invalid public app URL before creating a row', async () => {
