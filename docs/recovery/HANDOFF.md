@@ -7,8 +7,11 @@ Last updated: 2026-09-02 KST
 
 ## 현재 상태
 
-**Current phase**: 헤더 계정 메뉴 정리 — **PR [#115](https://github.com/landfill/ClairKeys/pull/115)
-review-ready, 병합 승인 대기**. 브랜치 `codex/ui-header-user-menu`, head `4a2288c`.
+**Current phase**: 헤더 계정 메뉴 정리 — **코드 병합 완료 / 운영 확인 대기.
+PR [#115](https://github.com/landfill/ClairKeys/pull/115) 병합 (`885cfd3`, 2026-09-02)**, 최종 head
+`4a2288c`, post-merge 6/6 success, Vercel **Production 배포 `885cfd3` success**. 원격·로컬
+`codex/ui-header-user-menu` 삭제, worktree clean `main`. GitHub 이슈 없이 브라우저 피드백에서 온
+작업이라 닫힐 이슈는 없다.
 **GitHub 이슈 없이 사용자의 브라우저 피드백에서 바로 온 작업**이다(PR #100·#101과 같은 경로).
 
 `/profile` 운영 확인 중 헤더 계정 드롭다운의 UI가 앱과 어긋나고 긴 이메일이 넘친다는 피드백이 왔다.
@@ -59,9 +62,21 @@ stale했다** — AGENTS.md 단계 4("리뷰 수정마다 `reviews/PR-<번호>.m
 재검증 Jest 88 / **833**, tsc, lint, build 통과. 전체 분류는 `docs/recovery/reviews/PR-115.md`
 Iteration 2·3.
 
-**Next action**: (1) head `4a2288c`의 hosted CI를 확인한다. (2) **사용자의 명시적 병합 승인 후에만
-병합한다.** (3) 병합 뒤 운영에서 헤더 메뉴를 눈으로 확인한다 — jsdom이 판정하지 못한 것이 넷이다:
-넘침, 포커스 링 클리핑, 줄바꿈된 긴 이름의 높이, **로그아웃이 추가된 모바일 계정 행**.
+**Next action**: **사용자가 운영에서 헤더 계정 메뉴를 확인한다.** 이 메뉴는 모든 페이지의 헤더에 있고,
+아래는 전부 jsdom이 판정하지 못해 회귀가 **클래스로만** 단언한 것들이다.
+
+| 확인 | 회귀가 못 보는 이유 |
+|---|---|
+| 긴 이메일이 메뉴 안에서 감싸지는가 | jsdom은 넘침을 계산하지 않는다 |
+| 긴 이름이 헤더 트리거를 밀지 않는가 | 같음 |
+| **메뉴 항목의 포커스 링이 잘리지 않는가** (Tab으로) | outline 클리핑을 판정하지 못한다 |
+| **줄바꿈된 긴 이름의 높이** | R7 수정으로 두 줄이 될 수 있다 |
+| **모바일 메뉴 계정 행의 로그아웃** | 이 PR이 추가한 파괴적 컨트롤. 행 레이아웃이 바뀌었다 |
+| 테두리가 헤어라인으로 보이는가 | 원래 보고의 핵심 |
+
+확인이 끝나면 결과를 이 HANDOFF와 `docs/recovery/reviews/PR-115.md`에 기록한다. 그다음 코드 작업 후보는
+**#114**(중첩 `<main>`), **#112**(제거한 프로필 기능), **#103**(손가락 번호)이며 사용자가 착수를 지시한
+뒤 시작한다.
 
 **Previous phase**: 이슈 [#104](https://github.com/landfill/ClairKeys/issues/104) 마이페이지 앱 셸
 **완료 — PR [#113](https://github.com/landfill/ClairKeys/pull/113) 병합 (`0c0712f`, 2026-09-02),
