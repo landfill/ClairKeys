@@ -66,12 +66,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Job not found.' }, { status: 404 })
   }
 
+  // `omrJobId` is `String?` in the schema, so this is type narrowing, not a
+  // defence: the row was found by `omrJobId: jobId`, so the value is never
+  // null here and the 409 cannot be reached. It stays because D-018 requires
+  // the fetch target to be the stored identifier rather than request input.
   const storedJobId = sheetMusic.omrJobId
   if (!storedJobId) {
     return NextResponse.json({ error: 'Stored job identifier is missing.' }, { status: 409 })
   }
 
   if (sheetMusic.animationDataUrl) {
+    // Another trigger already stored the score. Normally that write also set
+    // the status, but a storage success followed by a failed status update
+    // leaves the row drifted; the status poll repairs it on its own
+    // short-circuit, and answering `completed` here must do the same.
+    if (sheetMusic.processingStatus !== 'completed') {
+      try {
+        await prisma.sheetMusic.update({
+          where: { id: sheetMusic.id },
+          data: { processingStatus: 'completed', updatedAt: new Date() },
+        })
+      } catch (error) {
+        // Same shape as the catch below: the service retries 5xx, so the next
+        // callback gets another chance to repair the row.
+        console.error('OMR callback status repair failed:', jobId, error)
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+      }
+    }
+
     return NextResponse.json({
       success: true,
       jobId,
@@ -83,8 +105,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Use the identifier read back from the database, not request input, for
-    // the server-side fetch target. The request value is only a lookup key.
+    // What actually keeps request input out of the `/result` URL is the
+    // `UUID_PATTERN` allowlist above and `encodeURIComponent` inside
+    // `fetchAndStoreOmrResult`. Passing the stored identifier is the D-018
+    // rule and the boundary CodeQL's taint tracking sees; by itself it adds
+    // nothing, because the two strings are equal.
     const animationDataUrl = await fetchAndStoreOmrResult(storedJobId, sheetMusic.userId)
     await prisma.sheetMusic.update({
       where: { id: sheetMusic.id },

@@ -57,6 +57,9 @@ export async function GET(
       )
     }
 
+    // Type narrowing for the nullable column, not a defence: the row was
+    // found by `omrJobId: jobId`, so the 409 below cannot be reached. Same
+    // shape as the finalize callback (issue #72).
     const storedJobId = sheetMusic.omrJobId
     if (!storedJobId) {
       return NextResponse.json(
