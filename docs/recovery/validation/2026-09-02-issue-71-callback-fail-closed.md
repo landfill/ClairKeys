@@ -4,6 +4,7 @@ Date: 2026-09-02 KST
 Branch: `codex/issue-71-callback-fail-closed`
 Commits: `dea17cc` (regression), `dd6f62b` (fix + D-036), `24424e7` (review regression), `0dd2e07` (helper)
 Pull request: [#109](https://github.com/landfill/ClairKeys/pull/109)
+Merged: `f2cbb9e` on `main`, 2026-09-02
 Environment: macOS (Darwin 25.5.0), Node/npm from repo lockfile, no database or OMR service reachable
 
 ## Claim being verified

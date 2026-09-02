@@ -8,7 +8,11 @@ Last updated: 2026-09-02 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#71](https://github.com/landfill/ClairKeys/issues/71) 콜백 주소 fail-closed
-**PR [#109](https://github.com/landfill/ClairKeys/pull/109) 생성 / CI·리뷰 대기** (2026-09-02 10:24 KST).
+**완료 — PR #109 병합 (`f2cbb9e`, 2026-09-02 11:01 KST), 이슈 CLOSED**. 후속 이슈
+[#110](https://github.com/landfill/ClairKeys/issues/110)(`omr-service` 호스트 검증, #71 선택 항목 2)을 열었다.
+다음 코드 작업은 아직 시작하지 않았다. 아래는 이 phase의 진행 기록이다.
+
+(PR #109 생성 시점 기록, 2026-09-02 10:24 KST):
 `upload/route.ts`가 `NEXTAUTH_URL` 미설정·공백을 잘못된 URL과 같게 503 `OMR_CALLBACK_NOT_CONFIGURED`로
 거부하고 `request.nextUrl`을 더 이상 읽지 않는다. **D-018 Decision 1을 개정하는 결정 변경**이라 D-036을 같은
 커밋(`dd6f62b`)에 넣었다. 회귀 `dea17cc`는 수정 전 `OMR_SERVICE_UNAVAILABLE`(행 생성 후)로 실패를 관측했다.
@@ -62,7 +66,14 @@ clean `main`. 최종 근거는 `docs/recovery/validation/2026-09-02-issue-72-fin
 설정 근거 부족"은 `vercel env ls`로 Production·Preview 존재를 확인해 해소했다(값은 내려받지 않음). 전체 분류는
 `docs/recovery/reviews/PR-109.md` Iteration 2. Jest 85 / 793, tsc, lint, build 통과.
 
-**Next action**: (1) PR #109 head `0dd2e07`의 hosted CI를 확인한다. CodeRabbit 재요청 결과가 오면 처리한다. (2) 사용자의 명시적 병합
+**2026-09-02 11:01 KST 병합**: `0dd2e07` 16/16 pass·CLEAN·미해결 0 재확인 후 사용자 승인으로 병합. CodeRabbit은
+두 번 모두 rate limited — 이 PR의 리뷰는 독립 리뷰뿐이다. 브랜치 정리 완료, worktree clean `main`.
+
+**Next action**: 오늘 트리아지 순서의 남은 후보는 #58(검은건반 기하 — 실제 기하 기준을 정하는 결정이 선행,
+`DECISIONS.md` 항목을 코드와 같은 PR에), #104(마이페이지 앱 셸 — 범위가 넓음). 사용자가 착수를 지시한 뒤 시작한다.
+#110은 `omr-service` 변경이라 VM 배포가 필요하며 #73과 함께 처리하는 것이 자연스럽다.
+
+**(이전 next action, 완료됨)**: (1) PR #109 head `0dd2e07`의 hosted CI를 확인한다. CodeRabbit 재요청 결과가 오면 처리한다. (2) 사용자의 명시적 병합
 승인 후에만 병합한다. (3) 병합 뒤 `omr-service` 호스트 검증 후속 이슈를 연다. (4) 그다음 후보는 #58(검은건반
 기하 — 기준 결정을 `DECISIONS.md`에 먼저 남겨야 함), #104.
 
