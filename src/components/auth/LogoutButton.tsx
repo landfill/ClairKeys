@@ -10,7 +10,7 @@ interface LogoutButtonProps {
 }
 
 export default function LogoutButton({ 
-  className = "text-sm text-gray-700 hover:text-gray-900 transition-colors",
+  className = "text-sm text-ink-muted hover:text-ink transition-colors",
   children = "로그아웃",
   callbackUrl = "/"
 }: LogoutButtonProps) {
@@ -34,8 +34,8 @@ export default function LogoutButton({
       className={`${className} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       {isLoading ? (
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 animate-spin rounded-full border border-rule-strong border-t-transparent"></div>
           <span>로그아웃 중...</span>
         </div>
       ) : (

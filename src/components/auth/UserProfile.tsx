@@ -1,7 +1,8 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 import Image from 'next/image'
+import { useSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import LogoutButton from './LogoutButton'
 
@@ -10,7 +11,12 @@ interface UserProfileProps {
   className?: string
 }
 
-export default function UserProfile({ 
+const MENU_LINKS = [
+  { href: '/profile', label: '프로필' },
+  { href: '/library', label: '내 악보' }
+]
+
+export default function UserProfile({
   showDropdown = true,
   className = ""
 }: UserProfileProps) {
@@ -30,11 +36,24 @@ export default function UserProfile({
     }
   }, [session])
 
+  // The backdrop closes the menu on a click, but a keyboard user has no way to
+  // reach it. Escape is the one that matters for them.
+  useEffect(() => {
+    if (!isDropdownOpen) return
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsDropdownOpen(false)
+    }
+
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [isDropdownOpen])
+
   if (status === 'loading') {
     return (
-      <div className={`flex items-center space-x-2 ${className}`}>
-        <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
-        <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
+      <div className={`flex items-center gap-2 ${className}`}>
+        <div className="h-8 w-8 animate-pulse rounded-full bg-surface-muted" />
+        <div className="h-4 w-20 animate-pulse rounded bg-surface-muted" />
       </div>
     )
   }
@@ -44,21 +63,28 @@ export default function UserProfile({
   }
 
   const { user } = session
+  // The name is optional on the session; the address is what is always there.
+  const label = user.name || user.email || '계정'
+
+  const avatar = user.image ? (
+    <Image
+      src={user.image}
+      alt=""
+      width={32}
+      height={32}
+      className="h-8 w-8 shrink-0 rounded-full object-cover"
+    />
+  ) : null
 
   if (!showDropdown) {
     return (
-      <div className={`flex items-center space-x-2 ${className}`}>
-        {user.image && (
-          <Image
-            src={user.image}
-            alt={user.name || 'User'}
-            width={32}
-            height={32}
-            className="rounded-full"
-          />
-        )}
-        <span className="text-sm text-gray-700">
-          {user.name || user.email}
+      <div className={`flex min-w-0 items-center gap-2 ${className}`}>
+        {avatar}
+        <span
+          data-testid="account-menu-label"
+          className="truncate text-sm text-ink"
+        >
+          {label}
         </span>
       </div>
     )
@@ -67,24 +93,28 @@ export default function UserProfile({
   return (
     <div className={`relative ${className}`}>
       <button
+        type="button"
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="flex items-center space-x-2 text-sm text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-md p-1"
+        aria-haspopup="menu"
+        aria-expanded={isDropdownOpen}
+        aria-label="계정 메뉴"
+        // The focus ring comes from the global :focus-visible rule, as it does
+        // for Button — a per-component ring makes focus differ page to page.
+        className="flex max-w-[14rem] items-center gap-2 rounded-full p-1 text-sm text-ink-muted transition-colors hover:text-ink"
       >
-        {user.image && (
-          <Image
-            src={user.image}
-            alt={user.name || 'User'}
-            width={32}
-            height={32}
-            className="rounded-full"
-          />
-        )}
-        <span>{user.name || user.email}</span>
+        {avatar}
+        <span
+          data-testid="account-menu-label"
+          className="max-w-[9rem] truncate"
+        >
+          {label}
+        </span>
         <svg
-          className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+          className={`h-4 w-4 shrink-0 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
@@ -97,44 +127,55 @@ export default function UserProfile({
             className="fixed inset-0 z-10"
             onClick={() => setIsDropdownOpen(false)}
           />
-          
-          {/* Dropdown */}
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border">
-            <div className="px-4 py-2 text-sm text-gray-900 border-b">
-              <div className="font-medium">{user.name}</div>
-              <div className="text-gray-500">{user.email}</div>
+
+          <div
+            role="menu"
+            aria-label="계정"
+            className="absolute right-0 z-20 mt-2 w-64 overflow-hidden rounded-lg border border-rule bg-surface py-1 shadow-lg"
+          >
+            <div className="border-b border-rule px-4 py-3">
+              {user.name && (
+                <div
+                  data-testid="account-menu-name"
+                  className="truncate text-sm font-medium text-ink"
+                >
+                  {user.name}
+                </div>
+              )}
+              {user.email && (
+                // A 32-character address is one unbroken token; without
+                // break-all it has nowhere to wrap and runs past the menu.
+                <div className="break-all text-xs text-ink-muted">
+                  {user.email}
+                </div>
+              )}
             </div>
-            
-            <a
-              href="/profile"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              onClick={() => setIsDropdownOpen(false)}
-            >
-              프로필 설정
-            </a>
-            
-            <a
-              href="/library"
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              onClick={() => setIsDropdownOpen(false)}
-            >
-              내 악보
-            </a>
-            
-            {isAdmin && (
-              <a
-                href="/admin/update-finger-data"
-                className="block px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 font-medium"
+
+            {MENU_LINKS.map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                role="menuitem"
+                className="block px-4 py-2 text-sm text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
                 onClick={() => setIsDropdownOpen(false)}
               >
-                🛠️ 관리자 도구
-              </a>
+                {link.label}
+              </Link>
+            ))}
+
+            {isAdmin && (
+              <Link
+                href="/admin/update-finger-data"
+                role="menuitem"
+                className="block px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-surface-muted"
+                onClick={() => setIsDropdownOpen(false)}
+              >
+                관리자 도구
+              </Link>
             )}
-            
-            <div className="border-t">
-              <div className="px-4 py-2">
-                <LogoutButton className="text-sm text-red-600 hover:text-red-800" />
-              </div>
+
+            <div className="border-t border-rule px-4 py-2">
+              <LogoutButton className="text-sm text-state-error transition-colors hover:brightness-90" />
             </div>
           </div>
         </>
