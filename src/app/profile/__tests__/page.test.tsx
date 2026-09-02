@@ -21,6 +21,19 @@ jest.mock('next/navigation', () => ({
   redirect: jest.fn()
 }))
 
+/**
+ * Midday UTC, so the calendar day is the same in every zone the suite might run
+ * in — a midnight instant renders as the previous day west of UTC and made this
+ * assertion pass only in UTC and KST. The expectation is formatted the same way
+ * the page formats it rather than written out, for the same reason.
+ */
+const JOIN_DATE_ISO = '2026-03-12T12:00:00.000Z'
+const EXPECTED_JOIN_DATE = new Intl.DateTimeFormat('ko-KR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+}).format(new Date(JOIN_DATE_ISO))
+
 const originalFetch = global.fetch
 
 beforeEach(() => {
@@ -28,7 +41,7 @@ beforeEach(() => {
   mockSession.data.user.image = null
   global.fetch = jest.fn().mockResolvedValue({
     ok: true,
-    json: async () => ({ createdAt: '2026-03-12T00:00:00.000Z' })
+    json: async () => ({ createdAt: JOIN_DATE_ISO })
   }) as unknown as typeof fetch
 })
 
@@ -43,6 +56,13 @@ describe('profile page shell', () => {
 
     // MainLayout is what puts the page inside a <main> landmark; the old page
     // built its own bg-gray-50 wrapper and never entered the shell.
+    //
+    // This renders the page without the root layout, which contributes a <main>
+    // of its own — so in the browser /profile actually ships two nested ones,
+    // as do library, explore, upload and sheet/[id]. That is a pre-existing
+    // repo-wide defect tracked separately, not something this page introduced,
+    // but it means the assertion below describes the page component rather than
+    // the production DOM.
     const main = await screen.findByRole('main')
 
     // PageHeader renders the title as the page's only h1, inside that shell.
@@ -112,7 +132,7 @@ describe('the profile page says only what it knows', () => {
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith('/api/user/profile')
     })
-    expect(await screen.findByText(/2026년 3월 12일/)).toBeInTheDocument()
+    expect(await screen.findByText(EXPECTED_JOIN_DATE)).toBeInTheDocument()
   })
 
   it('omits the join date rather than guessing when the request fails', async () => {

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
 import Card from '@/components/ui/Card'
 import Loading from '@/components/ui/Loading'
-import { OptimizedImage } from '@/components/ui/OptimizedImage'
+import Image from 'next/image'
 
 /**
  * Renders a join date only once it is known. An unparseable or missing value
@@ -93,7 +93,7 @@ export default function ProfilePage() {
           <Card padding="lg">
             <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:items-center sm:text-left">
               {user.image ? (
-                <OptimizedImage
+                <Image
                   src={user.image}
                   alt=""
                   width={80}
@@ -101,7 +101,6 @@ export default function ProfilePage() {
                   // The avatar is the topmost element of the page, so waiting
                   // for it to scroll into view only delays it.
                   priority
-                  lazy={false}
                   className="h-20 w-20 shrink-0 rounded-full object-cover"
                 />
               ) : (
