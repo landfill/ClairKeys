@@ -130,19 +130,32 @@ export async function POST(request: NextRequest) {
     // Resolve the callback before creating a row for the same reason as the
     // service URL above: a malformed deployment URL is knowable now, while a
     // row created first would have no job and no trigger capable of moving it.
-    let callbackUrl: string
-    try {
-      const callbackBaseUrl = process.env.NEXTAUTH_URL?.trim() || request.nextUrl.origin
-      callbackUrl = new URL('/api/omr/finalize', callbackBaseUrl).toString()
-    } catch (error) {
-      console.error('OMR callback refused: public application URL is invalid', error)
-      return NextResponse.json(
+    //
+    // The address comes from configuration only. The service will POST the
+    // shared secret to whatever we hand it, and the request Host header is
+    // the one input here an outside party can shape — so an unset value is
+    // refused the same way an invalid one is (D-036, issue #71).
+    const callbackNotConfigured = () =>
+      NextResponse.json(
         {
           error: '완료 알림 주소가 설정되지 않았습니다. 관리자에게 문의해 주세요.',
           code: 'OMR_CALLBACK_NOT_CONFIGURED'
         },
         { status: 503 }
       )
+
+    const callbackBaseUrl = process.env.NEXTAUTH_URL?.trim()
+    if (!callbackBaseUrl) {
+      console.error('OMR callback refused: NEXTAUTH_URL is not set')
+      return callbackNotConfigured()
+    }
+
+    let callbackUrl: string
+    try {
+      callbackUrl = new URL('/api/omr/finalize', callbackBaseUrl).toString()
+    } catch (error) {
+      console.error('OMR callback refused: public application URL is invalid', error)
+      return callbackNotConfigured()
     }
 
     // Create sheet music record in database with pending status
