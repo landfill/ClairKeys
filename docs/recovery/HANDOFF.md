@@ -34,9 +34,14 @@ checks가 재실행 중이다. 원격·로컬 `codex/deps-browserslist-audit`는
 patch/minor, audit 0건, Jest 777·tsc·lint·build 통과)로 분리했다. 기록은
 `docs/recovery/reviews/PR-108.md`. **#108이 병합되기 전에는 어떤 PR도 이 두 체크를 통과할 수 없다.**
 
-**Next action**: (1) #107 head `9658721`의 hosted checks — 특히 Security Audit·Scan — 가 pass인지 확인한다.
-(2) CodeRabbit 수동 리뷰(2026-09-02 09:50 KST 요청) 결과가 오면 actionable을 처리한다. (3) 사용자의 명시적
-병합 승인 후에만 #107을 병합한다. (4) 병합 뒤 다음 후보는 #71, 그다음 #58 (위 순서 근거 참조). 병합 뒤 다음 후보는 #71(`upload/route.ts:135`의
+**2026-09-02 10:45 KST**: #107 `9658721`의 hosted checks 17/17 pass(Security Audit·Scan·CodeQL 포함). CodeRabbit
+수동 리뷰 actionable 1건(R1: R11 보정 update가 try 밖) — ACCEPT, 회귀 먼저 추가해 reject를 관측한 뒤 자체
+try/catch로 라우트 JSON 500을 반환하게 고쳐 `56d189a`를 push했다. 기록은 `docs/recovery/reviews/PR-107.md`
+Iteration 4.
+
+**Next action**: (1) #107 head `56d189a`의 hosted checks 재실행 결과를 확인한다. (2) reviewer가 R1을 확인하면
+스레드가 resolved인지 본다. (3) 사용자의 명시적 병합 승인 후에만 #107을 병합한다. (4) 병합 뒤 다음 후보는 #71,
+그다음 #58 (위 순서 근거 참조). 병합 뒤 다음 후보는 #71(`upload/route.ts:135`의
 `NEXTAUTH_URL` fallback을 503 `OMR_CALLBACK_NOT_CONFIGURED`로 — 이슈의 선택 항목 2번은 `omr-service/`
 변경이라 제외), 그다음 #58(검은건반 기하 — 기준 결정을 `DECISIONS.md`에 먼저 남겨야 함).
 
