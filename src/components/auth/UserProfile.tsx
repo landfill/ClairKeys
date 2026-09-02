@@ -110,7 +110,10 @@ export default function UserProfile({
         ref={triggerRef}
         type="button"
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        aria-haspopup="true"
+        // No aria-haspopup: "true" is defined as equivalent to "menu", so it
+        // announces "menu button" and invites the arrow-key navigation this
+        // popup does not implement — the same promise dropping role="menu"
+        // removed. aria-expanded alone is the disclosure pattern.
         aria-expanded={isDropdownOpen}
         // The visible name has to survive into the accessible name (WCAG 2.5.3):
         // a bare "계정 메뉴" label leaves voice control unable to address the
@@ -167,7 +170,10 @@ export default function UserProfile({
               {user.name && (
                 <div
                   data-testid="account-menu-name"
-                  className="truncate text-sm font-medium text-ink"
+                  // break-words, not truncate: this is the one block whose job
+                  // is to say which account is signed in, and the address below
+                  // it wraps rather than clipping for the same reason.
+                  className="break-words text-sm font-medium text-ink"
                 >
                   {user.name}
                 </div>

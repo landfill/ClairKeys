@@ -73,6 +73,19 @@ describe('the account menu holds a long name and address', () => {
     expect(label.className).toMatch(/max-w-/)
   })
 
+  it('wraps a long name in the identity block rather than clipping it', async () => {
+    mockSession.data.user.name = 'Alexandra Konstantinopoulos-Whitfield'
+
+    await renderProfile()
+    openMenu()
+
+    // This block exists to say which account is signed in; truncating it there
+    // defeats the point, and the address beside it already wraps.
+    const name = screen.getByTestId('account-menu-name')
+    expect(name.className).not.toMatch(/\btruncate\b/)
+    expect(name).toHaveTextContent('Alexandra Konstantinopoulos-Whitfield')
+  })
+
   it('falls back to the address when the account has no name', async () => {
     mockSession.data.user.name = null as unknown as string
 
@@ -136,10 +149,12 @@ describe('the account menu uses the design system', () => {
 })
 
 describe('the account menu can be operated from the keyboard', () => {
-  it('announces that it opens something, keeping the visible name in its label', async () => {
+  it('announces expansion without promising menu navigation, and keeps the visible name', async () => {
     await renderProfile()
 
-    expect(trigger()).toHaveAttribute('aria-haspopup', 'true')
+    // aria-haspopup="true" means "menu", which would re-make the promise that
+    // dropping role="menu" was meant to withdraw.
+    expect(trigger()).not.toHaveAttribute('aria-haspopup')
     expect(trigger()).toHaveAttribute('aria-expanded', 'false')
     // WCAG 2.5.3: the accessible name must contain the visible text, or voice
     // control cannot address the control the user is looking at.
