@@ -68,6 +68,7 @@ clean `main`. 최종 근거는 `docs/recovery/validation/2026-09-02-issue-72-fin
 
 **2026-09-02 11:01 KST 병합**: `0dd2e07` 16/16 pass·CLEAN·미해결 0 재확인 후 사용자 승인으로 병합. CodeRabbit은
 두 번 모두 rate limited — 이 PR의 리뷰는 독립 리뷰뿐이다. 브랜치 정리 완료, worktree clean `main`.
+`f2cbb9e` post-merge 6/6 success (E2E, build, tests, lint, Security Audit).
 
 **Next action**: 오늘 트리아지 순서의 남은 후보는 #58(검은건반 기하 — 실제 기하 기준을 정하는 결정이 선행,
 `DECISIONS.md` 항목을 코드와 같은 PR에), #104(마이페이지 앱 셸 — 범위가 넓음). 사용자가 착수를 지시한 뒤 시작한다.
