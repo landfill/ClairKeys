@@ -7,7 +7,37 @@ Last updated: 2026-09-02 KST
 
 ## 현재 상태
 
-**Current phase**: 이슈 [#104](https://github.com/landfill/ClairKeys/issues/104) 마이페이지 앱 셸
+**Current phase**: 헤더 계정 메뉴 정리 — **PR [#115](https://github.com/landfill/ClairKeys/pull/115)
+review-ready, 병합 승인 대기**. 브랜치 `codex/ui-header-user-menu`, head `7db90eb`.
+**GitHub 이슈 없이 사용자의 브라우저 피드백에서 바로 온 작업**이다(PR #100·#101과 같은 경로).
+
+`/profile` 운영 확인 중 헤더 계정 드롭다운의 UI가 앱과 어긋나고 긴 이메일이 넘친다는 피드백이 왔다.
+읽어 보니 이 메뉴는 **헤더에서 유일하게 기본 팔레트에 남아 있던 부분**이었다 — `Header.tsx` 본체는 이미
+전부 토큰인데 이 드롭다운만 `bg-white`·`gray-*`·`orange-*`·`red-*`였다. **테두리가 가장 눈에 띄는
+부분이다**: `border`에 색이 없으면 `currentColor`를 상속해 헤어라인 대신 **잉크색 실선**이 그려진다
+(피드백의 computed style `border: 1px solid rgb(27, 31, 42)`가 그 증거).
+
+넘침은 두 곳이었다 — 메뉴 안(32자 단일 토큰이 `w-48`에서 줄바꿈할 자리가 없음 → `w-64` + `break-all`)과
+헤더 트리거(이름을 그대로 렌더해 레이아웃을 밈 → `max-w` + `truncate`).
+
+**보고에 없었지만 같은 읽기에서 4건이 더 나왔다**: 이름 없는 계정의 빈 `<div>`, `<a href>`라 메뉴를 고를
+때마다 앱 전체가 리로드(헤더의 나머지는 `Link`), 자체 `focus:ring-blue-500`(`Button.tsx`가 기록한 규약
+위반), Escape 미지원·`aria-haspopup`/`aria-expanded` 부재. 라벨도 하나 바꿨다 — `프로필 설정` → `프로필`,
+이슈 #104가 그 설정들을 제거해 옛 라벨은 존재하지 않는 화면을 가리켰다.
+
+**이 메뉴는 모든 페이지에 렌더된다.** `UserProfile`에는 테스트가 하나도 없었고 회귀 `2573a80`이 수정 전
+9건 실패를 관측했다. 두 변형(드롭다운, 모바일 compact)을 모두 덮는다. **jsdom은 넘침을 판정하지
+못하므로** 줄바꿈은 레이아웃이 아니라 그것을 허용하는 클래스로 단언한다 — 취약하지만 이 환경의 최선이고
+주석과 커밋에 적었다.
+
+로컬 검증 Jest 88 / **825**(신규 10), tsc, lint, build 통과. 리뷰 `docs/recovery/reviews/PR-115.md`.
+**미검증**: 브라우저 확인 없음, 관리자 링크는 admin 세션 전용이라 미실행.
+
+**Next action**: (1) PR #115의 hosted CI와 리뷰를 확인한다 — CodeRabbit 수동 요청 + 독립 리뷰
+(`/code-review high 115`, **인자 순서 주의**). (2) **사용자의 명시적 병합 승인 후에만 병합한다.**
+(3) 병합 뒤 운영에서 헤더 메뉴를 눈으로 확인한다 — jsdom이 판정하지 못한 넘침과 시각 일관성이 대상이다.
+
+**Previous phase**: 이슈 [#104](https://github.com/landfill/ClairKeys/issues/104) 마이페이지 앱 셸
 **완료 — PR [#113](https://github.com/landfill/ClairKeys/pull/113) 병합 (`0c0712f`, 2026-09-02),
 이슈 CLOSED, 2026-09-02 사용자가 운영에서 확인하고 이상 없음을 보고**. 최종 head `abd1109`, post-merge 6/6 success, Vercel
 **Production 배포 `0c0712f` success**. 원격·로컬 `codex/issue-104-profile-shell` 삭제, worktree clean `main`.
