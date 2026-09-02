@@ -1272,3 +1272,70 @@
 - Not-tested: 운영 배포에서의 동작 변화 — 설정돼 있으므로 관측 가능한 차이가 없어야 한다. `vercel env ls`는 이름만
   보여주므로 값이 `https://clairkeys.vercel.app`인지는 확인하지 않았다(값을 내려받지 않기로 했다).
 - Related: D-018, 이슈 [#71](https://github.com/landfill/ClairKeys/issues/71), PR #68 리뷰 R10
+
+## D-037: 검은건반 기하는 표준 치수에서 유도하고, 유도 공식을 코드에 남긴다
+
+- Date: 2026-09-02
+- Status: Accepted
+- Fulfills: 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58) 할 일 1 (기준 결정)
+- Context:
+  - 이슈 [#56](https://github.com/landfill/ClairKeys/issues/56)을 PR #57이 고칠 때, spec에는 "표의 값 자체는
+    실제 피아노의 비대칭 배치를 올바르게 반영하므로 버리지 말 것"이라고 적혀 있었다. **이 주장이 틀렸다는 것이
+    #56 검증 과정에서 드러났고, 이슈 #58이 그 사실만 분리해 기록했다.**
+  - `pianoLayout.ts`의 오프셋 `{C# 0.65, D# 0.6, F# 0.65, G# 0.6, A# 0.6}`은 다섯 개 전부에 −0.05~−0.10칸의
+    **균일한 좌측 편향**을 준다. 실제 피아노는 2건반 그룹과 3건반 그룹이 각각 바깥으로 벌어지는 대칭 패턴이므로
+    **D#·A#는 방향이 반대**이고 G#는 경계에 정확히 놓여야 한다. 흑건 폭도 0.6이 아니라 0.583이다.
+  - 2026-09-02 이 결정을 위해 표준 치수(백건 23.5mm, 흑건 13.7mm)로 독립 재계산해 이슈의 표를 재현했다.
+    G#의 편차가 정확히 0이 나오는 것이 이 모델이 자기정합적이라는 근거다 — 3흑건 그룹의 대칭축이기 때문이다.
+  - 기존 테스트 `pianoLayout.test.ts`의 유일한 흑건 위치 검사는 `|중심 − 경계| ≤ 0.35 * keyWidth`라는
+    **절대값 상한**이었다. 부호를 보지 않으므로 방향이 반대인 값도 통과한다.
+  - 이슈 본문은 `PianoKeyboard.tsx`를 "모바일 전체화면·가로모드·데모가 사용"한다고 적었으나, **현재
+    코드베이스에서 그 컴포넌트는 라우트에서 도달할 수 없다.** 유일한 소비자인 `FullScreenPiano.tsx`와
+    `LandscapePianoInterface.tsx`를 import하는 파일이 0개다(README 재작성이 확인한 `src/components/mobile/*`
+    미도달과 같은 사실). 실제 재생 경로는 `FallingNotesPlayer` → `SimplePianoKeyboard` → `buildKeyLayout()`
+    하나뿐이다.
+  - 흑건 오프셋과 흑건 폭은 DS-0 "변경하지 않을 회귀 계약"의 고정 상수 7개에 **포함되지 않는다.** 다만 그 절이
+    `pianoLayout.ts`를 명시하므로 D-024에 따라 결정을 먼저 기록한다.
+- Decision:
+  1. **기준은 표준 피아노 치수 백건 23.5mm · 흑건 13.7mm다.** 흑건 폭 비율 `BLACK_KEY_WIDTH_RATIO`는
+     `13.7 / 23.5`로 정의한다.
+  2. **오프셋은 상수로 적지 않고 유도 함수로 계산한다.** 그룹 내 흰건반의 후면 폭이 균등하다는 가정에서
+     `blackKeyLeftOffset(whites, blacks, index)`가 왼쪽 인접 백건 기준 좌변 오프셋을 낸다. 결과는
+     C# 0.611, D# 0.806, F# 0.563, G# 0.709, A# 0.854다.
+  3. **회귀는 방향 불변식으로 건다.** C#·F#는 경계보다 왼쪽, D#·A#는 오른쪽, G#는 경계와 일치. 테스트는
+     기대값을 **구현에서 import하지 않고 표준 치수에서 직접 유도한다.**
+  4. **이 결정의 범위는 `pianoLayout.ts`와 그 파생값 하나(`SimplePianoKeyboard`의 장식 축척 기준 폭)뿐이다.**
+     이슈 #58 할 일 3(`PianoKeyboard.tsx` 통일)은 그 파일이 죽은 코드이므로 수행하지 않고, HANDOFF의 P2-A
+     죽은 코드 정리로 이관한다.
+- Reason: 값을 세 자리 소수로 적어 두면 다음 세션이 그것을 취향으로 읽고, 이슈 #56의 spec처럼 "이 표는 맞다"는
+  근거 없는 주장이 다시 붙는다. 유도 공식이 코드에 있으면 실제 악기로 검산할 수 있다. 방향 불변식을 절대값
+  상한 대신 쓰는 이유도 같다 — 크기는 취향일 수 있어도 방향은 사실이다.
+- Rejected:
+  - 이슈에 적힌 소수 3자리를 상수로 하드코딩 | 값의 출처가 주석에만 남아, 다음 변경에서 검산 없이 조정된다.
+  - `PianoKeyboard.tsx`를 같은 PR에서 통일 | 라우트에서 도달할 수 없어 회귀를 관측할 수 없고, AGENTS.md의
+    "한 PR에는 하나의 목적"과 충돌한다. 죽은 코드는 통일이 아니라 제거가 맞는 처리다.
+  - 같은 PR에서 죽은 코드 3개 파일 삭제 | 기하 수정과 성격이 다른 변경이라 회귀 원인 분리가 어려워진다.
+  - 기존 `|중심 − 경계| ≤ 0.35` 상한을 조이는 것으로 대체 | 부호를 보지 않는 한 방향 오류는 어떤 상한으로도
+    관측되지 않는다.
+- Consequence:
+  - 흑건이 시각적으로 약 0.1~0.15칸(keyWidth 24에서 2.4~3.5px) 움직이고 폭이 0.4px 좁아진다. `PX_PER_SEC`,
+    `BASE_PLAYBACK_KEY_WIDTH` 등 DS-0 고정 상수 7개는 **한 픽셀도 바뀌지 않는다.**
+  - 낙하 노트의 x는 `buildKeyLayout`에서 오므로 흑건 노트의 낙하 위치도 함께 이동한다. 건반과 노트가 같은
+    출처를 쓰므로 둘은 계속 정렬된다.
+  - `SimplePianoKeyboard`의 장식 축척 기준값 `14.4`(= 24 × 0.6)가 더 이상 흑건 폭과 같지 않게 되므로
+    파생식으로 바꿨다. 이런 파생 상수가 다른 곳에 또 있으면 같은 방식으로 처리한다.
+  - `PianoKeyboard.tsx`는 여전히 실제와 2배 이상 과장된 편차를 그린다. 도달 불가이므로 사용자에게는 보이지
+    않지만, **되살릴 때는 반드시 이 결정에 맞춰야 한다.**
+- Constraint: DS-0 "변경하지 않을 회귀 계약"의 재생 기하 상수 7개와 크롭 불변식은 이 결정의 대상이 아니다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 흑건 오프셋과 폭을 조정할 때 숫자를 직접 고치지 않는다. `WHITE_KEY_MM`·`BLACK_KEY_MM` 또는 유도
+  가정을 고치고, 방향 불변식을 통과하는지 확인한다. `PianoKeyboard.tsx`를 되살린다면 같은 유도를 쓴다.
+- Tested: 회귀 3건이 수정 전 실패(방향·오프셋·흑건 폭)하고 수정 후 통과하는 것을 관측했다. 전체 Jest
+  85 suites / 796 tests, `tsc --noEmit`, `npm run lint` 통과.
+- Not-tested: 실제 브라우저·실기기에서의 시각 확인. 변경 폭이 2~4px이라 회귀 테스트가 좌표를 판정하고 육안
+  판정은 하지 않았다. `PianoKeyboard.tsx` 경로는 도달 불가라 실행되지 않는다.
+- Related: 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58),
+  [#56](https://github.com/landfill/ClairKeys/issues/56), PR #57, D-024,
+  `docs/recovery/phases/DS-0-current-state-baseline.md`

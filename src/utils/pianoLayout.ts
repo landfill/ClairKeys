@@ -17,6 +17,48 @@ export const TOTAL_KEYS = C8_MIDI - A0_MIDI + 1; // 88 keys
  */
 export const BASE_PLAYBACK_KEY_WIDTH = 24;
 
+/**
+ * Standard piano key widths. Every black-key dimension below is derived from
+ * these two numbers rather than written out, so the geometry can be checked
+ * against a real instrument instead of taken on faith (D-037, issue #58).
+ */
+const WHITE_KEY_MM = 23.5;
+const BLACK_KEY_MM = 13.7;
+
+/** Black-key width in white-key widths. */
+export const BLACK_KEY_WIDTH_RATIO = BLACK_KEY_MM / WHITE_KEY_MM;
+
+/**
+ * Left edge of each black key, measured from the left edge of the white key
+ * immediately below it, in white-key widths.
+ *
+ * A black key does not sit on the boundary between its neighbours. Within a
+ * group the portions of white key left visible between the black keys are
+ * equal, so a group of `whites` white keys and `blacks` black keys leaves each
+ * white key a back portion of `1 - blacks * BLACK_KEY_WIDTH_RATIO / whites`,
+ * and the k-th black key of the group starts after k of those portions and
+ * k-1 black keys. Subtracting the k-1 whole white keys already counted in the
+ * caller's base position rebases that onto the white key below.
+ *
+ * The result is the pattern a real piano has: the two- and three-key groups
+ * each splay outwards from their own centre. C# and F# lean left, D# and A#
+ * lean right, and G# — the axis of the three-key group — lands on its boundary
+ * exactly.
+ */
+function blackKeyLeftOffset(whites: number, blacks: number, index: number): number {
+  const backWhiteWidth = 1 - (blacks * BLACK_KEY_WIDTH_RATIO) / whites;
+  return index * backWhiteWidth + (index - 1) * BLACK_KEY_WIDTH_RATIO - (index - 1);
+}
+
+/** pitch class -> [white keys in group, black keys in group, index in group] */
+const BLACK_KEY_GROUP_POSITION: Record<number, [number, number, number]> = {
+  1: [3, 2, 1],   // C#
+  3: [3, 2, 2],   // D#
+  6: [4, 3, 1],   // F#
+  8: [4, 3, 2],   // G#
+  10: [4, 3, 3]   // A#
+};
+
 export type KeyboardRange = {
   minMidi: number;
   maxMidi: number;
@@ -66,24 +108,20 @@ export function buildKeyLayout(
     const black = isBlack(midi);
     
     if (black) {
-      const pitchClass = midi % 12 as 1 | 3 | 6 | 8 | 10;
-      
+      const pitchClass = midi % 12;
+
       // Find the white key to the left
       const leftWhiteKeys = keys.filter(k => !k.black && k.midi < midi);
       const leftWhiteIndex = leftWhiteKeys.length - 1;
       const baseX = Math.max(0, leftWhiteIndex) * keyWidth;
-      
-      // Black key offsets relative to the white key on the left
-      const offsets: Record<number, number> = {
-        1: 0.65,  // C#
-        3: 0.6,   // D#
-        6: 0.65,  // F#
-        8: 0.6,   // G#
-        10: 0.6   // A#
-      };
-      
-      const x = baseX + (offsets[pitchClass] ?? 0.5) * keyWidth;
-      keys.push({ midi, black: true, x, w: keyWidth * 0.6 });
+
+      const groupPosition = BLACK_KEY_GROUP_POSITION[pitchClass];
+      const offset = groupPosition
+        ? blackKeyLeftOffset(...groupPosition)
+        : 0.5;
+
+      const x = baseX + offset * keyWidth;
+      keys.push({ midi, black: true, x, w: keyWidth * BLACK_KEY_WIDTH_RATIO });
     }
   }
   
