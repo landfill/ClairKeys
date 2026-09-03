@@ -96,6 +96,17 @@ describe('PlaybackControls', () => {
     expect(screen.getByTestId('playback-stop')).toHaveClass('border-rule-strong')
   })
 
+  it('uses a narrow-screen 3-plus-3 layout for all six primary controls', () => {
+    renderControls()
+
+    const primaryControls = screen.getByTestId('playback-primary-controls')
+    const loopControls = screen.getByTestId('playback-loop')
+
+    expect(primaryControls).toHaveClass('grid', 'grid-cols-3')
+    expect(loopControls).toHaveClass('grid', 'grid-cols-3', 'col-span-3')
+    expect(primaryControls).not.toHaveClass('whitespace-nowrap')
+  })
+
   it('presents speed and secondary settings as matching rounded controls', () => {
     renderControls()
 

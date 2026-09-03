@@ -123,7 +123,10 @@ export default function PlaybackControls({
 
       {/* Main Controls */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div
+          data-testid="playback-primary-controls"
+          className="grid min-w-0 grid-cols-3 items-center gap-2 md:flex md:gap-3"
+        >
           {/* Play Button */}
           <Button
             onClick={onPlay}
@@ -167,7 +170,7 @@ export default function PlaybackControls({
           </Button>
 
           {onLoopStart && onLoopEnd && onLoopClear && (
-            <div className="flex items-center gap-1 rounded-full border border-rule bg-surface-muted p-1" data-testid="playback-loop">
+            <div className="col-span-3 grid grid-cols-3 items-center gap-1 rounded-full border border-rule bg-surface-muted p-1 md:flex" data-testid="playback-loop">
               <Button onClick={onLoopStart} variant="outline" size="lg" disabled={!isReady || duration <= 0} className="h-12 w-20 p-0 !px-0 !py-0 border-hand-left text-hand-left text-xs" title="구간 시작 A 설정" aria-label="A 시작">A 시작</Button>
               <Button onClick={onLoopEnd} variant="outline" size="lg" disabled={!isReady || duration <= 0 || loopStart === null} className="h-12 w-20 p-0 !px-0 !py-0 border-hand-right text-hand-right text-xs" title="구간 끝 B 설정" aria-label="B 종료">B 종료</Button>
               <Button onClick={onLoopClear} variant={loopEnd !== null ? 'primary' : 'ghost'} size="lg" disabled={!isReady || loopStart === null} className="h-12 w-20 gap-1 p-0 !px-0 !py-0 text-xs" title="A-B 구간 반복 초기화" aria-label="A-B 구간 반복 초기화">
