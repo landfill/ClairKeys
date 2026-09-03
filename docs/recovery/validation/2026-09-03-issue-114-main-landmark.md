@@ -42,3 +42,15 @@ Head: `3bec12e`
 
 DOM 요소 하나를 제거했지만 기존 `min-h-screen` 래퍼와 콘텐츠 구조를 유지해 시각 위험은 낮다. 다만 위
 항목을 실행하기 전에는 시각적으로 완전히 동일하다고 주장하지 않는다.
+
+## Merge verification
+
+- User approval: 2026-09-03 KST
+- Merge commit: `97d6cdb1dbf847dcab356b794e50115726291a72`
+- Issue #114: CLOSED at merge
+- Post-merge check-runs: **6/6 success** — E2E Tests, Post-merge build, Post-merge tests, Run Tests,
+  Security Audit, Lint
+- Vercel Production deployment `6236759141`: success
+- Branch cleanup: local and remote `codex/issue-114-main-landmark` tips were both contained in `main` with
+  zero unique commits, then both were deleted
+- Final local state: clean `main`
