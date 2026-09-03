@@ -1,7 +1,7 @@
 # Issue #103 Fingering Guidance Validation
 
 Date: 2026-09-03 KST
-Branch commit: `edf29d8`
+Branch commits: `edf29d8`, review fix `64911db`
 PR: [#117](https://github.com/landfill/ClairKeys/pull/117)
 
 ## Scope
@@ -37,6 +37,13 @@ Result: FAIL, 3 failures. Missing fingers remained `undefined`, both chord array
 | `npm run lint` | PASS — no warnings or errors |
 | `npm run build` | PASS — 34 static/dynamic route entries; build config skipped type/lint, which were run separately |
 | `git diff --check` | PASS |
+
+## Review-fix validation
+
+CodeRabbit R1 observed that combined-array adjacency misses an exact scale when accompaniment from the other hand is
+interleaved. A regression with same-onset LH accompaniment was added before changing the search to per-hand time-ordered
+index sequences. At `64911db`: focused Jest 4 suites / 40 tests, full Jest 90 suites / 847 tests, typecheck, lint, and
+build all pass.
 
 The existing profile test React `act(...)` warning and expected failure-path console output remain non-failing baseline noise.
 

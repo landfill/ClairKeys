@@ -8,7 +8,7 @@ Last updated: 2026-09-03 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#103](https://github.com/landfill/ClairKeys/issues/103) 모든 재생 노트의 운지 안내
-**IN_REVIEW**. PR [#117](https://github.com/landfill/ClairKeys/pull/117), head `edf29d8`, 브랜치
+**IN_REVIEW**. PR [#117](https://github.com/landfill/ClairKeys/pull/117), current head `64911db`, 브랜치
 `codex/issue-103-fingering-contract`이다. 사용자 요청에 따라 단순 운지 유틸리티 구현은 별도 worktree 없이
 Luna medium worker가 담당했고, 주 에이전트가 표준 조사·계약·플레이어 경계·렌더링과 전체 검증을 통합했다.
 
@@ -17,10 +17,12 @@ D-038은 원본 MusicXML/JSON 운지를 우선하고 누락분만 **결정론적
 장음계 상행은 자료가 보장하는 오른손 `1-2-3-1-2-3-4-5`, 왼손 `5-4-3-2-1-3-2-1`을 적용한다.
 동시음은 1~5음의 일반적인 양손 대칭 배열을 쓰고, 모든 fallback에서 `Math.random()`을 제거했다. 저장 JSON은
 변경하지 않고 `canonicalToFallingNotes` 경계에서 기존·신규 악보를 함께 보강하며 원본 운지는 보존한다.
-짧은 노트도 번호를 숨기지 않는다.
+짧은 노트도 번호를 숨기지 않는다. CodeRabbit R1은 양손 악보에서 반대손 반주가 장음계 음 사이에 끼면
+전체 배열의 연속 8개 탐색이 표준 배열을 놓친다고 지적했다. 손별 시간순 시퀀스로 탐색하도록 수정했고,
+반주가 같은 onset에 섞인 회귀를 추가했다(`64911db`). 스레드 답글과 resolve까지 완료했다.
 
 수정 전 회귀 3건이 누락 운지 `undefined`, 미지정 양손 화음, 짧은 노트 번호 숨김을 관측했다. 로컬 검증은
-focused Jest 4 suites / **39 tests**, 전체 Jest 90 suites / **846 tests**, `npx tsc --noEmit`, lint, build
+focused Jest 4 suites / **40 tests**, 전체 Jest 90 suites / **847 tests**, `npx tsc --noEmit`, lint, build
 통과다. 빌드는 설정상 타입·lint를 생략하므로 별도 실행했다. 상세 근거는
 `docs/recovery/validation/2026-09-03-issue-103-fingering-guidance.md`, 리뷰 상태는
 `docs/recovery/reviews/PR-117.md`에 있다. **미검증**: 실제 악보 한 곡 전체 번호, 교육적 자연스러움, 모바일
