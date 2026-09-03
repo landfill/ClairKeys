@@ -1,5 +1,6 @@
 import React from 'react'
 import RootLayout, { viewport } from '../layout'
+import MainLayout from '@/components/layout/MainLayout'
 
 jest.mock('next/font/google', () => ({
   Geist: () => ({ variable: '--font-geist-sans' }),
@@ -46,5 +47,23 @@ describe('RootLayout accessibility contract', () => {
     )
 
     expect(landmarks).toHaveLength(1)
+  })
+
+  it('keeps one main landmark when a page uses the shared MainLayout', () => {
+    const page = MainLayout({ children: <div>Page</div> })
+    const tree = RootLayout({ children: page })
+
+    function countMainLandmarks(node: React.ReactNode): number {
+      if (Array.isArray(node)) {
+        return node.reduce((count, child) => count + countMainLandmarks(child), 0)
+      }
+      if (!React.isValidElement<{ children?: React.ReactNode }>(node)) {
+        return 0
+      }
+
+      return (node.type === 'main' ? 1 : 0) + countMainLandmarks(node.props.children)
+    }
+
+    expect(countMainLandmarks(tree)).toBe(1)
   })
 })
