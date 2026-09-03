@@ -1339,3 +1339,55 @@
 - Related: 이슈 [#58](https://github.com/landfill/ClairKeys/issues/58),
   [#56](https://github.com/landfill/ClairKeys/issues/56), PR #57, D-024,
   `docs/recovery/phases/DS-0-current-state-baseline.md`
+
+## D-038: 운지 번호는 원본을 우선하고 누락분만 결정론적 학습 힌트로 보강한다
+
+- Date: 2026-09-03
+- Status: Accepted
+- Fulfills: 이슈 [#103](https://github.com/landfill/ClairKeys/issues/103)의 운지 데이터 정책 선행 조건
+- Context:
+  - 피아노 운지 번호는 양손 모두 엄지 1, 검지 2, 중지 3, 약지 4, 소지 5가 표준이다. 그러나 임의의
+    악곡 전체에 음높이만으로 적용할 유일한 표준 배열은 없다. Yamaha의 운지 지침도 같은 프레이즈에 복수의
+    유효한 선택이 있음을 명시하며, 손 위치·이동·프레이즈를 함께 고려하도록 설명한다.
+  - 장음계에는 정형 패턴이 있다. Baylor Piano Basics는 C·G·D·A·E 장음계의 한 옥타브 상행을 오른손
+    `1-2-3-1-2-3-4-5`, 왼손 `5-4-3-2-1-3-2-1`로 설명한다. 이 패턴은 장음계라는 문맥이 있을 때의
+    표준이지 모든 곡의 모든 음에 붙일 전역 표가 아니다.
+  - Simply Piano는 곡 학습 화면에서 손가락 번호를 켜고 끄는 기능을 제공하지만, 공개 도움말은 임의 악보에
+    번호를 생성하는 알고리즘을 정의하지 않는다. ClairKeys가 그 비공개 동작을 추측해 동일하다고 주장할 수 없다.
+  - canonical animation v1.1은 `finger`를 optional로 두고 MusicXML의 유효한 `<fingering>`만 보존한다.
+    현재 두 자동 보강 구현은 서로 다른 규칙과 `Math.random()`을 사용하며, 같은 악보에 서로 다른 번호를
+    만들 수 있다. 그중 관리자 API는 일부 음에 운지가 하나라도 있으면 나머지 누락음을 보강하지 않는다.
+- Decision:
+  1. 번호 의미는 양손 공통으로 엄지 1에서 소지 5까지다. 왼손이라는 이유로 숫자 의미를 반전하지 않는다.
+  2. 유효한 원본 MusicXML/저장 JSON의 `finger`가 최우선이며 자동 보강은 이를 덮어쓰지 않는다.
+  3. 원본 운지가 없는 음은 플레이어 입력 경계에서 결정론적으로 1~5를 배정한다. 같은 음표열은 실행·기기와
+     무관하게 같은 결과를 내야 하며 `Math.random()`을 사용하지 않는다.
+  4. 자동값은 **초보자용 학습 힌트**다. 음높이·손·동시음·인접 진행으로 설명 가능한 보수적 규칙만 적용하고,
+     프레이즈 분석이나 교사 검수 없이 교육적으로 유일하거나 최적인 운지라고 표현하지 않는다.
+  5. canonical 저장 계약의 `finger`는 optional로 유지한다. 기존 저장 파일을 일괄 덮어쓰지 않고 읽기 호환
+     경계에서 보강해 신규·기존 악보가 같은 표시 계약을 얻는다.
+  6. 화면은 재생 전과 재생 중 모든 유효한 재생 음에 번호를 렌더한다. 번호 높이보다 짧은 음표는 번호를
+     삭제하거나 글자를 3px까지 줄이지 않고 낙하 블록 위에 겹쳐 최소 글자 크기를 유지한다. 실제 모바일
+     가로 화면은 별도 수동 검증한다.
+- Reason: 표준 번호 체계와 특정 악구의 운지 선택을 구분해야 출처가 있는 정보를 보존하면서도 모든 노트에
+  일관된 힌트를 제공할 수 있다. 런타임 보강은 저장 데이터 마이그레이션 위험 없이 기존 악보까지 즉시 포괄한다.
+- Rejected:
+  - 음높이별 고정 좌·우 배열을 모든 곡에 표준으로 적용 | 손 이동·프레이즈·화음 문맥을 잃고 실제 피아노
+    교육에 존재하지 않는 단일 정답을 만든다.
+  - 관리자 API로 기존 JSON 전체를 즉시 덮어쓴다 | 무작위·부분 보강 결함이 있는 상태에서 원본을 비가역적으로
+    변경하고, 신규 변환 경로와 규칙도 다시 갈라진다.
+  - `finger`를 canonical v1.1 필수 필드로 바꾼다 | 원본 MusicXML이 운지를 제공하지 않는 정상 입력과 기존
+    저장 문서가 모두 계약 위반이 되어 breaking version migration이 필요하다.
+- Consequence: 원본 운지가 없는 곡도 번호가 보이지만 자동 번호는 전문 편집자의 운지와 다를 수 있다. 정확도
+  개선은 추후 키·박자·프레이즈·손 크기 같은 입력을 갖춘 별도 단계로 진행한다.
+- Constraint: P0-A canonical animation의 기존 v1.0/v1.1 읽기 호환성과 원본 `finger` 값은 유지한다.
+- Confidence: high (번호 체계·scale 패턴·결정론 요구), medium (일반 악구의 fallback 교육 품질)
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 자동 운지를 "표준 정답" 또는 "Simply Piano 알고리즘"으로 부르지 않는다. 규칙을 바꿀 때는
+  원본 우선·결정론·기존 저장 호환 회귀를 먼저 갱신한다.
+- Tested: 수정 전 경계 회귀 3건(누락 운지, 양손 화음, 짧은 노트 렌더링)이 실패함을 관측. 구현 후 focused
+  Jest 4 suites / 39 tests, 전체 Jest 90 suites / 846 tests, `npx tsc --noEmit`, lint, build 통과.
+- Not-tested: 실제 악보 전체의 교육적 최적성, 교사 검수, 모바일 가로 화면 가독성.
+- Related: 이슈 [#103](https://github.com/landfill/ClairKeys/issues/103), D-009, P0-A,
+  `docs/recovery/phases/ISSUE-103-fingering-guidance.md`

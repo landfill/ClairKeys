@@ -1,6 +1,8 @@
 /**
  * Piano Fingering Utilities
- * Assigns realistic hand and finger numbers based on music theory
+ * Assigns deterministic beginner hand and finger hints.
+ * Explicit score fingering always wins; inferred values are not a claim of
+ * pedagogically unique or optimal fingering for an arbitrary phrase.
  */
 
 import type { FallingNote, Hand, Finger } from '@/types/fallingNotes';
@@ -68,7 +70,10 @@ function assignLeftHandFinger(
 ): Finger {
   // Avoid thumb (1) on black keys
   if (isBlackKey) {
-    return [2, 3, 4][Math.floor(Math.random() * 3)] as Finger;
+    // Keep the fallback deterministic so the same score always renders the
+    // same fingering. The middle fingers are the conventional black-key
+    // choices for either hand.
+    return [2, 3, 4][positiveModulo(midi, 3)] as Finger;
   }
   
   // Scale-based fingering
@@ -85,9 +90,9 @@ function assignLeftHandFinger(
   
   // Default pattern based on range
   if (midi < 36) return 5; // Very low notes - pinky
-  if (midi < 48) return [4, 5][Math.floor(Math.random() * 2)] as Finger; // Low notes
-  if (midi < 55) return [2, 3, 4][Math.floor(Math.random() * 3)] as Finger; // Mid-low
-  return [1, 2, 3][Math.floor(Math.random() * 3)] as Finger; // Upper range
+  if (midi < 48) return [4, 5][positiveModulo(midi, 2)] as Finger; // Low notes
+  if (midi < 55) return [2, 3, 4][positiveModulo(midi, 3)] as Finger; // Mid-low
+  return [1, 2, 3][positiveModulo(midi, 3)] as Finger; // Upper range
 }
 
 /**
@@ -100,7 +105,7 @@ function assignRightHandFinger(
 ): Finger {
   // Avoid thumb (1) on black keys
   if (isBlackKey) {
-    return [2, 3, 4][Math.floor(Math.random() * 3)] as Finger;
+    return [2, 3, 4][positiveModulo(midi, 3)] as Finger;
   }
   
   // Scale-based fingering
@@ -117,9 +122,14 @@ function assignRightHandFinger(
   
   // Default pattern based on range
   if (midi > 84) return 5; // Very high notes - pinky
-  if (midi > 76) return [4, 5][Math.floor(Math.random() * 2)] as Finger; // High notes
-  if (midi > 67) return [2, 3, 4][Math.floor(Math.random() * 3)] as Finger; // Mid-high
-  return [1, 2, 3][Math.floor(Math.random() * 3)] as Finger; // Lower range
+  if (midi > 76) return [4, 5][positiveModulo(midi, 2)] as Finger; // High notes
+  if (midi > 67) return [2, 3, 4][positiveModulo(midi, 3)] as Finger; // Mid-high
+  return [1, 2, 3][positiveModulo(midi, 3)] as Finger; // Lower range
+}
+
+/** Modulo that remains usable for any numeric MIDI input, including negatives. */
+function positiveModulo(value: number, divisor: number): number {
+  return ((value % divisor) + divisor) % divisor;
 }
 
 /**
@@ -131,7 +141,7 @@ export function isBlackKeyMidi(midi: number): boolean {
 }
 
 /**
- * Enhance notes with realistic hand and finger assignments
+ * Preserve explicit assignments and fill gaps with deterministic beginner hints.
  */
 export function addFingeringToNotes(notes: FallingNote[]): FallingNote[] {
   const enhancedNotes: FallingNote[] = [];
@@ -143,13 +153,12 @@ export function addFingeringToNotes(notes: FallingNote[]): FallingNote[] {
     const isBlackKey = isBlackKeyMidi(note.midi);
     
     // Assign hand
-    const hand = assignHand(note.midi, { prevHand });
+    const hand = isValidHand(note.hand) ? note.hand : assignHand(note.midi, { prevHand });
     
     // Assign finger
-    const finger = assignFinger(note.midi, hand, { 
-      prevFinger, 
-      isBlackKey 
-    });
+    const finger = isValidFinger(note.finger)
+      ? note.finger
+      : assignFinger(note.midi, hand, { prevFinger, isBlackKey });
     
     enhancedNotes.push({
       ...note,
@@ -160,8 +169,89 @@ export function addFingeringToNotes(notes: FallingNote[]): FallingNote[] {
     prevHand = hand;
     prevFinger = finger;
   }
-  
+
+  // Notes starting together form a chord. Assign the conventional chord
+  // pattern by ascending pitch, while retaining every explicit finger.
+  const chordGroups = new Map<string, number[]>();
+  enhancedNotes.forEach((note, index) => {
+    const key = `${note.start}:${note.hand}`;
+    const group = chordGroups.get(key) ?? [];
+    group.push(index);
+    chordGroups.set(key, group);
+  });
+
+  chordGroups.forEach(indices => {
+    if (indices.length < 2) return;
+    const sorted = [...indices].sort((a, b) => enhancedNotes[a].midi - enhancedNotes[b].midi);
+    const hand = enhancedNotes[sorted[0]].hand as Hand;
+    const chordFingers = getChordFingers(hand, sorted.length);
+    sorted.forEach((noteIndex, position) => {
+      if (!isValidFinger(notes[noteIndex].finger)) {
+        // More than five simultaneous notes exceed one hand's fingers; keep
+        // the fallback valid without claiming pedagogical optimality.
+        enhancedNotes[noteIndex].finger = chordFingers[Math.min(position, 4)] as Finger;
+      }
+    });
+  });
+
+  applyMajorScaleRuns(enhancedNotes, notes);
+
   return enhancedNotes;
+}
+
+function isValidHand(hand: FallingNote['hand']): hand is Hand {
+  return hand === 'L' || hand === 'R';
+}
+
+function isValidFinger(finger: FallingNote['finger']): finger is Finger {
+  return finger === 1 || finger === 2 || finger === 3 || finger === 4 || finger === 5;
+}
+
+function getChordFingers(hand: Hand, noteCount: number): Finger[] {
+  const right: Finger[][] = [
+    [1], [1, 5], [1, 3, 5], [1, 2, 4, 5], [1, 2, 3, 4, 5],
+  ];
+  const left: Finger[][] = [
+    [5], [5, 1], [5, 3, 1], [5, 4, 2, 1], [5, 4, 3, 2, 1],
+  ];
+  const patterns = hand === 'R' ? right : left;
+  return patterns[Math.min(noteCount, 5) - 1] ?? patterns[4];
+}
+
+function applyMajorScaleRuns(enhancedNotes: FallingNote[], originalNotes: FallingNote[]): void {
+  const intervals = [2, 2, 1, 2, 2, 2, 1];
+  // Baylor's shared pattern applies to the CAGED major keys. F major RH and
+  // B major LH need different thumb crossings, so do not infer them here.
+  const cagedTonics = new Set([0, 2, 4, 7, 9]);
+  const rightFingers: Finger[] = [1, 2, 3, 1, 2, 3, 4, 5];
+  const leftFingers: Finger[] = [5, 4, 3, 2, 1, 3, 2, 1];
+
+  const indicesByHand: Record<Hand, number[]> = { L: [], R: [] };
+  enhancedNotes.forEach((note, index) => indicesByHand[note.hand as Hand].push(index));
+
+  (['L', 'R'] as const).forEach(hand => {
+    const handIndices = indicesByHand[hand].sort((a, b) =>
+      enhancedNotes[a].start - enhancedNotes[b].start || a - b
+    );
+    for (let start = 0; start <= handIndices.length - 8; start += 1) {
+      const runIndices = handIndices.slice(start, start + 8);
+      const run = runIndices.map(index => enhancedNotes[index]);
+      if (!cagedTonics.has(positiveModulo(run[0].midi, 12))) continue;
+
+      const isScale = run.every((note, index) => {
+        if (index === 0) return true;
+        return note.start > run[index - 1].start && note.midi - run[index - 1].midi === intervals[index - 1];
+      });
+      if (!isScale) continue;
+
+      const fingers = hand === 'R' ? rightFingers : leftFingers;
+      runIndices.forEach((noteIndex, index) => {
+        if (!isValidFinger(originalNotes[noteIndex].finger)) {
+          enhancedNotes[noteIndex].finger = fingers[index];
+        }
+      });
+    }
+  });
 }
 
 /**

@@ -74,16 +74,62 @@ describe('fingeringUtils', () => {
       expect([2, 3, 4]).toContain(rightFinger);
     });
 
+    it('should assign deterministic conventional fingers to black keys', () => {
+      const random = jest.spyOn(Math, 'random').mockImplementation(() => {
+        throw new Error('fingering must not use randomness');
+      });
+
+      try {
+        const inputs: Array<[number, 'L' | 'R']> = [
+          [61, 'L'], [63, 'L'], [66, 'R'], [68, 'R'], [70, 'R']
+        ];
+        inputs.forEach(([midi, hand]) => {
+          const finger = assignFinger(midi, hand);
+          expect([2, 3, 4]).toContain(finger);
+          expect(assignFinger(midi, hand)).toBe(finger);
+        });
+      } finally {
+        random.mockRestore();
+      }
+    });
+
     it('should handle scale positions correctly', () => {
-      const finger = assignFinger(60, 'R', { scalePosition: 0 });
-      expect(finger).toBeGreaterThanOrEqual(1);
-      expect(finger).toBeLessThanOrEqual(5);
+      const right = Array.from({ length: 8 }, (_, position) =>
+        assignFinger(60, 'R', { scalePosition: position })
+      );
+      const left = Array.from({ length: 8 }, (_, position) =>
+        assignFinger(48, 'L', { scalePosition: position })
+      );
+      expect(right).toEqual([1, 2, 3, 1, 2, 3, 4, 5]);
+      expect(left).toEqual([5, 4, 3, 2, 1, 3, 2, 1]);
     });
 
     it('should handle chord positions correctly', () => {
-      const finger = assignFinger(60, 'R', { chordPosition: 0 });
-      expect(finger).toBeGreaterThanOrEqual(1);
-      expect(finger).toBeLessThanOrEqual(5);
+      expect([0, 1, 2].map(chordPosition =>
+        assignFinger(60, 'R', { chordPosition })
+      )).toEqual([1, 3, 5]);
+      expect([0, 1, 2].map(chordPosition =>
+        assignFinger(48, 'L', { chordPosition })
+      )).toEqual([5, 3, 1]);
+    });
+
+    it('should be repeatable and use only valid fingers for fallback assignments', () => {
+      const random = jest.spyOn(Math, 'random').mockImplementation(() => {
+        throw new Error('fingering must not use randomness');
+      });
+
+      try {
+        for (const hand of ['L', 'R'] as const) {
+          for (const midi of [21, 36, 48, 54, 60, 67, 77, 84, 96]) {
+            const first = assignFinger(midi, hand);
+            expect(assignFinger(midi, hand)).toBe(first);
+            expect(first).toBeGreaterThanOrEqual(1);
+            expect(first).toBeLessThanOrEqual(5);
+          }
+        }
+      } finally {
+        random.mockRestore();
+      }
     });
   });
 
@@ -120,6 +166,104 @@ describe('fingeringUtils', () => {
       expect(enhanced[0].velocity).toBe(0.8);
       expect(enhanced[0].hand).toBeDefined();
       expect(enhanced[0].finger).toBeDefined();
+    });
+
+    it('should preserve existing valid hand and finger assignments', () => {
+      const notes: FallingNote[] = [
+        { midi: 60, start: 0, duration: 1, hand: 'R', finger: 4 },
+        { midi: 48, start: 1, duration: 1, hand: 'L', finger: 2 },
+      ];
+
+      expect(addFingeringToNotes(notes).map(({ hand, finger }) => ({ hand, finger }))).toEqual([
+        { hand: 'R', finger: 4 },
+        { hand: 'L', finger: 2 },
+      ]);
+    });
+
+    it('should assign simultaneous notes conventional chord fingers by ascending pitch', () => {
+      const notes: FallingNote[] = [
+        { midi: 67, start: 0, duration: 1, hand: 'R' },
+        { midi: 60, start: 0, duration: 1, hand: 'R' },
+        { midi: 64, start: 0, duration: 1, hand: 'R' },
+        { midi: 48, start: 0, duration: 1, hand: 'L' },
+        { midi: 36, start: 0, duration: 1, hand: 'L' },
+        { midi: 43, start: 0, duration: 1, hand: 'L' },
+      ];
+
+      const enhanced = addFingeringToNotes(notes);
+      expect(enhanced.slice(0, 3).sort((a, b) => a.midi - b.midi).map(note => note.finger)).toEqual([1, 3, 5]);
+      expect(enhanced.slice(3).sort((a, b) => a.midi - b.midi).map(note => note.finger)).toEqual([5, 3, 1]);
+    });
+
+    it('should preserve explicit chord fingers while filling the remaining notes deterministically', () => {
+      const notes: FallingNote[] = [
+        { midi: 60, start: 0, duration: 1, hand: 'R', finger: 2 },
+        { midi: 64, start: 0, duration: 1, hand: 'R' },
+        { midi: 67, start: 0, duration: 1, hand: 'R' },
+      ];
+
+      const enhanced = addFingeringToNotes(notes);
+      expect(enhanced.map(note => note.finger)).toEqual([2, 3, 5]);
+    });
+
+    it('should keep fallback fingers valid for chords larger than five notes', () => {
+      const notes: FallingNote[] = Array.from({ length: 7 }, (_, index) => ({
+        midi: 60 + index * 2,
+        start: 0,
+        duration: 1,
+        hand: 'R' as const,
+      }));
+
+      addFingeringToNotes(notes).forEach(note => {
+        expect(note.finger).toBeGreaterThanOrEqual(1);
+        expect(note.finger).toBeLessThanOrEqual(5);
+      });
+    });
+
+    it('should apply the standard right-hand scale pattern to an ascending C-major run', () => {
+      const notes: FallingNote[] = [60, 62, 64, 65, 67, 69, 71, 72].map((midi, index) => ({
+        midi,
+        start: index,
+        duration: 1,
+        hand: 'R' as const,
+      }));
+
+      expect(addFingeringToNotes(notes).map(note => note.finger)).toEqual([1, 2, 3, 1, 2, 3, 4, 5]);
+    });
+
+    it('should recognize a right-hand scale when left-hand accompaniment is interleaved', () => {
+      const notes: FallingNote[] = [60, 48, 62, 43, 64, 45, 65, 47, 67, 48, 69, 43, 71, 45, 72, 47].map((midi, index) => ({
+        midi,
+        start: Math.floor(index / 2),
+        duration: 1,
+        hand: index % 2 === 0 ? 'R' as const : 'L' as const,
+      }));
+
+      const enhanced = addFingeringToNotes(notes);
+      expect(enhanced.filter(note => note.hand === 'R').map(note => note.finger)).toEqual([1, 2, 3, 1, 2, 3, 4, 5]);
+    });
+
+    it('should apply the standard left-hand scale pattern to an ascending C-major run', () => {
+      const notes: FallingNote[] = [36, 38, 40, 41, 43, 45, 47, 48].map((midi, index) => ({
+        midi,
+        start: index,
+        duration: 1,
+        hand: 'L' as const,
+      }));
+
+      expect(addFingeringToNotes(notes).map(note => note.finger)).toEqual([5, 4, 3, 2, 1, 3, 2, 1]);
+    });
+
+    it('should not apply the CAGED crossing pattern to F-major right hand', () => {
+      const midi = [65, 67, 69, 70, 72, 74, 76, 77];
+      const notes: FallingNote[] = midi.map((pitch, index) => ({
+        midi: pitch,
+        start: index * 0.5,
+        duration: 0.5,
+        hand: 'R',
+      }));
+
+      expect(addFingeringToNotes(notes).map(note => note.finger)).not.toEqual([1, 2, 3, 1, 2, 3, 4, 5]);
     });
   });
 
