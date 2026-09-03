@@ -22,6 +22,12 @@ Last updated: 2026-09-03 KST
 `docs/recovery/validation/2026-09-03-issue-114-main-landmark.md`, 리뷰 상태는
 `docs/recovery/reviews/PR-116.md`에 있다. **미검증**: 인증된 브라우저에서 다섯 영향 페이지의 시각 비교.
 
+**PR #116 review/CI**: hosted checks **16/16 success**, `MERGEABLE`/`CLEAN`. CodeRabbit 수동 리뷰는 변경
+파일 3개 전부를 처리했고 actionable comment 0건이었다. PR 템플릿 섹션 누락 경고는 수용해 본문을 전체
+템플릿 구조로 갱신했다. docstring coverage 경고는 테스트 내부의 작은 재귀 helper와 기존 단순 React
+컴포넌트에 80% 문서 문자열을 요구하는 일반 지표이며 코드 정확성 지적이 없어 기각했다. 현재 병합을 막는
+CI·리뷰 항목은 없지만 **사용자의 PR #116 명시적 병합 승인을 기다린다.**
+
 **직전 작업**: 헤더 계정 메뉴 정리 **완료 — PR [#115](https://github.com/landfill/ClairKeys/pull/115)
 병합 (`885cfd3`), 최종 head `4a2288c`, post-merge 6/6 success, Production 배포 `885cfd3` success,
 2026-09-02 사용자가 운영에서 확인하고 문제 없음을 보고**. 브랜치 정리 완료. GitHub 이슈 없이 브라우저
