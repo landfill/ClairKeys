@@ -46,3 +46,9 @@ The full Jest and typecheck commands were executed and their failures are record
 The production change is limited to responsive classes on the existing primary and loop control wrappers. Labels, callbacks, button sizes, desktop arrangement, and `CompactPlaybackBar` remain unchanged. Rollback is a clean revert of commit `5f0b92222f2e0700065a8591f01f109a5faa46d5`.
 
 Not tested locally: physical-device touch interaction and Firefox/WebKit viewport verification.
+
+## Hosted review and CI follow-up
+
+After the corrected head was pushed, all hosted checks passed: Build Check, E2E Tests, Unit Tests, Run Tests, Lint, Lint and Type Check, Security Audit, Security Scan, CodeQL, Detect changes, PR Summary, Vercel, and Vercel Preview Comments. The manual `@coderabbitai review` trigger completed; CodeRabbit generated no actionable comments. Its walkthrough reported a non-blocking Docstring Coverage warning, which did not produce an actionable review finding.
+
+PR #119 remains OPEN, non-draft, and MERGEABLE. No merge was performed; explicit user approval is still required.

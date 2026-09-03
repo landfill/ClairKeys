@@ -5,8 +5,8 @@ Last updated: 2026-09-03 KST
 ## Current issue #118 status (2026-09-03)
 
 - Current phase: Issue #118 mobile playback controls overflow is implemented on `codex/issue-118-mobile-controls`; corrected head `5f0b92222f2e0700065a8591f01f109a5faa46d5`.
-- Next action: Monitor PR [#119](https://github.com/landfill/ClairKeys/pull/119) CI and obtain actionable human review; do not merge without the user's explicit approval.
-- Known blockers: in this checkout, full Jest reached 85/90 suites and 826/848 tests; its Python subprocess/platform failures are environment-local and unrelated to the changed files, and this session did not compare them against `main`. `npx tsc --noEmit` is likewise environment-local/unrelated to the changed files because this checkout cannot resolve `web-vitals`; this session did not compare it against `main`. Physical-device touch and Firefox/WebKit viewport verification are not tested locally.
+- Next action: Await the user's explicit merge approval for PR [#119](https://github.com/landfill/ClairKeys/pull/119); do not merge automatically.
+- Known blockers: hosted CI and the triggered manual CodeRabbit review are complete with no actionable comments. In this checkout, full Jest reached 85/90 suites and 826/848 tests; its Python subprocess/platform failures are environment-local and unrelated to the changed files, and this session did not compare them against `main`. `npx tsc --noEmit` is likewise environment-local/unrelated to the changed files because this checkout cannot resolve `web-vitals`; this session did not compare it against `main`. Physical-device touch and Firefox/WebKit viewport verification are not tested locally.
 - Recovery records: `docs/recovery/validation/2026-09-03-issue-118-mobile-controls.md` and `docs/recovery/reviews/PR-119.md`.
 
 > 아래 "현재 상태"만 읽고 바로 시작할 수 있어야 한다. 그 아래 절들은 시간 역순 기록이며, 필요한
