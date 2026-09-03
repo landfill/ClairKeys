@@ -123,7 +123,7 @@ describe('visualUtils with fingering', () => {
       expect(shouldShowFingerBadge(note)).toBe(false);
     });
 
-    it('should not show badge for very small notes', () => {
+    it('should keep the finger visible for very short notes', () => {
       const note: VisualNote = {
         x: 0,
         y: 0,
@@ -135,7 +135,7 @@ describe('visualUtils with fingering', () => {
         hand: 'R'
       };
 
-      expect(shouldShowFingerBadge(note)).toBe(false);
+      expect(shouldShowFingerBadge(note)).toBe(true);
     });
   });
 

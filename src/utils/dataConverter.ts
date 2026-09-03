@@ -1,6 +1,7 @@
 import type { PianoAnimationData, PianoNote } from '@/types/animation'
 import type { FallingNote } from '@/types/fallingNotes'
 import type { CanonicalAnimationData } from '@/types/animationContract'
+import { addFingeringToNotes } from '@/utils/fingeringUtils'
 
 /**
  * Data Converter Utilities
@@ -94,7 +95,7 @@ export function convertToFallingNotes(animationData: PianoAnimationData): Fallin
  * legacy string-pitch Shape A) once data has been through `normalizeAnimationData`.
  */
 export function canonicalToFallingNotes(data: CanonicalAnimationData): FallingNote[] {
-  return data.notes.map((note) => ({
+  const notes = data.notes.map((note) => ({
     midi: note.midi,
     start: note.start,
     duration: note.duration,
@@ -102,6 +103,10 @@ export function canonicalToFallingNotes(data: CanonicalAnimationData): FallingNo
     finger: note.finger,
     velocity: note.velocity,
   }));
+
+  // MusicXML fingering is optional. Preserve explicit source values and add a
+  // deterministic beginner hint only where the stored document has a gap.
+  return addFingeringToNotes(notes)
 }
 
 /**

@@ -125,7 +125,7 @@ export function getFingerBadgePosition(note: VisualNote): { x: number; y: number
  * Check if a finger badge should be displayed based on note size
  */
 export function shouldShowFingerBadge(note: VisualNote): boolean {
-  return note.w >= 12 && note.h >= 12 && note.finger !== undefined;
+  return note.finger !== undefined;
 }
 
 /**
