@@ -33,8 +33,8 @@ Result: PASS, 7/7 tests. The responsive regression checked widths `320`, `375`, 
 
 | Command | Result |
 |---|---|
-| `npm test -- --runInBand` | 85/90 suites and 826/848 tests passed. 5 suites/22 tests failed on existing platform/environment baselines: Python subprocess failures in converter corpus, converter tempo, OMR runtime, and piano samples, plus Windows path-separator expectations in `uploadPathInventory`. |
-| `npx tsc --noEmit` | Failed on existing missing `web-vitals` module in `src/lib/analytics.ts`. |
+| `npm test -- --runInBand` | 85/90 suites and 826/848 tests passed. 5 suites/22 tests failed in this checkout on environment-local failures unrelated to the changed files: Python subprocess failures in converter corpus, converter tempo, OMR runtime, and piano samples, plus Windows path-separator expectations in `uploadPathInventory`. This session did not compare the result against `main`. |
+| `npx tsc --noEmit` | Failed in this checkout because the environment could not resolve the `web-vitals` module in `src/lib/analytics.ts`; this is unrelated to the changed files and was not compared against `main`. |
 | `npm run lint` | PASS; no warnings or errors. |
 | `npm run build` | PASS in the escalated environment; compilation and static page generation succeeded. Existing Prisma Windows engine warnings were emitted during page data collection. |
 | `git diff --check` | PASS; only Git line-ending normalization warnings. |

@@ -6,7 +6,7 @@ Last updated: 2026-09-03 KST
 
 - Current phase: Issue #118 mobile playback controls overflow is implemented on `codex/issue-118-mobile-controls`; corrected head `5f0b92222f2e0700065a8591f01f109a5faa46d5`.
 - Next action: Monitor PR [#119](https://github.com/landfill/ClairKeys/pull/119) CI and obtain actionable human review; do not merge without the user's explicit approval.
-- Known blockers: local full Jest remains at 85/90 suites and 826/848 tests because of existing Python subprocess/platform failures; `npx tsc --noEmit` remains blocked by the existing missing `web-vitals` module. Physical-device touch and Firefox/WebKit viewport verification are not tested locally.
+- Known blockers: in this checkout, full Jest reached 85/90 suites and 826/848 tests; its Python subprocess/platform failures are environment-local and unrelated to the changed files, and this session did not compare them against `main`. `npx tsc --noEmit` is likewise environment-local/unrelated to the changed files because this checkout cannot resolve `web-vitals`; this session did not compare it against `main`. Physical-device touch and Firefox/WebKit viewport verification are not tested locally.
 - Recovery records: `docs/recovery/validation/2026-09-03-issue-118-mobile-controls.md` and `docs/recovery/reviews/PR-119.md`.
 
 > 아래 "현재 상태"만 읽고 바로 시작할 수 있어야 한다. 그 아래 절들은 시간 역순 기록이며, 필요한
@@ -14,8 +14,9 @@ Last updated: 2026-09-03 KST
 
 ## 현재 상태
 
-**Current phase**: 이슈 [#103](https://github.com/landfill/ClairKeys/issues/103) 모든 재생 노트의 운지 안내
-**BLOCKED — 운영 수동 확인 대기**. PR [#117](https://github.com/landfill/ClairKeys/pull/117)은 사용자 승인 후
+**Current phase**: 이슈 [#118](https://github.com/landfill/ClairKeys/issues/118) 모바일 재생 컨트롤 overflow 수정, PR [#119](https://github.com/landfill/ClairKeys/pull/119) 검토 대기
+**IN_REVIEW — CI 및 actionable human review 대기**. 병합하지 않는다. 이전 이슈 #103은 아래에 기록된 blocked 운영 수동 확인 항목으로 유지한다.
+**Blocked prior phase — issue #103:**
 merge commit `34b8ad4`로 병합됐고 이슈는 CLOSED다. post-merge checks 6/6 success, Vercel Production 배포
 success를 확인했다. 원격·로컬 `codex/issue-103-fingering-contract` 브랜치는 두 tip의 고유 커밋이 0임을
 확인한 뒤 삭제했고 worktree는 clean `main`이다. 사용자 요청에 따라 단순 운지 유틸리티 구현은 별도 worktree 없이
