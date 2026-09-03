@@ -231,6 +231,18 @@ describe('fingeringUtils', () => {
       expect(addFingeringToNotes(notes).map(note => note.finger)).toEqual([1, 2, 3, 1, 2, 3, 4, 5]);
     });
 
+    it('should recognize a right-hand scale when left-hand accompaniment is interleaved', () => {
+      const notes: FallingNote[] = [60, 48, 62, 43, 64, 45, 65, 47, 67, 48, 69, 43, 71, 45, 72, 47].map((midi, index) => ({
+        midi,
+        start: Math.floor(index / 2),
+        duration: 1,
+        hand: index % 2 === 0 ? 'R' as const : 'L' as const,
+      }));
+
+      const enhanced = addFingeringToNotes(notes);
+      expect(enhanced.filter(note => note.hand === 'R').map(note => note.finger)).toEqual([1, 2, 3, 1, 2, 3, 4, 5]);
+    });
+
     it('should apply the standard left-hand scale pattern to an ascending C-major run', () => {
       const notes: FallingNote[] = [36, 38, 40, 41, 43, 45, 47, 48].map((midi, index) => ({
         midi,

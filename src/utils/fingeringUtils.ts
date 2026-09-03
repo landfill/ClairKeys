@@ -226,26 +226,32 @@ function applyMajorScaleRuns(enhancedNotes: FallingNote[], originalNotes: Fallin
   const rightFingers: Finger[] = [1, 2, 3, 1, 2, 3, 4, 5];
   const leftFingers: Finger[] = [5, 4, 3, 2, 1, 3, 2, 1];
 
-  for (let start = 0; start <= enhancedNotes.length - 8; start += 1) {
-    const run = enhancedNotes.slice(start, start + 8);
-    const firstHand = run[0].hand;
-    if (!firstHand || run.some(note => note.hand !== firstHand)) continue;
-    if (!cagedTonics.has(positiveModulo(run[0].midi, 12))) continue;
+  const indicesByHand: Record<Hand, number[]> = { L: [], R: [] };
+  enhancedNotes.forEach((note, index) => indicesByHand[note.hand as Hand].push(index));
 
-    const isScale = run.every((note, index) => {
-      if (index === 0) return true;
-      return note.start > run[index - 1].start && note.midi - run[index - 1].midi === intervals[index - 1];
-    });
-    if (!isScale) continue;
+  (['L', 'R'] as const).forEach(hand => {
+    const handIndices = indicesByHand[hand].sort((a, b) =>
+      enhancedNotes[a].start - enhancedNotes[b].start || a - b
+    );
+    for (let start = 0; start <= handIndices.length - 8; start += 1) {
+      const runIndices = handIndices.slice(start, start + 8);
+      const run = runIndices.map(index => enhancedNotes[index]);
+      if (!cagedTonics.has(positiveModulo(run[0].midi, 12))) continue;
 
-    const fingers = firstHand === 'R' ? rightFingers : leftFingers;
-    run.forEach((_, index) => {
-      const noteIndex = start + index;
-      if (!isValidFinger(originalNotes[noteIndex].finger)) {
-        enhancedNotes[noteIndex].finger = fingers[index];
-      }
-    });
-  }
+      const isScale = run.every((note, index) => {
+        if (index === 0) return true;
+        return note.start > run[index - 1].start && note.midi - run[index - 1].midi === intervals[index - 1];
+      });
+      if (!isScale) continue;
+
+      const fingers = hand === 'R' ? rightFingers : leftFingers;
+      runIndices.forEach((noteIndex, index) => {
+        if (!isValidFinger(originalNotes[noteIndex].finger)) {
+          enhancedNotes[noteIndex].finger = fingers[index];
+        }
+      });
+    }
+  });
 }
 
 /**
