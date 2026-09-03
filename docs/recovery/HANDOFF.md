@@ -1,14 +1,26 @@
 # Current Handoff
 
-Last updated: 2026-09-02 KST
+Last updated: 2026-09-03 KST
 
 > 아래 "현재 상태"만 읽고 바로 시작할 수 있어야 한다. 그 아래 절들은 시간 역순 기록이며, 필요한
 > 맥락만 골라 읽는다.
 
 ## 현재 상태
 
-**Current phase**: **없음 — 2026-09-02 세션 종료.** 진행 중인 코드 작업도 열린 PR도 없고 worktree는
-clean `main`이다. 다음 세션은 아래 Next action에서 시작한다.
+**Current phase**: 이슈 [#114](https://github.com/landfill/ClairKeys/issues/114) 중첩 `<main>` 제거
+**IN_REVIEW — PR [#116](https://github.com/landfill/ClairKeys/pull/116), head `3bec12e`, branch
+`codex/issue-114-main-landmark`**. 코드 브랜치는 push됐고 로컬 worktree는 clean `main`이다.
+
+루트 레이아웃과 `MainLayout`을 함께 구성하는 회귀 `db4cc6c`가 수정 전 `<main>` 2개를 관측했다
+(`Expected: 1, Received: 2`). 구현 `3bec12e`는 루트 레이아웃을 유일한 `<main>` 소유자로 유지하고
+`MainLayout`의 내부 `<main>`만 제거했다. 기존 `min-h-screen` 래퍼와 자식 구조는 유지했다. 프로필의
+페이지 단위 셸 검사는 루트 레이아웃 없이 렌더된다는 실제 경계에 맞게 갱신했다.
+
+로컬 검증은 Jest 88 suites / **834 tests**, `npx tsc --noEmit`, lint, build 모두 통과했다. 빌드는
+설정상 타입·lint를 생략하므로 두 검사를 별도 실행했다. 기존 프로필 테스트의 React `act(...)` 경고는
+계속 출력되지만 실패는 아니다. 상세 근거는
+`docs/recovery/validation/2026-09-03-issue-114-main-landmark.md`, 리뷰 상태는
+`docs/recovery/reviews/PR-116.md`에 있다. **미검증**: 인증된 브라우저에서 다섯 영향 페이지의 시각 비교.
 
 **직전 작업**: 헤더 계정 메뉴 정리 **완료 — PR [#115](https://github.com/landfill/ClairKeys/pull/115)
 병합 (`885cfd3`), 최종 head `4a2288c`, post-merge 6/6 success, Production 배포 `885cfd3` success,
@@ -71,15 +83,13 @@ Iteration 5이며, 사용자가 항목별 세부 관측값을 남기지는 않�
 
 ---
 
-## Next action (2026-09-02 세션 종료 시점)
+## Next action (2026-09-03 PR #116 생성 시점)
 
-코드 작업 후보 셋이다. **사용자가 착수를 지시한 뒤 시작한다.**
+PR #116의 hosted CI와 리뷰를 확인하고 actionable 항목을 처리한다. 모든 체크와 리뷰가 정리돼도
+**사용자의 이 PR에 대한 명시적 병합 승인 전에는 병합하지 않는다.** 자동 검사가 판정하지 못한 다섯
+페이지(`library`·`explore`·`upload`·`sheet/[id]`·`profile`)의 시각 비교는 브라우저 확인 대상으로 남아 있다.
 
-| 후보 | 내용 | 선행 조건 |
-|---|---|---|
-| **#114** | 중첩 `<main>` — 루트 레이아웃과 `MainLayout`이 각각 하나씩 렌더한다. `library`·`explore`·`upload`·`sheet/[id]`·`profile` 다섯 페이지 영향 | 변경 자체는 작다. **회귀를 루트 레이아웃 포함으로 렌더하거나 E2E로 걸어야 한다** — 페이지 단위 테스트로는 잡히지 않는다 |
-| **#112** | 제거한 프로필 기능(이름 편집·사진·알림·계정 삭제) | **계정 삭제는 별도 설계 선행** — 스토리지 객체, 공개 악보 처리, 유예 기간 결정 |
-| **#103** | 악보 재생의 모든 노트에 손가락 번호 | 데이터 계약부터 정해야 함 |
+PR #116 종결 뒤 후보는 #112(프로필 기능, 설계 선행)와 #103(손가락 번호, 데이터 계약 선행)이다.
 
 착수하지 않는 것: #110·#73·#52·#47은 `omr-service` 변경이라 VM 배포 없이 완료를 주장할 수 없고, #61은
 #60 선행, #46은 선택지 미결정, #44는 본문에 후순위 명시.
