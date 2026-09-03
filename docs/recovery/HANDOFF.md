@@ -7,9 +7,28 @@ Last updated: 2026-09-03 KST
 
 ## 현재 상태
 
-**Current phase**: **없음 — 이슈 [#114](https://github.com/landfill/ClairKeys/issues/114) 중첩 `<main>` 제거
-완료.** PR [#116](https://github.com/landfill/ClairKeys/pull/116) 병합 (`97d6cdb`, 2026-09-03), 이슈
-CLOSED, 원격·로컬 작업 브랜치 삭제, worktree clean `main`이다.
+**Current phase**: 이슈 [#103](https://github.com/landfill/ClairKeys/issues/103) 모든 재생 노트의 운지 안내
+**IN_REVIEW**. PR [#117](https://github.com/landfill/ClairKeys/pull/117), head `edf29d8`, 브랜치
+`codex/issue-103-fingering-contract`이다. 사용자 요청에 따라 단순 운지 유틸리티 구현은 별도 worktree 없이
+Luna medium worker가 담당했고, 주 에이전트가 표준 조사·계약·플레이어 경계·렌더링과 전체 검증을 통합했다.
+
+피아노 번호의 보편 표준은 양손 모두 엄지 1 → 소지 5다. 그러나 임의 악곡 전체의 유일한 음별 배열은 없어
+D-038은 원본 MusicXML/JSON 운지를 우선하고 누락분만 **결정론적 초보자 힌트**로 보강한다. C·G·D·A·E
+장음계 상행은 자료가 보장하는 오른손 `1-2-3-1-2-3-4-5`, 왼손 `5-4-3-2-1-3-2-1`을 적용한다.
+동시음은 1~5음의 일반적인 양손 대칭 배열을 쓰고, 모든 fallback에서 `Math.random()`을 제거했다. 저장 JSON은
+변경하지 않고 `canonicalToFallingNotes` 경계에서 기존·신규 악보를 함께 보강하며 원본 운지는 보존한다.
+짧은 노트도 번호를 숨기지 않는다.
+
+수정 전 회귀 3건이 누락 운지 `undefined`, 미지정 양손 화음, 짧은 노트 번호 숨김을 관측했다. 로컬 검증은
+focused Jest 4 suites / **39 tests**, 전체 Jest 90 suites / **846 tests**, `npx tsc --noEmit`, lint, build
+통과다. 빌드는 설정상 타입·lint를 생략하므로 별도 실행했다. 상세 근거는
+`docs/recovery/validation/2026-09-03-issue-103-fingering-guidance.md`, 리뷰 상태는
+`docs/recovery/reviews/PR-117.md`에 있다. **미검증**: 실제 악보 한 곡 전체 번호, 교육적 자연스러움, 모바일
+가로 화면 가독성. PR 병합은 사용자의 명시적 승인 전 금지다.
+
+**Previous phase**: 이슈 [#114](https://github.com/landfill/ClairKeys/issues/114) 중첩 `<main>` 제거
+완료. PR [#116](https://github.com/landfill/ClairKeys/pull/116) 병합 (`97d6cdb`, 2026-09-03), 이슈
+CLOSED, 원격·로컬 작업 브랜치 삭제, worktree clean `main`이었다.
 
 루트 레이아웃과 `MainLayout`을 함께 구성하는 회귀 `db4cc6c`가 수정 전 `<main>` 2개를 관측했다
 (`Expected: 1, Received: 2`). 구현 `3bec12e`는 루트 레이아웃을 유일한 `<main>` 소유자로 유지하고
@@ -90,12 +109,12 @@ Iteration 5이며, 사용자가 항목별 세부 관측값을 남기지는 않�
 
 ---
 
-## Next action (2026-09-03 PR #116 종결 시점)
+## Next action (2026-09-03 PR #117 생성 시점)
 
-진행 중 코드 작업과 열린 PR은 없다. 다음 후보는 #112(프로필 기능, 설계 선행)와 #103(손가락 번호,
-데이터 계약 선행)이다. 자동 검사가 판정하지 못한 다섯 페이지(`library`·`explore`·`upload`·`sheet/[id]`·
-`profile`)의 시각 비교는 #114의 미검증 항목으로 남아 있으며, 운영 확인을 받으면 review/validation 기록에
-추가한다.
+PR #117의 hosted CI와 세 리뷰 표면을 확인하고 actionable feedback을 처리한다. 가능하면 Preview 또는
+운영 전 실제 악보 한 곡을 재생해 모든 노트의 번호 표시와 모바일 가로 가독성을 확인한다. 초록 CI·리뷰 완료는
+병합 승인이 아니며, 병합은 사용자의 명시적 승인 뒤에만 수행한다. 자동 검사가 판정하지 못한 다섯 페이지의
+시각 비교는 #114의 미검증 항목으로도 남아 있다.
 
 착수하지 않는 것: #110·#73·#52·#47은 `omr-service` 변경이라 VM 배포 없이 완료를 주장할 수 없고, #61은
 #60 선행, #46은 선택지 미결정, #44는 본문에 후순위 명시.
