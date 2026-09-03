@@ -80,22 +80,12 @@ describe('profile page shell', () => {
   it('renders inside the shared app shell rather than its own page frame', async () => {
     render(<ProfilePage />)
 
-    // MainLayout is what puts the page inside a <main> landmark; the old page
-    // built its own bg-gray-50 wrapper and never entered the shell.
-    //
-    // This renders the page without the root layout, which contributes a <main>
-    // of its own — so in the browser /profile actually ships two nested ones,
-    // as do library, explore, upload and sheet/[id]. That is a pre-existing
-    // repo-wide defect tracked separately, not something this page introduced,
-    // but it means the assertion below describes the page component rather than
-    // the production DOM.
-    const main = await screen.findByRole('main')
-
-    // PageHeader renders the title as the page's only h1, inside that shell.
+    // The root layout owns the page's single <main> landmark. Page-level tests
+    // render below that boundary, so assert the shared shell wrapper instead.
     const headings = screen.getAllByRole('heading', { level: 1 })
     expect(headings).toHaveLength(1)
     expect(headings[0]).toHaveTextContent('프로필')
-    expect(main).toContainElement(headings[0])
+    expect(headings[0].closest('.min-h-screen')).toBeInTheDocument()
   })
 
   it('shows the account the user actually signed in with', async () => {
