@@ -8,8 +8,10 @@ Last updated: 2026-09-03 KST
 ## 현재 상태
 
 **Current phase**: 이슈 [#103](https://github.com/landfill/ClairKeys/issues/103) 모든 재생 노트의 운지 안내
-**IN_REVIEW**. PR [#117](https://github.com/landfill/ClairKeys/pull/117), current head `64911db`, 브랜치
-`codex/issue-103-fingering-contract`이다. 사용자 요청에 따라 단순 운지 유틸리티 구현은 별도 worktree 없이
+**BLOCKED — 운영 수동 확인 대기**. PR [#117](https://github.com/landfill/ClairKeys/pull/117)은 사용자 승인 후
+merge commit `34b8ad4`로 병합됐고 이슈는 CLOSED다. post-merge checks 6/6 success, Vercel Production 배포
+success를 확인했다. 원격·로컬 `codex/issue-103-fingering-contract` 브랜치는 두 tip의 고유 커밋이 0임을
+확인한 뒤 삭제했고 worktree는 clean `main`이다. 사용자 요청에 따라 단순 운지 유틸리티 구현은 별도 worktree 없이
 Luna medium worker가 담당했고, 주 에이전트가 표준 조사·계약·플레이어 경계·렌더링과 전체 검증을 통합했다.
 
 피아노 번호의 보편 표준은 양손 모두 엄지 1 → 소지 5다. 그러나 임의 악곡 전체의 유일한 음별 배열은 없어
@@ -26,7 +28,7 @@ focused Jest 4 suites / **40 tests**, 전체 Jest 90 suites / **847 tests**, `np
 통과다. 빌드는 설정상 타입·lint를 생략하므로 별도 실행했다. 상세 근거는
 `docs/recovery/validation/2026-09-03-issue-103-fingering-guidance.md`, 리뷰 상태는
 `docs/recovery/reviews/PR-117.md`에 있다. **미검증**: 실제 악보 한 곡 전체 번호, 교육적 자연스러움, 모바일
-가로 화면 가독성. PR 병합은 사용자의 명시적 승인 전 금지다.
+가로 화면 가독성. phase 완료 조건의 수동 검증이 남아 있어 병합·이슈 종료만으로 `DONE`이라 기록하지 않는다.
 
 **Previous phase**: 이슈 [#114](https://github.com/landfill/ClairKeys/issues/114) 중첩 `<main>` 제거
 완료. PR [#116](https://github.com/landfill/ClairKeys/pull/116) 병합 (`97d6cdb`, 2026-09-03), 이슈
@@ -111,12 +113,12 @@ Iteration 5이며, 사용자가 항목별 세부 관측값을 남기지는 않�
 
 ---
 
-## Next action (2026-09-03 PR #117 생성 시점)
+## Next action (2026-09-03 PR #117 병합 시점)
 
-PR #117의 hosted CI와 세 리뷰 표면을 확인하고 actionable feedback을 처리한다. 가능하면 Preview 또는
-운영 전 실제 악보 한 곡을 재생해 모든 노트의 번호 표시와 모바일 가로 가독성을 확인한다. 초록 CI·리뷰 완료는
-병합 승인이 아니며, 병합은 사용자의 명시적 승인 뒤에만 수행한다. 자동 검사가 판정하지 못한 다섯 페이지의
-시각 비교는 #114의 미검증 항목으로도 남아 있다.
+Production에서 실제 악보 한 곡을 재생해 모든 노트에 번호가 보이는지, 번호가 교육적으로 부자연스럽지 않은지,
+모바일 가로 화면에서 짧은 노트의 번호가 읽히는지 확인한다. 사용자 확인을 받으면 #103 phase를 `DONE`으로
+바꾸고 validation/review/HANDOFF에 기록한다. 자동 검사가 판정하지 못한 다섯 페이지의 시각 비교는 #114의
+미검증 항목으로도 남아 있다.
 
 착수하지 않는 것: #110·#73·#52·#47은 `omr-service` 변경이라 VM 배포 없이 완료를 주장할 수 없고, #61은
 #60 선행, #46은 선택지 미결정, #44는 본문에 후순위 명시.

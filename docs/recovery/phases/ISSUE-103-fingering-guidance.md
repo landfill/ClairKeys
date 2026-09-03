@@ -1,10 +1,14 @@
 # ISSUE-103 — 모든 재생 노트의 운지 안내
 
-Status: `IN_PROGRESS`
+Status: `BLOCKED`
 Depends on: P0-A, DS-5
 
 Progress (2026-09-03): 표준 번호 체계와 일반 악구 운지의 차이를 조사하고 D-038로 출처 우선순위와
 결정론적 fallback 계약을 확정했다. 구현과 검증은 진행 중이다.
+
+Progress (2026-09-03): PR #117이 merge commit `34b8ad4`로 병합되고 이슈 #103은 닫혔다. 로컬·hosted·
+post-merge 자동 검증은 모두 통과했고 브랜치 정리도 끝났다. 완료 조건의 실제 악보·모바일 가로 수동 확인이
+남아 있어 Status는 `DONE`이 아니라 `BLOCKED`다.
 
 ## Objective
 

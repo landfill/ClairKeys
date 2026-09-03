@@ -56,4 +56,15 @@ The existing profile test React `act(...)` warning and expected failure-path con
 
 ## Result
 
-Local automated gates pass. The phase remains `IN_REVIEW`; manual score/browser validation and hosted review/CI remain open.
+Local automated gates passed at the initial head. Hosted review later produced R1, whose fix and final disposition are
+recorded below.
+
+## Merge and post-merge result
+
+- User merge approval: 2026-09-03 KST.
+- PR #117 merge commit: `34b8ad48b5aa51f284fe8ade7ca3e3f464b08b4d`.
+- Post-merge checks: 6/6 success (tests, lint, security audit, E2E, post-merge tests, post-merge build).
+- Vercel Production: success.
+- Issue #103: CLOSED automatically by the PR.
+- Branch cleanup: local and remote tips had 0 commits outside `origin/main`; both branches deleted.
+- Remaining: actual score and mobile landscape manual validation. Phase status remains `BLOCKED`, not `DONE`.
