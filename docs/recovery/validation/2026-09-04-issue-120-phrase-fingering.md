@@ -2,7 +2,7 @@
 
 Date: 2026-09-04 KST
 Branch: `codex/issue-120-phrase-fingering`
-Commits: regression/decision `a0af14c`, implementation `e7989dd`
+Commits: regression/decision `a0af14c`, implementation `e7989dd`, review fix `927d81f`
 PR: [#122](https://github.com/landfill/ClairKeys/pull/122)
 
 ## Scope and corrected premise
@@ -83,3 +83,15 @@ production build was served locally and Playwright intercepted only `/api/sheet/
 
 Screenshots were inspected locally and intentionally not committed. This verifies rendering with the branch build and real
 score payload, but not Vercel routing/auth configuration.
+
+## Review-fix validation
+
+CodeRabbit found that phrase silence was measured from only the immediately previous event. A long sustained note followed
+by a short intervening note could therefore be forgotten before the next onset. The new regression observed the old split
+as `1,2,1,2`; tracking the maximum sounding end across the whole phrase produces `1,2,3,4`.
+
+The second review item corrected recovery documentation: storage backfill is retired, not consolidated. D-039 now records
+that persisting heuristic fingers would erase their distinction from source notation.
+
+After `927d81f`: focused Jest 5 suites / 54 tests, full Jest 91 suites / 857 tests, typecheck, lint, and diff check pass.
+Both CodeRabbit threads were replied to and resolved. Review-fix hosted checks are pending.

@@ -5,7 +5,7 @@ Last updated: 2026-09-04 KST
 ## Current issue #120 status (2026-09-04)
 
 - Current phase: [#120](https://github.com/landfill/ClairKeys/issues/120) ordinary-score automatic fingering is
-  implemented on `codex/issue-120-phrase-fingering`; head `e7989dd`, review-ready PR
+  implemented on `codex/issue-120-phrase-fingering`; head `927d81f`, review-ready PR
   [#122](https://github.com/landfill/ClairKeys/pull/122).
 - Corrected premise from the user: an unannotated treble/bass-staff score is the normal product input, not an exceptional
   missing-data fallback. The implementation therefore treats hand-separated phrase inference as the primary path.
@@ -19,8 +19,11 @@ Last updated: 2026-09-04 KST
   The exact branch production build was therefore served locally with only `/api/sheet/28` metadata intercepted and the
   actual public 411-note JSON loaded. Desktop 1440×900 and mobile landscape 844×390 idle/playing all rendered readable
   badges with no page error. This does not verify Vercel routing/auth configuration.
-- Next action: wait for PR #122 hosted checks and the manually requested CodeRabbit review. Address every actionable item,
-  update `reviews/PR-122.md`, then await explicit merge approval.
+- Next action: wait for PR #122 review-fix head hosted checks, then await explicit merge approval.
+- Review update: CodeRabbit produced 2 actionable findings. Both were accepted and fixed in `927d81f`: phase/D-039 now
+  match the retired storage backfill, and phrase gaps use the maximum sounding end across all voices. The latter regression
+  failed `1,2,1,2` before the fix and passes `1,2,3,4`. Focused 54 and full 857 tests, typecheck, lint, and diff check pass;
+  both threads are replied to and resolved. Await the new head hosted checks, then explicit merge approval.
 - Known blockers: professional pianist/teacher review cannot be automated. Do not describe the heuristic as a unique correct
   fingering.
 - Evidence: `docs/recovery/validation/2026-09-04-issue-120-phrase-fingering.md`,
