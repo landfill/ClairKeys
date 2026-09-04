@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-04 KST
 
-## AGENTS.md reference trim — PR #128 open (2026-09-05)
+## AGENTS.md reference trim — PR #128 MERGED (2026-09-05)
 
 - `AGENTS.md` is read in full by every session because `CLAUDE.md` instructs it, so the file's length is a fixed
   per-session cost. Its `## Project Reference` section already carried its own warning that it goes stale, which
@@ -15,8 +15,14 @@ Last updated: 2026-09-04 KST
 - Kept because the code cannot say it: the manual user-ID synchronisation in the OAuth flow, the OMR service under
   Podman and systemd on a NAVER Cloud VM, the E2E spec's replacement history (issue #7), the environment variables
   (checked: no `.env.example` exists to derive them from), and the production-versus-development migration policy.
-- Next action: confirm hosted CI and any actionable review, then wait for the user's explicit merge approval. Do
-  not merge PR #128 without it.
+- Merged on the user's explicit approval as merge commit `36d3768`; every check passed, and the two PR comments
+  were bot notices (Vercel deployment, CodeRabbit declining to auto-review a repo under 10 stars). Local and remote
+  `codex/docs-agents-md-trim` were deleted after confirming both tips are contained in `main`.
+- Open item, not a blocker: `.claude/settings.local.json` carries an uncommitted `disabledMcpjsonServers:
+  ["playwright"]` from this session's `/doctor` run. The file sits in `.gitignore` line 53 yet is already tracked,
+  so gitignore does not apply to it and the edit surfaces in `git status`. Committing it would disable Playwright
+  for every teammate, so it was deliberately left out of both the PR and the direct commits. The user has the
+  three options — leave it, `git rm --cached` it so the ignore finally takes effect, or commit it deliberately.
 - Evidence: `docs/recovery/reviews/PR-128.md`.
 
 ## Issue #124, #125, #126 registration (2026-09-04)
