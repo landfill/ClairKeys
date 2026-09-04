@@ -102,7 +102,7 @@ Last updated: 2026-09-04 KST
 - No implementation branch or code change was started for any of these issues.
 
 
-## Current issue #52 status — root cause found and verified on the VM (2026-09-05)
+## Issue #52 CLOSED — restart race fixed, merged, deployed and re-verified (2026-09-05)
 
 - The verification the 2026-09-04 entry listed as blocking has now been run against the production VM, and it
   **falsified the fix**. Do not close #52. Do not describe PR
@@ -142,10 +142,20 @@ Last updated: 2026-09-04 KST
 - **Production is back on its baseline unit** — no unmerged configuration is left on the host. Deployment belongs
   after the merge, via the deployment guide. Post-restore: `active`, `ExecMainStatus=0`, image `12b9a021…`,
   health 200, unauthenticated 401.
-- Next action: confirm CI on `92f1dc4`, then wait for the user's explicit merge approval. After merging, deploy
-  the unit to the VM and re-run the ten-restart check against the deployed unit to close #52.
-- Evidence: `docs/recovery/validation/2026-09-05-pr123-vm-restart-falsified.md` (both the falsification and the
-  verified fix), `docs/recovery/reviews/PR-123.md`.
+- **Merged** on the user's explicit approval as `72cfd8a`, with every check green. Local and remote
+  `codex/issue-52-systemd-restart` were deleted after confirming both tips are contained in `main`.
+- **Deployed and re-verified on the host**, because a branch measurement is not a host measurement: the branch run
+  installed a candidate file temporarily and restored the baseline afterwards. `main`'s unit was installed over a
+  fresh backup (`/root/clairkeys-omr.service.bak.20260905-023452`), and ten back-to-back restarts failed **0/10**
+  with the `status=125` count unchanged. `active`, `ExecMainStatus=0`, `NRestarts=0`, one container, image
+  `12b9a021…` unchanged, health 200, unauthenticated 401. The host now matches `main` — no configuration drift.
+- Across the fix's whole history the same harness recorded: original **2/10**, `ExecStartPre` alone **1/10**,
+  `--rm` removed **0/40** on the branch and **0/10** on the deployed unit — fifty consecutive restarts since the
+  fix with no `status=125`.
+- Issue #52 is closed. Next action: none for #52. The OMR VM's remaining open issues are #44, #46, #47, #73,
+  #110 and #121.
+- Evidence: `docs/recovery/validation/2026-09-05-issue-52-deployed-unit-verified.md`,
+  `docs/recovery/validation/2026-09-05-pr123-vm-restart-falsified.md`, `docs/recovery/reviews/PR-123.md`.
 
 ## Issue #124, #125, #126 registration (2026-09-04)
 
