@@ -2,6 +2,23 @@
 
 Last updated: 2026-09-04 KST
 
+## AGENTS.md reference trim — PR #128 open (2026-09-05)
+
+- `AGENTS.md` is read in full by every session because `CLAUDE.md` instructs it, so the file's length is a fixed
+  per-session cost. Its `## Project Reference` section already carried its own warning that it goes stale, which
+  meant sessions paid to read it and were then told not to trust it.
+- PR [#128](https://github.com/landfill/ClairKeys/pull/128) on `codex/docs-agents-md-trim` (head `f23b830`) cuts
+  what a few tool calls reconstruct — commands that are `package.json` scripts, the stack that is its dependencies,
+  the schema that is `prisma/schema.prisma`, and the component/service/mobile tours that `ls` shows. 363 lines and
+  20,654 chars become 184 and 14,082, roughly 1,640 fewer tokens per session. **The operating contract in lines
+  1-109 is untouched** — the diff is 179 deletions and zero insertions.
+- Kept because the code cannot say it: the manual user-ID synchronisation in the OAuth flow, the OMR service under
+  Podman and systemd on a NAVER Cloud VM, the E2E spec's replacement history (issue #7), the environment variables
+  (checked: no `.env.example` exists to derive them from), and the production-versus-development migration policy.
+- Next action: confirm hosted CI and any actionable review, then wait for the user's explicit merge approval. Do
+  not merge PR #128 without it.
+- Evidence: `docs/recovery/reviews/PR-128.md`.
+
 ## Issue #124, #125, #126 registration (2026-09-04)
 
 - [#124](https://github.com/landfill/ClairKeys/issues/124) records a measured geometry defect in the falling-note
