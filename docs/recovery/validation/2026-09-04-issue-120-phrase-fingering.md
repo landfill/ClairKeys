@@ -94,4 +94,6 @@ The second review item corrected recovery documentation: storage backfill is ret
 that persisting heuristic fingers would erase their distinction from source notation.
 
 After `927d81f`: focused Jest 5 suites / 54 tests, full Jest 91 suites / 857 tests, typecheck, lint, and diff check pass.
-Both CodeRabbit threads were replied to and resolved. Review-fix hosted checks are pending.
+Both CodeRabbit threads were replied to and resolved. Hosted Build, two E2E jobs, two test jobs, lint/typecheck, Security
+Scan, CodeQL, Vercel, and Security Audit pass. Security Audit initially received npm registry HTTP 400 `Invalid package
+tree`; the unchanged head passed the failed-job rerun, confirming an external transient rather than a lockfile/code change.

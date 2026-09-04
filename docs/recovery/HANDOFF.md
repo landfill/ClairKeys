@@ -19,11 +19,16 @@ Last updated: 2026-09-04 KST
   The exact branch production build was therefore served locally with only `/api/sheet/28` metadata intercepted and the
   actual public 411-note JSON loaded. Desktop 1440×900 and mobile landscape 844×390 idle/playing all rendered readable
   badges with no page error. This does not verify Vercel routing/auth configuration.
-- Next action: wait for PR #122 review-fix head hosted checks, then await explicit merge approval.
+- Next action: await the user’s explicit merge approval for PR #122. Do not merge automatically.
 - Review update: CodeRabbit produced 2 actionable findings. Both were accepted and fixed in `927d81f`: phase/D-039 now
   match the retired storage backfill, and phrase gaps use the maximum sounding end across all voices. The latter regression
   failed `1,2,1,2` before the fix and passes `1,2,3,4`. Focused 54 and full 857 tests, typecheck, lint, and diff check pass;
-  both threads are replied to and resolved. Await the new head hosted checks, then explicit merge approval.
+  both threads are replied to and resolved. Current-head hosted Build, two E2E jobs, two test jobs, lint/typecheck, Security
+  Scan, CodeQL, Vercel, and Security Audit all pass. The first Security Audit attempt received npm registry HTTP 400
+  `Invalid package tree`; rerunning the unchanged head passed.
+- Direct-main record check: status commit `38c0b87` passed E2E, build, tests, and lint, but its Security Audit hit the same
+  npm registry 400 transient. This failure is recorded here per the direct-push protocol; PR head `927d81f` has a successful
+  audit rerun and no dependency or lockfile change.
 - Known blockers: professional pianist/teacher review cannot be automated. Do not describe the heuristic as a unique correct
   fingering.
 - Evidence: `docs/recovery/validation/2026-09-04-issue-120-phrase-fingering.md`,
