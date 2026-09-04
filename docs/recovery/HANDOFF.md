@@ -45,6 +45,41 @@ Last updated: 2026-09-05 KST
 - Evidence: `docs/recovery/validation/2026-09-05-issue-126-fingering-cost-model.md`,
   `docs/recovery/reviews/PR-129.md`, `docs/recovery/phases/ISSUE-126-fingering-cost-model.md`.
 
+## Issue #126 — Codex review round, and a commit message that closed the issue (2026-09-05)
+
+- **A handoff commit closed issue #126 by accident, and the line that did it was the line forbidding it.**
+  Commit `39f561c` on `main` carried the trailer `Directive: Do not close #126 on PR #129 — tier 1 is
+  untouched`. GitHub's auto-close parser reads `close #126` and ignores everything before it. The close event
+  records `commit_id 39f561cf...` and the commit author as actor, and `closedByPullRequestsReferences` is
+  empty, so this was the commit and not PR linkage. Reopened with `gh issue reopen 126`.
+  **Never write `close`/`closes`/`fixes`/`resolves` next to a `#number` in a commit pushed to `main`, not even
+  in a negation.** Say "issue #126 stays open" instead.
+- An independent Codex worker reviewed PR #129 through Orca orchestration, **sharing this worktree, read-only**
+  (run `run_9eba0e2f17e4`, dispatch `ctx_84ac42063753`). It reported six items. **Every one was reproduced in
+  this session against the branch source before being accepted; none were rejected.** Fixed in `57bf74e`.
+- The finding worth carrying: **two of the new regressions passed the defect they were written to catch.** The
+  same-centre chord test asserted ascending fingers and a narrowing span; re-injecting the pre-fix centre
+  comparison into a scratch copy produced `1 5 2 4`, which satisfies both. It now pins the exact `1 4 1 3`, and
+  the injected defect was confirmed to break that. A property assertion is only worth what it excludes — check
+  that by building the defect, not by reading the test.
+- The `crossings` test helper counted every finger change on a repeated note as a crossing, because
+  `Math.sign(0)` matches nothing. Latent: no current input has a zero pitch delta.
+- **A claim in the earlier validation record was wrong.** It said the production opening's `[5,1,2,5]` crosses
+  over the thumb at G#3. Nine semitones is past `CROSSING_MAX_INTERVAL`, so that is hand travel. What actually
+  picks the thumb is that E2 to B2 is a perfect fifth — exactly the natural hand span — so fingers 5 and 1
+  imply the same anchor and the hand does not move at all.
+- **The phase document's "no finger three times in a row" criterion was unqualified and is not met.** A
+  crossing only exists within `CROSSING_MAX_INTERVAL`, so a run of leaps has no crossing candidate and every
+  fingering pays the same lifted-hand cost: descending octaves return `5 1 1 1`, and descending fifths can hold
+  one finger five times. That is this decision's consequence, not a defect — re-using a finger across an
+  unbridgeable leap is what a player does. The criterion is now scoped to stepwise motion with the exception
+  stated and pinned by a regression. **The 192-scale sweep's "longest run 2" is a fact about scales, not about
+  arbitrary phrases.**
+- "5 states, 25 transitions" is the single-note figure. A two- or three-note chord event has `C(5,k)` = 10
+  candidates, so chord-to-chord transitions reach 100. Comment and D-041 now say so.
+- Branch head is `57bf74e`; 871 Jest tests, typecheck, lint and build all pass. PR #129 still needs the user's
+  explicit merge approval, and still does not close #126 — tier 1 remains.
+
 ## AGENTS.md reference trim — PR #128 MERGED (2026-09-05)
 
 - `AGENTS.md` is read in full by every session because `CLAUDE.md` instructs it, so the file's length is a fixed
