@@ -65,8 +65,21 @@ not duplicated into the repository.
 
 ## Not yet tested
 
-- Vercel preview browser playback of sheet 28
-- mobile landscape legibility in the preview
 - professional pianist/teacher review of the entire inferred score
 - hosted CI and review feedback
 
+## Browser verification
+
+The Vercel preview was ready but redirected anonymous headless access to Vercel login. macOS denied the `computer-use`
+skill Accessibility permission, so the authenticated Chrome session was not read or controlled. Instead, the exact branch
+production build was served locally and Playwright intercepted only `/api/sheet/28` metadata while loading the actual public
+411-note storage JSON.
+
+| View | Result |
+|---|---|
+| Desktop 1440×900, idle | PASS — visible initial badges `5,2,3,2,3,2,3`; no page errors |
+| Mobile landscape 844×390, idle | PASS — badges readable within falling notes; keyboard alignment intact |
+| Mobile landscape 844×390, playing at 0:02 | PASS — `playback-active`, compact controls, badges `5,2,3,3,2,3,2,5`; no page errors |
+
+Screenshots were inspected locally and intentionally not committed. This verifies rendering with the branch build and real
+score payload, but not Vercel routing/auth configuration.

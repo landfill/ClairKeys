@@ -15,10 +15,14 @@ Last updated: 2026-09-04 KST
 - Storage safety: canonical JSON is not rewritten. Player-bound values carry source/inferred provenance and algorithm
   version `phrase-dp-v1`. The old random storage backfill API is an authenticated 410 tombstone; its UI entry and two
   random scripts are removed.
-- Next action: wait for PR #122 hosted checks/review and use its preview to inspect sheet 28 on desktop and mobile
-  landscape. Address every actionable item, update `reviews/PR-122.md`, then await explicit merge approval.
-- Known blockers: professional pianist/teacher review cannot be automated. Preview visual verification is pending
-  deployment. Do not describe the heuristic as a unique correct fingering.
+- Browser verification: the Vercel preview is login protected and macOS denied `computer-use` Accessibility permission.
+  The exact branch production build was therefore served locally with only `/api/sheet/28` metadata intercepted and the
+  actual public 411-note JSON loaded. Desktop 1440×900 and mobile landscape 844×390 idle/playing all rendered readable
+  badges with no page error. This does not verify Vercel routing/auth configuration.
+- Next action: wait for PR #122 hosted checks and the manually requested CodeRabbit review. Address every actionable item,
+  update `reviews/PR-122.md`, then await explicit merge approval.
+- Known blockers: professional pianist/teacher review cannot be automated. Do not describe the heuristic as a unique correct
+  fingering.
 - Evidence: `docs/recovery/validation/2026-09-04-issue-120-phrase-fingering.md`,
   `docs/recovery/reviews/PR-122.md`, D-039 in `docs/recovery/DECISIONS.md` on the PR branch.
 
