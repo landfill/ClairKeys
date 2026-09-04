@@ -21,7 +21,8 @@ Depends on: ISSUE-103
 1. 상·하행 5음 위치, 반복음, 도약, 화음, 양손, 원본 보존, 운영 사례 축약 fixture를 회귀로 추가한다.
 2. 원본을 제약으로 삼는 손별 phrase/event 비용 모델을 구현한다.
 3. 자동 운지에 player-bound provenance와 알고리즘 버전을 부여한다.
-4. 운영 관리자 backfill의 무작위 경로를 같은 추론기로 통합하고 오래된 독립 스크립트를 정리한다.
+4. 저장 JSON을 덮어쓰는 관리자 backfill을 인증 후 410으로 폐기하고, UI 진입점과 오래된 무작위 독립
+   스크립트를 제거한다. 자동 운지는 player boundary 한 곳만 소유한다.
 5. focused/full Jest, typecheck, lint, build와 실제 운영 악보·모바일 가로 화면을 검증한다.
 
 ## Completion criteria

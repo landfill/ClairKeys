@@ -299,6 +299,17 @@ describe('fingeringUtils', () => {
       expect(fingers[0]).not.toBe(1);
     });
 
+    it('does not split a phrase while an earlier sustained note is still sounding', () => {
+      const notes: FallingNote[] = [
+        { midi: 60, start: 0, duration: 5, hand: 'R' },
+        { midi: 62, start: 0.5, duration: 0.5, hand: 'R' },
+        { midi: 64, start: 3, duration: 0.5, hand: 'R' },
+        { midi: 65, start: 3.5, duration: 0.5, hand: 'R' },
+      ];
+
+      expect(addFingeringToNotes(notes).map(note => note.finger)).toEqual([1, 2, 3, 4]);
+    });
+
     it('uses phrase context independently for two interleaved hands', () => {
       const notes: FallingNote[] = [0, 1, 2, 3, 4].flatMap(start => [
         { midi: 48 + [0, 2, 4, 5, 7][start], start, duration: 0.5, hand: 'L' as const },

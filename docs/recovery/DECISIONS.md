@@ -1414,7 +1414,9 @@
   4. 유효한 원본 `finger`는 절대 덮어쓰지 않는다. player-bound `FallingNote`에 `fingerSource: source|inferred`와
      자동값의 알고리즘 버전을 붙인다. 저장 canonical v1.1은 바꾸거나 일괄 재작성하지 않는다.
   5. 정확히 근거가 있는 CAGED 한 옥타브 scale 패턴은 D-038대로 유지하되, 원본 운지는 계속 우선한다.
-  6. 관리자 backfill이 필요하면 별도 무작위 규칙을 쓰지 않고 같은 엔진과 provenance를 사용한다.
+  6. 관리자 backfill은 유지하지 않는다. 인증·allowlist 확인 뒤 410을 반환하는 tombstone만 남겨 오래된 호출자가
+     명시적인 폐기 응답을 받게 하고, UI 진입점과 무작위 스크립트는 제거한다. 자동값은 저장하지 않고 player
+     boundary에서만 생성한다.
 - Reason: 손의 진행을 연결하면 단음별 modulo 규칙의 방향 오류를 제거하면서도, 공개 근거가 없는 유일한 정답을
   주장하지 않을 수 있다. 공간 방향 정규화는 왼손 숫자 의미를 뒤집지 않고 건반 위 배열만 대칭으로 다룬다.
 - Rejected:
@@ -1422,6 +1424,8 @@
   - PDF/MusicXML 재변환 | 원본에 운지 표기가 없으므로 입력 정보가 늘지 않는다.
   - canonical `finger` 필수화 | 정상적인 무운지 MusicXML과 기존 저장 파일을 계약 위반으로 만든다.
   - 전문 운지 데이터셋 없는 ML 모델 | 결과 근거와 결정론, 배포 비용을 검증할 수 없다.
+  - 관리자 backfill을 새 추론기로 통합 | 휴리스틱 값을 저장 `finger`로 굳히면 다음 읽기부터 원본 표기와 구분할
+    수 없고, runtime inference가 이미 기존·신규 JSON을 모두 처리하므로 데이터 재작성 위험만 남는다.
 - Constraint: D-038의 원본 우선, 결정론, 1~5 의미와 기존 저장 호환 계약을 유지한다.
 - Confidence: high (방향·원본 보존·결정론), medium (일반 악구의 교육적 자연스러움)
 - Scope-risk: moderate

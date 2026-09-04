@@ -227,17 +227,20 @@ function buildHandEvents(notes: FallingNote[], hand: Hand): FingeringEvent[] {
 function splitPhrases(events: FingeringEvent[]): FingeringEvent[][] {
   const phrases: FingeringEvent[][] = [];
   let current: FingeringEvent[] = [];
+  let phraseEnd = Number.NEGATIVE_INFINITY;
 
   events.forEach(event => {
-    const previous = current[current.length - 1];
     // Seconds are already baked into the canonical document. A two-second rest
     // is deliberately conservative: it resets hand position only at an audible
-    // break, not between ordinary slow notes.
-    if (previous && event.start - previous.end >= 2) {
+    // break, not between ordinary slow notes. Use the furthest sounding end in
+    // the phrase: a short intervening voice must not hide a sustained note.
+    if (current.length > 0 && event.start - phraseEnd >= 2) {
       phrases.push(current);
       current = [];
+      phraseEnd = Number.NEGATIVE_INFINITY;
     }
     current.push(event);
+    phraseEnd = Math.max(phraseEnd, event.end);
   });
   if (current.length > 0) phrases.push(current);
   return phrases;
