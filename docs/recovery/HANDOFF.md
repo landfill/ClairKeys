@@ -2,6 +2,29 @@
 
 Last updated: 2026-09-05 KST
 
+## Issue #126 tier 2 MERGED — `phrase-dp-v2` is live on `main`; tier 1 is the next action (2026-09-05)
+
+- PR [#129](https://github.com/landfill/ClairKeys/pull/129) merged on the user's explicit approval as
+  `d6b042f`, with every post-merge check on `main` green (E2E, build, Lint, Run Tests, Security Audit,
+  Post-merge tests). `main` now carries `phrase-dp-v2` and no `applyMajorScaleRuns`.
+- Local and remote `codex/issue-126-fingering-cost-model` both stood at `57bf74e`, were confirmed contained in
+  `main` with `git merge-base --is-ancestor` and no unique commits, and were deleted.
+- **Issue #126 stays open, and that is deliberate.** Only tier 2 is done. The next action is tier 1: pass
+  `keySignature`, `timeSignature`, `staff` and `voice` across the player boundary
+  (`canonicalToFallingNotes`, `src/utils/dataConverter.ts`) and group events by `start` + `voice` instead of
+  `start` alone. **One tier 1 item is already gone**: generalising the CAGED pattern layer over the key
+  signature has no target, because tier 2 deleted the layer.
+- Tier 3 (measures, rests, slurs, note values in the contract) is unchanged and still belongs with #125 stage
+  B under D-040. It needs conversion-time changes and re-registration of existing scores.
+- Still outstanding for the issue, and not doable locally: the 411-note production score has to be opened in
+  the app and judged for playability. D-040's policy keeps no source artefact in the repository.
+- **The known exception to carry forward**: "no finger three times in a row" holds for stepwise motion only.
+  A crossing exists only within `CROSSING_MAX_INTERVAL`, so a run of leaps has no crossing candidate and every
+  fingering pays the same lifted-hand cost — descending octaves return `5 1 1 1`. That is D-041's direct
+  consequence, is pinned by a regression, and must not be "fixed" by tuning the constants.
+- Evidence: `docs/recovery/phases/ISSUE-126-fingering-cost-model.md` (now `DONE`),
+  `docs/recovery/reviews/PR-129.md` (Iteration 3), `docs/recovery/validation/2026-09-05-issue-126-fingering-cost-model.md`.
+
 ## Issue #126 tier 2 — fingering cost model rewritten, PR #129 OPEN (2026-09-05)
 
 - The user chose to take issue [#126](https://github.com/landfill/ClairKeys/issues/126)'s **tier 2 (cost model)

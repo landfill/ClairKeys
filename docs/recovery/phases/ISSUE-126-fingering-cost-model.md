@@ -1,10 +1,15 @@
 # ISSUE-126 — 손 이동과 엄지 넘김을 담은 운지 비용 모델
 
-Status: `IN_REVIEW`
+Status: `DONE`
 Depends on: ISSUE-120 (`phrase-dp-v1`이 이 단계의 수정 대상이다)
 
-Progress (2026-09-05): 2순위(비용 모델)를 브랜치 `codex/issue-126-fingering-cost-model`에서 구현했다.
-1순위(경계 문맥 전달)와 3순위(계약 확장)는 이 단계에 포함하지 않는다.
+Progress (2026-09-05): PR [#129](https://github.com/landfill/ClairKeys/pull/129)가 merge commit `d6b042f`로
+병합되고 post-merge 체크가 전부 통과했다(E2E, build, Lint, Run Tests, Security Audit, Post-merge tests).
+Codex 독립 리뷰 1라운드의 6개 항목을 전부 재현·반영했고(`57bf74e`), 원격·로컬 작업 브랜치는 두 tip이
+`main`에 포함됨을 확인한 뒤 삭제했다.
+
+이 단계의 완료 조건은 모두 충족했다. **다만 이슈 #126 자체는 열려 있다** — 1순위(경계 문맥 전달)가 남았고,
+411음 운영 악보의 연주 가능성 수동 검토는 이 단계의 범위 밖이다.
 
 ## Objective
 
