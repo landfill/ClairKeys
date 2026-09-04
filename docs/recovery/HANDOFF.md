@@ -102,6 +102,112 @@ Last updated: 2026-09-04 KST
 - No implementation branch or code change was started for any of these issues.
 
 
+## Current issue #52 status — PR #123's fix FALSIFIED on the VM (2026-09-05)
+
+- The verification the 2026-09-04 entry listed as blocking has now been run against the production VM, and it
+  **falsified the fix**. Do not close #52. Do not describe PR
+  [#123](https://github.com/landfill/ClairKeys/pull/123) as fixing the runtime defect.
+- Reproduced first, on the unmodified unit: spaced restarts never failed, but ten back-to-back
+  `systemctl restart clairkeys-omr` produced **2 failures in 10** and moved the cumulative `status=125` count from
+  2 to 4. The defect is real and timing-dependent.
+- Installed PR #123's unit (the diff against the deployed file is exactly the one `ExecStartPre` line) and
+  confirmed systemd both recognised and ran it — `ExecStartPre={ /bin/rm -f /run/clairkeys-omr.service.ctr-id ;
+  code=exited ; status=0 }`. The same ten-restart test still produced **1 failure in 10**, count 4 to 5, with a
+  byte-identical error: `Error: remove /run/clairkeys-omr.service.ctr-id: no such file or directory` →
+  `status=125`. One failure with the fix installed and running is enough to refute "this removes the failure";
+  no statistics are needed.
+- **Why it misses**: the failure is `ExecStart`'s `podman run` exiting 125 while trying to REMOVE a cidfile that
+  is already gone — "no such file", not "file already exists". PR #123 pre-deletes a file it assumes is in the
+  way. Deleting an already-absent file does not touch the observed path. Unverified hypothesis for the next
+  attempt: the unit's stop path (`ExecStop`/`ExecStopPost` with `podman stop|rm --ignore --cidfile=…`, under
+  `Type=notify` + `--sdnotify=conmon`) is where the window lives — `--ignore` covers a missing *container*, not a
+  missing *cidfile*.
+- **Production was restored** to the backed-up unit (`/root/clairkeys-omr.service.bak.20260905-011654`) and is
+  identical to its pre-verification state: `active`, `ExecMainStatus=0`, image `12b9a021…`, external `GET /health`
+  200, unauthenticated `POST /process` 401.
+- Next action: decide what PR #123 should become. Its regression test asserts the unit file's contents and passes,
+  but file contents are not restart behaviour — merging it as-is would record a fix that does not fix anything.
+  Either repoint it at the stop path or reduce its claim.
+- Evidence: `docs/recovery/validation/2026-09-05-pr123-vm-restart-falsified.md`,
+  `docs/recovery/reviews/PR-123.md`.
+
+## Issue #124, #125, #126 registration (2026-09-04)
+
+- [#124](https://github.com/landfill/ClairKeys/issues/124) records a measured geometry defect in the falling-note
+  finger badge: `getFingerBadgePosition` clamps the badge to a 14px floor while a black-key note is only
+  `whiteKeyWidth × 0.437` wide, so at the 24px base density the badge is 14.00px over a 10.49px note and overflows
+  onto neighbouring white-key notes (black-key notes render at `z-index` 30 against 20). The 12px font floor
+  likewise binds on black keys only, and a note shorter than `badge + 4px` overflows vertically.
+- [#125](https://github.com/landfill/ClairKeys/issues/125) asks to re-divide the vertical budget so the practice
+  screen can show staff notation above the keyboard, the way the user's Simply Piano reference does.
+  `planPlaybackGeometry` currently splits height into falling area and keyboard only, with the keyboard target tied
+  to a real white key's 6.3 aspect (D-021/D-022/D-023); D-023's own table records 315px of the desktop's 682px
+  going to margin. The issue separates stage A (three-way layout, keyboard height re-based on legibility rather
+  than physical proportion) from stage B (notation rendering), and documents why stage B is blocked: canonical
+  JSON v1.1 keeps no measure boundaries, note values, rests, or enharmonic spelling, so accurate notation needs
+  MusicXML-derived data preserved in the contract first.
+- [#126](https://github.com/landfill/ClairKeys/issues/126) answers the user's question about how fingering is
+  actually assigned and records what running `addFingeringToNotes` shows. `phrase-dp-v1` produces the conventional
+  result only where `applyMajorScaleRuns` matches (exactly 8 notes, strictly ascending, CAGED tonics); everything
+  else falls to the DP, whose only state is the finger number. A right-hand descending C major octave returns
+  `5 4 3 2 1 1 1 1`, twelve descending notes return eight consecutive thumbs, F major ascending returns
+  `1 1 1 2 2 3 4 5`, and repeated notes always return one fixed finger. The structural cause is that
+  `transitionCost` penalises any finger move opposite to the pitch direction by 10 — which is exactly what a
+  thumb crossing is — while `fingerDelta = 0` escapes that penalty entirely, so repeating a finger is the cheapest
+  move once 5→1 is exhausted.
+- Layer analysis added as a comment on #126: the fingering gap is mostly neither the MusicXML nor the
+  visualization. `converter.py` already emits `finger`, `voice`, `staff`, `keySignature` and `timeSignature`, and
+  the canonical document keeps them, but `canonicalToFallingNotes` (`src/utils/dataConverter.ts:97`) passes only
+  `midi/start/duration/hand/finger/velocity` into `addFingeringToNotes`. That is why `applyMajorScaleRuns` is
+  hardcoded to CAGED tonics (no key signature to read) and why simultaneous voices in one hand collapse into a
+  chord. Proposed order: pass the existing context at the player boundary first (no re-conversion of stored JSON),
+  then the cost model, then a contract extension for measures/rests/slurs/note values — which is the same data
+  #125 stage B needs.
+- Issue bodies for #125 and #126 were rewritten to carry the layer analysis, plus two corrections the user
+  supplied or measurement settled.
+  - **Retention is policy, not an open question.** The user stated that not storing the original PDF was defined
+    early in the project to stay clear of copyright. The code implements it: `SheetMusic` has only
+    `animationDataUrl` (`prisma/schema.prisma:69`), the upload route forwards the PDF without storing it
+    (`fileStorageService.uploadSheetMusicFile` and the `sheet-music-files` bucket have no production caller), and
+    the OMR service deletes its work directory (`omr-service/app.py:372`). **This policy is not recorded anywhere
+    in `docs/recovery/DECISIONS.md`** — a grep finds only Footer `© 2024` items. Record it before #125 stage B or
+    #126 tier 3 acts on it. The workable shape is to bake measures, rests, note values and spelling into the
+    canonical JSON at conversion time — derived data of the same kind already stored — rather than retaining the
+    MusicXML, which is effectively a copy of the score; existing scores then need a user re-upload.
+  - **Playback-time inference is deliberate and cheap.** D-038 decision 5 and its Reason chose runtime enrichment
+    so stored documents are never overwritten; D-038 explicitly rejected bulk-rewriting stored JSON. It runs once
+    per load inside `useMemo(..., [animationData])` (`FallingNotesPlayer.tsx:51`), not per frame. Measured on this
+    Mac: 411 notes 1.1ms, 1000 2.3ms, 3000 4.5ms, 6000 6.3ms, 12000 15.4ms.
+  - Recorded in #126 as a complexity constraint for the fix: hand position must NOT become a separate DP state
+    dimension (5 states and 25 transitions per event would become 100 and 10,000). It is already implied by the
+    (finger, pitch) pair as `m - offset(f)`, so comparing implied anchors across events models hand motion at the
+    current state count.
+- **Source-artefact policy, as the user stated it on 2026-09-05.** The core rule is narrower than an earlier
+  entry here claimed: *the PDF is not stored because it carries the direct copyright exposure.* Artefacts from the
+  MusicXML onward are not forbidden — they may be retained where there is a need. And the user accepted the
+  consequence that follows from today's implementation: **existing scores will be re-registered rather than
+  backfilled.**
+- [#127](https://github.com/landfill/ClairKeys/issues/127) records that MusicXML is deleted immediately after
+  conversion — generated into `temp_dir` (`omr-service/app.py:342`), consumed by `converter.convert`, then removed
+  by `shutil.rmtree` (`app.py:372`, and `:386` on the failure path). It never leaves the VM: `GET /result/{job_id}`
+  returns `animation_data` only (`app.py:233`), `SheetMusic` has no column for it, and `src/` references musicxml
+  in one comment. With the re-registration decision made, retention's strongest motive is gone; what remains is
+  post-hoc diagnosis of recognition defects (#44 needs the MusicXML by definition) and a real corpus for converter
+  regressions. Retaining only failed jobs, briefly, is therefore the cheapest option that still buys something.
+  Note D-011 forbids giving the OMR service storage write credentials, so any retention must follow the
+  `animation_data` path: the app collects from `/result` and stores with the key it already holds.
+- #125 stage B and #126 tier 3 are now both premised on "new uploads onward; existing scores are re-registered",
+  and the fix in both is the same: bake measures, rests, note values and spelling into the canonical JSON at
+  conversion time. Neither depends on #127's outcome.
+- **All three are now recorded as D-040** in `docs/recovery/DECISIONS.md`: the PDF is the only forbidden artefact,
+  MusicXML onward is allowed where a need is shown, and existing scores are re-registered rather than backfilled.
+  The user instructed that this entry be committed directly to `main` without a PR; AGENTS.md still excludes new
+  DECISIONS entries from the direct-commit exception, so the deviation is one-off and is recorded inside D-040's
+  own Context. D-040 carries the directive that matters here: do not infer "retain nothing" from the code, because
+  a session in this repository already did exactly that and was wrong three times over.
+- No implementation branch or code change was started for any of these issues.
+
+
 ## Current issue #52 status (2026-09-04)
 
 - Current phase: [#52](https://github.com/landfill/ClairKeys/issues/52) OMR systemd restart reliability is implemented
