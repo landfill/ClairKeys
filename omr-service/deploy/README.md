@@ -70,6 +70,43 @@ systemctl enable --now clairkeys-omr
 for 3 GB and the VM has 15 GiB, but concurrency was pinned at 1 when the box was
 provisioned at 4 GB (PR #36) and nothing has re-measured it since.
 
+## Repeat deployment
+
+Use the already prepared `/opt/clairkeys-deploy` checkout for subsequent image
+updates; do not build from a checkout with uncommitted files. Replace `<commit>`
+with the exact commit being deployed.
+
+```bash
+git -C /opt/clairkeys-deploy fetch origin main
+test -z "$(git -C /opt/clairkeys-deploy status --porcelain)"
+git -C /opt/clairkeys-deploy checkout --detach <commit>
+cd /opt/clairkeys-deploy/omr-service
+podman build -f Dockerfile.audiveris \
+  -t "clairkeys-omr:<commit>" -t clairkeys-omr:current .
+expected_image=$(podman image inspect --format '{{.Id}}' "clairkeys-omr:<commit>")
+install -m 0644 deploy/clairkeys-omr.service /etc/systemd/system/clairkeys-omr.service
+systemctl daemon-reload
+systemctl restart clairkeys-omr
+test "$(systemctl is-active clairkeys-omr)" = active
+actual_image=$(podman inspect --format '{{.Image}}' clairkeys-omr-prod)
+test "$actual_image" = "$expected_image"
+```
+
+The `restart` command must exit 0. The final two checks must show an active
+service and a running container; compare the container image ID with the ID
+printed by `podman image inspect` to prove that the new image is running rather
+than an older container. If restart fails, stop and inspect the journal before
+retrying instead of relying on `Restart=always` to hide a transient failure:
+
+```bash
+journalctl -u clairkeys-omr --since "5 minutes ago" --no-pager
+systemctl status clairkeys-omr --no-pager
+```
+
+After a successful restart, repeat the external `/health` and unauthorized
+`/process` checks below. The unit removes a stale cidfile before each start, so
+the restart result is now a meaningful deployment signal.
+
 ## Confirming it actually works
 
 From **outside** the VM, which is the only vantage point that proves anything —
