@@ -102,7 +102,7 @@ Last updated: 2026-09-04 KST
 - No implementation branch or code change was started for any of these issues.
 
 
-## Current issue #52 status — PR #123's fix FALSIFIED on the VM (2026-09-05)
+## Current issue #52 status — root cause found and verified on the VM (2026-09-05)
 
 - The verification the 2026-09-04 entry listed as blocking has now been run against the production VM, and it
   **falsified the fix**. Do not close #52. Do not describe PR
@@ -125,11 +125,27 @@ Last updated: 2026-09-04 KST
 - **Production was restored** to the backed-up unit (`/root/clairkeys-omr.service.bak.20260905-011654`) and is
   identical to its pre-verification state: `active`, `ExecMainStatus=0`, image `12b9a021…`, external `GET /health`
   200, unauthenticated `POST /process` 401.
-- Next action: decide what PR #123 should become. Its regression test asserts the unit file's contents and passes,
-  but file contents are not restart behaviour — merging it as-is would record a fix that does not fix anything.
-  Either repoint it at the stop path or reduce its claim.
-- Evidence: `docs/recovery/validation/2026-09-05-pr123-vm-restart-falsified.md`,
-  `docs/recovery/reviews/PR-123.md`.
+- **The branch was then repointed and the real fix verified** (head `92f1dc4`). Reading the whole unit found the
+  actual mechanism: the cidfile has TWO owners. `--rm` makes podman's asynchronous cleanup delete it, and
+  `ExecStopPost=podman rm --cidfile` deletes it too; on a restart the late deletion takes the file the *next*
+  start has already written, which is why the error said "no such file" rather than "already exists", and why
+  deleting it earlier could never help. Removing `--rm` leaves ExecStopPost as the sole owner.
+- Measured on the VM with the same ten-restart harness: unmodified **2/10** failures, `ExecStartPre` alone
+  **1/10**, `--rm` removed **0/40** with the `status=125` count unchanged. Against a ~15% baseline, forty
+  consecutive successes is `0.85^40 ≈ 0.15%` — not chance. No container accumulation: `podman ps -a` held at one
+  throughout, since `--replace` covers name reuse and ExecStopPost does the removal.
+- `ExecStartPre` is kept deliberately. It does nothing for this race, but it is what `podman generate systemd
+  --new` emits and it does guard a cidfile that survives a hard kill or reboot. The regression test's docstrings
+  now say which line guards which failure.
+- The new regression `test_cidfile_has_exactly_one_owner` was confirmed to FAIL against the `--rm` unit and pass
+  without it; all 46 `omr-service` tests pass.
+- **Production is back on its baseline unit** — no unmerged configuration is left on the host. Deployment belongs
+  after the merge, via the deployment guide. Post-restore: `active`, `ExecMainStatus=0`, image `12b9a021…`,
+  health 200, unauthenticated 401.
+- Next action: confirm CI on `92f1dc4`, then wait for the user's explicit merge approval. After merging, deploy
+  the unit to the VM and re-run the ten-restart check against the deployed unit to close #52.
+- Evidence: `docs/recovery/validation/2026-09-05-pr123-vm-restart-falsified.md` (both the falsification and the
+  verified fix), `docs/recovery/reviews/PR-123.md`.
 
 ## Issue #124, #125, #126 registration (2026-09-04)
 
