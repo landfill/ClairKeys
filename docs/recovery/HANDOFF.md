@@ -2,6 +2,24 @@
 
 Last updated: 2026-09-04 KST
 
+## Current issue #52 status (2026-09-04)
+
+- Current phase: [#52](https://github.com/landfill/ClairKeys/issues/52) OMR systemd restart reliability is implemented
+  on `codex/issue-52-systemd-restart` and is in review via PR
+  [#123](https://github.com/landfill/ClairKeys/pull/123); head `d439173`.
+- The checked-in unit removes `%t/%n.ctr-id` immediately before Podman starts, and the deployment guide now defines
+  a repeat-deployment path that checks restart exit status, active state, and the running image ID.
+- Regression commit `24fdb91` observed the missing `ExecStartPre`; implementation `dd06c56` and whitespace cleanup
+  `d439173` make the focused test and all 45 OMR Python tests pass. `git diff --check` passes.
+- Next action: complete hosted CI and actionable review, then obtain production VM access and verify that installing the
+  unit makes `systemctl restart clairkeys-omr` exit 0 with no new status 125/cidfile race in the journal. Also repeat the
+  external health 200 and unauthenticated process 401 checks and confirm the running image ID.
+- Known blocker: this session had no confirmed production VM credentials/access, so no deployment or restart was attempted.
+  Do not close #52 or describe the runtime defect as fixed until that verification succeeds. Do not merge PR #123 without
+  the user's explicit approval.
+- Evidence: `docs/recovery/validation/2026-09-04-issue-52-systemd-restart.md` and
+  `docs/recovery/reviews/PR-123.md`.
+
 ## Current issue #120 status (2026-09-04)
 
 - Current phase: [#120](https://github.com/landfill/ClairKeys/issues/120) ordinary-score automatic fingering implementation
