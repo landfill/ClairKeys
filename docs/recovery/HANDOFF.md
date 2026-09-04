@@ -2,6 +2,26 @@
 
 Last updated: 2026-09-04 KST
 
+## Current issue #120 status (2026-09-04)
+
+- Current phase: [#120](https://github.com/landfill/ClairKeys/issues/120) ordinary-score automatic fingering is
+  implemented on `codex/issue-120-phrase-fingering`; head `e7989dd`, review-ready PR
+  [#122](https://github.com/landfill/ClairKeys/pull/122).
+- Corrected premise from the user: an unannotated treble/bass-staff score is the normal product input, not an exceptional
+  missing-data fallback. The implementation therefore treats hand-separated phrase inference as the primary path.
+- Local evidence: focused Jest 5 suites / 53 tests, full Jest 91 suites / 856 tests, typecheck, lint, build, and diff check
+  pass. A read-only run over the issue #120 production JSON produced 411/411 valid inferred values deterministically while
+  retaining 169 L and 242 R assignments.
+- Storage safety: canonical JSON is not rewritten. Player-bound values carry source/inferred provenance and algorithm
+  version `phrase-dp-v1`. The old random storage backfill API is an authenticated 410 tombstone; its UI entry and two
+  random scripts are removed.
+- Next action: wait for PR #122 hosted checks/review and use its preview to inspect sheet 28 on desktop and mobile
+  landscape. Address every actionable item, update `reviews/PR-122.md`, then await explicit merge approval.
+- Known blockers: professional pianist/teacher review cannot be automated. Preview visual verification is pending
+  deployment. Do not describe the heuristic as a unique correct fingering.
+- Evidence: `docs/recovery/validation/2026-09-04-issue-120-phrase-fingering.md`,
+  `docs/recovery/reviews/PR-122.md`, D-039 in `docs/recovery/DECISIONS.md` on the PR branch.
+
 ## Issue #120 and #121 registration (2026-09-04)
 
 - [#120](https://github.com/landfill/ClairKeys/issues/120) records the gap left by #103: a real 411-note
