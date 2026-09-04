@@ -26,6 +26,14 @@ Last updated: 2026-09-04 KST
   `transitionCost` penalises any finger move opposite to the pitch direction by 10 — which is exactly what a
   thumb crossing is — while `fingerDelta = 0` escapes that penalty entirely, so repeating a finger is the cheapest
   move once 5→1 is exhausted.
+- Layer analysis added as a comment on #126: the fingering gap is mostly neither the MusicXML nor the
+  visualization. `converter.py` already emits `finger`, `voice`, `staff`, `keySignature` and `timeSignature`, and
+  the canonical document keeps them, but `canonicalToFallingNotes` (`src/utils/dataConverter.ts:97`) passes only
+  `midi/start/duration/hand/finger/velocity` into `addFingeringToNotes`. That is why `applyMajorScaleRuns` is
+  hardcoded to CAGED tonics (no key signature to read) and why simultaneous voices in one hand collapse into a
+  chord. Proposed order: pass the existing context at the player boundary first (no re-conversion of stored JSON),
+  then the cost model, then a contract extension for measures/rests/slurs/note values — which is the same data
+  #125 stage B needs.
 - No implementation branch or code change was started for any of the three issues.
 
 ## Current issue #52 status (2026-09-04)
