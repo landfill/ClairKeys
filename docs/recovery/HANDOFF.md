@@ -34,6 +34,14 @@ Last updated: 2026-09-04 KST
   chord. Proposed order: pass the existing context at the player boundary first (no re-conversion of stored JSON),
   then the cost model, then a contract extension for measures/rests/slurs/note values — which is the same data
   #125 stage B needs.
+- Issue bodies for #125 and #126 were rewritten to carry the layer analysis, and a further constraint was found
+  while checking it: **no original artefact is retained.** `SheetMusic` has only `animationDataUrl` with no PDF or
+  MusicXML column (`prisma/schema.prisma:69`), the upload route forwards the PDF to the OMR service without
+  storing it (`fileStorageService.uploadSheetMusicFile` and the `sheet-music-files` bucket exist but have no
+  production caller), and the OMR service deletes its work directory with `shutil.rmtree` (`omr-service/app.py:372`).
+  So the fingering fix needs no new PDF/XML/JSON — inference runs at the player boundary and stored documents are
+  untouched — but any contract extension (measures, rests, slurs, note values) cannot be backfilled for existing
+  scores without a user re-upload. That single constraint is shared by #125 stage B and #126 tier 3.
 - No implementation branch or code change was started for any of the three issues.
 
 ## Current issue #52 status (2026-09-04)
