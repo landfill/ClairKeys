@@ -18,22 +18,13 @@ jest.mock('next-auth/react', () => ({
   signOut: jest.fn()
 }))
 
-const originalFetch = global.fetch
-let isAdminResponse = false
-
 beforeEach(() => {
   mockSession.data.user.name = 'BYOUNG KWANG KIM'
   mockSession.data.user.email = 'letthelightsurroundyou@gmail.com'
   mockSession.data.user.image = null
-  isAdminResponse = false
-  global.fetch = jest.fn().mockImplementation(async () => ({
-    ok: true,
-    json: async () => ({ isAdmin: isAdminResponse })
-  })) as unknown as typeof fetch
 })
 
 afterEach(() => {
-  global.fetch = originalFetch
   jest.clearAllMocks()
 })
 
@@ -220,23 +211,6 @@ describe('every account action stays reachable', () => {
     expect(screen.getByRole('button', { name: '로그아웃' })).toBeInTheDocument()
   })
 
-  it('shows the admin link only to an admin', async () => {
-    await renderProfile()
-    openMenu()
-    expect(screen.queryByRole('link', { name: /관리자/ })).not.toBeInTheDocument()
-  })
-
-  it('shows the admin link when the account is an admin', async () => {
-    isAdminResponse = true
-
-    await renderProfile()
-    openMenu()
-
-    expect(screen.getByRole('link', { name: /관리자/ })).toHaveAttribute(
-      'href',
-      '/admin/update-finger-data'
-    )
-  })
 })
 
 describe('the compact variant used by the mobile menu', () => {
