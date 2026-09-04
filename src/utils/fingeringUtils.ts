@@ -7,6 +7,8 @@
 
 import type { FallingNote, Hand, Finger } from '@/types/fallingNotes';
 
+export const FINGERING_ALGORITHM_VERSION = 'phrase-dp-v1';
+
 /**
  * MIDI note ranges for hand assignment
  */
@@ -146,57 +148,266 @@ export function isBlackKeyMidi(midi: number): boolean {
 export function addFingeringToNotes(notes: FallingNote[]): FallingNote[] {
   const enhancedNotes: FallingNote[] = [];
   let prevHand: Hand | undefined;
-  let prevFinger: Finger | undefined;
-  
+
   for (let i = 0; i < notes.length; i++) {
     const note = notes[i];
-    const isBlackKey = isBlackKeyMidi(note.midi);
-    
-    // Assign hand
     const hand = isValidHand(note.hand) ? note.hand : assignHand(note.midi, { prevHand });
-    
-    // Assign finger
-    const finger = isValidFinger(note.finger)
-      ? note.finger
-      : assignFinger(note.midi, hand, { prevFinger, isBlackKey });
-    
+
     enhancedNotes.push({
       ...note,
       hand,
-      finger
+      finger: isValidFinger(note.finger) ? note.finger : undefined,
     });
-    
     prevHand = hand;
-    prevFinger = finger;
   }
 
-  // Notes starting together form a chord. Assign the conventional chord
-  // pattern by ascending pitch, while retaining every explicit finger.
-  const chordGroups = new Map<string, number[]>();
-  enhancedNotes.forEach((note, index) => {
-    const key = `${note.start}:${note.hand}`;
-    const group = chordGroups.get(key) ?? [];
-    group.push(index);
-    chordGroups.set(key, group);
-  });
-
-  chordGroups.forEach(indices => {
-    if (indices.length < 2) return;
-    const sorted = [...indices].sort((a, b) => enhancedNotes[a].midi - enhancedNotes[b].midi);
-    const hand = enhancedNotes[sorted[0]].hand as Hand;
-    const chordFingers = getChordFingers(hand, sorted.length);
-    sorted.forEach((noteIndex, position) => {
-      if (!isValidFinger(notes[noteIndex].finger)) {
-        // More than five simultaneous notes exceed one hand's fingers; keep
-        // the fallback valid without claiming pedagogical optimality.
-        enhancedNotes[noteIndex].finger = chordFingers[Math.min(position, 4)] as Finger;
-      }
-    });
-  });
+  inferHandPhrases(enhancedNotes, notes);
 
   applyMajorScaleRuns(enhancedNotes, notes);
 
+  enhancedNotes.forEach((note, index) => {
+    if (isValidFinger(notes[index].finger)) {
+      note.fingerSource = 'source';
+      delete note.fingeringAlgorithm;
+    } else {
+      note.fingerSource = 'inferred';
+      note.fingeringAlgorithm = FINGERING_ALGORITHM_VERSION;
+    }
+  });
+
   return enhancedNotes;
+}
+
+interface FingeringEvent {
+  indices: number[];
+  start: number;
+  end: number;
+  lowMidi: number;
+  highMidi: number;
+}
+
+interface EventCandidate {
+  fingers: Finger[];
+  lowSpatial: number;
+  highSpatial: number;
+  centerSpatial: number;
+  cost: number;
+}
+
+function inferHandPhrases(enhanced: FallingNote[], original: FallingNote[]): void {
+  (['L', 'R'] as const).forEach(hand => {
+    const events = buildHandEvents(enhanced, hand);
+    splitPhrases(events).forEach(phrase => inferPhrase(phrase, hand, enhanced, original));
+  });
+}
+
+function buildHandEvents(notes: FallingNote[], hand: Hand): FingeringEvent[] {
+  const byStart = new Map<number, number[]>();
+  notes.forEach((note, index) => {
+    if (note.hand !== hand) return;
+    const indices = byStart.get(note.start) ?? [];
+    indices.push(index);
+    byStart.set(note.start, indices);
+  });
+
+  return [...byStart.entries()]
+    .sort(([startA], [startB]) => startA - startB)
+    .map(([start, indices]) => {
+      const sorted = indices.sort((a, b) => notes[a].midi - notes[b].midi || a - b);
+      return {
+        indices: sorted,
+        start,
+        end: Math.max(...sorted.map(index => start + notes[index].duration)),
+        lowMidi: notes[sorted[0]].midi,
+        highMidi: notes[sorted[sorted.length - 1]].midi,
+      };
+    });
+}
+
+function splitPhrases(events: FingeringEvent[]): FingeringEvent[][] {
+  const phrases: FingeringEvent[][] = [];
+  let current: FingeringEvent[] = [];
+
+  events.forEach(event => {
+    const previous = current[current.length - 1];
+    // Seconds are already baked into the canonical document. A two-second rest
+    // is deliberately conservative: it resets hand position only at an audible
+    // break, not between ordinary slow notes.
+    if (previous && event.start - previous.end >= 2) {
+      phrases.push(current);
+      current = [];
+    }
+    current.push(event);
+  });
+  if (current.length > 0) phrases.push(current);
+  return phrases;
+}
+
+function inferPhrase(
+  events: FingeringEvent[],
+  hand: Hand,
+  enhanced: FallingNote[],
+  original: FallingNote[],
+): void {
+  if (events.length === 0) return;
+  const candidates = events.map(event => eventCandidates(event, hand, enhanced, original));
+  const costs: number[][] = candidates.map(row => row.map(() => Number.POSITIVE_INFINITY));
+  const previousChoice: number[][] = candidates.map(row => row.map(() => -1));
+  const openingDirection = phraseDirection(events, 0);
+
+  candidates[0].forEach((candidate, index) => {
+    const idealOpening = openingDirection > 0 ? 1 : openingDirection < 0 ? 5 : 3;
+    costs[0][index] = candidate.cost + Math.abs(candidate.centerSpatial - idealOpening) * 2;
+  });
+
+  for (let eventIndex = 1; eventIndex < events.length; eventIndex += 1) {
+    candidates[eventIndex].forEach((candidate, candidateIndex) => {
+      candidates[eventIndex - 1].forEach((previous, priorIndex) => {
+        const total = costs[eventIndex - 1][priorIndex]
+          + candidate.cost
+          + transitionCost(events[eventIndex - 1], previous, events[eventIndex], candidate);
+        if (total < costs[eventIndex][candidateIndex]) {
+          costs[eventIndex][candidateIndex] = total;
+          previousChoice[eventIndex][candidateIndex] = priorIndex;
+        }
+      });
+    });
+  }
+
+  let choice = costs[costs.length - 1].reduce(
+    (best, cost, index, row) => cost < row[best] ? index : best,
+    0,
+  );
+  for (let eventIndex = events.length - 1; eventIndex >= 0; eventIndex -= 1) {
+    const event = events[eventIndex];
+    const candidate = candidates[eventIndex][choice];
+    event.indices.forEach((noteIndex, position) => {
+      if (!isValidFinger(original[noteIndex].finger)) {
+        enhanced[noteIndex].finger = candidate.fingers[position];
+      }
+    });
+    choice = previousChoice[eventIndex][choice];
+  }
+}
+
+function eventCandidates(
+  event: FingeringEvent,
+  hand: Hand,
+  notes: FallingNote[],
+  original: FallingNote[],
+): EventCandidate[] {
+  if (event.indices.length > 1) {
+    if (event.indices.length <= 5) {
+      const candidates = fingerCombinations(event.indices.length)
+        .map(spatial => spatial.map(value => hand === 'R' ? value as Finger : (6 - value) as Finger))
+        .filter(fingers => event.indices.every((noteIndex, position) =>
+          !isValidFinger(original[noteIndex].finger) || original[noteIndex].finger === fingers[position]
+        ))
+        .map(fingers => makeCandidate(fingers, event, hand, notes));
+      // Conflicting source annotations are still source truth. They may not be
+      // physically monotonic, but silently rewriting them would be worse.
+      if (candidates.length > 0) return candidates;
+    }
+
+    const conventional = getChordFingers(hand, event.indices.length);
+    const preserved = event.indices.map((noteIndex, position) =>
+      isValidFinger(original[noteIndex].finger)
+        ? original[noteIndex].finger as Finger
+        : conventional[Math.min(position, conventional.length - 1)],
+    );
+    return [makeCandidate(preserved, event, hand, notes)];
+  }
+
+  const noteIndex = event.indices[0];
+  const fixed = original[noteIndex].finger;
+  const fingers: Finger[] = isValidFinger(fixed) ? [fixed] : [1, 2, 3, 4, 5];
+  return fingers.map(finger => makeCandidate([finger], event, hand, notes));
+}
+
+function makeCandidate(
+  fingers: Finger[],
+  event: FingeringEvent,
+  hand: Hand,
+  notes: FallingNote[],
+): EventCandidate {
+  const spatial = fingers.map(finger => spatialFinger(finger, hand));
+  const blackThumbs = event.indices.reduce((count, noteIndex, position) =>
+    count + (isBlackKeyMidi(notes[noteIndex].midi) && fingers[position] === 1 ? 1 : 0), 0);
+  const pitchSpan = event.highMidi - event.lowMidi;
+  const fingerSpan = spatial[spatial.length - 1] - spatial[0];
+  const idealSpan = event.indices.length === 1
+    ? 0
+    : Math.min(4, Math.max(event.indices.length - 1, Math.round(pitchSpan / 2)));
+  const shapeCost = event.indices.length <= 1 || pitchSpan === 0
+    ? 0
+    : event.indices.reduce((cost, noteIndex, position) => {
+      const pitchPosition = (notes[noteIndex].midi - event.lowMidi) / pitchSpan;
+      const fingerPosition = fingerSpan === 0 ? 0 : (spatial[position] - spatial[0]) / fingerSpan;
+      return cost + Math.abs(pitchPosition - fingerPosition) * 4;
+    }, 0);
+  return {
+    fingers,
+    lowSpatial: spatial[0],
+    highSpatial: spatial[spatial.length - 1],
+    centerSpatial: spatial.reduce((sum, value) => sum + value, 0) / spatial.length,
+    cost: blackThumbs * 12 + Math.abs(fingerSpan - idealSpan) * 3 + shapeCost,
+  };
+}
+
+function fingerCombinations(count: number): number[][] {
+  const combinations: number[][] = [];
+  const visit = (next: number, chosen: number[]) => {
+    if (chosen.length === count) {
+      combinations.push(chosen);
+      return;
+    }
+    for (let value = next; value <= 5; value += 1) {
+      visit(value + 1, [...chosen, value]);
+    }
+  };
+  visit(1, []);
+  return combinations;
+}
+
+function transitionCost(
+  previousEvent: FingeringEvent,
+  previous: EventCandidate,
+  event: FingeringEvent,
+  candidate: EventCandidate,
+): number {
+  const previousMidi = (previousEvent.lowMidi + previousEvent.highMidi) / 2;
+  const midi = (event.lowMidi + event.highMidi) / 2;
+  const pitchDelta = midi - previousMidi;
+  const fingerDelta = candidate.centerSpatial - previous.centerSpatial;
+
+  if (pitchDelta === 0) return Math.abs(fingerDelta) * 10;
+
+  const distance = Math.abs(pitchDelta);
+  const direction = Math.sign(pitchDelta);
+  const idealSteps = distance <= 2
+    ? 1
+    : distance <= 5
+      ? Math.min(3, Math.round(distance / 2))
+      : Math.min(4, Math.round(distance / 3));
+  const mismatch = Math.abs(fingerDelta - direction * idealSteps);
+  const directionPenalty = fingerDelta !== 0 && Math.sign(fingerDelta) !== direction ? 10 : 0;
+  // Large leaps normally move the whole hand, so exact finger-distance matching
+  // matters less than keeping the direction physically coherent.
+  const distanceWeight = distance > 7 ? 1 : 5;
+  return mismatch * distanceWeight + directionPenalty;
+}
+
+function phraseDirection(events: FingeringEvent[], start: number): number {
+  const origin = (events[start].lowMidi + events[start].highMidi) / 2;
+  for (let index = start + 1; index < events.length; index += 1) {
+    const next = (events[index].lowMidi + events[index].highMidi) / 2;
+    if (next !== origin) return Math.sign(next - origin);
+  }
+  return 0;
+}
+
+function spatialFinger(finger: Finger, hand: Hand): number {
+  return hand === 'R' ? finger : 6 - finger;
 }
 
 function isValidHand(hand: FallingNote['hand']): hand is Hand {

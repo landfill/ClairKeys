@@ -7,7 +7,8 @@ import {
   assignFinger, 
   isBlackKeyMidi, 
   addFingeringToNotes,
-  generateSampleNotesWithFingering 
+  generateSampleNotesWithFingering,
+  FINGERING_ALGORITHM_VERSION,
 } from '../fingeringUtils';
 import type { FallingNote } from '@/types/fallingNotes';
 
@@ -282,6 +283,7 @@ describe('fingeringUtils', () => {
         { finger: 2, source: 'source' },
         { finger: 3, source: 'inferred' },
       ]);
+      expect(addFingeringToNotes(notes)[1].fingeringAlgorithm).toBe(FINGERING_ALGORITHM_VERSION);
     });
 
     it('keeps repeated notes on one finger inside a phrase', () => {
@@ -306,6 +308,37 @@ describe('fingeringUtils', () => {
       const enhanced = addFingeringToNotes(notes);
       expect(enhanced.filter(note => note.hand === 'L').map(note => note.finger)).toEqual([5, 4, 3, 2, 1]);
       expect(enhanced.filter(note => note.hand === 'R').map(note => note.finger)).toEqual([1, 2, 3, 4, 5]);
+    });
+
+    it('chooses compact non-thumb fingers for adjacent black-key dyads', () => {
+      const repeatedDyads: FallingNote[] = [0, 0.5, 1].flatMap(start => [
+        { midi: 66, start, duration: 0.5, hand: 'R' as const },
+        { midi: 68, start, duration: 0.5, hand: 'R' as const },
+      ]);
+
+      expect(addFingeringToNotes(repeatedDyads).map(note => note.finger)).toEqual([2, 3, 2, 3, 2, 3]);
+    });
+
+    it('handles the production score opening as a deterministic hand phrase', () => {
+      // An identifying-metadata-free excerpt from the 411-note issue #120 JSON:
+      // bass hand movement interleaved with repeated RH black-key dyads.
+      const excerpt: FallingNote[] = [
+        { midi: 40, start: 0, duration: 2, hand: 'L' },
+        { midi: 66, start: 0.5, duration: 0.5, hand: 'R' },
+        { midi: 68, start: 0.5, duration: 0.5, hand: 'R' },
+        { midi: 66, start: 1, duration: 0.5, hand: 'R' },
+        { midi: 68, start: 1, duration: 0.5, hand: 'R' },
+        { midi: 47, start: 2, duration: 1, hand: 'L' },
+        { midi: 56, start: 3, duration: 1, hand: 'L' },
+        { midi: 40, start: 4, duration: 2, hand: 'L' },
+      ];
+
+      const first = addFingeringToNotes(excerpt);
+      expect(first).toEqual(addFingeringToNotes(excerpt));
+      expect(first.every(note => note.fingerSource === 'inferred')).toBe(true);
+      expect(first.every(note => note.fingeringAlgorithm === FINGERING_ALGORITHM_VERSION)).toBe(true);
+      expect(first.filter(note => note.hand === 'R').map(note => note.finger)).toEqual([2, 3, 2, 3]);
+      expect(first.filter(note => note.hand === 'L').map(note => note.finger)).toEqual([5, 3, 2, 5]);
     });
 
     it('should not apply the CAGED crossing pattern to F-major right hand', () => {

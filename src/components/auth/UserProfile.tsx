@@ -25,20 +25,7 @@ export default function UserProfile({
 }: UserProfileProps) {
   const { data: session, status } = useSession()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
-
-  // Check admin status when user is logged in
-  useEffect(() => {
-    if (session?.user?.email) {
-      fetch('/api/auth/is-admin')
-        .then(res => res.json())
-        .then(data => setIsAdmin(data.isAdmin))
-        .catch(() => setIsAdmin(false))
-    } else {
-      setIsAdmin(false)
-    }
-  }, [session])
 
   // The backdrop closes the menu on a click, but a keyboard user has no way to
   // reach it. Escape also has to hand focus back: if it closes while focus is
@@ -197,16 +184,6 @@ export default function UserProfile({
                 {link.label}
               </Link>
             ))}
-
-            {isAdmin && (
-              <Link
-                href="/admin/update-finger-data"
-                className="block px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-surface-muted"
-                onClick={() => setIsDropdownOpen(false)}
-              >
-                관리자 도구
-              </Link>
-            )}
 
             <div className="mt-1 border-t border-rule pt-1">
               <LogoutButton

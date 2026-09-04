@@ -21,6 +21,9 @@ export type Hand = "L" | "R";
  */
 export type Finger = 1 | 2 | 3 | 4 | 5;
 
+/** Whether a player-bound finger came from the score or ClairKeys inference. */
+export type FingerSource = "source" | "inferred";
+
 /**
  * Represents a musical note for falling notes visualization
  */
@@ -35,6 +38,10 @@ export type FallingNote = {
   hand?: Hand;
   /** Finger number (1-5: thumb to pinky) */
   finger?: Finger;
+  /** Provenance exists only at the player boundary; canonical score data stays untouched. */
+  fingerSource?: FingerSource;
+  /** Version of the deterministic inference, present only when fingerSource is inferred. */
+  fingeringAlgorithm?: string;
   /** Note velocity (0-1) */
   velocity?: number;
 };
