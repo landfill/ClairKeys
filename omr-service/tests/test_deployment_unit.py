@@ -16,4 +16,3 @@ class DeploymentUnitTests(unittest.TestCase):
 
         self.assertIn(cleanup, lines)
         self.assertLess(lines.index(cleanup), run_index)
-
