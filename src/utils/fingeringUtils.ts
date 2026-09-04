@@ -7,7 +7,7 @@
 
 import type { FallingNote, Hand, Finger } from '@/types/fallingNotes';
 
-export const FINGERING_ALGORITHM_VERSION = 'phrase-dp-v1';
+export const FINGERING_ALGORITHM_VERSION = 'phrase-dp-v2';
 
 /**
  * MIDI note ranges for hand assignment
@@ -163,8 +163,6 @@ export function addFingeringToNotes(notes: FallingNote[]): FallingNote[] {
 
   inferHandPhrases(enhancedNotes, notes);
 
-  applyMajorScaleRuns(enhancedNotes, notes);
-
   enhancedNotes.forEach((note, index) => {
     if (isValidFinger(notes[index].finger)) {
       note.fingerSource = 'source';
@@ -184,6 +182,8 @@ interface FingeringEvent {
   end: number;
   lowMidi: number;
   highMidi: number;
+  /** Sounding pitches, ascending. A re-strike is an identical set, not an equal centre. */
+  midis: number[];
 }
 
 interface EventCandidate {
@@ -191,8 +191,85 @@ interface EventCandidate {
   lowSpatial: number;
   highSpatial: number;
   centerSpatial: number;
+  /**
+   * Where this fingering implies the hand is sitting, as a MIDI number.
+   * A finger that plays a pitch pins the hand: comparing implied anchors across
+   * events models hand travel without adding a DP state dimension, which would
+   * take transitions from 25 to 10,000 per single-note event. (25 is the
+   * single-note figure the issue measured; a chord event has `C(5,k)`
+   * candidates, so chord-to-chord transitions already reach 100.)
+   */
+  anchor: number;
   cost: number;
 }
+
+/**
+ * Semitones from the low edge of a natural hand position to each spatial finger
+ * — the C-D-E-F-G five-finger shape. `spatialFinger` has already mirrored the
+ * left hand, so one table serves both.
+ */
+const NATURAL_SPAN = [0, 2, 4, 5, 7] as const;
+
+/** Semitones the hand absorbs by leaning rather than by travelling. */
+const HAND_GIVE = 1;
+
+/** Cost per semitone the hand actually travels. */
+const HAND_TRAVEL = 2;
+
+/**
+ * Travelling means lifting off the key that is still sounding. A thumb crossing
+ * is the one device that moves the hand without lifting, so it has to be priced
+ * against this rather than forbidden.
+ */
+const LEGATO_BREAK = 9;
+
+/** Below this spacing a break is audible; above it the hand has time to move. */
+const LEGATO_WINDOW_SEC = 0.5;
+
+/** Base cost of passing the thumb under the hand, or a finger over the thumb. */
+const CROSSING_BASE = 6;
+
+/**
+ * Added per semitone the hand travels during a crossing. Weighted below
+ * `HAND_TRAVEL` because travelling is what a crossing is for: the tuck is the
+ * motion, so charging it the full lifted-hand rate would double-count it.
+ */
+const CROSSING_TRAVEL_WEIGHT = 0.5;
+
+/** Crossing to or from the index finger is cramped next to 3 or 4. */
+const CROSSING_INDEX_SURCHARGE = 3;
+
+/** The thumb is the short finger: crossing it onto a black key reaches past it. */
+const CROSSING_BLACK_THUMB = 8;
+
+/** A crossing is a stepwise device. Wider than these and the hand simply leaps. */
+const CROSSING_MAX_INTERVAL = 5;
+const CROSSING_MAX_TRAVEL = 7;
+
+/** Repeats closer together than this cannot be re-struck by one finger. */
+const FAST_REPEAT_SEC = 0.25;
+
+/** Holding one finger through a fast repeat. */
+const REPEAT_SAME_FAST = 9;
+
+/** Walking back out to restart a fast repeated-note group. */
+const REPEAT_RESET = 4;
+
+/**
+ * Extra cost of using each finger on a fast repeat, indexed by finger - 1.
+ * Repeated-note groups are played with the agile fingers; the ring and little
+ * fingers neither rise nor fall quickly enough to take their turn.
+ */
+const FAST_REPEAT_FINGER_COST = [0, 0, 0, 3, 6] as const;
+
+/** Changing finger on a repeat the hand had time to re-strike. */
+const REPEAT_IDLE_CHANGE = 10;
+
+/** The thumb is too short to sit comfortably on a raised key. */
+const BLACK_THUMB = 12;
+
+/** The pinky is short and weak; a black key asks it to reach and stay curled. */
+const BLACK_PINKY = 5;
 
 function inferHandPhrases(enhanced: FallingNote[], original: FallingNote[]): void {
   (['L', 'R'] as const).forEach(hand => {
@@ -220,6 +297,7 @@ function buildHandEvents(notes: FallingNote[], hand: Hand): FingeringEvent[] {
         end: Math.max(...sorted.map(index => start + notes[index].duration)),
         lowMidi: notes[sorted[0]].midi,
         highMidi: notes[sorted[sorted.length - 1]].midi,
+        midis: sorted.map(index => notes[index].midi),
       };
     });
 }
@@ -334,8 +412,17 @@ function makeCandidate(
   notes: FallingNote[],
 ): EventCandidate {
   const spatial = fingers.map(finger => spatialFinger(finger, hand));
-  const blackThumbs = event.indices.reduce((count, noteIndex, position) =>
-    count + (isBlackKeyMidi(notes[noteIndex].midi) && fingers[position] === 1 ? 1 : 0), 0);
+  // The old model priced only the thumb. The pinky is the other finger whose
+  // length and strength argue against a raised key, and leaving it unpriced is
+  // why a descending black-key line could park 5 on C#.
+  const blackKeyCost = event.indices.reduce((cost, noteIndex, position) => {
+    if (!isBlackKeyMidi(notes[noteIndex].midi)) return cost;
+    if (fingers[position] === 1) return cost + BLACK_THUMB;
+    if (fingers[position] === 5) return cost + BLACK_PINKY;
+    return cost;
+  }, 0);
+  const anchor = event.indices.reduce((sum, noteIndex, position) =>
+    sum + notes[noteIndex].midi - NATURAL_SPAN[spatial[position] - 1], 0) / event.indices.length;
   const pitchSpan = event.highMidi - event.lowMidi;
   const fingerSpan = spatial[spatial.length - 1] - spatial[0];
   const idealSpan = event.indices.length === 1
@@ -353,7 +440,8 @@ function makeCandidate(
     lowSpatial: spatial[0],
     highSpatial: spatial[spatial.length - 1],
     centerSpatial: spatial.reduce((sum, value) => sum + value, 0) / spatial.length,
-    cost: blackThumbs * 12 + Math.abs(fingerSpan - idealSpan) * 3 + shapeCost,
+    anchor,
+    cost: blackKeyCost + Math.abs(fingerSpan - idealSpan) * 3 + shapeCost,
   };
 }
 
@@ -378,26 +466,89 @@ function transitionCost(
   event: FingeringEvent,
   candidate: EventCandidate,
 ): number {
-  const previousMidi = (previousEvent.lowMidi + previousEvent.highMidi) / 2;
-  const midi = (event.lowMidi + event.highMidi) / 2;
-  const pitchDelta = midi - previousMidi;
+  const gap = Math.max(event.start - previousEvent.start, 0);
+
+  // An identical pitch set is a re-strike, not a move. Comparing the sets rather
+  // than the event centre keeps two different chords that share a centre from
+  // being treated as one repeated note.
+  if (samePitchSet(previousEvent, event)) return repeatCost(previous, candidate, gap);
+
+  const travel = Math.max(0, Math.abs(candidate.anchor - previous.anchor) - HAND_GIVE);
+  const sameFinger = previous.fingers.length === candidate.fingers.length
+    && previous.fingers.every((finger, position) => finger === candidate.fingers[position]);
+
+  // Re-using a finger on a different pitch needs a lift however short the move.
+  // This is the line the old model was missing: a zero finger delta escaped every
+  // penalty, so repeating the thumb was the cheapest way to carry on descending
+  // once 5->1 had been spent.
+  if (sameFinger) return travel * HAND_TRAVEL + legatoBreakCost(gap);
+
+  if (travel === 0) return 0;
+
+  return crossingCost(previousEvent, previous, event, candidate, travel)
+    ?? travel * HAND_TRAVEL + legatoBreakCost(gap);
+}
+
+function samePitchSet(previousEvent: FingeringEvent, event: FingeringEvent): boolean {
+  return previousEvent.midis.length === event.midis.length
+    && previousEvent.midis.every((midi, index) => midi === event.midis[index]);
+}
+
+function legatoBreakCost(gap: number): number {
+  return LEGATO_BREAK * Math.min(1, LEGATO_WINDOW_SEC / Math.max(gap, 0.01));
+}
+
+function repeatCost(previous: EventCandidate, candidate: EventCandidate, gap: number): number {
+  const spatialDelta = candidate.centerSpatial - previous.centerSpatial;
+  const single = previous.fingers.length === 1 && candidate.fingers.length === 1;
+
+  // Given time, a player re-strikes with the same finger and the hand stays put.
+  if (gap >= FAST_REPEAT_SEC || !single) return Math.abs(spatialDelta) * REPEAT_IDLE_CHANGE;
+
+  // Faster than that, one finger cannot rise and fall in time; the conventional
+  // answer walks inward toward the thumb (3-2-1) in either hand, which is a step
+  // of -1 in finger numbers, and then resets outward.
+  const agility = FAST_REPEAT_FINGER_COST[candidate.fingers[0] - 1];
+  const fingerStep = candidate.fingers[0] - previous.fingers[0];
+  if (fingerStep === 0) return REPEAT_SAME_FAST + agility;
+  return (fingerStep === -1 ? 0 : REPEAT_RESET) + agility;
+}
+
+/**
+ * Cost of a thumb crossing, or `null` when the move is not one.
+ *
+ * A crossing is precisely a finger move against the pitch direction, which is
+ * what the old `directionPenalty` charged a flat 10 for — so the conventional
+ * answer for every descending scale was also the model's most expensive one.
+ */
+function crossingCost(
+  previousEvent: FingeringEvent,
+  previous: EventCandidate,
+  event: FingeringEvent,
+  candidate: EventCandidate,
+  travel: number,
+): number | null {
+  // Crossing is a single-line device; a chord repositions the whole hand.
+  if (previousEvent.indices.length !== 1 || event.indices.length !== 1) return null;
+
+  const pitchDelta = event.midis[0] - previousEvent.midis[0];
+  if (Math.abs(pitchDelta) > CROSSING_MAX_INTERVAL || travel > CROSSING_MAX_TRAVEL) return null;
+
   const fingerDelta = candidate.centerSpatial - previous.centerSpatial;
+  if (Math.sign(fingerDelta) === Math.sign(pitchDelta)) return null;
 
-  if (pitchDelta === 0) return Math.abs(fingerDelta) * 10;
+  // One end must be the thumb: it is what passes under, and what the others pass
+  // over. The pinky neither crosses nor is crossed.
+  const from = previous.fingers[0];
+  const to = candidate.fingers[0];
+  const other = from === 1 ? to : to === 1 ? from : 0;
+  if (other === 0 || other === 5) return null;
 
-  const distance = Math.abs(pitchDelta);
-  const direction = Math.sign(pitchDelta);
-  const idealSteps = distance <= 2
-    ? 1
-    : distance <= 5
-      ? Math.min(3, Math.round(distance / 2))
-      : Math.min(4, Math.round(distance / 3));
-  const mismatch = Math.abs(fingerDelta - direction * idealSteps);
-  const directionPenalty = fingerDelta !== 0 && Math.sign(fingerDelta) !== direction ? 10 : 0;
-  // Large leaps normally move the whole hand, so exact finger-distance matching
-  // matters less than keeping the direction physically coherent.
-  const distanceWeight = distance > 7 ? 1 : 5;
-  return mismatch * distanceWeight + directionPenalty;
+  const thumbMidi = from === 1 ? previousEvent.midis[0] : event.midis[0];
+  return CROSSING_BASE
+    + travel * CROSSING_TRAVEL_WEIGHT
+    + (other === 2 ? CROSSING_INDEX_SURCHARGE : 0)
+    + (isBlackKeyMidi(thumbMidi) ? CROSSING_BLACK_THUMB : 0);
 }
 
 function phraseDirection(events: FingeringEvent[], start: number): number {
@@ -430,42 +581,6 @@ function getChordFingers(hand: Hand, noteCount: number): Finger[] {
   ];
   const patterns = hand === 'R' ? right : left;
   return patterns[Math.min(noteCount, 5) - 1] ?? patterns[4];
-}
-
-function applyMajorScaleRuns(enhancedNotes: FallingNote[], originalNotes: FallingNote[]): void {
-  const intervals = [2, 2, 1, 2, 2, 2, 1];
-  // Baylor's shared pattern applies to the CAGED major keys. F major RH and
-  // B major LH need different thumb crossings, so do not infer them here.
-  const cagedTonics = new Set([0, 2, 4, 7, 9]);
-  const rightFingers: Finger[] = [1, 2, 3, 1, 2, 3, 4, 5];
-  const leftFingers: Finger[] = [5, 4, 3, 2, 1, 3, 2, 1];
-
-  const indicesByHand: Record<Hand, number[]> = { L: [], R: [] };
-  enhancedNotes.forEach((note, index) => indicesByHand[note.hand as Hand].push(index));
-
-  (['L', 'R'] as const).forEach(hand => {
-    const handIndices = indicesByHand[hand].sort((a, b) =>
-      enhancedNotes[a].start - enhancedNotes[b].start || a - b
-    );
-    for (let start = 0; start <= handIndices.length - 8; start += 1) {
-      const runIndices = handIndices.slice(start, start + 8);
-      const run = runIndices.map(index => enhancedNotes[index]);
-      if (!cagedTonics.has(positiveModulo(run[0].midi, 12))) continue;
-
-      const isScale = run.every((note, index) => {
-        if (index === 0) return true;
-        return note.start > run[index - 1].start && note.midi - run[index - 1].midi === intervals[index - 1];
-      });
-      if (!isScale) continue;
-
-      const fingers = hand === 'R' ? rightFingers : leftFingers;
-      runIndices.forEach((noteIndex, index) => {
-        if (!isValidFinger(originalNotes[noteIndex].finger)) {
-          enhancedNotes[noteIndex].finger = fingers[index];
-        }
-      });
-    }
-  });
 }
 
 /**
