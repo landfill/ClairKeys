@@ -52,8 +52,14 @@ Last updated: 2026-09-05 KST
   untouched`. GitHub's auto-close parser reads `close #126` and ignores everything before it. The close event
   records `commit_id 39f561cf...` and the commit author as actor, and `closedByPullRequestsReferences` is
   empty, so this was the commit and not PR linkage. Reopened with `gh issue reopen 126`.
-  **Never write `close`/`closes`/`fixes`/`resolves` next to a `#number` in a commit pushed to `main`, not even
-  in a negation.** Say "issue #126 stays open" instead.
+  **It then happened a second time**: the very commit written to record the first one quoted the offending
+  line, and the issue closed again. The parser does not care that the text is a quotation or a negation — the
+  string is enough. The same quotation went into PR #129's body, where an auto-close keyword would have closed
+  the issue *on merge*; it was removed.
+  **Rule: never put `close`/`closes`/`fixes`/`resolves` before a `#number` in a commit message or a PR body,
+  quotations and negations included.** Write "issue #126 stays open" instead. Repository *file* contents are
+  not parsed, so the validation record may quote the line safely. Check before pushing with
+  `git log -1 --format=%B | grep -inE '(clos(e|es|ed)|fix(es|ed)?|resolv(e|es|ed))[[:space:]:]*#[0-9]+'`.
 - An independent Codex worker reviewed PR #129 through Orca orchestration, **sharing this worktree, read-only**
   (run `run_9eba0e2f17e4`, dispatch `ctx_84ac42063753`). It reported six items. **Every one was reproduced in
   this session against the branch source before being accepted; none were rejected.** Fixed in `57bf74e`.

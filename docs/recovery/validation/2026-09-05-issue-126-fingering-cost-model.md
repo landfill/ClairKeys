@@ -214,6 +214,19 @@ GitHub의 auto-close 파서는 앞말을 해석하지 않고 `close #<번호>` �
 `39f561cf...`로, actor를 커밋 author(`landfill`)로 기록하고 있고, `closedByPullRequestsReferences`는 빈
 배열이라 PR 연동이 아님이 확인된다. `gh issue reopen 126`으로 되돌렸다.
 
-**후속 세션 주의: `main`에 직접 푸시하는 핸드오프 커밋의 본문·trailer에 `close`/`closes`/`fixes`/
-`resolves` + `#번호` 조합을 쓰지 않는다.** 부정문이어도 닫힌다. 이슈를 닫지 않겠다는 뜻은
-"issue #126 stays open" 처럼 동사를 피해서 쓴다.
+### 같은 사고가 두 번 났다
+
+첫 번째를 기록하려던 다음 `main` 커밋(`1b927de`)이 문제의 줄을 **따옴표로 인용**했고, 이슈가 다시 닫혔다.
+파서는 인용부호도 부정문도 구분하지 않는다 — 문자열이 존재하면 걸린다. 다시 재오픈했다.
+
+같은 인용을 PR #129 본문에도 넣었는데, PR 본문의 auto-close 키워드는 **병합 시점에** 이슈를 닫는다.
+발견 즉시 본문에서 제거했다.
+
+### 규칙
+
+- **커밋 메시지와 PR 본문**에는 `close`/`closes`/`closed`/`fix`/`fixes`/`fixed`/`resolve`/`resolves`/
+  `resolved` 를 `#번호` 앞에 두지 않는다. **부정문도, 인용도 예외가 아니다.**
+- 이슈를 닫지 않겠다는 뜻은 동사를 피해 쓴다 — 예: `issue #126 stays open`, `#126 remains for tier 1`.
+- **저장소 파일 내용은 파싱되지 않는다.** 이 문서가 문제의 문장을 코드블록으로 담고 있어도 안전하다.
+  위험한 것은 커밋 메시지와 PR·이슈 본문뿐이다.
+- 푸시 전 확인: `git log -1 --format=%B | grep -inE '(clos(e|es|ed)|fix(es|ed)?|resolv(e|es|ed))[[:space:]:]*#[0-9]+'`
