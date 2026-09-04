@@ -254,6 +254,60 @@ describe('fingeringUtils', () => {
       expect(addFingeringToNotes(notes).map(note => note.finger)).toEqual([5, 4, 3, 2, 1, 3, 2, 1]);
     });
 
+    it('uses mirrored five-finger positions for short ascending phrases', () => {
+      const pitches = [60, 62, 64, 65, 67];
+      const right = pitches.map((midi, start) => ({ midi, start, duration: 0.5, hand: 'R' as const }));
+      const left = pitches.map((midi, start) => ({ midi: midi - 12, start, duration: 0.5, hand: 'L' as const }));
+
+      expect(addFingeringToNotes(right).map(note => note.finger)).toEqual([1, 2, 3, 4, 5]);
+      expect(addFingeringToNotes(left).map(note => note.finger)).toEqual([5, 4, 3, 2, 1]);
+    });
+
+    it('uses mirrored five-finger positions for short descending phrases', () => {
+      const pitches = [67, 65, 64, 62, 60];
+      const right = pitches.map((midi, start) => ({ midi, start, duration: 0.5, hand: 'R' as const }));
+      const left = pitches.map((midi, start) => ({ midi: midi - 12, start, duration: 0.5, hand: 'L' as const }));
+
+      expect(addFingeringToNotes(right).map(note => note.finger)).toEqual([5, 4, 3, 2, 1]);
+      expect(addFingeringToNotes(left).map(note => note.finger)).toEqual([1, 2, 3, 4, 5]);
+    });
+
+    it('marks preserved and inferred fingers with distinct provenance', () => {
+      const notes: FallingNote[] = [
+        { midi: 60, start: 0, duration: 0.5, hand: 'R', finger: 2 },
+        { midi: 62, start: 0.5, duration: 0.5, hand: 'R' },
+      ];
+
+      expect(addFingeringToNotes(notes).map(note => ({ finger: note.finger, source: note.fingerSource }))).toEqual([
+        { finger: 2, source: 'source' },
+        { finger: 3, source: 'inferred' },
+      ]);
+    });
+
+    it('keeps repeated notes on one finger inside a phrase', () => {
+      const notes: FallingNote[] = [0, 0.5, 1].map(start => ({
+        midi: 66,
+        start,
+        duration: 0.5,
+        hand: 'R',
+      }));
+
+      const fingers = addFingeringToNotes(notes).map(note => note.finger);
+      expect(new Set(fingers).size).toBe(1);
+      expect(fingers[0]).not.toBe(1);
+    });
+
+    it('uses phrase context independently for two interleaved hands', () => {
+      const notes: FallingNote[] = [0, 1, 2, 3, 4].flatMap(start => [
+        { midi: 48 + [0, 2, 4, 5, 7][start], start, duration: 0.5, hand: 'L' as const },
+        { midi: 60 + [0, 2, 4, 5, 7][start], start, duration: 0.5, hand: 'R' as const },
+      ]);
+
+      const enhanced = addFingeringToNotes(notes);
+      expect(enhanced.filter(note => note.hand === 'L').map(note => note.finger)).toEqual([5, 4, 3, 2, 1]);
+      expect(enhanced.filter(note => note.hand === 'R').map(note => note.finger)).toEqual([1, 2, 3, 4, 5]);
+    });
+
     it('should not apply the CAGED crossing pattern to F-major right hand', () => {
       const midi = [65, 67, 69, 70, 72, 74, 76, 77];
       const notes: FallingNote[] = midi.map((pitch, index) => ({
