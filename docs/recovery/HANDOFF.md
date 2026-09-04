@@ -2,6 +2,32 @@
 
 Last updated: 2026-09-04 KST
 
+## Issue #124, #125, #126 registration (2026-09-04)
+
+- [#124](https://github.com/landfill/ClairKeys/issues/124) records a measured geometry defect in the falling-note
+  finger badge: `getFingerBadgePosition` clamps the badge to a 14px floor while a black-key note is only
+  `whiteKeyWidth × 0.437` wide, so at the 24px base density the badge is 14.00px over a 10.49px note and overflows
+  onto neighbouring white-key notes (black-key notes render at `z-index` 30 against 20). The 12px font floor
+  likewise binds on black keys only, and a note shorter than `badge + 4px` overflows vertically.
+- [#125](https://github.com/landfill/ClairKeys/issues/125) asks to re-divide the vertical budget so the practice
+  screen can show staff notation above the keyboard, the way the user's Simply Piano reference does.
+  `planPlaybackGeometry` currently splits height into falling area and keyboard only, with the keyboard target tied
+  to a real white key's 6.3 aspect (D-021/D-022/D-023); D-023's own table records 315px of the desktop's 682px
+  going to margin. The issue separates stage A (three-way layout, keyboard height re-based on legibility rather
+  than physical proportion) from stage B (notation rendering), and documents why stage B is blocked: canonical
+  JSON v1.1 keeps no measure boundaries, note values, rests, or enharmonic spelling, so accurate notation needs
+  MusicXML-derived data preserved in the contract first.
+- [#126](https://github.com/landfill/ClairKeys/issues/126) answers the user's question about how fingering is
+  actually assigned and records what running `addFingeringToNotes` shows. `phrase-dp-v1` produces the conventional
+  result only where `applyMajorScaleRuns` matches (exactly 8 notes, strictly ascending, CAGED tonics); everything
+  else falls to the DP, whose only state is the finger number. A right-hand descending C major octave returns
+  `5 4 3 2 1 1 1 1`, twelve descending notes return eight consecutive thumbs, F major ascending returns
+  `1 1 1 2 2 3 4 5`, and repeated notes always return one fixed finger. The structural cause is that
+  `transitionCost` penalises any finger move opposite to the pitch direction by 10 — which is exactly what a
+  thumb crossing is — while `fingerDelta = 0` escapes that penalty entirely, so repeating a finger is the cheapest
+  move once 5→1 is exhausted.
+- No implementation branch or code change was started for any of the three issues.
+
 ## Current issue #52 status (2026-09-04)
 
 - Current phase: [#52](https://github.com/landfill/ClairKeys/issues/52) OMR systemd restart reliability is implemented
