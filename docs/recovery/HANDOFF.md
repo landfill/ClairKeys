@@ -34,14 +34,25 @@ Last updated: 2026-09-04 KST
   chord. Proposed order: pass the existing context at the player boundary first (no re-conversion of stored JSON),
   then the cost model, then a contract extension for measures/rests/slurs/note values — which is the same data
   #125 stage B needs.
-- Issue bodies for #125 and #126 were rewritten to carry the layer analysis, and a further constraint was found
-  while checking it: **no original artefact is retained.** `SheetMusic` has only `animationDataUrl` with no PDF or
-  MusicXML column (`prisma/schema.prisma:69`), the upload route forwards the PDF to the OMR service without
-  storing it (`fileStorageService.uploadSheetMusicFile` and the `sheet-music-files` bucket exist but have no
-  production caller), and the OMR service deletes its work directory with `shutil.rmtree` (`omr-service/app.py:372`).
-  So the fingering fix needs no new PDF/XML/JSON — inference runs at the player boundary and stored documents are
-  untouched — but any contract extension (measures, rests, slurs, note values) cannot be backfilled for existing
-  scores without a user re-upload. That single constraint is shared by #125 stage B and #126 tier 3.
+- Issue bodies for #125 and #126 were rewritten to carry the layer analysis, plus two corrections the user
+  supplied or measurement settled.
+  - **Retention is policy, not an open question.** The user stated that not storing the original PDF was defined
+    early in the project to stay clear of copyright. The code implements it: `SheetMusic` has only
+    `animationDataUrl` (`prisma/schema.prisma:69`), the upload route forwards the PDF without storing it
+    (`fileStorageService.uploadSheetMusicFile` and the `sheet-music-files` bucket have no production caller), and
+    the OMR service deletes its work directory (`omr-service/app.py:372`). **This policy is not recorded anywhere
+    in `docs/recovery/DECISIONS.md`** — a grep finds only Footer `© 2024` items. Record it before #125 stage B or
+    #126 tier 3 acts on it. The workable shape is to bake measures, rests, note values and spelling into the
+    canonical JSON at conversion time — derived data of the same kind already stored — rather than retaining the
+    MusicXML, which is effectively a copy of the score; existing scores then need a user re-upload.
+  - **Playback-time inference is deliberate and cheap.** D-038 decision 5 and its Reason chose runtime enrichment
+    so stored documents are never overwritten; D-038 explicitly rejected bulk-rewriting stored JSON. It runs once
+    per load inside `useMemo(..., [animationData])` (`FallingNotesPlayer.tsx:51`), not per frame. Measured on this
+    Mac: 411 notes 1.1ms, 1000 2.3ms, 3000 4.5ms, 6000 6.3ms, 12000 15.4ms.
+  - Recorded in #126 as a complexity constraint for the fix: hand position must NOT become a separate DP state
+    dimension (5 states and 25 transitions per event would become 100 and 10,000). It is already implied by the
+    (finger, pitch) pair as `m - offset(f)`, so comparing implied anchors across events models hand motion at the
+    current state count.
 - No implementation branch or code change was started for any of the three issues.
 
 ## Current issue #52 status (2026-09-04)
