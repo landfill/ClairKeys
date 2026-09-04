@@ -195,7 +195,9 @@ interface EventCandidate {
    * Where this fingering implies the hand is sitting, as a MIDI number.
    * A finger that plays a pitch pins the hand: comparing implied anchors across
    * events models hand travel without adding a DP state dimension, which would
-   * take transitions from 25 to 10,000 per event.
+   * take transitions from 25 to 10,000 per single-note event. (25 is the
+   * single-note figure the issue measured; a chord event has `C(5,k)`
+   * candidates, so chord-to-chord transitions already reach 100.)
    */
   anchor: number;
   cost: number;

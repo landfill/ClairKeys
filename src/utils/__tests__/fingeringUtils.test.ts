@@ -350,8 +350,11 @@ describe('fingeringUtils', () => {
       expect(first.every(note => note.fingeringAlgorithm === FINGERING_ALGORITHM_VERSION)).toBe(true);
       expect(first.filter(note => note.hand === 'R').map(note => note.finger)).toEqual([2, 3, 2, 3]);
       // `phrase-dp-v1` answered [5, 3, 2, 5] here and left the thumb unused across
-      // a sixteen-semitone bass span. `phrase-dp-v2` prices hand travel, so the
-      // fifth up to B2 is taken by the thumb and the leap to G#3 crosses over it.
+      // a sixteen-semitone bass span. Under `phrase-dp-v2` the fifth E2->B2 is
+      // exactly the natural hand span, so finger 5 and finger 1 imply the same
+      // anchor (40) and the hand does not move at all — that is why the thumb
+      // wins, and finger 3 does not. The following leap to G#3 is nine semitones,
+      // past CROSSING_MAX_INTERVAL, so it is hand travel and not a crossing.
       expect(first.filter(note => note.hand === 'L').map(note => note.finger)).toEqual([5, 1, 2, 5]);
     });
 
@@ -389,13 +392,18 @@ describe('fingeringUtils', () => {
       return longest;
     };
 
-    /** Transitions where the finger number moves against the pitch direction. */
+    /**
+     * Transitions where the finger number moves against the pitch direction.
+     * A crossing needs both a finger move and a pitch move: without the pitch
+     * guard, `Math.sign(0)` makes every finger change on a repeated note count.
+     */
     const crossings = (midis: number[], fingers: (Finger | undefined)[]): number =>
       fingers.reduce((count, finger, index) => {
         if (index === 0) return count;
         const fingerDelta = (finger as number) - (fingers[index - 1] as number);
         const pitchDelta = midis[index] - midis[index - 1];
-        return count + (fingerDelta !== 0 && Math.sign(fingerDelta) !== Math.sign(pitchDelta) ? 1 : 0);
+        if (fingerDelta === 0 || pitchDelta === 0) return count;
+        return count + (Math.sign(fingerDelta) !== Math.sign(pitchDelta) ? 1 : 0);
       }, 0);
 
     const C_MAJOR_DESCENDING = [72, 71, 69, 67, 65, 64, 62, 60];
@@ -440,6 +448,17 @@ describe('fingeringUtils', () => {
     it('moves the hand instead of stalling on one finger through descending thirds', () => {
       const midis = [72, 69, 65, 64, 60, 57];
       expect(longestSameFingerRun(run(midis, 'R'))).toBeLessThan(3);
+    });
+
+    it('reuses one finger across leaps no crossing can bridge', () => {
+      // The documented exception to "no finger three times in a row". A crossing
+      // only exists inside CROSSING_MAX_INTERVAL, so a descending octave leap has
+      // none available: every candidate pays the same lifted-hand cost, and
+      // re-using one finger is what a player actually does with a leaping figure.
+      expect(run([84, 72, 60, 48], 'R')).toEqual([5, 1, 1, 1]);
+
+      // Where a crossing does exist — stepwise motion — the rule still holds.
+      expect(longestSameFingerRun(run([84, 83, 81, 79, 77, 76, 74, 72], 'R'))).toBeLessThan(3);
     });
 
     it('never repeats a finger three times in a non-CAGED or minor scale', () => {
@@ -490,12 +509,12 @@ describe('fingeringUtils', () => {
         { midi: 66, start: 0.4, duration: 0.4, hand: 'R' },
       ];
 
-      const fingers = addFingeringToNotes(notes).map(note => note.finger);
-      expect(fingers[0]).toBeLessThan(fingers[1] as number);
-      expect(fingers[2]).toBeLessThan(fingers[3] as number);
-      // The second dyad is narrower, so it must not reuse the first one's span.
-      expect((fingers[3] as number) - (fingers[2] as number))
-        .toBeLessThan((fingers[1] as number) - (fingers[0] as number));
+      // Pinned rather than asserted by property on purpose. Both dyads centre on
+      // 64, so a centre-comparing implementation routes them through the repeat
+      // path instead of the anchor path — and it still produces ascending fingers
+      // and a narrower second span, so the obvious property assertions pass under
+      // the defect they are meant to catch. The exact result does not.
+      expect(addFingeringToNotes(notes).map(note => note.finger)).toEqual([1, 4, 1, 3]);
     });
 
     it('keeps the thumb and the pinky off black keys', () => {
