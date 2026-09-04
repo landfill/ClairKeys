@@ -1,6 +1,18 @@
 # Current Handoff
 
-Last updated: 2026-09-03 KST
+Last updated: 2026-09-04 KST
+
+## Issue #120 and #121 registration (2026-09-04)
+
+- [#120](https://github.com/landfill/ClairKeys/issues/120) records the gap left by #103: a real 411-note
+  production JSON had correct `L`/`R` staff-derived hands but no source `finger` on any note, so retransformation
+  cannot improve its fingering. The player-bound fallback must become phrase-aware while preserving explicit
+  source fingering; the old random admin/backfill paths also need removal, isolation, or consolidation.
+- [#121](https://github.com/landfill/ClairKeys/issues/121) separately defines operator monitoring for the OMR VM:
+  external availability/auth checks, systemd/Podman and host resources, per-stage job/callback telemetry, result
+  contract/quality signals, structured redacted logs, dashboards, alerts, and a tested runbook. It links existing
+  VM issues #44, #47, #52, #73, and #110 rather than duplicating their fixes.
+- No implementation branch or code change was started for either issue.
 
 ## Current issue #118 status (2026-09-03)
 
