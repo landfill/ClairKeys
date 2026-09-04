@@ -53,7 +53,30 @@ Last updated: 2026-09-04 KST
     dimension (5 states and 25 transitions per event would become 100 and 10,000). It is already implied by the
     (finger, pitch) pair as `m - offset(f)`, so comparing implied anchors across events models hand motion at the
     current state count.
-- No implementation branch or code change was started for any of the three issues.
+- **Source-artefact policy, as the user stated it on 2026-09-05.** The core rule is narrower than an earlier
+  entry here claimed: *the PDF is not stored because it carries the direct copyright exposure.* Artefacts from the
+  MusicXML onward are not forbidden — they may be retained where there is a need. And the user accepted the
+  consequence that follows from today's implementation: **existing scores will be re-registered rather than
+  backfilled.**
+- [#127](https://github.com/landfill/ClairKeys/issues/127) records that MusicXML is deleted immediately after
+  conversion — generated into `temp_dir` (`omr-service/app.py:342`), consumed by `converter.convert`, then removed
+  by `shutil.rmtree` (`app.py:372`, and `:386` on the failure path). It never leaves the VM: `GET /result/{job_id}`
+  returns `animation_data` only (`app.py:233`), `SheetMusic` has no column for it, and `src/` references musicxml
+  in one comment. With the re-registration decision made, retention's strongest motive is gone; what remains is
+  post-hoc diagnosis of recognition defects (#44 needs the MusicXML by definition) and a real corpus for converter
+  regressions. Retaining only failed jobs, briefly, is therefore the cheapest option that still buys something.
+  Note D-011 forbids giving the OMR service storage write credentials, so any retention must follow the
+  `animation_data` path: the app collects from `/result` and stores with the key it already holds.
+- #125 stage B and #126 tier 3 are now both premised on "new uploads onward; existing scores are re-registered",
+  and the fix in both is the same: bake measures, rests, note values and spelling into the canonical JSON at
+  conversion time. Neither depends on #127's outcome.
+- **None of this is in `docs/recovery/DECISIONS.md` yet** — not the PDF policy, not the MusicXML allowance, not the
+  re-registration decision. A grep finds only Footer `© 2024` items. Under AGENTS.md a new DECISIONS entry is not a
+  handoff exception, so it needs a branch and PR; record it with whichever change first acts on it, and do not let
+  a session read the code alone and conclude "retaining nothing is the design" — that misreading already happened
+  once in this session.
+- No implementation branch or code change was started for any of these issues.
+
 
 ## Current issue #52 status (2026-09-04)
 
