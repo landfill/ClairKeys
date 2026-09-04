@@ -10,7 +10,7 @@ import {
   generateSampleNotesWithFingering,
   FINGERING_ALGORITHM_VERSION,
 } from '../fingeringUtils';
-import type { FallingNote } from '@/types/fallingNotes';
+import type { FallingNote, Finger, Hand } from '@/types/fallingNotes';
 
 describe('fingeringUtils', () => {
   describe('isBlackKeyMidi', () => {
@@ -349,7 +349,10 @@ describe('fingeringUtils', () => {
       expect(first.every(note => note.fingerSource === 'inferred')).toBe(true);
       expect(first.every(note => note.fingeringAlgorithm === FINGERING_ALGORITHM_VERSION)).toBe(true);
       expect(first.filter(note => note.hand === 'R').map(note => note.finger)).toEqual([2, 3, 2, 3]);
-      expect(first.filter(note => note.hand === 'L').map(note => note.finger)).toEqual([5, 3, 2, 5]);
+      // `phrase-dp-v1` answered [5, 3, 2, 5] here and left the thumb unused across
+      // a sixteen-semitone bass span. `phrase-dp-v2` prices hand travel, so the
+      // fifth up to B2 is taken by the thumb and the leap to G#3 crosses over it.
+      expect(first.filter(note => note.hand === 'L').map(note => note.finger)).toEqual([5, 1, 2, 5]);
     });
 
     it('should not apply the CAGED crossing pattern to F-major right hand', () => {
@@ -362,6 +365,175 @@ describe('fingeringUtils', () => {
       }));
 
       expect(addFingeringToNotes(notes).map(note => note.finger)).not.toEqual([1, 2, 3, 1, 2, 3, 4, 5]);
+    });
+  });
+
+  // Issue #126 fixed the reproduction table recorded on the issue: outside the
+  // ascending CAGED octave the model exhausted 5->1 and then repeated the thumb,
+  // because a thumb crossing is by definition a finger move opposite to the pitch
+  // direction and the old transition cost charged exactly that a flat penalty.
+  describe('addFingeringToNotes hand motion and thumb crossings (issue #126)', () => {
+    const run = (midis: number[], hand: Hand, gap = 0.4): (Finger | undefined)[] =>
+      addFingeringToNotes(
+        midis.map((midi, index) => ({ midi, start: index * gap, duration: gap, hand })),
+      ).map(note => note.finger);
+
+    /** Longest run of one finger repeated on consecutive events. */
+    const longestSameFingerRun = (fingers: (Finger | undefined)[]): number => {
+      let longest = 1;
+      let current = 1;
+      for (let index = 1; index < fingers.length; index += 1) {
+        current = fingers[index] === fingers[index - 1] ? current + 1 : 1;
+        longest = Math.max(longest, current);
+      }
+      return longest;
+    };
+
+    /** Transitions where the finger number moves against the pitch direction. */
+    const crossings = (midis: number[], fingers: (Finger | undefined)[]): number =>
+      fingers.reduce((count, finger, index) => {
+        if (index === 0) return count;
+        const fingerDelta = (finger as number) - (fingers[index - 1] as number);
+        const pitchDelta = midis[index] - midis[index - 1];
+        return count + (fingerDelta !== 0 && Math.sign(fingerDelta) !== Math.sign(pitchDelta) ? 1 : 0);
+      }, 0);
+
+    const C_MAJOR_DESCENDING = [72, 71, 69, 67, 65, 64, 62, 60];
+    const C_MAJOR_ASCENDING = [60, 62, 64, 65, 67, 69, 71, 72];
+
+    it('crosses the thumb under instead of repeating it in a descending right-hand octave', () => {
+      expect(run(C_MAJOR_DESCENDING, 'R')).toEqual([5, 4, 3, 2, 1, 3, 2, 1]);
+    });
+
+    it('crosses the thumb in a descending left-hand octave', () => {
+      expect(run([60, 59, 57, 55, 53, 52, 50, 48], 'L')).toEqual([1, 2, 3, 1, 2, 3, 4, 5]);
+    });
+
+    it('keeps the CAGED octave result without a hardcoded scale pattern', () => {
+      expect(run(C_MAJOR_ASCENDING, 'R')).toEqual([1, 2, 3, 1, 2, 3, 4, 5]);
+      expect(run([36, 38, 40, 41, 43, 45, 47, 48], 'L')).toEqual([5, 4, 3, 2, 1, 3, 2, 1]);
+    });
+
+    it('places the F-major crossing so the thumb never lands on a black key', () => {
+      const midis = [65, 67, 69, 70, 72, 74, 76, 77];
+      const fingers = run(midis, 'R');
+      expect(fingers).toEqual([1, 2, 3, 4, 1, 2, 3, 4]);
+      midis.forEach((midi, index) => {
+        if (isBlackKeyMidi(midi)) expect(fingers[index]).not.toBe(1);
+      });
+    });
+
+    it('crosses more than once across a two-octave descending run', () => {
+      const midis = [76, 74, 72, 71, 69, 67, 65, 64, 62, 60, 59, 57];
+      const fingers = run(midis, 'R');
+      expect(longestSameFingerRun(fingers)).toBeLessThan(3);
+      expect(crossings(midis, fingers)).toBeGreaterThanOrEqual(2);
+    });
+
+    it('crosses rather than parking the pinky when an ascending run outlasts the hand', () => {
+      const midis = [67, 69, 71, 72, 74, 76, 78, 79, 81];
+      const fingers = run(midis, 'R');
+      expect(longestSameFingerRun(fingers)).toBeLessThan(3);
+      expect(crossings(midis, fingers)).toBeGreaterThanOrEqual(1);
+    });
+
+    it('moves the hand instead of stalling on one finger through descending thirds', () => {
+      const midis = [72, 69, 65, 64, 60, 57];
+      expect(longestSameFingerRun(run(midis, 'R'))).toBeLessThan(3);
+    });
+
+    it('never repeats a finger three times in a non-CAGED or minor scale', () => {
+      // F major and B major are the two keys the old CAGED pattern deliberately
+      // excluded; the harmonic minor adds an augmented second the pattern layer
+      // could never have matched.
+      const scales: [string, number[], Hand][] = [
+        ['F major ascending', [65, 67, 69, 70, 72, 74, 76, 77], 'R'],
+        ['F major descending', [77, 76, 74, 72, 70, 69, 67, 65], 'R'],
+        ['B major ascending', [59, 61, 63, 64, 66, 68, 70, 71], 'L'],
+        ['B major descending', [71, 70, 68, 66, 64, 63, 61, 59], 'L'],
+        ['A harmonic minor ascending', [69, 71, 72, 74, 76, 77, 80, 81], 'R'],
+        ['A harmonic minor descending', [81, 80, 77, 76, 74, 72, 71, 69], 'R'],
+      ];
+
+      const offenders = scales
+        .map(([name, midis, hand]) => `${name}: ${longestSameFingerRun(run(midis, hand))}`)
+        .filter(entry => Number(entry.split(': ')[1]) >= 3);
+
+      expect(offenders).toEqual([]);
+    });
+
+    it('alternates fingers on repeated notes only when they are fast', () => {
+      // Two groupings tie on cost here (`3 2 1 3 2 1 3 2` and `3 2 1 3 2 1 2 1`),
+      // so assert the shape a repeated-note group has rather than the tie-break:
+      // no finger takes two strikes in a row, only the agile fingers take part,
+      // and each group walks inward one finger at a time before resetting.
+      const fast = run([64, 64, 64, 64, 64, 64, 64, 64], 'R', 0.1);
+      expect(longestSameFingerRun(fast)).toBe(1);
+      expect(fast.filter(finger => (finger as number) > 3)).toEqual([]);
+      fast.forEach((finger, index) => {
+        if (index === 0) return;
+        const step = (finger as number) - (fast[index - 1] as number);
+        expect(step === -1 || step > 0).toBe(true);
+      });
+
+      // A comfortable repeat stays planted: re-placing the hand is the cost, and
+      // at half a second there is time to do nothing at all.
+      const slow = run([64, 64, 64, 64], 'R', 0.5);
+      expect(new Set(slow).size).toBe(1);
+    });
+
+    it('does not treat two different chords with the same centre as a repeated note', () => {
+      const notes: FallingNote[] = [
+        { midi: 60, start: 0, duration: 0.4, hand: 'R' },
+        { midi: 68, start: 0, duration: 0.4, hand: 'R' },
+        { midi: 62, start: 0.4, duration: 0.4, hand: 'R' },
+        { midi: 66, start: 0.4, duration: 0.4, hand: 'R' },
+      ];
+
+      const fingers = addFingeringToNotes(notes).map(note => note.finger);
+      expect(fingers[0]).toBeLessThan(fingers[1] as number);
+      expect(fingers[2]).toBeLessThan(fingers[3] as number);
+      // The second dyad is narrower, so it must not reuse the first one's span.
+      expect((fingers[3] as number) - (fingers[2] as number))
+        .toBeLessThan((fingers[1] as number) - (fingers[0] as number));
+    });
+
+    it('keeps the thumb and the pinky off black keys', () => {
+      const midis = [73, 71, 69, 68, 66];
+      const fingers = run(midis, 'R');
+      midis.forEach((midi, index) => {
+        if (!isBlackKeyMidi(midi)) return;
+        expect(fingers[index]).not.toBe(1);
+        expect(fingers[index]).not.toBe(5);
+      });
+    });
+
+    it('still never overwrites a finger the score supplied', () => {
+      const notes: FallingNote[] = C_MAJOR_DESCENDING.map((midi, index) => ({
+        midi,
+        start: index * 0.4,
+        duration: 0.4,
+        hand: 'R' as const,
+        ...(index % 3 === 0 ? { finger: 2 as Finger } : {}),
+      }));
+
+      const enhanced = addFingeringToNotes(notes);
+      enhanced.forEach((note, index) => {
+        if (index % 3 !== 0) return;
+        expect(note.finger).toBe(2);
+        expect(note.fingerSource).toBe('source');
+      });
+    });
+
+    it('returns the same fingering on repeated runs of the same input', () => {
+      const notes: FallingNote[] = C_MAJOR_DESCENDING.map((midi, index) => ({
+        midi,
+        start: index * 0.4,
+        duration: 0.4,
+        hand: 'R' as const,
+      }));
+
+      expect(addFingeringToNotes(notes)).toEqual(addFingeringToNotes(notes));
     });
   });
 
