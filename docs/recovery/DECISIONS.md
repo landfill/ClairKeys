@@ -1436,3 +1436,60 @@
 - Not-tested: 전문 피아노 교사의 곡 전체 운지 검수, 개인 손 크기별 적합성.
 - Related: D-038, 이슈 [#103](https://github.com/landfill/ClairKeys/issues/103),
   [#120](https://github.com/landfill/ClairKeys/issues/120)
+
+## D-040: 저작권 노출을 지는 것은 PDF뿐이다 — 그 이후 산출물은 필요할 때 허용하고, 기존 악보는 재등록으로 감수한다
+
+- Date: 2026-09-05
+- Status: Accepted
+- Context:
+  - 이 정책은 프로젝트 초기에 사용자가 정의했으나 저장소 어디에도 기록되지 않았다. `DECISIONS.md` 전체
+    검색 결과 관련 항목이 없고 Footer의 `© 2024` 표기 건만 나온다.
+  - 2026-09-05 세션에서 실제로 오독이 발생했다. 코드가 PDF도 MusicXML도 보관하지 않는 것을 보고 "원본을
+    일절 보관하지 않는 것이 설계"라고 역추론해, 이슈 [#125](https://github.com/landfill/ClairKeys/issues/125)와
+    [#126](https://github.com/landfill/ClairKeys/issues/126)에 "원본 보관 여부를 먼저 결정하라"고 잘못
+    기술했다. 사용자가 세 차례에 걸쳐 정정했다. 코드 사실에서 의도를 추론할 수 있다는 가정이 틀렸다.
+  - 구현 사실: `SheetMusic`은 `animationDataUrl`만 갖는다(`prisma/schema.prisma:69`). 업로드 라우트는 PDF를
+    OMR 서비스로 전달만 한다(`src/app/api/omr/upload/route.ts`). `fileStorageService.uploadSheetMusicFile`과
+    `sheet-music-files` 버킷은 존재하지만 프로덕션 호출부가 없다. OMR 서비스는 MusicXML을 `temp_dir`에 만든
+    뒤 `shutil.rmtree`로 삭제하며(`omr-service/app.py:342`, `:372`, `:386`), `GET /result/{job_id}` 응답에는
+    `animation_data`만 담긴다(`app.py:233`).
+  - #125 단계 B(악보 표시)와 #126 3순위(운지 추론용 악구 경계)는 마디 번호·쉼표·이음줄·음표 값·이명동음
+    표기를 요구한다. 이 정보는 MusicXML에 있고 canonical JSON에는 없으므로, 원본이 없으면 기존 악보에
+    소급할 수 없다.
+  - 이 항목은 사용자의 명시적 지시로 PR 없이 `main`에 직접 커밋했다. `AGENTS.md`가 `DECISIONS.md` 신규
+    항목을 직접 커밋 예외에서 제외하고 있으므로, 규약 자체는 바뀌지 않았고 이번 반영만 예외다.
+- Decision:
+  1. **직접적인 저작권 이슈가 있는 원본 PDF는 저장하지 않는다.** 이것이 핵심 정책이며 유일한 금지 대상이다.
+  2. **MusicXML 이후의 산출물은 금지 대상이 아니다.** 필요가 있으면 보관을 허용한다. 다만 허용이지 기본값이
+     아니므로, 보관을 도입할 때는 그 필요를 개별 사안으로 판단해 기록한다
+     ([#127](https://github.com/landfill/ClairKeys/issues/127)).
+  3. **기존 악보에 새 표기 정보를 소급하지 않는다.** 사용자가 악보를 다시 등록하는 것으로 감수하며, 신규
+     업로드부터 지원한다.
+  4. 보관을 도입하는 경우에도 **OMR 서비스에 스토리지 쓰기 자격증명을 주지 않는다**(D-011 유지). 앱이
+     `/result`에서 수집해 자신이 이미 가진 키로 저장한다.
+- Consequence:
+  - #125 단계 B와 #126 3순위는 "변환 시점에 canonical JSON에 표기 정보를 굽는다"로 확정되고, #127의 결론과
+    무관하게 진행할 수 있다.
+  - 기존 악보는 재등록 전까지 악보 표시와 악구 기반 운지 개선을 받지 못한다. 화면은 그 상태를 표현할 수
+    있어야 한다.
+  - MusicXML 미보관이 유지되는 동안 [#44](https://github.com/landfill/ClairKeys/issues/44) 같은 인식 결함은
+    사용자에게 같은 PDF를 다시 받아야 재현된다. 그 대가는 #127이 다룬다.
+- Rejected:
+  - PDF도 보관한다 | 저작권 노출을 그대로 떠안는다. 이 정책의 존재 이유다.
+  - MusicXML 보관을 정책으로 금지한다 | 진단과 회귀 corpus의 값을 미리 포기한다. 필요할 때 선택할 여지를
+    남기는 편이 낫다.
+  - 기존 악보를 위한 소급 경로를 만든다 | 재변환할 원본이 없으므로 사용자 재업로드 외에 방법이 없고, 그것은
+    재등록과 같다.
+- Constraint: D-011(OMR 서비스는 스토리지 쓰기 자격증명을 갖지 않는다)
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: **코드가 아무것도 보관하지 않는다는 사실에서 "일절 보관 금지"를 추론하지 않는다.** 금지 대상은
+  PDF뿐이다. MusicXML 보관을 도입할 때는 #127의 수명주기·접근제어·보존기간 항목을 함께 정의한다.
+- Tested: 정책 진술은 사용자 확인. 구현 사실은 `prisma/schema.prisma`, `src/app/api/omr/upload/route.ts`,
+  `src/services/fileStorageService.ts` 호출부, `omr-service/app.py`를 읽어 확인.
+- Not-tested: 코드 변경이 없으므로 실행 검증 대상이 없다.
+- Related: D-011, D-038, 이슈 [#44](https://github.com/landfill/ClairKeys/issues/44),
+  [#125](https://github.com/landfill/ClairKeys/issues/125),
+  [#126](https://github.com/landfill/ClairKeys/issues/126),
+  [#127](https://github.com/landfill/ClairKeys/issues/127)

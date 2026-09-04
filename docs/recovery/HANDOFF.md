@@ -70,11 +70,12 @@ Last updated: 2026-09-04 KST
 - #125 stage B and #126 tier 3 are now both premised on "new uploads onward; existing scores are re-registered",
   and the fix in both is the same: bake measures, rests, note values and spelling into the canonical JSON at
   conversion time. Neither depends on #127's outcome.
-- **None of this is in `docs/recovery/DECISIONS.md` yet** — not the PDF policy, not the MusicXML allowance, not the
-  re-registration decision. A grep finds only Footer `© 2024` items. Under AGENTS.md a new DECISIONS entry is not a
-  handoff exception, so it needs a branch and PR; record it with whichever change first acts on it, and do not let
-  a session read the code alone and conclude "retaining nothing is the design" — that misreading already happened
-  once in this session.
+- **All three are now recorded as D-040** in `docs/recovery/DECISIONS.md`: the PDF is the only forbidden artefact,
+  MusicXML onward is allowed where a need is shown, and existing scores are re-registered rather than backfilled.
+  The user instructed that this entry be committed directly to `main` without a PR; AGENTS.md still excludes new
+  DECISIONS entries from the direct-commit exception, so the deviation is one-off and is recorded inside D-040's
+  own Context. D-040 carries the directive that matters here: do not infer "retain nothing" from the code, because
+  a session in this repository already did exactly that and was wrong three times over.
 - No implementation branch or code change was started for any of these issues.
 
 
