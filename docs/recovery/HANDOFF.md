@@ -4,9 +4,8 @@ Last updated: 2026-09-04 KST
 
 ## Current issue #120 status (2026-09-04)
 
-- Current phase: [#120](https://github.com/landfill/ClairKeys/issues/120) ordinary-score automatic fingering is
-  implemented on `codex/issue-120-phrase-fingering`; head `927d81f`, review-ready PR
-  [#122](https://github.com/landfill/ClairKeys/pull/122).
+- Current phase: [#120](https://github.com/landfill/ClairKeys/issues/120) ordinary-score automatic fingering implementation
+  is merged via PR [#122](https://github.com/landfill/ClairKeys/pull/122), merge commit `10e9c72`; issue CLOSED.
 - Corrected premise from the user: an unannotated treble/bass-staff score is the normal product input, not an exceptional
   missing-data fallback. The implementation therefore treats hand-separated phrase inference as the primary path.
 - Local evidence: focused Jest 5 suites / 53 tests, full Jest 91 suites / 856 tests, typecheck, lint, build, and diff check
@@ -19,7 +18,12 @@ Last updated: 2026-09-04 KST
   The exact branch production build was therefore served locally with only `/api/sheet/28` metadata intercepted and the
   actual public 411-note JSON loaded. Desktop 1440×900 and mobile landscape 844×390 idle/playing all rendered readable
   badges with no page error. This does not verify Vercel routing/auth configuration.
-- Next action: await the user’s explicit merge approval for PR #122. Do not merge automatically.
+- Merge lifecycle: user approved on 2026-09-04. Current-head checks and resolved threads were rechecked before merge.
+  Post-merge checks are 6/6 success and Vercel Production for `10e9c72` is success. Local/remote branch tips had zero
+  commits outside `origin/main`; both `codex/issue-120-phrase-fingering` branches were deleted, worktree clean `main`.
+- Next action: obtain a professional pianist/teacher review of the complete inferred score. If the full-song fingering is
+  educationally natural, change the phase from `BLOCKED` to `DONE`; otherwise open a focused correction issue with the
+  exact phrase/onset evidence. Do not infer this from issue closure or green CI.
 - Review update: CodeRabbit produced 2 actionable findings. Both were accepted and fixed in `927d81f`: phase/D-039 now
   match the retired storage backfill, and phrase gaps use the maximum sounding end across all voices. The latter regression
   failed `1,2,1,2` before the fix and passes `1,2,3,4`. Focused 54 and full 857 tests, typecheck, lint, and diff check pass;

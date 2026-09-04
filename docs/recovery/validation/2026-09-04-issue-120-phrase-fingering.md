@@ -97,3 +97,15 @@ After `927d81f`: focused Jest 5 suites / 54 tests, full Jest 91 suites / 857 tes
 Both CodeRabbit threads were replied to and resolved. Hosted Build, two E2E jobs, two test jobs, lint/typecheck, Security
 Scan, CodeQL, Vercel, and Security Audit pass. Security Audit initially received npm registry HTTP 400 `Invalid package
 tree`; the unchanged head passed the failed-job rerun, confirming an external transient rather than a lockfile/code change.
+
+## Merge and post-merge result
+
+- User merge approval: 2026-09-04 KST.
+- PR #122 merge commit: `10e9c72f82fb5d554a8837ca342502099351afda`.
+- Issue #120: CLOSED automatically.
+- Post-merge checks: 6/6 success — E2E, post-merge build, Run Tests, Security Audit, lint, post-merge tests.
+- Vercel Production deployment for `10e9c72`: success.
+- Branch cleanup: local and remote `codex/issue-120-phrase-fingering` tips each had zero commits outside
+  `origin/main`; both were deleted with a clean `main` worktree.
+- Remaining manual gap: professional pianist/teacher review of the complete inferred score. Phase remains `BLOCKED`, not
+  `DONE`; merge and issue closure do not prove pedagogical naturalness.

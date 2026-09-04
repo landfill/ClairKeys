@@ -1,7 +1,12 @@
 # ISSUE-120 — 운지 없는 악보의 phrase-aware 학습 힌트
 
-Status: `IN_PROGRESS`
+Status: `BLOCKED`
 Depends on: ISSUE-103
+
+Progress (2026-09-04): PR #122가 merge commit `10e9c72`로 병합되고 이슈 #120은 닫혔다. 로컬·hosted·
+post-merge 자동 검증, 실제 411음 데이터의 결정론/유효성, 데스크톱·모바일 가로 렌더링, Production 배포와
+브랜치 정리는 완료됐다. 그러나 곡 전체 자동 운지가 실제 연주 관점에서 교육적으로 자연스러운지는 전문
+피아니스트/교사 검수가 없어 Completion criteria를 전부 충족했다고 할 수 없으므로 `DONE`이 아니다.
 
 ## Objective
 
