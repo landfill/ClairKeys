@@ -1,6 +1,49 @@
 # Current Handoff
 
-Last updated: 2026-09-04 KST
+Last updated: 2026-09-05 KST
+
+## Issue #126 tier 2 — fingering cost model rewritten, PR #129 OPEN (2026-09-05)
+
+- The user chose to take issue [#126](https://github.com/landfill/ClairKeys/issues/126)'s **tier 2 (cost model)
+  before tier 1 (boundary context)**, against the order the issue proposes. The reported defect lives in tier 2,
+  and tier 2's result dissolves one of tier 1's items. The deviation and its reason are recorded in D-041's own
+  Context, per AGENTS.md's rule about diverging from a spec.
+- Reproduced first on `main`: the issue's table is exact. RH descending C major returns `5 4 3 2 1 1 1 1`, twelve
+  descending notes give eight consecutive thumbs, F major ascending `1 1 1 2 2 3 4 5`, and A harmonic minor
+  repeats one finger five times. The new regressions failed **8 of 13** against `phrase-dp-v1`.
+- **The diagnosis changed the plan.** Printing the DP's own cost table for a nine-note G major run showed the DP
+  had already found a coherent `1 2 3 4 1 2 3 4 5` at cost 9.0 — and `applyMajorScaleRuns` was overwriting its
+  first eight notes with `1 2 3 1 2 3 4 5`, leaving `... 4 5 5`. So the pattern layer was **deleted**, not
+  generalised over the key signature as tier 1 proposed. That tier 1 item no longer has a target.
+- The fix: hand position is derived, not stored. A finger playing a pitch pins the hand at
+  `m - NATURAL_SPAN[s-1]`, so comparing implied anchors models hand travel while the DP keeps 5 states and 25
+  transitions — the complexity constraint #126 recorded. Travelling beyond the hand's give means lifting off a
+  sounding key and costs legato; a crossing is the one device that moves the hand without lifting, so it is
+  priced as the alternative rather than forbidden. Re-using a finger on a new pitch pays that same legato cost:
+  **that is the line v1 was missing**, and why repeating the thumb was optimal once 5→1 was spent.
+- Also: black-key cost extended from the thumb to the pinky; repeated-note alternation now decided by note
+  spacing (`FAST_REPEAT_SEC` 0.25s); repeat detection changed from event-centre pitch to **pitch-set identity**,
+  so two different chords sharing a centre are no longer one repeated note. `FINGERING_ALGORITHM_VERSION` is
+  now `phrase-dp-v2`.
+- Measured, not asserted: a sweep of 24 keys (major and harmonic minor) x 1-2 octaves x both directions x both
+  hands — **192 runs, longest same-finger run 2 everywhere, and the thumb on none of the 920 black keys played**.
+  RH two-octave C major ascending is `1 2 3 1 2 3 4 1 2 3 1 2 3 4 5`, the textbook fingering. LH two-octave
+  differs from the textbook in where the four-group sits; both groupings are playable and **the constants were
+  not tuned to match one textbook line** — D-039 rejected claiming a unique answer for an arbitrary phrase.
+- Full Jest 870 pass, `tsc --noEmit`, `next lint`, `next build` all clean. 12,000 notes infer in 12.6ms against
+  v1's 9.9ms on the same harness (1.27x, inside the issue's "single-digit multiple").
+- Two existing expectations changed, both expectation problems rather than defects, both recorded with their
+  reason in the test file and the validation log.
+- **PR [#129](https://github.com/landfill/ClairKeys/pull/129) does not close #126.** Tier 1 remains: passing
+  `keySignature`/`timeSignature`/`staff`/`voice` to the inferrer and grouping events by `start` + `voice`. Tier 3
+  (contract extension) is unchanged and still belongs with #125 stage B under D-040.
+- Open item carried forward: the 411-note production JSON cannot be reviewed for playability locally — D-040's
+  policy means no source artefact is in the repository. It has to be opened in the app.
+- Decision recorded as **D-041**, amending D-039 (decisions 2 and 5) and D-038's CAGED pattern. Committed on the
+  PR branch, not directly to `main`, because AGENTS.md excludes new DECISIONS entries from the direct-commit
+  exception.
+- Evidence: `docs/recovery/validation/2026-09-05-issue-126-fingering-cost-model.md`,
+  `docs/recovery/reviews/PR-129.md`, `docs/recovery/phases/ISSUE-126-fingering-cost-model.md`.
 
 ## AGENTS.md reference trim — PR #128 MERGED (2026-09-05)
 
