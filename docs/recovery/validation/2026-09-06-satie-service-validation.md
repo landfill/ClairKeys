@@ -102,3 +102,14 @@ then ran successfully. Neither is counted as an application accuracy failure or 
 VM staging root `/data/analysis/satie-api-G1Lvjr`; agent-uploaded staging PDFs/diagnostic OMR cleanup is
 pending at this checkpoint. User-owned local sample originals must remain. Always With Me API has also
 completed; its separate XML/reference investigation is ongoing.
+
+## Final cleanup and retained evidence
+
+- API original animation SHA-256: `f8976970848b12e3ccc0b520da6240824f1b876a101ec40064bd4e434ef605f1`.
+- API300dpi animation: `7bf6f206ad56cb0e2a27f1af040249a2f99ac8c6599d56144c76d69d9fc2c998`.
+- Independent original MXL: `2b166f08022b3387b08859a3fcc0643cef9266642805f87ba94f3c3bd47fe50f`.
+- Removed only the two agent-uploaded VM staging PDFs and diagnostic-original/original.omr after testing.
+  Re-enumeration found no PDF/PNG/OMR under the VM Satie analysis root. Local user sample originals,
+  renders, raw API/analysis results and diagnostic XML remain in the Git-excluded test folder.
+- Service remains healthy on the same image; no test JVM remains. Always With Me completed separately:
+  [its validation](2026-09-06-always-with-me-service-validation.md). No findings were automatically fixed.

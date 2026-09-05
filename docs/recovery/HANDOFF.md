@@ -2,6 +2,25 @@
 
 Last updated: 2026-09-06 KST
 
+## Satie and Always With Me validation finished; accuracy defects are now reproduced (2026-09-06)
+
+- Three real OMR API jobs completed without callback/library/storage writes. App/runtime code unchanged.
+  Satie original/300dpi:34.217s/26.285s,239/283 notes. Always:51.445s,647 notes. Early result409→complete200;
+  status payloads stay small and service removes per-job temp files. This is API success, not musical accuracy.
+- Satie original first8 bars9/41 global exact matches; its identical-note reproduced XML omits bars5/13,
+  several opening chords and sampled ties. Satie300dpi matches41/41 and the sampled9–12 tie, with zero
+  held-guidance reach conflicts; repeats still unexpanded. Different printed staff layouts, not DPI-only variants.
+- Always first4 bars16/47 exact matches; matching reproduced XML drops numeric tempo entirely and has
+  six incorrect bar lengths. Meter changes/all44 bars are present. XML fifths=-1 is correct, but converter
+  negative-fifths fallback incorrectly emits keyC. Correct-tempo-only local replay leaves timing defects.
+- Evidence: [Satie](validation/2026-09-06-satie-service-validation.md),
+  [Always](validation/2026-09-06-always-with-me-service-validation.md). Raw source/reference/results/READMEs
+  remain under the requested Git-excluded local-test-data folders. Removed only5 remote staging PDF/OMR
+  files; user-local originals/renders/results preserved. Production stays healthy on79a2328 imageff0a347f…9415ef.
+- No browser audio/badge geometry or expert fingering certification; no full-score pass. The tests request
+  did not implement fixes or alter issues. Next fix candidates and exact layer evidence are in the reports.
+
+
 ## Satie real-API validation complete; Always With Me added (2026-09-06)
 
 - Tested both user-local Satie PDFs through real authenticated /process→/status→/result with no callback
