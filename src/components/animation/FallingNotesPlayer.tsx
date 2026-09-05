@@ -12,6 +12,7 @@ import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { CompactPlaybackBar, PlaybackControls, TempoDisplay } from '@/components/playback'
 import { getActiveNotes } from '@/utils/visualUtils'
+import ScoreTimingNotice from '@/components/playback/ScoreTimingNotice'
 
 /**
  * Standing in for a rotation the device will not perform. The box is laid out
@@ -192,6 +193,7 @@ export default function FallingNotesPlayer({
       ].filter(Boolean).join(' ')}
       style={orientation.rotate ? rotatedRootStyle : undefined}
     >
+      {!isPlaying && <ScoreTimingNotice metadata={animationData.metadata} />}
       <TempoDisplay
         tempo={animationData.tempo}
         tempoSource={animationData.tempoSource}
