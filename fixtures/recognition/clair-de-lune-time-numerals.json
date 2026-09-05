@@ -1,0 +1,17 @@
+{
+  "sourceIssue": 134,
+  "sourcePdfSha256": "34d06c77398470ea6f9bf15d9cd5724a0db94c904eb81107c5ca29d2f1be5478",
+  "scope": "Two isolated time-numerator run descriptors extracted from the engine graph. Visually verified as 9. No PDF or page image.",
+  "glyphs": [
+    {
+      "staff": 1,
+      "label": 9,
+      "runTableXml": "<run-table orientation=\"VERTICAL\" width=\"30\" height=\"35\">\n        <runs>0 8 3</runs>\n        <runs>0 5 9 11 5</runs>\n        <runs>0 4 15 5 7</runs>\n        <runs>0 3 16 3 11</runs>\n        <runs>0 2 17 3 12</runs>\n        <runs>0 2 18 2 13</runs>\n        <runs>0 1 19 2 13</runs>\n        <runs>20 2 13</runs>\n        <runs>22 1 12</runs>\n        <runs>21 2 7 1 4</runs>\n        <runs>8 16 5 3 3</runs>\n        <runs>4 21 3 4 3</runs>\n        <runs>0 33 2</runs>\n        <runs>0 32 3</runs>\n        <runs>0 32 3</runs>\n        <runs>0 31 4</runs>\n        <runs>4 26 5</runs>\n        <runs>5 25 5</runs>\n        <runs>6 5 9 8 7</runs>\n        <runs>35</runs>\n        <runs>35</runs>\n        <runs>34</runs>\n        <runs>33</runs>\n        <runs>0 2 30</runs>\n        <runs>0 2 30</runs>\n        <runs>0 3 28</runs>\n        <runs>0 5 25</runs>\n        <runs>0 6 22</runs>\n        <runs>0 9 17</runs>\n        <runs>0 10 12 2 1</runs>\n      </run-table>\n    "
+    },
+    {
+      "staff": 2,
+      "label": 9,
+      "runTableXml": "<run-table orientation=\"VERTICAL\" width=\"30\" height=\"35\">\n        <runs>0 10 3</runs>\n        <runs>0 6 13 5 2 1 3</runs>\n        <runs>0 3 16 4 8</runs>\n        <runs>0 3 16 4 10</runs>\n        <runs>0 2 17 3 11</runs>\n        <runs>0 2 18 2 12</runs>\n        <runs>0 1 34</runs>\n        <runs>0 1 34</runs>\n        <runs>35</runs>\n        <runs>21 2 12</runs>\n        <runs>7 6 8 3 7 1 3</runs>\n        <runs>5 15 1 3 6 3 2</runs>\n        <runs>3 17 2 11 2</runs>\n        <runs>3 17 2 11 2</runs>\n        <runs>3 17 2 11 2</runs>\n        <runs>3 17 2 10 3</runs>\n        <runs>3 17 1 10 4</runs>\n        <runs>5 24 6</runs>\n        <runs>6 7 2 13 7</runs>\n        <runs>35</runs>\n        <runs>34</runs>\n        <runs>0 1 33</runs>\n        <runs>0 2 31</runs>\n        <runs>0 2 30</runs>\n        <runs>0 2 29</runs>\n        <runs>0 4 26</runs>\n        <runs>0 5 24</runs>\n        <runs>0 6 22</runs>\n        <runs>0 9 16</runs>\n        <runs>0 9 11 2 2</runs>\n      </run-table>\n    "
+    }
+  ]
+}

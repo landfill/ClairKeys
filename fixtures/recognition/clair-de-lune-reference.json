@@ -1,0 +1,25 @@
+{
+  "sourceIssue": 134,
+  "sourcePdfSha256": "34d06c77398470ea6f9bf15d9cd5724a0db94c904eb81107c5ca29d2f1be5478",
+  "scope": "Visually read first measure only; raw pitched events before tie merging. Not a full-score ground truth.",
+  "timeSignature": "9/8",
+  "quarterBpm": 69,
+  "measures": [
+    {
+      "number": "1",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        { "midi": 76, "staff": 1, "onset": 1, "duration": 0.5 },
+        { "midi": 79, "staff": 1, "onset": 1, "duration": 0.5 },
+        { "midi": 76, "staff": 1, "onset": 1.5, "duration": 1.5 },
+        { "midi": 79, "staff": 1, "onset": 1.5, "duration": 1.5 },
+        { "midi": 72, "staff": 1, "onset": 3, "duration": 1.5 },
+        { "midi": 76, "staff": 1, "onset": 3, "duration": 1.5 },
+        { "midi": 64, "staff": 2, "onset": 0.5, "duration": 1 },
+        { "midi": 67, "staff": 2, "onset": 0.5, "duration": 1 },
+        { "midi": 64, "staff": 2, "onset": 1.5, "duration": 3 },
+        { "midi": 67, "staff": 2, "onset": 1.5, "duration": 3 }
+      ]
+    }
+  ]
+}

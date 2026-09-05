@@ -1866,3 +1866,35 @@
 - Confidence: high
 - Scope-risk: moderate
 - Related: #134, #44, P0-B, 2026-09-05 VM reproduction
+
+## D-049: 이미지 근거가 일치하는 6/9 오인만 내부 리듬 재해석 후보로 만든다
+
+- Date: 2026-09-06
+- Status: Accepted when the guarded meter-retry implementation merges; not deployed
+- Context: #134의 두 9 글리프를 기존 분류기가 6으로 인식한다. Bravura/Leland 픽셀 template의
+  독립 비교는 두 글리프를 9로 판정했다. 공식 Audiveris 5.3 samples.zip의 숫자 3,048개 중
+  9가 아닌 3,009개에서 9 제안은 0개, 라벨 9의 39개 중 제안은 23개(16개는 보류)였다.
+  이는 표본 내 결과이지 무오류 보장이 아니다. 점음표 누락은 별도이고 전체 악보 해결은 주장하지 않는다.
+- Decision:
+  1. 정상 결과는 재실행하지 않는다. 6/8 단일 박자의 출력에서 일반 마디 둘 이상이 넘치고 전체의
+     절반 이상이 넘치는 경우에만 검사한다. 지원 범위는 pinned Audiveris 5.11.0의 한 페이지,
+     한 파트·두 개의 5선 보표, 첫 system의 선택된 6/8 쌍 두 개뿐이다. 변경 박자/불명확한 그래프는 보류한다.
+  2. 두 선택된 분자 글리프 모두 aspect-preserving 정규화 후 9 IoU>=0.65 및 6 대비 차이>=0.08을
+     만족해야 한다. 한쪽만 일치하거나 글꼴/글리프/체크포인트를 읽을 수 없으면 기존 결과를 유지한다.
+  3. 원본 graph/출력을 보존하고 별도 임시 폴더의 graph 사본에서만 선택된 분자와 쌍의 값을 바꾼다.
+     RHYTHMS/PAGE 완료표시를 지운 뒤 엔진을 다시 실행한다. exported XML/JSON에 음표나 박자를 덧쓰지 않는다.
+  4. 재시도도 동일한 변환 semaphore 안에서 순차 실행하며 전체 작업의 기존 timeout 잔여량만 쓴다.
+     재시도 실패·timeout·모호한 출력은 원래 출력을 반환한다. 취소는 전파하고 자식 프로세스를 회수한다.
+  5. 재시도 출력의 9/8, 동일 파트/마디 구조, 기존 staff별 pitch multiplicity의 비감소와 리듬 모순 감소를
+     확인해야 선택한다. 원본 sound/metronome 템포 표기와 변환기가 해석한 시작 템포도 보존돼야 한다.
+     같은 숫자가 다른 위치로 옮겨져 시작 템포가 사라지는 후보도 거부한다. 이 조건은 이미지 근거를 대신하지 않으며 완전한 음악적 정답을 인증하지 않는다.
+     남은 오류에 대한 D-048 경고는 유지한다.
+- Rejected: 6/8 전체를 9/8로 치환 | 정당한 6/8 악보를 훼손한다.
+- Rejected: 경고 개수만 최소화 | 점음표가 빠져도 경고가 줄어들 수 있다.
+- Rejected: 모든 PDF의 SYMBOLS 상수를 변경 | 첫 마디 점음표도 완전히 해결되지 않았으며 일반 회귀가 검증되지 않았다.
+- Constraint: D-040 원본 PDF 미보관; 기존 결과 파일 불변; source tempo precedence 불변; 원본 점음표/붙임줄을 추정해 채우지 않는다.
+- Confidence: medium
+- Scope-risk: moderate
+- Tested: Same-PDF isolated automatic retry selected 9/8 in 28.604s; exported overflow bars 10→1. Runtime numeral module repeated the 3,048-label probe without non-9 proposals. Failure/budget/cancellation tests pass.
+- Not-tested: Full-score musical correctness, handwritten/unseen digit fonts and end-to-end genuine 6/8 PDF corpus. First-bar dot/tie defects and fresh baseline's late-positioned opening tempo remain unresolved; do not close #134 or mark its phase DONE for this partial repair.
+- Related: #134; validation/2026-09-06-recognition-reference-checkpoint.md

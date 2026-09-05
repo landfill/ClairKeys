@@ -8,6 +8,12 @@ import logging
 from pathlib import Path
 from typing import Optional
 import os
+import tempfile
+from time import monotonic
+
+from omr.converter import MusicXMLToClairKeysConverter
+from omr.meter_retry import accept_meter_retry, prepare_meter_retry, retry_is_eligible
+from omr.time_numeral import classify_time_numeral
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +93,7 @@ class AudiverisProcessor:
     async def _process_pdf_unlocked(
         self, pdf_path: Path, output_dir: Path
     ) -> Path:
+        deadline = monotonic() + self.process_timeout_seconds
         try:
             logger.info(f"Starting Audiveris processing for {pdf_path}")
             
@@ -118,10 +125,11 @@ class AudiverisProcessor:
                 cwd=output_dir
             )
             
-            stdout, stderr = await self._communicate_with_timeout(
-                process,
-                self.process_timeout_seconds,
-            )
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                await self._kill_and_wait(process)
+                raise RuntimeError(f'Audiveris timed out after {self.process_timeout_seconds:g} seconds')
+            stdout, stderr = await self._communicate_with_timeout(process, remaining)
             
             # Check if process completed successfully
             if process.returncode != 0:
@@ -147,11 +155,69 @@ class AudiverisProcessor:
             musicxml_path = output_files[0]
             
             logger.info(f"Successfully generated MusicXML: {musicxml_path}")
-            return musicxml_path
+            return await self._maybe_retry_meter(musicxml_path, pdf_path, output_dir, deadline)
             
         except Exception as e:
             logger.error(f"Error in Audiveris processing: {str(e)}")
             raise
+
+    async def _maybe_retry_meter(
+        self, original: Path, pdf_path: Path, output_dir: Path, deadline: float
+    ) -> Path:
+        """A failed optional recognition retry must never erase a valid first result.
+
+        Called inside the existing conversion slot. Both JVMs are sequential and
+        share the original deadline; normal results keep their original bytes.
+        """
+        source = output_dir / f'{pdf_path.stem}.omr'
+        if not source.is_file() or monotonic() >= deadline:
+            return original
+        try:
+            converter = MusicXMLToClairKeysConverter()
+            before = converter._parse_musicxml(original).getroot()
+            if not retry_is_eligible(before):
+                return original
+            retry_dir = Path(tempfile.mkdtemp(prefix='meter-retry-', dir=output_dir))
+            target = retry_dir / 'retry.omr'
+            jar = self.audiveris_executable.parent.parent / 'lib/app/audiveris.jar'
+            evidence = prepare_meter_retry(source, target, lambda table: classify_time_numeral(table, jar))
+            if not evidence:
+                return original
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                return original
+            logger.info('Retrying internal meter interpretation using two-staff image evidence: %s', evidence)
+            process = await asyncio.create_subprocess_exec(
+                str(self.audiveris_executable), '-batch', '-transcribe', '-export',
+                '-output', str(retry_dir), '--', str(target),
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=retry_dir,
+            )
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                await self._kill_and_wait(process)
+                return original
+            await self._communicate_with_timeout(process, remaining)
+            if process.returncode != 0:
+                logger.warning('Meter retry exited %s; retaining first recognition result', process.returncode)
+                return original
+            outputs = sorted(retry_dir.glob('*.mxl'))
+            if not outputs:
+                outputs = sorted(retry_dir.glob('*.xml'))
+            if len(outputs) != 1:
+                return original
+            candidate = converter._parse_musicxml(outputs[0]).getroot()
+            if not accept_meter_retry(before, candidate):
+                logger.warning('Meter retry failed structure/pitch/rhythm guards; retaining first result')
+                return original
+            logger.info('Selected image-supported 9/8 reinterpretation; remaining recognition errors may persist')
+            return outputs[0]
+        except asyncio.CancelledError:
+            raise
+        except Exception as error:
+            # Diagnostics only; PDF/image checkpoints stay inside the existing
+            # request temp tree and are removed by the service's normal cleanup.
+            logger.warning('Meter retry unavailable (%s); retaining first result', type(error).__name__)
+            return original
     
     async def validate_audiveris_installation(self) -> bool:
         """
