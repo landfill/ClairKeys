@@ -2,6 +2,38 @@
 
 Last updated: 2026-09-05 KST
 
+## #130 stage 4 STOPPED — every hand-motion measure inverts on the arpeggio; PR #136 open (2026-09-05)
+
+- Stage 4 could not lower `wastedHandTravel` in any form the worker tried (37–51, 51, 53 — all worse). Before
+  writing the attempt off, the measure itself was checked. **It inverts**: on the corpus arpeggio the model's
+  `5 1 2 1 2` scores 2 of 4 while both conventional answers score 3, and an exhaustive search over all 5^5
+  fingerings puts `1 4 1 4 1` on top at 1 of 4 — a 26-semitone arpeggio alternating thumb and ring finger.
+  That is where optimising this measure converges.
+- **D-044's harness had two holes, and PR [#136](https://github.com/landfill/ClairKeys/pull/136) closes both.**
+  It only checked for inversion, so a measure returning the same number for good and bad passed trivially —
+  which is what happened on every scale, 0 against 0. And the set held three scales and one leap with **no
+  arpeggio**, so a measure was validated on passages where the defect does not occur. Adding bar 3
+  disqualified `wastedHandTravel` immediately.
+- **Three independent measures of hand motion now agree that the model's arpeggio fingering beats the
+  conventional one.** Three agreements are not three coincidences. Few fingers with the hand moving is real
+  left-hand technique in a pedalled arpeggio this wide, so **there is no evidence the model is wrong there**,
+  and stage 4 stops rather than optimising toward an answer nobody has shown to be right.
+- **What is settled and what is not.** Settled: unreachable chord pairs went 26 of 154 to 0 (D-043) — that
+  defect was measurable and is fixed. The three surviving targets are already healthy: longest repetition run
+  3, pitch-changing runs 1, same-finger leaps 10 of 155. Not settled: whether the wide-arpeggio fingering is
+  wrong at all.
+- **To make progress, someone has to name a bar that looks wrong on screen and the fingering it should have.**
+  Only then is there an entry for the validity set. The coordinator guessing at conventional answers is what
+  consumed stages 3 and 4; D-045 forbids repeating it. The user confirmed on 2026-09-05 that identifying bars
+  is awkward, so this is parked as a follow-up rather than a blocker on the PR.
+- Stage 5 (re-scoping the leap exception) rests on the same missing evidence.
+- Worker-startup note worth keeping: the first dispatch failed with `agent_prompt_blocked` because the Codex
+  CLI update dialog was holding the input, with the cursor defaulting to **`1. Update now (curl … | sh)`** —
+  a stray Enter would have run a piped remote script. Arrow down twice to `3. Skip until next version`, then
+  retry with `--retry-of`. Orca diagnoses this state as `blockedReason: codex-update-prompt`.
+- Recorded as D-045; the phase document is now `BLOCKED` with a `Blocked on` section. Evidence:
+  `docs/recovery/reviews/PR-136.md`, issue #130's comment of 2026-09-05.
+
 ## #130 stage 3 MERGED — the targets are validated now; stage 4 is the model change (2026-09-05)
 
 - PR [#133](https://github.com/landfill/ClairKeys/pull/133) merged as `16d68a2`, post-merge checks green.
