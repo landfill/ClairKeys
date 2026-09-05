@@ -37,13 +37,16 @@ export default function FallingNotes({
         return (
           <div
             key={index}
+            data-sustaining={visualNote.sustaining || undefined}
             className="absolute"
             style={{
               transform: `translate(${visualNote.x}px, ${visualNote.y}px)`,
               width: visualNote.w,
               height: visualNote.h,
               background: visualNote.color,
-              boxShadow: '0 1px 8px rgba(0,0,0,0.45)',
+              opacity: visualNote.sustaining ? 0.25 : 1,
+              border: visualNote.sustaining ? `1px dashed ${visualNote.color}` : undefined,
+              boxShadow: visualNote.sustaining ? undefined : '0 1px 8px rgba(0,0,0,0.45)',
               borderRadius: 6,
               zIndex: visualNote.z
             }}

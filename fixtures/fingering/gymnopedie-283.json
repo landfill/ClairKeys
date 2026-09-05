@@ -1,0 +1,2566 @@
+{
+  "version": "1.1",
+  "title": "Gymnopédie No.1",
+  "composer": "Erik Satie",
+  "metadata": {
+    "title": "Gymnopédie No.1",
+    "composer": "Erik Satie"
+  },
+  "notes": [
+    {
+      "midi": 43,
+      "start": 0,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 0.789474,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 0.789474,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 0.789474,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 38,
+      "start": 2.368421,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 3.157895,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 3.157895,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 3.157895,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 43,
+      "start": 4.736842,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 5.526316,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 5.526316,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 5.526316,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 38,
+      "start": 7.105263,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 7.894737,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 7.894737,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 7.894737,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 43,
+      "start": 9.473684,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 10.263158,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 10.263158,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 10.263158,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 78,
+      "start": 10.263158,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 81,
+      "start": 11.052632,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 11.842105,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 79,
+      "start": 11.842105,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 12.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 12.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 12.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 78,
+      "start": 12.631579,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 73,
+      "start": 13.421053,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 43,
+      "start": 14.210526,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 14.210526,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 15,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 15,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 15,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 15,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 74,
+      "start": 15.789474,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 16.578947,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 16.578947,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 17.368421,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 17.368421,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 17.368421,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 43,
+      "start": 18.947368,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 18.947368,
+      "duration": 9.473684,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 19.736842,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 19.736842,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 19.736842,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 38,
+      "start": 21.315789,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 22.105263,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 22.105263,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 22.105263,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 43,
+      "start": 23.684211,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 24.473684,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 24.473684,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 24.473684,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 38,
+      "start": 26.052632,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 26.842105,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 26.842105,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 26.842105,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 43,
+      "start": 28.421053,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 29.210526,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 29.210526,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 29.210526,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 78,
+      "start": 29.210526,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 81,
+      "start": 30,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 30.789474,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 79,
+      "start": 30.789474,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 31.578947,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 31.578947,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 31.578947,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 78,
+      "start": 31.578947,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 73,
+      "start": 32.368421,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 43,
+      "start": 33.157895,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 33.157895,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 33.947368,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 33.947368,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 33.947368,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 33.947368,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 74,
+      "start": 34.736842,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 35.526316,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 35.526316,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 36.315789,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 36.315789,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 36.315789,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 42,
+      "start": 37.894737,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 37.894737,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 38.684211,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 38.684211,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 38.684211,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 35,
+      "start": 40.263158,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 78,
+      "start": 40.263158,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 41.052632,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 41.052632,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 41.052632,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 40,
+      "start": 42.631579,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 42.631579,
+      "duration": 7.105263,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 55,
+      "start": 43.421053,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 43.421053,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 40,
+      "start": 45,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 45.789474,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 45.789474,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 67,
+      "start": 45.789474,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 38,
+      "start": 47.368421,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 53,
+      "start": 48.157895,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 48.157895,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 48.157895,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 33,
+      "start": 49.736842,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 49.736842,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 50.526316,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 60,
+      "start": 50.526316,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 50.526316,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 50.526316,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 72,
+      "start": 51.315789,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 52.105263,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 76,
+      "start": 52.105263,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 55,
+      "start": 52.894737,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 52.894737,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 52.894737,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 52.894737,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 53.684211,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 54.473684,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 54.473684,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 50,
+      "start": 55.263158,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 55,
+      "start": 55.263158,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 55.263158,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 55.263158,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 72,
+      "start": 55.263158,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 56.052632,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 56.842105,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 56.842105,
+      "duration": 3.947368,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 48,
+      "start": 57.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 52,
+      "start": 57.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 57.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 57.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 38,
+      "start": 59.210526,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 48,
+      "start": 60,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 54,
+      "start": 60,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 60,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 60,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 60.789474,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 61.578947,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 76,
+      "start": 61.578947,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 62.368421,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 60,
+      "start": 62.368421,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 65,
+      "start": 62.368421,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 77,
+      "start": 62.368421,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 79,
+      "start": 63.157895,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 63.947368,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 81,
+      "start": 63.947368,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 64.736842,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 60,
+      "start": 64.736842,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 64.736842,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 72,
+      "start": 64.736842,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 74,
+      "start": 65.526316,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 66.315789,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 76,
+      "start": 66.315789,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 50,
+      "start": 67.105263,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 55,
+      "start": 67.105263,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 67.105263,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 67.105263,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 67.105263,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 67.894737,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 68.684211,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 68.684211,
+      "duration": 3.947368,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 48,
+      "start": 69.473684,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 52,
+      "start": 69.473684,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 69.473684,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 69.473684,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 38,
+      "start": 71.052632,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 48,
+      "start": 71.842105,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 54,
+      "start": 71.842105,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 71.842105,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 71.842105,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 72.631579,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 73.421053,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 79,
+      "start": 73.421053,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 74.210526,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 74.210526,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 67,
+      "start": 74.210526,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 42,
+      "start": 75.789474,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 78,
+      "start": 75.789474,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 76.578947,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 76.578947,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 76.578947,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 35,
+      "start": 78.157895,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 78.157895,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 78.947368,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 78.947368,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 78.947368,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 78.947368,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 79.736842,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 80.526316,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 80.526316,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 81.315789,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 81.315789,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 81.315789,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 81.315789,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 82.105263,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 82.894737,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 82.894737,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 83.684211,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 83.684211,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 83.684211,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 83.684211,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 83.684211,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 84.473684,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 85.263158,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 85.263158,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 86.052632,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 86.052632,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 86.052632,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 52,
+      "start": 86.842105,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 86.842105,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 86.842105,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 67,
+      "start": 86.842105,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 45,
+      "start": 87.631579,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 55,
+      "start": 87.631579,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 60,
+      "start": 87.631579,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 87.631579,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 87.631579,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 72,
+      "start": 87.631579,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 90,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 45,
+      "start": 90,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 50,
+      "start": 90,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 90,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 90,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 90,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 74,
+      "start": 90,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 92.368421,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 79,
+      "start": 92.368421,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 93.157895,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 93.157895,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 67,
+      "start": 93.157895,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 40,
+      "start": 94.736842,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 95.526316,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 95.526316,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 65,
+      "start": 95.526316,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 95.526316,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 40,
+      "start": 97.105263,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 97.105263,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 97.894737,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 60,
+      "start": 97.894737,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 65,
+      "start": 97.894737,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 72,
+      "start": 97.894737,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 77,
+      "start": 98.684211,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 99.473684,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 76,
+      "start": 99.473684,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 60,
+      "start": 100.263158,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 100.263158,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 100.263158,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 100.263158,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 72,
+      "start": 101.052632,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 101.842105,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 76,
+      "start": 101.842105,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 102.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 60,
+      "start": 102.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 65,
+      "start": 102.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 102.631579,
+      "duration": 1.578947,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 102.631579,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 72,
+      "start": 103.421053,
+      "duration": 0.789474,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 104.210526,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 65,
+      "start": 104.210526,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 105,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 105,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 105,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 52,
+      "start": 105.789474,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 105.789474,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 105.789474,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 67,
+      "start": 105.789474,
+      "duration": 0.789474,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 45,
+      "start": 106.578947,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 55,
+      "start": 106.578947,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 60,
+      "start": 106.578947,
+      "duration": 1.578947,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 106.578947,
+      "duration": 1.578947,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 106.578947,
+      "duration": 1.578947,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 106.578947,
+      "duration": 1.578947,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 72,
+      "start": 106.578947,
+      "duration": 1.578947,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 108.947368,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 45,
+      "start": 108.947368,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 50,
+      "start": 108.947368,
+      "duration": 2.368421,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 108.947368,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 65,
+      "start": 108.947368,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 108.947368,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 108.947368,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 74,
+      "start": 108.947368,
+      "duration": 2.368421,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    }
+  ],
+  "duration": 111.315789,
+  "tempo": 76,
+  "tempoSource": "user",
+  "timingReferenceBpm": 76,
+  "scoreTempo": null,
+  "keySignature": "D",
+  "timeSignature": "3/4",
+  "generated_at": "2026-09-05T05:13:29.711745"
+}

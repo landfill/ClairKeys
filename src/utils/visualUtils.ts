@@ -27,6 +27,20 @@ export function notesToVisualNotes(
     // Skip notes outside visible time range for performance
     const noteEnd = note.start + note.duration;
     if (noteEnd < visibleTimeStart || note.start > visibleTimeEnd) continue;
+
+    if (note.keyRelease !== undefined && note.keyRelease > note.start && note.keyRelease < noteEnd) {
+      // Split only the display geometry. Both rectangles together still cover
+      // the complete musical duration used by the audio scheduler.
+      const held = { ...note, keyRelease: undefined, duration: note.keyRelease - note.start };
+      const sustaining = {
+        ...note, keyRelease: undefined, start: note.keyRelease,
+        duration: noteEnd - note.keyRelease, finger: undefined,
+      };
+      visualNotes.push(...notesToVisualNotes([held], nowSec, pxPerSec, height, layout));
+      visualNotes.push(...notesToVisualNotes([sustaining], nowSec, pxPerSec, height, layout)
+        .map(visual => ({ ...visual, sustaining: true })));
+      continue;
+    }
     
     // Calculate note height based on duration with minimum visibility
     const noteHeight = Math.max(3, note.duration * pxPerSec);
@@ -79,7 +93,7 @@ export function calculateSongLength(notes: FallingNote[]): number {
 export function getActiveNotes(notes: FallingNote[], currentTime: number): FallingNote[] {
   return notes.filter(note => 
     note.start <= currentTime && 
-    currentTime <= note.start + note.duration
+    currentTime < (note.keyRelease ?? note.start + note.duration)
   );
 }
 

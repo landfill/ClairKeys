@@ -49,6 +49,7 @@ export default function FallingNotesPlayer({
 }) {
   // Convert canonical animation data to falling notes format
   const notes = useMemo(() => canonicalToFallingNotes(animationData), [animationData])
+  const hasReleaseGuidance = useMemo(() => notes.some(note => note.keyRelease !== undefined), [notes])
   
   // Use falling notes player hook for audio-visual synchronization
   const {
@@ -198,7 +199,16 @@ export default function FallingNotesPlayer({
         scoreTempo={animationData.scoreTempo}
         isPlaybackActive={isPlaying}
         className={isPlaying ? '' : 'mb-4'}
-      />
+      >
+        {isPlaying && hasReleaseGuidance && <span role="note" className="ml-2 text-xs text-ink-muted">
+          옅은 노트: 소리 유지 · 자동 손 떼기 제안
+        </span>}
+      </TempoDisplay>
+
+      {!isPlaying && hasReleaseGuidance && <p className="mb-2 text-xs text-ink-muted" role="note">
+        옅은 노트는 손을 뗀 뒤 소리가 이어지는 구간입니다. 손 떼기 시점은 자동 연습 제안이며,
+        소리를 이어가려면 페달이나 다른 연주 방법이 필요할 수 있습니다.
+      </p>}
 
       {isPlaying ? (
         /* One row instead of four. The landscape viewport this mode targets is

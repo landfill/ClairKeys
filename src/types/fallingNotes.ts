@@ -42,6 +42,8 @@ export type FallingNote = {
   fingerSource?: FingerSource;
   /** Version of the deterministic inference, present only when fingerSource is inferred. */
   fingeringAlgorithm?: string;
+  /** Player-only inferred finger-release time; musical/audio duration is unchanged. */
+  keyRelease?: number;
   /** Note velocity (0-1) */
   velocity?: number;
 };
@@ -126,6 +128,8 @@ export type KeyPosition = {
  * Visual representation of a falling note
  */
 export type VisualNote = {
+  /** Continuing sound after an inferred release, not a finger-holding instruction. */
+  sustaining?: boolean;
   /** X position in pixels */
   x: number;
   /** Y position in pixels */

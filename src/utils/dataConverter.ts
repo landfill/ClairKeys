@@ -2,6 +2,7 @@ import type { PianoAnimationData, PianoNote } from '@/types/animation'
 import type { FallingNote } from '@/types/fallingNotes'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import { addFingeringToNotes } from '@/utils/fingeringUtils'
+import { addKeyReleaseGuidance } from '@/utils/heldNoteGuidance'
 
 /**
  * Data Converter Utilities
@@ -106,7 +107,7 @@ export function canonicalToFallingNotes(data: CanonicalAnimationData): FallingNo
 
   // MusicXML fingering is optional. Preserve explicit source values and add a
   // deterministic beginner hint only where the stored document has a gap.
-  return addFingeringToNotes(notes)
+  return addKeyReleaseGuidance(addFingeringToNotes(notes))
 }
 
 /**
