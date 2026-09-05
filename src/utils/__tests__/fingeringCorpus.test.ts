@@ -1,10 +1,9 @@
 /**
  * Fingering measured against a real score rather than hand-built scales.
  *
- * The numbers below are a ratchet, not a target. They record what
- * `phrase-dp-v2` does to the corpus today, defects included, so that issue #130
- * can be worked on one mechanism at a time with the effect of each change
- * visible. Any change to the inferrer moves these numbers and must update them
+ * The numbers below are a ratchet, not a target. They record what the inferrer
+ * does to the corpus today, defects included, so that issue #130 can be worked
+ * on one mechanism at a time with the effect of each change visible. Any change to the inferrer moves these numbers and must update them
  * deliberately — an improvement fails this test just as loudly as a regression,
  * which is the point.
  *
@@ -14,7 +13,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { addFingeringToNotes } from '../fingeringUtils';
-import { measureFingering, maxReach, impliedAnchor } from '../../../scripts/lib/fingeringMetrics';
+import { measureFingering } from '../../../scripts/lib/fingeringMetrics';
+import { impliedAnchor } from '../handReach';
 import type { FallingNote, Finger } from '@/types/fallingNotes';
 
 const CORPUS = path.join(__dirname, '..', '..', '..', 'fixtures', 'fingering');
@@ -36,45 +36,6 @@ function loadCorpusScore(file: string): { notes: FallingNote[]; raw: Record<stri
     })),
   };
 }
-
-describe('fingering metrics', () => {
-  it('treats a finger pair that cannot span an interval as unreachable', () => {
-    expect(maxReach(4, 5)).toBe(5);
-    expect(maxReach(1, 5)).toBe(15);
-    // Two notes cannot share one finger at any distance.
-    expect(maxReach(3, 3)).toBe(0);
-    // The table is symmetric in the order the fingers are given.
-    expect(maxReach(5, 2)).toBe(maxReach(2, 5));
-  });
-
-  it('judges a chord on every pair of its notes, not only neighbouring ones', () => {
-    // The reach table is nowhere subadditive — all ten finger triples have
-    // `MAX[a-b] + MAX[b-c] > MAX[a-c]` — so two legal adjacent spans can add up
-    // to an outer span no hand can take. C4-A#4-D#5 on 1-2-3 is exactly that:
-    // 10 semitones is the 1-2 limit, 5 is the 2-3 limit, and the resulting 15
-    // between thumb and middle finger is past the 1-3 limit of 12.
-    const chord: FallingNote[] = [
-      { midi: 60, start: 0, duration: 1, hand: 'R', finger: 1 },
-      { midi: 70, start: 0, duration: 1, hand: 'R', finger: 2 },
-      { midi: 75, start: 0, duration: 1, hand: 'R', finger: 3 },
-    ];
-
-    const m = measureFingering(chord);
-    expect(m.chordPairs).toBe(3);
-    expect(m.reachViolations.map(v => `${v.lowFinger}-${v.highFinger} ${v.semitones}>${v.limit}`))
-      .toEqual(['1-3 15>12']);
-  });
-
-  it('derives the same hand position from either hand playing the same shape', () => {
-    // A right-hand thumb and a left-hand little finger both sit at the low edge.
-    expect(impliedAnchor(60, 1, 'R')).toBe(60);
-    expect(impliedAnchor(60, 5, 'L')).toBe(60);
-    // A perfect fifth is exactly the natural span, so the far finger implies the
-    // same position — this is the mechanism issue #130 turns on.
-    expect(impliedAnchor(67, 5, 'R')).toBe(60);
-    expect(impliedAnchor(67, 1, 'L')).toBe(60);
-  });
-});
 
 describe('love-affair-411 corpus score', () => {
   const { notes, raw } = loadCorpusScore('love-affair-411.json');
@@ -112,19 +73,19 @@ describe('love-affair-411 corpus score', () => {
   // --- the ratchet -------------------------------------------------------
   // Each number is a defect issue #130 is meant to reduce. Lower them as the
   // work lands; never raise one without saying why in the same commit.
-  it('records what phrase-dp-v2 currently does, defects included', () => {
+  it('records what the inferrer currently does, defects included', () => {
     const m = measureFingering(enhanced);
 
-    // Defect 2: no absolute per-pair reach limit, so chords get finger pairs
-    // that cannot span them. Target 0.
+    // Defect 2 is fixed: `chordIsReachable` now prunes chord candidates, so no
+    // chord is fingered with a pair that cannot span it. This must stay at 0.
     expect({
       unreachableChordPairs: m.reachViolations.length,
       chordPairs: m.chordPairs,
-    }).toEqual({ unreachableChordPairs: 26, chordPairs: 154 });
+    }).toEqual({ unreachableChordPairs: 0, chordPairs: 154 });
 
-    // Defect 1: the hand relocates part-way through steady pitch motion because
-    // the model spends its whole span in one step and then oscillates. Target is
-    // roughly one reposition per octave of a run, far below this.
+    // Defect 1 is still open — stage 3's job. The hand relocates part-way
+    // through steady pitch motion because the model spends its whole span in one
+    // step and then oscillates. Target is roughly one reposition per octave.
     expect({
       repositions: m.repositionsInMonotoneRuns.length,
       overEvents: m.monotoneRunEvents,

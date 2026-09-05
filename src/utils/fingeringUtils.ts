@@ -6,8 +6,9 @@
  */
 
 import type { FallingNote, Hand, Finger } from '@/types/fallingNotes';
+import { NATURAL_SPAN, spatialFinger, chordIsReachable } from '@/utils/handReach';
 
-export const FINGERING_ALGORITHM_VERSION = 'phrase-dp-v2';
+export const FINGERING_ALGORITHM_VERSION = 'phrase-dp-v3';
 
 /**
  * MIDI note ranges for hand assignment
@@ -203,13 +204,6 @@ interface EventCandidate {
   cost: number;
 }
 
-/**
- * Semitones from the low edge of a natural hand position to each spatial finger
- * — the C-D-E-F-G five-finger shape. `spatialFinger` has already mirrored the
- * left hand, so one table serves both.
- */
-const NATURAL_SPAN = [0, 2, 4, 5, 7] as const;
-
 /** Semitones the hand absorbs by leaning rather than by travelling. */
 const HAND_GIVE = 1;
 
@@ -379,11 +373,21 @@ function eventCandidates(
 ): EventCandidate[] {
   if (event.indices.length > 1) {
     if (event.indices.length <= 5) {
-      const candidates = fingerCombinations(event.indices.length)
+      const shapes = fingerCombinations(event.indices.length)
         .map(spatial => spatial.map(value => hand === 'R' ? value as Finger : (6 - value) as Finger))
         .filter(fingers => event.indices.every((noteIndex, position) =>
           !isValidFinger(original[noteIndex].finger) || original[noteIndex].finger === fingers[position]
-        ))
+        ));
+
+      // Reach is a hard constraint, not a cost: a shape the hand cannot hold is
+      // not an expensive answer, it is not an answer. Pricing it instead would
+      // let a run of cheap transitions buy an impossible chord, which is how
+      // `E4 + E5` came to be fingered 4 and 5.
+      const holdable = shapes.filter(fingers => chordIsReachable(event.midis, fingers));
+
+      // A chord wider than one hand can hold leaves nothing; keep the score's
+      // own shapes rather than inventing a reachable chord it did not ask for.
+      const candidates = (holdable.length > 0 ? holdable : shapes)
         .map(fingers => makeCandidate(fingers, event, hand, notes));
       // Conflicting source annotations are still source truth. They may not be
       // physically monotonic, but silently rewriting them would be worse.
@@ -558,10 +562,6 @@ function phraseDirection(events: FingeringEvent[], start: number): number {
     if (next !== origin) return Math.sign(next - origin);
   }
   return 0;
-}
-
-function spatialFinger(finger: Finger, hand: Hand): number {
-  return hand === 'R' ? finger : 6 - finger;
 }
 
 function isValidHand(hand: FallingNote['hand']): hand is Hand {

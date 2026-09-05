@@ -2,58 +2,15 @@
  * Measurable properties of an inferred fingering.
  *
  * These exist so that "the left hand looks wrong" becomes a number a test can
- * hold. They deliberately do not import the cost model: a metric that is
- * defined in terms of the thing it measures cannot catch that thing being
- * wrong. What they do share with the model is the physical premise that a hand
- * has one position and five fingers at fixed offsets from it — that is anatomy,
- * not a scoring choice.
+ * hold. They deliberately do not import the cost model: a metric defined in the
+ * terms of the thing it measures cannot catch that thing being wrong. What both
+ * read is `@/utils/handReach`, which owns neither of them — it is anatomy, and
+ * sharing it keeps the two from drifting apart without making the measurement
+ * circular.
  */
 
 import type { FallingNote, Finger, Hand } from '@/types/fallingNotes';
-
-/**
- * Semitones from the low edge of a natural hand position to each finger, from
- * the low finger upward: the C-D-E-F-G five-finger shape. Index 0 is the
- * right-hand thumb and the left-hand little finger.
- */
-const NATURAL_SPAN = [0, 2, 4, 5, 7] as const;
-
-/**
- * Largest interval each finger pair can still take, in semitones, for an adult
- * hand. Deliberately generous — these are "no longer physically available"
- * bounds, not comfort bounds, so that anything a metric flags is indisputable
- * rather than a matter of taste or hand size. Keyed low-finger-first.
- *
- * The table is nowhere subadditive: every one of the ten finger triples has
- * `MAX_REACH[a-b] + MAX_REACH[b-c] > MAX_REACH[a-c]`, by two to five semitones.
- * A chord must therefore be checked on every pair of its notes, not only on
- * neighbouring ones — two legal adjacent spans can add up to an outer span no
- * hand can take.
- *
- * Not sourced from Parncutt et al. (1997); that paper's tables give comfort and
- * practical ranges per pair and would be the reference to adopt properly if
- * these are ever tightened. Treat the numbers below as this repository's
- * working floor until then.
- */
-const MAX_REACH: Readonly<Record<string, number>> = {
-  '1-2': 10, '1-3': 12, '1-4': 14, '1-5': 15,
-  '2-3': 5, '2-4': 7, '2-5': 10,
-  '3-4': 4, '3-5': 7,
-  '4-5': 5,
-};
-
-/** Where a finger playing a pitch puts the hand, as a MIDI number. */
-export function impliedAnchor(midi: number, finger: Finger, hand: Hand): number {
-  const spatial = hand === 'R' ? finger : 6 - finger;
-  return midi - NATURAL_SPAN[spatial - 1];
-}
-
-/** The widest interval this finger pair can still take, or null if unknown. */
-export function maxReach(a: Finger, b: Finger): number | null {
-  if (a === b) return 0;
-  const [lo, hi] = a < b ? [a, b] : [b, a];
-  return MAX_REACH[`${lo}-${hi}`] ?? null;
-}
+import { impliedAnchor, maxReach } from '@/utils/handReach';
 
 export interface ReachViolation {
   start: number;
@@ -152,7 +109,6 @@ export function measureFingering(notes: FallingNote[]): FingeringMetrics {
           const high = event.notes[j];
           chordPairs += 1;
           const limit = maxReach(low.finger, high.finger);
-          if (limit === null) continue;
           const semitones = high.midi - low.midi;
           if (semitones > limit) {
             reachViolations.push({
