@@ -2,6 +2,46 @@
 
 Last updated: 2026-09-05 KST
 
+## The #126 playability review finally happened, and it failed — issue #130, PR #131 (2026-09-05)
+
+- The user opened the 411-note production score in the app and reported that left-hand fingering is still
+  unplayable. That is the manual review #126 had been carrying forward unmet for three sessions. **It was
+  performed, and `phrase-dp-v2` fails it.** The findings are issue
+  [#130](https://github.com/landfill/ClairKeys/issues/130); #126 keeps only tier 1.
+- **Hand assignment is not the problem, and the player is not the one doing it.** `converter.py:348
+  _hand_for` maps staff 1 to R and staff 2+ to L at conversion time, and `addFingeringToNotes` preserves a
+  valid hand — so the player's pitch-range `assignHand` never runs on this score. Zero mismatches across 411
+  notes. This matters because the left hand climbs to F#4, above the right hand's lowest note (A3): a
+  range-based rule would have misassigned those 44 notes. Scores that arrive without staff data still carry
+  that risk.
+- **Defect 1 — the model spends the whole hand on one step.** `NATURAL_SPAN` is exactly 7 semitones, so a
+  perfect fifth played little-finger-to-thumb implies the *same* anchor and costs nothing. In bar 3 the left
+  hand goes `E2 B2 G#3 B3 F#4 B3 G#3` and the model answers `5 1 2 1 2 1 2`: E2→B2 is free, after which
+  nothing is left and it oscillates. 19 of 29 left-hand bars reverse finger direction against a monotone
+  pitch line. **This is v1's thumb repetition one level up** — v1 had no hand position, v2 has one but no
+  budget for consuming the hand in the direction of travel.
+- **Defect 2 — no absolute reach limit.** 23 of 132 chord pairs get fingers that cannot span them: E4+E5 with
+  4 and 5, B2+A3 with 5 and 4. `makeCandidate` prices relative shape distortion only. Issue #126 had named a
+  per-pair reach table as a tier 2 item and PR #129 implemented the anchor approach without it.
+- **Defect 3 — the leap exception written in PR #129's review round was too generous.** The same mechanism it
+  blessed is producing unplayable output in real music. Re-scope it from measurement after defects 1 and 2.
+- **Tier 1 will not fix any of this**: measured 0 onsets where one hand sounds two voices at once in this
+  score, so `voice`-based event grouping changes nothing here. Reprioritised behind #130.
+- PR [#131](https://github.com/landfill/ClairKeys/pull/131) is stage 1 and **changes no production code**: the
+  score is now `fixtures/fingering/love-affair-411.json`, stored byte-for-byte, plus a metrics module that
+  deliberately does not import the cost model, and a **ratchet** test pinning today's defect counts — 23/132
+  unreachable pairs, 65 repositions over 171 monotone-run events. Recorded as D-042.
+- **The ratchet pins current values, not targets.** An improvement fails it as loudly as a regression, so the
+  next change must move the numbers on purpose. Asserting the target instead would leave CI red and hide the
+  next real regression. Never raise a number to make the suite pass.
+- Retention was never the obstacle: D-040 forbids the PDF alone, and the user confirmed that MusicXML and JSON
+  are fine. A previous suggestion in this session to anonymise the notes first was the same over-inference
+  D-040's Directive warns about.
+- Next: stage 2 (per-pair reach table — it prunes candidates, so it comes before the budget work), then stage
+  3 (directional finger budget), then stage 4 (re-scope the leap exception from measurement).
+- Evidence: `docs/recovery/phases/ISSUE-130-fingering-corpus-and-reach.md`, `docs/recovery/reviews/PR-131.md`,
+  `fixtures/fingering/README.md`, D-042.
+
 ## Issue #126 tier 2 MERGED — `phrase-dp-v2` is live on `main`; tier 1 is the next action (2026-09-05)
 
 - PR [#129](https://github.com/landfill/ClairKeys/pull/129) merged on the user's explicit approval as
