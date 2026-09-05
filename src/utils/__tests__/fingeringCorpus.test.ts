@@ -83,21 +83,29 @@ describe('love-affair-411 corpus score', () => {
       chordPairs: m.chordPairs,
     }).toEqual({ unreachableChordPairs: 0, chordPairs: 154 });
 
-    // Defect 1 is still open — stage 3's job. The hand relocates part-way
-    // through steady pitch motion because the model spends its whole span in one
-    // step and then oscillates. Target is roughly one reposition per octave.
+    // Defect 1 is still open — stage 3's job — but it is measured differently
+    // now. `repositionsInMonotoneRuns` was disqualified as a target: it rates the
+    // defective bar 3 arpeggio better than every conventional answer. See
+    // `fingeringMetricValidity.test.ts`. These three replace it, and each is
+    // shown there not to prefer a defective fingering.
     expect({
-      repositions: m.repositionsInMonotoneRuns.length,
-      overEvents: m.monotoneRunEvents,
-    }).toEqual({ repositions: 65, overEvents: 171 });
+      wastedHandTravel: m.wastedHandTravel.length,
+      sameFingerLeaps: m.sameFingerLeaps.length,
+      melodicTransitions: m.melodicTransitions,
+    }).toEqual({ wastedHandTravel: 36, sameFingerLeaps: 10, melodicTransitions: 155 });
 
     // Finger repetition is largely solved; both remaining runs are in the left
     // hand, and one of them is a genuinely repeated note (B2 B2 B2).
     expect(m.repetitionRuns.map(r => `${r.hand} finger ${r.finger} x${r.length}`))
       .toEqual(['L finger 1 x3', 'L finger 1 x3']);
+    expect({ longestRun: m.longestRepetitionRun, pitchChangingRuns: m.pitchChangingRepetitionRuns })
+      .toEqual({ longestRun: 3, pitchChangingRuns: 1 });
   });
 
   it('spends the whole left hand on the first step of the bar 3 arpeggio', () => {
+    // Still a defect pin, not a target. What makes it wrong is measurable as
+    // wasted hand travel: B2 taken by the thumb leaves nothing, so reaching G#3
+    // throws the hand eleven semitones for an interval that needed two.
     // The reported symptom, pinned exactly. E2 to B2 is a perfect fifth, so
     // little finger and thumb imply the same hand position and the step is free —
     // after which nothing is left and the fingering oscillates 2-1-2-1.

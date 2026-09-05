@@ -48,12 +48,22 @@ function report(file: string): void {
     console.log(`  bar ${String(bar(r.start)).padStart(3)} ${r.hand}  finger ${r.finger} x${r.length}  ${r.midis.map(noteName).join(' ')}`);
   }
 
+  console.log(`\none finger asked to leap: ${m.sameFingerLeaps.length} of ${m.melodicTransitions} melodic steps`);
+  for (const l of m.sameFingerLeaps.slice(0, 10)) {
+    console.log(`  bar ${String(bar(l.start)).padStart(3)} ${l.hand}  finger ${l.finger} across ${l.semitones} semitones  ${noteName(l.fromMidi)} -> ${noteName(l.toMidi)}`);
+  }
+
+  console.log(`\nhand motion the fingering added, not the music: ${m.wastedHandTravel.length} of ${m.melodicTransitions}`);
+  for (const j of [...m.wastedHandTravel].sort((a, b) => b.excess - a.excess).slice(0, 10)) {
+    console.log(`  bar ${String(bar(j.start)).padStart(3)} ${j.hand}  ${noteName(j.fromMidi)}:${j.fromFinger} -> ${noteName(j.toMidi)}:${j.toFinger}  travelled ${j.travelled}, needed ${j.unavoidable}, wasted ${j.excess}`);
+  }
+
+  console.log(`\nlongest same-finger run: ${m.longestRepetitionRun}; runs spanning a pitch change: ${m.pitchChangingRepetitionRuns}`);
+
+  // Descriptive only — see the note on the field. Printed so a change is visible,
+  // not so it can be optimised.
   const rate = m.monotoneRunEvents ? (m.repositionsInMonotoneRuns.length / m.monotoneRunEvents) : 0;
-  console.log(`\nhand repositions inside steady pitch motion: ${m.repositionsInMonotoneRuns.length} over ${m.monotoneRunEvents} events (${(rate * 100).toFixed(1)}%)`);
-  const byBar = new Map<number, number>();
-  for (const r of m.repositionsInMonotoneRuns) byBar.set(bar(r.start), (byBar.get(bar(r.start)) ?? 0) + 1);
-  const worst = [...byBar].sort((a, b) => b[1] - a[1]).slice(0, 8);
-  for (const [b, count] of worst) console.log(`  bar ${String(b).padStart(3)}: ${count}`);
+  console.log(`\n[not a target] hand repositions inside steady pitch motion: ${m.repositionsInMonotoneRuns.length} over ${m.monotoneRunEvents} (${(rate * 100).toFixed(1)}%)`);
 }
 
 const only = process.argv[2];

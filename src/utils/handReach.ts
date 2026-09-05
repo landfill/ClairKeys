@@ -89,3 +89,33 @@ export function chordIsReachable(midis: readonly number[], fingers: readonly Fin
   }
   return true;
 }
+
+/** Widest interval a thumb crossing spans. Beyond it the hand simply leaps. */
+const CROSSING_MAX_INTERVAL = 5;
+
+/**
+ * Whether two consecutive notes can be joined by passing the thumb under the
+ * hand, or a finger over the thumb.
+ *
+ * One end must be the thumb — it is what passes under, and what the others pass
+ * over — the other must be 2, 3 or 4, and the step must be small enough to tuck.
+ * A crossing moves the hand without breaking contact, so it is the one
+ * relocation that costs a line nothing.
+ */
+export function isThumbCrossing(
+  fromMidi: number,
+  fromFinger: Finger,
+  toMidi: number,
+  toFinger: Finger,
+  hand: Hand,
+): boolean {
+  const pitchDelta = toMidi - fromMidi;
+  if (pitchDelta === 0 || Math.abs(pitchDelta) > CROSSING_MAX_INTERVAL) return false;
+
+  const other = fromFinger === 1 ? toFinger : toFinger === 1 ? fromFinger : 0;
+  if (other === 0 || other === 5) return false;
+
+  // The finger number must move against the pitch: that is what a crossing is.
+  const spatialDelta = spatialFinger(toFinger, hand) - spatialFinger(fromFinger, hand);
+  return spatialDelta !== 0 && Math.sign(spatialDelta) !== Math.sign(pitchDelta);
+}
