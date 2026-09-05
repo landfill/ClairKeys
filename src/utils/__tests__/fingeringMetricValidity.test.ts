@@ -56,6 +56,17 @@ const PASSAGES: Passage[] = [
     good: [[5, 2, 1], [5, 3, 1]],
     bad: [[5, 5, 5]],
   },
+  {
+    // Bar 3 of the corpus, and the passage issue #130 was opened about. It has
+    // to be here: a set built only from scales validates a metric on passages
+    // where the defect does not occur. Two candidate metrics passed this file
+    // until this entry was added, and both inverted on it immediately.
+    name: 'LH bar 3 arpeggio, wider than the hand',
+    hand: 'L',
+    midis: [40, 47, 56, 59, 66],
+    good: [[5, 4, 2, 1, 2], [5, 3, 2, 1, 3]],
+    bad: [[5, 1, 2, 1, 2]],
+  },
 ];
 
 const build = (midis: number[], fingers: Finger[], hand: Hand): FallingNote[] =>
@@ -77,6 +88,17 @@ function inversions(score: (notes: FallingNote[]) => number): string[] {
     const worstGood = Math.max(...passage.good.map(f => score(build(passage.midis, f, passage.hand))));
     const bestBad = Math.min(...passage.bad.map(f => score(build(passage.midis, f, passage.hand))));
     if (worstGood > bestBad) found.push(`${passage.name}: good ${worstGood} > bad ${bestBad}`);
+  }
+  return found;
+}
+
+/** Passages where a metric actually separates the good fingerings from the bad. */
+function discriminations(score: (notes: FallingNote[]) => number): string[] {
+  const found: string[] = [];
+  for (const passage of PASSAGES) {
+    const worstGood = Math.max(...passage.good.map(f => score(build(passage.midis, f, passage.hand))));
+    const bestBad = Math.min(...passage.bad.map(f => score(build(passage.midis, f, passage.hand))));
+    if (worstGood < bestBad) found.push(passage.name);
   }
   return found;
 }
@@ -133,14 +155,29 @@ describe('what the motion measures do and do not describe', () => {
   });
 });
 
+/** The measures admitted as optimisation targets. */
+const ADMITTED = ['sameFingerLeaps', 'longestRepetitionRun', 'pitchChangingRepetitionRuns'];
+
 describe('metric validity against conventional fingerings', () => {
-  it.each([
-    'sameFingerLeaps',
-    'wastedHandTravel',
-    'longestRepetitionRun',
-    'pitchChangingRepetitionRuns',
-  ])('%s never prefers a defective fingering', name => {
+  it.each(ADMITTED)('%s never prefers a defective fingering', name => {
     expect(inversions(CANDIDATES[name])).toEqual([]);
+  });
+
+  it.each(ADMITTED)('%s can actually tell a good fingering from a bad one', name => {
+    // Not-inverting is not enough. A measure that returns the same number for
+    // both is useless as a target and passes an inversion check trivially —
+    // `wastedHandTravel` scored 0 for good and bad alike on every scale here,
+    // which is how it was admitted before this test existed.
+    expect(discriminations(CANDIDATES[name]).length).toBeGreaterThan(0);
+  });
+
+  it('records that wastedHandTravel is disqualified as a target', () => {
+    // It inverts on the arpeggio — the very passage issue #130 is about. The
+    // model's `5 1 2 1 2` scores 2 of 4 while both conventional answers score 3,
+    // and an exhaustive search over all 5^5 fingerings puts `1 4 1 4 1` on top
+    // at 1 of 4, which no one would play. Kept as a descriptive measure.
+    expect(inversions(CANDIDATES.wastedHandTravel))
+      .toEqual(['LH bar 3 arpeggio, wider than the hand: good 3 > bad 2']);
   });
 
   it('records that repositionsInMonotoneRuns is disqualified as a target', () => {
