@@ -10,7 +10,7 @@
  */
 
 import type { FallingNote, Finger, Hand } from '@/types/fallingNotes';
-import { impliedAnchor, maxReach, NATURAL_SPAN } from '@/utils/handReach';
+import { impliedAnchor, maxReach, NATURAL_SPAN, isThumbCrossing } from '@/utils/handReach';
 
 export interface ReachViolation {
   start: number;
@@ -217,7 +217,10 @@ export function measureFingering(notes: FallingNote[]): FingeringMetrics {
       // forced by the interval no matter which fingers take it.
       const unavoidable = Math.max(0, semitones - HAND_WIDTH);
       const excess = travelled - unavoidable;
-      if (excess > WASTED_TRAVEL_TOLERANCE) {
+      // A crossing relocates the hand without lifting it, so its anchor move is
+      // the mechanism working rather than motion the fingering wasted.
+      const crossing = isThumbCrossing(from.midi, from.finger, to.midi, to.finger, hand);
+      if (!crossing && excess > WASTED_TRAVEL_TOLERANCE) {
         wastedHandTravel.push({
           hand, start: to.start, fromMidi: from.midi, toMidi: to.midi,
           fromFinger: from.finger, toFinger: to.finger, travelled, unavoidable, excess,
