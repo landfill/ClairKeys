@@ -2,6 +2,26 @@
 
 Last updated: 2026-09-06 KST
 
+## PR142 merged and post-merge green; production cutover awaits separate approval (2026-09-06)
+
+- User-approved merge `79a2328` is on main; **all six merge-commit post-merge checks passed**. PR142 merge
+  is complete. Both work-branch tips are contained but retained for the existing user settings change.
+- New Docker-format image `localhost/clairkeys-omr:79a2328` built successfully from the exact merge,
+  ID `ff0a347f52b92803398e617c47541cd1b1d43fa366469b9a4625b61c839415ef`; HEALTHCHECK retained.
+  Image-internal modules passed all77 service tests with fixtures/frontend mounted read-only.
+- **Auto-review rejected the current-tag/restart command:** merging approval did not explicitly authorize
+  production rollout/in-flight-job disruption. The command was not executed and was not retried indirectly.
+  Ask for explicit production deployment/restart approval before switching; no need to reapprove this merge.
+- Confirmed afterward: current tag and running service still a7cf0ff image `09a9e62d…b871576`, active/healthy.
+  New deploy checkout is clean at79a2328. No unit/env/secret or stored-score changes.
+- Fresh verification PDF in `/data/analysis/pr142-deploy-JUv6ts` was hash-checked then deleted without a
+  new conversion because rollout was blocked. Re-download if needed after approval. A pre-existing
+  `/data/processing/8e33ffee-70a3-45da-a809-6b52745be42d` file dated2026-08-21 returned status404 and was
+  left untouched; do not mistake it for a new job or delete it as agent-owned temp data.
+- [Deployment record](validation/2026-09-06-meter-vm-deployment.md). #134's dots/ties/tempo placement remain
+  unresolved; the recognition phase stays IN_PROGRESS even after eventual meter-only rollout.
+
+
 ## PR142 explicitly approved and merged; exact-commit deployment underway (2026-09-06)
 
 - User explicitly approved merging PR142. Rechecked head `d8a6129`, all hosted checks green, no new reviews

@@ -8,6 +8,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-06: User-approved PR142 merged as `79a2328`, delivering only D-049's guarded internal meter
   retry. Full963 Jest/final VM77 tests and final PR CI passed; exact merged-commit deployment is underway.
   Missing dots/ties and beginning-tempo placement remain unresolved; this phase is not DONE.
+- 2026-09-06: All merge-commit gates passed. Exact Docker-format image built and image-internal77 tests
+  passed. Auto-review blocked current-tag/restart because separate production rollout approval was absent.
+  Production remains unchanged; request deployment/restart approval, then recheck idle state before cutover.
 
 ## Objective
 
