@@ -4,12 +4,12 @@ import path from 'path'
 const OMR_DIR = path.join(process.cwd(), 'omr-service')
 const PYTHON = process.env.PYTHON_BIN || 'python3'
 
-describe('OMR processor behavior and deployment static contracts (issue #22)', () => {
-  it('passes the Python behavior and static configuration suite', () => {
+describe('OMR processor and recognition evaluation contracts', () => {
+  it.each(['test_audiveris_runtime.py', 'test_recognition_evaluation.py'])('passes %s', (suite) => {
     expect(() =>
       execFileSync(
         PYTHON,
-        ['-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_audiveris_runtime.py'],
+        ['-m', 'unittest', 'discover', '-s', 'tests', '-p', suite],
         {
           cwd: OMR_DIR,
           encoding: 'utf-8',
