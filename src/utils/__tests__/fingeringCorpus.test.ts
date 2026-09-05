@@ -92,7 +92,7 @@ describe('love-affair-411 corpus score', () => {
       wastedHandTravel: m.wastedHandTravel.length,
       sameFingerLeaps: m.sameFingerLeaps.length,
       melodicTransitions: m.melodicTransitions,
-    }).toEqual({ wastedHandTravel: 43, sameFingerLeaps: 13, melodicTransitions: 167 });
+    }).toEqual({ wastedHandTravel: 36, sameFingerLeaps: 10, melodicTransitions: 155 });
 
     // Finger repetition is largely solved; both remaining runs are in the left
     // hand, and one of them is a genuinely repeated note (B2 B2 B2).

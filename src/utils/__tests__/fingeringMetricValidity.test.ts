@@ -81,6 +81,58 @@ function inversions(score: (notes: FallingNote[]) => number): string[] {
   return found;
 }
 
+describe('what the motion measures do and do not describe', () => {
+  const twoNotes = (gapAfterFirst: number): FallingNote[] => [
+    // One finger, an octave apart: impossible to slide, trivial to re-strike.
+    { midi: 48, start: 0, duration: 1, hand: 'L', finger: 5 },
+    { midi: 60, start: 1 + gapAfterFirst, duration: 1, hand: 'L', finger: 5 },
+  ];
+
+  it('counts a finger asked to slide an octave when the notes abut', () => {
+    const m = measureFingering(twoNotes(0));
+    expect(m.melodicTransitions).toBe(1);
+    expect(m.sameFingerLeaps).toHaveLength(1);
+    expect(m.wastedHandTravel).toHaveLength(1);
+  });
+
+  it('counts nothing across a rest, because the hand simply moves', () => {
+    // The corpus was counting a transition separated by fifteen seconds, which
+    // is a different passage rather than a fingering defect.
+    const m = measureFingering(twoNotes(0.5));
+    expect(m.melodicTransitions).toBe(0);
+    expect(m.sameFingerLeaps).toEqual([]);
+    expect(m.wastedHandTravel).toEqual([]);
+  });
+
+  it('still counts notes that overlap, which are held rather than released', () => {
+    const overlapping: FallingNote[] = [
+      { midi: 48, start: 0, duration: 2, hand: 'L', finger: 5 },
+      { midi: 60, start: 1, duration: 1, hand: 'L', finger: 5 },
+    ];
+    expect(measureFingering(overlapping).melodicTransitions).toBe(1);
+  });
+
+  it('reports zero rather than dividing by nothing on a degenerate score', () => {
+    for (const notes of [[], [{ midi: 60, start: 0, duration: 1, hand: 'R' as const, finger: 1 as Finger }]]) {
+      const m = measureFingering(notes);
+      expect(m.melodicTransitions).toBe(0);
+      expect(m.monotoneRunEvents).toBe(0);
+      expect(m.chordPairs).toBe(0);
+      expect(m.longestRepetitionRun).toBe(0);
+      expect(m.sameFingerLeaps).toEqual([]);
+      expect(m.wastedHandTravel).toEqual([]);
+    }
+  });
+
+  it('ignores a note with no finger rather than guessing one', () => {
+    const partial: FallingNote[] = [
+      { midi: 48, start: 0, duration: 1, hand: 'L', finger: 5 },
+      { midi: 60, start: 1, duration: 1, hand: 'L' },
+    ];
+    expect(measureFingering(partial).melodicTransitions).toBe(0);
+  });
+});
+
 describe('metric validity against conventional fingerings', () => {
   it.each([
     'sameFingerLeaps',
