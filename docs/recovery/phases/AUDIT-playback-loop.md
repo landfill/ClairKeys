@@ -3,6 +3,10 @@
 Status: `IN_PROGRESS`
 Depends on: DS-5 (기존 A-B 구간 반복)
 
+Progress (2026-09-05): PR #138을 사용자 위임에 따른 판단으로 `8258af2`에 병합했다.
+병합 전 hosted CI 전체 통과, post-merge build/E2E는 확인 중이다. CodeRabbit은 리뷰를 스킵했고
+이 세션의 직접 검증으로 판단했다. 사용자 미커밋 설정 변경으로 브랜치 정리는 보류한다.
+
 ## Objective
 
 2026-09-05 감사에서 확인한 첫 A-B 복귀 이후 애니메이션 중단을 복구한다.

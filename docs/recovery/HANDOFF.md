@@ -2,6 +2,22 @@
 
 Last updated: 2026-09-05 KST
 
+## User authorization and first audit fix merged (2026-09-05)
+
+- **Latest user instruction:** preserve the branch strategy, but use agent judgment to merge sufficiently
+  verified work without requesting approval again until the user explicitly asks to resume per-PR approval.
+  The user also explicitly authorized direct access to the already-authenticated OMR VM. This changes the
+  current authorization, not AGENTS.md itself. Do not keep treating lack of a new approval message as a blocker.
+- PR #138 is merged as `8258af2`; review/CI evidence and the fact that CodeRabbit skipped review are in
+  [PR-138](reviews/PR-138.md). Post-merge build/E2E were running when this entry was written.
+- Both loop branch tips are contained in main. Cleanup is withheld under the existing dirty-worktree rule
+  because `.claude/settings.local.json` is user-owned and remains uncommitted.
+- #137 tempo input and immutable timing edits are implemented on their independent branch; validation is
+  ongoing. An added API test fixture lacks Prisma fields and currently fails typecheck; fix it before
+  claiming the branch passes. No production score has been edited.
+- VM `101.79.16.73` authenticated successfully with the existing NCP key; `clairkeys-omr` is active.
+  Continue read-only lineage checks for #134 before changing its conversion behavior.
+
 ## Audit fixes authorized — A-B playback submitted; tempo and held-note guidance follow (2026-09-05)
 
 - User authorized implementing the audit findings while preserving branches and review/merge rules.
