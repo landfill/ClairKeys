@@ -1630,3 +1630,59 @@
 - Not-tested: corpus가 한 곡뿐이라 다른 텍스처(대위, 옥타브 연속, 빠른 패시지)의 지표는 아직 모른다.
 - Related: D-038, D-039, D-040, D-041, 이슈 [#120](https://github.com/landfill/ClairKeys/issues/120),
   [#126](https://github.com/landfill/ClairKeys/issues/126), [#130](https://github.com/landfill/ClairKeys/issues/130)
+
+## D-043: 도달 한계는 비용이 아니라 후보를 쳐내는 제약이고, 표는 모델도 계측도 소유하지 않는다
+
+- Date: 2026-09-05
+- Status: Accepted
+- Amends: D-042 (결정 2의 "계측은 비용 모델을 import하지 않는다"를 구체화)
+- Fulfills: 이슈 [#130](https://github.com/landfill/ClairKeys/issues/130) 2단계
+- Context:
+  - D-042가 도달 한계를 **계측**했지만 모델은 그 표를 참조하지 않았다. 그래서 리포트가 "도달 불가 26건"이라고
+    말하는 동안에도 추론기는 계속 그 26건을 만들어냈다. 계측은 제약이 아니다.
+  - 운영 악보에서 `E4 + E5`(옥타브)가 4·5번, `B2 + A3`(10도)가 5·4번으로 나왔다. 원인은 `makeCandidate`가
+    `Math.abs(fingerSpan - idealSpan) * 3`이라는 **상대적** 모양 비용만 물린다는 것이다. 비용이면 다른 곳의
+    싼 전이들이 불가능한 화음을 사올 수 있다.
+  - 표를 어디에 둘 것인가가 실제 설계 문제였다. 모델이 계측의 표를 참조하면 순환이 되고(모델이 틀린 표를
+    믿으면 계측도 같이 믿는다), 각자 복제하면 조용히 어긋난다.
+- Decision:
+  1. **도달 한계는 하드 제약이다.** `eventCandidates`에서 화음 후보를 생성한 뒤 `chordIsReachable`로
+     쳐낸다. 비용으로 표현하지 않는다 — 손이 잡을 수 없는 모양은 비싼 답이 아니라 답이 아니다.
+  2. **한 손이 잡을 수 없는 화음은 후보가 비므로, 그때는 걸러내기 전 후보를 그대로 쓴다.** 악보가 요구한
+     모양을 조용히 좁혀 "잡히는 화음"을 지어내지 않는다. 그런 화음은 손 배정이나 아르페지오 표기의 문제이지
+     운지의 문제가 아니다.
+  3. **해부학은 셋째 자리에 둔다** — `src/utils/handReach.ts`. `NATURAL_SPAN`, `spatialFinger`,
+     `impliedAnchor`, `maxReach`, `chordIsReachable`이 여기 있고, `fingeringUtils`와
+     `scripts/lib/fingeringMetrics`가 **둘 다 여기서 읽되 서로를 import하지 않는다.** 손 벌림과 도달 한계는
+     모델의 판단이 아니라 신체 사실이므로 공유해도 순환이 아니다. 계측은 여전히 "모델이 위반을 만들었는가"를
+     스스로 계산한다.
+  4. 도달 한계는 **동시에 울리는 음**에만 적용한다. 연속음은 anchor가 이미 처리한다 — travel 0인 전이는
+     정의상 자연 손 벌림 차이 안이므로 어떤 손가락 쌍도 무리하지 않는다.
+  5. `FINGERING_ALGORITHM_VERSION`을 `phrase-dp-v3`으로 올린다. 화면에 보이는 값이 바뀌는데 provenance
+     문자열이 그대로면 그 필드의 존재 이유가 없어진다. 단계마다 올린다.
+- Consequence:
+  - 운영 악보의 도달 불가 화음 쌍이 **26/154 → 0/154**. 411음 중 60음의 운지가 바뀌었다.
+    `E4 + E5`가 1·5번이 된다.
+  - 진행 중 손 재배치는 **65/171로 변하지 않는다.** 도달 한계는 화음에만 걸리고 이 지표는 단음 선율에서
+    측정되기 때문이다. 3단계(방향성 손가락 예산)가 남아 있다.
+  - 성능은 12,000음 12.0ms로 오히려 약간 빨라졌다(후보가 줄어든다).
+  - 원본 운지는 여전히 덮어쓰지 않는다. 원본이 물리적으로 불가능해도 보존한다(D-039 결정 4 유지).
+- Rejected:
+  - 도달 초과를 큰 비용으로 표현 | 비용은 다른 곳의 싼 전이로 상쇄된다. 불가능한 것을 비싸게 만드는 것과
+    불가능하게 만드는 것은 다르다.
+  - 표를 `fingeringUtils`에 두고 계측이 import | 순환이 된다. 모델이 틀린 표를 믿으면 계측도 같이 믿는다.
+  - 표를 양쪽에 복제 | 조용히 어긋난다. 어긋난 순간 계측이 무의미해지는데 아무도 모른다.
+  - 잡을 수 없는 화음을 좁혀서 잡히게 만들기 | 악보가 요구하지 않은 화음을 지어내는 것이고, 진짜 문제(손
+    배정 또는 아르페지오)를 감춘다.
+  - 연속음에도 도달 한계 적용 | anchor가 이미 처리한다. 중복 제약은 넘김을 잘못 막을 수 있다.
+- Constraint: D-042(래칫), D-039 결정 4(원본 운지 불변), 이슈 #130의 복잡도 제약
+- Confidence: high
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 도달 한계를 비용으로 되돌리지 않는다. `handReach.ts`가 `fingeringUtils`를 import하게 만들지
+  않는다 — 의존 방향이 뒤집히면 계측의 독립성이 사라진다.
+- Tested: 전체 Jest 890건(신규 13건: `handReach.test.ts` 10건, 모델 레벨 회귀 3건), `tsc --noEmit`,
+  `next lint`, `next build`. corpus 도달 불가 26→0, 결정론 유지, 12,000음 12.0ms 확인.
+- Not-tested: 도달 한계 수치 자체의 타당성. 너그러운 작업용 기준이며 Parncutt et al. (1997)을 채택하려면
+  실제 문헌을 확인해야 한다.
+- Related: D-038, D-039, D-041, D-042, 이슈 [#130](https://github.com/landfill/ClairKeys/issues/130)

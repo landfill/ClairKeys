@@ -11,6 +11,7 @@ import {
   FINGERING_ALGORITHM_VERSION,
 } from '../fingeringUtils';
 import type { FallingNote, Finger, Hand } from '@/types/fallingNotes';
+import { chordIsReachable } from '../handReach';
 
 describe('fingeringUtils', () => {
   describe('isBlackKeyMidi', () => {
@@ -542,6 +543,47 @@ describe('fingeringUtils', () => {
         expect(note.finger).toBe(2);
         expect(note.fingerSource).toBe('source');
       });
+    });
+
+    it('will not hand a chord to a finger pair that cannot span it', () => {
+      // Reach is a hard constraint on candidate generation, not a cost. Before
+      // issue #130 stage 2 the corpus's bar 7 octave E4 + E5 came out as 4 and 5,
+      // because a run of cheap transitions could buy an impossible chord.
+      const octave: FallingNote[] = [
+        { midi: 64, start: 0, duration: 1, hand: 'R' },
+        { midi: 76, start: 0, duration: 1, hand: 'R' },
+      ];
+
+      const fingers = addFingeringToNotes(octave).map(note => note.finger) as Finger[];
+      expect(chordIsReachable([64, 76], fingers)).toBe(true);
+      expect(fingers).toEqual([1, 5]);
+    });
+
+    it('keeps a chord no hand can hold rather than inventing a reachable one', () => {
+      // A two-octave span in one hand is beyond every finger pair. There is no
+      // right answer, so the score's own shape survives instead of being quietly
+      // narrowed into something it did not ask for.
+      const impossible: FallingNote[] = [
+        { midi: 48, start: 0, duration: 1, hand: 'L' },
+        { midi: 72, start: 0, duration: 1, hand: 'L' },
+      ];
+
+      const fingers = addFingeringToNotes(impossible).map(note => note.finger) as Finger[];
+      expect(fingers).toHaveLength(2);
+      fingers.forEach(finger => expect([1, 2, 3, 4, 5]).toContain(finger));
+      expect(chordIsReachable([48, 72], fingers)).toBe(false);
+    });
+
+    it('still preserves a source fingering the hand cannot actually hold', () => {
+      // Source annotations are truth even when they are not physically monotonic
+      // (D-039 decision 4). Reach must not become a reason to overwrite one.
+      const annotated: FallingNote[] = [
+        { midi: 64, start: 0, duration: 1, hand: 'R', finger: 4 },
+        { midi: 76, start: 0, duration: 1, hand: 'R', finger: 5 },
+      ];
+
+      expect(addFingeringToNotes(annotated).map(note => note.finger)).toEqual([4, 5]);
+      expect(addFingeringToNotes(annotated).every(note => note.fingerSource === 'source')).toBe(true);
     });
 
     it('returns the same fingering on repeated runs of the same input', () => {
