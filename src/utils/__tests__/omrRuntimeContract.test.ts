@@ -5,7 +5,13 @@ const OMR_DIR = path.join(process.cwd(), 'omr-service')
 const PYTHON = process.env.PYTHON_BIN || 'python3'
 
 describe('OMR processor and recognition evaluation contracts', () => {
-  it.each(['test_audiveris_runtime.py', 'test_recognition_evaluation.py'])('passes %s', (suite) => {
+  it.each([
+    'test_audiveris_runtime.py',
+    'test_recognition_evaluation.py',
+    'test_meter_retry.py',
+    'test_meter_retry_runtime.py',
+    'test_time_numeral.py',
+  ])('passes %s', (suite) => {
     expect(() =>
       execFileSync(
         PYTHON,
