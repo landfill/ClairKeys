@@ -2,7 +2,18 @@
 
 Last updated: 2026-09-05 KST
 
-## #130 stage 4 STOPPED — every hand-motion measure inverts on the arpeggio; PR #136 open (2026-09-05)
+## #130 stage 4 STOPPED and MERGED — the open question is a human reference fingering (2026-09-05)
+
+- PR [#136](https://github.com/landfill/ClairKeys/pull/136) merged as `6ab2d7d`, post-merge checks green,
+  branch deleted after confirming containment. The validity harness runs 14 tests on `main`.
+- **Where issue #130 actually stands.** Fixed and measured: unreachable chord pairs 26 of 154 to 0. Healthy
+  and holding: longest repetition run 3, pitch-changing runs 1, same-finger leaps 10 of 155. **Open and
+  undecided: whether the wide-arpeggio fingering is wrong at all.** Stages 4 and 5 both wait on that.
+- **The one thing that unblocks it is a bar someone has seen look wrong, plus the fingering it should have
+  had.** Not another metric, not another mechanism. `codex/issue-130-directional-budget` stays as the local
+  record of two superseded attempts and is not for merging.
+
+## #130 stage 4 detail — every hand-motion measure inverts on the arpeggio (2026-09-05)
 
 - Stage 4 could not lower `wastedHandTravel` in any form the worker tried (37–51, 51, 53 — all worse). Before
   writing the attempt off, the measure itself was checked. **It inverts**: on the corpus arpeggio the model's
