@@ -2,6 +2,36 @@
 
 Last updated: 2026-09-05 KST
 
+## #130 stage 2 — reach is now a constraint, not a measurement; PR #132 open (2026-09-05)
+
+- Stage 1 measured reach and stopped there, so the report said 26 unreachable chord pairs while the inferrer
+  went on producing all 26. PR [#132](https://github.com/landfill/ClairKeys/pull/132) puts the table inside
+  the model. **Unreachable chord pairs 26 of 154 to 0 of 154**, 60 of the corpus's 411 fingerings changed,
+  `FINGERING_ALGORITHM_VERSION` now `phrase-dp-v3`.
+- **The reason it is a constraint and not a cost is the part to keep.** `makeCandidate` priced relative shape
+  distortion, and a price is payable: a run of cheap transitions elsewhere could buy an impossible chord,
+  which is exactly how the octave `E4 + E5` came to be fingered 4 and 5. Reach is applied where candidates
+  are generated. A shape the hand cannot hold is not an expensive answer, it is not an answer.
+- **Where the table lives was the real design question**, and the answer generalises. The metrics have to be
+  able to contradict the model, so they cannot ask it what is legal; two copies of the table would drift and
+  the drift would silently disable the only guard against the model being wrong. Hand span and reach are
+  anatomy rather than scoring, so they now live in `src/utils/handReach.ts`, which neither
+  `fingeringUtils` nor `scripts/lib/fingeringMetrics` owns and both read. **Do not reverse that dependency.**
+- Reach binds simultaneous notes only. Consecutive notes are already covered by the anchor — a zero-travel
+  transition is by construction inside the natural span difference — and a second constraint there could
+  wrongly block a thumb crossing.
+- A chord wider than one hand leaves no candidates after pruning; the pre-filter shapes are kept rather than
+  narrowing the score into a chord it never contained. That case is a hand-assignment or arpeggiation
+  question. Source fingerings are still never overwritten, physically impossible ones included (D-039).
+- **Repositions stayed at 65 of 171, and that is expected, not a shortfall** — reach binds chords, that metric
+  is measured on single-note lines. Stage 3 is what moves it.
+- **Next action — stage 3: the directional finger budget.** Charge for reaching the end of the hand early
+  while the pitch keeps moving one way, so that spending the whole span on a fifth (`5` to `1`, anchor
+  unchanged, cost zero) stops being the cheapest opening of an arpeggio. Then stage 4 re-scopes the leap
+  exception from measurement.
+- Recorded as D-043, amending D-042's "the metrics do not import the model" into where the shared anatomy
+  goes. Evidence: `docs/recovery/reviews/PR-132.md`, `docs/recovery/phases/ISSUE-130-fingering-corpus-and-reach.md`.
+
 ## #130 stage 1 MERGED — the corpus and the ratchet are on `main`; stage 2 is next (2026-09-05)
 
 - PR [#131](https://github.com/landfill/ClairKeys/pull/131) merged as `72627e9`, every post-merge check on
