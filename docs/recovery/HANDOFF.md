@@ -2,6 +2,43 @@
 
 Last updated: 2026-09-05 KST
 
+## #130 stage 3 — the target was wrong, not the mechanism; PR #133 open (2026-09-05)
+
+- **Three attempts at stage 3 failed, and the reason was the metric.** Two Codex workers and one attempt by
+  this session all tried to reduce `repositionsInMonotoneRuns` (65→61, 61→64, and a blocked report). Scoring
+  the corpus's bar 3 left hand settles it: the defective `5 1 2 1 2` rates **2** and every conventional
+  answer — `5 4 2 1 2`, `5 3 2 1 3`, `5 4 3 2 1` — rates **3**. Minimising it pushes the fingering the wrong
+  way.
+- The physics behind that: a run wider than the hand *must* relocate, its total travel is fixed by the pitch
+  span (21 semitones for all four fingerings above), and the metric only counted how many steps that was
+  divided into. **Suspect the target before the mechanism when a metric will not move.**
+- PR [#133](https://github.com/landfill/ClairKeys/pull/133) changes no production code. It adds a validity
+  harness — a metric may become an optimisation target only after it is shown not to rank a defensible
+  fingering below a defective one — and replaces the target with three measures that pass it:
+  `sameFingerLeaps`, `wastedHandTravel`, and repetition-run **length** rather than count.
+- **The disqualified metric is kept, with its inversion pinned as a passing test.** The evidence is worth more
+  than the number was, and a later change that makes it pass is news rather than progress.
+- `wastedHandTravel` measures hand motion **beyond what the interval forces**, not raw travel: a two-octave
+  bass drop moves the hand about twenty semitones however it is fingered. Thumb crossings are excluded,
+  because a crossing relocates the hand without lifting it — without that exclusion the conventional
+  fingerings score worse again. The predicate `isThumbCrossing` lives in `handReach.ts` as anatomy, since the
+  metrics may not import the cost model. Checked for over-exclusion: 19 of 277 transitions, the widest a
+  textbook tuck.
+- **New baselines, and they point at the reported symptom directly**: wasted hand travel **43 of 167**,
+  same-finger leaps **13 of 167**, longest run 3, one run spanning a pitch change, reach violations 0 of 154.
+  `B2:1 → G#3:2` travels eleven semitones for an interval needing two — the thumb spends the hand on the
+  fifth and the next note throws it. That is the user's complaint as a number that goes down when fixed.
+- **Branch `codex/issue-130-directional-budget` is abandoned, not merged.** It holds the two failed attempts;
+  its metric-tightening idea was reimplemented on the new branch.
+- Delegation note: the metric fix was done by a **Gemini 3.8 Flash** worker via `agy`, with the design fixed
+  by this session and only the typing delegated (`--agent gemini` cannot select a model, so
+  `terminal create --command` plus `worker-start --terminal` was used to keep it supervised). Every claim was
+  re-run here, including checks that the test file, the tolerance constant and `fingeringUtils.ts` were
+  untouched.
+- **Next action — stage 4**: change the model against the new targets. Stage 5 re-scopes the leap exception.
+- Recorded as D-044. Evidence: `docs/recovery/reviews/PR-133.md`,
+  `docs/recovery/phases/ISSUE-130-fingering-corpus-and-reach.md`, issue #130's corrected criteria.
+
 ## #130 stage 2 MERGED — reach is a constraint now; stage 3 is the last real fix (2026-09-05)
 
 - Merged as `d8f50f0`, post-merge checks green, branches deleted after confirming containment. `main` carries
