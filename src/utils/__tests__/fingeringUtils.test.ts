@@ -350,13 +350,12 @@ describe('fingeringUtils', () => {
       expect(first.every(note => note.fingerSource === 'inferred')).toBe(true);
       expect(first.every(note => note.fingeringAlgorithm === FINGERING_ALGORITHM_VERSION)).toBe(true);
       expect(first.filter(note => note.hand === 'R').map(note => note.finger)).toEqual([2, 3, 2, 3]);
-      // `phrase-dp-v1` answered [5, 3, 2, 5] here and left the thumb unused across
-      // a sixteen-semitone bass span. Under `phrase-dp-v2` the fifth E2->B2 is
-      // exactly the natural hand span, so finger 5 and finger 1 imply the same
-      // anchor (40) and the hand does not move at all — that is why the thumb
-      // wins, and finger 3 does not. The following leap to G#3 is nine semitones,
-      // past CROSSING_MAX_INTERVAL, so it is hand travel and not a crossing.
-      expect(first.filter(note => note.hand === 'L').map(note => note.finger)).toEqual([5, 1, 2, 5]);
+      // The directional budget prices arriving at the thumb during a continuing
+      // run, even though E2->B2 is a natural-span fifth with zero anchor travel.
+      // The opening therefore keeps an inner finger (`5-2`) instead of spending
+      // the whole hand immediately; the following nine-semitone leap remains
+      // genuine hand travel rather than a thumb crossing.
+      expect(first.filter(note => note.hand === 'L').map(note => note.finger)).toEqual([5, 2, 2, 5]);
     });
 
     it('should not apply the CAGED crossing pattern to F-major right hand', () => {

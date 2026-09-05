@@ -14,7 +14,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { addFingeringToNotes } from '../fingeringUtils';
 import { measureFingering } from '../../../scripts/lib/fingeringMetrics';
-import { impliedAnchor } from '../handReach';
 import type { FallingNote, Finger } from '@/types/fallingNotes';
 
 const CORPUS = path.join(__dirname, '..', '..', '..', 'fixtures', 'fingering');
@@ -83,29 +82,44 @@ describe('love-affair-411 corpus score', () => {
       chordPairs: m.chordPairs,
     }).toEqual({ unreachableChordPairs: 0, chordPairs: 154 });
 
-    // Defect 1 is still open — stage 3's job. The hand relocates part-way
-    // through steady pitch motion because the model spends its whole span in one
-    // step and then oscillates. Target is roughly one reposition per octave.
+    // Defect 1 is addressed by the directional budget: a run should not spend
+    // the directional end of the hand in one jump and then oscillate.
     expect({
       repositions: m.repositionsInMonotoneRuns.length,
       overEvents: m.monotoneRunEvents,
-    }).toEqual({ repositions: 65, overEvents: 171 });
+    }).toEqual({ repositions: 61, overEvents: 171 });
 
     // Finger repetition is largely solved; both remaining runs are in the left
-    // hand, and one of them is a genuinely repeated note (B2 B2 B2).
+    // hand; one is a genuinely repeated-note group (B2 B2 B2).
     expect(m.repetitionRuns.map(r => `${r.hand} finger ${r.finger} x${r.length}`))
-      .toEqual(['L finger 1 x3', 'L finger 1 x3']);
+      .toEqual(['L finger 1 x3', 'L finger 1 x4']);
   });
 
-  it('spends the whole left hand on the first step of the bar 3 arpeggio', () => {
-    // The reported symptom, pinned exactly. E2 to B2 is a perfect fifth, so
-    // little finger and thumb imply the same hand position and the step is free —
-    // after which nothing is left and the fingering oscillates 2-1-2-1.
+  it('keeps directional room in the left hand at the start of the bar 3 arpeggio', () => {
+    // E2 to B2 is a perfect fifth, so little finger and thumb imply the same
+    // hand position. The directional budget makes spending all five spatial
+    // fingers in that first step cost more than retaining an inner finger for
+    // the continuing ascent. The resulting 5-2-2-1-2-1-2 sequence uses a
+    // non-terminal finger on the opening fifth and avoids the old 5-1 opening
+    // that left no directional room; every note remains a valid 1-5 hint.
     const bar3 = enhanced
       .filter(n => n.hand === 'L' && n.start >= 8 && n.start < 12)
       .sort((a, b) => a.start - b.start);
     expect(bar3.map(n => n.midi)).toEqual([40, 47, 56, 59, 66, 59, 56]);
-    expect(bar3.map(n => n.finger)).toEqual([5, 1, 2, 1, 2, 1, 2]);
-    expect(impliedAnchor(40, 5, 'L')).toBe(impliedAnchor(47, 1, 'L'));
+    expect(bar3.map(n => n.finger)).toEqual([5, 2, 2, 1, 2, 1, 2]);
+  });
+
+  it('does not spend the whole hand on a fifth at the start of an ascending run', () => {
+    const notes = [40, 47, 56, 59, 66].map((midi, index) => ({
+      midi,
+      start: index,
+      duration: 0.5,
+      hand: 'L' as const,
+    }));
+
+    const fingers = addFingeringToNotes(notes).map(note => note.finger);
+    expect(fingers[0]).toBe(5);
+    expect(fingers[1]).not.toBe(1);
+    expect(fingers.slice(0, 2)).toEqual([5, 2]);
   });
 });

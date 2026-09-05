@@ -8,7 +8,7 @@
 import type { FallingNote, Hand, Finger } from '@/types/fallingNotes';
 import { NATURAL_SPAN, spatialFinger, chordIsReachable } from '@/utils/handReach';
 
-export const FINGERING_ALGORITHM_VERSION = 'phrase-dp-v3';
+export const FINGERING_ALGORITHM_VERSION = 'phrase-dp-v4';
 
 /**
  * MIDI note ranges for hand assignment
@@ -265,6 +265,18 @@ const BLACK_THUMB = 12;
 /** The pinky is short and weak; a black key asks it to reach and stay curled. */
 const BLACK_PINKY = 5;
 
+/**
+ * Cost for reaching the directional end of the hand before a run is over.
+ *
+ * A spatial step is one more finger consumed from the side the phrase is
+ * moving toward. A normal walk leaves fingers in reserve, while landing on the
+ * far edge before the next note spends the last usable option. Ten points is
+ * deliberately just above the eight-point cost of a one-finger anchor move:
+ * retaining a finger for the continuing run wins, but a legitimate ending is
+ * not penalised because only internal run events are charged.
+ */
+const DIRECTIONAL_BUDGET = 10;
+
 function inferHandPhrases(enhanced: FallingNote[], original: FallingNote[]): void {
   (['L', 'R'] as const).forEach(hand => {
     const events = buildHandEvents(enhanced, hand);
@@ -340,7 +352,8 @@ function inferPhrase(
       candidates[eventIndex - 1].forEach((previous, priorIndex) => {
         const total = costs[eventIndex - 1][priorIndex]
           + candidate.cost
-          + transitionCost(events[eventIndex - 1], previous, events[eventIndex], candidate);
+          + transitionCost(events[eventIndex - 1], previous, events[eventIndex], candidate)
+          + directionalBudgetCost(events, eventIndex, previous, candidate);
         if (total < costs[eventIndex][candidateIndex]) {
           costs[eventIndex][candidateIndex] = total;
           previousChoice[eventIndex][candidateIndex] = priorIndex;
@@ -491,6 +504,43 @@ function transitionCost(
 
   return crossingCost(previousEvent, previous, event, candidate, travel)
     ?? travel * HAND_TRAVEL + legatoBreakCost(gap);
+}
+
+/**
+ * Price consuming several spatial fingers in the direction of a continuing
+ * pitch line. No phrase history or extra DP state is needed: the neighboring
+ * events provide the local direction and the candidate provides its position.
+ */
+function directionalBudgetCost(
+  events: FingeringEvent[],
+  eventIndex: number,
+  previous: EventCandidate,
+  candidate: EventCandidate,
+): number {
+  // A chord uses several fingers at once; its shape cost and reach constraint
+  // already account for that demand, while this budget is for walking a line.
+  if (eventIndex === 0 || eventIndex >= events.length - 1) return 0;
+  const previousEvent = events[eventIndex - 1];
+  const event = events[eventIndex];
+  const nextEvent = events[eventIndex + 1];
+  if (previousEvent.indices.length !== 1 || event.indices.length !== 1 || nextEvent.indices.length !== 1) return 0;
+
+  const direction = Math.sign(event.midis[0] - previousEvent.midis[0]);
+  const nextDirection = Math.sign(nextEvent.midis[0] - event.midis[0]);
+  if (direction === 0 || direction !== nextDirection) return 0;
+  // A natural hand span is the largest interval for which finger budget is
+  // relevant; wider jumps are genuine relocations and retain the documented
+  // same-finger leap exception.
+  const pitchInterval = Math.abs(event.midis[0] - previousEvent.midis[0]);
+  if (pitchInterval > NATURAL_SPAN[NATURAL_SPAN.length - 1]) return 0;
+
+  // The budget applies while the run still has somewhere to go. The last note
+  // may naturally use the terminal finger; charging it would make every scale
+  // reject its conventional ending and replace a finger choice with a move.
+  const exhaustsHand = direction > 0 ? candidate.highSpatial === 5 : candidate.lowSpatial === 1;
+  if (!exhaustsHand) return 0;
+  const spatialAdvance = direction * (candidate.centerSpatial - previous.centerSpatial);
+  return spatialAdvance > 1 ? DIRECTIONAL_BUDGET : 0;
 }
 
 function samePitchSet(previousEvent: FingeringEvent, event: FingeringEvent): boolean {
