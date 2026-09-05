@@ -11,6 +11,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-06: All merge-commit gates passed. Exact Docker-format image built and image-internal77 tests
   passed. Auto-review blocked current-tag/restart because separate production rollout approval was absent.
   Production remains unchanged; request deployment/restart approval, then recheck idle state before cutover.
+- 2026-09-06: User separately approved rollout; exact79a2328 image now runs active/healthy. Restart,
+  image equality, external health/auth and real production-module PDF smoke verified (28.704s,9/8,
+  163 notes, one overflow). First-bar6/10 and beginning-tempo null remain, so the overall phase stays
+  IN_PROGRESS. Live-smoke PDF/image checkpoints removed; diagnostic XML/JSON retained.
 
 ## Objective
 

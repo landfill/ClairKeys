@@ -87,3 +87,26 @@ missing from the rejected command; the earlier rejection was not bypassed.
 - A hash-verified same-PDF conversion is now running with `PYTHONPATH=/app` inside the production image,
   using the committed smoke script and separate analysis output root `/data/analysis/pr142-live-Fetl0O`.
   It does not create or rewrite a stored score or database row. Results/cleanup are pending at this entry.
+
+## Final production-image recognition smoke and cleanup
+
+- Source hash verified before running: `34d06c77398470ea6f9bf15d9cd5724a0db94c904eb81107c5ca29d2f1be5478`.
+- Executed committed smoke script with `podman exec -e PYTHONPATH=/app clairkeys-omr-prod python3 ...`.
+  Report confirmed `processorSource=/app/omr/audiveris.py`; no candidate checkout was on the import path.
+- Real PDF→initial XML→two-staff image evidence→internal graph retry→selected XML→canonical conversion:
+  **28.704s**. Selected `result/meter-retry-kuts9jdq/retry.mxl`, meter9/8,163 notes, one overflow in bar9
+  (5 quarter beats observed vs4.5 expected). First-bar exact raw-event match6/10 and bar length4.0 remain;
+  tempo/scoreTempo null because the original engine tempo mark is placed after score start. These are
+  known incomplete musical results, not a failed deployment or a new full-score correctness claim.
+- Report/outputs retained under `/data/analysis/pr142-live-Fetl0O/result`:
+  - Initial `input.mxl`: `e2dc0c7f1f9cf02d1130f25bc77cc7f2dd66c2e596a47af5818a5301f9a87867`.
+  - Selected `meter-retry-kuts9jdq/retry.mxl`: `878039a165e5af081d7d2907f68190626d3499f2f7e2f5bc657b92ea71f630a5`.
+  - `smoke-report.json`: `9da4662b1a2ec4c304fb023d35a2c570f6fa394a576d84a924e9f6d2f10b9e93`.
+- After process exit0, container had only its service Python process, exact new image and healthy status;
+  rollback a7cf0ff image identity rechecked and preserved. No stored score or database row was changed.
+- Enumerated then removed only this smoke's input.pdf, result/input.omr and selected retry.omr (3 files).
+  Re-enumeration found no PDF/PNG/OMR files in the live-smoke root. Source can be downloaded again from
+  the issue attachment; diagnostic XML/JSON/logs remain. The historical production8e33ffee artifact was untouched.
+- Deployment verification is complete. Full web upload/storage/callback roundtrip was not exercised;
+  external health/auth probes, actual image77 tests and native recognition/converter smoke were exercised.
+  #134's unresolved musical scope and existing-score re-upload policy are unchanged.

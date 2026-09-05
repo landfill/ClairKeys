@@ -2,6 +2,23 @@
 
 Last updated: 2026-09-06 KST
 
+## PR142 deployment verified on production; remaining recognition work is separate (2026-09-06)
+
+- Explicitly approved rollout is complete. Exact merge79a2328 image `ff0a347f…9415ef` is running,
+  active/healthy; current tag matches. Restart exit0, external health200/unauthorized-process401, manual
+  HEALTHCHECK passed. Previous a7cf0ff image is preserved for rollback. Merge-commit gates all passed.
+- Real PDF smoke ran **production `/app/omr/audiveris.py`**, not a candidate source overlay:28.704s,
+  image-supported9/8 selected,163 canonical notes, one bar9 overflow. It matches predeployment results.
+  First-bar raw reference remains6/10; opening tempo/scoreTempo remain null. Dots/ties/tempo placement are
+  **not fixed**, so #134 and its phase remain IN_PROGRESS. Existing stored scores were not changed.
+- Temporary source PDF and both image-bearing OMR checkpoints from the live smoke were deleted after
+  verification; XML/JSON/log/hash evidence remains at `/data/analysis/pr142-live-Fetl0O/result` and in
+  [deployment record](validation/2026-09-06-meter-vm-deployment.md). No PDF/PNG/OMR files remain in that root.
+- Branch tips are contained in main but retained for the untouched user settings change. No rollout
+  approval is outstanding for PR142 now. Next work is the unresolved musical recognition, not redeploying
+  or reapproving this same meter fix.
+
+
 ## Production rollout explicitly approved and switched; recognition smoke underway (2026-09-06)
 
 - User explicitly approved the separate production deployment/restart. Rechecked image/rollback IDs,
