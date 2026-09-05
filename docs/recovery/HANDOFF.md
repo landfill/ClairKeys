@@ -2,6 +2,19 @@
 
 Last updated: 2026-09-06 KST
 
+## PR142 explicitly approved and merged; exact-commit deployment underway (2026-09-06)
+
+- User explicitly approved merging PR142. Rechecked head `d8a6129`, all hosted checks green, no new reviews
+  or inline feedback. Merged as `79a2328c90198544428b36bf3449d90f7c77e413`; local main fast-forwarded.
+- Both local and remote work-branch tips are `d8a6129` and contained in main. Remote existence verified.
+  Preserve both branches because `.claude/settings.local.json` remains user-owned and uncommitted.
+- Exact merged-commit Docker-format image build is underway in clean `/opt/clairkeys-deploy`. Current
+  production/rollback a7cf0ff image `09a9e62d…b871576` is active/healthy and not switched yet. Merge-commit
+  post-merge checks are running. [Deployment record](validation/2026-09-06-meter-vm-deployment.md).
+- This ships only the guarded meter retry. #134 and its recognition phase remain incomplete for dots,
+  ties and opening-tempo placement. No stored score is rewritten.
+
+
 ## Final meter-retry code verified; production unchanged (2026-09-06)
 
 - PR142 final head `d8a6129` adds the own-review fix that prevents moving an existing opening tempo away
