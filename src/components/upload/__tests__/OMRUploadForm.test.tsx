@@ -71,6 +71,15 @@ describe('OMRUploadForm', () => {
     global.fetch = originalFetch
   })
 
+  it('explains automatic reading and names the selected tempo unit', async () => {
+    render(<OMRUploadForm />)
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+    expect(screen.getByText(/악보의 빠르기를 자동으로 읽습니다/)).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('박 단위'), { target: { value: 'dotted-quarter' } })
+    fireEvent.change(screen.getByLabelText('빠르기 (BPM)'), { target: { value: '46' } })
+    expect(screen.getByText(/♩=69/)).toBeInTheDocument()
+  })
+
   describe('선택 전', () => {
     it('uses the same rounded field surface for score metadata', async () => {
       render(<OMRUploadForm />)
@@ -225,6 +234,21 @@ describe('OMRUploadForm', () => {
       })
     })
 
+    it('uploads dotted-quarter 46 as quarter BPM 69', async () => {
+      respondToUploadWith({ sheetMusicId: 8, jobId: 'job-8' })
+      const onUploadStart = jest.fn()
+      render(<OMRUploadForm onUploadStart={onUploadStart} />)
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+      await selectFile(pdfFile())
+      await fillRequiredFields()
+      fireEvent.change(screen.getByLabelText('빠르기 (BPM)'), { target: { value: '46' } })
+      fireEvent.change(screen.getByLabelText('박 단위'), { target: { value: 'dotted-quarter' } })
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: '변환 시작하기' })) })
+      await waitFor(() => expect(onUploadStart).toHaveBeenCalled())
+      const body = fetchMock.mock.calls.find(([url]) => url === '/api/omr/upload')![1].body as FormData
+      expect(body.get('tempo')).toBe('69')
+    })
+
     it('빠르기를 비우면 값을 보내지 않는다 (D-013)', async () => {
       respondToUploadWith({ sheetMusicId: 8, jobId: 'job-8' })
       const onUploadStart = jest.fn()
@@ -343,12 +367,12 @@ describe('OMRUploadForm', () => {
   })
 
   describe('빠르기 입력 (D-013, 이슈 #82)', () => {
-    it('선택 입력이고 비워두면 미상으로 남는다고 알린다', async () => {
+    it('선택 입력이고 악보에서 읽지 못할 때만 미상이라고 알린다', async () => {
       render(<OMRUploadForm />)
 
       expect(screen.getByLabelText('빠르기 (BPM)')).toBeInTheDocument()
       expect(
-        screen.getByText('선택 입력입니다. 비워두면 빠르기 미상으로 표시됩니다.')
+        screen.getByText(/비워두면 악보의 빠르기를 자동으로 읽습니다. 읽지 못한 경우에만 미상/)
       ).toBeInTheDocument()
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
     })
@@ -366,7 +390,7 @@ describe('OMRUploadForm', () => {
       })
 
       expect(
-        await screen.findByText('빠르기는 20에서 400 사이로 입력해 주세요.')
+        await screen.findByText('4분음표 기준 빠르기는 20에서 400 사이로 입력해 주세요.')
       ).toBeInTheDocument()
       // 카테고리 조회 한 번뿐 — 업로드 요청은 나가지 않았다.
       expect(fetchMock).toHaveBeenCalledTimes(1)

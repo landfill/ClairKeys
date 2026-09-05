@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button, StatusState, UploadIcon } from '@/components/ui'
 import type { Category } from '@/types/category'
+import TempoInput from './TempoInput'
+import { quarterBpm, TEMPO_ERROR, type TempoUnit } from '@/utils/tempoInput'
 import { fileSignature, inspectPdfFile, MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
 import {
   classifyUploadResponse,
@@ -60,6 +62,7 @@ export default function OMRUploadForm({
   })
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [tempoUnit, setTempoUnit] = useState<TempoUnit>('quarter')
   const [phase, setPhase] = useState<FormPhase>('idle')
   const [failure, setFailure] = useState<UploadFailure | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -133,12 +136,7 @@ export default function OMRUploadForm({
       newErrors.composer = '저작자는 필수 입력 항목입니다.'
     }
 
-    if (formData.tempo.trim()) {
-      const tempo = Number(formData.tempo)
-      if (!Number.isFinite(tempo) || tempo < 20 || tempo > 400) {
-        newErrors.tempo = '빠르기는 20에서 400 사이로 입력해 주세요.'
-      }
-    }
+    try { quarterBpm(formData.tempo, tempoUnit) } catch { newErrors.tempo = TEMPO_ERROR }
 
     if (!selectedFile) {
       newErrors.file = 'PDF 파일을 선택해주세요.'
@@ -239,7 +237,7 @@ export default function OMRUploadForm({
       uploadFormData.append('title', title)
       uploadFormData.append('composer', formData.composer.trim())
       if (formData.tempo.trim()) {
-        uploadFormData.append('tempo', formData.tempo.trim())
+        uploadFormData.append('tempo', String(quarterBpm(formData.tempo, tempoUnit)))
       }
       if (formData.categoryId) {
         uploadFormData.append('categoryId', formData.categoryId.toString())
@@ -422,32 +420,9 @@ export default function OMRUploadForm({
           {errors.composer && <p className="mt-1 text-sm text-state-error">{errors.composer}</p>}
         </div>
 
-        {/* 빠르기 (D-013: 비워두면 미상) */}
-        <div>
-          <label htmlFor="tempo" className="mb-2 block text-sm font-medium text-ink">
-            빠르기 (BPM)
-          </label>
-          <input
-            id="tempo"
-            type="number"
-            min={20}
-            max={400}
-            step="any"
-            value={formData.tempo}
-            onChange={(e) => handleInputChange('tempo', e.target.value)}
-            aria-describedby="tempo-help"
-            aria-invalid={Boolean(errors.tempo)}
-            className={`w-full rounded-2xl border px-3 py-2 transition-colors focus:border-accent ${
-              errors.tempo ? 'border-state-error' : 'border-rule-strong'
-            }`}
-            placeholder="예: 60"
-            disabled={isBusy}
-          />
-          <p id="tempo-help" className="mt-1 text-xs text-ink-muted">
-            선택 입력입니다. 비워두면 빠르기 미상으로 표시됩니다.
-          </p>
-          {errors.tempo && <p className="mt-1 text-sm text-state-error">{errors.tempo}</p>}
-        </div>
+        <TempoInput value={formData.tempo} unit={tempoUnit}
+          onChange={value => handleInputChange('tempo', value)} onUnitChange={setTempoUnit}
+          disabled={isBusy} error={errors.tempo} />
 
         {/* 카테고리 */}
         <div>

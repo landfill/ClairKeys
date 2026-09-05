@@ -1755,6 +1755,23 @@
   옳게 순위를 매기는지는 미확인.
 - Related: D-038, D-039, D-041, D-042, D-043, 이슈 [#130](https://github.com/landfill/ClairKeys/issues/130)
 
+## D-046: 템포 입력의 음표 단위와 저장된 시간축 수정
+
+- Date: 2026-09-05
+- Status: Proposed with issue #137 implementation
+- Context: #134 원본의 점4분음표=46은 quarter BPM 69로 인식됐지만 사용자 입력 46이 덮어썼다. 라이브러리 편집은 제목만 노출한다.
+- Decision:
+  1. UI에서 입력 숫자와 음표 단위를 함께 받고 quarter BPM으로 환산해 기존 API에 보낸다. 빈 입력은 자동 인식, 인식값도 없을 때만 미상이다.
+  2. 기존 악보 템포 수정은 `timingReferenceBpm / newQuarterBpm`으로 모든 start/duration와 전체 duration를 균일하게 변환한다. 원본의 상대적 템포 변화는 보존한다. 업로드의 고정 템포 override와 이 편집의 균일 속도 조절 의미를 구별한다.
+  3. 새 데이터는 canonical v1.1, tempoSource=user, tempo/timingReferenceBpm=새 값으로 저장하고 scoreTempo는 유지한다. 기존 JSON 객체를 덮어쓰지 않고 새 URL로 교체한다.
+  4. 소유자 검증 후 앱의 기존 Supabase 권한으로만 읽고 쓴다. URL은 구성된 Supabase의 animation-data 버킷으로 제한한다. DB는 기존 URL과 updatedAt을 비교해 한 편집만 반영한다.
+  5. 동시 편집으로 확실히 반영되지 않은 새 객체는 제거한다. DB 통신 실패로 반영 여부가 불확실하면 새 객체를 보존한다. 이전 객체는 공유 참조나 복구에 필요할 수 있어 삭제하지 않는다; 수명주기 정리는 별도다.
+- Rejected: 메타데이터 숫자만 수정 | 노트 시간은 이미 초로 저장돼 있어 실제 재생이 바뀌지 않는다.
+- Constraint: 기존 악보 재등록 허용(D-040)은 유지한다. 이 변경으로 박자표나 OMR 음표 오류를 보정하지 않는다.
+- Confidence: high
+- Scope-risk: moderate
+- Related: #134, #137, 2026-09-05 codebase audit
+
 ## D-045: 손 이동을 재는 지표는 아르페지오에서 전부 뒤집힌다 — 검증 세트는 결함이 사는 악구를 포함해야 한다
 
 - Date: 2026-09-05

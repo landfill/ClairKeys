@@ -8,6 +8,8 @@ import type { SheetMusicWithCategory } from '@/types/sheet-music'
 import Button from '@/components/ui/Button'
 import Loading from '@/components/ui/Loading'
 import StatusState from '@/components/ui/StatusState'
+import TempoInput from '@/components/upload/TempoInput'
+import { quarterBpm, TEMPO_ERROR, type TempoUnit } from '@/utils/tempoInput'
 
 export interface LibrarySheetMusicListProps {
   selectedCategoryId?: number | null
@@ -32,6 +34,10 @@ export function LibrarySheetMusicList({
   const [editingSheet, setEditingSheet] = useState<SheetMusicWithCategory | null>(null)
   const [title, setTitle] = useState('')
   const [titleError, setTitleError] = useState<string | null>(null)
+  const [tempo, setTempo] = useState('')
+  const [tempoUnit, setTempoUnit] = useState<TempoUnit>('quarter')
+  const [tempoError, setTempoError] = useState<string | undefined>()
+  const [saving, setSaving] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -112,25 +118,35 @@ export function LibrarySheetMusicList({
   const openTitleEditor = (sheet: SheetMusicWithCategory) => {
     setTitle(sheet.title)
     setTitleError(null)
+    setTempo('')
+    setTempoUnit('quarter')
+    setTempoError(undefined)
     setEditingSheet(sheet)
   }
 
   const saveTitle = async (event: FormEvent) => {
     event.preventDefault()
-    if (!editingSheet) return
+    if (!editingSheet || saving) return
     if (!title.trim()) {
       setTitleError('제목을 입력해 주세요.')
       return
     }
 
+    let bpm: number | null
+    try { bpm = quarterBpm(tempo, tempoUnit) } catch { setTempoError(TEMPO_ERROR); return }
+
     try {
+      setSaving(true)
       setTitleError(null)
+      setTempoError(undefined)
       setErrorMessage(null)
-      await updateSheetMusic(editingSheet.id, { title: title.trim() })
+      await updateSheetMusic(editingSheet.id, { title: title.trim(), ...(bpm !== null ? { tempo: bpm } : {}) })
       setEditingSheet(null)
     } catch (error) {
       console.error('Failed to update sheet music title:', error)
-      setErrorMessage('제목을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.')
+      setErrorMessage('악보 정보를 저장하지 못했습니다. 새로고침한 뒤 다시 시도해 주세요.')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -219,7 +235,7 @@ export function LibrarySheetMusicList({
       {editingSheet && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-sheet-title">
           <form onSubmit={saveTitle} className="w-full max-w-md rounded-lg bg-surface p-6 shadow-xl">
-            <h2 id="edit-sheet-title" className="text-lg font-semibold text-ink">악보 제목 수정</h2>
+            <h2 id="edit-sheet-title" className="text-lg font-semibold text-ink">악보 정보 수정</h2>
             <label className="mt-4 block text-sm font-medium text-ink" htmlFor="sheet-title">제목</label>
             <input
               id="sheet-title"
@@ -234,12 +250,16 @@ export function LibrarySheetMusicList({
               aria-describedby={titleError ? 'sheet-title-error' : undefined}
             />
             {titleError && <p id="sheet-title-error" role="alert" className="mt-2 text-sm text-state-error">{titleError}</p>}
+            {editingSheet.availability === 'ready' && <div className="mt-4">
+              <TempoInput value={tempo} unit={tempoUnit} onChange={setTempo} onUnitChange={setTempoUnit}
+                editing disabled={saving} error={tempoError} />
+            </div>}
             <div className="mt-6 flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => {
+              <Button type="button" variant="outline" disabled={saving} onClick={() => {
                 setTitleError(null)
                 setEditingSheet(null)
               }}>취소</Button>
-              <Button type="submit">저장</Button>
+              <Button type="submit" disabled={saving}>{saving ? '저장 중…' : '저장'}</Button>
             </div>
           </form>
         </div>
