@@ -2,6 +2,20 @@
 
 Last updated: 2026-09-06 KST
 
+## User-requested local sample workspace created, Git-excluded (2026-09-06)
+
+- Created `local-test-data/scores/` for user-supplied PDF/MusicXML samples and `local-test-data/results/`
+  for service-validation outputs, with a local README. User explicitly requested this local sample folder;
+  it is not a change to production PDF retention or permission to upload/change stored scores automatically.
+- Added `/local-test-data/` to this clone's `.git/info/exclude` (not the shared `.gitignore`). The folder
+  and all contents are local-only and do not appear in Git status; another clone needs its own setup.
+- Verified `git check-ignore -v` for the actual README and nested PDF/JSON paths; all matched the local
+  exclude rule. `git ls-files -- local-test-data` is empty; status still contains only the untouched user
+  settings change. No samples downloaded, no service call or production change, no application-code PR needed.
+- Setup branch `codex/test-local-score-workspace` has no unique commit and was not pushed; retained under
+  the existing user-dirty-worktree rule. Returned to main for this fact-only handoff record.
+
+
 ## PR142 deployment verified on production; remaining recognition work is separate (2026-09-06)
 
 - Explicitly approved rollout is complete. Exact merge79a2328 image `ff0a347f…9415ef` is running,
