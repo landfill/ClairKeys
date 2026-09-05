@@ -2,6 +2,31 @@
 
 Last updated: 2026-09-05 KST
 
+## Four audit fixes merged and verified; VM rollout complete (2026-09-05)
+
+- **Delivered:** PR #138 A-B frame lifecycle (`8258af2`); PR #139 tempo units and owner retiming (`bf79a07`);
+  PR #140 sustained sound versus inferred finger occupancy (`193fcdd`); PR #141 beat-domain MusicXML timing
+  and recognition diagnostics (`a7cf0ff`). Every merge commit passed all post-merge gates. These phases are DONE.
+- Final application verification: **959 Jest tests PASS**, independent typecheck/lint/build PASS, real built
+  browser checks with mocked score/session APIs; VM Docker image passed **46 service tests**. Browser scripts
+  are now retained in [reproducers](validation/2026-09-05-browser-reproducers.md), not only temporary files.
+- **OMR VM is live on exact commit `a7cf0ff`**, image `09a9e62d8512481abb3e2177116027404f48f35995ed57bfb00213e42b871576`.
+  Restart exited 0; service active; running image matched; external health=200 and unauthenticated process=401;
+  HEALTHCHECK healthy; actual MXL and in-measure tempo smoke passed. Rollback `clairkeys-omr:acf25f8` preserved.
+  [Deployment evidence](validation/2026-09-05-musicxml-vm-deployment.md).
+- **Still unresolved:** #134's actual note/meter recognition errors. Same-PDF VM reproduction proves they
+  are already in Audiveris XML; warnings are not a repair. Existing JSONs are not rewritten by deployment.
+  Correct reference MusicXML/rhythm reconstruction or a separately validated recognition improvement is needed.
+  #130 remains parked for a human fingering reference. Repeat/ending expansion, flat/minor key metadata and
+  ambiguous cross-staff tie identity remain explicit audit follow-ups, not delivered claims.
+- No production score or secret was edited. New source PDF/OMR image copies were removed after diagnosis;
+  exact permitted XML/JSON evidence is in the repository. The clean temporary VM validation checkout was removed.
+- All four local and remote work branch tips are contained in main; their actual remote existence was checked.
+  They remain **preserved under AGENTS.md's dirty-worktree rule** because `.claude/settings.local.json` is
+  user-owned and uncommitted. Never include or revert it to make cleanup possible.
+- User-delegated merge judgment and VM access remain authorized until the user asks to restore per-PR approval.
+  No operating-contract file was changed to grant this authority. Only the explicit user instruction grants it.
+
 ## #141 merged — rollout now targets exact commit a7cf0ff (2026-09-05)
 
 - Fresh hosted CI all green at final head `bd35836`; PR #141 merged as
