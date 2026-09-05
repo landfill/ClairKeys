@@ -6,6 +6,7 @@ Converts MusicXML files to ClairKeys animation data format
 import json
 import logging
 import math
+import re
 from pathlib import Path, PurePosixPath
 from typing import Dict, List, Optional, Any
 import xml.etree.ElementTree as ET
@@ -29,6 +30,17 @@ _QUARTER_NOTE_MULTIPLIERS = {
     "32nd": 0.125,
     "64th": 0.0625,
     "128th": 0.03125,
+}
+
+_TRADITIONAL_KEY_NAMES = {
+    "major": (
+        "Cb", "Gb", "Db", "Ab", "Eb", "Bb", "F", "C",
+        "G", "D", "A", "E", "B", "F#", "C#",
+    ),
+    "minor": (
+        "Abm", "Ebm", "Bbm", "Fm", "Cm", "Gm", "Dm", "Am",
+        "Em", "Bm", "F#m", "C#m", "G#m", "D#m", "A#m",
+    ),
 }
 
 class MusicXMLToClairKeysConverter:
@@ -125,10 +137,12 @@ class MusicXMLToClairKeysConverter:
                 "tempoSource": tempo_source,
                 "timingReferenceBpm": timing_reference_bpm,
                 "scoreTempo": score_tempo,
-                "keySignature": self._extract_key_signature(root),
                 "timeSignature": self._extract_time_signature(root),
                 "generated_at": datetime.utcnow().isoformat()
             }
+            key_signature = self._extract_key_signature(root)
+            if key_signature is not None:
+                animation_data["keySignature"] = key_signature
             
             logger.info(f"Successfully converted to ClairKeys format")
             return animation_data
@@ -396,19 +410,37 @@ class MusicXMLToClairKeysConverter:
         """Only a tempo effective at quarter zero describes the opening."""
         return scan_score(root, self._find_tempo).opening_tempo
 
-    def _extract_key_signature(self, root: ET.Element) -> str:
-        """Extract key signature from MusicXML"""
+    def _extract_key_signature(self, root: ET.Element) -> Optional[str]:
+        """Decode the first key declaration without guessing unreadable metadata."""
         key_elem = root.find('.//key')
-        if key_elem is not None:
-            fifths_elem = key_elem.find('fifths')
-            if fifths_elem is not None:
-                fifths = int(fifths_elem.text)
-                # Convert circle of fifths to key name (simplified)
-                keys = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#']
-                if 0 <= fifths < len(keys):
-                    return keys[fifths]
-        
-        return "C"  # Default to C major
+        if key_elem is None:
+            return None
+
+        fifths_elem = key_elem.find('fifths')
+        if fifths_elem is None or fifths_elem.text is None:
+            return None
+        fifths_text = fifths_elem.text.strip()
+        if re.fullmatch(r"[+-]?[0-9]+", fifths_text) is None:
+            return None
+        digits = fifths_text[1:] if fifths_text[0] in "+-" else fifths_text
+        digits = digits.lstrip("0") or "0"
+        # Bound the textual magnitude before int(): huge invalid values must
+        # not hit Python's digit limit or consume arbitrary bigint work.
+        if len(digits) != 1 or digits > "7":
+            return None
+        fifths = int(digits) * (-1 if fifths_text.startswith("-") else 1)
+
+        mode_elem = key_elem.find('mode')
+        if mode_elem is None:
+            mode = "major"
+        elif mode_elem.text is None:
+            return None
+        else:
+            mode = mode_elem.text.strip().lower()
+            if mode not in _TRADITIONAL_KEY_NAMES:
+                return None
+
+        return _TRADITIONAL_KEY_NAMES[mode][fifths + 7]
     
     def _extract_time_signature(self, root: ET.Element) -> str:
         """Extract time signature from MusicXML"""

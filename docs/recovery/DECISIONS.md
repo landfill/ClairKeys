@@ -1915,6 +1915,8 @@
      major/minor로 해석하고, 그 외 값(빈 값/none/다른 선법 포함)은 이 작은 계약으로 표시하지 않는다.
   4. key/fifths 없음, 빈 값·비정수·범위 밖 값, 표현 불가능한 조표는 Optional[str]의 None으로 반환하고
      JSON keySignature 필드를 생략한다. false C나 JSON null을 새로 쓰지 않고, 음표 변환은 계속한다.
+     숫자는 ASCII 정수 표기로 제한한다. 부호와 선행 0을 분리해 작은 범위 여부를 먼저 확인하므로
+     매우 긴 숫자도 Python 정수 변환 제한 예외를 만들지 않는다. 긴 선행 0 뒤의 유효한 값은 보존한다.
   5. notes, duration, tempo provenance, timing reference, warnings, source finger 및 기존 저장 문서는
      변경하지 않는다. 현재 UI/normalizer의 optional 문자열 호환을 회귀 검사한다.
 - Rejected: 모든 플랫을 C로 유지 | 확인된 사실과 다르다.
