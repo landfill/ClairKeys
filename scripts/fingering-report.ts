@@ -14,8 +14,10 @@ import type { FallingNote } from '../src/types/fallingNotes';
 
 const CORPUS = path.join(__dirname, '..', 'fixtures', 'fingering');
 const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+/** Scientific pitch notation, so a reader can find the note in the score. */
 const noteName = (midi: number) => `${NAMES[midi % 12]}${Math.floor(midi / 12) - 1}`;
 
+/** Print one corpus score's metrics, with the bars behind each count. */
 function report(file: string): void {
   const doc = JSON.parse(fs.readFileSync(path.join(CORPUS, file), 'utf8'));
   const notes: FallingNote[] = doc.notes.map((n: Record<string, unknown>) => ({

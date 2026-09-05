@@ -1603,6 +1603,10 @@
   4. 도달 한계 표는 **너그럽게** 잡는다. "불편하다"가 아니라 "물리적으로 불가능하다"의 경계여야 지표가
      손 크기나 취향 논쟁에 휘말리지 않는다. Parncutt et al. (1997)의 수치를 인용하지 않는다 — 확인하지
      않은 출처를 붙이지 않으며, 표를 조이려면 그때 실제 문헌을 확인한다.
+  5. **화음은 인접 음이 아니라 모든 음 쌍으로 판정한다.** 이 표는 어디서도 부가적이지 않다 — 손가락 3중
+     조합 10개 **전부**에서 `MAX[a-b] + MAX[b-c] > MAX[a-c]`이며 차이가 2~5반음이다. 따라서 인접 쌍이
+     모두 합법이어도 바깥 쌍은 불가능할 수 있고, 인접 검사만으로는 **모든 3음 화음에서** 위반을 놓칠 수
+     있다. 실측: 이 corpus에서 인접 검사는 23/132, 전체 쌍 검사는 26/154였다.
 - Consequence:
   - `fixtures/fingering/love-affair-411.json` 62KB가 저장소에 들어온다. corpus가 커지면 크기를 다시 본다.
   - #126의 "411음 운영 악보 수동 검토" 완료 조건이 비로소 실행 가능해진다. 이번에 수행한 결과가 #130이다.
@@ -1620,8 +1624,9 @@
 - Reversibility: clean
 - Directive: 래칫 숫자를 "테스트를 통과시키려고" 올리지 않는다. 올려야 한다면 그것은 회귀이며 같은 커밋에
   이유를 적는다. 계측 모듈에서 `fingeringUtils`를 import하지 않는다.
-- Tested: 전체 Jest 879건(신규 8건), `tsc --noEmit`, `next lint`, `next build`. corpus 파일이 다운로드
-  바이트와 동일함을 `cmp`로 확인.
+- Tested: 전체 Jest 880건(신규 9건), `tsc --noEmit`, `next lint`, `next build`. corpus 파일이 다운로드
+  바이트와 동일함을 `cmp`로 확인. 인접 전용 검사를 사본에 주입해 새 회귀가 그것을 잡고 전체 쌍 검사가
+  corpus에서 3건을 더 찾아냄을 확인.
 - Not-tested: corpus가 한 곡뿐이라 다른 텍스처(대위, 옥타브 연속, 빠른 패시지)의 지표는 아직 모른다.
 - Related: D-038, D-039, D-040, D-041, 이슈 [#120](https://github.com/landfill/ClairKeys/issues/120),
   [#126](https://github.com/landfill/ClairKeys/issues/126), [#130](https://github.com/landfill/ClairKeys/issues/130)

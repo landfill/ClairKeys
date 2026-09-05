@@ -19,6 +19,10 @@ import type { FallingNote, Finger } from '@/types/fallingNotes';
 
 const CORPUS = path.join(__dirname, '..', '..', '..', 'fixtures', 'fingering');
 
+/**
+ * Read a corpus score the way the player does, returning both the mapped notes
+ * and the raw entries so a test can check what the mapping dropped.
+ */
 function loadCorpusScore(file: string): { notes: FallingNote[]; raw: Record<string, unknown>[] } {
   const doc = JSON.parse(fs.readFileSync(path.join(CORPUS, file), 'utf8'));
   return {
@@ -41,6 +45,24 @@ describe('fingering metrics', () => {
     expect(maxReach(3, 3)).toBe(0);
     // The table is symmetric in the order the fingers are given.
     expect(maxReach(5, 2)).toBe(maxReach(2, 5));
+  });
+
+  it('judges a chord on every pair of its notes, not only neighbouring ones', () => {
+    // The reach table is nowhere subadditive — all ten finger triples have
+    // `MAX[a-b] + MAX[b-c] > MAX[a-c]` — so two legal adjacent spans can add up
+    // to an outer span no hand can take. C4-A#4-D#5 on 1-2-3 is exactly that:
+    // 10 semitones is the 1-2 limit, 5 is the 2-3 limit, and the resulting 15
+    // between thumb and middle finger is past the 1-3 limit of 12.
+    const chord: FallingNote[] = [
+      { midi: 60, start: 0, duration: 1, hand: 'R', finger: 1 },
+      { midi: 70, start: 0, duration: 1, hand: 'R', finger: 2 },
+      { midi: 75, start: 0, duration: 1, hand: 'R', finger: 3 },
+    ];
+
+    const m = measureFingering(chord);
+    expect(m.chordPairs).toBe(3);
+    expect(m.reachViolations.map(v => `${v.lowFinger}-${v.highFinger} ${v.semitones}>${v.limit}`))
+      .toEqual(['1-3 15>12']);
   });
 
   it('derives the same hand position from either hand playing the same shape', () => {
@@ -98,7 +120,7 @@ describe('love-affair-411 corpus score', () => {
     expect({
       unreachableChordPairs: m.reachViolations.length,
       chordPairs: m.chordPairs,
-    }).toEqual({ unreachableChordPairs: 23, chordPairs: 132 });
+    }).toEqual({ unreachableChordPairs: 26, chordPairs: 154 });
 
     // Defect 1: the hand relocates part-way through steady pitch motion because
     // the model spends its whole span in one step and then oscillates. Target is

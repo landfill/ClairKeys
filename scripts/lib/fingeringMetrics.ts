@@ -24,6 +24,12 @@ const NATURAL_SPAN = [0, 2, 4, 5, 7] as const;
  * bounds, not comfort bounds, so that anything a metric flags is indisputable
  * rather than a matter of taste or hand size. Keyed low-finger-first.
  *
+ * The table is nowhere subadditive: every one of the ten finger triples has
+ * `MAX_REACH[a-b] + MAX_REACH[b-c] > MAX_REACH[a-c]`, by two to five semitones.
+ * A chord must therefore be checked on every pair of its notes, not only on
+ * neighbouring ones — two legal adjacent spans can add up to an outer span no
+ * hand can take.
+ *
  * Not sourced from Parncutt et al. (1997); that paper's tables give comfort and
  * practical ranges per pair and would be the reference to adopt properly if
  * these are ever tightened. Treat the numbers below as this repository's
@@ -101,6 +107,11 @@ interface Event {
   notes: { midi: number; finger: Finger }[];
 }
 
+/**
+ * One hand's notes as simultaneity groups in time order, with the notes of each
+ * group ordered low to high. Notes with no finger are dropped: an unassigned
+ * note is not evidence about the assignment.
+ */
 function handEvents(notes: FallingNote[], hand: Hand): Event[] {
   const byStart = new Map<number, { midi: number; finger: Finger }[]>();
   for (const note of notes) {
@@ -114,6 +125,13 @@ function handEvents(notes: FallingNote[], hand: Hand): Event[] {
     .map(([start, ns]) => ({ start, notes: ns.sort((a, b) => a.midi - b.midi) }));
 }
 
+/**
+ * Measure one already-fingered score.
+ *
+ * Chords are judged on reach, single-note lines on repetition and on how often
+ * the hand relocates mid-run; a chord says nothing about the second pair of
+ * properties because moving the whole hand is what playing one involves.
+ */
 export function measureFingering(notes: FallingNote[]): FingeringMetrics {
   const reachViolations: ReachViolation[] = [];
   const repetitionRuns: RepetitionRun[] = [];
@@ -125,20 +143,25 @@ export function measureFingering(notes: FallingNote[]): FingeringMetrics {
     const events = handEvents(notes, hand);
 
     for (const event of events) {
+      // Every pair, not just neighbouring notes: the reach table is not
+      // subadditive, so a triad whose adjacent spans both fit can still ask the
+      // outer two fingers for an interval neither can reach together.
       for (let i = 0; i < event.notes.length - 1; i += 1) {
-        const low = event.notes[i];
-        const high = event.notes[i + 1];
-        chordPairs += 1;
-        const limit = maxReach(low.finger, high.finger);
-        if (limit === null) continue;
-        const semitones = high.midi - low.midi;
-        if (semitones > limit) {
-          reachViolations.push({
-            start: event.start, hand,
-            lowMidi: low.midi, highMidi: high.midi,
-            lowFinger: low.finger, highFinger: high.finger,
-            semitones, limit,
-          });
+        for (let j = i + 1; j < event.notes.length; j += 1) {
+          const low = event.notes[i];
+          const high = event.notes[j];
+          chordPairs += 1;
+          const limit = maxReach(low.finger, high.finger);
+          if (limit === null) continue;
+          const semitones = high.midi - low.midi;
+          if (semitones > limit) {
+            reachViolations.push({
+              start: event.start, hand,
+              lowMidi: low.midi, highMidi: high.midi,
+              lowFinger: low.finger, highFinger: high.finger,
+              semitones, limit,
+            });
+          }
         }
       }
     }
