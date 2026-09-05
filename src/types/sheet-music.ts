@@ -44,6 +44,8 @@ export interface UpdateSheetMusicRequest {
   composer?: string
   categoryId?: number | null
   isPublic?: boolean
+  /** New quarter-note BPM; omitted leaves the stored timing untouched. */
+  tempo?: number
 }
 
 export interface SheetMusicListResponse {

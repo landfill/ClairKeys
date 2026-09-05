@@ -59,6 +59,15 @@ describe('LibrarySheetMusicList', () => {
     await waitFor(() => expect(updateSheetMusic).toHaveBeenCalledWith(1, { title: '새 제목' }))
   })
 
+  it('submits a printed dotted-quarter tempo as quarter BPM from the live edit dialog', async () => {
+    render(<LibrarySheetMusicList />)
+    fireEvent.click(screen.getByRole('button', { name: '연습 가능 제목 수정' }))
+    fireEvent.change(screen.getByLabelText('빠르기 (BPM)'), { target: { value: '46' } })
+    fireEvent.change(screen.getByLabelText('박 단위'), { target: { value: 'dotted-quarter' } })
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+    await waitFor(() => expect(updateSheetMusic).toHaveBeenCalledWith(1, { title: '연습 가능', tempo: 69 }))
+  })
+
   it('explains why a whitespace-only title cannot be saved', async () => {
     render(<LibrarySheetMusicList />)
 

@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 import { sheetMusicCache } from '@/services/cacheService'
 import { deriveSheetMusicAvailability } from '@/lib/sheetMusicAvailability'
+import { quarterBpm } from '@/utils/tempoInput'
+import { saveSheetTempo, TempoEditError } from '@/services/sheetTempoService'
 
 export async function GET(
   request: NextRequest,
@@ -113,7 +115,16 @@ export async function PUT(
 
     // Parse request body
     const body = await request.json()
-    const { title, composer, categoryId, isPublic } = body
+    const { title, composer, categoryId, isPublic, tempo } = body
+
+    if (tempo !== undefined) {
+      try {
+        if (typeof tempo !== 'number') throw new Error()
+        quarterBpm(String(tempo), 'quarter')
+      } catch {
+        return NextResponse.json({ error: 'Tempo must be a number between 20 and 400 quarter BPM' }, { status: 400 })
+      }
+    }
 
     // Validate required fields only if they are being updated
     if (title !== undefined && !title?.trim()) {
@@ -182,7 +193,14 @@ export async function PUT(
       updateData.isPublic = isPublic
     }
 
-    const updatedSheet = await prisma.sheetMusic.update({
+    if (tempo !== undefined && deriveSheetMusicAvailability(existingSheet) !== 'ready') {
+      return NextResponse.json({ error: 'The score is not ready for tempo editing' }, { status: 409 })
+    }
+
+    const updatedSheet = tempo !== undefined ? await saveSheetTempo({
+      id: sheetId, userId: session.user.id, animationDataUrl: existingSheet.animationDataUrl,
+      updatedAt: existingSheet.updatedAt,
+    }, tempo, updateData) : await prisma.sheetMusic.update({
       where: { id: sheetId },
       data: updateData,
       include: {
@@ -195,6 +213,13 @@ export async function PUT(
       }
     })
 
+    if (!updatedSheet) return NextResponse.json({ error: 'Sheet music not found' }, { status: 404 })
+
+    sheetMusicCache.invalidateSheet(sheetId)
+    sheetMusicCache.invalidateUser(session.user.id)
+    sheetMusicCache.invalidateSearch()
+    if (existingSheet.isPublic || updatedSheet.isPublic) sheetMusicCache.invalidatePublic()
+
     return NextResponse.json({
       success: true,
       sheetMusic: {
@@ -204,12 +229,16 @@ export async function PUT(
         categoryId: updatedSheet.categoryId,
         category: updatedSheet.category?.name || null,
         isPublic: updatedSheet.isPublic,
+        animationDataUrl: updatedSheet.animationDataUrl,
         updatedAt: updatedSheet.updatedAt
       }
     })
 
   } catch (error) {
     console.error('Update sheet music error:', error)
+    if (error instanceof TempoEditError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
     
     return NextResponse.json(
       { error: 'Internal server error' },
