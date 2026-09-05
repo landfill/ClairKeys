@@ -39,6 +39,13 @@ Last updated: 2026-09-05 KST
   D-040's Directive warns about.
 - Next: stage 2 (per-pair reach table — it prunes candidates, so it comes before the budget work), then stage
   3 (directional finger budget), then stage 4 (re-scope the leap exception from measurement).
+- **CodeRabbit reviewed PR #131 and was right about something bigger than it said.** It flagged the chord
+  reach check for comparing only neighbouring notes. Measuring the table settled the scale: all ten finger
+  triples satisfy `MAX[a-b] + MAX[b-c] > MAX[a-c]` by two to five semitones, so the table is nowhere
+  subadditive and adjacent-only checking can miss a violation in *any* three-note chord. It was missing three
+  on the corpus, all outer spans of right-hand triads. Ratchet moved 23/132 to 26/154 in `355c317`; the
+  regression states the property rather than a count, and the adjacent-only enumeration was re-injected to
+  confirm it fails against it.
 - Evidence: `docs/recovery/phases/ISSUE-130-fingering-corpus-and-reach.md`, `docs/recovery/reviews/PR-131.md`,
   `fixtures/fingering/README.md`, D-042.
 
