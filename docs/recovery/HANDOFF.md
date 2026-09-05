@@ -2,6 +2,33 @@
 
 Last updated: 2026-09-05 KST
 
+## #130 stage 3 MERGED — the targets are validated now; stage 4 is the model change (2026-09-05)
+
+- PR [#133](https://github.com/landfill/ClairKeys/pull/133) merged as `16d68a2`, post-merge checks green.
+  Re-read from `main`: unreachable chord pairs **0 of 154**, same-finger leaps **10 of 155**, wasted hand
+  travel **36 of 155**, longest same-finger run 3, one run spanning a pitch change.
+- **These four are now the targets, and each has been shown not to rank a defensible fingering below a
+  defective one** (`src/utils/__tests__/fingeringMetricValidity.test.ts`). The measure three attempts were
+  spent minimising, `repositionsInMonotoneRuns`, is disqualified and its inversion pinned as a passing test.
+- **Next action — stage 4: change the model against these targets.** The concrete case to fix is
+  `B2:1 → G#3:2` in the corpus: the hand travels eleven semitones for an interval that needed two, because
+  the thumb spent the whole hand on the preceding fifth. Lower `wastedHandTravel` without raising the others,
+  and update the ratchet in the same commit.
+- **Do not merge `codex/issue-130-directional-budget`.** It is local-only, never pushed, and holds the two
+  superseded attempts (`4d1d052`, `7a3d5e8`). Kept rather than deleted because it has unique commits, which
+  AGENTS.md forbids discarding — it is a record, not pending work.
+- Rules earned in this stage, both general enough to outlive it:
+  - **Suspect the target before the mechanism when a metric will not move.** Three sound mechanisms failed
+    against a metric that pointed the wrong way.
+  - **When a measurement and its subject are deliberately independent, check they share the same assumptions
+    about time and phrasing.** The model split phrases on silence; the metrics did not, and counted a pair
+    fifteen seconds apart as a defect.
+- Delegation shape that worked for a weak model (Gemini 3.8 Flash via `agy`): the design was fixed here, the
+  function body written into the brief, and only the typing delegated — then every claim re-run, including
+  checks that the test file, the tolerance constant and `fingeringUtils.ts` were untouched.
+- Evidence: `docs/recovery/reviews/PR-133.md` (Iteration 3),
+  `docs/recovery/phases/ISSUE-130-fingering-corpus-and-reach.md`, D-044.
+
 ## #130 stage 3 — the target was wrong, not the mechanism; PR #133 open (2026-09-05)
 
 - **Three attempts at stage 3 failed, and the reason was the metric.** Two Codex workers and one attempt by
