@@ -49,3 +49,11 @@ Full clone-local review artifacts: `local-test-data/results/priority-model-revie
 and `luna-regression-review.md`; Opus report is pending. Shared summary here preserves the conclusions
 without relying on private model memory. Next: finish remaining review, record phase/decision before code,
 implement regression-first on a dedicated branch, review/CI and request target-PR/rollout approvals as required.
+
+## Completed review and first implementation follow-up
+
+Opus review and fresh Sol implementation/Luna independent-review tasks have completed. Every settled
+worker terminal was released and delivery acknowledged; no worker was stopped for mere slowness.
+Coordinator corrected overstrong causal/count claims in the Opus proposal and fixed Luna's new numeric
+parsing findings. Actual code, final972/83 tests and exact retained-result checks are recorded in
+[OMR-Q1 implementation](2026-09-06-key-metadata-implementation.md). No AGY task has executed yet.
