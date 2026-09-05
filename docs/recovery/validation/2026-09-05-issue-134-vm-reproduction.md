@@ -1,0 +1,73 @@
+# 2026-09-05 — #134 same-PDF reproduction on the OMR VM
+
+The user explicitly authorized direct VM access. VM `101.79.16.73`, host `vm-naver-20260820145930`,
+service `clairkeys-omr` active, container `clairkeys-omr-prod` (`localhost/clairkeys-omr:current`).
+No Java conversion was running at the initial check. One isolated conversion was run with the existing
+`AudiverisProcessor(process_timeout_seconds=300)` in `/data/analysis/issue134-9m1By2/out`.
+No service restart, DB update, callback or production score edit was performed.
+
+## Chain and result
+
+- Input: https://github.com/user-attachments/files/31858211/Clair_de_Lune_easy_300dpi.pdf
+- PDF SHA-256: `34d06c77398470ea6f9bf15d9cd5724a0db94c904eb81107c5ca29d2f1be5478`.
+- Both VM `/app/omr/converter.py` and local main converter SHA-256:
+  `f91ee22a3203dcf21f59884ef265b931e0be93223418edbe397db31825a19c77`.
+- Export: `/data/analysis/issue134-9m1By2/out/input.mxl`, 5309 bytes.
+- MXL SHA-256: `298e8a88265fe8d4ede4b4133f476ae2cb1d00c6a1e5c8db47fdd252f585dba5`.
+- The first measure's XML explicitly contains **6/8**, while the PDF first page read in the original audit contains **9/8**.
+- Local conversion of this MXL with `title='Clair de lune v2', tempo=46` compared against the exact original
+  issue #134 JSON retained in `2026-09-05-codebase-audit-evidence.md`:
+  **all 133 notes equal as complete dictionaries; every top-level field equal except `generated_at`.**
+  This includes `tempoSource=user`, `scoreTempo=69`, `timingReferenceBpm=46` and duration 80.86956500000001.
+- This is a new same-input reproduction, not retrieval of the original upload's discarded XML or `/result`.
+  It nevertheless reproduces the complete served musical payload, not merely note count/duration summaries.
+
+## Raw measure lengths
+
+MusicXML first divisions=12 and declared 6/8 (3 quarter notes per measure). Measure cursor/backup/chord
+traversal yields these maximum quarter-note positions; source PDF shows 9/8 (4.5 quarters).
+
+| Measure | Maximum quarter position |
+| --- | ---: |
+| 1 | 3.5 |
+| 2 | 3.5 |
+| 3 | 4.5 |
+| 4 | 4.5 |
+| 5 | 4.25 |
+| 6 | 3 |
+| 7 | 3.25 |
+| 8 | 3 |
+| 9 | 2.5 |
+| 10 | 4.5 |
+| 11 | 3 |
+| 12 | 4.5 |
+| 13 | 3 |
+| 14 | 4.5 |
+| 15 | 3 |
+| 16 | 4.5 |
+| 17 | 3 |
+
+Ten measures exceed the XML's own 6/8 length. Changing the metadata meter or multiplying total duration
+cannot reconstruct missing or misrecognized notes. The specific 9→6 discrepancy occurs in Audiveris recognition;
+the converter then serializes the inconsistent rhythmic output without reporting it. Separate mid-measure
+tempo bugs found in the audit are still converter defects, but are not the cause established here.
+
+Follow-up: retain this XML as a real regression input, diagnose measure rhythm contradictions, and do not
+claim that #137's tempo UI fixes #134. The definitive score still requires correcting the recognized
+rhythmic structure or obtaining a verified MusicXML. No heuristic duration correction was adopted here.
+
+## Cleanup
+
+The newly downloaded `/data/analysis/issue134-9m1By2/input.pdf` and image-bearing `out/input.omr` were removed
+after inspection. Only MXL and the conversion log remain on the VM. The PDF and its images are not stored
+in this repository (D-040). The service remained active after cleanup.
+
+## Exact MXL bytes (base64)
+
+The compressed container contains MusicXML and its container declaration. This block preserves the exact
+input for future regression work without requiring VM access. Decode in memory with Python's `base64` and
+`zipfile.ZipFile(io.BytesIO(...))`; do not confuse the MXL archive hash with a hash of its decompressed XML.
+
+```base64
+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
+```

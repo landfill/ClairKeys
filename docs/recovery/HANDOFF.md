@@ -2,6 +2,23 @@
 
 Last updated: 2026-09-05 KST
 
+## Tempo PR submitted; #134's wrong meter reproduced inside Audiveris XML (2026-09-05)
+
+- #137 implementation is [PR #139](https://github.com/landfill/ClairKeys/pull/139). Full Jest 937 PASS,
+  typecheck/lint/build PASS, Chromium mobile-width upload/edit and quarter-BPM PUT verified with mocked APIs.
+  Review and remaining storage risks: [PR-139](reviews/PR-139.md). Prior API test-fixture typecheck failure is fixed.
+- **VM #134 breakthrough:** same PDF → current Audiveris → MusicXML **6/8** → converter with tempo 46
+  reproduces **every one of the 133 served note dictionaries and every top-level field except generated_at**.
+  This locates the original PDF 9/8→6/8 error in recognition; ten measures even exceed XML's own 6/8 length.
+  No single tempo or metadata correction can recover the missing rhythm. Exact MXL, hashes and measure
+  evidence: [VM reproduction](validation/2026-09-05-issue-134-vm-reproduction.md).
+- Only the fresh PDF/OMR image copies were removed from the VM after reproduction; XML/log retained and
+  service active. No existing score or database row was changed. Continue from this evidence for #134.
+- PR #138 post-merge gates are all green; phase DONE. Branch cleanup remains withheld for the existing
+  user-owned `.claude/settings.local.json` modification.
+- Next: evaluate #139 hosted CI/storage edge cases; independently address #135's held-note guidance and
+  converter rhythm diagnostics. User-delegated merge authority remains in effect.
+
 ## User authorization and first audit fix merged (2026-09-05)
 
 - **Latest user instruction:** preserve the branch strategy, but use agent judgment to merge sufficiently
