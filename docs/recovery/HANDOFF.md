@@ -35,6 +35,17 @@ Last updated: 2026-09-05 KST
   `terminal create --command` plus `worker-start --terminal` was used to keep it supervised). Every claim was
   re-run here, including checks that the test file, the tolerance constant and `fingeringUtils.ts` were
   untouched.
+- **CodeRabbit found one more assumption the metrics were making about time.** Both motion measures treated
+  any two adjacent notes as a transition regardless of the silence between them, so the corpus was counting a
+  pair **fifteen and a half seconds apart** as a fingering defect. Both describe a connected line by
+  construction — a finger cannot slide five semitones under a held key, and travel the interval did not
+  require is what breaks legato — and neither claim survives a rest. The model had drawn this distinction all
+  along at its phrase breaks; the metrics were the side out of step. Measured first: only 12 of 167
+  transitions were affected, so gating them does not gut the measures. Baselines are now **36 wasted-travel
+  and 10 same-finger leaps of 155 connected steps**.
+- CodeRabbit's own suggestion — skip whenever the next note starts after the previous one ends — was **not**
+  taken: ordinary detached playing would silence the measures entirely. The threshold is a hair above zero,
+  because what matters is whether the notes abut rather than how long the rest is.
 - **Next action — stage 4**: change the model against the new targets. Stage 5 re-scopes the leap exception.
 - Recorded as D-044. Evidence: `docs/recovery/reviews/PR-133.md`,
   `docs/recovery/phases/ISSUE-130-fingering-corpus-and-reach.md`, issue #130's corrected criteria.
