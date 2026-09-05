@@ -3,6 +3,10 @@
 Status: `IN_PROGRESS`
 Depends on: phrase-dp-v3, canonical player boundary
 
+Progress (2026-09-05): PR #140을 `193fcdd`로 병합했다. 병합 전 전체 hosted CI 통과,
+post-merge 체크 확인 중. 자동 리뷰는 스킵됐고 corpus·경계·브라우저 직접 검증으로 판단했다.
+사용자 설정 미커밋 변경 때문에 브랜치는 보존한다.
+
 ## Objective
 
 Gymnopédie의 낮은 베이스를 계속 누른 채 23~28반음 위 화음을 누르라고 보이는 안내를 개선한다.

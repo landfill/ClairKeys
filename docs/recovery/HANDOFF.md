@@ -2,6 +2,17 @@
 
 Last updated: 2026-09-05 KST
 
+## #135 merged; converter timing and diagnostics next (2026-09-05)
+
+- PR #140 merged as `193fcdd` after every hosted check passed and agent review confirmed source/finger
+  preservation, same-onset/cross-hand boundaries and the built-player legend. [PR-140](reviews/PR-140.md)
+  records skipped bot review and pending post-merge checks. Merged branch tips remain retained for user dirt.
+- Main now separates inferred finger release from sustained sound for #135. This does not certify pedal
+  timing or solve #130's parked arpeggio question.
+- Next: a dedicated MusicXML timeline/diagnostics branch. Use beat positions before integrating tempo,
+  cover in-measure changes and offsets, and expose overfull measure diagnostics from the retained #134 XML.
+  Avoid arbitrary rhythm repair; the original 9/8 recognition failure remains distinct.
+
 ## #135 release-guidance PR submitted; #137 post-merge verified (2026-09-05)
 
 - [PR #140](https://github.com/landfill/ClairKeys/pull/140) keeps #135's musical durations/fingers intact
