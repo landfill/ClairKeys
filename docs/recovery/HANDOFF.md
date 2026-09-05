@@ -2,6 +2,20 @@
 
 Last updated: 2026-09-06 KST
 
+## First prioritized fix implemented; broader recognition work remains (2026-09-06)
+
+- OMR-Q1 branch `codex/omr-key-signature-integrity`, code038ee1c after decision5ee4566: truthful optional
+  flat/minor key metadata, malformed-input handling, no note/timing changes. Sol implementation plus Luna
+  independent review; coordinator reproduced/fixed giant-number and Unicode parsing findings.
+- Final local972 Jest /83 Python tests and independent typecheck/lint/build PASS. Actual retained XML
+  replay changes only Always keyC→F; all647 notes unchanged. Satie239/D and Love411/E remain exactly equal
+  except generated_at. [Evidence/model provenance](validation/2026-09-06-key-metadata-implementation.md).
+- All current model tasks completed and terminals released, including Opus architecture review. Some
+  Opus claims were corrected before adoption; no coverage/scale thresholds or boundary changes adopted.
+  AGY was discovered only, not used for a task. Next: exact VM-dependency validation, ready PR/CI, then
+  separate source-recognition experiments. No new fix merged/deployed yet; production remains79a2328.
+
+
 ## Love Affair tested; prioritized implementation requested with model assistance (2026-09-06)
 
 - User requested another Love Affair test, then priority-ordered fixes using suitable models. Two PDFs
