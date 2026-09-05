@@ -2,6 +2,17 @@
 
 Last updated: 2026-09-05 KST
 
+## #141 merged — rollout now targets exact commit a7cf0ff (2026-09-05)
+
+- Fresh hosted CI all green at final head `bd35836`; PR #141 merged as
+  `a7cf0ffe420830830128b1dcb86ab34fabac71b3`. CodeRabbit skipped review; own review and evidence in [PR-141](reviews/PR-141.md).
+- Docker-format isolated VM image passed all **46 service tests** with the static frontend source mounted
+  read-only, plus actual MXL smoke. The prior standalone missing-file error is resolved, not ignored.
+- Next: build exact merged commit in clean `/opt/clairkeys-deploy` with `--format docker`, preserve
+  `clairkeys-omr:acf25f8` rollback, verify idle service, restart and prove image/health/auth/converter behavior.
+  Post-merge checks and production rollout remain pending at this entry.
+- #134's recognized notes remain incorrect and are not silently repaired. #138/#139/#140 remain complete.
+
 ## PR #141 CI retried; isolated VM image verified, production not switched yet (2026-09-05)
 
 - Current #141 head `bd35836` adds Docker-format deployment commands so the declared HEALTHCHECK is

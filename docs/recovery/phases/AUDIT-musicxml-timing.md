@@ -3,6 +3,10 @@
 Status: `IN_PROGRESS`
 Depends on: P0-B, #134 VM reproduction
 
+Progress (2026-09-05): PR #141 최종 head `bd35836`의 hosted CI 전체 통과 후 `a7cf0ff`로 병합했다.
+격리 VM Docker 형식 이미지에서 실제 MXL smoke와 서비스 테스트 46개 통과. 원래 CI 한 실행은
+apt 브라우저 의존성 설치 지연으로 취소 후 재시도했다. 운영 배포와 post-merge 체크는 확인 중이다.
+
 ## Objective
 
 MusicXML cursor를 먼저 박 단위로 해석한 뒤 전역 템포 지도에 따라 초로 변환한다.
