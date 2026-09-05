@@ -2,6 +2,27 @@
 
 Last updated: 2026-09-06 KST
 
+## Automatic meter retry implemented; whole-score recognition still incomplete (2026-09-06)
+
+- Work-branch code `ff1084c` implements D-049: only widespread 6/8 overflow, a supported one-page/two-staff
+  graph and independent 9 evidence from both selected numerators can trigger a separate RHYTHMS/PAGE retry.
+  Preserve original files; require structure/pitch-count/tempo-mark preservation and fewer overflows;
+  share the existing conversion slot and timeout. Normal/ambiguous/failed candidates keep the original.
+- Final full Jest **963 PASS**; independent typecheck/lint/build PASS. Exact-commit files in the VM's existing
+  Python3.10/Pillow10.1 environment passed **all 75 service tests**. Hosted PR CI and production rollout
+  are still pending. Production source/image/settings have not been changed.
+- Real automatic v1 run selected 9/8 in 28.604s, 163 canonical notes, overflow bars 10→1. **First-bar raw
+  match remains 6/10**: dots/ties are not fixed. Fresh baseline and retry both retain the 69 tempo mark but
+  place it after the start; opening tempo is null in both. This is not a new retry regression or a resolved
+  tempo-recognition issue. Do not close #134 or mark its recognition phase DONE for this partial repair.
+- Runtime pixel classifier tested all 3,048 labeled official digit samples: 3,009 non-nine samples yielded
+  zero nine proposals; 23/39 nines proposed, 16 abstained. This is finite-corpus evidence, not a quality guarantee.
+- Exact final-commit end-to-end rerun in `automatic-ff1084c` also selected 9/8 (29.780s, 163 notes,
+  one overflow, same 6/10 first-bar match and same unresolved opening tempo). Results and reproducible commands:
+  [automatic retry validation](validation/2026-09-06-guarded-meter-retry.md). Next: review-ready PR,
+  CI/review iteration. Source PDFs/image checkpoints remain temporary and require cleanup after probes finish.
+
+
 ## Recognition candidates still fail the source reference (2026-09-06)
 
 - Work-branch commit `02079e1` adds an offline exact raw-event evaluator, a visually checked first-bar
