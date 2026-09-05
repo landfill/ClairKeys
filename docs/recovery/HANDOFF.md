@@ -2,6 +2,21 @@
 
 Last updated: 2026-09-05 KST
 
+## #135 release-guidance PR submitted; #137 post-merge verified (2026-09-05)
+
+- [PR #140](https://github.com/landfill/ClairKeys/pull/140) keeps #135's musical durations/fingers intact
+  but separates 43 inferred finger-release suggestions from continuing sound. Held-finger reach violations
+  across the corpus's hand/onset observations fall 65→0. Same-onset impossible chords are not corrected.
+- Full 944 tests PASS, final legend focused 28 PASS, independent typecheck/lint/build PASS. Built Chromium
+  confirms G2 is released before the later upper chord and the faint tail has no continuing finger badge.
+  A screenshot caught an offscreen legend; the final version keeps it in the tempo banner during playback.
+  Evidence and review state: [PR-140](reviews/PR-140.md). Pedal timing and musical assessment are not claimed.
+- #137 merge `bf79a07` post-merge gates all passed; phase DONE. #138 remains DONE. Branch tips for both
+  merged PRs are retained only because the user's settings file remains dirty.
+- Next independent task: repair converter timing at in-measure tempo changes and expose proven measure
+  contradictions from #134's retained XML. A tempo/meter guess cannot reconstruct the recognized notes;
+  do not close #134 as musically corrected based on a diagnostic warning alone.
+
 ## #137 merged; #135 guidance is next (2026-09-05)
 
 - PR #139 merged as `bf79a07` under the user's delegated judgment after all hosted checks passed and
