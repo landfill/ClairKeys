@@ -1848,3 +1848,21 @@
 - Scope-risk: moderate
 - Not-tested: 페달의 실제 타이밍, 교사의 완곡 연주 평가. 이 안내를 유일한 정답으로 판정하지 않는다.
 - Related: #135, #126, 2026-09-05 codebase audit
+
+## D-048: 먼저 박 위치를 해석하고 나중에 초로 적분한다
+
+- Date: 2026-09-05
+- Status: Accepted when the MusicXML timing implementation merges
+- Context: 기존 변환기는 한 마디에서 찾은 템포 하나를 마디 전체에 적용한다. #134 VM 재현에서는 Audiveris XML 자체의 6/8 오인식과 10개의 초과 마디가 기존 저장본을 완전히 재현했다.
+- Decision:
+  1. note/backup/forward/chord와 divisions를 유리수 quarter 위치로 해석한다. 정규 controlling part는 같은 measure index에서 관측된 최대 길이로 다음 공통 경계를 정한다. 명시적으로 non-controlling인 part는 자신의 경계를 보존하고 다른 part를 밀지 않는다. 박자표 길이로 음표를 강제 축소하거나 늘리지 않는다.
+  2. direction/sound의 위치와 유효한 playback offset을 수집해 전역 템포 지도를 만든다. sound 자신의 offset이 direction offset보다 우선하고, direction offset은 sound=yes일 때만 재생에 반영한다(W3C MusicXML 4.0).
+  3. 시간은 이 지도에서 적분한다. note duration도 시작과 끝 사이의 변화에 따라 적분한다. 같은 위치의 상충된 part 표기는 앞 part 우선, 같은 part의 동일 위치에서는 뒤 direction 우선이다.
+  4. 0박에 표기된 템포만 곡 시작 metadata를 결정한다. 나중에 처음 표기된 경우 시작은 미상이고 기존 기준 BPM 60을 사용하다가 해당 위치에서 바뀐다. 사용자 override는 모든 악보 템포 변경보다 우선하는 기존 계약을 유지한다.
+  5. 명시된 박자표보다 긴 일반 마디는 `metadata.timingWarnings`로 기록한다. implicit/non-controlling/free-meter 및 단순히 짧은 마디는 이 진단으로 오판하지 않는다. 미지원 repeat/ending/jump 순서도 진단한다. 저장 canonical 버전은 1.1이며 기존 reader는 optional metadata를 보존한다.
+  6. 플레이어는 인식 리듬 확인이 필요함을 설명한다. 진단은 교정이 아니며 #134가 음악적으로 해결됐다는 근거로 사용하지 않는다.
+- Rejected: 마디 길이를 박자표에 강제로 맞춘다 | 잘못 인식된 박자표/누락 음표를 재현하지 못하며 정당한 pickup도 훼손한다.
+- Constraint: PDF 미보관(D-040), 현재 fixed user tempo precedence 유지. OMR VM에 저장소 쓰기 자격증명을 주지 않는다.
+- Confidence: high
+- Scope-risk: moderate
+- Related: #134, #44, P0-B, 2026-09-05 VM reproduction

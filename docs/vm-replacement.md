@@ -146,7 +146,7 @@ git -C /opt/clairkeys-deploy status --short
 ```bash
 cd /opt/clairkeys-deploy/omr-service
 DEPLOY_SHA=$(git -C /opt/clairkeys-deploy rev-parse --short HEAD)
-podman build -f Dockerfile.audiveris \
+podman build --format docker -f Dockerfile.audiveris \
   -t "clairkeys-omr:${DEPLOY_SHA}" \
   -t clairkeys-omr:current .
 
@@ -357,7 +357,7 @@ git -C /opt/clairkeys fetch origin main
 git -C /opt/clairkeys-deploy checkout --detach origin/main
 cd /opt/clairkeys-deploy/omr-service
 DEPLOY_SHA=$(git -C /opt/clairkeys-deploy rev-parse --short HEAD)
-podman build -f Dockerfile.audiveris \
+podman build --format docker -f Dockerfile.audiveris \
   -t "clairkeys-omr:${DEPLOY_SHA}" \
   -t clairkeys-omr:current .
 systemctl restart clairkeys-omr || true

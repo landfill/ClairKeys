@@ -12,6 +12,8 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import zipfile
 
+from omr.musicxml_timing import QuarterClock, ScoreTimeline, scan_score
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_TIMING_REFERENCE_BPM = 60.0
@@ -79,7 +81,10 @@ class MusicXMLToClairKeysConverter:
             metadata = self._extract_metadata(root, title, composer)
             logger.info(f"Extracted metadata: {metadata}")
 
-            score_tempo = self._extract_tempo(root)
+            timeline = scan_score(root, self._find_tempo)
+            if timeline.warnings:
+                metadata['timingWarnings'] = timeline.warnings
+            score_tempo = timeline.opening_tempo
             resolved_tempo = tempo if tempo is not None else score_tempo
             if tempo is not None:
                 tempo_source = "user"
@@ -101,6 +106,7 @@ class MusicXMLToClairKeysConverter:
                 root,
                 timing_reference_bpm,
                 use_score_tempo_changes=tempo is None,
+                timeline=timeline,
             )
             logger.info(f"Extracted {len(notes)} notes")
             
@@ -193,121 +199,46 @@ class MusicXMLToClairKeysConverter:
         root: ET.Element,
         initial_tempo: float,
         use_score_tempo_changes: bool = True,
+        timeline: Optional[ScoreTimeline] = None,
     ) -> List[Dict[str, Any]]:
-        """Extract notes from MusicXML into canonical timed notes.
-
-        Timing is accumulated in *seconds*, not divisions, because tempo can
-        change between measures and each change re-scales tick->second. Within a
-        measure a cursor tracks the seconds offset so `<backup>`/`<forward>` and
-        `<chord>` place notes at the right onset; `<tie>` merges durations instead
-        of emitting a second note. Hand comes from `<staff>` (1->R, 2->L), falling
-        back to the part index only when no staff is given.
-        """
+        """Interpret musical positions first, then integrate a shared tempo map."""
+        timeline = timeline or scan_score(root, self._find_tempo)
+        clock = QuarterClock(initial_tempo, timeline.tempos if use_score_tempo_changes else {})
         notes: List[Dict[str, Any]] = []
-        parts = root.findall('.//part')
-        # Tempo is a score-wide property in MusicXML: a <sound tempo> / <per-minute>
-        # in one part (conventionally the first) governs playback for every part at
-        # that measure position. Build one measure-indexed timeline from all parts so
-        # a tempo change declared in one part re-scales the others' timing too.
-        tempo_timeline = self._build_tempo_timeline(
-            parts,
-            initial_tempo,
-            use_score_tempo_changes=use_score_tempo_changes,
-        )
-
-        for part_idx, part in enumerate(parts):
-            divisions = 1
-            measure_start_sec = 0.0
-            # Tie state must persist across measure boundaries — a note tied into the
-            # next measure has to merge with the note that opened the tie — so
-            # open_ties lives at part scope, not per measure.
-            open_ties: Dict[Any, Dict[str, Any]] = {}  # (midi, voice) -> tie-open note
-
-            for measure_idx, measure in enumerate(part.findall('measure')):
-                attributes = measure.find('attributes')
-                if attributes is not None:
-                    div_elem = attributes.find('divisions')
-                    if div_elem is not None and div_elem.text:
-                        try:
-                            divisions = int(div_elem.text)
-                        except ValueError:
-                            pass
-                if divisions <= 0:
-                    divisions = 1
-
-                tempo = tempo_timeline[measure_idx] if measure_idx < len(tempo_timeline) else initial_tempo
-                sec_per_tick = (60.0 / tempo) / divisions if tempo > 0 else 0.0
-
-                cursor_sec = 0.0        # seconds offset from measure_start_sec
-                measure_max_sec = 0.0   # furthest point reached (measure length)
-                last_onset_sec = 0.0    # onset of the last non-chord note (chords share it)
-
-                for elem in list(measure):
-                    tag = elem.tag
-                    if tag == 'backup':
-                        cursor_sec = max(0.0, cursor_sec - self._duration_ticks(elem) * sec_per_tick)
-                        continue
-                    if tag == 'forward':
-                        cursor_sec += self._duration_ticks(elem) * sec_per_tick
-                        measure_max_sec = max(measure_max_sec, cursor_sec)
-                        continue
-                    if tag != 'note':
-                        continue
-
-                    dur_sec = self._duration_ticks(elem) * sec_per_tick
-                    is_chord = elem.find('chord') is not None
-                    onset_sec = last_onset_sec if is_chord else cursor_sec
-                    end_sec = onset_sec + dur_sec
-
-                    # Rests and unpitched/unparseable notes advance time but emit nothing.
+        for part_idx, measures in enumerate(timeline.parts):
+            open_ties: Dict[Any, Dict[str, Any]] = {}
+            for measure_idx, measure in enumerate(measures):
+                for elem, onset, duration in measure.notes:
                     parsed = None if elem.find('rest') is not None else self._parse_pitch(elem)
-                    if parsed is not None:
-                        midi_num, voice, staff = parsed
-                        tie_start, tie_stop = self._tie_flags(elem)
-                        key = (midi_num, voice)
-                        if tie_stop and key in open_ties:
-                            started = open_ties[key]
-                            started['duration'] = round(started['duration'] + dur_sec, 6)
-                            if not tie_start:
-                                del open_ties[key]
-                        else:
-                            note: Dict[str, Any] = {
-                                "midi": midi_num,
-                                "start": round(measure_start_sec + onset_sec, 6),
-                                "duration": round(dur_sec, 6),
-                                "hand": self._hand_for(staff, part_idx),
-                                "finger": self._fingering(elem),
-                            }
-                            if voice is not None:
-                                note["voice"] = voice
-                            if staff is not None:
-                                note["staff"] = staff
-                            notes.append(note)
-                            if tie_start:
-                                open_ties[key] = note
-
-                    if not is_chord:
-                        cursor_sec = end_sec
-                        last_onset_sec = onset_sec
-                    measure_max_sec = max(measure_max_sec, end_sec)
-
-                measure_start_sec += measure_max_sec
-
+                    if parsed is None:
+                        continue
+                    midi_num, voice, staff = parsed
+                    start_quarter = timeline.starts[part_idx][measure_idx] + onset
+                    dur_sec = clock.duration(start_quarter, start_quarter + duration)
+                    tie_start, tie_stop = self._tie_flags(elem)
+                    key = (midi_num, voice)
+                    if tie_stop and key in open_ties:
+                        started = open_ties[key]
+                        started['duration'] = round(started['duration'] + dur_sec, 6)
+                        if not tie_start:
+                            del open_ties[key]
+                    else:
+                        note: Dict[str, Any] = {
+                            "midi": midi_num,
+                            "start": round(clock.at(start_quarter), 6),
+                            "duration": round(dur_sec, 6),
+                            "hand": self._hand_for(staff, part_idx),
+                            "finger": self._fingering(elem),
+                        }
+                        if voice is not None:
+                            note["voice"] = voice
+                        if staff is not None:
+                            note["staff"] = staff
+                        notes.append(note)
+                        if tie_start:
+                            open_ties[key] = note
         notes.sort(key=lambda n: (n['start'], n['midi']))
         return notes
-
-    def _duration_ticks(self, elem: ET.Element) -> int:
-        """Read a `<duration>` child as an integer tick count (0 if absent)."""
-        dur_elem = elem.find('duration')
-        if dur_elem is not None and dur_elem.text:
-            try:
-                return int(dur_elem.text)
-            except ValueError:
-                try:
-                    return int(float(dur_elem.text))
-                except ValueError:
-                    return 0
-        return 0
 
     def _parse_pitch(self, note_elem: ET.Element) -> Optional[tuple]:
         """Return (midi, voice, staff) for a pitched note, or None if unpitched."""
@@ -383,11 +314,11 @@ class MusicXMLToClairKeysConverter:
         must first be converted. Keep `sound` first because it is the playback
         value and needs no beat-unit conversion.
         """
-        sound = measure.find('.//sound[@tempo]')
+        sound = measure if measure.tag == 'sound' else measure.find('.//sound[@tempo]')
         if sound is not None:
             try:
                 tempo = float(sound.get('tempo'))
-                if tempo > 0:
+                if math.isfinite(tempo) and tempo > 0:
                     return tempo
             except (TypeError, ValueError):
                 pass
@@ -397,37 +328,6 @@ class MusicXMLToClairKeysConverter:
             if tempo is not None:
                 return tempo
         return None
-
-    def _build_tempo_timeline(
-        self,
-        parts: List[ET.Element],
-        initial_tempo: float,
-        use_score_tempo_changes: bool = True,
-    ) -> List[float]:
-        """Build a measure-indexed tempo (BPM) timeline shared across all parts.
-
-        For each measure position, the first tempo declared by any part (scanning
-        parts in document order) wins and carries forward until the next change.
-        This mirrors MusicXML's convention that a tempo direction in one part is a
-        global playback change, so parts that carry no tempo of their own still get
-        re-scaled at a measure where another part changed tempo. A user-supplied
-        tempo disables score changes because the explicit user value has contract
-        precedence over every score tempo.
-        """
-        max_measures = max((len(part.findall('measure')) for part in parts), default=0)
-        timeline: List[float] = []
-        current = initial_tempo
-        for i in range(max_measures):
-            if use_score_tempo_changes:
-                for part in parts:
-                    measures = part.findall('measure')
-                    if i < len(measures):
-                        measure_tempo = self._find_tempo(measures[i])
-                        if measure_tempo is not None and measure_tempo > 0:
-                            current = measure_tempo
-                            break
-            timeline.append(current)
-        return timeline
 
     def _note_to_midi(self, step: str, octave: int, alter: int = 0) -> Optional[int]:
         """Convert note name to MIDI number"""
@@ -493,25 +393,9 @@ class MusicXMLToClairKeysConverter:
         return per_minute_value * multiplier * dot_multiplier
 
     def _extract_tempo(self, root: ET.Element) -> Optional[float]:
-        """Extract the tempo the score declares *at its opening*, or None.
+        """Only a tempo effective at quarter zero describes the opening."""
+        return scan_score(root, self._find_tempo).opening_tempo
 
-        Only the first measure of each part is consulted. Scanning the whole
-        score for "a tempo" reads a mark that appears at bar 12 as though it
-        described bar 1: the opening bars get re-timed by a number the score
-        never applied to them, and `tempoSource` claims `score` for a piece
-        whose beginning is in fact unmarked. Later marks are not lost — they
-        still take effect from their own measure through
-        `_build_tempo_timeline`, which is where a mid-piece change belongs.
-        """
-        for part in root.findall('.//part'):
-            measures = part.findall('measure')
-            if not measures:
-                continue
-            tempo = self._find_tempo(measures[0])
-            if tempo is not None:
-                return tempo
-        return None
-    
     def _extract_key_signature(self, root: ET.Element) -> str:
         """Extract key signature from MusicXML"""
         key_elem = root.find('.//key')

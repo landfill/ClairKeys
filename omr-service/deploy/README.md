@@ -47,7 +47,7 @@ git -C /opt/clairkeys worktree add --detach /opt/clairkeys-deploy origin/main
 
 # 2. Build, tagged both by commit and as :current, which the unit references.
 cd /opt/clairkeys-deploy/omr-service
-podman build -f Dockerfile.audiveris \
+podman build --format docker -f Dockerfile.audiveris \
   -t "clairkeys-omr:$(git -C /opt/clairkeys rev-parse --short origin/main)" \
   -t clairkeys-omr:current .
 
@@ -81,7 +81,7 @@ git -C /opt/clairkeys-deploy fetch origin main
 test -z "$(git -C /opt/clairkeys-deploy status --porcelain)"
 git -C /opt/clairkeys-deploy checkout --detach <commit>
 cd /opt/clairkeys-deploy/omr-service
-podman build -f Dockerfile.audiveris \
+podman build --format docker -f Dockerfile.audiveris \
   -t "clairkeys-omr:<commit>" -t clairkeys-omr:current .
 expected_image=$(podman image inspect --format '{{.Id}}' "clairkeys-omr:<commit>")
 install -m 0644 deploy/clairkeys-omr.service /etc/systemd/system/clairkeys-omr.service
@@ -91,6 +91,11 @@ test "$(systemctl is-active clairkeys-omr)" = active
 actual_image=$(podman inspect --format '{{.Image}}' clairkeys-omr-prod)
 test "$actual_image" = "$expected_image"
 ```
+
+Keep `--format docker`: podman 4.4.1's default OCI format warns that it ignores
+the Dockerfile's `HEALTHCHECK`. Confirm the built image retains that check and
+still run the external HTTP probes below; image metadata alone is not evidence
+that the provider network or the shared-secret boundary works.
 
 The `restart` command must exit 0. The final two checks must show an active
 service and a running container; compare the container image ID with the ID
