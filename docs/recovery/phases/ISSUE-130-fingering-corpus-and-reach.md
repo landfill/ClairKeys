@@ -3,8 +3,13 @@
 Status: `IN_PROGRESS`
 Depends on: ISSUE-126 2순위 (`phrase-dp-v2`가 이 단계의 수정 대상이다)
 
-Progress (2026-09-05): 1단계(corpus + 계측 래칫)를 브랜치 `codex/issue-130-fingering-corpus-metrics`에서
-구현했다. 2~4단계는 후속 PR로 나눈다.
+Progress (2026-09-05): **1단계 완료.** PR [#131](https://github.com/landfill/ClairKeys/pull/131)이 merge
+commit `72627e9`로 병합되고 post-merge 체크가 전부 통과했다. CodeRabbit 리뷰 1건(화음 도달 검사가 인접
+쌍만 본다)을 반영했고, 검증 과정에서 도달 한계 표가 어디서도 부가적이지 않다는 사실이 드러나 래칫이
+23/132에서 **26/154**로 바뀌었다. 브랜치는 tip 포함 확인 후 삭제했다.
+
+다음은 2단계(손가락 쌍별 도달 한계를 **비용 모델에** 적용)다. 지금까지는 계측만 하고 있으며, 모델은 여전히
+닿지 않는 화음을 만든다.
 
 ## Objective
 

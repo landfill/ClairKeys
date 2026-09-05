@@ -2,6 +2,32 @@
 
 Last updated: 2026-09-05 KST
 
+## #130 stage 1 MERGED — the corpus and the ratchet are on `main`; stage 2 is next (2026-09-05)
+
+- PR [#131](https://github.com/landfill/ClairKeys/pull/131) merged as `72627e9`, every post-merge check on
+  `main` green. `fixtures/fingering/love-affair-411.json` is in the repository at the same sha256 it was
+  stored with, and the ratchet test runs in CI. Both branch tips were confirmed contained in `main` and
+  deleted.
+- **The ratchet's current numbers, which stage 2 must move**: unreachable chord pairs **26 of 154**; hand
+  repositions inside steady pitch motion **65 over 171** monotone-run events; two three-long finger
+  repetitions, one of which is a genuinely repeated note. Bar 3's left hand is pinned at `5 1 2 1 2 1 2`.
+- **Stage 1 measures; it does not constrain.** Nothing in the model consults the reach table yet, so the
+  inferrer still produces chords no hand can take. That is stage 2's whole job.
+- **Next action — stage 2: apply the per-pair reach table inside the cost model.** It goes before the
+  directional budget because it prunes candidates: doing it first means stage 3 tunes over an already-legal
+  candidate set instead of competing with impossible ones. Apply it to chord candidate generation
+  (`eventCandidates`/`makeCandidate`) and to transitions. Expect the unreachable count to reach 0 and the
+  ratchet to be lowered deliberately in that commit.
+- Carry forward from the review: **a chord constraint is a property of every pair of its notes.** The reach
+  table is nowhere subadditive — all ten finger triples have `MAX[a-b] + MAX[b-c] > MAX[a-c]` by two to five
+  semitones — so a neighbours-only check is unsound for any three-note chord. Do not reduce it to neighbours
+  again to save comparisons.
+- The reach numbers themselves are this repository's generous working floor, chosen so a flag is never a
+  matter of hand size. They are **not** Parncutt et al. (1997) values; adopting those means reading the paper
+  first. Tightening them is a separate decision from applying them.
+- Evidence: `docs/recovery/reviews/PR-131.md` (Iteration 3), `docs/recovery/phases/ISSUE-130-fingering-corpus-and-reach.md`,
+  `fixtures/fingering/README.md`, D-042.
+
 ## The #126 playability review finally happened, and it failed — issue #130, PR #131 (2026-09-05)
 
 - The user opened the 411-note production score in the app and reported that left-hand fingering is still
