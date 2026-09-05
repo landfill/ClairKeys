@@ -73,3 +73,13 @@ node --import tsx local-test-data/results/satie-2026-09-06/analyze_fingering.ts 
 Together with Satie/Always evidence, this places input recognition/omission and truthful quality/error
 handling ahead of further fingering-cost tuning. The independent flat-key metadata defect is bounded
 enough to implement first without claiming to repair any of those musical recognition failures.
+
+## Follow-up and cleanup
+
+OMR-Q1 is implemented as PR143, not merged/deployed. Independent page/scale experiments are recorded
+in [OMR-Q2 results](2026-09-06-page-scale-experiments.md): selected300 produced37 notes/0 of41 opening
+matches; selected400 produced441/41 of41. Last printed bar31 and whole-note loss remain. VM staging
+PDFs and image checkpoints were removed after copying results to the requested local Git-excluded folder.
+User-local originals and outputs remain. API solo animation hash:
+`751853c809a50223fe0e85536ec76c5439103c88c818d860c9285df8a115f510`; reproduced MXL:
+`b124f20046ad1a08d0d44ef4993dc62320699905fa5f8fbf119c4473e38d6a83`.

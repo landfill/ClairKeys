@@ -2,6 +2,24 @@
 
 Last updated: 2026-09-06 KST
 
+## PR143 ready for approval; source-scale improvement demonstrated, not yet implemented (2026-09-06)
+
+- First priority deliverable PR143: key metadata only, code038ee1c/head92c8e1b. All final hosted checks
+  green, including both E2E jobs; local972 Jest, exact VM83 tests and retained647/239/411-note replays pass.
+  Independent model review findings fixed. **No PR143 merge or rollout approval yet; production unchanged.**
+- OMR-Q2 plan-only branch `codex/omr-page-scale-validation`,76a6b89. Same TruongCa music pages1–2:
+  selected300=37 notes/0 of41 opening matches;400=441/41 of41, staff coverage4→10 per page,
+  raw measure stacks4/5→15/16. Cost45.909→98.242s. This is actual XML improvement, not a global400dpi policy.
+-400 still omits final printed31 and exports no whole-note types. Preliminary independent page probe
+  separates the text credit page but undercounts Always staves and fails Satie bbox parsing; not production-ready.
+  [Experiment detail and next gate](validation/2026-09-06-page-scale-experiments.md). Do not blindly skip pages,
+  use corrupted411 as gold, hardcode arbitrary thresholds or change D-048 timing boundaries.
+- Sol/Luna/Opus tasks all completed and were released. AGY discovery only. Model conclusions were
+  independently checked/corrected. Raw user inputs/reports/checkpoints remain Git-excluded locally; five
+  VM source/checkpoint copies were deleted after collection. Next: get PR143 delivery approval, and
+  continue separate source-aware page/scale implementation only after normal-control/fallback validation.
+
+
 ## OMR-Q1 submitted; next work is actual recognition experiments (2026-09-06)
 
 - [PR143](https://github.com/landfill/ClairKeys/pull/143) is review-ready: code038ee1c, head92c8e1b includes
