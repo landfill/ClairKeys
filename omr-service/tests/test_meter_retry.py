@@ -1,3 +1,6 @@
+import base64
+import hashlib
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -5,6 +8,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 from omr.meter_retry import prepare_meter_retry, retry_is_eligible, accept_meter_retry
+from omr.recognition_evaluation import evaluate_reference, read_musicxml
 
 
 def mxl_root(meter='6', durations=(4, 4, 3), pitch='C'):
@@ -147,6 +151,30 @@ class MeterRetryTests(unittest.TestCase):
         self.assertFalse(accept_meter_retry(original, candidate))
         sound.set('tempo', '69.0')
         self.assertTrue(accept_meter_retry(original, candidate))
+
+    def test_same_tempo_mark_cannot_move_away_from_score_start(self):
+        original, candidate = mxl_root(), mxl_root('9')
+        original.find('.//measure').insert(0, ET.Element('sound', tempo='69'))
+        ET.SubElement(candidate.find('.//measure'), 'sound', tempo='69')
+        self.assertFalse(accept_meter_retry(original, candidate))
+
+    def test_actual_automatic_pair_passes_guards_but_not_full_reference(self):
+        fixtures = Path(__file__).resolve().parents[2] / 'fixtures/recognition'
+        fixture = json.loads((fixtures / 'clair-de-lune-automatic-retry.json').read_text())
+        reference = json.loads((fixtures / 'clair-de-lune-reference.json').read_text())
+        roots = []
+        with tempfile.TemporaryDirectory() as directory:
+            for name in ('before', 'after'):
+                data = base64.b64decode(fixture[name]['mxlBase64'], validate=True)
+                self.assertEqual(hashlib.sha256(data).hexdigest(), fixture[name]['mxlSha256'])
+                path = Path(directory) / f'{name}.mxl'
+                path.write_bytes(data)
+                roots.append(read_musicxml(path))
+        self.assertTrue(retry_is_eligible(roots[0]))
+        self.assertTrue(accept_meter_retry(*roots))
+        result = evaluate_reference(roots[1], reference)
+        self.assertFalse(result['exact'])
+        self.assertEqual(result['matchedEvents'], fixture['expectedMatchedRawEvents'])
 
 
 if __name__ == '__main__':

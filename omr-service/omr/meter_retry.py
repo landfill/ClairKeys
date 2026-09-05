@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 from omr.musicxml_timing import scan_score
+from omr.converter import MusicXMLToClairKeysConverter
 
 
 def _uniform_meter(root, numerator):
@@ -47,7 +48,8 @@ def _tempo_marks(root):
     sounds = Counter(Fraction(sound.get('tempo')) for sound in root.iter('sound') if sound.get('tempo'))
     metronomes = Counter(tuple((child.tag, (child.text or '').strip()) for child in mark)
                          for mark in root.iter('metronome'))
-    return sounds, metronomes
+    opening = scan_score(root, MusicXMLToClairKeysConverter()._find_tempo).opening_tempo
+    return sounds, metronomes, opening
 
 
 def accept_meter_retry(original, candidate):
