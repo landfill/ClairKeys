@@ -8,7 +8,8 @@ commit `72627e9`로 병합되고 post-merge 체크가 전부 통과했다. CodeR
 쌍만 본다)을 반영했고, 검증 과정에서 도달 한계 표가 어디서도 부가적이지 않다는 사실이 드러나 래칫이
 23/132에서 **26/154**로 바뀌었다. 브랜치는 tip 포함 확인 후 삭제했다.
 
-**2단계 구현 완료** (브랜치 `codex/issue-130-reach-table`). 도달 한계를 하드 제약으로 `eventCandidates`에
+**2단계 완료.** PR [#132](https://github.com/landfill/ClairKeys/pull/132)가 merge commit `d8f50f0`으로
+병합되고 post-merge 체크가 전부 통과했다. 브랜치는 tip 포함 확인 후 삭제했다. 도달 한계를 하드 제약으로 `eventCandidates`에
 적용해 도달 불가 화음 쌍이 **26/154 → 0/154**가 됐다. 해부학 상수는 `src/utils/handReach.ts`로 옮겨
 모델과 계측이 서로를 import하지 않고 둘 다 여기서 읽는다(D-043). `FINGERING_ALGORITHM_VERSION`은
 `phrase-dp-v3`.

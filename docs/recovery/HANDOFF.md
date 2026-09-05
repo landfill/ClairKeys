@@ -2,7 +2,14 @@
 
 Last updated: 2026-09-05 KST
 
-## #130 stage 2 — reach is now a constraint, not a measurement; PR #132 open (2026-09-05)
+## #130 stage 2 MERGED — reach is a constraint now; stage 3 is the last real fix (2026-09-05)
+
+- Merged as `d8f50f0`, post-merge checks green, branches deleted after confirming containment. `main` carries
+  `phrase-dp-v3`, `src/utils/handReach.ts`, and 0 of 154 unreachable chord pairs.
+- **CodeRabbit did not review PR #132** — its check reported `Review rate limited`, unlike PR #131. The only
+  review behind that merge is this session's own verification. Worth knowing if something surfaces there.
+
+## #130 stage 2 detail — reach is a constraint, not a measurement (2026-09-05)
 
 - Stage 1 measured reach and stopped there, so the report said 26 unreachable chord pairs while the inferrer
   went on producing all 26. PR [#132](https://github.com/landfill/ClairKeys/pull/132) puts the table inside
