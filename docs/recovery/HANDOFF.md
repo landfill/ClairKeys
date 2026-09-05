@@ -2,6 +2,22 @@
 
 Last updated: 2026-09-06 KST
 
+## Love Affair tested; prioritized implementation requested with model assistance (2026-09-06)
+
+- User requested another Love Affair test, then priority-ordered fixes using suitable models. Two PDFs
+  tested through actual OMR API without library/storage/callback writes: solo2-page completed45.310s,
+  411 notes; TruongCa3-page failed45.394s on its text-only third page. Earlier music-page parsing was also bad.
+- Solo exact-note reproduced XML omits printed21/31, has wrong lengths11/19/20 and no numeric tempo60.
+  Its first3 raw-reference bars are41/41; zero headless fingering reach conflicts do not certify the rest.
+  [Love evidence](validation/2026-09-06-love-affair-service-validation.md).
+- Actual Orca Run `run_53f04f95438d`: Sol/Luna read-only reviews completed and released; Opus architectural
+  review still running (`ctx_45a4e0154a8f`). [Recovered model findings/IDs](validation/2026-09-06-multimodel-review-checkpoint.md).
+  AGY models were discovered but no AGY task has executed. Do not claim implementation or all reviews complete yet.
+- Next: dedicated metadata-fix branch with a decision and regression-first contract, while preserving the
+  broader priority of actual input recognition/omission handling. No filename patches, invented durations
+  or further D-045 metric tuning. VM Love staging sources remain temporarily in use; local samples/results Git-excluded.
+
+
 ## Satie and Always With Me validation finished; accuracy defects are now reproduced (2026-09-06)
 
 - Three real OMR API jobs completed without callback/library/storage writes. App/runtime code unchanged.
