@@ -2,6 +2,18 @@
 
 Last updated: 2026-09-05 KST
 
+## Audit fixes authorized — A-B playback submitted; tempo and held-note guidance follow (2026-09-05)
+
+- User authorized implementing the audit findings while preserving branches and review/merge rules.
+- First independent change: [PR #138](https://github.com/landfill/ClairKeys/pull/138), A-B frame lifecycle.
+  Regression failed 2/8 before the fix; full Jest now 911 PASS, independent typecheck/lint and build PASS.
+  CI/review iterations: [PR-138](reviews/PR-138.md). No merge approval has been given.
+- Continue on independent branches from current main for #137/#134 tempo handling and #135 held-note
+  guidance. The unresolved #134 MusicXML lineage and D-045 human arpeggio reference still constrain claims.
+- Correction from following the actual edit caller: the live library dialog edits title only. A separate
+  `SheetMusicEditForm` supports other metadata but the library does not use it. The API method is **PUT**,
+  not PATCH. Neither path currently supports tempo. The earlier audit has been corrected below.
+
 ## Codebase audit — new score evidence separates timing, held-note guidance and playback control (2026-09-05)
 
 - User requested a GitHub issue/codebase review, not implementation. Audited `main` application revision

@@ -97,7 +97,7 @@ after wrap: pending RAF=0, isPlaying=true, displayTime=2, audioStarts=2
 - **자동 인식 기능은 있다.** `_find_tempo`는 `<sound tempo>` 및 metronome의 beat unit/dot을 읽는다. #134의 `scoreTempo:69`는 실제 산출물에서도 그 경로의 증거다. 숫자 없는 `Lent et douloureux` 같은 표현에서 숫자를 추정하는 기능은 없다.
 - 업로드의 "비워두면 빠르기 미상" 안내(`OMRUploadForm.tsx:446`)는 악보 템포가 있으면 이를 채택하는 변환기와 불일치한다. 단위도 단순 BPM만 표시한다.
 - `type=number`, `step=any`이며 wheel 입력 방지 처리가 없다. 사용자의 스크롤 오입력 보고와 맞는 UI 구조이나 이번 세션에서 해당 브라우저의 wheel 동작 자체는 실측하지 않았다.
-- 제목만 편집 가능한 것은 아니다. `SheetMusicEditForm`과 `PATCH /api/sheet/[id]`는 제목·작곡가·카테고리·공개 여부를 지원한다. **템포 편집은 UI와 API 모두 지원하지 않는다.**
+- 2026-09-05 호출 경로 추가 확인: **실제 LibrarySheetMusicList 편집 대화상자는 제목만 수정한다.** 별도 `SheetMusicEditForm`과 `PUT /api/sheet/[id]`에는 제목·작곡가·카테고리·공개 여부 지원이 있지만 라이브러리는 이 폼을 사용하지 않는다. **템포 편집은 UI와 API 모두 지원하지 않는다.** 최초 기록의 PATCH 표기도 PUT으로 정정했다.
 - 템포는 이미 노트의 초 단위 시간에 반영돼 있다. 메타데이터 숫자만 바꾸는 수정은 재생 속도를 바꾸지 않는다. 저장 템포 수정의 의미와 시간 변환 범위를 먼저 정의해야 한다.
 
 ## 성능: 확인한 비용과 미확인 범위
