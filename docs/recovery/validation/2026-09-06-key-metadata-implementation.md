@@ -78,3 +78,10 @@ default; whole-note loss cannot be explained simply by that option being off. Of
 Verify exact committed code against VM Python3.10 dependencies, submit review-ready PR, inspect hosted CI
 and feedback, then seek target-PR merge/production rollout approvals. Source recognition experiments follow
 as a separate decision/branch and must improve reference events, not merely return success or reduce warnings.
+
+## Exact VM-dependency verification and PR
+
+Exact038ee1c was exported without source PDFs/secrets into `/data/analysis/key-038ee1c`; separate Python
+interpreter in the existing container, PYTHONPATH=. and cwd that checkout's omr-service, ran all83 tests
+PASS (0.410s). Production `/app` and image remain unchanged. Review-ready PR143 submitted at92c8e1b;
+hosted gates and approval/merge/rollout remain pending in its review log.

@@ -2,6 +2,18 @@
 
 Last updated: 2026-09-06 KST
 
+## OMR-Q1 submitted; next work is actual recognition experiments (2026-09-06)
+
+- [PR143](https://github.com/landfill/ClairKeys/pull/143) is review-ready: code038ee1c, head92c8e1b includes
+  current main evidence. Key metadata fix only; no musical recognition claims or production deployment.
+- Exact committed files in isolated VM `/data/analysis/key-038ee1c`, using deployed Python3.10 dependencies,
+  passed all83 service tests (0.410s). Final local972 Jest/static/build gates and exact three-score replays
+  passed. Hosted CI/review is pending; [review log](reviews/PR-143.md).
+- User's broader requested priority fixes remain active: source recognition/page coverage and omitted
+  whole notes/tempo need controlled experiments. No arbitrary DPI threshold, page-dropping rule or
+  nominal-bar padding has been accepted. Existing D-048/D-045 boundaries stay in force.
+
+
 ## First prioritized fix implemented; broader recognition work remains (2026-09-06)
 
 - OMR-Q1 branch `codex/omr-key-signature-integrity`, code038ee1c after decision5ee4566: truthful optional
