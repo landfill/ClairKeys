@@ -1,0 +1,3718 @@
+{
+  "version": "1.1",
+  "title": "Piano Solo - Love Affair",
+  "composer": "Ennio Morricone",
+  "metadata": {
+    "title": "Piano Solo - Love Affair",
+    "composer": "Ennio Morricone"
+  },
+  "notes": [
+    {
+      "midi": 40,
+      "start": 0,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 0.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 0.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 1,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 1,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 1.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 1.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 2,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 2.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 2.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 56,
+      "start": 3,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 40,
+      "start": 4,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 4.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 4.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 5.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 5.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 6,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 6.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 6.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 56,
+      "start": 7,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 40,
+      "start": 8,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 68,
+      "start": 8,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 8,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 8.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 9,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 9.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 10,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 10.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 68,
+      "start": 10.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 10.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 56,
+      "start": 11,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 68,
+      "start": 11,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 11.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 75,
+      "start": 11.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 12,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 12,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 12,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 49,
+      "start": 12.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 52,
+      "start": 13,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 13.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 14,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 14.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 14.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 14.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 15,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 15.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 15.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 16,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 16,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 16,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 49,
+      "start": 16.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 54,
+      "start": 17,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 17.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 18,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 18.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 18.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 73,
+      "start": 19,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 19,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 19.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 75,
+      "start": 19.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 20,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 47,
+      "start": 20.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 21,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 21.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 22,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 22.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 23,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 47,
+      "start": 23.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 42,
+      "start": 24,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 24,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 24,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 24.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 63,
+      "start": 25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 25.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 44,
+      "start": 26,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 26,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 26.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 26.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 27,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 63,
+      "start": 27.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 75,
+      "start": 27.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 45,
+      "start": 28,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 28,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 28,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 56,
+      "start": 28.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 54,
+      "start": 29,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 29.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 47,
+      "start": 30,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 30,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 30.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 30.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 80,
+      "start": 30.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 31,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 31.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 31.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 37,
+      "start": 32,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 32,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 32,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 81,
+      "start": 32,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 49,
+      "start": 32.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 52,
+      "start": 33,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 33.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 48,
+      "start": 34,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 34,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 34.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 80,
+      "start": 34.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 35,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 35,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 35.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 35.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 35,
+      "start": 36,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 36,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 74,
+      "start": 36,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 36,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 36.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 54,
+      "start": 37,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 37.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 40,
+      "start": 38,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 47,
+      "start": 38.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 39,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 39,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 80,
+      "start": 39,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 62,
+      "start": 39.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 74,
+      "start": 39.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 81,
+      "start": 39.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 45,
+      "start": 40,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 40,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 40,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 83,
+      "start": 40,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 52,
+      "start": 40.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 41,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 41,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 41,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 41.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 42,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 42,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 75,
+      "start": 42,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 42.5,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 42.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 42.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 43,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 43,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 44,
+      "start": 43.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 43.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 43.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 83,
+      "start": 43.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 52,
+      "start": 44,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 44.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 44.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 44.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 52,
+      "start": 45,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 45.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 63,
+      "start": 46,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 46,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 75,
+      "start": 46,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 46.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 46.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 46.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 47,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 75,
+      "start": 47,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 47,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 42,
+      "start": 47.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 47.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 47.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 83,
+      "start": 47.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 49,
+      "start": 48,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 48.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 48.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 48.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 81,
+      "start": 48.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 49,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 47,
+      "start": 49.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 49.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 75,
+      "start": 49.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 80,
+      "start": 49.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 50,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 50.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 63,
+      "start": 51,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 51,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 51,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 38,
+      "start": 51.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 51.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 74,
+      "start": 51.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 81,
+      "start": 51.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 52,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 54,
+      "start": 52.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 52.5,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 74,
+      "start": 52.5,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 80,
+      "start": 52.5,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 53,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 37,
+      "start": 53.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 49,
+      "start": 53.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 53,
+      "start": 54,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 62,
+      "start": 54.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 68,
+      "start": 54.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 54.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 77,
+      "start": 54.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 55,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 55,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 33,
+      "start": 55.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 45,
+      "start": 55.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 55.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 73,
+      "start": 55.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 80,
+      "start": 55.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 54,
+      "start": 56,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 56.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 56.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 73,
+      "start": 56.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 56.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 57,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 57.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 57.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 57.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 58,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 58.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 54,
+      "start": 59,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 59,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 75,
+      "start": 59,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 32,
+      "start": 59.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 44,
+      "start": 59.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 59.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 59.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 60,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 60.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 60.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 60.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 61,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 51,
+      "start": 61.5,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 61.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 75,
+      "start": 61.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 62.5,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 63,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 73,
+      "start": 63,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 42,
+      "start": 63.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 63.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 63.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 49,
+      "start": 64,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 64.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 64.5,
+      "duration": 3,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 64.5,
+      "duration": 3,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 54,
+      "start": 65,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 49,
+      "start": 65.5,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 48,
+      "start": 66.5,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 47,
+      "start": 68,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 68.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 68.5,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 69,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 47,
+      "start": 69.5,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 70,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 69,
+      "start": 70,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 71.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 68,
+      "start": 71.5,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 71.5,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 72,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 72.5,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 73,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 73.5,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 68,
+      "start": 73.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 2,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 73.5,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 2,
+      "staff": 1
+    },
+    {
+      "midi": 56,
+      "start": 74,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 74.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 2,
+      "staff": 1
+    },
+    {
+      "midi": 75,
+      "start": 74.5,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 2,
+      "staff": 1
+    },
+    {
+      "midi": 42,
+      "start": 75,
+      "duration": 0.75,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 75,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 75,
+      "duration": 2,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 49,
+      "start": 75.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 52,
+      "start": 76.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 76.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 77.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 77.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 77.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 2,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 77.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 2,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 78.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 73,
+      "start": 78.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 2,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 78.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 2,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 79.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 47,
+      "start": 79.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 80.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 80.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 81.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 81.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 82.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 47,
+      "start": 82.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 42,
+      "start": 83.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 83.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 83.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 83.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 84.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 63,
+      "start": 84.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 84.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 44,
+      "start": 85.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 85.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 85.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 85.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 86.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 63,
+      "start": 86.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 75,
+      "start": 86.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 45,
+      "start": 87.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 87.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 54,
+      "start": 88.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 56,
+      "start": 88.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 47,
+      "start": 89.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 89.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 89.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 71,
+      "start": 89.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 80,
+      "start": 89.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 90.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 90.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 78,
+      "start": 90.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 30,
+      "start": 91.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 42,
+      "start": 91.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 69,
+      "start": 91.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 91.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 81,
+      "start": 91.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 49,
+      "start": 91.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 57,
+      "start": 92.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 68,
+      "start": 92.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 92.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 80,
+      "start": 92.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 92.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 43,
+      "start": 93.25,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 64,
+      "start": 93.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 70,
+      "start": 93.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 76,
+      "start": 93.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 52,
+      "start": 93.75,
+      "duration": 0.5,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 58,
+      "start": 94.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 94.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 73,
+      "start": 94.25,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 44,
+      "start": 95.25,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 95.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 95.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 63,
+      "start": 95.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 95.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 96.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 63,
+      "start": 96.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 63,
+      "start": 96.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 96.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 37,
+      "start": 97.25,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 97.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 97.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 63,
+      "start": 97.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 98.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 98.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 63,
+      "start": 98.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 98.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 98.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 98.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 42,
+      "start": 99.25,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 99.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 99.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 99.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 99.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 99.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 100.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 100.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 100.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 100.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 100.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 100.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 35,
+      "start": 101.25,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 101.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 101.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 63,
+      "start": 101.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 102.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 63,
+      "start": 102.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 102.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 102.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 63,
+      "start": 102.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 40,
+      "start": 103.25,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 103.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 103.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 103.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 103.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 104.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 104.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 104.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 104.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 105.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 105.75,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 105.75,
+      "duration": 1.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 56,
+      "start": 106.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 33,
+      "start": 107.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 107.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 107.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 61,
+      "start": 107.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 107.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 52,
+      "start": 108.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 108.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 108.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 59,
+      "start": 109.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 61,
+      "start": 109.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 109.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 57,
+      "start": 110.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 6,
+      "staff": 2
+    },
+    {
+      "midi": 40,
+      "start": 111.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 59,
+      "start": 111.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 71,
+      "start": 111.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 111.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 111.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 47,
+      "start": 112.25,
+      "duration": 1,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 112.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 112.25,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 112.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 112.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 56,
+      "start": 113.25,
+      "duration": 2,
+      "hand": "L",
+      "finger": null,
+      "voice": 5,
+      "staff": 2
+    },
+    {
+      "midi": 66,
+      "start": 113.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 113.75,
+      "duration": 1,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 66,
+      "start": 114.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 68,
+      "start": 114.75,
+      "duration": 0.5,
+      "hand": "R",
+      "finger": null,
+      "voice": 1,
+      "staff": 1
+    }
+  ],
+  "duration": 115.25,
+  "tempo": 60,
+  "tempoSource": "user",
+  "timingReferenceBpm": 60,
+  "scoreTempo": null,
+  "keySignature": "E",
+  "timeSignature": "4/4",
+  "generated_at": "2026-09-05T00:56:27.181392"
+}
