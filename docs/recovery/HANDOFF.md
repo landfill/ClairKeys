@@ -2,6 +2,21 @@
 
 Last updated: 2026-09-05 KST
 
+## Remaining issue reconciliation — partial completion, plus corrected accidental closure (2026-09-05)
+
+- Checked all 12 initially open issues against current code and their full acceptance scope. **None is fully
+  complete as written**, though #47 UI trace exposure, #126 tier 2, #130 chord reach, #127 policy/corpus and
+  parts of #121/#44 already shipped. #125's policy prerequisite is also complete. Several bodies need narrowing.
+- **Own error corrected:** #134 had been auto-closed by PR #141 because a negative sentence still contained
+  a GitHub closing keyword next to the issue number. Verified the PR closing reference and merge-time close
+  event, removed that keyword from the assistant-authored PR body, and reopened #134. It is OPEN again;
+  there are now 13 open issues. No other issue was modified or closed.
+- #73 remains untested at the actual HTTP-loop level; the 46 service tests are not proof of that path.
+  #110 callback URL allowlist, #61 per-sample compensation, #46 adaptive DPI, #124 badge geometry and
+  #125 score-pane layout remain outstanding.
+- Evidence and per-issue completed/remaining scope: [reconciliation](validation/2026-09-05-open-issue-reconciliation.md).
+  Focused verification 7 suites / 119 tests PASS. No application code or VM state changed.
+
 ## Four audit fixes merged and verified; VM rollout complete (2026-09-05)
 
 - **Delivered:** PR #138 A-B frame lifecycle (`8258af2`); PR #139 tempo units and owner retiming (`bf79a07`);
