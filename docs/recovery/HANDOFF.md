@@ -2,6 +2,22 @@
 
 Last updated: 2026-09-06 KST
 
+## Final meter-retry code verified; production unchanged (2026-09-06)
+
+- PR142 final head `d8a6129` adds the own-review fix that prevents moving an existing opening tempo away
+  from score start, plus exact automatic before/after XML regression fixtures. Full963 Jest and exact
+  VM77 service tests PASS. Final-head hosted CI is all green, including both E2E jobs; consult [PR-142](reviews/PR-142.md).
+- The automatic 9/8 recognition path is implemented, but #134's missing dots/ties and fresh baseline
+  late-positioned tempo remain unresolved. First-bar raw reference is still6/10. Do not describe the
+  issue or recognition phase as complete. Production remains a7cf0ff, active/healthy; no PR142 merge.
+- All temporary PDF/PNG/image-bearing OMR files were removed from the local/VM analysis roots (38 files);
+  exact permitted XML/JSON/hash/log evidence and scripts are retained. Re-download the issue attachment
+  for the next PDF experiment rather than expecting the deleted source/checkpoints to still exist.
+- No target-PR142 approval has been received. The earlier conversational merge delegation and the latest
+  supplied AGENTS contract's explicit per-PR approval rule need reconciliation before merging; ask the
+  user to confirm this PR rather than silently treating either authorization as newly revoked or expanded.
+
+
 ## Meter recognition repair submitted for review (2026-09-06)
 
 - [PR #142](https://github.com/landfill/ClairKeys/pull/142) contains the narrow automatic meter retry;

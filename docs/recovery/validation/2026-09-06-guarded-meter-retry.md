@@ -121,3 +121,21 @@ merge approval rule before a production build/deployment. Genuine 6/8 full-PDF e
 unseen handwriting/font coverage and full-score human reference review are not claimed. #134 stays
 unresolved for dots/ties and tempo placement. Temporary PDFs/image-bearing OMR files require cleanup
 once probes are complete; preserving XML/JSON/hash/text diagnostics does not require preserving the PDF.
+
+## Final review follow-up — d8a6129
+
+- Added opening-tempo preservation after own review reproduced equal tempo marks moving away from start.
+  The new negative test failed before the fix. Actual automatic before/after MXL from ff1084c is now in
+  `fixtures/recognition/clair-de-lune-automatic-retry.json` with hashes, an acceptance check and an explicit
+  still-incomplete first-bar reference assertion. No new PDF recognition run is claimed for this follow-up;
+  the preserved exact automatic pair passes the stricter final guard.
+- Final full963 Jest tests PASS. Exact committed files exported into isolated VM `validation-d8a6129`:
+  **77 service tests PASS (0.404s)**. Same Python3.10/Pillow10.1 dependencies, no production module replacement.
+- PR142 final head is `d8a612997ffefa2815a0a0a42c6b2945c242dd6b`; CI/review details in its review log.
+- All final-head hosted checks passed, including both E2E jobs. CodeRabbit skipped its review; own-review
+  findings were reproduced and fixed. Approval-rule reconciliation, merge and production deployment remain pending.
+- After all PDF probes completed, removed precisely15 local and23 VM analysis-only PDF/PNG/OMR files.
+  Read-only enumeration verified zero such files remain under the two analysis roots. XML/JSON/logs,
+  sample descriptors and code remain; re-download the issue attachment if further PDF diagnosis is needed.
+- Service still active, original a7cf0ff image ID unchanged and HEALTHCHECK healthy. No image build,
+  merge, production restart or stored-score write occurred in this work unit.
