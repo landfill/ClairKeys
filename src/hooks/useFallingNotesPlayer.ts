@@ -188,6 +188,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
       return
     }
 
+    let cancelled = false
     const animationLoop = () => {
       // Audio, falling notes, and active keys all consume this one score-time
       // value derived from the AudioContext playback anchor.
@@ -195,7 +196,13 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
       setCurrentTime(currentAudioTime)
 
       if (loopSection && currentAudioTime >= loopSection.end) {
-        void handleSeek(loopSection.start)
+        // A successful seek keeps isPlaying and this effect's dependencies
+        // unchanged. Resume this loop explicitly, once the audio is ready.
+        // Cleanup owns cancellation if pause/stop/unmount replaces the effect
+        // while the asynchronous seek is still waiting.
+        void handleSeek(loopSection.start).then(() => {
+          if (!cancelled) rafRef.current = requestAnimationFrame(animationLoop)
+        })
         return
       }
 
@@ -211,6 +218,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     rafRef.current = requestAnimationFrame(animationLoop)
 
     return () => {
+      cancelled = true
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current)
         rafRef.current = null
