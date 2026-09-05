@@ -3,6 +3,10 @@
 Status: `IN_PROGRESS`
 Depends on: P1-A, canonical v1.1 tempo provenance
 
+Progress (2026-09-05): PR #139가 `bf79a07`로 병합되어 #137이 닫혔다. 전체 hosted CI 통과,
+post-merge 체크 확인 중. D-046의 제안은 이 구현의 병합으로 채택됐다. 사용자 설정 미커밋 변경 때문에
+병합된 브랜치는 보존한다. 실제 운영 악보의 템포 변경은 이 세션에서 실행하지 않았다.
+
 ## Objective
 
 악보의 점4분음표=46을 4분음표=46으로 오입력하는 경로를 제거하고,

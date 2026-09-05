@@ -2,6 +2,17 @@
 
 Last updated: 2026-09-05 KST
 
+## #137 merged; #135 guidance is next (2026-09-05)
+
+- PR #139 merged as `bf79a07` under the user's delegated judgment after all hosted checks passed and
+  storage/authorization edges were re-reviewed. #137 closed. CodeRabbit skipped review; see [PR-139](reviews/PR-139.md).
+- Main now supports explicit tempo units, wheel-stable entry/slider and owner retiming of stored scores.
+  The prior JSON remains intact; the app writes a new URL with an optimistic row comparison.
+- Post-merge checks are pending; no live stored score was modified by the agent. Both branch tips are
+  contained but preserved due to the existing user-owned settings change.
+- Continue #135 on its own branch: preserve musical durations, distinguish a derived finger-release
+  suggestion from continued sound, and verify the actual 283-note corpus. Do not retune #130's parked model.
+
 ## Tempo PR submitted; #134's wrong meter reproduced inside Audiveris XML (2026-09-05)
 
 - #137 implementation is [PR #139](https://github.com/landfill/ClairKeys/pull/139). Full Jest 937 PASS,
