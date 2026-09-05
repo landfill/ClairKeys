@@ -2,6 +2,16 @@
 
 Last updated: 2026-09-06 KST
 
+## Meter recognition repair submitted for review (2026-09-06)
+
+- [PR #142](https://github.com/landfill/ClairKeys/pull/142) contains the narrow automatic meter retry;
+  code `ff1084c`, submitted head `9228a5f` includes current main evidence. It is not a full #134 repair.
+- Local full963 / exact VM75 tests and two isolated automatic 9/8 runs passed their stated checks.
+  Live hosted CI/review status is tracked in [PR-142](reviews/PR-142.md). Production remains on a7cf0ff.
+- Continue CI/review; preserve normal-score behavior and original output. Missing dots/ties and fresh
+  baseline opening-tempo placement remain unresolved. No issue closure or production completion is claimed.
+
+
 ## Automatic meter retry implemented; whole-score recognition still incomplete (2026-09-06)
 
 - Work-branch code `ff1084c` implements D-049: only widespread 6/8 overflow, a supported one-page/two-staff
