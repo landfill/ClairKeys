@@ -2,6 +2,19 @@
 
 Last updated: 2026-09-05 KST
 
+## PR #141 CI retried; isolated VM image verified, production not switched yet (2026-09-05)
+
+- Current #141 head `bd35836` adds Docker-format deployment commands so the declared HEALTHCHECK is
+  preserved. Application code remains `890cf99` (959 tests PASS).
+- One initial E2E run stalled in apt font download for over eleven minutes and was canceled; a fresh run
+  has progressed into E2E. Do not treat a canceled old attempt as a passing test. Details: [PR-141](reviews/PR-141.md).
+- Isolated Docker-format candidate built on VM with HEALTHCHECK intact. Python 3.10 smoke: 133 notes,
+  ten warnings, original duration. Full service tests need the static frontend source path mounted read-only;
+  standalone image run had one missing-file error and the rerun is in progress.
+- No production switch yet. Old `acf25f8` image/tag retained; clean `/opt/clairkeys-deploy` and isolated
+  `/opt/clairkeys-pr141` checkout are separate. Merge → exact merged-commit build → idle restart → image,
+  health/auth and converter checks remain required. User-delegated authority is unchanged.
+
 ## MusicXML timing PR ready; first three fixes passed post-merge gates (2026-09-05)
 
 - [PR #141](https://github.com/landfill/ClairKeys/pull/141) repairs in-measure tempo and playback offsets,
