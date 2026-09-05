@@ -2,6 +2,18 @@
 
 Last updated: 2026-09-06 KST
 
+## Production rollout explicitly approved and switched; recognition smoke underway (2026-09-06)
+
+- User explicitly approved the separate production deployment/restart. Rechecked image/rollback IDs,
+  clean79a2328 checkout, unchanged unit, no JVM/new processing directories and historical job status404.
+- Current tag and service switched successfully to merge79a2328 image
+  `ff0a347f52b92803398e617c47541cd1b1d43fa366469b9a4625b61c839415ef`. Restart exit0, active/running;
+  actual image matches. External health200, unauthorized process401; manual HEALTHCHECK exit0/healthy.
+- Actual production-image PDF smoke is running from `/app` modules in temporary
+  `/data/analysis/pr142-live-Fetl0O`. Collect results and remove its source PDF/image checkpoints afterward.
+  Do not describe unresolved dots/ties/tempo placement as fixed; #134 stays open. Rollback a7cf0ff retained.
+
+
 ## PR142 merged and post-merge green; production cutover awaits separate approval (2026-09-06)
 
 - User-approved merge `79a2328` is on main; **all six merge-commit post-merge checks passed**. PR142 merge

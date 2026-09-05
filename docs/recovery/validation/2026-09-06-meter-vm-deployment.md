@@ -71,3 +71,19 @@ A fresh input was downloaded only for planned post-cutover verification into
 after the rejection, before any new PDF conversion; helper script/reference JSON remain. The issue's
 attachment can be downloaded again. No post-deployment recognition or external HTTP check on a new
 running image is claimed, since production never changed.
+
+## Explicit deployment approval and successful cutover — 2026-09-06
+
+The user subsequently explicitly approved production deployment/restart. This supplied the authority
+missing from the rejected command; the earlier rejection was not bypassed.
+
+- Preflight rechecked exact79a2328 clean checkout, new/rollback image IDs, committed unit equality,
+  no JVM and no new processing directory. The historical8e33ffee job still returned authenticated404.
+- Retagged the verified79a2328 image as current and ran `systemctl restart clairkeys-omr`: exit0.
+- Service active, container running and actual image exactly
+  `ff0a347f52b92803398e617c47541cd1b1d43fa366469b9a4625b61c839415ef`.
+- From outside the VM: GET /health=200; unauthenticated POST /process=401.
+- Manual `podman healthcheck run clairkeys-omr-prod` exit0, HEALTHCHECK healthy. Rollback a7cf0ff retained.
+- A hash-verified same-PDF conversion is now running with `PYTHONPATH=/app` inside the production image,
+  using the committed smoke script and separate analysis output root `/data/analysis/pr142-live-Fetl0O`.
+  It does not create or rewrite a stored score or database row. Results/cleanup are pending at this entry.
