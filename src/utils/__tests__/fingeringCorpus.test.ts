@@ -92,7 +92,11 @@ describe('love-affair-411 corpus score', () => {
     // Finger repetition is largely solved; both remaining runs are in the left
     // hand; one is a genuinely repeated-note group (B2 B2 B2).
     expect(m.repetitionRuns.map(r => `${r.hand} finger ${r.finger} x${r.length}`))
-      .toEqual(['L finger 1 x3', 'L finger 1 x4']);
+      .toEqual(['L finger 1 x3', 'L finger 1 x3']);
+    expect({
+      longestRun: m.longestRepetitionRun,
+      pitchChangingRuns: m.pitchChangingRepetitionRuns,
+    }).toEqual({ longestRun: 3, pitchChangingRuns: 1 });
   });
 
   it('keeps directional room in the left hand at the start of the bar 3 arpeggio', () => {

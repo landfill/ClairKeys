@@ -46,6 +46,10 @@ export interface FingeringMetrics {
   reachViolations: ReachViolation[];
   /** Runs of three or more consecutive events on one finger. */
   repetitionRuns: RepetitionRun[];
+  /** Length of the longest same-finger run, or zero when there are none. */
+  longestRepetitionRun: number;
+  /** Same-finger runs that span more than one pitch. */
+  pitchChangingRepetitionRuns: number;
   /** Hand relocations that happen part-way through a run of steady pitch motion. */
   repositionsInMonotoneRuns: Reposition[];
   /** Events considered when counting repositions, so the count can be read as a rate. */
@@ -169,6 +173,8 @@ export function measureFingering(notes: FallingNote[]): FingeringMetrics {
 
   return {
     reachViolations, repetitionRuns, repositionsInMonotoneRuns,
+    longestRepetitionRun: repetitionRuns.reduce((longest, run) => Math.max(longest, run.length), 0),
+    pitchChangingRepetitionRuns: repetitionRuns.filter(run => new Set(run.midis).size > 1).length,
     monotoneRunEvents, chordPairs,
   };
 }

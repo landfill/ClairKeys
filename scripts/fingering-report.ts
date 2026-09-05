@@ -44,6 +44,8 @@ function report(file: string): void {
   }
 
   console.log(`\nsame finger three or more times running: ${m.repetitionRuns.length}`);
+  console.log(`longest same-finger run: ${m.longestRepetitionRun}`);
+  console.log(`pitch-changing same-finger runs: ${m.pitchChangingRepetitionRuns}`);
   for (const r of m.repetitionRuns.slice(0, 12)) {
     console.log(`  bar ${String(bar(r.start)).padStart(3)} ${r.hand}  finger ${r.finger} x${r.length}  ${r.midis.map(noteName).join(' ')}`);
   }
