@@ -92,16 +92,16 @@ actual_image=$(podman inspect --format '{{.Image}}' clairkeys-omr-prod)
 test "$actual_image" = "$expected_image"
 ```
 
+Keep `--format docker`: podman 4.4.1's default OCI format warns that it ignores
+the Dockerfile's `HEALTHCHECK`. Confirm the built image retains that check and
+still run the external HTTP probes below; image metadata alone is not evidence
+that the provider network or the shared-secret boundary works.
+
 The `restart` command must exit 0. The final two checks must show an active
 service and a running container; compare the container image ID with the ID
 printed by `podman image inspect` to prove that the new image is running rather
 than an older container. If restart fails, stop and inspect the journal before
 retrying instead of relying on `Restart=always` to hide a transient failure:
-
-Keep `--format docker`: podman 4.4.1's default OCI format warns that it ignores
-the Dockerfile's `HEALTHCHECK`. Confirm the built image retains that check and
-still run the external HTTP probes below; image metadata alone is not evidence
-that the provider network or the shared-secret boundary works.
 
 ```bash
 journalctl -u clairkeys-omr --since "5 minutes ago" --no-pager
