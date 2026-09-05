@@ -2,6 +2,24 @@
 
 Last updated: 2026-09-05 KST
 
+## #134 now targets the recognition engine itself — experiments underway (2026-09-05)
+
+- The user confirmed re-uploading is sufficient and challenged the earlier decision to stop at converter
+  fixes/warnings. Resumed the authorized engine work on `codex/issue-134-recognition-quality`; phase plan
+  `f18a0d5` is pushed, with no PR yet because no runtime correction policy is ready.
+- Exact mechanism observed: the upper staff has a 9 candidate, the lower staff is classified as 6, and
+  Audiveris requires a candidate in both staves. It discards 9/8 and chooses 6/8. The source is A4/300dpi
+  with staff interline about 20px, and 9/8 is supported; nominal DPI/support explanations are ruled out.
+- DPI400, global threshold140, header crop margins and adaptive mean variants have not fixed the meter.
+  A **reference-only** 9/8 intervention before the rest of OMR changes 133→164 notes and 17→1 engine
+  rhythm failures, but still misses some source dots/ties. Do not ship that hardcoded intervention or
+  declare accuracy from warning counts. A no-change resume control and a 400dpi interaction test are running.
+- [Experiment record](validation/2026-09-05-recognition-engine-experiments.md) holds values and limitations.
+  VM experiment root `/data/analysis/issue134-engine-tMsls9`, local temp root
+  `/private/tmp/clairkeys-recognition.qtu2Sl`. PDF and image-bearing checkpoints are temporary and still in use;
+  clean them when work ends. The existing production service/settings are unchanged and active.
+- User offered another PDF if needed. The issue's attachment is available; no additional file was requested.
+
 ## Remaining issue reconciliation — partial completion, plus corrected accidental closure (2026-09-05)
 
 - Checked all 12 initially open issues against current code and their full acceptance scope. **None is fully
