@@ -2,6 +2,21 @@
 
 Last updated: 2026-09-06 KST
 
+## Satie real-API validation complete; Always With Me added (2026-09-06)
+
+- Tested both user-local Satie PDFs through real authenticated /process→/status→/result with no callback
+  or user/sheet ID: both complete (34.217s/26.285s),239/283 notes; pending result409→complete200, automatic
+  job-temp cleanup. Source/results remain Git-excluded. No application/production/library changes.
+- First8 printed bars: original9/41 exact events versus300dpi41/41. Original reproduction XML matches
+  every HTTP note and omits entire printed bars5 and13; opening chords and sampled ties are also wrong.
+  These are different engravings/staff layouts, so do not attribute the difference to DPI alone.
+- Headless actual player-input checks: original15 same-onset unreachable pairs/6 held conflict observations;
+  300dpi0/0. Neither result certifies visual badge layout or expert fingering. Repeats remain unexpanded.
+- [Satie evidence](validation/2026-09-06-satie-service-validation.md). User then added Always With Me:
+  API completed51.445s/647 notes, but printed numeric tempo is absent from result and key metadata is C
+  despite one flat. XML/reference investigation ongoing in Git-excluded local results; VM temp cleanup pending.
+
+
 ## User-requested local sample workspace created, Git-excluded (2026-09-06)
 
 - Created `local-test-data/scores/` for user-supplied PDF/MusicXML samples and `local-test-data/results/`
