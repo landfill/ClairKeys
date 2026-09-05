@@ -1,6 +1,26 @@
 # Current Handoff
 
-Last updated: 2026-09-05 KST
+Last updated: 2026-09-06 KST
+
+## Recognition candidates still fail the source reference (2026-09-06)
+
+- Work-branch commit `02079e1` adds an offline exact raw-event evaluator, a visually checked first-bar
+  reference and the actual gap0.4 experimental MXL. Eight Python tests and the two-test Jest bridge pass;
+  independent typecheck/lint pass. No automatic recognition correction is implemented or deployed yet.
+- Known-meter + gap0.4 and gap0.2 match 8/10 first-bar raw pitched events; default known-meter,
+  minWeight0.01 and maxPartCount10 match 6/10. All still miss the final RH C5/E5 augmentation dots.
+  Correct meter/bar length therefore cannot be used as the success criterion. Ties and the full score
+  are explicitly outside this evaluator's current certification scope.
+- The matched no-change checkpoint control is 134 notes, not the direct-run baseline's 133; one tie
+  differs on reload. The causal meter comparison is **134→164**, engine bad bars **17→1**. No hardcoded
+  meter intervention is eligible for production.
+- Continue with independent numerator recognition: actual 9 glyphs beat 6 templates in both staves,
+  but rotated controls alone are insufficient. Official Audiveris 5.3 training samples were located
+  for a genuine 6/9 regression probe; no correction threshold/policy is accepted yet.
+- [Detailed checkpoint](validation/2026-09-06-recognition-reference-checkpoint.md). VM service active,
+  production image unchanged; no experimental JVM remains from gap/weight/part-count runs. Temporary
+  PDF/image checkpoints remain in use at the previously recorded roots and need cleanup when analysis ends.
+
 
 ## #134 now targets the recognition engine itself — experiments underway (2026-09-05)
 
