@@ -1,10 +1,10 @@
 # ISSUE-135 — 소리의 유지와 손가락 점유를 분리한다
 
-Status: `IN_PROGRESS`
+Status: `DONE`
 Depends on: phrase-dp-v3, canonical player boundary
 
 Progress (2026-09-05): PR #140을 `193fcdd`로 병합했다. 병합 전 전체 hosted CI 통과,
-post-merge 체크 확인 중. 자동 리뷰는 스킵됐고 corpus·경계·브라우저 직접 검증으로 판단했다.
+merge commit `193fcdd`의 post-merge E2E/build를 포함한 전체 체크도 통과했다. 자동 리뷰는 스킵됐고 corpus·경계·브라우저 직접 검증으로 판단했다.
 사용자 설정 미커밋 변경 때문에 브랜치는 보존한다.
 
 ## Objective

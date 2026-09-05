@@ -2,6 +2,22 @@
 
 Last updated: 2026-09-05 KST
 
+## MusicXML timing PR ready; first three fixes passed post-merge gates (2026-09-05)
+
+- [PR #141](https://github.com/landfill/ClairKeys/pull/141) repairs in-measure tempo and playback offsets,
+  fractional divisions and controlling-part alignment; explicitly non-controlling parts keep independent
+  boundaries. Original #134 note dictionaries remain exactly equal while ten overfull measures are diagnosed.
+- Final full Jest **959 PASS**, focused Python converter/timing 32 PASS, independent typecheck/lint/build PASS.
+  Built Chromium confirms the actual diagnostic notice at mobile width. Evidence: [PR-141](reviews/PR-141.md).
+- Next required actions: hosted CI/head review, merge under delegated authority, exact-commit OMR image build,
+  idle-service restart, external health/unauthorized request checks and converter smoke on retained MXL.
+  VM deployment has not happened yet. Clean deploy checkout at `acf25f8`, rollback image ID recorded in PR log.
+- #138/#139/#140 are merged with all merge-commit post-merge gates green; their phases are DONE.
+  Work branches are retained because `.claude/settings.local.json` is still user-owned and dirty.
+- #134 is not musically corrected: the recognition engine omitted/misread notes as well as the meter.
+  Repeats/ending expansion, flat/minor key metadata and synthetic tie identity remain explicit audit follow-ups.
+  Do not close those or #130's parked musical-reference question on the strength of new warnings.
+
 ## #135 merged; converter timing and diagnostics next (2026-09-05)
 
 - PR #140 merged as `193fcdd` after every hosted check passed and agent review confirmed source/finger
