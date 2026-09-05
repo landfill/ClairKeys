@@ -1898,3 +1898,30 @@
 - Tested: Same-PDF isolated automatic retry selected 9/8 in 28.604s; exported overflow bars 10→1. Runtime numeral module repeated the 3,048-label probe without non-9 proposals. Failure/budget/cancellation tests pass.
 - Not-tested: Full-score musical correctness, handwritten/unseen digit fonts and end-to-end genuine 6/8 PDF corpus. First-bar dot/tie defects and fresh baseline's late-positioned opening tempo remain unresolved; do not close #134 or mark its phase DONE for this partial repair.
 - Related: #134; validation/2026-09-06-recognition-reference-checkpoint.md
+
+## D-050: 읽을 수 없는 조표를 C로 꾸미지 않고 기존 optional 문자열 계약을 사용한다
+
+- Date: 2026-09-06
+- Status: Accepted when OMR-Q1 merges
+- Context: 실제 Always XML의 fifths=-1이 JSON C가 되고, 잘못된 fifths 문자열은 전체 변환을 중단한다.
+  Sol/Luna 독립 검토는 기존 canonical keySignature가 optional string이고 재생 음높이는 이 메타데이터를
+  사용하지 않음을 확인했다. 사용자 요청은 세 곡 검증 후 우선순위별 수정이며, 원본 인식 개선은 별도다.
+- Decision:
+  1. 기존과 같이 문서 순서의 첫 key 선언만 읽는다. key-change/파트별 조성 분석을 새로 주장하지 않는다.
+  2. 정수 fifths -7..7과 major/minor만 간결한 ASCII 이름으로 변환한다. 음수는 플랫을 포함한다.
+     major: Cb,Gb,Db,Ab,Eb,Bb,F,C,G,D,A,E,B,F#,C#.
+     minor: Abm,Ebm,Bbm,Fm,Cm,Gm,Dm,Am,Em,Bm,F#m,C#m,G#m,D#m,A#m.
+  3. mode가 없을 때만 기존 major-name 관례를 유지한다. 명시된 mode는 공백/대소문자를 정규화한 뒤
+     major/minor로 해석하고, 그 외 값(빈 값/none/다른 선법 포함)은 이 작은 계약으로 표시하지 않는다.
+  4. key/fifths 없음, 빈 값·비정수·범위 밖 값, 표현 불가능한 조표는 Optional[str]의 None으로 반환하고
+     JSON keySignature 필드를 생략한다. false C나 JSON null을 새로 쓰지 않고, 음표 변환은 계속한다.
+  5. notes, duration, tempo provenance, timing reference, warnings, source finger 및 기존 저장 문서는
+     변경하지 않는다. 현재 UI/normalizer의 optional 문자열 호환을 회귀 검사한다.
+- Rejected: 모든 플랫을 C로 유지 | 확인된 사실과 다르다.
+- Rejected: 조표가 잘못됐다는 이유로 유효한 음표 변환도 중단 | 메타데이터 결함을 전체 실패로 확대한다.
+- Rejected: 이번에 새 key 객체/스키마 버전을 도입 | 기존 optional 문자열 계약이 이 범위를 표현한다.
+- Constraint: 기존 absence/unknown 처리와 첫 선언 범위는 명시한다. Satie/Always/Love의 인식 정확도나
+  반복/손 배정 문제를 이 메타데이터 수정으로 해결했다고 표현하지 않는다.
+- Confidence: high
+- Scope-risk: moderate
+- Related: OMR-Q1; validation/2026-09-06-multimodel-review-checkpoint.md
