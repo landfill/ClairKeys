@@ -1829,3 +1829,22 @@
   다섯 지표의 역전·구별 능력 행렬을 직접 측정.
 - Not-tested: 아르페지오에서 무엇이 옳은 운지인지. 이것이 이 항목의 핵심 미결 사항이다.
 - Related: D-041, D-042, D-043, D-044, 이슈 [#130](https://github.com/landfill/ClairKeys/issues/130)
+
+## D-047: 유지음은 손가락을 계속 누르라는 뜻으로만 그리지 않는다
+
+- Date: 2026-09-05
+- Status: Accepted when the issue #135 implementation merges
+- Context: #135의 첫 두 마디는 낮은 베이스의 음가 중에 23/28반음 위 화음을 친다. 같은-onset reach 검사는 0건이지만 유지음까지 점유로 읽으면 65개의 hand/onset 관측에서 모순이 있다.
+- Decision:
+  1. canonical 음가·오디오 시간과 현재 운지 번호를 변경하지 않는다. player 경계에서 별도의 `keyRelease`(절대 초)를 계산하며 이는 자동 연습 안내다.
+  2. 나중에 시작하는 같은 손의 음이 기존 유지음과 같은 건반을 재타건하거나, 같은 finger를 다른 음에 요구하거나, handReach 쌍별 한계를 넘으면 그 이전 음의 keyRelease를 새 onset으로 제안한다. 공존 가능한 기존 음은 유지한다.
+  3. 동일 onset 내부는 바꾸지 않는다. 이 규칙은 뒤늦게 들어오는 음과 이전 점유의 충돌을 해결하며, 원래부터 불가능한 화음을 수정하지 않는다.
+  4. 건반 활성과 손가락 번호는 제안된 점유 구간에만 대응한다. 이후 원본 음가의 나머지는 옅은 유지 구간으로 표시하고 자동 안내임을 설명한다. 페달 원본/정답이라고 표현하지 않는다.
+  5. 검증은 실제 #135 corpus에서 점유 reach를 검사하고, 음악적 note timing 및 기존 finger 값·출처가 그대로인지 독립적으로 비교한다. #130의 disqualified 이동 지표를 다시 최적화하지 않는다.
+- Rejected: duration를 짧게 자른다 | 오디오와 원본 음악의 유지가 바뀐다.
+- Rejected: 낮은 베이스를 오른손으로 옮긴다 | staff 배정은 정상이며 한 마디의 다른 역할을 임의로 바꾼다.
+- Constraint: D-039 source finger 보존, D-040 PDF 미보관, D-045의 사람 기준 없는 아르페지오 최적화 금지 유지.
+- Confidence: medium
+- Scope-risk: moderate
+- Not-tested: 페달의 실제 타이밍, 교사의 완곡 연주 평가. 이 안내를 유일한 정답으로 판정하지 않는다.
+- Related: #135, #126, 2026-09-05 codebase audit

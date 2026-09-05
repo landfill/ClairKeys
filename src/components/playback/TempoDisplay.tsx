@@ -1,15 +1,18 @@
 import type { TempoDisplayInput } from '@/types/animationContract'
 import { getTempoDisplay } from '@/utils/tempoDisplay'
+import type { ReactNode } from 'react'
 
 export interface TempoDisplayProps extends TempoDisplayInput {
   isPlaybackActive?: boolean
   className?: string
+  children?: ReactNode
 }
 
 /** Shows the recorded tempo and whether it came from the score or the user. */
 export default function TempoDisplay({
   isPlaybackActive = false,
   className = '',
+  children,
   ...input
 }: TempoDisplayProps) {
   const display = getTempoDisplay(input)
@@ -30,6 +33,7 @@ export default function TempoDisplay({
       {display.secondary && (
         <span className="ml-2 text-xs font-normal text-ink-muted">{display.secondary}</span>
       )}
+      {children}
     </div>
   )
 }

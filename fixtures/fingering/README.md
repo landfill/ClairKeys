@@ -19,6 +19,7 @@ document, so these files exercise the whole path that ships.
 | File | Notes | Key | Metre | Source `finger` | Provenance |
 |---|---|---|---|---|---|
 | `love-affair-411.json` | 411 | E | 4/4, ♩=60 | none | Production Supabase object `804629/omr_14d84a04-312b-40fc-bdc2-8145d1f0bbb6.json`, stored byte-for-byte |
+| `gymnopedie-283.json` | 283 | D | 3/4, ♩=76 (user) | none | Issue #135 Supabase object `804629/omr_76e63915-5fd8-4a65-8a38-ec27255c25cf.json`, stored byte-for-byte |
 
 `love-affair-411.json` is the score issue [#120](https://github.com/landfill/ClairKeys/issues/120)
 measured and issue [#130](https://github.com/landfill/ClairKeys/issues/130) diagnoses. It is
@@ -29,6 +30,12 @@ fingering — which is the product's normal input, not an edge case.
 sha256 `97ff181dda5ee4835afb030e7bcaac0fc81f8b2068725d8d6e4ca5e2f5bcb8b7`
 
 ## Adding a score
+
+`gymnopedie-283.json` covers a texture absent from the first corpus: sustained bass under later
+upper chords in the same hand. Its first two bars span 23 and 28 semitones if musical duration is
+mistaken for finger occupancy. D-047 adds derived release guidance while preserving every source
+note and the existing inferred fingers. Source SHA-256:
+`bedf109c747a274368629876e24e112d9790854ae00c572aaf263d6db33f34c0`.
 
 Store the canonical JSON verbatim — do not reformat it, so the file keeps its provenance as the
 exact bytes the service produced. Record its hash and what makes it worth keeping. A score that
