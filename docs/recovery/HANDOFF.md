@@ -2,6 +2,42 @@
 
 Last updated: 2026-09-05 KST
 
+## Codebase audit — new score evidence separates timing, held-note guidance and playback control (2026-09-05)
+
+- User requested a GitHub issue/codebase review, not implementation. Audited `main` application revision
+  `2636657ecbdac6d354bd2e874026b9a05ff6d9c1`; no application code, issue, PR or production data changed.
+- **#134:** original PDF says **9/8 and dotted-quarter=46**; served JSON says **6/8**, `tempo=46`,
+  `tempoSource=user`, `timingReferenceBpm=46`, while preserving **`scoreTempo=69`**. Automatic tempo reading
+  exists; the user override wins. The upload UI does not identify its quarter-note unit. The meter mismatch
+  is already in storage. Without this upload's MusicXML and `/result`, do not attribute the remaining
+  rhythm error solely to Audiveris or solely to the converter (#44's evidence boundary remains).
+- **#135:** first bar has held G2 plus later B3/D4/F#4, spanning **23 semitones**; second bar spans **28**
+  and assigns finger 5 to both the held bass and a later chord note. Staff-to-hand mismatches are **0/283**.
+  Same-onset reach violations are 0; including sounding notes yields **65 hand/onset observations** that
+  cannot be held as finger positions, not 65 independent bad chords. Duration currently serves both sound
+  and key highlighting; pedal/key-release/held-note guidance is absent. This is distinct from #130's
+  arpeggio question and cannot be closed by changing finger costs or splitting voices alone.
+- **New reproducible player defect:** the first A-B wrap calls `handleSeek(A)` and returns before scheduling
+  the next RAF (`useFallingNotesPlayer.ts:197`). A stable-callback hook probe yields `isPlaying=true`, audio
+  restarted, but **0 pending frames**. Existing loop tests cover markers only.
+- Other converter probes reproduce mid-measure tempo being applied to the entire bar, unexpanded repeats,
+  and flat/minor keys reported as C. A synthetic same-voice cross-staff tie also collides; neither real score
+  has been shown to exercise that tie case. No new correction policy was adopted.
+- **#137:** editing supports title, composer, category and visibility, but no tempo. Empty-tempo help text
+  contradicts the converter's automatic reading path. Wheel behavior was not tested in a browser.
+- Validation: **94 suites / 904 tests PASS**, typecheck PASS, lint PASS. Pure scans and synthetic DP were
+  timed, but no mobile/browser rendering or VM performance profile was taken. Initial 12,000-note DP
+  samples were 17–42ms; this does not establish DP as the user's principal performance problem.
+- Findings, exact commands, input bytes/hashes and reproducible probes are retained in
+  [audit](validation/2026-09-05-codebase-audit.md) and
+  [evidence](validation/2026-09-05-codebase-audit-evidence.md). Source PDFs are not retained (D-040).
+- **Next action candidates:** independent A-B playback fix; #134/#137 beat-unit UX and XML provenance
+  investigation; #135 held-note/pedal guidance contract. These are review recommendations, not a new phase
+  or a change to D-045. **#130 remains parked on its human reference fingering.**
+- Existing user change `.claude/settings.local.json` remains untouched and uncommitted. Only audit and
+  handoff records are committed under the direct-main state-record exception; inspect their post-push
+  checks through GitHub live state.
+
 ## #130 stage 4 STOPPED and MERGED — the open question is a human reference fingering (2026-09-05)
 
 - PR [#136](https://github.com/landfill/ClairKeys/pull/136) merged as `6ab2d7d`, post-merge checks green,
