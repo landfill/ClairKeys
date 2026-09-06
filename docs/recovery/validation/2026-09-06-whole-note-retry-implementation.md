@@ -1,6 +1,7 @@
 # Guarded whole-note recovery implementation
 
 Date: 2026-09-06 KST. Code: `7ddf7cdbef86e8e691311847831870bc0eb9f059`.
+Follow-up: `ef714c78ad9ddfdf7f4fe1128f5e5edc961fc09a` (voice-preservation hardening).
 Plan/decisions: D-051/D-052, commits1af5ba6/a04a16d. No merge or production rollout in this record.
 
 ## Scope
@@ -16,7 +17,8 @@ tempo position, staff/clef/transpose metadata and old ties. It allows only graph
 at onset0/duration4 and one new final measure containing whole notes on both staves. Additional ties
 must form a contiguous pair touching an added whole. Graph evidence is bounded, nonempty foreground
 RLE with unique glyphs; the count is checked globally, not a general image-to-XML alignment proof.
-Voice identifiers are not themselves an acceptance key; this is not full-score/voice certification.
+Voice identifiers are also preserved after ef714c7 because the converter keys sounding ties by voice;
+this still is not full-score/voice certification.
 
 ## Regression-first and reviews
 
@@ -116,3 +118,18 @@ returned no remaining PDF/OMR files; service active and no analysis JVM. User-lo
 all copied checkpoints remain Git-excluded and recover the deleted staging copies. XML/JSON/logs and
 candidate code remain on VM. Historical processing job8e33ffee… and unrelated data were not touched.
 PR CI remains pending creation.
+
+## Voice-continuity follow-up
+
+After initial submission, root checked the actual converter: open ties are keyed by MIDI/voice.
+Changing only a preserved note's voice or only the new tie stop's voice was accepted by the earlier
+guard. Both rejection regressions failed before ef714c7 and pass afterward. The first test draft
+incorrectly assumed synthetic fixtures already contained voice elements; corrected the fixture mutation
+before recording the two behavioral failures. D-052 now explicitly preserves voice identity.
+
+Final ef714c7:24 focused/107 full local Python tests and974 Jest tests PASS. Same dependency image:
+107 tests run/104 passed/3 private-source skips, exit0. Existing typecheck/lint/build remain applicable:
+the follow-up changes only Python guard/tests and its decision, no frontend or dependency behavior.
+The exact native wrapper run above remains7ddf7cd; ef714c7 changes only acceptance strictness, not any
+JVM command. The same retained native Love pair passes the final guard with all old voice-tagged raw
+events preserved (0 removed/+8 whole additions). No PDFs were re-uploaded and no production change.

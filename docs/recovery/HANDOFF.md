@@ -2,6 +2,17 @@
 
 Last updated: 2026-09-06 KST
 
+## PR144 voice-preservation hardening added after native recovery validation (2026-09-06)
+
+- Follow-up ef714c7 preserves raw event voices and matching voices on new tie pairs; converter tie
+  identity made this necessary. Both newly reproduced regressions now pass. Love's actual retained
+  native pair still passes, preserving all old voice-tagged events and adding only8 whole notes.
+- Final local974 Jest/107 Python tests PASS; same image dependencies104 passed/3 private-source skips.
+  Prior exact7ddf7cd native Love run87.042s remains valid recognition evidence; follow-up changes only
+  acceptance guards, not JVM commands. No new deployment or PDF upload.
+- Initial PR144 CI all passed; ef714c7 CI and manual CodeRabbit review are pending. Consult
+  [PR144 review log](reviews/PR-144.md). No target merge or rollout approval received.
+
 ## Guarded whole-note recovery submitted as PR144 (2026-09-06)
 
 - PR144 carries code7ddf7cd; native exact-code and local validation are recorded in
