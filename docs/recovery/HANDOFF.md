@@ -1,5 +1,16 @@
 # Current Handoff
 
+## Branch cleanup (2026-09-06)
+
+- User explicitly authorized deletion despite preserved pre-existing working-tree changes.
+- Deleted 11 local and 8 remote branches after verifying every deleted tip has zero commits
+  outside origin/main at eea1d8826c6d922c8041569cf9a7bb680e5760a4.
+- Kept codex/issue-130-directional-budget (2 unique commits, local) and
+  codex/omr-page-scale-validation (1 unique commit, local and remote). Checkout is now main.
+- All 10 pre-existing modified/untracked file contents were restored byte-for-byte after a
+  temporary stash enabled switching branches; the temporary stash was removed after verification.
+- Detailed ref inventory and verification: [cleanup record](validation/2026-09-06-branch-cleanup.md).
+
 Last updated: 2026-09-06 KST
 
 ## Open GitHub issue bodies refreshed (2026-09-06)
