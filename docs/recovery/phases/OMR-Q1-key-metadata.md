@@ -3,6 +3,11 @@
 Status: `IN_PROGRESS`
 Depends on: Satie/Always/Love validation, Sol/Luna contract review, D-050
 
+## Progress
+
+- 2026-09-06: User-approved PR143 merged as1aa8c71 after all final-head gates passed and a late timezone
+  review false positive was verified/replied/resolved. Exact-image rollout and post-merge gates underway.
+
 ## Objective
 
 Fix the demonstrated XML fifths=-1 → JSON C defect without changing any recognized note, rhythm,

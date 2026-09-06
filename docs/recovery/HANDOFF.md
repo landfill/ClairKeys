@@ -2,6 +2,19 @@
 
 Last updated: 2026-09-06 KST
 
+## PR143 merge/rollout approved; merged and exact image building (2026-09-06)
+
+- User approved both PR143 merge and production rollout. Final head92c8e1b/CI rechecked. A late bot review
+  incorrectly called the KST decision date future; verified5ee4566=2026-09-06T04:10:25+09:00, replied with
+  evidence and resolved the false-positive thread without changing the correct date.
+- Merged as `1aa8c71ac2225fbb9fbc1ffa8d3e73022bddd796`, local main fast-forwarded. Both work-branch tips
+  are92c8e1b and contained; remote existence verified. Both retained for untouched user settings dirt.
+- Exact1aa8c71 Docker-format build underway in clean `/opt/clairkeys-deploy`; current/rollback79a2328
+  imageff0a347f…9415ef remains healthy. Merge-commit gates and rollout verification pending.
+- Only OMR-Q1 key metadata is being delivered. Page/scale policy, missing whole notes/tempo and wider
+  recognition accuracy remain separate. [Deployment record](validation/2026-09-06-key-metadata-deployment.md).
+
+
 ## PR143 ready for approval; source-scale improvement demonstrated, not yet implemented (2026-09-06)
 
 - First priority deliverable PR143: key metadata only, code038ee1c/head92c8e1b. All final hosted checks
