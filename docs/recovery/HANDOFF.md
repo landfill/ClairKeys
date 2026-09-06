@@ -2,6 +2,16 @@
 
 Last updated: 2026-09-06 KST
 
+## PR144 merge and rollout approved; merged, exact image building (2026-09-06)
+
+- User approved PR144 merge and VM deployment. Rechecked ef714c7 CI/review/CLEAN and merged as
+  b9d3ac61a5ee492cdcb6aea2bedaa133cc926d8b; local main updated. Both feature tips contained but retained
+  for untouched user settings dirt. [Deployment record](validation/2026-09-06-whole-note-deployment.md).
+- Clean VM checkout is now at the exact merge and Docker-format image build is running. Current
+  service/image1aa8c71/42482e26…d09e remains healthy and retained for rollback; no cutover yet.
+- Next: image-internal tests, approved cutover, health/auth and live API smoke. No stored-score rewrite.
+  OMR-Q3 remains IN_PROGRESS for21, numeric tempo, RH ties and broader accuracy.
+
 ## PR144 verified and awaiting explicit delivery approval (2026-09-06)
 
 - Final code/head ef714c7, non-Draft PR144, all PR CI/E2E checks passed and mergeability CLEAN.

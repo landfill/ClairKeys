@@ -3,6 +3,11 @@
 Status: `IN_PROGRESS`
 Depends on: source references and retained graphs; no dependency on OMR-Q2
 
+## Progress
+
+- 2026-09-06: PR144's bounded whole-note retry merged with explicit approval as b9d3ac6. Exact-image
+  deployment underway. Phase remains IN_PROGRESS: independent21 exporter loss, tempo and RH ties remain.
+
 ## Objective
 
 Repair omitted whole notes/measures and then missing note values/ties/tempo at the recognition boundary.
