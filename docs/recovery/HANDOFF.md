@@ -14,7 +14,8 @@ Last updated: 2026-09-06 KST
 - E1 controls falsified the zero-control-trigger premise (Satie4 candidates in failing stacks);
   E3 length changes did not restore the missing ledgers. No automatic retention policy is adopted.
 - All Opus/AGY tasks settled; next is engine-internal ledger instrumentation and source-aware guard
-  validation. AGY's out-of-scope5-line fixture edit is preserved pending user-approved restoration.
+  validation. User-approved restoration removed AGY's5-line fixture edit; exact HEAD equality and
+  all8 reference tests were verified on2026-09-06.
   User settings and the pre-existing HANDOFF edit remain uncommitted and untouched.
 
 ## Same-worktree Opus/AGY investigation prepared; native diagnostic permission needed (2026-09-06)

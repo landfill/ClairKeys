@@ -224,3 +224,26 @@ raising the interline cap to25px alone leaves `min(line-cap13px, interline-cap25
 not admit the hypothesized23px blob. That is an untested hypothesis requiring a corrected probe,
 not an approved setting. Root fetched CheckSuite/Check/Grades this session; LedgersBuilder.java
 was supplied by the prior worker, despite the report's broader root-attribution wording.
+
+## Fixture restoration completed (2026-09-06)
+
+The user explicitly instructed `복구해`. AGY removed only its five added m22 attribute lines in
+`fixtures/recognition/wedge-positive-control.xml`. Root independently verified:
+
+```text
+git diff --exit-code -- fixtures/recognition/wedge-positive-control.xml
+PASS: no diff against HEAD
+PYTHONPATH=omr-service python3 -m unittest discover -s omr-service/tests -p test_wedge_reference.py
+PASS: 8 tests (0.008s)
+```
+
+Existing user settings and pre-existing HANDOFF changes remain preserved. The restoration makes
+the tracked fixture unchanged, so no fixture commit or PR is needed. The exploratory AGY evaluator's
+self-controls must not be claimed valid against the original fixture; their prior dependency on
+the altered fixture remains documented above.
+
+Task `task_f644b5cc4e21`, dispatch `ctx_b21ddf7b7d56`: worker completion was rejected for stale
+capability, not a file failure. After independent verification, coordinator recovery attempted stop
+(external terminal: no process action), abandoned the unresolved Dispatch, then explicitly marked
+the task completed with the verification evidence. Release retained the external terminal with no
+process action. No task remains active; the restoration approval blocker is resolved.
