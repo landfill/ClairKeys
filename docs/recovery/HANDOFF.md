@@ -2,6 +2,14 @@
 
 Last updated: 2026-09-06 KST
 
+## Open GitHub issue bodies refreshed (2026-09-06)
+
+- User-requested refresh completed for all13 open issues. Bodies distinguish shipped portions,
+  remaining work and acceptance conditions; superseded metrics/policy statements are corrected.
+  Original reports/measurements/attachment links remain as collapsed historical records.
+- Every published body was read back and matched; titles and OPEN states are unchanged. No issue
+  was closed or created and no application/VM change was made. [Audit and body hashes](validation/2026-09-06-issue-body-refresh.md).
+
 ## PR145 OMR VM deployment verified (2026-09-06)
 
 - User-authorized VM rollout completed for exact merge1edbceacdd13ef7947d7cf0a3dcc22bcc88b1c81.
