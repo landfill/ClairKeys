@@ -138,6 +138,14 @@ describe('normalizeAnimationData — converter.py shape (fields under metadata)'
     expect(out.version).toBe(ANIMATION_CONTRACT_VERSION) // no version in Shape C → filled
     expect(out.notes[0]).toMatchObject({ midi: 67, hand: 'R', finger: 3 })
   })
+
+  it('preserves optional flat/minor names and keeps absent key metadata absent', () => {
+    const note = { midi: 60, start: 0, duration: 1 }
+
+    expect(normalizeAnimationData({ keySignature: 'F', notes: [note] }).keySignature).toBe('F')
+    expect(normalizeAnimationData({ keySignature: 'Cm', notes: [note] }).keySignature).toBe('Cm')
+    expect(normalizeAnimationData({ notes: [note] })).not.toHaveProperty('keySignature')
+  })
 })
 
 describe('normalizeAnimationData — hard errors (no silent fallback)', () => {
