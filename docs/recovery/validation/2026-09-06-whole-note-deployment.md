@@ -32,3 +32,30 @@ is retained for rollback. No secret/env/unit or stored-score changes.
 
 Build, image-internal tests, approved cutover, health/auth checks and actual live API smoke pending.
 This deployment fixes the bounded whole-note/terminal-bar case, not remaining21/tempo/RH-tie defects.
+
+## Image tests and approved cutover
+
+Build exit0; new tag b9d3ac6 resolves to
+`d7d6344bbc1331324b8b14e7a62a4de6a3f5d22a62e908503773edfeac106c8a`.
+Docker HEALTHCHECK retained. Actual image /app modules, only fixtures/src mounted read-only:
+
+```text
+podman run --rm --network none -v /opt/clairkeys-deploy/fixtures:/fixtures:ro -v /opt/clairkeys-deploy/src:/src:ro -w /app -e PYTHONPATH=/app localhost/clairkeys-omr:b9d3ac6 python3 -m unittest discover -s tests
+```
+
+107 tests run,104 passed/3 private-source diagnostic skips, exit0 in0.594s. Those source tests were
+validated locally/native premerge; no source fixtures are falsely described as passing in this container.
+Current unit matched committed source. Before restart, only the historical processing directory existed.
+
+Guarded current-image/target-image checks passed; retagged current to b9d3ac6 and restarted the service,
+exit0. Service active/running, exact new image, manual HEALTHCHECK exit0/healthy. External GET /health200
+and unauthorized POST /process401. No env/unit/secret changes. Rollback1aa8c71 image remains retained.
+
+## Live API smoke underway
+
+Temporary root /data/analysis/pr144-live-Qhyd9Q; unchanged Love solo PDF SHA256
+acdd4ee03f8da75493491f677519dbce4fecf0275b106caf268fa6899ea34253.
+Ran existing test_omr_api.py inside the live container (no module overlay), reading the service token
+only internally; POST /process accepted200, job a7ca14e6-7260-44ab-b546-ac6c4840639b.
+No callback/user/sheet IDs supplied, so no library/storage writes. Completion/equality/cleanup pending.
+The helper emitted a non-failing requests dependency-version warning; the API request itself succeeded.

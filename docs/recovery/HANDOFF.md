@@ -2,6 +2,16 @@
 
 Last updated: 2026-09-06 KST
 
+## Approved PR144 image is live and healthy; real API smoke underway (2026-09-06)
+
+- Exact mergeb9d3ac6 image d7d6344b…106c8a built and passed104 image-internal tests/3 explained
+  source-diagnostic skips. Approved current-tag switch and restart exited0; active/healthy, external
+  health200 and unauthorized process401. Rollback1aa8c71 image42482e26…d09e retained.
+- Actual live API accepted Love solo job a7ca14e6-7260-44ab-b546-ac6c4840639b. No callback/library/storage
+  writes; waiting for completion/equality and temporary source cleanup. [Deployment record](validation/2026-09-06-whole-note-deployment.md).
+- Production cutover approval is fulfilled, not outstanding. Remaining musical defects21/tempo/RH ties
+  are not part of this fix. User settings and source originals untouched; feature branches retained.
+
 ## PR144 merge and rollout approved; merged, exact image building (2026-09-06)
 
 - User approved PR144 merge and VM deployment. Rechecked ef714c7 CI/review/CLEAN and merged as
