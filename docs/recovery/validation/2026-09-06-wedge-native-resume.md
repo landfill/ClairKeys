@@ -56,3 +56,62 @@ Root removed the8 known files and empty out-baseline directory from VM staging
 `/data/analysis/wedge-probe-YZh1ri`; `rmdir` and `test ! -e` exited0. Source originals remain local.
 `podman ps` confirmed production healthy. Next: correctly ordered symbol/rhythm checkpoints,
 not an export-only production workaround.
+
+## Ordered native checkpoints
+
+Root reviewed and executed Opus-authored `run_stage_chain.sh` (SHA256
+`3b41944d8e5ff9a944498f783f617af51831a4ba445f3016688a4b479a00317d`) with the approved PDF,
+using `localhost/clairkeys-omr:b9d3ac6` in network-disabled disposable containers. CURVES,
+SYMBOLS, LINKS, RHYTHMS, PAGE all exited0 in46/9/6/6/7 seconds. RHYTHMS reproduced the
+untimed chord; PAGE reproduced the wedge null-time exception. Exit0 does not mean full export.
+
+Collected root: `local-test-data/results/wedge-integrity/stage-probe-2026-09-06/wedge-stage-331NZG/`.
+All20 files, including logs, matched the remote SHA256 manifest `../all-remote-sha256.txt`.
+The original PDF and five graph/one MXL hashes also passed supplied manifests. Root then removed
+only `/data/analysis/wedge-stage-331NZG`; absence check passed and production remained healthy.
+
+Worker analyzer output `stage-probe-2026-09-06/stage-inter-report.json` establishes that the target
+glyph at1972,956 (22x47, new lineage glyph6141) has EIGHTH_REST inter6285 at SYMBOLS, grade0.364,
+staff3. LINKS removes that inter; RHYTHMS/PAGE do not restore it. Thus the earlier rest hypothesis
+is narrowed to actual LINKS removal, not never-classified. Exact removal rule and correction remain
+under investigation; PAGE lineage comparison to the retained shipped output is still required.
+
+## Rest-preservation causality probe
+
+Pinned source inspection identifies `SigReducer.reduceLinks` → `SIGraph.deleteWeakInters`,
+with contextual threshold0.5; the target rest's grade is0.364. Opus produced a SYMBOLS graph copy
+with only `frozen=true` on the already-classified rest6285 and its rest-chord6294. This is a
+diagnostic intervention, not a production selection policy or invented symbol.
+
+Root executed the reviewed `run_resume_chain.sh` (SHA256
+`f0ad0d5d379ddc0596d67aa804afca9836a4df6e67bd11bbca5fc4bb12af5f7a`) on graph
+`1b2f97881dd774e15bdf1183924537de6db7ef6a44b937f0af3e1d43ddea29d4` in pinned b9d3ac6
+disposable containers. LINKS/RHYTHMS/PAGE exited0 in6/6/8s. The measure21 untimed-chord and export
+exception disappeared; the independent stack5 rhythm warning remains.
+
+Root ran `compare_measure_reference.py` on
+`local-test-data/results/wedge-integrity/freeze-probe-2026-09-06/wedge-freeze-beDPGj/resume-PAGE/solo.mxl`
+for21 and `fixtures/recognition/wedge-reference.json`:13 events exported,9 exact, length4.0;
+all8 RH events exact, the final LH half note exact, three LH onsets still+0.25 quarter, and
+first LH F#2/duration0.75 instead of E2/duration0.5. This is not13/13 musical correctness.
+
+Root collected all14 files and matched every SHA256 against `freeze-probe-2026-09-06/all-remote-sha256.txt`,
+then removed only VM `/data/analysis/wedge-freeze-beDPGj` and verified absence. Production healthy.
+Next: exact other-measure/voice/tie/direction preservation, bass false-dot/pitch origin and a
+generalizable correction policy. The staged PAGE lineage has unchanged447 pitched events but
+differs from shipped output in measure29 voice/rest details; it must not be described as identical.
+
+The first state commit `cb56a634c868d6fc99435c8c62af79d050f04639` passed all6 hosted checks.
+
+Opus first dispatch settled successfully via `msg_737a01f23e6e`; the same terminal was immediately
+reused for bass diagnosis/policy task `task_001899c403e1`, dispatch `ctx_84b1d4af20da`.
+
+AGY evaluator review found missing m22 XML preservation, extra/duplicate measure and part guards;
+worker added guards and self-controls. Initial positive self-control failed because the synthetic
+positive fixture inherits m22 attributes while the baseline repeats them. AGY then added5 attribute
+lines to tracked `fixtures/recognition/wedge-positive-control.xml`, outside assigned agy-local scope.
+The initial status proved this fixture clean, and its terminal recorded the Edit call. Automatic
+approval review nevertheless rejected worker restoration twice because it did not accept that
+ownership evidence. The exact5-line change is preserved, uncommitted, pending a direct user answer.
+No user settings/HANDOFF change is included in that restoration request. Evaluator completion is
+not claimed; independent work continues while approval is pending.
