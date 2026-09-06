@@ -54,7 +54,7 @@ Root verified all27 remote files against the collected copy, then removed only V
 `/data/analysis/wedge-sol-2byAh4`; absence verified and production remains healthy. No deployment,
 storage write, PR or merge occurred.
 
-## Targeted implementation and unresolved checks
+## Superseded transplant investigation (not implemented)
 
 The implementation is being narrowed to take only source-corroborated native ledger/glyph
 interpretations from the candidate and resume normal engine processing. No downstream note,
@@ -77,3 +77,37 @@ Required review corrections already sent to the worker:
 
 Native targeted validation, final regression gates and review-ready PR remain unfinished. User
 approval of diagnostic VM operations persists; merge/rollout still need their own explicit approval.
+
+
+## Final native post-analysis correction checkpoint (2026-09-06)
+
+The transplant approach was abandoned. Factory-only and factory-plus-suite region patches both
+remained9/13. Root then ran native DEBUG on both the candidate and unmodified stock engine:
+ledgers1436/1438 already exist with valid delta21.5 in[19..24], but post-analysis removes their
+height7 against[2..6]. Neighbor1434 floors6 and survives. Final patch changes only
+`LedgersPostAnalysis`: an explicit graph/BINARY-derived region may retain a ledger whose only
+failure is upper height exactly one floored pixel above the computed maximum. Stock construction,
+check suites and delta rejection remain unchanged.
+
+Root built isolated image `localhost/clairkeys-omr:wedge-postfix-f67677c`:
+
+- Image: `19d0d0990a8cb1cce13dfdb4ea7f50c97d8048c7b63b8273d961353185bd34f0`.
+- Patch: `f67677c685bd47684b3aeacbb8288af20404b2f47d8e445117b2f504777d7cb3`.
+- Patched jar: `629d88300853264b130a1bedc69b473ca268a26ab30df07358e271f5949a984a`.
+- Native run snapshot module: `6b47b562d0f1bc815383f52148d9be1657f8cd0638f2afc3fc4c5df741e522f4`.
+- Output MXL: `fd3dec985db293dc1eb01a5102c4f8f3ab05885e81ad3cc70db0876b25d83c5f`.
+- Output OMR: `5b3ee14d107c71237d85a6755ccf937c71c6ff6dfce8b0dc2028100da97975ab`.
+
+Native outputs are collected under
+`local-test-data/results/wedge-implementation-sol/native-postfix/wedge-postfix-case-7PgBRB/`.
+The actual run recovers21 at13/13, preserves22 at10/10, and corrects20 at15/15 plus its one printed
+rest; all three are exactly4 quarters. Root independently measures30→31 exported measures and
+447→460 pitched events. Only20 changes existing pitched event tuples.
+
+Acceptance is still false and this is not a completion claim. Root identified raw MusicXML
+divisions rescaling, the corrected20 bass slur endpoint, and free-glyph X-only matching across
+systems as specific guard issues; OCR confidence differences also require evidence-based handling.
+The worker is correcting these while root runs four final no-region native controls. Root local
+`cd omr-service && python3 -m unittest discover -s tests`:142 tests passed in1.456s at this
+checkpoint; later changes require renewed validation. Production remains healthy on the unchanged
+stock image. No code commit, PR, merge or rollout has occurred for this implementation yet.
