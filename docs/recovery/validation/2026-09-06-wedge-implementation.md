@@ -111,3 +111,73 @@ The worker is correcting these while root runs four final no-region native contr
 `cd omr-service && python3 -m unittest discover -s tests`:142 tests passed in1.456s at this
 checkpoint; later changes require renewed validation. Production remains healthy on the unchanged
 stock image. No code commit, PR, merge or rollout has occurred for this implementation yet.
+
+
+## Independent acceptance and full local gates (2026-09-06)
+
+Root independently ran the collected native pair against module
+`ef1c2c719ec20661a48e7a1cf9bf07e614c4fb6386fb3cc75bfee2a5bb786743`: acceptance true.
+Root source-page reinspection supports measure20's same-chord diminuendo2.5→3.5 and pedal release
+at3.0 after the rhythm correction. Explicit offsets/payloads and source chord associations must
+remain preserved; no arbitrary direction retiming is authorized. A separate recursive comparator
+of all outside-scope note metadata, normalizing duration/offset by MusicXML divisions, found no
+changes. Root requested that production guards retain this full metadata invariant and strict
+outside-scope tie anchors, with negative regression cases, before final code freeze.
+
+Final PostAnalysis-only no-region controls were executed with
+`bash run_native_controls.sh /data/analysis/wedge-postfix-controls-kl7X5i localhost/clairkeys-omr:wedge-postfix-f67677c`.
+All four Love/Satie/good-Satie/Always LEDGERS graphs pass exact live-graph equality; book/image
+entries are unchanged. ID aliases are compared by full glyph payload and only truly unreferenced
+cache entries are excluded. This proves no-region engine-stage equivalence, not a full fresh
+processor run of each control.
+
+Root gates at this checkpoint:
+
+- `npx tsc --noEmit`: exit0.
+- `npm run lint`: exit0, no ESLint warnings/errors.
+- `npm test -- --runInBand`:102 suites,977 tests passed in19.909s.
+- `npm run build`: exit0. This build skips type/lint internally; both were run separately above.
+- An initial incorrect `npx eslint .` invocation included generated `.next` and auxiliary scripts,
+  reporting9060 problems. It is not the repository lint gate; the required `npm run lint` passes.
+- State commit `c3ade456c23b44eecc5e1228d668dcdff69c7e49`: post-push checks observed; five completed
+  checks passed, E2E was still running at the observation. No failed check observed.
+
+Root collected260 files into
+`local-test-data/results/wedge-implementation-sol/vm-final-collection/`; all hashes match the
+remote manifest `vm-final-manifest.json`. The downloaded/extracted public JDK toolchain is excluded
+from that artifact collection (its official archive and original source checksums were verified
+before each build). Nine superseded VM staging directories were removed: wedge-region-raGcj6,
+wedge-region-case-vdgakn, wedge-region-controls-haL8Wo, wedge-region-v2-YwLlpJ,
+wedge-region2-case-PVnOfM, wedge-region2-controls-fmeERJ, wedge-region-trace-7v5j8g,
+wedge-region-tracecase-apv5t4, wedge-posttrace-7Hceh8. Only the three final postfix staging
+paths remain pending integration validation/cleanup. Production remains healthy and unchanged.
+
+Actual processor selection, final test freeze and review-ready PR remain to be completed.
+
+
+## Actual processor integration exposed two final defects (2026-09-06)
+
+Automatic approval review rejected final VM staging twice despite the prior scope record. The user
+then explicitly replied `승인` to the precise final Love PDF/code/scripts transfer/run/collect/delete
+request for101.79.16.73; staging succeeded. This additional scope blocker is resolved.
+
+The actual `AudiverisProcessor.process_pdf` chain ran with module
+`6470ce544724887021c930785146b02955786e9ee007d34f03ed05b503a06b92`, stock and alternate executables,
+concurrency1 and the original900-second budget. It produced the correct native candidate but
+returned the unchanged whole-note retry because acceptance rejected it. Root independently found
+all20/21/22 references exact, both scoped ledger proofs true, full outside event/note/context
+preservation, and preserved header/slurs/ties. The sole difference is an assigned stem glyph's
+`groups=STUMP` cache label absent in the candidate: exact5x143 ink and primitive stem median/width
+are unchanged. That descriptor repeats in four relations, producing five graph differences.
+The worker is validating a narrowly scoped normalization against upstream GlyphGroup semantics;
+this failed integration must not be reported as a successful actual processor selection.
+
+Root also tested the exact Dockerfile GNU `patch -p1 --ignore-whitespace` command against the
+checksum-pinned original source. All three hunks failed due to CRLF line endings. The isolated
+engine build had used `git apply --ignore-space-change`, so it had not tested this packaging path.
+The Dockerfile must verify the original checksum, normalize line endings, then apply/compile the
+patch. The worker is fixing this and root will independently re-run that exact path.
+
+Frozen checkpoint root tests: full Python145 passed in2.566s, and the actual Jest OMR contract
+inventory passed all10 suites. Previous full977 Jest/type/lint/build gates remain as recorded;
+changed focused suites require revalidation after these final defects are fixed.

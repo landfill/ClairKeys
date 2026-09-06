@@ -2,20 +2,22 @@
 
 Last updated: 2026-09-06 KST
 
-## Implementation resumed with Codex Sol; coordinator verifies (2026-09-06)
+## Codex Sol correction implemented; final processor verification (2026-09-06)
 
-- User explicitly requested correction code, rejected Opus implementation and AGY verification,
-  and selected another Codex model or AGY Gemini Flash for implementation. Chosen worker is
-  Codex gpt-5.6-sol/high, same checkout and existing wedge branch; coordinator independently
-  reviews code, runs tests and compares native outputs. No Opus/AGY task is active.
-- Implementation task `task_f956cd1a5218`, dispatch `ctx_1bc097ab8165` in run `run_53f04f95438d`.
-  Worker owns code/tests and prerequisite phase/decision changes; root owns execution/Git/status.
-- Start from measured export-loss signature and regression tests; the broad rhythm-only retention
-  proposal remains rejected. Guard module, processor integration and tests now exist uncommitted.
-  First native candidate recovers21 at13/13 but changes other measures and is correctly rejected;
-  targeted native-ledger recovery is being implemented. [Current implementation evidence](validation/2026-09-06-wedge-implementation.md).
-  Full phase13/13 and preservation criteria remain; no implementation or PR completion is claimed.
-  Existing approved VM diagnostic scope persists; no merge/rollout approval.
+- User selected another Codex model for implementation and rejected Opus implementation/AGY
+  verification. Codex gpt-5.6-sol/high implemented the guarded native recovery in the same checkout;
+  root independently reviewed source and ran native, local and packaging checks.
+- A region-scoped one-pixel LedgersPostAnalysis exception plus retention of engine-classified rests
+  recovers21 at13/13,20 at15/15 plus its printed rest, and preserves22 at10/10. Four no-region native
+  controls pass. Root145 Python tests,977 Jest tests, separate type/lint and build checks passed at
+  recorded checkpoints. [Exact evidence and remaining validation](validation/2026-09-06-wedge-implementation.md).
+- Actual process_pdf generated the correct candidate but rejected an assigned stem glyph cache-label
+  difference; the bounded comparison fix is being verified. Dockerfile CRLF patch failure was fixed,
+  and exact GNU patch/compile now yields byte-identical tested engine classes. No PR or completed
+  actual processor selection is claimed yet.
+- User explicitly reapproved final Love PDF/code/scripts VM101.79.16.73 temporary transfer/run/cleanup
+  after automatic review rejected the prior approval record. That blocker is resolved; production
+  remains unchanged. No merge/rollout approval. User settings and pre-existing HANDOFF edits stay intact.
 
 ## Native wedge cause measured; musical correction remains open (2026-09-06)
 
