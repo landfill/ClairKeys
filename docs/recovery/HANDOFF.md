@@ -1,5 +1,16 @@
 # Current Handoff
 
+## Installed skill guidance audited (2026-09-06)
+
+- User-requested audit against the official latest-model guide screened 121 on-disk skill
+  entrypoints and applied 29 Markdown files across 23 skills. Removed redundant questions,
+  stale prompting defaults and oversized small-task procedures; preserved real approval gates.
+- All installed files match the validated candidates. YAML parsing passed for 23 entrypoints;
+  the restrictive bundled validator passed 13, with 10 unchanged metadata limitations.
+  No live service or application behavior test is claimed. [Evidence and full diff](validation/2026-09-06-skill-audit.md).
+- Plugin/system updates may replace these local edits; compare the recorded patch with new
+  upstream contents before reapplying. Existing user changes and OMR phase scope are preserved.
+
 ## Branch cleanup (2026-09-06)
 
 - User explicitly authorized deletion despite preserved pre-existing working-tree changes.
