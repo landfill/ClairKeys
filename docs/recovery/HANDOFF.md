@@ -2,21 +2,20 @@
 
 Last updated: 2026-09-06 KST
 
-## PR145 merged; rollout remains separate (2026-09-06)
+## PR145 OMR VM deployment verified (2026-09-06)
 
-- User explicitly approved PR145 merge. Rechecked exact head f614245, all hosted CI, mergeability
-  and all four resolved review threads; merged as `1edbceacdd13ef7947d7cf0a3dcc22bcc88b1c81`.
-- Remote and local main agree at the merge checkpoint; implementation files match the validated
-  feature tip. Both local and remote feature tips are ancestors of main. Post-merge checks started;
-  their initial observation showed no failure and they were still running.
-- Branch cleanup is blocked by preserved user-owned `.claude/settings.local.json` and pre-existing
-  HANDOFF edits. No local or remote work branch was deleted; the current checkout stays on the
-  feature branch with main fast-forwarded separately. Do not discard or commit those user edits.
-- Source-backed recovery is verified at21 13/13,20 15/15 plusrest,22 10/10, with149 Python tests,
-  prior977 Jest tests and current hosted CI/E2E passing. [Review/merge log](reviews/PR-145.md) and
-  [validation](validation/2026-09-06-wedge-implementation.md) retain exact evidence and hashes.
-- This approval covered merging PR145. Production OMR rollout was not requested or performed;
-  production remains on the earlier deployed version. Broader OMR accuracy remains separate.
+- User-authorized VM rollout completed for exact merge1edbceacdd13ef7947d7cf0a3dcc22bcc88b1c81.
+  Running/current image1a28f10ea2bb5fb6f4a038008c5b89ec0556ab8049fcac002009c2e1dcf24173
+  is healthy. Restart exit0, systemd active, external health200 and unauthorized process401.
+- Actual production API Love job completed150.842s:431 notes/123.0 seconds, no timing warnings;
+  every note and duration equals the independently validated recovery. Only generated_at differs.
+  Image tests143 passed with six explained private-source skips. [Deployment evidence](validation/2026-09-06-wedge-deployment.md).
+- Live job files were automatically removed and the dedicated VM staging tree was collected,
+  hash-verified and deleted. Previous b9d3ac6 image is retained as rollback-pr145. No secret,
+  environment, unit, library or stored-score changes. Existing scores require reprocessing/new upload.
+- Both Vercel web Production and the separate OMR VM now include PR145. Wedge phase delivery is
+  complete; broader OMR numeric tempo/RH ties/accuracy remain separate. No deployment work or worker
+  is left active. Existing local tool settings and historical HANDOFF note remain preserved.
 
 ## Native wedge cause measured; musical correction remains open (2026-09-06)
 

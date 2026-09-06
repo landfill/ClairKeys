@@ -1,6 +1,6 @@
 # OMR-Q3 (wedge) — Stop the exporter from deleting a recognized measure
 
-Status: `MERGED`
+Status: `DONE`
 Depends on: OMR-Q3 whole-note recovery (merged as `b9d3ac6`, deployed image `d7d6344b…106c8a`)
 Scope note: this is the independent printed-measure-21 loss that
 [OMR-Q3](OMR-Q3-whole-note-integrity.md) explicitly separated from the whole-note/cautionary chain.
@@ -63,6 +63,12 @@ Decision records: `D-053` and `D-054` in [DECISIONS.md](../DECISIONS.md).
   all PR checks and four review fixes passed. Local/remote main and both feature-tip ancestry
   checks verified. Branch cleanup is blocked by preserved user-owned dirty settings/HANDOFF.
   Production rollout is separate and was not performed; merge check-runs initially in progress.
+
+- 2026-09-06: Explicitly approved VM rollout completed for merge1edbcea, image1a28f10e…24173.
+  Actual production API returns431 notes/123.0s identical to the validated native recovery, with no
+  timing warnings; health/auth checks pass. Image143 tests pass/six private-source skips explained.
+  Temporary payloads/results collected, hash-verified and removed; rollback image retained.
+  Wedge phase delivery is complete; broader musical accuracy remains separate.
 
 ## Objective
 
