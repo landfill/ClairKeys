@@ -2,6 +2,21 @@
 
 Last updated: 2026-09-06 KST
 
+## Implementation resumed with Codex Sol; coordinator verifies (2026-09-06)
+
+- User explicitly requested correction code, rejected Opus implementation and AGY verification,
+  and selected another Codex model or AGY Gemini Flash for implementation. Chosen worker is
+  Codex gpt-5.6-sol/high, same checkout and existing wedge branch; coordinator independently
+  reviews code, runs tests and compares native outputs. No Opus/AGY task is active.
+- Implementation task `task_f956cd1a5218`, dispatch `ctx_1bc097ab8165` in run `run_53f04f95438d`.
+  Worker owns code/tests and prerequisite phase/decision changes; root owns execution/Git/status.
+- Start from measured export-loss signature and regression tests; the broad rhythm-only retention
+  proposal remains rejected. Guard module, processor integration and tests now exist uncommitted.
+  First native candidate recovers21 at13/13 but changes other measures and is correctly rejected;
+  targeted native-ledger recovery is being implemented. [Current implementation evidence](validation/2026-09-06-wedge-implementation.md).
+  Full phase13/13 and preservation criteria remain; no implementation or PR completion is claimed.
+  Existing approved VM diagnostic scope persists; no merge/rollout approval.
+
 ## Native wedge cause measured; musical correction remains open (2026-09-06)
 
 - Direct user approval now covers temporary Love PDF/OMR/scripts on VM101.79.16.73 with cleanup.
