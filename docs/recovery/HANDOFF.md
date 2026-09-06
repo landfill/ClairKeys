@@ -2,6 +2,21 @@
 
 Last updated: 2026-09-06 KST
 
+## PR144 verified and awaiting explicit delivery approval (2026-09-06)
+
+- Final code/head ef714c7, non-Draft PR144, all PR CI/E2E checks passed and mergeability CLEAN.
+  Local974 Jest/107 Python tests PASS; same image dependencies104 passed/3 private-source skips.
+- Sol implementation, Opus source reference, AGY acceptance criteria and Luna independent reviews
+  completed. CodeRabbit c32bde7 review had no actionable code comments; description advisory fixed.
+  Incremental ef714c7 bot review hit quota, so a bounded independent Luna follow-up reviewed that exact
+  commit and passed24 focused tests with no actionable issue. Coverage/limits: [PR144 log](reviews/PR-144.md).
+- Native Love recovery restores8 source-confirmed whole notes and terminal31; all old events retained.
+  Satie/Always/goodSatie original note arrays/durations unchanged.21, numeric tempo and RH final ties
+  remain separate failures. No claim of complete musical/fingering correctness.
+- Next: explicit PR144 merge and production rollout approval, then fresh CI/review check and exact-image
+  deployment workflow. Neither approval has been received. Production remains1aa8c71 image42482e26…d09e.
+  User settings/original samples untouched;18 VM staging PDF/OMR copies cleaned, local copies preserved.
+
 ## PR144 voice-preservation hardening added after native recovery validation (2026-09-06)
 
 - Follow-up ef714c7 preserves raw event voices and matching voices on new tie pairs; converter tie
