@@ -115,3 +115,112 @@ approval review nevertheless rejected worker restoration twice because it did no
 ownership evidence. The exact5-line change is preserved, uncommitted, pending a direct user answer.
 No user settings/HANDOFF change is included in that restoration request. Evaluator completion is
 not claimed; independent work continues while approval is pending.
+
+## Two-rest experiment and independent review
+
+Opus extended the copied-graph probe to the source-confirmed purged rest in20 as well as21.
+Root directly compared every archive/XML entry of candidate
+`3beb7fc80b2b88f070fd10ec9b0c6717d4cb2668bc394e0f3932a8901b7d17a5` against the SYMBOLS baseline:
+only four `frozen=true` attributes differ (rests6272/6285, rest-chords6293/6294). Competing FLAT6273
+is unchanged and unfrozen. Automatic review initially used the earlier unwanted-FLAT concern;
+the direct comparison resolved it and the subsequent run was approved.
+
+Root ran unchanged `run_resume_chain.sh` in `/data/analysis/wedge-both-RKlFgs`, pinned b9d3ac6.
+LINKS/RHYTHMS/PAGE exited0 in6/6/7s, with neither rhythm warning nor export exception. All14 files
+were collected under `both-rest-probe-2026-09-06/wedge-both-RKlFgs/` and matched the sibling
+`all-remote-sha256.txt` manifest. Root removed the dedicated VM directory and verified absence;
+production remained healthy. All four session staging directories are now removed.
+
+Worker comparison: stage baseline30→31 measures,447→460 pitched events; only21 added, only20
+changed among shared measures.20 retains15 pitched events and the same MIDI/staff multiset,
+length4.25→4.0, restores its eighth rest and retimes its treble; bass pitch/duration errors remain.
+The existing8 whole events and terminal31 remain. This does not establish a general safe policy.
+
+AGY initial task settled, then same-terminal follow-up `task_3f3f5a952b78` / `ctx_b0c743898587`
+retracted its unsupported semantic-corruption claim: its comparator treated regenerated slur
+numbers as corruption. It independently confirmed9/13 on the frozen candidate after correcting
+reversed baseline/candidate inputs, and disclosed the out-of-scope fixture edit. Release returned
+`retained / external_terminal / processAction:none`; no AGY task remains active.
+
+Root additionally compared the same-lineage baseline and single-rest frozen score: no common
+measure difference remains after slur-ID normalization. Explicit start/stop pairing shows no
+removed complete slur span and two added spans20→21 and21→22; the baseline's orphan stop22 and
+unclosed start20 are now paired. This validates these particular artifacts, not the generic
+AGY comparator or arbitrary slur renumbering.
+
+Opus source/pixel review narrows the bass cause to missing ledger interpretations already at HEADS:
+the printed E2 ledger is visible but absent from the graph at20/21, and its tail is classified
+as a false augmentation dot. Exact creation-vs-removal origin within/before LEDGERS is not yet
+instrumented. The proposed guards are unaccepted research, not a production policy; normal-score
+purged-rest census and LEDGERS instrumentation remain next. Main state commit11bd1a5 passed6 checks.
+
+## Continued approved diagnostics
+
+Opus E2/policy task settled and its terminal was released with transcript capture. A fresh Opus
+high task `task_e8dce9213aa6` / `ctx_7b8a015da5a0` continues the bounded Love-only E3 ledger-length
+experiment and E1 baseline-font review in the same checkout. Root fetched the exact public
+5.11.0 `CheckSuite.java` to unblock source inspection. No engine source patch is implemented.
+
+The user then explicitly approved temporary transfer/execution of Satie, good-Satie and Always
+PDFs plus diagnostic scripts on the same VM, with collection/cleanup and no production changes.
+This resolves the E1 payload scope blocker. E1 must cover production Bravura as well as Leland;
+the earlier Leland-only runner cannot prove normal-pipeline preservation. Fixture restoration
+remains a separate pending question; this latest approval was for the three control PDFs.
+
+Root census review found exploratory limitations: overlap checks only inspect pre-LINKS rests,
+missing pitch permits an in-profile result, sheet-wide raw pixel ranges ignore staff scale,
+and competing non-rest shapes are not considered. These are not established runtime guards;
+zero candidates in three controls alone would not prove general safety.
+
+## Final E1/E3 results and next investigation boundary
+
+E1 ran `run_census_pass.sh` SHA256
+`899d0b7c6528bc8cc560a90f83dbc2d0d789b25bfea97fc0944dba47c7c480c7`, with no music-font constant
+for the Bravura condition and the explicit Leland constant for the second condition. All18 stages
+exited0. Root collected and SHA256-verified all70 files from VM `/data/analysis/wedge-controls-OCvsmK`,
+then removed that dedicated directory and verified absence. The local full manifest/verification
+log is under `controls-probe-2026-09-06/`.
+
+Both font conditions produced the following census counts:
+
+| Score | Rests at SYMBOLS | Purged at LINKS | Profile candidates | Distinct failing stacks | Candidates in failing stacks |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Satie | 48 | 17 | 9 | 9 | 4 |
+| good-Satie | 49 | 0 | 0 | 0 | 0 |
+| Always | 21 | 11 | 1 | 5 | 0 |
+
+The four Satie candidates are in stacks5,6,18,31. This falsifies the proposed zero-control-trigger
+premise, not proof that retention would harm those measures: its actual effect is unmeasured.
+No D-054/runtime policy is adopted. Census-only runs are not full conversion/preservation tests.
+
+**Coordinator correction to the worker report:** Always has5 failing `(sheet, system, stack)`
+tuples, not4. Sheet1/system1/stack2 and sheet2/system1/stack2 are distinct; never deduplicate raw
+stack numbers across sheets. Root independently parsed both RHYTHMS logs. Its sole candidate is
+on sheet2/stack9, outside the failure set, so the candidate intersection remains0.
+
+E3 ran `run_ledger_probe.sh` SHA256
+`062921d92b28e4296a5c713da80361988ededf96245592efc1c617b5cf1c9e0a` on Love, four variants ×
+LEDGERS/HEADS, all8 stages exit0. Baseline/control time21/16s and19/16s; low0.60/low0.20 variants
+19/17s and20/15s. The first-ledger mechanism control passed. Target20/21 ledgers remain absent
+in both relaxed variants, with identical erroneous head candidates; sheet2 ledger counts are
+78 baseline,84 at0.60,85 at0.20. No PAGE promotion was warranted. These tested length changes
+do not repair the fault; other checks, candidate construction and removal inside LEDGERS remain
+unresolved. The lower probe's supposed sub-core-length bracket was not reachable under the
+unchanged core-section floor, so do not overstate the experiment's coverage.
+
+Root collected and verified all31 files in `ledger-probe-2026-09-06/wedge-ledger-oaqu9v/`, then
+removed the VM directory and verified absence. All6 session staging directories are removed;
+production remains healthy on b9d3ac6. User-local sources/results are preserved and Git-excluded.
+
+Final Opus dispatch settled via `msg_ceb798c0dc28`; release captured transcript and closed its
+owned terminal. No worker task is active. AGY's external terminal remains retained without process
+action. Feature branch5ce335c is pushed; all diagnostic code/results remain local, no correction
+PR exists. The one tracked fixture edit remains uncommitted pending user-approved restoration.
+
+Next bounded work: instrument ledger candidate construction/check/reduction to distinguish why
+the source-confirmed ledger disappears, and measure any retention proposal against source-confirmed
+Satie events before adopting it. **Do not blindly execute the worker report's thickness suggestion:**
+raising the interline cap to25px alone leaves `min(line-cap13px, interline-cap25px)=13px`; it does
+not admit the hypothesized23px blob. That is an untested hypothesis requiring a corrected probe,
+not an approved setting. Root fetched CheckSuite/Check/Grades this session; LedgersBuilder.java
+was supplied by the prior worker, despite the report's broader root-attribution wording.

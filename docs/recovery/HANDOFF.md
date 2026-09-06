@@ -9,10 +9,12 @@ Last updated: 2026-09-06 KST
 - Export-obstacle removal gives7 events/2 exact of13; preserving the engine-recognized rest on a
   diagnostic graph gives13 events/9 exact, correct4-quarter length and restored diminuendo.
   Remaining bass pitch/false-dot errors prevent musical completion. No runtime policy implemented.
-- All3 VM staging directories from this session were collected, hash-verified and removed; production
+- All6 VM staging directories from this session were collected, hash-verified and removed; production
   remains healthy b9d3ac6. [Evidence and active ownership](validation/2026-09-06-wedge-native-resume.md).
-- Same Opus continues bass diagnosis and generalizable policy; AGY independent evaluator is under
-  review. Its out-of-scope5-line fixture edit is preserved pending user-approved restoration.
+- E1 controls falsified the zero-control-trigger premise (Satie4 candidates in failing stacks);
+  E3 length changes did not restore the missing ledgers. No automatic retention policy is adopted.
+- All Opus/AGY tasks settled; next is engine-internal ledger instrumentation and source-aware guard
+  validation. AGY's out-of-scope5-line fixture edit is preserved pending user-approved restoration.
   User settings and the pre-existing HANDOFF edit remain uncommitted and untouched.
 
 ## Same-worktree Opus/AGY investigation prepared; native diagnostic permission needed (2026-09-06)
