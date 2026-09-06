@@ -181,3 +181,42 @@ patch. The worker is fixing this and root will independently re-run that exact p
 Frozen checkpoint root tests: full Python145 passed in2.566s, and the actual Jest OMR contract
 inventory passed all10 suites. Previous full977 Jest/type/lint/build gates remain as recorded;
 changed focused suites require revalidation after these final defects are fixed.
+
+
+## Final successful processor selection and delivery checkpoint (2026-09-06)
+
+Final implementation module:
+`058d8e387658083b76c25fb326fd439d27d2b399b653d6058e319952b289d6bb`.
+The assigned-glyph cache-label exception preserves free-glyph groups and all image/Inter/ink/relation
+checks. Exact Dockerfile checksum→CRLF normalization→GNU patch→javac execution passes and its
+classes are byte-identical to the isolated tested image. Normalized patched source SHA:
+`d88f81110055c94a243a6fb213be24d0e96bf3a873dcfcd90cccc8a6c64e7e97`.
+
+Root reran the full actual `AudiverisProcessor.process_pdf` chain from the Love PDF in the approved
+network-disabled container, with the original900-second budget and concurrency1:
+`bash run_processor_integration.sh /data/analysis/wedge-processor-verified-Jikic8 localhost/clairkeys-omr:wedge-postfix-f67677c`.
+It exits0 and selects `output/wedge-retry-26pz_m6d/page/love.mxl`, with no remaining trigger.
+Measure21 matches13/13,20 matches15/15 plus1/1 printed rest,22 matches10/10; all are exact4 quarters.
+
+- Selected MXL SHA: `12d13fa44f1f7a187b88c4195dccea4fa4a015fa8e791f6bd979ca4606e508f1`.
+- Selected OMR SHA: `d3c1770ddf3ee2ca7b16bd99205cdf1ce5b760c65c60baed3fc9b34c31a1339e`.
+- Processor summary SHA: `c65b064e44ffc37b5c1c75416c5a7ae9d27b3f7cd548a328f143ea9c27d7c7bb`.
+- Final root Python suite:145 tests pass in2.432s, log `root-python-final.log` in the ignored
+  implementation evidence directory. Full Jest977, separate type/lint/build and four final engine
+  controls are recorded above; no application TypeScript changed after those gates.
+- Ordinary `git diff --check` flags three required single-space context lines inside the stored
+  unified `.patch` artifact. Excluding only that artifact, the check is clean; its actual GNU patch
+  application and compiled output were tested successfully. Those spaces are patch syntax.
+
+Root collected the final163 files under `local-test-data/results/wedge-implementation-sol/vm-verified-final/`
+and compared every hash to `vm-verified-final-manifest.json`: zero mismatches. The remaining five VM
+staging directories (postfix build/case/controls and both processor runs) were removed after that
+check. Combined with the earlier nine removals, no private input/staging copy from this implementation
+remains. Production is still healthy on stock; test image tags remain isolated, not deployed.
+
+Automatic approval review twice blocked code staging as potentially user-owned, even after the
+worker identified its exact15 implementation paths. The user then explicitly approved the17-file
+reviewed code/tests/fixture/plan/decision patch for stage/commit/PR, excluding settings/HANDOFF.
+That blocker is resolved. Code commit `d35b14d` and decision-link commit `44dc0f7` are pushed on the
+feature branch; review-ready PR145 exists. CI/review/merge state is tracked in `reviews/PR-145.md`.
+No merge or rollout approval is implied.

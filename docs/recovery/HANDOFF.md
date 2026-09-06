@@ -2,22 +2,21 @@
 
 Last updated: 2026-09-06 KST
 
-## Codex Sol correction implemented; final processor verification (2026-09-06)
+## Wedge recovery implemented and independently verified (2026-09-06)
 
-- User selected another Codex model for implementation and rejected Opus implementation/AGY
-  verification. Codex gpt-5.6-sol/high implemented the guarded native recovery in the same checkout;
-  root independently reviewed source and ran native, local and packaging checks.
-- A region-scoped one-pixel LedgersPostAnalysis exception plus retention of engine-classified rests
-  recovers21 at13/13,20 at15/15 plus its printed rest, and preserves22 at10/10. Four no-region native
-  controls pass. Root145 Python tests,977 Jest tests, separate type/lint and build checks passed at
-  recorded checkpoints. [Exact evidence and remaining validation](validation/2026-09-06-wedge-implementation.md).
-- Actual process_pdf generated the correct candidate but rejected an assigned stem glyph cache-label
-  difference; the bounded comparison fix is being verified. Dockerfile CRLF patch failure was fixed,
-  and exact GNU patch/compile now yields byte-identical tested engine classes. No PR or completed
-  actual processor selection is claimed yet.
-- User explicitly reapproved final Love PDF/code/scripts VM101.79.16.73 temporary transfer/run/cleanup
-  after automatic review rejected the prior approval record. That blocker is resolved; production
-  remains unchanged. No merge/rollout approval. User settings and pre-existing HANDOFF edits stay intact.
+- Codex gpt-5.6-sol/high implemented the correction at the user's request; root independently
+  reviewed code and verified actual engine/processor outputs. No Opus implementation or AGY
+  verification was used. Same checkout; user settings and pre-existing HANDOFF changes preserved.
+- Actual PDF processing selects source-backed recovery:21 13/13,20 15/15 plus its printed rest,
+ 22 10/10, all exact4-quarter measures. Four no-region native controls pass;145 Python tests,
+ 977 Jest tests, separate type/lint/build and the exact Dockerfile patch/compile path passed.
+- Implementation commits d35b14d/44dc0f7 and PR145 deliver the guarded retry and native post-analysis
+  correction. Check [PR145 review log](reviews/PR-145.md) and GitHub for live CI/review/merge status;
+  [full validation](validation/2026-09-06-wedge-implementation.md) records hashes and negative checks.
+- User explicitly approved final VM validation and separately the17-file code commit/PR scope after
+  automatic-review blocks. Both approvals were fulfilled. All implementation VM staging inputs were
+  collected/hash-verified/removed; production remains unchanged and healthy. Merge/rollout of PR145
+  requires its own explicit approval. Broader OMR accuracy remains outside this wedge correction.
 
 ## Native wedge cause measured; musical correction remains open (2026-09-06)
 
