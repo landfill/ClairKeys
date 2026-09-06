@@ -2,6 +2,21 @@
 
 Last updated: 2026-09-06 KST
 
+## Guarded whole-note recovery implemented and exact native code verified (2026-09-06)
+
+- Code7ddf7cd implements D-052, preserving the initial Bravura result and selecting a Leland retry only
+  for the narrow terminal-cautionary4/4 piano case with exact event/metadata/tie preservation guards.
+- Actual native wrapper recovered8 source-confirmed whole notes and final31:418 canonical notes,
+  86.752s. Satie/Always/goodSatie skipped retry at239/647/283 notes. No service restart or stored-score write.
+- Final local974 Jest/105 Python tests, typecheck/lint/build PASS. Sol implementation, Opus source
+  reference and independent Luna review completed; root reproduced/fixed timing and numeric/graph
+  guard gaps. [Implementation evidence](validation/2026-09-06-whole-note-retry-implementation.md).
+- Exact7ddf7cd native Love rerun PASS87.042s; final VM105 tests run/102 passed/3 source-diagnostic skips.
+  All three normal-control note arrays/durations exactly match prior API results. Removed18 VM staging
+  PDF/OMR copies only after local collection/hash checks; user originals preserved. Next: ready PR and
+  CI/review. Printed21, numeric tempo and RH final ties
+  remain unresolved. No new target-PR merge or rollout approval; production remains1aa8c71 image42482e26…d09e.
+
 ## Musical loss takes priority; whole-note recovery experimentally demonstrated (2026-09-06)
 
 - User-directed order now OMR-Q3 musical-event recovery first, conditional400dpi next, regression at
