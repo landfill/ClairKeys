@@ -28,7 +28,7 @@ Reproduced from `local-test-data/results/whole-note-integrity/wrapper-final-love
 (both the first Bravura result and the shipped Leland retry) with
 `local-test-data/results/wedge-integrity/analyze_wedge_loss.py`:
 
-0. **Upstream candidate, not proven.** The printed eighth rest that separates the treble half chord
+0. **Historical pre-native hypothesis (superseded).** The printed eighth rest that separates the treble half chord
    from the three treble eighth chords is absent from the final graph: glyph `6164` (x 1972, y 956,
    22x47) sits in system 2's free-glyph list with no inter, while the engine's own accepted eighth
    rest on the same staff (inter `6279`, glyph `5915`, y 956, 23x47) is its geometric twin.
@@ -36,7 +36,9 @@ Reproduced from `local-test-data/results/whole-note-integrity/wrapper-final-love
    `rest8th` 0.5118 (margin 0.157) versus 0.5175 (margin 0.144) for that accepted rest, with every
    accepted rest and a notehead control ranking correctly. As with the whole heads, absence in a
    completed graph cannot distinguish *never classified* from *classified and later removed*, so
-   this is a hypothesis needing stage-specific evidence — not a licence to insert an inter.
+   this was initially a hypothesis needing stage-specific evidence—not a licence to insert an
+   inter. Ordered native checkpoints later proved SYMBOLS creates it and LINKS removes it; D-054
+   now uses that engine-created inter under stricter source guards.
 1. Whatever the reason for its absence, without a rest there `MeasureRhythm.createNewVoices` cannot
    time the following eighth chords: they
    are a rookie voice at a slot with no simultaneous chord on the other staff, and
@@ -59,7 +61,11 @@ and sheet 1 has no null-time wedge end, so this accounts for exactly one lost me
 unrelated to the whole-note/cautionary chain that `b9d3ac6` fixed; measure 31 is present in the
 shipped output and must stay present.
 
-## Candidate corrections, by how much music they recover
+## Historical candidate comparison, by how much music they recover
+
+This section records the pre-implementation decision boundary. Its partial ceilings and statements
+that native evidence did not yet exist are superseded by the dated Progress entries and D-054; they
+remain here to show why export-only and rest-only repairs were rejected.
 
 Export walks `measure.getVoices()` and each voice's slot entries, so chords that no voice claims are
 never exported even when the measure survives. That splits the candidates cleanly:
@@ -90,16 +96,20 @@ the exported XML remain forbidden under D-048 and D-052.
 1. Reproduce the cause from retained evidence and record it in the repository. (done)
 2. Run the controlled diagnostics on copied graphs and report, per candidate, how many of the 13
    reference events come back and how many match on pitch, staff, onset and quarter duration
-   together. No production behavior changes during this stage.
+   together. No production behavior changes during this stage. (done)
 3. Choose a correction policy only after those numbers exist, including whether a native engine
    correction (patched build or evidence-backed symbol recovery plus step re-run) is preferable to
-   an export-only workaround.
+   an export-only workaround. (done: D-054 selects a fail-closed native candidate, subject to its
+   native acceptance evidence; export-only and rest-only partial results remain rejected)
 4. Add regression coverage before any behavior change: graph fixtures reproducing the fault, guard
    tests for the accepted candidate, and runtime tests for budget, cancellation and failure fallback.
+   (done for implementation scope; hosted CI remains in stage 7)
 5. Implement the chosen policy for the selected recognition result, inside the existing conversion
-   semaphore and the original deadline.
+   semaphore and the original deadline. (done; actual processor selection verified)
 6. Verify against the printed reference for measure 21, not against "export produced no exception".
    Re-verify the Satie/Always/Love controls and the whole-note recovery that `b9d3ac6` delivers.
+   (done for implementation: direct native candidate, actual processor selection and four
+   no-region controls pass)
 7. Review-ready PR, CI/review, then explicit merge and rollout approvals.
 
 ## Completion criteria
@@ -108,12 +118,16 @@ the exported XML remain forbidden under D-048 and D-052.
   count of exact matches (MIDI, staff, onset and quarter duration together) against the printed
   reference, alongside the count of events still missing. A partial recovery is never recorded as
   completion of this phase.
-- Every measure that already exported keeps identical note content, voices, ties and directions,
-  except for anything the accepted candidate is explicitly allowed to drop.
+- Every out-of-scope measure that already exported keeps identical note/rest content, voices, ties,
+  slur endpoint pairing and directions. An already-exported measure may change only when it
+  independently satisfies D-054's graph-and-BINARY-backed missing-ledger/false-dot signature, its
+  corrected events are exact against a separately recorded printed-source reference, and no event
+  remains missing or unexpected. The candidate may not drop content from any measure.
 - The whole-note recovery (8 whole notes, terminal measure 31) is unchanged on the same input.
 - Every residual loss and every residual pitch or rhythm error is stated in the validation record;
   no claim of a musically complete measure 21 without event-level evidence.
-- Satie/Always/good-Satie controls show no note, duration, voice or tie change.
+- Satie/Always/good-Satie controls show no note, duration, voice, tie, slur-endpoint or direction
+  change; their missing measures or rhythm warnings alone must not trigger the candidate.
 - Runtime stays inside the existing semaphore, deadline and cleanup rules; the source PDF is never
   tracked and analysis copies are removed after collection.
 

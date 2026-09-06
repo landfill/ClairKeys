@@ -43,6 +43,12 @@ def _events(counter):
             for _ in range(count)]
 
 
+def _rests(counter):
+    return [dict(staff=staff, onset=float(onset), duration=float(duration))
+            for (staff, onset, duration), count in sorted(counter.items())
+            for _ in range(count)]
+
+
 def evaluate_reference(root: ET.Element, reference: dict) -> dict:
     part = root.find('part')
     if part is None:
@@ -52,7 +58,7 @@ def evaluate_reference(root: ET.Element, reference: dict) -> dict:
     meter = None
     for measure in part.findall('measure'):
         cursor = end = previous_onset = Fraction(0)
-        events = Counter()
+        events, rests = Counter(), Counter()
         for item in measure:
             if item.tag == 'attributes':
                 value = item.findtext('divisions')
@@ -81,6 +87,8 @@ def evaluate_reference(root: ET.Element, reference: dict) -> dict:
                     midi = (int(pitch.findtext('octave')) + 1) * 12
                     midi += {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}[pitch.findtext('step')]
                     events[(midi + int(alter), int(item.findtext('staff', '1')), onset, duration)] += 1
+                elif item.find('rest') is not None:
+                    rests[(int(item.findtext('staff', '1')), onset, duration)] += 1
                 end = max(end, onset + duration)
                 if not chord:
                     previous_onset = onset
@@ -88,25 +96,36 @@ def evaluate_reference(root: ET.Element, reference: dict) -> dict:
         number = measure.get('number')
         if number in measures:
             raise ValueError(f'Ambiguous repeated measure number: {number}')
-        measures[number] = (events, end, meter)
+        measures[number] = (events, rests, end, meter)
 
     results = []
     matched = expected_count = 0
     for expected in reference['measures']:
         wanted = Counter(_event_key(event) for event in expected['pitchedEvents'])
-        actual, length, actual_meter = measures.get(str(expected['number']), (Counter(), None, None))
+        actual, actual_rests, length, actual_meter = measures.get(
+            str(expected['number']), (Counter(), Counter(), None, None))
         count = sum((wanted & actual).values())
         matched += count
         expected_count += sum(wanted.values())
         missing, unexpected = _events(wanted - actual), _events(actual - wanted)
         meter_matches = actual_meter == expected.get('timeSignature', reference['timeSignature'])
         length_matches = length == Fraction(str(expected['quarterLength']))
+        rest_contract = expected.get('restEvents')
+        wanted_rests = Counter(
+            (int(event['staff']), Fraction(str(event['onset'])), Fraction(str(event['duration'])))
+            for event in (rest_contract or []))
+        matched_rests = sum((wanted_rests & actual_rests).values()) if rest_contract is not None else None
+        missing_rests = _rests(wanted_rests - actual_rests) if rest_contract is not None else []
+        unexpected_rests = _rests(actual_rests - wanted_rests) if rest_contract is not None else []
         results.append(dict(number=str(expected['number']), matchedEvents=count,
                             missing=missing, unexpected=unexpected,
+                            matchedRests=matched_rests, missingRests=missing_rests,
+                            unexpectedRests=unexpected_rests,
                             actualTimeSignature=actual_meter, meterMatches=meter_matches,
                             actualQuarterLength=float(length) if length is not None else None,
                             lengthMatches=length_matches,
-                            exact=not missing and not unexpected and meter_matches and length_matches))
+                            exact=(not missing and not unexpected and not missing_rests
+                                   and not unexpected_rests and meter_matches and length_matches)))
     return dict(scope='Referenced measures of the first part; raw events before tie merging only',
                 matchedEvents=matched, expectedEvents=expected_count, measures=results,
                 exact=bool(results) and all(result['exact'] for result in results))

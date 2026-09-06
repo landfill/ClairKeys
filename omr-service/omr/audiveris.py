@@ -18,6 +18,12 @@ from omr.whole_note_retry import (
     accept_whole_note_retry,
     retry_is_eligible as whole_note_retry_is_eligible,
 )
+from omr.wedge_retry import (
+    accept_wedge_retry,
+    detect_wedge_export_loss,
+    prepare_wedge_retry,
+    recovery_region_constant,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,12 +35,19 @@ class AudiverisProcessor:
         audiveris_executable: Optional[Path] = None,
         max_concurrent_conversions: Optional[int] = None,
         process_timeout_seconds: Optional[float] = None,
+        audiveris_recovery_executable: Optional[Path] = None,
     ):
         configured_executable = os.getenv(
             "AUDIVERIS_EXECUTABLE", "/opt/audiveris/bin/Audiveris"
         )
         self.audiveris_executable = Path(
             audiveris_executable or configured_executable
+        )
+        self.audiveris_recovery_executable = Path(
+            audiveris_recovery_executable or os.getenv(
+                'AUDIVERIS_RECOVERY_EXECUTABLE',
+                '/opt/clairkeys-audiveris-recovery/bin/Audiveris',
+            )
         )
         concurrency = max_concurrent_conversions
         if concurrency is None:
@@ -162,8 +175,12 @@ class AudiverisProcessor:
             meter_result = await self._maybe_retry_meter(
                 musicxml_path, pdf_path, output_dir, deadline
             )
-            return await self._maybe_retry_whole_notes(
+            whole_note_result = await self._maybe_retry_whole_notes(
                 meter_result, pdf_path, output_dir, deadline
+            )
+            music_family = 'Leland' if whole_note_result != meter_result else None
+            return await self._maybe_retry_wedge(
+                whole_note_result, pdf_path, output_dir, deadline, music_family
             )
             
         except Exception as e:
@@ -240,6 +257,7 @@ class AudiverisProcessor:
         source = output_dir / f'{pdf_path.stem}.omr'
         if monotonic() >= deadline:
             return original
+
         try:
             converter = MusicXMLToClairKeysConverter()
             before = converter._parse_musicxml(original).getroot()
@@ -296,6 +314,116 @@ class AudiverisProcessor:
                 'Whole-note retry unavailable (%s); retaining first result',
                 type(error).__name__,
             )
+            return original
+
+    async def _maybe_retry_wedge(
+        self, original: Path, pdf_path: Path, output_dir: Path, deadline: float,
+        music_family: Optional[str] = None,
+    ) -> Path:
+        """Retry only a selected result with the D-054 export-loss signature.
+
+        The first result and graph are opened read-only. Both optional JVMs run
+        sequentially while ``process_pdf`` owns the existing semaphore and share
+        its original deadline. Any ambiguity returns the selected result.
+        """
+        source = original.with_suffix('.omr')
+        if monotonic() >= deadline or not source.is_file():
+            return original
+        try:
+            converter = MusicXMLToClairKeysConverter()
+            before = converter._parse_musicxml(original).getroot()
+            trigger = detect_wedge_export_loss(before, source)
+            if trigger is None:
+                return original
+            region_constant = recovery_region_constant(source, trigger)
+            if region_constant is None:
+                return original
+            retry_dir = Path(tempfile.mkdtemp(prefix='wedge-retry-', dir=output_dir))
+            symbols_dir = retry_dir / 'symbols'
+            symbols_dir.mkdir()
+            command = [
+                str(self.audiveris_recovery_executable), '-batch', '-step', 'SYMBOLS', '-save',
+            ]
+            if music_family:
+                command.extend((
+                    '-constant',
+                    f'org.audiveris.omr.ui.symbol.MusicFont.defaultMusicFamily={music_family}',
+                ))
+            command.extend(('-constant', region_constant,
+                            '-output', str(symbols_dir), '--', str(pdf_path)))
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                return original
+            logger.info('Running isolated wedge candidate for missing measure %s',
+                        trigger.measure_number)
+            process = await asyncio.create_subprocess_exec(
+                *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+                cwd=symbols_dir,
+            )
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                await self._kill_and_wait(process)
+                return original
+            await self._communicate_with_timeout(process, remaining)
+            if process.returncode != 0:
+                logger.warning('Wedge region candidate exited %s; retaining selected result',
+                               process.returncode)
+                return original
+            symbol_graphs = sorted(symbols_dir.glob('*.omr'))
+            if len(symbol_graphs) != 1 or monotonic() >= deadline:
+                return original
+            page_dir = retry_dir / 'page'
+            page_dir.mkdir()
+            prepared = page_dir / symbol_graphs[0].name
+            evidence = prepare_wedge_retry(symbol_graphs[0], source, prepared, trigger)
+            if evidence is None:
+                return original
+            command = [
+                str(self.audiveris_executable), '-batch', '-step', 'PAGE', '-save', '-export',
+            ]
+            if music_family:
+                command.extend((
+                    '-constant',
+                    f'org.audiveris.omr.ui.symbol.MusicFont.defaultMusicFamily={music_family}',
+                ))
+            command.extend(('-output', str(page_dir), '--', str(prepared)))
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                return original
+            process = await asyncio.create_subprocess_exec(
+                *command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+                cwd=page_dir,
+            )
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                await self._kill_and_wait(process)
+                return original
+            await self._communicate_with_timeout(process, remaining)
+            if process.returncode != 0:
+                logger.warning('Wedge PAGE candidate exited %s; retaining selected result',
+                               process.returncode)
+                return original
+            outputs = sorted(page_dir.glob('*.mxl'))
+            if not outputs:
+                outputs = sorted(page_dir.glob('*.xml'))
+            graphs = sorted(page_dir.glob('*.omr'))
+            if len(outputs) != 1 or len(graphs) != 1 or monotonic() >= deadline:
+                return original
+            candidate = converter._parse_musicxml(outputs[0]).getroot()
+            if not accept_wedge_retry(before, candidate, source, graphs[0], evidence):
+                logger.warning(
+                    'Wedge retry failed source/event/direction/slur guards; retaining selected result'
+                )
+                return original
+            if monotonic() >= deadline:
+                return original
+            logger.info('Selected native source-backed wedge recovery')
+            return outputs[0]
+        except asyncio.CancelledError:
+            raise
+        except Exception as error:
+            logger.warning('Wedge retry unavailable (%s); retaining selected result',
+                           type(error).__name__)
             return original
     
     async def validate_audiveris_installation(self) -> bool:

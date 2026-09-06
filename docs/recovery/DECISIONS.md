@@ -2045,3 +2045,70 @@
   근거일 뿐 분류기 결과가 아니며, 그것만으로 그래프에 inter를 넣지 않는다.
 - Related: D-048; D-049; D-051; D-052; OMR-Q3-wedge-export-integrity;
   local-test-data/results/wedge-integrity
+
+## D-054: 실제 null-time wedge로 마디가 빠진 선택 결과만 source-backed 후보 재인식을 허용한다
+
+- Date: 2026-09-06
+- Status: Implemented and native-validated candidate; PR/CI review and delivery approval remain
+- Context: 순서가 보존된 native checkpoint에서 대상 8분쉼표는 SYMBOLS가 만든 뒤 LINKS가 지웠다.
+  그 rest/rest-chord만 엔진의 기존 `frozen` 보호로 보존하면 마디21은 13개 이벤트를 모두 export하지만
+  인쇄 참조 동시 일치는 9/13이다. 나머지4개는 LEDGERS가 source ink에 있는 첫 ledger를 만들지 못해
+  HEADS가 한 칸 높은 저등급 머리를 만들고, 남은 ink tail이 false augmentation dot으로 연결되는 별도
+  연쇄다. 같은 연쇄가 이미 export되는 마디20에도 있다. `minLedgerLengthLow` 실험은 target ledger를
+  복구하지 못했고 다른 ledger만 늘렸으며, Satie에는 rhythm-failure 안의 purged-rest 후보가4개라서
+  rhythm failure나 rest profile만으로 동작시키는 정책은 너무 넓다.
+- Decision:
+  1. 이미 선택된 5.11.0 결과의 MusicXML에서 실제 번호 공백이 있고, 같은 namespaced
+     `(sheet, system, stack)`의 graph measure에 voice가 주장하지 않은 chord를 endpoint로 둔 wedge가
+     있을 때만 후보 경로를 시작한다. 여러 movement, 모호한 번호 매핑, 중복 ID, 여러 원인 stack,
+     지원 밖 part/staff/page 구조는 원본을 그대로 반환한다. 단순 rhythm warning이나 마디 공백만으로
+     시작하지 않는다.
+  2. 후보는 기존 semaphore와 최초 deadline 안의 별도 임시 디렉터리에서 같은 source PDF와 선택 결과의
+     music-font 조건으로만 만든다. normal pipeline, meter retry, whole-note retry의 명령과 결과는 바꾸지
+     않는다. 실패·timeout·취소 외 모든 모호성은 원본 선택 결과로 복귀하고, 취소는 전파한다.
+  3. Native trace에서 target38x7 Section/filament는 stock construction 범위 안에서 생성되고 lookup의
+     Min/MaxThickness·Length·Convexity·Straight·Pitch check를 모두 통과했다. 제거 지점은
+     `LedgersPostAnalysis`: delta21.5는 sheet2 허용[19..24] 안이지만 exact height7은 통계 상한6보다
+     1px 커서 `HEIGHT`로 제거된다. 따라서 factory/suite cap 완화는 채택하지 않는다. 별도 recovery
+     executable은 stock factory와 suite를 그대로 쓰고, 선택 결과와 BINARY에서 동적으로 계산한
+     namespaced rectangle 안에서 delta가 정상이며 유일한 discard 사유가 upper `HEIGHT`이고
+     `floor(height) == maxHeight + 1`인 ledger만 post-analysis 제거에서 보존한다. region이 없으면 원래
+     post-analysis와 동일하다. head·pitch·dot·note·voice·timing node와 전역 threshold는 바꾸지 않는다.
+  4. SYMBOLS가 실제로 만든 뒤 선택 graph에서 사라진 rest 중 target stack 안에서 기하학적으로 유일하고,
+     같은 sheet에서 엔진이 받아들인 동일 shape의 크기·staff pitch profile에 드는 항목만 그 rest-chord와
+     함께 사본에서 `frozen=true`로 보존한다. inter, note, time, voice, pitch, dot를 직접 만들거나 고치지
+     않는다.
+  5. native 후보가 추가로 바꿀 수 있는 기존 마디는 target과 같은 source-backed ledger-defect signature를
+     독립적으로 만족하는 stack뿐이다. signature는 BINARY의 theoretical ledger ordinate를 가로지르는
+     foreground run, 같은 staff의 accepted-ledger normalized geometry, 저등급/abnormal head와 연결된
+     augmentation, baseline의 ledger 부재, 같은 sheet·ledger index의 accepted-ledger normalized geometry,
+     후보가 만든 image-glyph-backed ledger와 native head 이동,
+     false dot의 native 소멸을 모두 요구한다. 마디 번호·좌표·제목·고정 개수로 선택하지 않는다.
+  6. 후보 채택은 모든 기존 마디 보존, 범위 밖 마디의 pitched/rest event·voice·tie·direction·tempo·meter
+     동일성, slur endpoint pairing 동일성, 범위 안의 note-count 보존과 meter 거리 개선, 누락 마디의
+     기존 graph head만 export됨, source-backed ledger/rest 변화 밖의 graph inter count·shape·pitch·staff,
+     primitive curve/median, relation 종류와 endpoint, assigned/free live-glyph ink 동일성, D-052 whole-note
+     구조 보존을 요구한다. stock 반복에서도 달라지는 미참조 glyph cache와 MusicXML layout 좌표·source
+     path·encoding date, subpixel bounds/context-grade 및 관계의 재계산된 거리/grade는 musical equality로
+     쓰지 않는다. slur 번호 재생성은 endpoint pairing이 같을 때만 동등하다. 하나라도 증명하지 못하면
+     원본을 반환한다.
+     Source-confirmed 기존 defect stack의 direction cursor는 payload·staff·explicit offset이 같고 old/new
+     양쪽에서 동일 staff·pitch·순번의 native chord onset에 결합될 때만 함께 이동할 수 있다. Love20에서
+     이 규칙으로 확인된 hairpin2.5→3.5와 pedal release3.0 이외의 임의 direction retiming은 허용하지 않는다.
+  7. Love의 phase 완료는 인쇄 참조 13개 전부의 MIDI/staff/onset/duration 동시 일치와 기존 전 마디 및
+     Satie/good-Satie/Always의 비회귀를 native 실행으로 확인한 뒤에만 주장한다. 코드·fixture 통과나
+     9/13 rest-only 결과만으로 완료하지 않는다.
+- Rejected: 모든 purged rest 또는 rhythm-failure stack을 보존 | Satie에서 같은 폭의 후보4개가 발생한다.
+- Rejected: ledger 길이나 두께 상수를 normal pipeline 또는 candidate factory/suite에 적용 | target construction은
+  이미 성공하며 실제 제거는 post-analysis의 1px height quantization 경계다.
+- Rejected: native ledger를 포함해 선택 graph XML에 inter를 복사하거나 note, timing, voice, pitch,
+  false dot를 직접 덮어쓰기 | engine lifecycle과 source recognition을 우회한다.
+- Constraint: 선택 결과 원본, source PDF, normal controls와 기존 retry 결과는 그대로 보존한다. production,
+  merge, rollout은 별도 명시적 승인 없이는 바꾸지 않는다.
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 실제 native 13/13과 control preservation 전에는 thickness 후보를 일반 교정으로 표현하거나
+  phase completion을 낮추지 않는다. stack ID는 sheet/system namespace 없이 비교하지 않는다.
+- Related: D-048; D-052; D-053; OMR-Q3-wedge-export-integrity;
+  validation/2026-09-06-wedge-native-resume.md

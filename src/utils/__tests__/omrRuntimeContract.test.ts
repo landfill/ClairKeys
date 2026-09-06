@@ -14,6 +14,9 @@ describe('OMR processor and recognition evaluation contracts', () => {
     'test_time_numeral.py',
     'test_whole_note_retry.py',
     'test_whole_note_retry_runtime.py',
+    'test_wedge_reference.py',
+    'test_wedge_retry.py',
+    'test_wedge_retry_runtime.py',
   ])('passes %s', (suite) => {
     // unittest discovery exits successfully even when a named suite is absent.
     expect(existsSync(path.join(OMR_DIR, 'tests', suite))).toBe(true)

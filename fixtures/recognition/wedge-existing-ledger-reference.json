@@ -1,0 +1,31 @@
+{
+  "source": "Love Affair Piano Solo, printed measure 20 (independent 2026-09-06 source read)",
+  "sourcePdfSha256": "acdd4ee03f8da75493491f677519dbce4fecf0275b106caf268fa6899ea34253",
+  "timeSignature": "4/4",
+  "measures": [
+    {
+      "number": 20,
+      "quarterLength": 4,
+      "restEvents": [
+        {"staff": 1, "onset": 2, "duration": 0.5}
+      ],
+      "pitchedEvents": [
+        {"midi": 61, "staff": 1, "onset": 0, "duration": 2},
+        {"midi": 71, "staff": 1, "onset": 0, "duration": 2},
+        {"midi": 69, "staff": 1, "onset": 2.5, "duration": 0.5},
+        {"midi": 78, "staff": 1, "onset": 2.5, "duration": 0.5},
+        {"midi": 69, "staff": 1, "onset": 3, "duration": 0.5},
+        {"midi": 78, "staff": 1, "onset": 3, "duration": 0.5},
+        {"midi": 73, "staff": 1, "onset": 3.5, "duration": 0.5},
+        {"midi": 76, "staff": 1, "onset": 3.5, "duration": 0.5},
+        {"midi": 40, "staff": 2, "onset": 0, "duration": 0.5},
+        {"midi": 49, "staff": 2, "onset": 0.5, "duration": 0.5},
+        {"midi": 52, "staff": 2, "onset": 1, "duration": 0.5},
+        {"midi": 57, "staff": 2, "onset": 1.5, "duration": 0.5},
+        {"midi": 59, "staff": 2, "onset": 2, "duration": 0.5},
+        {"midi": 61, "staff": 2, "onset": 2.5, "duration": 0.5},
+        {"midi": 57, "staff": 2, "onset": 3, "duration": 1}
+      ]
+    }
+  ]
+}

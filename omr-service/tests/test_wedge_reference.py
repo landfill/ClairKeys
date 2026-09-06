@@ -10,6 +10,8 @@ class WedgeReferenceTests(unittest.TestCase):
     def setUp(self):
         self.fixtures = Path(__file__).resolve().parents[2] / 'fixtures' / 'recognition'
         self.reference = json.loads((self.fixtures / 'wedge-reference.json').read_text())
+        self.existing_reference = json.loads(
+            (self.fixtures / 'wedge-existing-ledger-reference.json').read_text())
 
     def test_baseline_failure_contract(self):
         # The baseline candidate lacks measure 21 but has measure 22.
@@ -46,6 +48,17 @@ class WedgeReferenceTests(unittest.TestCase):
             'acdd4ee03f8da75493491f677519dbce4fecf0275b106caf268fa6899ea34253',
             'Reference must be explicitly linked to Love Affair PDF'
         )
+
+    def test_existing_measure_reference_is_source_linked_and_complete(self):
+        self.assertEqual(self.existing_reference['sourcePdfSha256'],
+                         self.reference['sourcePdfSha256'])
+        measure = self.existing_reference['measures'][0]
+        self.assertEqual(measure['number'], 20)
+        self.assertEqual(measure['quarterLength'], 4)
+        self.assertEqual(len(measure['pitchedEvents']), 15)
+        self.assertEqual(measure['restEvents'], [
+            {'staff': 1, 'onset': 2, 'duration': 0.5},
+        ])
 
     def _mutate_positive_control_and_evaluate(self, mutate_fn):
         import copy

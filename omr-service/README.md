@@ -155,6 +155,11 @@ this service should not expose it.
 - Audiveris maximum Java heap: 3GB
 - Native Audiveris conversions per service instance: 1
 - Audiveris conversion timeout: 15 minutes
+- The normal executable remains `/opt/audiveris/bin/Audiveris`. A duplicated,
+  source-pinned `/opt/clairkeys-audiveris-recovery/bin/Audiveris` installation
+  contains the region-scoped ledger post-analysis boundary used only after the
+  D-054 missing export/null-time-wedge trigger; unsupported or rejected candidates retain the
+  normal result. Its JDK25 compiler is build-only and is removed from the image.
 - Remaining memory is reserved for Python, native OCR libraries, and the OS
 
 The service runs on a VM with **15GiB**, so the concurrency limit of 1 is

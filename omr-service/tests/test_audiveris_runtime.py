@@ -41,6 +41,13 @@ class HangingProcess:
 
 
 class AudiverisProcessorTests(unittest.TestCase):
+    def test_existing_positional_constructor_contract_is_preserved(self):
+        processor = AudiverisProcessor(Path('/tmp/stock-audiveris'), 2, 3)
+
+        self.assertEqual(processor.audiveris_executable, Path('/tmp/stock-audiveris'))
+        self.assertEqual(processor._conversion_slots._value, 2)
+        self.assertEqual(processor.process_timeout_seconds, 3)
+
     def test_native_launcher_receives_output_folder_and_returns_mxl(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             temp_dir = Path(temporary_directory)
@@ -256,7 +263,35 @@ class DeploymentStaticContractTests(unittest.TestCase):
         self.assertIn("AUDIVERIS_TIMEOUT_SECONDS=900", dockerfile)
         self.assertIn("grep -Fqx 'java-options=-Xmx3G'", dockerfile)
         self.assertGreaterEqual(dockerfile.count("--no-install-recommends"), 2)
-        self.assertNotIn("openjdk", dockerfile.lower())
+        self.assertNotRegex(dockerfile.lower(), r"apt-get install[^\n]*openjdk")
+        self.assertIn("rm -rf /tmp/jdk25", dockerfile)
+
+    def test_container_builds_an_isolated_region_recovery_engine(self):
+        dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
+        patch_file = (
+            OMR_SERVICE_ROOT / "audiveris-patches/0001-region-scoped-ledger-recovery.patch"
+        )
+
+        self.assertTrue(patch_file.is_file())
+        self.assertIn(
+            "555ce0821e4fe175ea50d54518cd6fbece9663c1998de529bc6ce429534457df",
+            dockerfile,
+        )
+        self.assertIn(
+            "81202a3d8b10912c132a8340d3de6d6a70782d39cd15e0972410a95212f46f3c",
+            dockerfile,
+        )
+        self.assertIn("cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery", dockerfile)
+        self.assertIn("/opt/clairkeys-audiveris-recovery/bin/Audiveris -version", dockerfile)
+        checksum = dockerfile.index('echo "${LEDGERS_POST_ANALYSIS_SHA256}')
+        normalize = dockerfile.index("sed -i 's/\\r$//'", checksum)
+        apply_patch = dockerfile.index('patch --directory=/tmp/audiveris-source', normalize)
+        self.assertLess(checksum, normalize)
+        self.assertLess(normalize, apply_patch)
+        self.assertIn(
+            'Math.floor(info.height) == maxHeight + 1',
+            patch_file.read_text(encoding="utf-8"),
+        )
 
     def test_container_replaces_english_data_with_checksum_pinned_legacy_model(self):
         dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
