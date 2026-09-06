@@ -14,6 +14,10 @@ from time import monotonic
 from omr.converter import MusicXMLToClairKeysConverter
 from omr.meter_retry import accept_meter_retry, prepare_meter_retry, retry_is_eligible
 from omr.time_numeral import classify_time_numeral
+from omr.whole_note_retry import (
+    accept_whole_note_retry,
+    retry_is_eligible as whole_note_retry_is_eligible,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +159,12 @@ class AudiverisProcessor:
             musicxml_path = output_files[0]
             
             logger.info(f"Successfully generated MusicXML: {musicxml_path}")
-            return await self._maybe_retry_meter(musicxml_path, pdf_path, output_dir, deadline)
+            meter_result = await self._maybe_retry_meter(
+                musicxml_path, pdf_path, output_dir, deadline
+            )
+            return await self._maybe_retry_whole_notes(
+                meter_result, pdf_path, output_dir, deadline
+            )
             
         except Exception as e:
             logger.error(f"Error in Audiveris processing: {str(e)}")
@@ -217,6 +226,76 @@ class AudiverisProcessor:
             # Diagnostics only; PDF/image checkpoints stay inside the existing
             # request temp tree and are removed by the service's normal cleanup.
             logger.warning('Meter retry unavailable (%s); retaining first result', type(error).__name__)
+            return original
+
+    async def _maybe_retry_whole_notes(
+        self, original: Path, pdf_path: Path, output_dir: Path, deadline: float
+    ) -> Path:
+        """Retry one guarded 4/4 piano with Leland inside the first deadline.
+
+        This method is called while ``process_pdf`` still owns the conversion
+        semaphore.  The original PDF and first XML/OMR stay untouched, and an
+        unsupported or rejected candidate simply returns the first result.
+        """
+        source = output_dir / f'{pdf_path.stem}.omr'
+        if monotonic() >= deadline:
+            return original
+        try:
+            converter = MusicXMLToClairKeysConverter()
+            before = converter._parse_musicxml(original).getroot()
+            if not whole_note_retry_is_eligible(before, source):
+                return original
+            retry_dir = Path(tempfile.mkdtemp(prefix='whole-note-retry-', dir=output_dir))
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                return original
+            logger.info('Retrying guarded whole-note recognition with the Leland music template')
+            process = await asyncio.create_subprocess_exec(
+                str(self.audiveris_executable), '-batch', '-export',
+                '-constant',
+                'org.audiveris.omr.ui.symbol.MusicFont.defaultMusicFamily=Leland',
+                '-output', str(retry_dir), '--', str(pdf_path),
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+                cwd=retry_dir,
+            )
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                await self._kill_and_wait(process)
+                return original
+            await self._communicate_with_timeout(process, remaining)
+            if process.returncode != 0:
+                logger.warning(
+                    'Whole-note retry exited %s; retaining first recognition result',
+                    process.returncode,
+                )
+                return original
+            outputs = sorted(retry_dir.glob('*.mxl'))
+            if not outputs:
+                outputs = sorted(retry_dir.glob('*.xml'))
+            graphs = sorted(retry_dir.glob('*.omr'))
+            if len(outputs) != 1 or len(graphs) != 1:
+                return original
+            candidate = converter._parse_musicxml(outputs[0]).getroot()
+            if monotonic() >= deadline:
+                return original
+            if not accept_whole_note_retry(before, candidate, graphs[0]):
+                logger.warning(
+                    'Whole-note retry failed event/metadata/graph guards; retaining first result'
+                )
+                return original
+            if monotonic() >= deadline:
+                return original
+            logger.info(
+                'Selected graph-backed whole-note recovery; other recognition defects may persist'
+            )
+            return outputs[0]
+        except asyncio.CancelledError:
+            raise
+        except Exception as error:
+            logger.warning(
+                'Whole-note retry unavailable (%s); retaining first result',
+                type(error).__name__,
+            )
             return original
     
     async def validate_audiveris_installation(self) -> bool:
