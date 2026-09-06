@@ -2,6 +2,21 @@
 
 Last updated: 2026-09-06 KST
 
+## PR144 merged, deployed and live-API verified (2026-09-06)
+
+- Approved mergeb9d3ac6 deployed as exact image d7d6344bbc1331324b8b14e7a62a4de6a3f5d22a62e908503773edfeac106c8a.
+  Current/running/healthy agree; restart exit0, health200 and unauthorized process401. Rollback1aa8c71
+  image42482e26…d09e retained. All six merge-commit checks PASS; image tests104 passed/3 explained skips.
+- Actual live API Love job a7ca14e6-7260-44ab-b546-ac6c4840639b completed86.912s:418 notes,119.25s,
+  exact note/duration equality with the validated whole-note recovery. Only title/generated metadata
+  differ. No storage/library writes. [Final deployment evidence](validation/2026-09-06-whole-note-deployment.md).
+- Service removed its job files; VM analysis PDF staging copy removed after collection/hash check.
+  User-local original/results remain Git-excluded. Historical processing files and user settings untouched.
+  Both merged feature tips contained but branches retained under dirty-worktree rule.
+- Delivery approval is fulfilled. OMR-Q3 remains IN_PROGRESS; next source correction is the independent
+  printed21 wedge-export exception, then unresolved tempo/RH ties and other musical accuracy. No stored
+  score migration; re-upload needed to use the new engine path for an old score.
+
 ## Approved PR144 image is live and healthy; real API smoke underway (2026-09-06)
 
 - Exact mergeb9d3ac6 image d7d6344b…106c8a built and passed104 image-internal tests/3 explained

@@ -7,6 +7,9 @@ Depends on: source references and retained graphs; no dependency on OMR-Q2
 
 - 2026-09-06: PR144's bounded whole-note retry merged with explicit approval as b9d3ac6. Exact-image
   deployment underway. Phase remains IN_PROGRESS: independent21 exporter loss, tempo and RH ties remain.
+- 2026-09-06: Approved deployment completed, exact image d7d6344b…106c8a healthy. Live API Love418 notes
+  matches validated recovery exactly; merge-commit checks passed. No stored-score rewrite. Next:21 exporter
+  exception and remaining tempo/RH-tie correctness, not another rollout of the same whole-note fix.
 
 ## Objective
 

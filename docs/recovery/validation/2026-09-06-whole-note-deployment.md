@@ -59,3 +59,31 @@ Ran existing test_omr_api.py inside the live container (no module overlay), read
 only internally; POST /process accepted200, job a7ca14e6-7260-44ab-b546-ac6c4840639b.
 No callback/user/sheet IDs supplied, so no library/storage writes. Completion/equality/cleanup pending.
 The helper emitted a non-failing requests dependency-version warning; the API request itself succeeded.
+
+## Live result and completion
+
+Live API job a7ca14e6-7260-44ab-b546-ac6c4840639b completed in86.912s. Early /result409 correctly
+became200; status payloads did not contain the animation;87 polls, maximum observed131.359ms.
+Result418 notes/duration119.25/reference60/keyE/tempo unknown, with the known measure20 overflow.
+Every note dictionary and total duration exactly equal the validated wrapper-final-love result.
+Only generated_at, title and metadata.title differ because the live request used a different label.
+This verifies the8 whole-note recovery result on the real deployed service, not an overlaid module.
+
+Actual image code hashes equal local merged sources:
+
+- audiveris.py: e71a88cb40a8ab055b740bbdbb23a3ea93ee2a8ffa74685399dc4e2b2d830b98
+- whole_note_retry.py: 8826d279ad8e66b62b78454c04cdb1c0da881569054dca5305910417ec990f2c
+
+Service automatically removed its per-job processing directory. Collected live JSON/status/comparison
+under Git-excluded local-test-data/results/whole-note-deploy-2026-09-06/, then deleted only the VM
+analysis root's solo.pdf staging copy after its SHA256 check. Scoped find shows no PDF/OMR in that
+analysis root. User-original PDF and all previous local checkpoints remain untouched/recoverable.
+Historical processing directory was not deleted. No analysis JVM remains; service is healthy on the
+exact d7d6344b…106c8a image and rollback42482e26…d09e remains available. Deploy checkout clean.
+
+All six merge-b9d3ac6 post-merge checks PASS. Both local/remote feature tips remain contained after
+fresh fetch, but branch deletion is intentionally deferred for the existing user-owned settings change.
+
+Approved PR144 delivery is complete. OMR-Q3 stays IN_PROGRESS: printed21, numeric tempo, RH final
+ties and broader source accuracy are still unresolved. Existing stored scores were not changed;
+re-upload is required to apply new recognition to an old score. No full-score correctness claim.
