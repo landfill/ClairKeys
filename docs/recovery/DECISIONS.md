@@ -1927,3 +1927,53 @@
 - Confidence: high
 - Scope-risk: moderate
 - Related: OMR-Q1; validation/2026-09-06-multimodel-review-checkpoint.md
+
+## D-051: 음악적 누락 복구를 먼저 하고 자동 페이지 선별은 보류한다
+
+- Date: 2026-09-06
+- Status: User-directed work order; runtime correction policy not yet chosen
+- Context: 사용자는 앞선4번(온음표·마디·음가·붙임줄·템포·손 배정)을 최우선으로 하고, 조건부400dpi를
+  그다음으로 요청했다. 검증은 매 단계 병행한다. 비악보 페이지가 파싱 오류를 내는 것은 허용되며,
+  자동으로 페이지를 버리는 편의 기능은 필수 선행조건이 아니라는 방향을 승인했다.
+- Decision:
+  1. OMR-Q3의 Love Affair 온음표/마디 누락부터 검출 전·후·export 경계를 확인하고 실제 이벤트를 복구한다.
+  2. OMR-Q2의 자동 페이지 선별/제거 제안은 보류한다. 오선 탐지 실패를 비악보로 단정하거나 페이지를
+     조용히 제외하지 않는다. 필요한 오류는 확인된 실패 페이지/단계로 설명한다.
+  3. 조건부400dpi 재시도는 핵심 누락 복구 다음 순서이며, 특정 복구에 필요하면 통제 실험으로 증명한다.
+     모든 입력을 무조건 확대하지 않는다. 기존 JVM 동시성/시간/메모리 경계 유지.
+  4. 회귀는 각 수정 직후 세 곡으로 병행한다. 경고/메타데이터 개선만으로 음악적 인식 완료를 주장하지 않는다.
+- Constraint: D-048의 임의 마디 길이 보정 금지, D-045의 근거 없는 운지 지표 튜닝 금지 유지.
+- Confidence: high
+- Scope-risk: moderate
+- Related: OMR-Q3; user-approved order4→2 with3 concurrent and1 deferred
+
+## D-052: 빈 마지막 마디가 있는 4/4 피아노만 대체 템플릿으로 재인식하고 엄격히 검증한다
+
+- Date: 2026-09-06
+- Status: Candidate implementation decision; acceptance requires regression and PR review
+- Context: 같은 Love solo/300dpi에서 Bravura HEADS는 온음표0개, Leland HEADS/PAGE는8개다.
+  기존439개 raw pitched 이벤트는 마디별 pitch/staff/onset/duration이 모두 보존되고, 마지막31이
+  복원된다. 별도21 누락은 wedge timeOffset NPE다. Satie raw 이벤트는 동일하지만 Always의
+  비온음표 이벤트5개가 바뀌므로 전역 폰트 교체는 허용하지 않는다. Bravura stemLessBoost0.38은
+  온음표3개만 남아 동일 복구를 달성하지 못했다. 숫자 증가만으로 정확도를 판단하지 않는다.
+- Decision:
+  1. 초기 인식은 기존 Bravura 설정 그대로 둔다. 단일 part/두 표준 오선 피아노, 균일4/4,
+     현재 검증된1~2페이지, pinned5.11.0 완료 그래프에서 온음표가 없고 마지막 stack이 빈
+     CAUTIONARY인 경우에만 원본 PDF 전체를 Leland로 한 번 더 처리한다. 페이지 선택/삭제 없음.
+  2. 동일 semaphore와 원래 deadline 안에서 순차 실행하고 결과는 별도 하위 임시 폴더에 둔다.
+     실패/시간 초과/모호한 XML/지원 밖 구조는 원본 결과를 보존한다. 설정은 JVM CLI 한정이다.
+  3. 후보는 기존 모든 마디와 pitched/rest raw 이벤트의 staff/voice/onset/duration/pitch를 보존해야 한다.
+     기존 조표·박자·템포와 기존 타이도 보존한다. 추가 pitched 이벤트는 실제 재인식된 온음표만
+     허용하며, onset0/duration4이고 이미지 glyph가 있는 WHOLE_NOTE 그래프와 개수가 맞아야 한다.
+  4. 새 마디는 기존 마지막 번호 다음의 마지막 한 마디만 허용한다. 양쪽 staff에 온음표가 있고
+     길이가4여야 한다. 새 타이는 새 온음표와 시간/음높이/성부가 이어지는 경계의 짝만 허용한다.
+     그 외 음가/음높이/템포/기존 타이 변경이나 새 비온음표는 거절한다. XML을 직접 보정하지 않는다.
+  5. 단일 사례의 분류기 결과가 전체 악보 정확도를 보증하지 않음을 기록한다. 실제 Love의8개
+     원본 온음표 참조 및 음가/오선, Satie/Always의 비회귀/재시도 생략, malformed/false candidate,
+     timeout/cancellation/deadline/concurrency를 회귀 검증한다. wedge21/템포/RH타이 문제는 별도다.
+- Rejected: 전역 Leland 교체 | Always의 다른 이벤트도 달라져 변화 범위를 보증할 수 없다.
+- Rejected: stemLessBoost 또는 거리 임계치 전역 완화 | 복구가 불완전하고 오탐 위험을 늘린다.
+- Rejected: 비어 보이는 마디에 음표/시간을 삽입 | 실제 이미지 인식을 우회하고 D-048에 위배된다.
+- Confidence: medium
+- Scope-risk: moderate
+- Related: D-051; OMR-Q3; local-test-data/results/whole-note-integrity
