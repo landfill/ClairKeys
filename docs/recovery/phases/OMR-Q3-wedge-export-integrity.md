@@ -1,6 +1,6 @@
 # OMR-Q3 (wedge) — Stop the exporter from deleting a recognized measure
 
-Status: `IN_PROGRESS`
+Status: `MERGED`
 Depends on: OMR-Q3 whole-note recovery (merged as `b9d3ac6`, deployed image `d7d6344b…106c8a`)
 Scope note: this is the independent printed-measure-21 loss that
 [OMR-Q3](OMR-Q3-whole-note-integrity.md) explicitly separated from the whole-note/cautionary chain.
@@ -14,6 +14,55 @@ Decision records: `D-053` and `D-054` in [DECISIONS.md](../DECISIONS.md).
   Baseline measured against AGY's reference: measure 21 scores 0 of 13, measure 22 scores 10 of 10.
   Diagnostic scripts prepared; the native run is blocked pending user approval of the VM scope. No
   production repair is implemented and no correction policy is approved.
+- 2026-09-06: Native checkpoints proved that SYMBOLS recognizes the target eighth rest and LINKS
+  removes it. Preserving that engine-created rest restores 13 events and 9 exact matches while
+  leaving every other measure unchanged in the same lineage. The four remaining mismatches share
+  a missing-ledger/false-dot chain already present in measure 20; ledger-length relaxation did not
+  recover it. D-054 therefore authorizes a fail-closed candidate implementation triggered only by
+  an actual missing exported measure with a null-time wedge endpoint. Its rest and ledger changes
+  must be source/engine-backed, and native Love/control evidence is still required before the
+  candidate may be accepted or this phase may claim 13 of 13.
+- 2026-09-06: A first PDF-wide thickness candidate recovered printed measure 21 at 13/13 and
+  measure 20 at 15/15 pitched matches, but still omitted measure 20's printed eighth rest and also
+  changed pitched events in eight unrelated existing
+  measures and changed measure 19's length, so it was correctly rejected. The implementation now
+  applies a pinned native post-analysis variant only inside graph/BINARY-derived recovery
+  rectangles; construction and check suites stay stock and no graph inter is copied. Targeted
+  native validation is pending; the 13/13 result proves mechanism efficacy, not candidate safety
+  or phase completion.
+- 2026-09-06: Native region patch v1 (factory cap only) and v2 (factory plus active
+  MaxThicknessCheck suite) both retained the two rests but left the target ledgers absent and
+  remained 9/13. The weight-zero check hypothesis was therefore insufficient, not confirmed.
+  Candidate-only native tracing of parsed regions, Section/core/filament bounds and lookup impacts
+  is the next implementation substage; no further cap or predicate change is allowed without that
+  measured rejection point.
+- 2026-09-06: DEBUG post-analysis evidence identifies the exact removal: target ledgers have
+  delta21.5 inside[19..24], height7 against[2..6], and are discarded only as upper `HEIGHT`.
+  The correction is narrowed again: keep stock construction/check suites and exempt only a
+  graph/BINARY-derived region ledger whose delta passes, whose sole failure is upper height, and
+  whose floored height is exactly one pixel above the computed maximum. No global threshold moves.
+- 2026-09-06: The final native result is exact for printed21(13/13),22(10/10), and existing20
+  (15/15 pitched plus1/1 rest). Source review also confirms measure20's corrected hairpin endpoints
+  at2.5/3.5 and pedal release at3.0. Acceptance may admit those cursor moves only by matching the
+  unchanged direction payload/explicit offset to the same staff/pitch/ordinal native chord in the
+  old and corrected timelines; arbitrary in-scope direction retiming remains rejected.
+- 2026-09-06: The frozen final Python snapshot passed the actual full
+  `AudiverisProcessor.process_pdf` chain inside the final PostAnalysis-only image: it selected the
+  wedge candidate under concurrency1 and the original900s deadline, left no export-loss trigger,
+  and reproduced exact21(13/13),22(10/10),20(15/15 pitched plus1/1 rest), all four quarters.
+  Love/Satie/good-Satie/Always no-region native controls and retained-result no-trigger checks pass.
+  Phase stays `IN_PROGRESS` for review-ready PR, hosted CI/review and explicit delivery approval.
+
+- 2026-09-06: Final actual process_pdf selects recovery with21 13/13,20 15/15 plus its printed
+  rest,22 10/10; four no-region native controls and145 Python/977 Jest/type/lint/build checks pass.
+  Exact GNU patch/compile packaging is independently verified. Implementation is delivered in
+  PR145; CI/review and any later merge/deployment are tracked separately. All VM staging copies
+  are collected/hash-verified/removed; production unchanged.
+
+- 2026-09-06: User-approved PR145 merged as1edbceacdd13ef7947d7cf0a3dcc22bcc88b1c81 after
+  all PR checks and four review fixes passed. Local/remote main and both feature-tip ancestry
+  checks verified. Branch cleanup is blocked by preserved user-owned dirty settings/HANDOFF.
+  Production rollout is separate and was not performed; merge check-runs initially in progress.
 
 ## Objective
 

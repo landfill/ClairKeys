@@ -267,3 +267,15 @@ All hosted checks on f614245 pass, including both E2E jobs. CodeRabbit's latest 
 approval. Root independently verified the four fixes and resolved the corresponding four threads.
 The original four findings are all addressed; no unresolved actionable review remains at this
 checkpoint. Merge/rollout still require explicit PR145 approval.
+
+
+## Merge verification (2026-09-06)
+
+PR145 explicitly approved and merged as `1edbceacdd13ef7947d7cf0a3dcc22bcc88b1c81`.
+`git rev-parse main origin/main` returned that SHA for both refs. Both
+`git merge-base --is-ancestor codex/omr-wedge-measure-integrity main` and the equivalent command
+for `origin/codex/omr-wedge-measure-integrity` exited0. The implementation diff for omr-service,
+recognition fixtures and the CI inventory is empty between main and feature tip. All PR checks
+passed immediately before merge; initial merge-commit check-runs are still in progress.
+User-owned dirty settings/HANDOFF prevent branch deletion under the project contract; branches
+were retained. No production rollout was performed.

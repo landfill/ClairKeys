@@ -2,23 +2,21 @@
 
 Last updated: 2026-09-06 KST
 
-## Wedge recovery implemented and independently verified (2026-09-06)
+## PR145 merged; rollout remains separate (2026-09-06)
 
-- Codex gpt-5.6-sol/high implemented the correction at the user's request; root independently
-  reviewed code and verified actual engine/processor outputs. No Opus implementation or AGY
-  verification was used. Same checkout; user settings and pre-existing HANDOFF changes preserved.
-- Actual PDF processing selects source-backed recovery:21 13/13,20 15/15 plus its printed rest,
- 22 10/10, all exact4-quarter measures. Four no-region native controls pass;149 Python tests,
- 977 Jest tests, separate type/lint/build and the exact Dockerfile patch/compile path passed.
-- Implementation commits d35b14d/44dc0f7, review fix f614245 and PR145 deliver the guarded retry and native post-analysis
-  correction. Check [PR145 review log](reviews/PR-145.md) and GitHub for live CI/review/merge status;
-  [full validation](validation/2026-09-06-wedge-implementation.md) records hashes and negative checks.
-  All latest PR CI checks pass; four review findings were fixed and independently verified.
-  CodeRabbit skipped its second automatic review; root verified the final fixes manually.
-- User explicitly approved final VM validation and separately the17-file code commit/PR scope after
-  automatic-review blocks. Both approvals were fulfilled. All implementation VM staging inputs were
-  collected/hash-verified/removed; production remains unchanged and healthy. Merge/rollout of PR145
-  requires its own explicit approval. Broader OMR accuracy remains outside this wedge correction.
+- User explicitly approved PR145 merge. Rechecked exact head f614245, all hosted CI, mergeability
+  and all four resolved review threads; merged as `1edbceacdd13ef7947d7cf0a3dcc22bcc88b1c81`.
+- Remote and local main agree at the merge checkpoint; implementation files match the validated
+  feature tip. Both local and remote feature tips are ancestors of main. Post-merge checks started;
+  their initial observation showed no failure and they were still running.
+- Branch cleanup is blocked by preserved user-owned `.claude/settings.local.json` and pre-existing
+  HANDOFF edits. No local or remote work branch was deleted; the current checkout stays on the
+  feature branch with main fast-forwarded separately. Do not discard or commit those user edits.
+- Source-backed recovery is verified at21 13/13,20 15/15 plusrest,22 10/10, with149 Python tests,
+  prior977 Jest tests and current hosted CI/E2E passing. [Review/merge log](reviews/PR-145.md) and
+  [validation](validation/2026-09-06-wedge-implementation.md) retain exact evidence and hashes.
+- This approval covered merging PR145. Production OMR rollout was not requested or performed;
+  production remains on the earlier deployed version. Broader OMR accuracy remains separate.
 
 ## Native wedge cause measured; musical correction remains open (2026-09-06)
 
