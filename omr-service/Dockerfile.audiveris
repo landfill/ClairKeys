@@ -6,10 +6,15 @@ ARG AUDIVERIS_SHA256=ae714594f40e54b1a4951fc3f914f08ae38fe5d07b7f2283b1a904fdb6e
 ARG TESSDATA_REPOSITORY_URL=https://raw.githubusercontent.com/tesseract-ocr/tessdata
 ARG TESSDATA_TAG=4.1.0
 ARG TESSDATA_ENG_SHA256=daa0c97d651c19fba3b25e81317cd697e9908c8208090c94c3905381c23fc047
+ARG OPENJDK_25_URL=https://download.java.net/java/GA/jdk25.0.2/b1e0dfa218384cb9959bdcb897162d4e/10/GPL/openjdk-25.0.2_linux-x64_bin.tar.gz
+ARG OPENJDK_25_SHA256=555ce0821e4fe175ea50d54518cd6fbece9663c1998de529bc6ce429534457df
+ARG AUDIVERIS_SOURCE_COMMIT=9e1e55cd2746037d059345881c53e6a6754bffbd
+ARG LEDGERS_POST_ANALYSIS_SHA256=81202a3d8b10912c132a8340d3de6d6a70782d39cd15e0972410a95212f46f3c
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV AUDIVERIS_EXECUTABLE=/opt/audiveris/bin/Audiveris
+ENV AUDIVERIS_RECOVERY_EXECUTABLE=/opt/clairkeys-audiveris-recovery/bin/Audiveris
 ENV AUDIVERIS_MAX_CONCURRENCY=1
 ENV AUDIVERIS_TIMEOUT_SECONDS=900
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
@@ -40,6 +45,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     python3-dev \
     curl \
+    patch \
     unzip \
     libxml2-dev \
     libxslt1-dev \
@@ -69,6 +75,41 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && /opt/audiveris/bin/Audiveris -version \
     && rm -f "/tmp/${AUDIVERIS_DEB}" /tmp/eng.traineddata \
     && rm -rf /var/lib/apt/lists/*
+
+# Keep the official installation byte-identical for the normal path. The
+# alternate installation differs only by a pinned LedgersPostAnalysis class
+# whose one-pixel upper-height exception requires an explicit recovery region.
+COPY audiveris-patches/0001-region-scoped-ledger-recovery.patch /tmp/ledger-recovery.patch
+RUN mkdir -p \
+      /tmp/jdk25 \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger \
+      /tmp/ledger-classes \
+    && curl -fsSL "${OPENJDK_25_URL}" -o /tmp/openjdk25.tar.gz \
+    && echo "${OPENJDK_25_SHA256}  /tmp/openjdk25.tar.gz" | sha256sum -c - \
+    && curl -fsSL \
+      "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java" \
+      -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java \
+    && echo "${LEDGERS_POST_ANALYSIS_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java" \
+      | sha256sum -c - \
+    && sed -i 's/\r$//' \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java \
+    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace \
+      --input=/tmp/ledger-recovery.patch \
+    && tar -xzf /tmp/openjdk25.tar.gz -C /tmp/jdk25 --strip-components=1 \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' \
+      -cp '/opt/audiveris/lib/app/*' -d /tmp/ledger-classes \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java \
+    && cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery \
+    && /tmp/jdk25/bin/jar --update \
+      --file /opt/clairkeys-audiveris-recovery/lib/app/audiveris.jar \
+      -C /tmp/ledger-classes org/audiveris/omr/sheet/ledger \
+    && /tmp/jdk25/bin/jar --list \
+      --file /opt/clairkeys-audiveris-recovery/lib/app/audiveris.jar \
+      | grep -Fqx 'org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.class' \
+    && /opt/audiveris/bin/Audiveris -version \
+    && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
+    && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes \
+      /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch
 
 # Create working directory
 WORKDIR /app

@@ -1,0 +1,32 @@
+<sheet>
+  <page id="1">
+    <system id="1">
+      <stack id="1" left="10" right="109" duration="1"/>
+      <stack id="2" left="110" right="209" duration="5/4"><slot id="1" x-offset="20" time-offset="0"/></stack>
+      <stack id="3" left="210" right="309" duration="1"/>
+      <part id="1">
+        <staff id="1" left="10" right="309"><lines><line><point x="10" y="40"/><point x="309" y="40"/></line><line><point x="10" y="50"/><point x="309" y="50"/></line><line><point x="10" y="60"/><point x="309" y="60"/></line><line><point x="10" y="70"/><point x="309" y="70"/></line><line><point x="10" y="80"/><point x="309" y="80"/></line></lines></staff>
+        <staff id="2" left="10" right="309"><lines><line><point x="10" y="100"/><point x="309" y="100"/></line><line><point x="10" y="110"/><point x="309" y="110"/></line><line><point x="10" y="120"/><point x="309" y="120"/></line><line><point x="10" y="130"/><point x="309" y="130"/></line><line><point x="10" y="140"/><point x="309" y="140"/></line></lines></staff>
+        <measure id="1"/><measure id="2" abnormal="true"/><measure id="3"/>
+      </part>
+      <sig><inters>
+        <rest pitch="-0.5" shape="EIGHTH_REST" glyph="glyph-rest-ok" grade="0.70" staff="1" id="rest-ok"><bounds x="70" y="53" w="10" h="20"/></rest>
+        <rest-chord grade="0.70" staff="1" id="rest-chord-ok"><bounds x="70" y="53" w="10" h="20"/></rest-chord>
+        <rest pitch="-0.5" shape="EIGHTH_REST" glyph="glyph-rest-target" grade="0.36" staff="1" id="rest-target"><bounds x="150" y="53" w="10" h="20"/></rest>
+        <rest-chord grade="0.36" staff="1" id="rest-chord-target"><bounds x="150" y="53" w="10" h="20"/></rest-chord>
+        <rest pitch="-0.5" shape="QUARTER_REST" glyph="glyph-rest-other" grade="0.35" staff="1" id="rest-other"><bounds x="230" y="50" w="10" h="20"/></rest>
+        <rest-chord grade="0.35" staff="1" id="rest-chord-other"><bounds x="230" y="50" w="10" h="20"/></rest-chord>
+        </inters><relations>
+          <relation source="rest-chord-ok" target="rest-ok"><containment/></relation>
+          <relation source="rest-chord-target" target="rest-target"><containment/></relation>
+          <relation source="rest-chord-other" target="rest-other"><containment/></relation>
+        </relations>
+      </sig>
+    </system>
+  </page>
+  <glyph-index>
+    <glyph id="glyph-rest-ok"><run-table orientation="VERTICAL" width="10" height="20"><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs></run-table></glyph>
+    <glyph id="glyph-rest-target"><run-table orientation="VERTICAL" width="10" height="20"><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs></run-table></glyph>
+    <glyph id="glyph-rest-other"><run-table orientation="VERTICAL" width="10" height="20"><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs></run-table></glyph>
+  </glyph-index>
+</sheet>

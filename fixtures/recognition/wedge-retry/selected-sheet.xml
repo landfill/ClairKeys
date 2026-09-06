@@ -1,0 +1,51 @@
+<sheet>
+  <page id="1">
+    <system id="1">
+      <stack id="1" left="10" right="109" duration="1"/>
+      <stack id="2" left="110" right="209" duration="5/4"><slot id="1" x-offset="20" time-offset="0"/></stack>
+      <stack id="3" left="210" right="309" duration="1"/>
+      <part id="1">
+        <staff id="1" left="10" right="309"><lines><line><point x="10" y="40"/><point x="309" y="40"/></line><line><point x="10" y="50"/><point x="309" y="50"/></line><line><point x="10" y="60"/><point x="309" y="60"/></line><line><point x="10" y="70"/><point x="309" y="70"/></line><line><point x="10" y="80"/><point x="309" y="80"/></line></lines><header><clef>clef-g</clef></header><notes>head-ok</notes></staff>
+        <staff id="2" left="10" right="309"><lines><line><point x="10" y="100"/><point x="309" y="100"/></line><line><point x="10" y="110"/><point x="309" y="110"/></line><line><point x="10" y="120"/><point x="309" y="120"/></line><line><point x="10" y="130"/><point x="309" y="130"/></line><line><point x="10" y="140"/><point x="309" y="140"/></line></lines><header><clef>clef-f</clef></header><ledgers><ledgers-entry index="1">ledger-ok</ledgers-entry></ledgers><notes>head-ledger-ok head-bad</notes></staff>
+        <measure id="1"><head-chords>chord-ledger-ok</head-chords><voice id="1"><slots><entry><key>1</key><value status="BEGIN" chord="chord-ledger-ok"/></entry></slots></voice></measure>
+        <measure id="2" abnormal="true"><head-chords>chord-target chord-target-2</head-chords><voice id="1"/><voice id="5"/></measure>
+        <measure id="3"><head-chords>chord-ok</head-chords><voice id="1"><slots><entry><key>1</key><value status="BEGIN" chord="chord-ok"/></entry></slots></voice></measure>
+      </part>
+      <free-glyphs>glyph-free</free-glyphs>
+      <sig><inters>
+        <clef shape="G_CLEF" staff="1" id="clef-g"><bounds x="10" y="35" w="10" h="50"/></clef>
+        <clef shape="F_CLEF" staff="2" id="clef-f"><bounds x="10" y="95" w="10" h="50"/></clef>
+        <head pitch="6" shape="NOTEHEAD_BLACK" glyph="glyph-head-ledger-ok" grade="0.72" staff="2" id="head-ledger-ok"><bounds x="30" y="145" w="14" h="11"/></head>
+        <ledger thickness="3" shape="LEDGER" glyph="glyph-ledger-ok" grade="0.75" staff="2" id="ledger-ok"><bounds x="26" y="149" w="20" h="3"/><median><p1 x="26" y="150"/><p2 x="46" y="150"/></median></ledger>
+        <head pitch="5" shape="NOTEHEAD_BLACK" glyph="glyph-head-bad" grade="0.27" abnormal="true" staff="2" id="head-bad"><bounds x="130" y="142" w="12" h="11"/></head>
+        <head pitch="1" shape="NOTEHEAD_BLACK" glyph="glyph-head-target-2" grade="0.70" staff="1" id="head-target-2"><bounds x="165" y="65" w="12" h="11"/></head>
+        <augmentation-dot shape="AUGMENTATION_DOT" glyph="glyph-false-dot" grade="0.63" staff="2" id="false-dot"><bounds x="140" y="149" w="4" h="3"/></augmentation-dot>
+        <head-chord grade="0.27" staff="2" id="chord-target"><bounds x="130" y="142" w="14" h="11"/></head-chord>
+        <head-chord grade="0.40" staff="1" id="chord-target-2"><bounds x="165" y="65" w="12" h="11"/></head-chord>
+        <head-chord grade="0.72" staff="2" id="chord-ledger-ok"><bounds x="30" y="145" w="14" h="11"/></head-chord>
+        <head-chord grade="0.70" staff="1" id="chord-ok"><bounds x="230" y="65" w="12" h="11"/></head-chord>
+        <wedge shape="DIMINUENDO" id="wedge-target"><bounds x="125" y="55" w="55" h="8"/></wedge>
+        <rest pitch="-0.5" shape="EIGHTH_REST" glyph="glyph-rest-ok" grade="0.70" staff="1" id="rest-ok"><bounds x="70" y="53" w="10" h="20"/></rest>
+        <rest-chord grade="0.70" staff="1" id="rest-chord-ok"><bounds x="70" y="53" w="10" h="20"/></rest-chord>
+        </inters><relations>
+          <relation source="chord-target" target="wedge-target"><chord-wedge side="LEFT"/></relation>
+          <relation source="chord-target-2" target="wedge-target"><chord-wedge side="RIGHT"/></relation>
+          <relation source="false-dot" target="head-bad"><augmentation/></relation>
+          <relation source="chord-target" target="head-bad"><containment/></relation>
+          <relation source="chord-target-2" target="head-target-2"><containment/></relation>
+          <relation source="chord-ledger-ok" target="head-ledger-ok"><containment/></relation>
+          <relation source="rest-chord-ok" target="rest-ok"><containment/></relation>
+        </relations>
+      </sig>
+    </system>
+  </page>
+  <glyph-index>
+    <glyph groups="STUMP" id="glyph-head-ledger-ok"><run-table orientation="VERTICAL" width="14" height="11"><runs>3 5 3</runs><runs>2 7 2</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>2 7 2</runs><runs>3 5 3</runs><runs>11</runs><runs>11</runs><runs>11</runs><runs>11</runs></run-table></glyph>
+    <glyph id="glyph-ledger-ok"><run-table orientation="HORIZONTAL" width="20" height="3"><runs>20</runs><runs>20</runs><runs>20</runs></run-table></glyph>
+    <glyph id="glyph-head-bad"><run-table orientation="VERTICAL" width="12" height="11"><runs>3 5 3</runs><runs>2 7 2</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>2 7 2</runs><runs>3 5 3</runs><runs>11</runs><runs>11</runs><runs>11</runs></run-table></glyph>
+    <glyph id="glyph-head-target-2"><run-table orientation="VERTICAL" width="12" height="11"><runs>3 5 3</runs><runs>2 7 2</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>1 9 1</runs><runs>2 7 2</runs><runs>3 5 3</runs><runs>11</runs><runs>11</runs><runs>11</runs></run-table></glyph>
+    <glyph id="glyph-false-dot"><run-table orientation="HORIZONTAL" width="4" height="3"><runs>4</runs><runs>4</runs><runs>4</runs></run-table></glyph>
+    <glyph id="glyph-rest-ok"><run-table orientation="VERTICAL" width="10" height="20"><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs><runs>20</runs></run-table></glyph>
+    <glyph left="230" top="50" groups="SYMBOL" id="glyph-free"><run-table orientation="HORIZONTAL" width="10" height="3"><runs>10</runs><runs>10</runs><runs>10</runs></run-table></glyph>
+  </glyph-index>
+</sheet>

@@ -1,0 +1,43 @@
+{
+  "sourceIssue": "OMR-Q3",
+  "sourcePdfSha256": "acdd4ee03f8da75493491f677519dbce4fecf0275b106caf268fa6899ea34253",
+  "scope": "Visually read measures 21 and 22 only; raw pitched events before tie merging. Not a full-score ground truth.",
+  "timeSignature": "4/4",
+  "measures": [
+    {
+      "number": 21,
+      "quarterLength": 4.0,
+      "pitchedEvents": [
+        { "midi": 69, "staff": 1, "onset": 0.0, "duration": 2.0 },
+        { "midi": 64, "staff": 1, "onset": 0.0, "duration": 2.0 },
+        { "midi": 66, "staff": 1, "onset": 2.5, "duration": 0.5 },
+        { "midi": 69, "staff": 1, "onset": 2.5, "duration": 0.5 },
+        { "midi": 73, "staff": 1, "onset": 3.0, "duration": 0.5 },
+        { "midi": 76, "staff": 1, "onset": 3.0, "duration": 0.5 },
+        { "midi": 71, "staff": 1, "onset": 3.5, "duration": 0.5 },
+        { "midi": 75, "staff": 1, "onset": 3.5, "duration": 0.5 },
+        { "midi": 40, "staff": 2, "onset": 0.0, "duration": 0.5 },
+        { "midi": 49, "staff": 2, "onset": 0.5, "duration": 0.5 },
+        { "midi": 54, "staff": 2, "onset": 1.0, "duration": 0.5 },
+        { "midi": 57, "staff": 2, "onset": 1.5, "duration": 0.5 },
+        { "midi": 61, "staff": 2, "onset": 2.0, "duration": 2.0 }
+      ]
+    },
+    {
+      "number": 22,
+      "quarterLength": 4.0,
+      "pitchedEvents": [
+        { "midi": 68, "staff": 1, "onset": 0.0, "duration": 4.0 },
+        { "midi": 63, "staff": 1, "onset": 0.0, "duration": 4.0 },
+        { "midi": 40, "staff": 2, "onset": 0.0, "duration": 0.5 },
+        { "midi": 47, "staff": 2, "onset": 0.5, "duration": 0.5 },
+        { "midi": 56, "staff": 2, "onset": 1.0, "duration": 0.5 },
+        { "midi": 59, "staff": 2, "onset": 1.5, "duration": 0.5 },
+        { "midi": 66, "staff": 2, "onset": 2.0, "duration": 0.5 },
+        { "midi": 59, "staff": 2, "onset": 2.5, "duration": 0.5 },
+        { "midi": 56, "staff": 2, "onset": 3.0, "duration": 0.5 },
+        { "midi": 47, "staff": 2, "onset": 3.5, "duration": 0.5 }
+      ]
+    }
+  ]
+}

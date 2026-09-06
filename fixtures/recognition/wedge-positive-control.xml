@@ -1,0 +1,92 @@
+<score-partwise>
+  <part id="P1">
+    <measure number="21">
+      <attributes>
+        <divisions>2</divisions>
+        <time><beats>4</beats><beat-type>4</beat-type></time>
+        <staves>2</staves>
+      </attributes>
+      <!-- treble: half chord (A4, E4), rest 0.5, eighth chord (F#4, A4), eighth chord (C#5, E5), eighth chord (B4, D#5) -->
+      <note>
+        <pitch><step>A</step><octave>4</octave></pitch>
+        <duration>4</duration>
+        <staff>1</staff>
+      </note>
+      <note>
+        <chord/>
+        <pitch><step>E</step><octave>4</octave></pitch>
+        <duration>4</duration>
+        <staff>1</staff>
+      </note>
+      <note>
+        <rest/>
+        <duration>1</duration>
+        <staff>1</staff>
+      </note>
+      <note>
+        <pitch><step>F</step><alter>1</alter><octave>4</octave></pitch>
+        <duration>1</duration>
+        <staff>1</staff>
+      </note>
+      <note>
+        <chord/>
+        <pitch><step>A</step><octave>4</octave></pitch>
+        <duration>1</duration>
+        <staff>1</staff>
+      </note>
+      <note>
+        <pitch><step>C</step><alter>1</alter><octave>5</octave></pitch>
+        <duration>1</duration>
+        <staff>1</staff>
+      </note>
+      <note>
+        <chord/>
+        <pitch><step>E</step><octave>5</octave></pitch>
+        <duration>1</duration>
+        <staff>1</staff>
+      </note>
+      <note>
+        <pitch><step>B</step><octave>4</octave></pitch>
+        <duration>1</duration>
+        <staff>1</staff>
+      </note>
+      <note>
+        <chord/>
+        <pitch><step>D</step><alter>1</alter><octave>5</octave></pitch>
+        <duration>1</duration>
+        <staff>1</staff>
+      </note>
+      <backup><duration>8</duration></backup>
+      <!-- bass: E2(0.5), C#3(0.5), F#3(0.5), A3(0.5), C#4(2.0) -->
+      <note><pitch><step>E</step><octave>2</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>C</step><alter>1</alter><octave>3</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>F</step><alter>1</alter><octave>3</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>A</step><octave>3</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>C</step><alter>1</alter><octave>4</octave></pitch><duration>4</duration><staff>2</staff></note>
+    </measure>
+    <measure number="22">
+      <!-- treble: whole chord G#4, D#4 -->
+      <note>
+        <pitch><step>G</step><alter>1</alter><octave>4</octave></pitch>
+        <duration>8</duration>
+        <staff>1</staff>
+      </note>
+      <note>
+        <chord/>
+        <pitch><step>D</step><alter>1</alter><octave>4</octave></pitch>
+        <duration>8</duration>
+        <staff>1</staff>
+      </note>
+      <backup><duration>8</duration></backup>
+      <!-- bass: 8 eighth notes: E2, B2, G#3, B3, F#4, B3, G#3, B2 -->
+      <note><pitch><step>E</step><octave>2</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>B</step><octave>2</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>B</step><octave>3</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>F</step><alter>1</alter><octave>4</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>B</step><octave>3</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>G</step><alter>1</alter><octave>3</octave></pitch><duration>1</duration><staff>2</staff></note>
+      <note><pitch><step>B</step><octave>2</octave></pitch><duration>1</duration><staff>2</staff></note>
+    </measure>
+  </part>
+</score-partwise>

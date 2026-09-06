@@ -1,0 +1,82 @@
+diff --git a/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java b/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java
+index 8df6ce1..603916c 100644
+--- a/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java
+@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
++import java.awt.Rectangle;
+ import java.awt.geom.Line2D;
+ import java.awt.geom.Point2D;
+ import java.util.ArrayList;
+@@ -295,12 +296,57 @@ public class LedgersPostAnalysis
+                     minHeight,
+                     maxHeight);
+ 
+-            if (!dD.isBlank() || !hH.isBlank()) {
++            final boolean discard = !dD.isBlank() || !hH.isBlank();
++            final boolean retainRecovery = discard
++                    && info.ledger.getGlyph() != null
++                    && isRecovery(info)
++                    && dD.isBlank()
++                    && "HEIGHT".equals(hH)
++                    && ((int) Math.floor(info.height) == maxHeight + 1);
++
++            if (retainRecovery) {
++                logger.info(
++                        "Retaining source-backed ledger {} at one-pixel post-analysis boundary",
++                        info.ledger);
++            } else if (discard) {
+                 discard(info.ledger);
+             }
+         }
+     }
+ 
++    private boolean isRecovery (Info info)
++    {
++        final String specification = constants.recoveryRegions.getValue().trim();
++
++        if (specification.isEmpty()) {
++            return false;
++        }
++
++        final int sheetNumber = sheet.getStub().getNumber();
++        final int systemId = info.staff.getSystem().getId();
++        final Rectangle bounds = info.ledger.getBounds();
++        for (String token : specification.split(";")) {
++            final String[] fields = token.split(",", -1);
++            if (fields.length != 6) {
++                throw new IllegalArgumentException("Invalid ledger recovery region: " + token);
++            }
++            final int tokenSheet = Integer.parseInt(fields[0]);
++            final int tokenSystem = Integer.parseInt(fields[1]);
++            final int x = Integer.parseInt(fields[2]);
++            final int y = Integer.parseInt(fields[3]);
++            final int width = Integer.parseInt(fields[4]);
++            final int height = Integer.parseInt(fields[5]);
++            if (x < 0 || y < 0 || width <= 0 || height <= 0) {
++                throw new IllegalArgumentException("Invalid ledger recovery region: " + token);
++            }
++            if (tokenSheet == sheetNumber && tokenSystem == systemId
++                    && new Rectangle(x, y, width, height).intersects(bounds)) {
++                return true;
++            }
++        }
++        return false;
++    }
++
+     //---------//
+     // process //
+     //---------//
+@@ -335,6 +380,10 @@ public class LedgersPostAnalysis
+     private static class Constants
+             extends ConstantSet
+     {
++        private final Constant.String recoveryRegions = new Constant.String(
++                "",
++                "Candidate-only ledger recovery rectangles: sheet,system,x,y,width,height;...");
++
+         private final Scale.Fraction maxIsolatedLedgerWidth = new Scale.Fraction(
+                 3,
+                 "Reasonable maximum width for an isolated ledger");
