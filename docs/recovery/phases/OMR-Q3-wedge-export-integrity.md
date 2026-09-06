@@ -4,7 +4,7 @@ Status: `IN_PROGRESS`
 Depends on: OMR-Q3 whole-note recovery (merged as `b9d3ac6`, deployed image `d7d6344b…106c8a`)
 Scope note: this is the independent printed-measure-21 loss that
 [OMR-Q3](OMR-Q3-whole-note-integrity.md) explicitly separated from the whole-note/cautionary chain.
-Decision record: `D-053` in [DECISIONS.md](../DECISIONS.md).
+Decision records: `D-053` and `D-054` in [DECISIONS.md](../DECISIONS.md).
 
 ## Progress
 
