@@ -2,6 +2,25 @@
 
 Last updated: 2026-09-06 KST
 
+## Musical loss takes priority; whole-note recovery experimentally demonstrated (2026-09-06)
+
+- User-directed order now OMR-Q3 musical-event recovery first, conditional400dpi next, regression at
+  every change; automatic page selection is deferred. Plan/decision commits1af5ba6/a04a16d on
+  codex/omr-whole-note-integrity (D-051/D-052); production remains approved143 image42482e26…d09e.
+- Same Love solo300: baseline HEADS has0 WHOLE_NOTE; Leland HEADS/PAGE has8. All439 existing raw
+  pitched events stay equal per printed measure;8 whole events are added and final31 is recovered.
+  Missing21 is a separate WedgeIterators null-timeOffset export exception. No musical fix deployed.
+- Full raw-event controls: Satie unchanged; Always5 removed/7 added, so global Leland rejected.
+  Opening reference counts remain Love41/41,Satie23/41 per-measure,Always16/47; latter failures persist.
+  [Experiment/model checkpoint](validation/2026-09-06-whole-note-template-checkpoint.md).
+- Sol engine review, Luna candidate review and AGY/Gemini acceptance review completed. Coordinator
+  corrected stale/misparsed model claims and recovered all useful evidence inside this repository.
+  Opus source-reference review remains active; Sol D-052 regression-first implementation task registered.
+- Next: implement conservative original-preserving retry, exact source/guard tests and native wrapper
+  verification, independent review/ready PR. No target merge/rollout approval for this new work.
+  VM temporary sources/checkpoints in /data/analysis/whole-heads-4jU02k remain needed for wrapper tests;
+  clean after collection. User-local originals/results remain Git-excluded; user settings untouched.
+
 ## OMR-Q1 merged, deployed and verified; OMR-Q2 remains next (2026-09-06)
 
 - Approved PR143 merged as1aa8c71; all six merge-commit post-merge checks passed. Exact Docker-format
