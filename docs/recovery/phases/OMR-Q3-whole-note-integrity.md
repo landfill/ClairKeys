@@ -22,8 +22,10 @@ does not distinguish failed detection from later removal.
    regression fixture before implementation. Do not treat the411-note output as gold.
 2. Capture the HEADS-stage graph with the unchanged engine/source and compare to final graph/XML.
    Inspect pinned5.11.0 detection/filter/export code to locate the loss. No filename patches or invented notes.
-3. Record a specific correction decision before implementing a bounded fix. Keep musical duration and
-   physical key-release guidance separate; do not pad bars to hide missing recognition.
+3. Implement D-052's bounded whole-note template retry regression-first. Keep initial Bravura and
+   abstain outside the validated4/4/piano/terminal-cautionary scope. Preserve original musical events;
+   accept only image-recognized whole additions and the recovered terminal measure. The independent
+   measure21 wedge exporter exception remains a separate correction. Never pad bars or invent notes.
 4. Verify the actual source events and normal Satie/Always/Love controls after each behavior change.
    Use conditional400dpi only if needed and independently shown beneficial, within existing budget/concurrency.
 5. Review-ready PR, CI/review and explicit target merge/rollout approvals. Broader unresolved items stay open.
