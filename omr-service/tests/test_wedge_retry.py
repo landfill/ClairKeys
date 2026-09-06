@@ -405,7 +405,31 @@ class WedgeRetryContractTests(unittest.TestCase):
         self.assertIn('dD.isBlank()', patch_text)
         self.assertIn('"HEIGHT".equals(hH)', patch_text)
         self.assertIn('Math.floor(info.height) == maxHeight + 1', patch_text)
+        self.assertIn('info.ledger.getGlyph() != null', patch_text)
         self.assertNotIn('minLedgerLengthLow=', constant)
+
+    def test_recovery_region_missing_or_non_finite_numbers_fail_closed(self):
+        trigger = detect_wedge_export_loss(score(), self.selected)
+        mutations = {
+            'missing-grade': lambda sheet: sheet.find(
+                ".//head[@id='head-bad']").attrib.pop('grade'),
+            'missing-pitch': lambda sheet: sheet.find(
+                ".//head[@id='head-bad']").attrib.pop('pitch'),
+            'missing-staff-y': lambda sheet: sheet.find(
+                "page/system/part/staff/lines/line/point").attrib.pop('y'),
+            'non-finite-grade': lambda sheet: sheet.find(
+                ".//head[@id='head-bad']").set('grade', 'nan'),
+            'non-finite-pitch': lambda sheet: sheet.find(
+                ".//head[@id='head-bad']").set('pitch', 'inf'),
+            'non-finite-staff-y': lambda sheet: sheet.find(
+                "page/system/part/staff/lines/line/point").set('y', '-inf'),
+        }
+        for name, mutate in mutations.items():
+            sheet = fixture_sheet('selected-sheet.xml')
+            mutate(sheet)
+            graph = archive(self.directory, f'{name}.omr', sheet)
+            with self.subTest(name=name):
+                self.assertIsNone(recovery_region_constant(graph, trigger))
 
     def test_ledger_profile_uses_engine_pixel_quantization_without_fuzzy_tolerance(self):
         profile = [(38 / 21.4375, 7 / 21.4375)]

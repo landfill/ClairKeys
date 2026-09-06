@@ -8,7 +8,8 @@ Decision records: `D-053` and `D-054` in [DECISIONS.md](../DECISIONS.md).
 
 ## Progress
 
-- 2026-09-06: Export-side cause chain independently reproduced from repository-resident graphs and
+- **Historical — initial diagnostic checkpoint (superseded by later Progress entries), 2026-09-06:**
+  Export-side cause chain independently reproduced from repository-resident graphs and
   logs, plus an upstream candidate for its origin (an eighth rest absent from the final graph).
   Baseline measured against AGY's reference: measure 21 scores 0 of 13, measure 22 scores 10 of 10.
   Diagnostic scripts prepared; the native run is blocked pending user approval of the VM scope. No

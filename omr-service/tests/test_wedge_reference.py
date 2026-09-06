@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import unittest
+import xml.etree.ElementTree as ET
 
 from omr.recognition_evaluation import evaluate_reference, read_musicxml
 
@@ -58,6 +59,62 @@ class WedgeReferenceTests(unittest.TestCase):
         self.assertEqual(len(measure['pitchedEvents']), 15)
         self.assertEqual(measure['restEvents'], [
             {'staff': 1, 'onset': 2, 'duration': 0.5},
+        ])
+
+    def _evaluate_rest_contract(self, rest_specs):
+        root = ET.fromstring(
+            '<score-partwise><part id="P1"><measure number="1">'
+            '<attributes><divisions>2</divisions><time><beats>4</beats>'
+            '<beat-type>4</beat-type></time></attributes></measure></part>'
+            '</score-partwise>'
+        )
+        measure = root.find('part/measure')
+        consumed = 0
+        for staff, duration in rest_specs:
+            note = ET.SubElement(measure, 'note')
+            ET.SubElement(note, 'rest')
+            ET.SubElement(note, 'duration').text = str(duration)
+            ET.SubElement(note, 'staff').text = str(staff)
+            consumed += duration
+        forward = ET.SubElement(measure, 'forward')
+        ET.SubElement(forward, 'duration').text = str(8 - consumed)
+        reference = {
+            'timeSignature': '4/4',
+            'measures': [{
+                'number': 1,
+                'quarterLength': 4,
+                'pitchedEvents': [],
+                'restEvents': [{'staff': 1, 'onset': 0, 'duration': 0.5}],
+            }],
+        }
+        return evaluate_reference(root, reference)['measures'][0]
+
+    def test_rest_event_contract_reports_matching_actual_rest(self):
+        result = self._evaluate_rest_contract([(1, 1)])
+
+        self.assertTrue(result['exact'])
+        self.assertEqual(result['matchedRests'], 1)
+        self.assertEqual(result['missingRests'], [])
+        self.assertEqual(result['unexpectedRests'], [])
+
+    def test_rest_event_contract_reports_missing_actual_rest(self):
+        result = self._evaluate_rest_contract([])
+
+        self.assertFalse(result['exact'])
+        self.assertEqual(result['matchedRests'], 0)
+        self.assertEqual(result['missingRests'], [
+            {'staff': 1, 'onset': 0.0, 'duration': 0.5},
+        ])
+        self.assertEqual(result['unexpectedRests'], [])
+
+    def test_rest_event_contract_reports_unexpected_actual_rest(self):
+        result = self._evaluate_rest_contract([(1, 1), (2, 1)])
+
+        self.assertFalse(result['exact'])
+        self.assertEqual(result['matchedRests'], 1)
+        self.assertEqual(result['missingRests'], [])
+        self.assertEqual(result['unexpectedRests'], [
+            {'staff': 2, 'onset': 0.5, 'duration': 0.5},
         ])
 
     def _mutate_positive_control_and_evaluate(self, mutate_fn):

@@ -125,6 +125,20 @@ def _fraction(text, *, positive=False):
     return value
 
 
+def _finite_float(text):
+    """Parse a finite XML number, normalizing all malformed input to ValueError."""
+    if (text is None or not isinstance(text, str) or not text
+            or len(text) > 64 or not text.isascii()):
+        raise ValueError('invalid finite number')
+    try:
+        value = float(text)
+    except (TypeError, ValueError) as error:
+        raise ValueError('invalid finite number') from error
+    if not math.isfinite(value):
+        raise ValueError('invalid finite number')
+    return value
+
+
 def _xml(data):
     if len(data) > _MAX_XML_BYTES or b'<!DOCTYPE' in data.upper() or b'<!ENTITY' in data.upper():
         raise ValueError('unsafe XML')
@@ -330,7 +344,8 @@ def _staff_interlines(system):
             points = line.findall('point')
             if len(points) < 1:
                 raise ValueError('missing staff points')
-            ordinates.append(sum(float(point.get('y')) for point in points) / len(points))
+            ordinates.append(
+                sum(_finite_float(point.get('y')) for point in points) / len(points))
         gaps = [right - left for left, right in zip(ordinates, ordinates[1:])]
         if len(gaps) != 4 or min(gaps) <= 0:
             raise ValueError('invalid staff geometry')
@@ -345,10 +360,10 @@ def _line_y(staff, *, below, x):
     if not points:
         raise ValueError('missing staff line geometry')
     if len(points) == 1:
-        return float(points[0].get('y'))
+        return _finite_float(points[0].get('y'))
     left, right = points[0], points[-1]
-    x1, x2 = float(left.get('x')), float(right.get('x'))
-    y1, y2 = float(left.get('y')), float(right.get('y'))
+    x1, x2 = _finite_float(left.get('x')), _finite_float(right.get('x'))
+    y1, y2 = _finite_float(left.get('y')), _finite_float(right.get('y'))
     return y1 if x1 == x2 else y1 + ((x - x1) * (y2 - y1) / (x2 - x1))
 
 
@@ -971,7 +986,7 @@ def _row_runs(gray, y, left, right):
 def _source_ledger_signature(graph, ref, head, dot):
     if ref.element.get('abnormal') != 'true':
         return False
-    pitch_value = float(head.get('pitch'))
+    pitch_value = _finite_float(head.get('pitch'))
     pitch = round(pitch_value)
     if abs(pitch_value - pitch) > 0.01 or abs(pitch) < 5 or abs(pitch) % 2 != 1:
         return False
@@ -980,9 +995,9 @@ def _source_ledger_signature(graph, ref, head, dot):
     for other_ref in _measure_refs(graph):
         if other_ref.sheet_number == ref.sheet_number and other_ref.element.get('abnormal') != 'true':
             normal_heads.update(_graph_measure_heads(other_ref, sheet))
-    other_grades = [float(item.get('grade')) for item in normal_heads
+    other_grades = [_finite_float(item.get('grade')) for item in normal_heads
                     if item.get('grade') is not None]
-    if not other_grades or float(head.get('grade')) >= min(other_grades):
+    if not other_grades or _finite_float(head.get('grade')) >= min(other_grades):
         return False
     staff = next((staff for staff in ref.system.findall('part/staff')
                   if staff.get('id') == head.get('staff')), None)

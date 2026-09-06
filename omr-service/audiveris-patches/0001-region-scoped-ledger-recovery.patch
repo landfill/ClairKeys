@@ -10,13 +10,14 @@ index 8df6ce1..603916c 100644
  import java.awt.geom.Line2D;
  import java.awt.geom.Point2D;
  import java.util.ArrayList;
-@@ -295,12 +296,56 @@ public class LedgersPostAnalysis
+@@ -295,12 +296,57 @@ public class LedgersPostAnalysis
                      minHeight,
                      maxHeight);
  
 -            if (!dD.isBlank() || !hH.isBlank()) {
 +            final boolean discard = !dD.isBlank() || !hH.isBlank();
 +            final boolean retainRecovery = discard
++                    && info.ledger.getGlyph() != null
 +                    && isRecovery(info)
 +                    && dD.isBlank()
 +                    && "HEIGHT".equals(hH)
