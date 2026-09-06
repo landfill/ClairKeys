@@ -1,12 +1,16 @@
 # OMR-Q1 — Preserve traditional key-signature metadata truthfully
 
-Status: `IN_PROGRESS`
+Status: `DONE`
 Depends on: Satie/Always/Love validation, Sol/Luna contract review, D-050
 
 ## Progress
 
 - 2026-09-06: User-approved PR143 merged as1aa8c71 after all final-head gates passed and a late timezone
   review false positive was verified/replied/resolved. Exact-image rollout and post-merge gates underway.
+- 2026-09-06: All merge-commit gates passed; exact image42482e26…36d09e passed83 image tests and was
+  deployed with restart/image/health/auth checks. Production-module replay corrected only Always keyC→F
+  while preserving all647 notes/other fields; Satie239/D and Love411/E unchanged. Phase complete; broader
+  recognition/page/tempo/fingering work is explicitly outside this deliverable.
 
 ## Objective
 

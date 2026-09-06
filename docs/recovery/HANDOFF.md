@@ -2,6 +2,23 @@
 
 Last updated: 2026-09-06 KST
 
+## OMR-Q1 merged, deployed and verified; OMR-Q2 remains next (2026-09-06)
+
+- Approved PR143 merged as1aa8c71; all six merge-commit post-merge checks passed. Exact Docker-format
+  image `42482e26afb5cdc9c3c2bc7b8ccd89b6b05b02403326e2711f7f00566536d09e` built, passed83 image-internal
+  tests and is now current/running/healthy. Previous79a2328 imageff0a347f…9415ef retained for rollback.
+- Restart exit0; image equality, external health200/unauthorized-process401 and manual HEALTHCHECK passed.
+  One initial permission-review timeout prevented execution; its explicitly allowed single retry succeeded.
+  This was not a new denial or a bypass. User already approved both merge and rollout.
+- Actual deployed `/app/omr/converter.py` replay: Always647 notes unchanged with only keyC→F;
+  Satie239/D and Love411/E unchanged. Every other non-generated field remained equal. Existing stored
+  scores/database were not rewritten. [Deployment evidence](validation/2026-09-06-key-metadata-deployment.md).
+- OMR-Q1 is DONE. OMR-Q2 page/scale policy, omitted whole notes/bars, numeric tempo recognition and
+  broader musical accuracy remain unresolved; no experimental400dpi/page-filter policy was deployed.
+- User settings remain untouched; merged work branches retained under dirty-worktree rule. No new PDF
+  copy was needed. Replay JSON is in Git-excluded local-test-data/results/key-deploy-2026-09-06/.
+
+
 ## PR143 merge/rollout approved; merged and exact image building (2026-09-06)
 
 - User approved both PR143 merge and production rollout. Final head92c8e1b/CI rechecked. A late bot review
