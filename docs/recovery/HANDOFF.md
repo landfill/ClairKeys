@@ -8,11 +8,13 @@ Last updated: 2026-09-06 KST
   reviewed code and verified actual engine/processor outputs. No Opus implementation or AGY
   verification was used. Same checkout; user settings and pre-existing HANDOFF changes preserved.
 - Actual PDF processing selects source-backed recovery:21 13/13,20 15/15 plus its printed rest,
- 22 10/10, all exact4-quarter measures. Four no-region native controls pass;145 Python tests,
+ 22 10/10, all exact4-quarter measures. Four no-region native controls pass;149 Python tests,
  977 Jest tests, separate type/lint/build and the exact Dockerfile patch/compile path passed.
-- Implementation commits d35b14d/44dc0f7 and PR145 deliver the guarded retry and native post-analysis
+- Implementation commits d35b14d/44dc0f7, review fix f614245 and PR145 deliver the guarded retry and native post-analysis
   correction. Check [PR145 review log](reviews/PR-145.md) and GitHub for live CI/review/merge status;
   [full validation](validation/2026-09-06-wedge-implementation.md) records hashes and negative checks.
+  All latest PR CI checks pass; four review findings were fixed and independently verified.
+  CodeRabbit skipped its second automatic review; root verified the final fixes manually.
 - User explicitly approved final VM validation and separately the17-file code commit/PR scope after
   automatic-review blocks. Both approvals were fulfilled. All implementation VM staging inputs were
   collected/hash-verified/removed; production remains unchanged and healthy. Merge/rollout of PR145

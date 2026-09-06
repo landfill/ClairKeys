@@ -220,3 +220,50 @@ reviewed code/tests/fixture/plan/decision patch for stage/commit/PR, excluding s
 That blocker is resolved. Code commit `d35b14d` and decision-link commit `44dc0f7` are pushed on the
 feature branch; review-ready PR145 exists. CI/review/merge state is tracked in `reviews/PR-145.md`.
 No merge or rollout approval is implied.
+
+
+## PR145 review corrections independently verified (2026-09-06)
+
+Review5125082149 on44dc0f7 produced four findings. Codex Sol task `task_19e5e971fe76` implemented
+only those corrections; root independently reproduced missing-grade/pitch TypeError, reviewed the
+diff, ran tests, compiled the Java patch and reran actual processing. Commit
+`f614245784b632b029ea7a6299555c3103da4ddc` contains the corrections:
+
+- Original phase checkpoint explicitly marked Historical; current main HANDOFF/review log remains
+  canonical while the phase plan itself is first introduced by this PR.
+- Native retention requires a non-null source glyph. Actual compiled bytecode invokes getGlyph at
+  offset648 and branches on null at651 before isRecovery, preventing source-less retention.
+- XML float conversion is finite and bounded, with missing/malformed/non-finite attributes producing
+  ValueError and the existing abstention result. Missing grade/pitch/y and non-finite cases are tested.
+- Evaluator tests execute matching, missing and unexpected restEvents with their actual counters
+  and exactness output. These isolate rest differences while retaining the measure length.
+
+Root full Python suite:149 tests passed in2.443s (`root-pr145-review-python.log`). New patch SHA
+`effac23a135fa14af9aebd88d452bbd02d5e9061565ec4b0b92086be46095348`; Python module SHA
+`c3b62f2365b2cc004f1ec16b239945499ddfd7a0f7682f060b950ed2b4e012b0`.
+The exact checksum/CRLF-normalize/GNU-patch/JDK25 compile path built isolated image
+`c7326c16c31326a208c9485eb67eeaca32fc96cd490b5892728ccc583e237c34`, tag
+`localhost/clairkeys-omr:wedge-pr145-effac23`; patched jar SHA
+`cbaead72b2b03db8705d6af4c1ac2cf0679d7a5cd91283b0936ac20aa0e50977`.
+
+Automatic review again blocked private-PDF staging; the user explicitly approved this PR's remaining
+same-VM verification repetitions, including transfer/run/collection/deletion and no production changes.
+Actual `bash run_processor_integration.sh /data/analysis/wedge-pr145-processor-RjCGpC localhost/clairkeys-omr:wedge-pr145-effac23`
+then exited0, selected `output/wedge-retry-xuvaw2ne/page/love.mxl` and left no trigger. Results remain
+exact21 13/13,20 15/15 plus1 rest,22 10/10, all4 quarters.
+
+- MXL SHA: `14fe66ca8dc93bf71985023661b274b7a1e15e9d2970558c9f6182f24b59abab`.
+- OMR SHA: `bbbb55df5fa4612b399836e1a93f2b90003e2ce5cbbe93e47028ea9b390fb5d6`.
+- Summary SHA: `902ff5bb05828657222575a2f744f5b4a7529576719289e3ba2f45d594d03c13`.
+
+All53 review-build/processor files were collected under
+`local-test-data/results/wedge-implementation-sol/pr145-review-native/` and individually matched
+`pr145-review-native-manifest.json`. Both new staging directories were removed; production remains
+healthy and unchanged. The worker completed and its exact owned terminal was released, with archived
+transcript retained. No active implementation worker remains.
+
+All hosted checks on f614245 pass, including both E2E jobs. CodeRabbit's latest success status says
+`Review skipped: manual review required for this OSS repository`; it is not a second automated
+approval. Root independently verified the four fixes and resolved the corresponding four threads.
+The original four findings are all addressed; no unresolved actionable review remains at this
+checkpoint. Merge/rollout still require explicit PR145 approval.
