@@ -2,6 +2,17 @@
 
 Last updated: 2026-09-06 KST
 
+## Guarded whole-note recovery submitted as PR144 (2026-09-06)
+
+- PR144 carries code7ddf7cd; native exact-code and local validation are recorded in
+  [implementation evidence](validation/2026-09-06-whole-note-retry-implementation.md).
+  Current hosted CI/review/approval state: [PR144 log](reviews/PR-144.md) and GitHub live state.
+- Same-source Love recovery restores8 whole notes and terminal31 without replacing existing events;
+  normal controls are unchanged. Whole-note recovery is not full-score correctness:21, RH final ties,
+  numeric tempo and other source defects remain. No production change; existing image1aa8c71 remains.
+- Next: finish hosted CI/review loop and obtain explicit target merge/rollout approval. User settings
+  untouched; sample originals and all collected graphs remain Git-excluded;18 VM staging copies cleaned.
+
 ## Guarded whole-note recovery implemented and exact native code verified (2026-09-06)
 
 - Code7ddf7cd implements D-052, preserving the initial Bravura result and selecting a Leland retry only
