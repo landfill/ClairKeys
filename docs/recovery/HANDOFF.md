@@ -2,6 +2,24 @@
 
 Last updated: 2026-09-06 KST
 
+## Same-worktree Opus/AGY investigation prepared; native diagnostic permission needed (2026-09-06)
+
+- User requires Claude Opus and Antigravity AGY workers only, no coordinator implementation and no
+  worktree split. Both ran in the existing checkout. Worker-authored plan/reference checkpoint86e817c
+  is on codex/omr-wedge-measure-integrity; no production correction or new PR yet.
+- Opus traced the empty-voice→null-time wedge→whole-measure deletion chain and prepared copied-graph
+  probes. AGY fixed source metadata and added8 focused reference tests; all115 Python tests pass.
+  Existing measure21 remains0/13 exact; no native repair result exists. Rest recognition is still a
+  hypothesis, not a proven sole cause. [Evidence/ownership/resume](validation/2026-09-06-wedge-worker-checkpoint.md).
+- Automatic permission review blocked transfer/execution of the private OMR and scripts on101.79.16.73
+  before execution. No payload sent, no bypass. Empty VM setup directory removed. Local Docker daemon
+  is unavailable and only JDK17 is installed. User approval of the specific diagnostic payload/VM scope
+  is needed; this is separate from prior PR144 deployment approval.
+- All worker tasks settled; Opus released, AGY release retained its external terminal without process
+  action. Next: approval, then resume the same two worker types in this same worktree for native probes
+  and actual implementation. Root does not implement. Production remains healthy b9d3ac6/d7d6344b…106c8a;
+  original samples and user settings untouched. No issue or phase is marked fixed/complete here.
+
 ## PR144 merged, deployed and live-API verified (2026-09-06)
 
 - Approved mergeb9d3ac6 deployed as exact image d7d6344bbc1331324b8b14e7a62a4de6a3f5d22a62e908503773edfeac106c8a.
