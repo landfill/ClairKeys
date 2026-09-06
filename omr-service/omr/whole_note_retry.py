@@ -32,6 +32,7 @@ class _Event:
     onset: Fraction
     duration: Fraction
     note_type: str
+    voice: str | None
 
 
 @dataclass
@@ -173,9 +174,13 @@ def _scan_score(root):
                 rest = item.find('rest') is not None
                 if (pitch is None) == (not rest):
                     raise ValueError('note must be pitched or rest')
+                voice = item.findtext('voice')
+                if (len(item.findall('voice')) > 1 or (voice is not None and (
+                        len(voice) > 12 or not voice.isascii() or not voice.strip().isdecimal()))):
+                    raise ValueError('unsupported voice identity')
                 event = _Event(
                     number, 'pitch' if pitch is not None else 'rest', pitch, staff,
-                    onset, duration, (item.findtext('type') or '').strip(),
+                    onset, duration, (item.findtext('type') or '').strip(), voice,
                 )
                 events[event] += 1
                 for marker in item.findall('tie'):
@@ -371,6 +376,7 @@ def _validate_new_ties(original, candidate, additions):
         start.kind == stop.kind == 'pitch'
         and start.pitch == stop.pitch
         and start.staff == stop.staff
+        and start.voice == stop.voice
         and stop.measure == start.measure + 1
         and start.onset + start.duration == candidate.lengths[start.measure]
         and stop.onset == 0

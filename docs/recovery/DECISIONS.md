@@ -1962,11 +1962,11 @@
      CAUTIONARY인 경우에만 원본 PDF 전체를 Leland로 한 번 더 처리한다. 페이지 선택/삭제 없음.
   2. 동일 semaphore와 원래 deadline 안에서 순차 실행하고 결과는 별도 하위 임시 폴더에 둔다.
      실패/시간 초과/모호한 XML/지원 밖 구조는 원본 결과를 보존한다. 설정은 JVM CLI 한정이다.
-  3. 후보는 기존 모든 마디와 pitched/rest raw 이벤트의 staff/onset/duration/pitch를 보존해야 한다.
+  3. 후보는 기존 모든 마디와 pitched/rest raw 이벤트의 staff/voice/onset/duration/pitch를 보존해야 한다.
      기존 조표·박자·템포와 기존 타이도 보존한다. 추가 pitched 이벤트는 실제 재인식된 온음표만
      허용하며, onset0/duration4이고 이미지 glyph가 있는 WHOLE_NOTE 그래프와 개수가 맞아야 한다.
   4. 새 마디는 기존 마지막 번호 다음의 마지막 한 마디만 허용한다. 양쪽 staff에 온음표가 있고
-     길이가4여야 한다. 새 타이는 새 온음표와 시간/음높이가 이어지는 경계의 짝만 허용한다.
+     길이가4여야 한다. 새 타이는 새 온음표와 시간/음높이/성부가 이어지는 경계의 짝만 허용한다.
      그 외 음가/음높이/템포/기존 타이 변경이나 새 비온음표는 거절한다. XML을 직접 보정하지 않는다.
   5. 단일 사례의 분류기 결과가 전체 악보 정확도를 보증하지 않음을 기록한다. 실제 Love의8개
      원본 온음표 참조 및 음가/오선, Satie/Always의 비회귀/재시도 생략, malformed/false candidate,

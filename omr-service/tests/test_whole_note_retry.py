@@ -287,6 +287,18 @@ class WholeNoteRetryTests(unittest.TestCase):
         candidate.find("part/measure[@number='31']/note[staff='2']/tie").set('type', 'start')
         self.assertFalse(accept_whole_note_retry(score(), candidate, self.candidate_graph))
 
+    def test_existing_voice_cannot_change_even_with_identical_pitch_and_tie_markers(self):
+        candidate = valid_candidate()
+        note = candidate.find("part/measure[@number='30']/note[staff='2']")
+        ET.SubElement(note, 'voice').text = '99'
+        self.assertFalse(accept_whole_note_retry(score(), candidate, self.candidate_graph))
+
+    def test_new_tie_pair_must_share_the_converter_voice_identity(self):
+        candidate = valid_candidate()
+        note = candidate.find("part/measure[@number='31']/note[staff='2']")
+        ET.SubElement(note, 'voice').text = '99'
+        self.assertFalse(accept_whole_note_retry(score(), candidate, self.candidate_graph))
+
     def test_tempo_cannot_move_within_a_preserved_measure(self):
         candidate = valid_candidate()
         measure = candidate.find("part/measure[@number='1']")
