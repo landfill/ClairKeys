@@ -94,8 +94,24 @@ The following are static before/after scenario checks, not independent model rol
 | Sonol proposal is awaiting launch approval | Prepare independently authorized work. | No run launch, forged dashboard approval, or delegation. |
 | User requests a WRKS summary | Summarize and label the transformation. | Preserve service provenance and do not invent provider model IDs. |
 
-No paid/live API, browser mutation, independent agent rollout, or application regression
-suite ran. Those are not needed to validate these installed instruction-only edits.
+No paid/live API, browser mutation, independent agent rollout, or local application regression
+suite ran. The repository's automatic CI ran after the evidence push, as recorded below.
+
+### GitHub post-push verification
+
+Evidence commit `22c8e6a2653826c1faa38baaebe100bc5292a3f1` was pushed to `origin/main`.
+GitHub reported the expected direct-status-push bypass while required checks were initially
+pending. Queried `gh api repos/landfill/ClairKeys/commits/22c8e6a2653826c1faa38baaebe100bc5292a3f1/check-runs`
+immediately after push and followed the runs to completion: all six checks passed on 2026-09-06.
+
+- [Tests workflow](https://github.com/landfill/ClairKeys/actions/runs/34034470420):
+  Run Tests, E2E Tests, Lint, Security Audit — all `completed/success`.
+- [Post-merge checks](https://github.com/landfill/ClairKeys/actions/runs/34034470412):
+  Post-merge tests and Post-merge build — both `completed/success`.
+
+These checks validate the repository evidence commit; they are not live executions of the
+installed skills. Separately, replayed the durable zero-context diff against all 29 original
+texts in memory and obtained the exact recorded post-edit SHA-256 for every file.
 
 ## Persistence and recovery
 
