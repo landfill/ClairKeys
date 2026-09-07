@@ -1,0 +1,19 @@
+import React from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { readFileSync, writeFileSync } from 'node:fs'
+import FallingNotes from '../../src/components/animation/FallingNotes'
+import { buildKeyLayout } from '../../src/utils/pianoLayout'
+import { canonicalToFallingNotes } from '../../src/utils/dataConverter'
+import { normalizeAnimationData } from '../../src/utils/animationContract'
+const notes = canonicalToFallingNotes(normalizeAnimationData(JSON.parse(readFileSync('fixtures/fingering/love-affair-411.json', 'utf8'))))
+const panel = (width, source, now, range, height) => {
+ const layout = buildKeyLayout(width, range)
+ return `<div class="panel" style="width:${layout.totalWidth}px;height:${height}px">${renderToStaticMarkup(<FallingNotes notes={source} nowSec={now} pxPerSec={140} height={height} layout={layout}/>)}</div>`
+}
+let body = '<h1>Issue 124 — actual FallingNotes component</h1><p>Real repository score: Love Affair, time 10s, 24px white keys, MIDI 36–84. Static render; no audio or account data.</p><div class="scroll">'+panel(24,notes,10,{minMidi:36,maxMidi:84},240)+'</div><h2>Containment cases — white / black / white</h2><div class="cases">'
+for(const width of [10.8,24,24.46,36]) {
+ const source=[60,61,62].flatMap((midi,i)=>[1,.1,.01].map((duration,j)=>({midi,start:j*.6,duration,finger:i+1,hand:'R'})))
+ body+='<section><h3>'+width+'px key</h3>'+panel(width,source,0,{minMidi:60,maxMidi:64},300)+'</section>'
+}
+body+='</div><p>Top: 0.01s labels omitted. Middle: 0.1s labels contained. Bottom: long notes. 10.8px keys omit labels.</p>'
+writeFileSync('/private/tmp/clairkeys-124-preview/index.html','<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><meta charset="utf-8"><title>Issue 124 badge verification</title><style>body{margin:16px;background:#faf6ee;color:#1b1f2a;font-family:Arial}h1{font-size:20px}h2{font-size:16px}h3,p{font-size:12px}.panel{position:relative;background:#0b0b0c;overflow:hidden}.scroll{overflow:auto}.cases{display:flex;gap:24px;flex-wrap:wrap}.absolute{position:absolute}.left-0{left:0}.right-0{right:0}.flex{display:flex}.items-center{align-items:center}.justify-center{justify-content:center}.font-black{font-weight:900}.text-white{color:white}.select-none{user-select:none}</style>'+body)

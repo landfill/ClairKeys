@@ -1,0 +1,185 @@
+
+> clairkeys@0.1.0 test
+> jest --runInBand src/utils/__tests__/visualUtils.test.ts src/components/animation/__tests__/FallingNotes.test.tsx
+
+FAIL src/utils/__tests__/visualUtils.test.ts
+  ● visualUtils with fingering › getFingerBadgePosition › should handle small notes appropriately
+
+    expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 8
+    Received:    14
+
+      75 |
+      76 |       const position = getFingerBadgePosition(smallNote);
+    > 77 |       expect(position.size).toBeLessThanOrEqual(smallNote.h);
+         |                             ^
+      78 |     });
+      79 |
+      80 |     it('should handle large notes appropriately', () => {
+
+      at Object.toBeLessThanOrEqual (src/utils/__tests__/visualUtils.test.ts:77:29)
+
+  ● visualUtils with fingering › shouldShowFingerBadge › should omit labels that cannot fit at readable size
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      137 |       };
+      138 |
+    > 139 |       expect(shouldShowFingerBadge(note)).toBe(false);
+          |                                           ^
+      140 |     });
+      141 |   });
+      142 |
+
+      at Object.toBe (src/utils/__tests__/visualUtils.test.ts:139:43)
+
+  ● issue 124 badge containment › contains white and black badges at 10.8px key width
+
+    expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0.4319999999999995
+    Received:    -1.5999999999999996
+
+      246 |       for (const note of notes) {
+      247 |         const badge = getFingerBadgePosition(note);
+    > 248 |         expect(badge.x).toBeGreaterThanOrEqual(note.x);
+          |                         ^
+      249 |         expect(badge.y).toBeGreaterThanOrEqual(note.y);
+      250 |         expect(badge.x + badge.width).toBeLessThanOrEqual(note.x + note.w + 1e-9);
+      251 |         expect(badge.y + badge.size).toBeLessThanOrEqual(note.y + note.h + 1e-9);
+
+      at toBeGreaterThanOrEqual (src/utils/__tests__/visualUtils.test.ts:248:25)
+
+  ● issue 124 badge containment › contains white and black badges at 24px key width
+
+    expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 207
+    Received:    190.544
+
+      247 |         const badge = getFingerBadgePosition(note);
+      248 |         expect(badge.x).toBeGreaterThanOrEqual(note.x);
+    > 249 |         expect(badge.y).toBeGreaterThanOrEqual(note.y);
+          |                         ^
+      250 |         expect(badge.x + badge.width).toBeLessThanOrEqual(note.x + note.w + 1e-9);
+      251 |         expect(badge.y + badge.size).toBeLessThanOrEqual(note.y + note.h + 1e-9);
+      252 |         expect(shouldShowFingerBadge(note)).toBe(keyWidth >= 24 && duration >= 0.1);
+
+      at toBeGreaterThanOrEqual (src/utils/__tests__/visualUtils.test.ts:249:25)
+
+  ● issue 124 badge containment › contains white and black badges at 24.46px key width
+
+    expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 207
+    Received:    190.24776
+
+      247 |         const badge = getFingerBadgePosition(note);
+      248 |         expect(badge.x).toBeGreaterThanOrEqual(note.x);
+    > 249 |         expect(badge.y).toBeGreaterThanOrEqual(note.y);
+          |                         ^
+      250 |         expect(badge.x + badge.width).toBeLessThanOrEqual(note.x + note.w + 1e-9);
+      251 |         expect(badge.y + badge.size).toBeLessThanOrEqual(note.y + note.h + 1e-9);
+      252 |         expect(shouldShowFingerBadge(note)).toBe(keyWidth >= 24 && duration >= 0.1);
+
+      at toBeGreaterThanOrEqual (src/utils/__tests__/visualUtils.test.ts:249:25)
+
+  ● issue 124 badge containment › contains white and black badges at 36px key width
+
+    expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 207
+    Received:    186
+
+      247 |         const badge = getFingerBadgePosition(note);
+      248 |         expect(badge.x).toBeGreaterThanOrEqual(note.x);
+    > 249 |         expect(badge.y).toBeGreaterThanOrEqual(note.y);
+          |                         ^
+      250 |         expect(badge.x + badge.width).toBeLessThanOrEqual(note.x + note.w + 1e-9);
+      251 |         expect(badge.y + badge.size).toBeLessThanOrEqual(note.y + note.h + 1e-9);
+      252 |         expect(shouldShowFingerBadge(note)).toBe(keyWidth >= 24 && duration >= 0.1);
+
+      at toBeGreaterThanOrEqual (src/utils/__tests__/visualUtils.test.ts:249:25)
+
+  ● issue 124 badge containment › uses explicit width 9.99 and height 14 readability limits
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      263 |     'uses explicit width %s and height %s readability limits', (w, h, visible) => {
+      264 |       expect(shouldShowFingerBadge({x: 0, y: 0, w: w as number, h: h as number,
+    > 265 |         color: '#fff', z: 20, finger: 1})).toBe(visible);
+          |                                            ^
+      266 |     });
+      267 | });
+      268 |
+
+      at toBe (src/utils/__tests__/visualUtils.test.ts:265:44)
+
+  ● issue 124 badge containment › uses explicit width 10 and height 13.99 readability limits
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      263 |     'uses explicit width %s and height %s readability limits', (w, h, visible) => {
+      264 |       expect(shouldShowFingerBadge({x: 0, y: 0, w: w as number, h: h as number,
+    > 265 |         color: '#fff', z: 20, finger: 1})).toBe(visible);
+          |                                            ^
+      266 |     });
+      267 | });
+      268 |
+
+      at toBe (src/utils/__tests__/visualUtils.test.ts:265:44)
+
+FAIL src/components/animation/__tests__/FallingNotes.test.tsx
+  ● FallingNotes fingering › omits a label too tall for a very short note
+
+    expect(element).not.toBeInTheDocument()
+
+    expected document not to contain element, found <div class="absolute flex items-center justify-center font-black text-white select-none" style="left: 2.200000000000001px; top: -15px; width: 14px; height: 14px; font-size: 12px; font-weight: 900; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9); z-index: 15;">2</div> instead
+
+      21 |     )
+      22 |
+    > 23 |     expect(screen.queryByText('2')).not.toBeInTheDocument()
+         |                                         ^
+      24 |   })
+      25 | })
+      26 |
+
+      at Object.toBeInTheDocument (src/components/animation/__tests__/FallingNotes.test.tsx:23:41)
+
+  ● fits a readable label in a 0.1-second black note without a text shadow
+
+    expect(element).toHaveStyle()
+
+    - Expected
+
+    - fontSize: 12px;
+      height: 14px;
+    - lineHeight: 1;
+    - width: 10.5px;
+    + width: 14px;
+
+      34 |     nowSec={0} pxPerSec={140} height={350} layout={blackLayout} />)
+      35 |   const badge = screen.getByText('2')
+    > 36 |   expect(badge).toHaveStyle({width: '10.5px', height: '14px', fontSize: '12px', lineHeight: '1'})
+         |                 ^
+      37 |   expect(badge.style.textShadow).toBe('')
+      38 |   expect(badge.style.backgroundColor).not.toBe('')
+      39 |   expect(badge.style.top).toBe('0px')
+
+      at Object.toHaveStyle (src/components/animation/__tests__/FallingNotes.test.tsx:36:17)
+
+Test Suites: 2 failed, 2 total
+Tests:       10 failed, 12 passed, 22 total
+Snapshots:   0 total
+Time:        0.573 s, estimated 3 s
+Ran all test suites matching src/utils/__tests__/visualUtils.test.ts|src/components/animation/__tests__/FallingNotes.test.tsx.
