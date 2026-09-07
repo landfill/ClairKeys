@@ -57,3 +57,12 @@ public/images/practice-example.png to practice-example.jpg plus the Image src. T
 no image editing or resampling occurred. Local browser screenshots above were captured before that
 path-only correction. Home 7 tests passed after it, and final-head hosted build, type/lint/unit/security
 and both E2E jobs pass. The review log tracks the independent review and merge gate.
+
+## Approved production delivery
+
+PR148 merged as a1a84da385d47e00ce9469dcd274ed2af443efa4 on 2026-09-07. Local main fast-forwarded;
+local and remote feature tips have zero unique commits outside origin/main. Preserved user changes block
+branch deletion under AGENTS.md. Exact-SHA Vercel Production deployment6307119421 succeeded.
+Live home contains the static example, and /images/practice-example.jpg equals the merge artifact byte
+for byte (SHA256 6b4dcaccecdae9ab8f830e7df11203ffc59047cab00f845004ad761d7c53bd15).
+All six merge check-runs completed successfully, including post-merge build/tests and E2E.

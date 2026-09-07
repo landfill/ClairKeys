@@ -9,7 +9,7 @@
   #146 remains in progress: next is playback transition layout, followed by explore/upload refinements.
 - Both feature tips are contained in main, but branch cleanup is blocked by preserved pre-existing
   settings/HANDOFF modifications and private local screenshots. No branch deleted or user change committed.
-- Final PR CI passed; post-merge checks are being verified separately.
+- Final PR CI and all six exact-merge post-merge checks (including E2E/build/tests) passed.
 
 ## Finger badge proposal withdrawn; UI renewal next (2026-09-07)
 
