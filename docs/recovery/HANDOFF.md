@@ -1,5 +1,17 @@
 # Current Handoff
 
+## Codex cloud environment saved (2026-09-08)
+
+- Created and read back the ClairKeys cloud environment for landfill/ClairKeys with Node22,
+  Python3.10, dependency/Prisma/Playwright setup, container-local test PostgreSQL, cache maintenance
+  and explicitly approved GitHub-only agent network access. No production secrets copied.
+- Environment configuration is saved; full execution readiness is not verified. Initial setup
+  installed npm/Python dependencies and reached PostgreSQL installation; the second test stalled
+  after runtime initialization and was cancelled. No cloud issue task was submitted.
+- Next: rerun setup to its success marker, verify DB/browser smoke and application checks,
+  then verify GitHub CLI authentication and direct handoff push capability before claiming the
+  complete issue workflow works in cloud. [Configuration and evidence](validation/2026-09-08-codex-cloud-environment.md).
+
 ## UI renewal first slice merged and deployed (2026-09-07)
 
 - User-approved PR148 merged as a1a84da385d47e00ce9469dcd274ed2af443efa4 and local main synchronized.
