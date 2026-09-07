@@ -49,3 +49,11 @@ API, whose first output was rejected). Source components remain unmodified for c
 For app verification, run the built app on loopback port3146 with NEXTAUTH_SECRET=clairkeys-local-ui-fixture,
 NEXTAUTH_URL=http://localhost:3146 and an unreachable dummy DATABASE_URL; run the proxy on loopback8147.
 All those values are test-only, not production credentials. Inspect /library and / through port8147.
+
+## Final asset naming and hosted checks
+
+Native browser screenshot bytes are JPEG, 800x400 and 24,252 bytes. Follow-up 5644513 changes only
+public/images/practice-example.png to practice-example.jpg plus the Image src. The bytes are identical;
+no image editing or resampling occurred. Local browser screenshots above were captured before that
+path-only correction. Home 7 tests passed after it, and final-head hosted build, type/lint/unit/security
+and both E2E jobs pass. The review log tracks the independent review and merge gate.
