@@ -6,7 +6,8 @@
   implemented in [PR148](https://github.com/landfill/ClairKeys/pull/148) from existing main.
 - Local 977 tests, typecheck, lint, build and actual built-UI fixture checks at four widths passed.
   [Validation](validation/2026-09-07-ui-renewal.md), [review tracking](reviews/PR-148.md).
-- Next: hosted CI/review and explicit PR148 merge approval. #146 remains open for playback transitions,
+- Final head 5b09a0a: all 16 checks/status contexts passed, review nit fixed, CLEAN/non-Draft.
+- Next: explicit PR148 merge approval. #146 remains open for playback transitions,
   explore and upload refinements. Existing finger labels/playback behavior unchanged; PR147 stays withdrawn.
 
 ## Finger badge proposal withdrawn; UI renewal next (2026-09-07)
