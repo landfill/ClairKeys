@@ -1,5 +1,14 @@
 # Current Handoff
 
+## UI renewal proposal published (2026-09-07)
+
+- Current service UI reviewed across home, explore, library, upload and practice, including
+  playback/pause and a mobile library viewport. Published [issue #146](https://github.com/landfill/ClairKeys/issues/146)
+  with UI-only scope, priorities, existing-issue boundaries and acceptance criteria.
+- Published text was read back and matched. Session-bearing screenshots remain local and were
+  not published. No application code or service data changed; no implementation approval implied.
+- [Inspection and publication evidence](validation/2026-09-07-ui-renewal-issue.md).
+
 ## Installed skill guidance audited (2026-09-06)
 
 - User-requested audit against the official latest-model guide screened 121 on-disk skill
