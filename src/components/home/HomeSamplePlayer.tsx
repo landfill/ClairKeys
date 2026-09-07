@@ -10,7 +10,7 @@ export default function HomeSamplePlayer() {
         className="overflow-hidden rounded-2xl border border-rule bg-surface shadow-sm"
       >
         <Image
-          src="/images/practice-example.png"
+          src="/images/practice-example.jpg"
           alt="양손의 낙하 노트와 피아노 건반을 함께 보여주는 연습 화면"
           width={800}
           height={400}
