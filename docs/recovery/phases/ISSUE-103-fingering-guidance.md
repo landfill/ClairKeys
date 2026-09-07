@@ -10,10 +10,14 @@ Progress (2026-09-03): PR #117이 merge commit `34b8ad4`로 병합되고 이슈 
 post-merge 자동 검증은 모두 통과했고 브랜치 정리도 끝났다. 완료 조건의 실제 악보·모바일 가로 수동 확인이
 남아 있어 Status는 `DONE`이 아니라 `BLOCKED`다.
 
+2026-09-07 scope amendment: D-055 / #124 supersedes unconditional short-note rendering below.
+Finger data remains present; visual labels require at least 10px note width and 14px height.
+Historical validation and status above are unchanged.
+
 ## Objective
 
 원본 악보의 유효한 운지를 보존하면서, 운지가 없는 기존·신규 악보의 모든 재생 노트에도 양손 공통 1~5
-번호를 일관되게 표시한다.
+번호를 일관되게 제공한다. 화면 표시는 D-055의 크기 하한을 따른다.
 
 ## In scope
 
@@ -35,7 +39,7 @@ post-merge 자동 검증은 모두 통과했고 브랜치 정리도 끝났다. �
 
 1. 현재 변환→저장→정규화→플레이어 경계의 운지 보존과 누락을 회귀로 고정한다.
 2. 기존 원본 운지를 보존하는 결정론적 fallback을 플레이어 입력 경계에 연결한다.
-3. 짧은 낙하 노트에서도 번호를 생략하지 않는 렌더링 규칙을 적용한다.
+3. D-055에 따라 노트 내부에 배지를 배치하고 가독 하한 미만에서는 표시만 생략한다.
 4. focused Jest 후 전체 Jest, typecheck, lint, build를 실행한다.
 5. 실제 악보 한 곡과 모바일 가로 화면을 수동 검증한다.
 
@@ -45,7 +49,7 @@ post-merge 자동 검증은 모두 통과했고 브랜치 정리도 끝났다. �
 - 원본의 유효한 왼손·오른손 운지가 변환·정규화·플레이어 경계에서 보존된다.
 - 원본이 없는 같은 입력은 반복 실행해도 같은 운지를 얻는다.
 - 왼손·오른손과 최대 다섯 음의 동시음을 검증한다.
-- 매우 짧은 노트도 번호 렌더링 대상이며 UI 테스트가 이를 관측한다.
+- D-055의 표시 하한과 노트 내부 배치를 UI 테스트로 확인하고 운지 데이터는 보존한다.
 - Jest, `npx tsc --noEmit`, lint, build가 통과한다.
 - 실제 악보 한 곡의 모든 노트 표시와 모바일 가로 화면 가독성을 수동 확인한다.
 

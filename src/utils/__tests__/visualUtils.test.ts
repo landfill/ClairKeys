@@ -11,6 +11,7 @@ import {
   getActiveNotes,
   getVisibleNotes
 } from '../visualUtils';
+import { buildKeyLayout } from '../pianoLayout';
 import { HAND_COLORS } from '@/types/fallingNotes';
 import type { FallingNote, VisualNote, KeyLayout } from '@/types/fallingNotes';
 
@@ -73,7 +74,7 @@ describe('visualUtils with fingering', () => {
       };
 
       const position = getFingerBadgePosition(smallNote);
-      expect(position.size).toBe(14); // Minimum size
+      expect(position.size).toBeLessThanOrEqual(smallNote.h);
     });
 
     it('should handle large notes appropriately', () => {
@@ -123,7 +124,7 @@ describe('visualUtils with fingering', () => {
       expect(shouldShowFingerBadge(note)).toBe(false);
     });
 
-    it('should keep the finger visible for very short notes', () => {
+    it('should omit labels that cannot fit at readable size', () => {
       const note: VisualNote = {
         x: 0,
         y: 0,
@@ -135,7 +136,7 @@ describe('visualUtils with fingering', () => {
         hand: 'R'
       };
 
-      expect(shouldShowFingerBadge(note)).toBe(true);
+      expect(shouldShowFingerBadge(note)).toBe(false);
     });
   });
 
@@ -231,4 +232,37 @@ describe('visualUtils with fingering', () => {
       expect(visible[1].midi).toBe(64);
     });
   });
+});
+
+
+describe('issue 124 badge containment', () => {
+  it.each([10.8, 24, 24.46, 36])('contains white and black badges at %spx key width', keyWidth => {
+    const layout = buildKeyLayout(keyWidth, { minMidi: 60, maxMidi: 64 });
+    for (const duration of [0.01, 0.1, 1]) {
+      const notes = notesToVisualNotes([
+        { midi: 60, start: 1, duration, finger: 1, hand: 'R' },
+        { midi: 61, start: 1, duration, finger: 2, hand: 'R' },
+      ], 0, 140, 350, layout);
+      for (const note of notes) {
+        const badge = getFingerBadgePosition(note);
+        expect(badge.x).toBeGreaterThanOrEqual(note.x);
+        expect(badge.y).toBeGreaterThanOrEqual(note.y);
+        expect(badge.x + badge.width).toBeLessThanOrEqual(note.x + note.w + 1e-9);
+        expect(badge.y + badge.size).toBeLessThanOrEqual(note.y + note.h + 1e-9);
+        expect(shouldShowFingerBadge(note)).toBe(keyWidth >= 24 && duration >= 0.1);
+        if (shouldShowFingerBadge(note)) {
+          expect(Number.isInteger(badge.fontSize)).toBe(true);
+          expect(badge.fontSize).toBeGreaterThanOrEqual(12);
+          expect(badge.fontSize).toBeLessThanOrEqual(badge.size);
+        }
+        expect(note.finger).toBeDefined();
+      }
+    }
+  });
+
+  it.each([[9.99, 14, false], [10, 13.99, false], [10, 14, true]])(
+    'uses explicit width %s and height %s readability limits', (w, h, visible) => {
+      expect(shouldShowFingerBadge({x: 0, y: 0, w: w as number, h: h as number,
+        color: '#fff', z: 20, finger: 1})).toBe(visible);
+    });
 });

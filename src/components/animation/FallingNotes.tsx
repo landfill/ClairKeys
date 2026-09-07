@@ -57,11 +57,14 @@ export default function FallingNotes({
                 style={{
                   left: badgePosition.x - visualNote.x,
                   top: badgePosition.y - visualNote.y,
-                  width: badgePosition.size,
+                  width: badgePosition.width,
                   height: badgePosition.size,
-                  fontSize: Math.max(12, badgePosition.size * 0.8),
+                  fontSize: badgePosition.fontSize,
+                  lineHeight: 1,
+                  fontFamily: 'monospace',
+                  backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                  borderRadius: 2,
                   fontWeight: 900,
-                  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.9)',
                   zIndex: 15
                 }}
               >

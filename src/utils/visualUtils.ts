@@ -125,21 +125,28 @@ export function getHandColor(hand?: Hand): string {
 }
 
 /**
- * Calculate optimal finger badge position within a note
+ * D-055: a narrow badge may be rectangular, but never exceeds its note.
+ * `size` is its height; width is bounded independently for black-key lanes.
  */
-export function getFingerBadgePosition(note: VisualNote): { x: number; y: number; size: number } {
-  const badgeSize = Math.min(20, Math.max(14, note.w * 0.7)); // Increased size for better visibility
-  const x = note.x + (note.w - badgeSize) / 2; // Center horizontally
-  const y = note.y + note.h - badgeSize - 4; // Near bottom of note with padding
-  
-  return { x, y, size: badgeSize };
+export function getFingerBadgePosition(note: VisualNote): {
+  x: number; y: number; width: number; size: number; fontSize: number
+} {
+  const width = Math.min(20, note.w);
+  const size = Math.min(20, Math.max(14, note.w * 0.7), note.h);
+  const bottomPadding = Math.min(4, (note.h - size) / 2);
+  return {
+    x: note.x + (note.w - width) / 2,
+    y: note.y + note.h - size - bottomPadding,
+    width,
+    size,
+    // Integer font sizes avoid fractional glyph metrics exceeding the plate.
+    fontSize: Math.min(16, Math.floor(size - 2)),
+  };
 }
 
-/**
- * Check if a finger badge should be displayed based on note size
- */
+/** Omit only the label when a 12px monospace digit cannot fit (D-055). */
 export function shouldShowFingerBadge(note: VisualNote): boolean {
-  return note.finger !== undefined;
+  return note.finger !== undefined && note.w >= 10 && note.h >= 14;
 }
 
 /**
