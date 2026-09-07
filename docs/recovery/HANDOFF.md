@@ -1,5 +1,16 @@
 # Current Handoff
 
+## Historical issues closed by user decision (2026-09-07)
+
+- User explicitly approved closing #44 (unused Bach score), #61 (sample volume adjustment),
+  #46 (small-page PDF historical failure), #47 (remaining error guidance), and #73 (callback
+  failure-path verification) as not planned. #47's original raw-log exposure was already fixed;
+  other unverified behavior is not claimed resolved.
+- All five CLOSED/NOT_PLANNED states and exact rationale comments were read back successfully.
+  Nine issues remain open, including #134 correctness, #110 callback origin validation and #146 UI.
+- [Closure rationale, reopening conditions and verification](validation/2026-09-07-historical-issue-closures.md).
+  No application code, settings or runtime changed.
+
 ## UI renewal proposal published (2026-09-07)
 
 - Current service UI reviewed across home, explore, library, upload and practice, including
