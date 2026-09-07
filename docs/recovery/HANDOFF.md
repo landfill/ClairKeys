@@ -1,14 +1,15 @@
 # Current Handoff
 
-## UI renewal first slice submitted (2026-09-07)
+## UI renewal first slice merged and deployed (2026-09-07)
 
-- #146 card spacing/width/action readability, mobile sort alignment and static home result example
-  implemented in [PR148](https://github.com/landfill/ClairKeys/pull/148) from existing main.
-- Local 977 tests, typecheck, lint, build and actual built-UI fixture checks at four widths passed.
-  [Validation](validation/2026-09-07-ui-renewal.md), [review tracking](reviews/PR-148.md).
-- Final head 5b09a0a: all 16 checks/status contexts passed, review nit fixed, CLEAN/non-Draft.
-- Next: explicit PR148 merge approval. #146 remains open for playback transitions,
-  explore and upload refinements. Existing finger labels/playback behavior unchanged; PR147 stays withdrawn.
+- User-approved PR148 merged as a1a84da385d47e00ce9469dcd274ed2af443efa4 and local main synchronized.
+  Exact-SHA Vercel Production deployment succeeded. Live home shows the static example and JPEG bytes
+  match the merge artifact. [Review/delivery log](reviews/PR-148.md).
+- Card readability and mobile sort alignment are delivered; existing note labels/playback are unchanged.
+  #146 remains in progress: next is playback transition layout, followed by explore/upload refinements.
+- Both feature tips are contained in main, but branch cleanup is blocked by preserved pre-existing
+  settings/HANDOFF modifications and private local screenshots. No branch deleted or user change committed.
+- Final PR CI passed; post-merge checks are being verified separately.
 
 ## Finger badge proposal withdrawn; UI renewal next (2026-09-07)
 

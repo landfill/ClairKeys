@@ -32,3 +32,10 @@ queries, actions, upload contract, note numbers, playback timing and musical dat
 
 Browser visual inspection and layout bounds are not human readability or learning-outcome measurements.
 Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim of OMR accuracy.
+
+## Progress
+
+- 2026-09-07: First slice approved and merged in PR148 as a1a84da385d47e00ce9469dcd274ed2af443efa4.
+  Exact-SHA Vercel Production deployment succeeded; live home and static artifact verified.
+  Local 977 tests/type/lint/build and final PR CI/E2E passed. Post-merge checks tracked in PR148 log.
+  Phase remains IN_PROGRESS for stages2–4. No note-label or playback behavior change in this slice.
