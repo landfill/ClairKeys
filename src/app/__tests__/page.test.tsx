@@ -1,10 +1,7 @@
 /**
- * 홈의 DS-2 계약.
- *
- * 이전 버전은 "가로 스크롤되는 건반 미리보기가 키보드로 도달 가능한가"를 지켰다. 그 요소는
- * 사라졌다 — 정지한 `min-w-[800px]` 그림 대신 실제 플레이어가 들어왔고, 그 건반은 D-020의
- * 반응형 폭 계산으로 컨테이너에 맞춰지므로 가로 스크롤이 없다. 원래 우려는 특정 요소가 아니라
- * 일반 가드로 옮겼다.
+ * Home static practice example and entry links.
+ * The image is a labeled capture of the existing player; this page mounts no
+ * live player and starts no audio. Player behavior is tested separately.
  */
 import { render, screen } from '@testing-library/react'
 import Home from '../page'
