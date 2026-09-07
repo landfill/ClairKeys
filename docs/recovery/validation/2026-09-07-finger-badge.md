@@ -1,4 +1,7 @@
-# Issue 124 finger badge validation — 2026-09-07
+# Issue 124 finger badge validation — WITHDRAWN (2026-09-07)
+
+Historical evidence only: user withdrew PR147 without merge and closed #124 as not planned.
+Do not reuse the label-suppression policy; no production correction was delivered.
 
 Implementation head: `47190a0703baf1b30a2bf1342ae12d6f5acaa7f4`.
 Review-ready PR: https://github.com/landfill/ClairKeys/pull/147.

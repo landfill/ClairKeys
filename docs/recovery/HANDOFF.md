@@ -1,14 +1,13 @@
 # Current Handoff
 
-## Finger badge correction submitted (2026-09-07)
+## Finger badge proposal withdrawn; UI renewal next (2026-09-07)
 
-- User ordered #124 before #146. Bounded badge geometry and explicit display thresholds are
-  implemented in [PR #147](https://github.com/landfill/ClairKeys/pull/147); D-055 documents the change.
-- Local 985 Jest tests, typecheck, lint, build and browser component bounds passed.
-  [Validation](validation/2026-09-07-finger-badge.md) and [live review tracking](reviews/PR-147.md).
-- Final head e607701: all 16 hosted checks/status contexts passed; both review threads resolved.
-- Next: obtain explicit approval to merge PR147, verify delivery, then continue #146.
-  No claim of physical-device or human performance verification. Existing user changes preserved.
+- User approved closing PR147 without merge and #124 as not planned. Both states verified.
+  Geometric overflow alone did not establish a user readability defect; label omission was rejected.
+- Main retains existing all-number rendering. D-055 and the threshold implementation remain only
+  on the abandoned branch and must not be carried into #146. [Withdrawal record](reviews/PR-147.md).
+- Current work: #146 from latest main, beginning with confirmed card readability and home static example.
+  Existing user changes and local signed-in screenshots remain preserved and excluded from commits.
 
 ## Historical issues closed by user decision (2026-09-07)
 
