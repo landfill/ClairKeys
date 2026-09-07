@@ -1,5 +1,12 @@
 # Current Handoff
 
+## Actual cloud issue trial dispatched (2026-09-08)
+
+- User authorized testing actual cloud implementation and PR creation. Submitted #146 upload-form
+  layout slice from main in the saved ClairKeys environment; no merge/deployment/issue closure.
+- Task URL, scope, requested branch and observed results: [cloud trial](validation/2026-09-08-codex-cloud-issue-trial.md).
+  Consult the live task for transient status; dispatch alone does not prove implementation or PR readiness.
+
 ## Codex cloud environment saved (2026-09-08)
 
 - Created and read back the ClairKeys cloud environment for landfill/ClairKeys with Node22,
