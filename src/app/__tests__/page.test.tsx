@@ -26,9 +26,11 @@ describe('Home — 로그인 전 가치 전달 (DS-2)', () => {
     )
   })
 
-  it('reserves a first-screen area for a falling-notes result without mounting a player', () => {
+  it('shows a labeled static practice example without mounting a player', () => {
     render(<Home />)
     expect(screen.getByTestId('falling-notes-result-area')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /낙하 노트와 피아노 건반/ })).toBeInTheDocument()
+    expect(screen.getByText('연습 화면 예시')).toBeInTheDocument()
     expect(screen.queryByTestId('falling-notes-player')).not.toBeInTheDocument()
   })
 

@@ -53,14 +53,14 @@ export function SheetMusicCard({
   }[availability]
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-200 h-full flex flex-col">
-      <div className="p-4 space-y-3 flex-1 flex flex-col">
+    <Card padding="none" className="group min-w-0 hover:shadow-md transition-shadow duration-200 h-full flex flex-col">
+      <div className="p-5 space-y-3 flex-1 flex flex-col">
         {/* Header with title and composer */}
         <div className="space-y-1 flex-shrink-0">
-          <h3 title={sheetMusic.title} className="font-semibold text-lg text-ink line-clamp-2 group-hover:text-accent transition-colors min-h-[3.5rem]">
+          <h3 title={sheetMusic.title} className="font-semibold text-lg text-ink break-words line-clamp-2 group-hover:text-accent transition-colors min-h-[3.5rem]">
             {sheetMusic.title}
           </h3>
-          <p className="text-ink-muted text-sm truncate">{sheetMusic.composer}</p>
+          <p className="text-ink-muted text-sm break-words line-clamp-2">{sheetMusic.composer}</p>
         </div>
 
         {/* Category and visibility info */}
@@ -91,7 +91,7 @@ export function SheetMusicCard({
         <div className="space-y-2 pt-2 flex-shrink-0">
           {availability === 'ready' || availability === undefined ? (
             <Link href={`/sheet/${sheetMusic.id}`} className="block w-full">
-              <Button as="span" className="w-full" size="sm">
+              <Button as="span" className="w-full min-h-11 whitespace-nowrap" size="sm">
                 연습 시작
               </Button>
             </Link>
@@ -101,7 +101,7 @@ export function SheetMusicCard({
             </Button>
           ) : (
             <Link href="/upload" className="block w-full">
-              <Button as="span" className="w-full" size="sm">
+              <Button as="span" className="w-full min-h-11 whitespace-nowrap" size="sm">
                 다시 업로드
               </Button>
             </Link>
@@ -113,7 +113,7 @@ export function SheetMusicCard({
                   onClick={() => onEdit(sheetMusic)}
                   variant="outline"
                   size="sm"
-                  className="min-w-0 w-full"
+                  className="min-w-0 w-full min-h-11 whitespace-nowrap"
                   aria-label={`${sheetMusic.title} 제목 수정`}
                 >
                   수정
@@ -126,7 +126,7 @@ export function SheetMusicCard({
                     onClick={() => setShowMoveMenu(!showMoveMenu)}
                     variant="outline"
                     size="sm"
-                    className="min-w-0 w-full"
+                    className="min-w-0 w-full min-h-11 whitespace-nowrap"
                   >
                     이동
                   </Button>
@@ -164,7 +164,7 @@ export function SheetMusicCard({
                   onClick={() => setShowDeleteDialog(true)}
                   variant="outline"
                   size="sm"
-                  className="min-w-0 w-full text-state-error hover:border-state-error"
+                  className="min-w-0 w-full min-h-11 whitespace-nowrap text-state-error hover:border-state-error"
                 >
                   삭제
                 </Button>
