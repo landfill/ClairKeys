@@ -236,20 +236,28 @@ describe('visualUtils with fingering', () => {
 
 
 describe('issue 124 badge containment', () => {
-  it.each([10.8, 24, 24.46, 36])('contains white and black badges at %spx key width', keyWidth => {
+  it.each([
+    { keyWidth: 10.8, visible: [false, false] },
+    { keyWidth: 11, visible: [true, false] },
+    { keyWidth: 23, visible: [true, true] },
+    { keyWidth: 24, visible: [true, true] },
+    { keyWidth: 24.46, visible: [true, true] },
+    { keyWidth: 36, visible: [true, true] },
+  ])('contains white and black badges at $keyWidth px key width', ({ keyWidth, visible }) => {
     const layout = buildKeyLayout(keyWidth, { minMidi: 60, maxMidi: 64 });
     for (const duration of [0.01, 0.1, 1]) {
       const notes = notesToVisualNotes([
         { midi: 60, start: 1, duration, finger: 1, hand: 'R' },
         { midi: 61, start: 1, duration, finger: 2, hand: 'R' },
       ], 0, 140, 350, layout);
-      for (const note of notes) {
+      for (const [index, note] of notes.entries()) {
         const badge = getFingerBadgePosition(note);
         expect(badge.x).toBeGreaterThanOrEqual(note.x);
         expect(badge.y).toBeGreaterThanOrEqual(note.y);
         expect(badge.x + badge.width).toBeLessThanOrEqual(note.x + note.w + 1e-9);
         expect(badge.y + badge.size).toBeLessThanOrEqual(note.y + note.h + 1e-9);
-        expect(shouldShowFingerBadge(note)).toBe(keyWidth >= 24 && duration >= 0.1);
+        // Explicit per-lane cases straddle the transformed white/black width thresholds.
+        expect(shouldShowFingerBadge(note)).toBe(visible[index] && duration >= 0.1);
         if (shouldShowFingerBadge(note)) {
           expect(Number.isInteger(badge.fontSize)).toBe(true);
           expect(badge.fontSize).toBeGreaterThanOrEqual(12);
