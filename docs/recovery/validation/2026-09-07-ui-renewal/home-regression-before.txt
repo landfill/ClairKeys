@@ -1,0 +1,335 @@
+
+> clairkeys@0.1.0 test
+> jest --runInBand src/app/__tests__/page.test.tsx
+
+FAIL src/app/__tests__/page.test.tsx
+  Home — 로그인 전 가치 전달 (DS-2)
+    ✓ leads with what the user gets, not with the product name (35 ms)
+    ✓ uses 내 악보로 시작하기 as the primary CTA (이슈 #76 완료 조건 2) (7 ms)
+    ✕ shows a labeled static practice example without mounting a player (28 ms)
+    ✓ states the file limit and the wait before the visitor commits (3 ms)
+    ✓ shows the three steps between a PDF and practice (6 ms)
+  Home — 접근성 가드
+    ✓ never leaves a horizontally scrollable region without keyboard reach (2 ms)
+    ✓ gives every heading a single h1 (2 ms)
+
+  ● Home — 로그인 전 가치 전달 (DS-2) › shows a labeled static practice example without mounting a player
+
+    TestingLibraryElementError: Unable to find an accessible element with the role "img" and name `/낙하 노트와 피아노 건반/`
+
+    Here are the accessible roles:
+
+      heading:
+
+      Name "가지고 있는 PDF 악보를 따라 치기 쉬운 연습으로":
+      [36m<h1[39m
+        [33mclass[39m=[32m"text-3xl xl:text-4xl font-semibold tracking-tight text-ink leading-tight"[39m
+      [36m/>[39m
+
+      Name "어떻게 되나요":
+      [36m<h2[39m
+        [33mclass[39m=[32m"mt-8 text-xs font-semibold tracking-wide uppercase text-ink-muted"[39m
+      [36m/>[39m
+
+      Name "PDF 악보를 올립니다":
+      [36m<h3[39m
+        [33mclass[39m=[32m"text-sm font-semibold text-ink"[39m
+      [36m/>[39m
+
+      Name "AI가 음표를 읽습니다":
+      [36m<h3[39m
+        [33mclass[39m=[32m"text-sm font-semibold text-ink"[39m
+      [36m/>[39m
+
+      Name "보면서 연습합니다":
+      [36m<h3[39m
+        [33mclass[39m=[32m"text-sm font-semibold text-ink"[39m
+      [36m/>[39m
+
+      Name "낙하 노트 학습 결과":
+      [36m<h2[39m
+        [33mclass[39m=[32m"sr-only"[39m
+        [33mid[39m=[32m"home-result-heading"[39m
+      [36m/>[39m
+
+      --------------------------------------------------
+      paragraph:
+
+      Name "":
+      [36m<p[39m
+        [33mclass[39m=[32m"mt-4 text-base text-ink-muted"[39m
+      [36m/>[39m
+
+      Name "":
+      [36m<p[39m
+        [33mclass[39m=[32m"text-sm text-ink-muted"[39m
+      [36m/>[39m
+
+      Name "":
+      [36m<p[39m
+        [33mclass[39m=[32m"text-sm text-ink-muted"[39m
+      [36m/>[39m
+
+      Name "":
+      [36m<p[39m
+        [33mclass[39m=[32m"text-sm text-ink-muted"[39m
+      [36m/>[39m
+
+      --------------------------------------------------
+      link:
+
+      Name "내 악보로 시작하기":
+      [36m<a[39m
+        [33mhref[39m=[32m"/upload"[39m
+      [36m/>[39m
+
+      Name "공개 악보 탐색":
+      [36m<a[39m
+        [33mhref[39m=[32m"/explore"[39m
+      [36m/>[39m
+
+      --------------------------------------------------
+      button:
+
+      Name "내 악보로 시작하기":
+      [36m<button[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center font-medium rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-accent text-on-accent hover:bg-accent-hover px-6 py-3 text-base w-full sm:w-auto "[39m
+      [36m/>[39m
+
+      Name "공개 악보 탐색":
+      [36m<button[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center font-medium rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-rule-strong bg-surface text-ink hover:bg-surface-muted px-6 py-3 text-base w-full sm:w-auto "[39m
+      [36m/>[39m
+
+      --------------------------------------------------
+      list:
+
+      Name "":
+      [36m<ul[39m
+        [33mclass[39m=[32m"mt-4 space-y-1 text-sm text-ink-muted"[39m
+      [36m/>[39m
+
+      Name "":
+      [36m<ol[39m
+        [33mclass[39m=[32m"mt-3 space-y-2"[39m
+      [36m/>[39m
+
+      --------------------------------------------------
+      listitem:
+
+      Name "":
+      [36m<li />[39m
+
+      Name "":
+      [36m<li />[39m
+
+      Name "":
+      [36m<li />[39m
+
+      Name "":
+      [36m<li[39m
+        [33mclass[39m=[32m"flex gap-3 border-t border-rule pt-2"[39m
+      [36m/>[39m
+
+      Name "":
+      [36m<li[39m
+        [33mclass[39m=[32m"flex gap-3 border-t border-rule pt-2"[39m
+      [36m/>[39m
+
+      Name "":
+      [36m<li[39m
+        [33mclass[39m=[32m"flex gap-3 border-t border-rule pt-2"[39m
+      [36m/>[39m
+
+      --------------------------------------------------
+      region:
+
+      Name "낙하 노트 학습 결과":
+      [36m<section[39m
+        [33maria-labelledby[39m=[32m"home-result-heading"[39m
+      [36m/>[39m
+
+      --------------------------------------------------
+
+    Ignored nodes: comments, script, style
+    [36m<body>[39m
+      [36m<div>[39m
+        [36m<div>[39m
+          [36m<section[39m
+            [33mclass[39m=[32m"pt-10 pb-16"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 "[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"grid gap-10 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-12 lg:items-start"[39m
+              [36m>[39m
+                [36m<div>[39m
+                  [36m<h1[39m
+                    [33mclass[39m=[32m"text-3xl xl:text-4xl font-semibold tracking-tight text-ink leading-tight"[39m
+                  [36m>[39m
+                    [0m가지고 있는 PDF 악보를[0m
+                    [36m<br />[39m
+                    [0m따라 치기 쉬운 연습으로[0m
+                  [36m</h1>[39m
+                  [36m<p[39m
+                    [33mclass[39m=[32m"mt-4 text-base text-ink-muted"[39m
+                  [36m>[39m
+                    [0m악보를 읽지 못해도 괜찮습니다. 노트가 건반으로 떨어지는 것을 보고 그대로 누르면 됩니다.[0m
+                  [36m</p>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"mt-6 flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-3"[39m
+                  [36m>[39m
+                    [36m<a[39m
+                      [33mhref[39m=[32m"/upload"[39m
+                    [36m>[39m
+                      [36m<button[39m
+                        [33mclass[39m=[32m"inline-flex items-center justify-center font-medium rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-accent text-on-accent hover:bg-accent-hover px-6 py-3 text-base w-full sm:w-auto "[39m
+                      [36m>[39m
+                        [0m내 악보로 시작하기[0m
+                      [36m</button>[39m
+                    [36m</a>[39m
+                    [36m<a[39m
+                      [33mhref[39m=[32m"/explore"[39m
+                    [36m>[39m
+                      [36m<button[39m
+                        [33mclass[39m=[32m"inline-flex items-center justify-center font-medium rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-rule-strong bg-surface text-ink hover:bg-surface-muted px-6 py-3 text-base w-full sm:w-auto "[39m
+                      [36m>[39m
+                        [0m공개 악보 탐색[0m
+                      [36m</button>[39m
+                    [36m</a>[39m
+                  [36m</div>[39m
+                  [36m<ul[39m
+                    [33mclass[39m=[32m"mt-4 space-y-1 text-sm text-ink-muted"[39m
+                  [36m>[39m
+                    [36m<li>[39m
+                      [0mPDF 파일, 최대 [0m
+                      [0m4[0m
+                      [0mMB[0m
+                    [36m</li>[39m
+                    [36m<li>[39m
+                      [0m변환에 1~3분, 페이지를 닫아도 계속됩니다[0m
+                    [36m</li>[39m
+                    [36m<li>[39m
+                      [0m공개로 설정하기 전까지 목록에 노출되지 않습니다[0m
+                    [36m</li>[39m
+                  [36m</ul>[39m
+                  [36m<h2[39m
+                    [33mclass[39m=[32m"mt-8 text-xs font-semibold tracking-wide uppercase text-ink-muted"[39m
+                  [36m>[39m
+                    [0m어떻게 되나요[0m
+                  [36m</h2>[39m
+                  [36m<ol[39m
+                    [33mclass[39m=[32m"mt-3 space-y-2"[39m
+                  [36m>[39m
+                    [36m<li[39m
+                      [33mclass[39m=[32m"flex gap-3 border-t border-rule pt-2"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"text-sm font-mono text-accent shrink-0"[39m
+                      [36m>[39m
+                        [0m1[0m
+                      [36m</span>[39m
+                      [36m<span>[39m
+                        [36m<h3[39m
+                          [33mclass[39m=[32m"text-sm font-semibold text-ink"[39m
+                        [36m>[39m
+                          [0mPDF 악보를 올립니다[0m
+                        [36m</h3>[39m
+                        [36m<p[39m
+                          [33mclass[39m=[32m"text-sm text-ink-muted"[39m
+                        [36m>[39m
+                          [0m가지고 있는 악보 파일을 그대로.[0m
+                        [36m</p>[39m
+                      [36m</span>[39m
+                    [36m</li>[39m
+                    [36m<li[39m
+                      [33mclass[39m=[32m"flex gap-3 border-t border-rule pt-2"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"text-sm font-mono text-accent shrink-0"[39m
+                      [36m>[39m
+                        [0m2[0m
+                      [36m</span>[39m
+                      [36m<span>[39m
+                        [36m<h3[39m
+                          [33mclass[39m=[32m"text-sm font-semibold text-ink"[39m
+                        [36m>[39m
+                          [0mAI가 음표를 읽습니다[0m
+                        [36m</h3>[39m
+                        [36m<p[39m
+                          [33mclass[39m=[32m"text-sm text-ink-muted"[39m
+                        [36m>[39m
+                          [0m1~3분. 페이지를 닫아도 됩니다.[0m
+                        [36m</p>[39m
+                      [36m</span>[39m
+                    [36m</li>[39m
+                    [36m<li[39m
+                      [33mclass[39m=[32m"flex gap-3 border-t border-rule pt-2"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"text-sm font-mono text-accent shrink-0"[39m
+                      [36m>[39m
+                        [0m3[0m
+                      [36m</span>[39m
+                      [36m<span>[39m
+                        [36m<h3[39m
+                          [33mclass[39m=[32m"text-sm font-semibold text-ink"[39m
+                        [36m>[39m
+                          [0m보면서 연습합니다[0m
+                        [36m</h3>[39m
+                        [36m<p[39m
+                          [33mclass[39m=[32m"text-sm text-ink-muted"[39m
+                        [36m>[39m
+                          [0m속도를 늦춰 따라갈 수 있습니다.[0m
+                        [36m</p>[39m
+                      [36m</span>[39m
+                    [36m</li>[39m
+                  [36m</ol>[39m
+                [36m</div>[39m
+                [36m<section[39m
+                  [33maria-labelledby[39m=[32m"home-result-heading"[39m
+                [36m>[39m
+                  [36m<h2[39m
+                    [33mclass[39m=[32m"sr-only"[39m
+                    [33mid[39m=[32m"home-result-heading"[39m
+                  [36m>[39m
+                    [0m낙하 노트 학습 결과[0m
+                  [36m</h2>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"min-h-[430px] rounded-2xl border border-rule bg-[#0b0b0c] shadow-sm"[39m
+                    [33mdata-testid[39m=[32m"falling-notes-result-area"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"sr-only"[39m
+                    [36m>[39m
+                      [0m낙하 노트 결과 예시가 들어갈 영역[0m
+                    [36m</span>[39m
+                  [36m</div>[39m
+                [36m</section>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</body>[39m
+
+      30 |     render(<Home />)
+      31 |     expect(screen.getByTestId('falling-notes-result-area')).toBeInTheDocument()
+    > 32 |     expect(screen.getByRole('img', { name: /낙하 노트와 피아노 건반/ })).toBeInTheDocument()
+         |                   ^
+      33 |     expect(screen.getByText('연습 화면 예시')).toBeInTheDocument()
+      34 |     expect(screen.queryByTestId('falling-notes-player')).not.toBeInTheDocument()
+      35 |   })
+
+      at Object.getElementError (node_modules/@testing-library/dom/dist/config.js:37:19)
+      at node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+      at node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+      at node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+      at Object.getByRole (src/app/__tests__/page.test.tsx:32:19)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 6 passed, 7 total
+Snapshots:   0 total
+Time:        0.841 s, estimated 1 s
+Ran all test suites matching src/app/__tests__/page.test.tsx.

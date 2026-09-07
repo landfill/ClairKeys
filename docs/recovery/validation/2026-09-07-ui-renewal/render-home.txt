@@ -1,0 +1,19 @@
+import React from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import FallingNotes from '../../src/components/animation/FallingNotes'
+import SimplePianoKeyboard from '../../src/components/piano/SimplePianoKeyboard'
+import { buildResponsiveKeyLayout } from '../../src/utils/pianoLayout'
+import { canonicalToFallingNotes } from '../../src/utils/dataConverter'
+import { getActiveNotes } from '../../src/utils/visualUtils'
+import { HOME_SAMPLE_ANIMATION } from '../../src/fixtures/homeSample'
+const notes=canonicalToFallingNotes(HOME_SAMPLE_ANIMATION)
+const layout=buildResponsiveKeyLayout(800,notes)
+const now=1.9
+const markup=renderToStaticMarkup(<div id="example" style={{width:800,height:400,background:'#0b0b0c'}}>
+ <div style={{position:'relative',height:250,overflow:'hidden'}}><FallingNotes notes={notes} nowSec={now} pxPerSec={140} height={250} layout={layout}/></div>
+ <div style={{height:2,background:'#cbd5e1'}}/>
+ <div style={{height:148}}><SimplePianoKeyboard layout={layout} activeKeys={new Set(getActiveNotes(notes,now).map(n=>n.midi))}/></div>
+</div>)
+const css=readdirSync('.next/static/css').filter(x=>x.endsWith('.css')).map(x=>readFileSync('.next/static/css/'+x,'utf8')).join('\n')
+writeFileSync('/private/tmp/clairkeys-146-assets/index.html','<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home practice example source</title><style>'+css+'\nbody{margin:0;background:#faf6ee}</style>'+markup)
