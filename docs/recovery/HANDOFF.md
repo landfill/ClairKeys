@@ -6,7 +6,8 @@
   implemented in [PR #147](https://github.com/landfill/ClairKeys/pull/147); D-055 documents the change.
 - Local 985 Jest tests, typecheck, lint, build and browser component bounds passed.
   [Validation](validation/2026-09-07-finger-badge.md) and [live review tracking](reviews/PR-147.md).
-- Next: resolve hosted checks/review, obtain explicit PR merge approval, then continue #146.
+- Final head e607701: all 16 hosted checks/status contexts passed; both review threads resolved.
+- Next: obtain explicit approval to merge PR147, verify delivery, then continue #146.
   No claim of physical-device or human performance verification. Existing user changes preserved.
 
 ## Historical issues closed by user decision (2026-09-07)
