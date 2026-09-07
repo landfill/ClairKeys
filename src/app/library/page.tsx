@@ -34,9 +34,9 @@ export default function LibraryPage() {
           description="업로드한 악보를 관리하고 연습하세요"
         />
         
-        <Container className="py-8" size="full">
+        <Container className="pt-6 pb-24" size="xl">
           {/* Tab Navigation */}
-          <div className="flex space-x-1 mb-8 p-1 tab-navigation rounded-full max-w-md">
+          <div className="flex space-x-1 mb-6 p-1 tab-navigation rounded-full max-w-md">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
@@ -57,15 +57,16 @@ export default function LibraryPage() {
           </div>
 
           {/* Search and Filter Bar */}
-          <div className="mb-8 space-y-4">
+          <div className="mb-6 space-y-3">
             {/* Search Bar */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-3">
               <div className="flex-1 relative">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="곡명, 저작자로 검색..."
+                  aria-label="내 악보 검색"
                   className="w-full rounded-2xl border border-rule-strong bg-surface py-3 pl-10 pr-4 text-ink shadow-sm transition-colors"
                 />
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -76,11 +77,11 @@ export default function LibraryPage() {
               </div>
               
               {/* Sort Dropdown */}
-              <div className="relative">
+              <div className="relative w-full md:w-40 md:shrink-0">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'recent' | 'name' | 'created')}
-                  className="h-12 min-w-[160px] appearance-none rounded-full border border-rule-strong bg-surface pl-4 pr-10 text-ink shadow-sm transition-colors hover:bg-surface-muted"
+                  className="h-12 w-full appearance-none rounded-full border border-rule-strong bg-surface pl-4 pr-10 text-ink shadow-sm transition-colors hover:bg-surface-muted"
                   aria-label="악보 정렬"
                 >
                   <option value="recent">최근 수정</option>
