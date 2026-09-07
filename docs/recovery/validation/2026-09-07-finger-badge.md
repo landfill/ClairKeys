@@ -39,3 +39,18 @@ actual production components. It is a static display check, not the full Tailwin
 D-055 explicitly supersedes unconditional short-note labels from D-038/ISSUE-103. Notes below 10px
 width or 14px height retain their data and geometry but omit the number. No inference/audio/OMR changes.
 Existing user modifications and the earlier signed-in UI captures are not part of this change.
+
+## Review follow-up
+
+- CodeRabbit review 5130439491 requested actual-score browser evidence. The initial evidence was already
+  committed directly to main at 9107532 under the repository status-record rule, outside the implementation
+  branch reviewed by the bot. Links were supplied in the reply. No phase was marked complete.
+- Added [mobile DOM metrics](2026-09-07-finger-badge/mobile-dom-metrics.json): 33/33 badge rectangles and
+  text ranges fit at 844x390 too. Desktop and landscape screenshots were reopened and inspected.
+- Review comment 3948464899 identified an over-specific sampled keyWidth>=24 test expectation. Follow-up
+  e607701 uses explicit white/black lane cases, adding widths 11 (white only) and 23 (both visible).
+  Focused Jest now 24 passed; typecheck and diff check passed. Production code unchanged from 47190a0.
+- Both hosted E2E jobs and all implementation CI checks passed at 47190a0. Follow-up head CI is tracked
+  in PR-147.md. CodeRabbit provides one included review per hour; no repeated review request is needed
+  for this tests-only correction. Local author review does not claim independent follow-up review.
+- Local preview server stopped and viewport override reset after verification.
