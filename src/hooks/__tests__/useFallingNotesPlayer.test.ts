@@ -138,3 +138,61 @@ describe('useFallingNotesPlayer loop lifecycle', () => {
     expect(frames.size).toBe(0)
   })
 })
+
+// A practice session is not the same thing as a sounding score. Pausing is a
+// pause inside the session the reader is already in; only a stop — theirs or
+// the end of the piece — returns them to setup.
+describe('useFallingNotesPlayer practice session', () => {
+  it('opens the session only once audio has actually started', async () => {
+    const { result } = renderHook(() => useFallingNotesPlayer(notes))
+    expect(result.current.isSessionActive).toBe(false)
+
+    mockAudio.startAudio.mockResolvedValueOnce(false)
+    await act(async () => { await result.current.play() })
+    expect(result.current.isSessionActive).toBe(false)
+
+    await act(async () => { await result.current.play() })
+    expect(result.current.isSessionActive).toBe(true)
+  })
+
+  it('keeps the session open across a pause', async () => {
+    const { result } = renderHook(() => useFallingNotesPlayer(notes))
+    await act(async () => { await result.current.play() })
+    act(() => result.current.pause())
+
+    expect(result.current.isPlaying).toBe(false)
+    expect(result.current.isSessionActive).toBe(true)
+  })
+
+  it('closes the session when the reader stops', async () => {
+    const { result } = renderHook(() => useFallingNotesPlayer(notes))
+    await act(async () => { await result.current.play() })
+    act(() => result.current.stop())
+
+    expect(result.current.isSessionActive).toBe(false)
+  })
+
+  it('closes the session when the score runs out', async () => {
+    const { result } = renderHook(() => useFallingNotesPlayer(notes))
+    await act(async () => { await result.current.play() })
+
+    // The auto-stop is a stop like any other: the playhead is back at zero and
+    // there is nothing left to resume.
+    await frameAt(13)
+
+    expect(result.current.isPlaying).toBe(false)
+    expect(result.current.isSessionActive).toBe(false)
+    expect(result.current.currentTime).toBe(0)
+  })
+
+  it('leaves the session alone when audio cannot restart mid-piece', async () => {
+    const { result } = await playingLoop()
+    mockAudio.startAudio.mockResolvedValueOnce(false)
+    await frameAt(4.1)
+
+    // A failed restart is not a decision to leave the piece. The reader stays
+    // where they were, paused, with the transport still under their thumb.
+    expect(result.current.isPlaying).toBe(false)
+    expect(result.current.isSessionActive).toBe(true)
+  })
+})

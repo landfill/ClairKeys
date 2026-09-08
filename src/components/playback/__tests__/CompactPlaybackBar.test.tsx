@@ -9,6 +9,8 @@ function renderBar(overrides: Partial<React.ComponentProps<typeof CompactPlaybac
     playbackSpeed: 1,
     volume: 0.22,
     maxVolume: 1,
+    isPlaying: true,
+    onPlay: jest.fn(),
     onPause: jest.fn(),
     onStop: jest.fn(),
     onSeek: jest.fn(),
@@ -78,6 +80,58 @@ describe('CompactPlaybackBar', () => {
 
     fireEvent.change(screen.getByLabelText('음량 (master gain)'), { target: { value: '0.4' } })
     expect(props.onVolumeChange).toHaveBeenCalledWith(0.4)
+  })
+
+  // Pausing used to swap this whole bar for the three-row setup block, which
+  // moved every control the reader had just been using. The transport now
+  // toggles in place instead.
+  describe('resuming from a pause', () => {
+    it('offers pause in the first transport slot while the score sounds', () => {
+      const props = renderBar({ isPlaying: true })
+
+      const button = screen.getByLabelText('일시정지')
+      expect(screen.getByTestId('compact-playback-bar').firstElementChild).toBe(button)
+      expect(button).toHaveClass('h-10', 'w-10')
+
+      fireEvent.click(button)
+      expect(props.onPause).toHaveBeenCalled()
+    })
+
+    it('offers resume in that same slot while paused', () => {
+      const props = renderBar({ isPlaying: false })
+
+      const button = screen.getByLabelText('재생')
+      // Same slot and same size: the control that was under the reader's thumb
+      // a moment ago is still there, and it is the one that restarts the score.
+      expect(screen.getByTestId('compact-playback-bar').firstElementChild).toBe(button)
+      expect(button).toHaveClass('h-10', 'w-10')
+      expect(screen.queryByLabelText('일시정지')).not.toBeInTheDocument()
+
+      fireEvent.click(button)
+      expect(props.onPlay).toHaveBeenCalled()
+      expect(props.onPause).not.toHaveBeenCalled()
+    })
+
+    it('keeps seeking, the loop markers and both inputs live while paused', () => {
+      const props = renderBar({
+        isPlaying: false,
+        onLoopStart: jest.fn(),
+        onLoopEnd: jest.fn(),
+        onLoopClear: jest.fn(),
+      })
+
+      fireEvent.keyDown(screen.getByRole('slider', { name: '재생 위치' }), { key: 'ArrowRight' })
+      expect(props.onSeek).toHaveBeenCalledWith(35)
+
+      fireEvent.click(screen.getByLabelText('구간 시작 A 설정'))
+      expect(props.onLoopStart).toHaveBeenCalled()
+
+      fireEvent.change(screen.getByLabelText('재생 속도'), { target: { value: '0.5' } })
+      expect(props.onSpeedChange).toHaveBeenCalledWith(0.5)
+
+      fireEvent.change(screen.getByLabelText('음량 (master gain)'), { target: { value: '0.4' } })
+      expect(props.onVolumeChange).toHaveBeenCalledWith(0.4)
+    })
   })
 
   it('keeps compact transport and loop controls the same size', () => {
