@@ -15,15 +15,21 @@ import { Button } from '@/components/ui'
  * The mode selector is deliberately absent. `FallingNotesPlayer` only supports
  * listen mode, and its handler logs rather than switching, so the control has
  * nothing to offer here.
+ *
+ * The bar outlives a pause. It is the transport for a practice session, not for
+ * a sounding score, so the first control toggles between pause and resume in
+ * place rather than the bar being swapped out for the setup chrome.
  */
 
 export interface CompactPlaybackBarProps {
   isReady: boolean
+  isPlaying: boolean
   currentTime: number
   duration: number
   playbackSpeed: number
   volume: number
   maxVolume: number
+  onPlay: () => void
   onPause: () => void
   onStop: () => void
   onSeek: (time: number) => void
@@ -49,11 +55,13 @@ function formatTime(seconds: number): string {
 
 export default function CompactPlaybackBar({
   isReady,
+  isPlaying,
   currentTime,
   duration,
   playbackSpeed,
   volume,
   maxVolume,
+  onPlay,
   onPause,
   onStop,
   onSeek,
@@ -103,16 +111,19 @@ export default function CompactPlaybackBar({
       data-testid="compact-playback-bar"
       className={`flex items-center gap-3 h-14 px-1 ${className}`}
     >
+      {/* One slot, two states. A pause used to replace this bar with the
+          three-row setup block, so resuming meant finding the transport
+          somewhere else on a page that had reflowed in the meantime. */}
       <Button
         type="button"
-        onClick={onPause}
+        onClick={isPlaying ? onPause : onPlay}
         disabled={!isReady}
-        aria-label="일시정지"
+        aria-label={isPlaying ? '일시정지' : '재생'}
         variant="outline"
         size="md"
         className="h-10 w-10 shrink-0 p-0 !px-0 !py-0 text-lg leading-none"
       >
-        ⏸️
+        {isPlaying ? '⏸️' : '▶️'}
       </Button>
       {onLoopStart && onLoopEnd && onLoopClear && (
         <div className="flex shrink-0 gap-1" data-testid="compact-loop-controls">
@@ -155,11 +166,17 @@ export default function CompactPlaybackBar({
         <div className="h-2 rounded-full bg-blue-600" style={{ width: `${progress}%` }} />
       </div>
 
+      {/* Disabled while the samples load, exactly as the setup screen's speed
+          control is. During playback this is always enabled — the status has
+          resolved before a note sounds — so the only window it closes is a
+          resume that is still starting, where a speed change would cancel the
+          start the reader just asked for. */}
       <select
         value={playbackSpeed}
         onChange={event => onSpeedChange(parseFloat(event.target.value))}
+        disabled={!isReady}
         aria-label="재생 속도"
-        className="h-10 shrink-0 rounded-full border border-rule-strong bg-surface px-3 text-xs text-ink shadow-sm"
+        className="h-10 shrink-0 rounded-full border border-rule-strong bg-surface px-3 text-xs text-ink shadow-sm disabled:opacity-50"
       >
         {SPEEDS.map(speed => (
           <option key={speed} value={speed}>

@@ -42,11 +42,16 @@ const rotatedRootStyle: React.CSSProperties = {
 export default function FallingNotesPlayer({
   animationData,
   className = '',
-  onPlaybackChange,
+  onSessionChange,
 }: {
   animationData: CanonicalAnimationData
   className?: string
-  onPlaybackChange?: (isPlaying: boolean) => void
+  /**
+   * Reports the practice session, not the sounding score. A pause keeps this
+   * true: the page chrome must not come back underneath a reader who only
+   * stopped the sound for a moment.
+   */
+  onSessionChange?: (isSessionActive: boolean) => void
 }) {
   // Convert canonical animation data to falling notes format
   const notes = useMemo(() => canonicalToFallingNotes(animationData), [animationData])
@@ -55,6 +60,7 @@ export default function FallingNotesPlayer({
   // Use falling notes player hook for audio-visual synchronization
   const {
     isPlaying,
+    isSessionActive,
     currentTime,
     tempoScale,
     lookAheadSec,
@@ -136,18 +142,20 @@ export default function FallingNotesPlayer({
     keyWidth: layout.keyWidth,
   })
 
-  // `isPlaying` is still false for as long as play() spends awaiting the
-  // AudioContext and the samples, so a plain `!isPlaying` here would release the
-  // orientation that the click had just requested. Only the fall from true is a
-  // stop.
-  const wasPlayingRef = useRef(false)
+  // The session, not `isPlaying`, owns the screen. A pause leaves the reader
+  // inside the practice run, so turning the phone back upright and rebuilding
+  // the page under them belongs to the end of the session alone. The session
+  // is also still false while play() awaits the AudioContext and the samples,
+  // so only the fall from true is an exit — a plain `!isSessionActive` would
+  // release the orientation the click had just requested.
+  const wasSessionActiveRef = useRef(false)
   useEffect(() => {
-    document.body.classList.toggle('playback-active', isPlaying)
-    onPlaybackChange?.(isPlaying)
-    if (wasPlayingRef.current && !isPlaying) orientation.exit()
-    wasPlayingRef.current = isPlaying
+    document.body.classList.toggle('playback-active', isSessionActive)
+    onSessionChange?.(isSessionActive)
+    if (wasSessionActiveRef.current && !isSessionActive) orientation.exit()
+    wasSessionActiveRef.current = isSessionActive
     return () => document.body.classList.remove('playback-active')
-  }, [isPlaying, onPlaybackChange, orientation])
+  }, [isSessionActive, onSessionChange, orientation])
 
   // The rotated player is fixed over the whole screen, so anything left
   // scrolling behind it only produces rubber-banding on iOS.
@@ -159,13 +167,18 @@ export default function FallingNotesPlayer({
   // The orientation request has to be issued from the click that produced the
   // user activation. play() awaits the AudioContext and the sample load, which
   // can outlive the activation window that requestFullscreen needs.
+  // Resuming asks for the orientation again rather than assuming it survived:
+  // the browser may have dropped fullscreen while the reader was paused, and
+  // the request is only grantable from the click that produced it.
   const handlePlay = useCallback(async () => {
     orientation.enter()
     // A start that never happens must not leave a phone turned with nothing
-    // playing, and no state transition would report that on its own.
+    // playing, and no state transition would report that on its own. Inside a
+    // session there is nothing to undo: the reader stays on the paused screen
+    // they were already operating.
     const started = await play()
-    if (!started) orientation.exit()
-  }, [orientation, play])
+    if (!started && !isSessionActive) orientation.exit()
+  }, [isSessionActive, orientation, play])
 
   // Derive key activation synchronously from the exact playhead passed to the
   // falling-note visualization. An effect would leave the keyboard one render
@@ -185,44 +198,48 @@ export default function FallingNotesPlayer({
       ref={rootRef}
       className={[
         'w-full mx-auto',
-        isPlaying ? 'max-w-none flex flex-col' : 'max-w-6xl',
+        isSessionActive ? 'max-w-none flex flex-col' : 'max-w-6xl',
         // An explicit cross-axis height replaces min-h while rotated; keeping
         // both would constrain the box along the wrong axis.
-        isPlaying && !orientation.rotate ? 'min-h-[100dvh]' : '',
+        isSessionActive && !orientation.rotate ? 'min-h-[100dvh]' : '',
         className,
       ].filter(Boolean).join(' ')}
       style={orientation.rotate ? rotatedRootStyle : undefined}
     >
-      {!isPlaying && <ScoreTimingNotice metadata={animationData.metadata} />}
+      {!isSessionActive && <ScoreTimingNotice metadata={animationData.metadata} />}
       <TempoDisplay
         tempo={animationData.tempo}
         tempoSource={animationData.tempoSource}
         timingReferenceBpm={animationData.timingReferenceBpm}
         scoreTempo={animationData.scoreTempo}
-        isPlaybackActive={isPlaying}
-        className={isPlaying ? '' : 'mb-4'}
+        isPlaybackActive={isSessionActive}
+        className={isSessionActive ? '' : 'mb-4'}
       >
-        {isPlaying && hasReleaseGuidance && <span role="note" className="ml-2 text-xs text-ink-muted">
+        {isSessionActive && hasReleaseGuidance && <span role="note" className="ml-2 text-xs text-ink-muted">
           옅은 노트: 소리 유지 · 자동 손 떼기 제안
         </span>}
       </TempoDisplay>
 
-      {!isPlaying && hasReleaseGuidance && <p className="mb-2 text-xs text-ink-muted" role="note">
+      {!isSessionActive && hasReleaseGuidance && <p className="mb-2 text-xs text-ink-muted" role="note">
         옅은 노트는 손을 뗀 뒤 소리가 이어지는 구간입니다. 손 떼기 시점은 자동 연습 제안이며,
         소리를 이어가려면 페달이나 다른 연주 방법이 필요할 수 있습니다.
       </p>}
 
-      {isPlaying ? (
-        /* One row instead of four. The landscape viewport this mode targets is
-           390px tall in total; the stacked setup chrome cost 264px of it. */
+      {isSessionActive ? (
+        /* One row instead of four, and it outlives a pause. The landscape
+           viewport this mode targets is 390px tall in total; the stacked setup
+           chrome cost 264px of it, and restoring it on every pause moved every
+           control the reader was using. */
         <div className="mb-2">
           <CompactPlaybackBar
             isReady={sampleStatus !== 'loading'}
+            isPlaying={isPlaying}
             currentTime={currentTime}
             duration={totalLength}
             playbackSpeed={tempoScale}
             volume={volume}
             maxVolume={MAX_MASTER_GAIN}
+            onPlay={handlePlay}
             onPause={pause}
             onStop={stop}
             onSeek={seek}
@@ -298,7 +315,7 @@ export default function FallingNotesPlayer({
       <div
         role="status"
         aria-live="polite"
-        className={isPlaying ? 'sr-only' : 'mb-4 text-xs text-ink-muted'}
+        className={isSessionActive ? 'sr-only' : 'mb-4 text-xs text-ink-muted'}
       >
         {sampleStatus === 'idle' && '녹음 피아노 샘플은 첫 재생 때 준비됩니다.'}
         {sampleStatus === 'loading' && '녹음 피아노 샘플을 준비 중입니다.'}
@@ -316,16 +333,17 @@ export default function FallingNotesPlayer({
       <div
         ref={visualizationRef}
         className="w-full"
-        style={isPlaying
+        style={isSessionActive
           ? { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }
           : undefined}
       >
       <div
+        data-testid="playback-box"
         className="w-full border rounded-2xl shadow overflow-hidden"
         style={{
           display: 'flex',
           flexDirection: 'column',
-          height: isPlaying ? boxHeight : standardVisualizationHeight,
+          height: isSessionActive ? boxHeight : standardVisualizationHeight,
         }}
       >
         {/* Falling Notes Area */}

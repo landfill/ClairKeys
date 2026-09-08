@@ -5,6 +5,7 @@ import FallingNotesPlayer from '../FallingNotesPlayer'
 const mockKeyboardFrames: Set<number>[] = []
 const mockPlayerState = {
   isPlaying: true,
+  isSessionActive: true,
   currentTime: 1.5,
   tempoScale: 1,
   lookAheadSec: 1.5,
@@ -22,6 +23,18 @@ const mockPlayerState = {
 jest.mock('@/hooks/useFallingNotesPlayer', () => ({
   useFallingNotesPlayer: () => mockPlayerState,
 }))
+
+/** Never played, or stopped: the setup screen. */
+function setIdle() {
+  mockPlayerState.isPlaying = false
+  mockPlayerState.isSessionActive = false
+}
+
+/** Paused part-way through a session: still the focused practice screen. */
+function setPaused() {
+  mockPlayerState.isPlaying = false
+  mockPlayerState.isSessionActive = true
+}
 
 const mockOrientation = {
   rotate: false,
@@ -78,6 +91,7 @@ describe('FallingNotesPlayer', () => {
     mockKeyboardFrames.length = 0
     mockPlayerState.sampleStatus = 'ready'
     mockPlayerState.isPlaying = true
+    mockPlayerState.isSessionActive = true
     mockOrientation.rotate = false
     mockOrientation.enter.mockClear()
     mockOrientation.exit.mockClear()
@@ -99,7 +113,7 @@ describe('FallingNotesPlayer', () => {
     expect(screen.getByTestId('tempo-display')).toHaveTextContent('♩=120 (출처 미상)')
     expect(screen.getByTestId('tempo-display')).toHaveClass('fixed')
 
-    mockPlayerState.isPlaying = false
+    setIdle()
     rerender(<FallingNotesPlayer animationData={animationData} />)
 
     expect(screen.getByTestId('tempo-display')).toHaveTextContent('♩=120 (출처 미상)')
@@ -108,7 +122,7 @@ describe('FallingNotesPlayer', () => {
 
   it('shows the current master gain and forwards slider changes to setVolume', () => {
     mockPlayerState.setVolume.mockClear()
-    mockPlayerState.isPlaying = false
+    setIdle()
     render(<FallingNotesPlayer animationData={animationData} />)
 
     // The readout is the gain value itself — that is what makes it usable for
@@ -124,7 +138,7 @@ describe('FallingNotesPlayer', () => {
   })
 
   it('shows recorded-sample readiness and removes the ineffective treble control', () => {
-    mockPlayerState.isPlaying = false
+    setIdle()
     render(<FallingNotesPlayer animationData={animationData} />)
 
     expect(screen.getByText('녹음 피아노 샘플로 재생합니다.')).toBeInTheDocument()
@@ -133,7 +147,7 @@ describe('FallingNotesPlayer', () => {
   })
 
   it('exposes degraded and failed fallback states without blocking playback', () => {
-    mockPlayerState.isPlaying = false
+    setIdle()
     mockPlayerState.sampleStatus = 'degraded'
     const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
 
@@ -147,7 +161,7 @@ describe('FallingNotesPlayer', () => {
   })
 
   it('marks controls not ready only while loading', () => {
-    mockPlayerState.isPlaying = false
+    setIdle()
     mockPlayerState.sampleStatus = 'loading'
     render(<FallingNotesPlayer animationData={animationData} />)
 
@@ -206,7 +220,7 @@ describe('FallingNotesPlayer', () => {
     })
 
     it('keeps the idle player at its standard pixel height', () => {
-      mockPlayerState.isPlaying = false
+      setIdle()
       render(<FallingNotesPlayer animationData={animationData} />)
       const { column } = readColumn()
 
@@ -225,7 +239,7 @@ describe('FallingNotesPlayer', () => {
     it('asks for landscape from the play click itself, not from a later effect', () => {
       mockOrientation.enter.mockClear()
       mockPlayerState.play.mockClear()
-      mockPlayerState.isPlaying = false
+      setIdle()
       render(<FallingNotesPlayer animationData={animationData} />)
 
       fireEvent.click(screen.getByTestId('play'))
@@ -236,11 +250,11 @@ describe('FallingNotesPlayer', () => {
       expect(mockPlayerState.play).toHaveBeenCalledTimes(1)
     })
 
-    it('releases the orientation as soon as playback stops', () => {
+    it('releases the orientation as soon as the session ends', () => {
       mockOrientation.exit.mockClear()
       const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
 
-      mockPlayerState.isPlaying = false
+      setIdle()
       rerender(<FallingNotesPlayer animationData={animationData} />)
 
       expect(mockOrientation.exit).toHaveBeenCalled()
@@ -310,8 +324,8 @@ describe('FallingNotesPlayer', () => {
       expect(status.className).toContain('sr-only')
     })
 
-    it('restores the full setup chrome when playback stops', () => {
-      mockPlayerState.isPlaying = false
+    it('restores the full setup chrome when the session ends', () => {
+      setIdle()
       render(<FallingNotesPlayer animationData={animationData} />)
 
       expect(screen.getByTestId('playback-ready')).toBeInTheDocument()
@@ -320,12 +334,109 @@ describe('FallingNotesPlayer', () => {
     })
   })
 
+  // Pause used to be indistinguishable from stop: the phone turned back, the
+  // page header and the three-row control block came back, and the box fell
+  // from its viewport height to a fixed 330px. Resuming meant finding the
+  // transport somewhere else on a page that had just reflowed underneath it.
+  describe('pausing inside a practice session', () => {
+    it('keeps the focused frame while the session is paused', () => {
+      setPaused()
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      expect(screen.getByTestId('compact-playback-bar')).toBeInTheDocument()
+      expect(screen.queryByTestId('playback-ready')).not.toBeInTheDocument()
+      expect(screen.queryByText(/히트라인/)).not.toBeInTheDocument()
+      expect(document.body).toHaveClass('playback-active')
+    })
+
+    it('keeps the box on the same measured column while paused', () => {
+      setPaused()
+      render(<FallingNotesPlayer animationData={animationData} />)
+      const column = screen.getByTestId('visual-playhead').parentElement!.parentElement!
+
+      // 330px is the idle box. Falling back to it on pause is the jump.
+      expect(column.style.height).not.toBe('330px')
+      expect(column.parentElement!.style.flex).toBe('1 1 0%')
+    })
+
+    it('does not release the orientation on a pause', () => {
+      const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+      mockOrientation.exit.mockClear()
+
+      setPaused()
+      rerender(<FallingNotesPlayer animationData={animationData} />)
+
+      // Turning the phone back upright mid-practice is the same defect as
+      // rebuilding the page underneath it.
+      expect(mockOrientation.exit).not.toHaveBeenCalled()
+    })
+
+    it('releases the orientation when the session itself ends', () => {
+      const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+      setPaused()
+      rerender(<FallingNotesPlayer animationData={animationData} />)
+      mockOrientation.exit.mockClear()
+
+      setIdle()
+      rerender(<FallingNotesPlayer animationData={animationData} />)
+
+      expect(mockOrientation.exit).toHaveBeenCalled()
+    })
+
+    it('reports the session to the page rather than the sounding score', () => {
+      const onSessionChange = jest.fn()
+      const { rerender } = render(
+        <FallingNotesPlayer animationData={animationData} onSessionChange={onSessionChange} />
+      )
+      expect(onSessionChange).toHaveBeenLastCalledWith(true)
+
+      setPaused()
+      rerender(<FallingNotesPlayer animationData={animationData} onSessionChange={onSessionChange} />)
+      // The page header and the info card stay away: a pause is not a return
+      // to browsing.
+      expect(onSessionChange).toHaveBeenLastCalledWith(true)
+
+      setIdle()
+      rerender(<FallingNotesPlayer animationData={animationData} onSessionChange={onSessionChange} />)
+      expect(onSessionChange).toHaveBeenLastCalledWith(false)
+    })
+
+    it('resumes from the same slot the pause was in', async () => {
+      setPaused()
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      await act(async () => {
+        fireEvent.click(screen.getByLabelText('재생'))
+      })
+
+      // The resume rides the same click that a first play does, because the
+      // browser may have dropped fullscreen while the reader was paused.
+      expect(mockOrientation.enter).toHaveBeenCalledTimes(1)
+      expect(mockPlayerState.play).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not release the orientation when a resume fails inside a session', async () => {
+      setPaused()
+      mockPlayerState.play.mockResolvedValue(false)
+      render(<FallingNotesPlayer animationData={animationData} />)
+      mockOrientation.exit.mockClear()
+
+      await act(async () => {
+        fireEvent.click(screen.getByLabelText('재생'))
+      })
+
+      // Unlike a failed first play, this leaves the reader where they already
+      // were — paused, in a screen they can operate.
+      expect(mockOrientation.exit).not.toHaveBeenCalled()
+    })
+  })
+
   // enter() runs from the click, but isPlaying only flips after play() resolves
   // its audio setup. Anything that treats that window as "not playing" cancels
   // the request that was just issued — on iOS that is the whole feature.
   describe('the window between the click and the first sound', () => {
     it('does not release the orientation while playback is still starting', async () => {
-      mockPlayerState.isPlaying = false
+      setIdle()
       render(<FallingNotesPlayer animationData={animationData} />)
       mockOrientation.exit.mockClear()
 
@@ -338,7 +449,7 @@ describe('FallingNotesPlayer', () => {
     })
 
     it('does not release the orientation merely because the player mounted idle', () => {
-      mockPlayerState.isPlaying = false
+      setIdle()
       render(<FallingNotesPlayer animationData={animationData} />)
 
       // Releasing on a false that was never preceded by a true is the same
@@ -347,7 +458,7 @@ describe('FallingNotesPlayer', () => {
     })
 
     it('releases the orientation when the audio never starts', async () => {
-      mockPlayerState.isPlaying = false
+      setIdle()
       mockPlayerState.play.mockResolvedValue(false)
       render(<FallingNotesPlayer animationData={animationData} />)
       mockOrientation.exit.mockClear()

@@ -166,6 +166,11 @@ export function useFallingNotesAudio() {
   const tempoScaleRef = useRef(1)
   const isPlayingRef = useRef(false)
   const playbackGenerationRef = useRef(0)
+  // How many starts are currently waiting on the sample bank. `sampleStatus`
+  // reports the bank except for `loading`, which describes a request — and a
+  // request can be abandoned. The count is what tells an abandoned start
+  // whether it is the last one out and therefore owes the status back.
+  const pendingSampleLoadsRef = useRef(0)
 
   // Rolling-scheduler state, all reset on every startAudio.
   const notesRef = useRef<FallingNote[]>([])
@@ -582,6 +587,7 @@ export function useFallingNotesAudio() {
     // it, and the fallback still covers whatever has not arrived.
     const bank = sampleBankRef.current
     setSampleStatus('loading')
+    pendingSampleLoadsRef.current += 1
     let loadResult: PianoSampleLoadResult | 'timeout'
     if (bank) {
       let timer: ReturnType<typeof setTimeout> | undefined
@@ -600,14 +606,24 @@ export function useFallingNotesAudio() {
       }
     }
 
+    pendingSampleLoadsRef.current -= 1
+    const bankStatus = loadResult === 'timeout' ? 'degraded' : loadResult.status
+
     // Covers both awaits above: a stop, unmount, or newer seek during either the
     // resume or the sample wait has already taken ownership of the clock.
     if (generation !== playbackGenerationRef.current || audioContext.state !== 'running') {
+      // Report the bank anyway when no other start is still waiting. `loading`
+      // is what the player reads as "not ready", and it disables the transport
+      // — including the stop that would otherwise clear it. A pause followed by
+      // a seek or a speed change reaches exactly here, and leaving the status
+      // behind locked the reader inside a screen with no working control.
+      // A newer start owns the status while it waits, so it is left alone.
+      if (pendingSampleLoadsRef.current === 0) setSampleStatus(bankStatus)
       return false
     }
 
     useSamplesForPlaybackRef.current = loadResult !== 'timeout' && loadResult.status === 'ready'
-    setSampleStatus(loadResult === 'timeout' ? 'degraded' : loadResult.status)
+    setSampleStatus(bankStatus)
 
     // Store current state
     notesRef.current = notes
