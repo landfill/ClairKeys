@@ -166,11 +166,17 @@ export default function CompactPlaybackBar({
         <div className="h-2 rounded-full bg-blue-600" style={{ width: `${progress}%` }} />
       </div>
 
+      {/* Disabled while the samples load, exactly as the setup screen's speed
+          control is. During playback this is always enabled — the status has
+          resolved before a note sounds — so the only window it closes is a
+          resume that is still starting, where a speed change would cancel the
+          start the reader just asked for. */}
       <select
         value={playbackSpeed}
         onChange={event => onSpeedChange(parseFloat(event.target.value))}
+        disabled={!isReady}
         aria-label="재생 속도"
-        className="h-10 shrink-0 rounded-full border border-rule-strong bg-surface px-3 text-xs text-ink shadow-sm"
+        className="h-10 shrink-0 rounded-full border border-rule-strong bg-surface px-3 text-xs text-ink shadow-sm disabled:opacity-50"
       >
         {SPEEDS.map(speed => (
           <option key={speed} value={speed}>

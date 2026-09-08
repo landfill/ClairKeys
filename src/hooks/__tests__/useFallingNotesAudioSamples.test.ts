@@ -562,6 +562,86 @@ describe('useFallingNotesAudio - recorded samples', () => {
     unmount()
   })
 
+  // `loading` is the one value in `sampleStatus` that describes a request
+  // rather than the bank, and it is what the player reads as "not ready" to
+  // disable the transport. A start that is abandoned while waiting for the
+  // samples must therefore hand the status back, or the controls never return.
+  describe('a start abandoned while the samples are still loading', () => {
+    function pendingLoad() {
+      let finish: (() => void) | undefined
+      mockLoad = jest.fn(
+        () => new Promise((resolve) => {
+          finish = () => resolve({ status: 'ready', readyCount: 30, totalCount: 30 })
+        })
+      )
+      return () => finish?.()
+    }
+
+    const note = { midi: 60, start: 0, duration: 1, hand: 'R' as const, velocity: 0.8 }
+
+    it('releases the status when nothing takes the start over', async () => {
+      const finishLoad = pendingLoad()
+      const { context } = makeSampleContext()
+      useContext(context)
+      const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+      let startPromise: Promise<boolean>
+      act(() => { startPromise = result.current.startAudio([note], 0, 1, false) })
+      await act(async () => { await Promise.resolve() })
+      expect(result.current.sampleStatus).toBe('loading')
+
+      // What a paused seek or speed change does: stop the audio without
+      // starting any replacement.
+      act(() => { result.current.stopAudio() })
+
+      let started: boolean | undefined
+      await act(async () => {
+        finishLoad()
+        started = await startPromise!
+      })
+
+      expect(started).toBe(false)
+      // Stranded here, `isReady` is false forever and the player's resume and
+      // stop buttons are both disabled — the reader cannot leave the screen.
+      expect(result.current.sampleStatus).not.toBe('loading')
+      expect(result.current.sampleStatus).toBe('ready')
+
+      unmount()
+    })
+
+    it('leaves the status to a newer start that has taken over', async () => {
+      const finishFirst = pendingLoad()
+      const { context } = makeSampleContext()
+      useContext(context)
+      const { result, unmount } = renderHook(() => useFallingNotesAudio())
+
+      let firstStart: Promise<boolean>
+      act(() => { firstStart = result.current.startAudio([note], 0, 1, false) })
+      await act(async () => { await Promise.resolve() })
+
+      const finishSecond = pendingLoad()
+      let secondStart: Promise<boolean>
+      act(() => { secondStart = result.current.startAudio([note], 0, 1, false) })
+      await act(async () => { await Promise.resolve() })
+
+      await act(async () => {
+        finishFirst()
+        expect(await firstStart!).toBe(false)
+      })
+
+      // The abandoned start must not answer for a load that is still running.
+      expect(result.current.sampleStatus).toBe('loading')
+
+      await act(async () => {
+        finishSecond()
+        expect(await secondStart!).toBe(true)
+      })
+      expect(result.current.sampleStatus).toBe('ready')
+
+      unmount()
+    })
+  })
+
   it('keeps playback working and reports failed when no samples loaded', async () => {
     mockLoad = jest.fn(() => Promise.resolve({
       status: 'failed',

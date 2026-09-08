@@ -22,6 +22,9 @@ function renderBar(overrides: Partial<React.ComponentProps<typeof CompactPlaybac
   return props
 }
 
+const transportButton = () =>
+  screen.getByRole('button', { name: /^(재생|일시정지)$/ })
+
 describe('CompactPlaybackBar', () => {
   // The bar exists because a landscape phone has 390px of height in total. What
   // it drops has to be chrome, never a way to operate playback — including for
@@ -132,6 +135,16 @@ describe('CompactPlaybackBar', () => {
       fireEvent.change(screen.getByLabelText('음량 (master gain)'), { target: { value: '0.4' } })
       expect(props.onVolumeChange).toHaveBeenCalledWith(0.4)
     })
+  })
+
+  it('closes the speed control while a start is still loading', () => {
+    // Changing the speed calls stopAudio, which abandons the start the reader
+    // just asked for. The setup screen has always disabled this control while
+    // loading; the bar now outlives a pause, so it needs the same guard.
+    renderBar({ isReady: false })
+
+    expect(screen.getByLabelText('재생 속도')).toBeDisabled()
+    expect(transportButton()).toBeDisabled()
   })
 
   it('keeps compact transport and loop controls the same size', () => {
