@@ -1,5 +1,15 @@
 # Cloud priority work and startup correction
 
+## Current independent dispatch (supersedes earlier task scope below)
+
+- While this work was in progress, origin/main advanced to cda9024 including PR150 (d78217b) and verified cloud-v4 repair/sample records. Preserved those records when rebasing the local status-only commit.
+- Read back the actual saved v4 environment: closed stdin, installed Prisma CLI, full Python requirements, Ubuntu archive mirror, Playwright/PostgreSQL packages and cache maintenance. Retained that verified configuration; v2/v3 below are historical diagnostic attempts.
+- Prior overlapping #146 P1 attempt and mixed-history #110 retry were cancelled before starting clean tasks. P1 pause/session behavior already shipped in PR150 and must not be reimplemented.
+- Current user explicitly renewed authorization for actual independent issue implementation in cloud, continuing if the local PC disconnects. This is separate from the earlier environment-only scope correction recorded in HANDOFF.
+- [Fix CompactPlaybackBar responsive defect](https://chatgpt.com/codex/cloud/tasks/task_e_6aa00288378c8322ba9c72f475b5fa32): remaining #146 narrow pointer:fine390px overflow/zero-width seek; preserve D-056/session/audio/orientation. Requested branch codex/issue-146-compact-toolbar-cloud.
+- [Implement issue110 callback URL validation](https://chatgpt.com/codex/cloud/tasks/task_e_6aa002b0e40c8322a876e3d379366416): independent OMR code/test/deploy-preparation docs. Requested branch codex/issue-110-callback-origin-cloud-v4. Do not reuse/publish prior cancelled dde7bfe.
+- Both fresh tasks were accepted on main in ClairKeys environment; initial cache-maintenance/repo-refresh states observed. Prompts require cloud-local implementation, tests, Lore commits and ready PR preparation without local-coordinator dependency. gh credentials remain absent unless independently verified; PR creation may need the Codex UI. No merge/deploy/issue closure authorized.
+
 Date: 2026-09-08 KST
 
 ## Authorization and priority

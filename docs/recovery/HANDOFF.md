@@ -1,5 +1,16 @@
 # Current Handoff
 
+## Independent cloud issue work newly authorized and dispatched (2026-09-08)
+
+- Current user explicitly requested actual priority issue implementation, multiple independent
+  cloud tasks, and continuation if the local PC disconnects. This renews implementation scope
+  beyond the earlier environment-only session recorded below; do not revive its old unpublished code.
+- PR150 now delivers #146 P1. New #146 task addresses the remaining narrow pointer:fine toolbar
+  overflow/zero-width seek; a separate #110 task implements callback origin validation and tests.
+- Both use the already verified saved v4 environment and latest main, separate branches/PRs,
+  and no dependency on each other or this coordinator. No merge/deploy/issue closure authorized.
+- Exact current task links, superseded attempts and recovered analysis: [independent cloud dispatch](validation/2026-09-08-cloud-priority-dispatch.md).
+
 ## Cloud environment samples complete; actual issue work cancelled (2026-09-08)
 
 - User clarified scope: environment construction and isolated samples only. Coordinator’s #110 retry was a scope error and was cancelled; do not resume or publish it.
