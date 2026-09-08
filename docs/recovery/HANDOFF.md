@@ -1,10 +1,16 @@
 # Current Handoff
 
+## Cloud environment samples complete; actual issue work cancelled (2026-09-08)
+
+- User clarified scope: environment construction and isolated samples only. Coordinator’s #110 retry was a scope error and was cancelled; do not resume or publish it.
+- Saved v4 setup/cache plus Node/Python/Prisma, Chromium/Firefox/WebKit localhost button samples and PostgreSQL temporary transaction samples passed. Public GitHub GET200; gh authentication absent.
+- Cloud-only prior commit dde7bfe remains unpublished; matching remote branch/PR absent. Sample turn made no source changes or commits. [Results and correction](validation/2026-09-08-codex-cloud-environment-samples.md).
+
 ## Cloud startup repair verified and saved (2026-09-08)
 
 - Reproduced Prisma hang despite checkpoint suppression; closed stdin fixes generation. Saved v4 setup/maintenance use `exec </dev/null`, installed Prisma CLI and bounded commands.
 - Full install and cache restore reached both success markers and platform Test complete. Ubuntu snapshot apt stalls required the same noble suites through the official archive mirror; full Python/Playwright/PostgreSQL packages installed.
-- Actual #110 retry passed startup and entered agent execution at08:57:53 UTC. Agent read recovery files and checked runtimes; initial cloud origin is absent and gh is unauthenticated. Implementation continues in the linked task; cloud PR publication remains unverified. No merge/deploy or permission widening. [Repair evidence](validation/2026-09-08-codex-cloud-startup-repair.md).
+- Actual #110 retry passed startup and entered agent execution at08:57:53 UTC. Agent read recovery files and checked runtimes; initial cloud origin is absent and gh is unauthenticated. That issue turn was subsequently cancelled after user scope correction; only environment samples are authorized (see above). No merge/deploy or permission widening. [Repair evidence](validation/2026-09-08-codex-cloud-startup-repair.md).
 
 ## Practice pause no longer ends the practice run (2026-09-08)
 

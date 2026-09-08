@@ -40,3 +40,7 @@ Retry produced a new execution URL: https://chatgpt.com/codex/cloud/tasks/task_e
 The agent reports initial branch work, no origin configured and gh unauthenticated. It is proceeding to attach the public origin and implement/validate before authenticated publication. This is a separate cloud publication limitation, not a recurrence of startup failure. No credentials or broader network permissions were added. Codex UI PR publication has not yet been verified. The independent issue task remains running; its eventual implementation/PR completion is not claimed by this infrastructure repair.
 
 Setup and maintenance changes were saved and read back before this retry. Browser packages are installed only in OpenAI's disposable Ubuntu cloud container, never on the user's Mac or Supabase project. Existing user-local HANDOFF changes were restored and compared; settings and screenshots remain untouched. Main status-record push check-runs was initially empty (not a passing CI claim).
+
+## Superseding user scope correction
+
+Actual issue implementation was not authorized for this environment task. Coordinator cancelled the incorrectly retried issue turn and ran isolated samples instead. See [environment sample results](2026-09-08-codex-cloud-environment-samples.md). Earlier statements that implementation continues are historical and superseded. Cloud-only prior commitdde7bfe remains unpublished; no matching remote branch/PR was found. Do not resume or publish it as environment work.
