@@ -37,8 +37,14 @@
   **and** stop together. An in-flight load count hands the status back. `e0674fc`: the E2E skip now
   requires firefox, so a real start failure fails instead of skipping. Head `e0674fc`, all 16 checks
   green, jest 995.
-- PR150 is review-ready and unmerged. **Explicit merge approval is required and not received.** No
-  deployment, no issue closure. #146 keeps explore cards, upload form and the responsive pass open.
+- User approved and PR150 merged as `d78217b` (merge commit, as PR145/#148). All six post-merge
+  checks on `d78217b` pass. `main` contains the merge and both branch tips have zero unique commits.
+- Branch cleanup is **blocked by design**: pre-existing user-owned uncommitted changes remain in the
+  working tree, and the lifecycle rule forbids deleting any branch while they do. Local and remote
+  `codex/issue-146-playback-session` are both retained.
+- **No deployment and no issue closure.** Vercel Production was not verified for this merge. #146
+  keeps explore cards, upload form and the responsive pass open, with the 390px compact-bar overflow
+  recorded as the first candidate of that responsive bundle.
 
 ## Cloud startup failure localized (2026-09-08)
 
