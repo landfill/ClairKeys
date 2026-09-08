@@ -78,7 +78,7 @@ async function serveFixture(page: import('@playwright/test').Page) {
 }
 
 for (const viewport of viewports) {
-  test(`keeps the frame and the transport in place across a pause on ${viewport.name}`, async ({ page }) => {
+  test(`keeps the frame and the transport in place across a pause on ${viewport.name}`, async ({ page, browserName }) => {
     await serveFixture(page)
     await page.setViewportSize({ width: viewport.width, height: viewport.height })
     await page.goto('/sheet/1')
@@ -92,20 +92,27 @@ for (const viewport of viewports) {
     // The session opens only when audio actually starts (D-056 decision 1), so
     // this whole transition presupposes a browser that can run an AudioContext
     // with an output. Headless Firefox on the CI runner cannot, and there is
-    // then no transition left to measure. Anything other than an untouched
-    // setup screen is still a failure — a half-entered session would mean the
-    // chrome and the audio had come apart, which is the defect class this file
-    // exists to catch.
+    // then no transition left to measure.
     const started = await page
       .getByTestId('compact-playback-bar')
       .waitFor({ state: 'visible', timeout: 15000 })
       .then(() => true, () => false)
 
     if (!started) {
+      // Firefox is the only project that has ever failed to start here, and
+      // only on a runner with no audio output. Anywhere else, a start that
+      // never happens is the regression this file exists to catch — skipping
+      // it everywhere would let a broken play handler pass as "skipped".
+      expect(
+        browserName,
+        'playback did not start in a browser project that supports it — this is a regression, not a silent runner',
+      ).toBe('firefox')
+      // Even in firefox, the screen must be the untouched setup screen. A
+      // half-entered session means the chrome and the audio came apart.
       await expect(page.getByTestId('playback-primary-controls')).toBeVisible()
       await expect(page.getByRole('heading', { name: animation.title })).toBeVisible()
       await expect(page.getByTestId('compact-playback-bar')).toHaveCount(0)
-      test.skip(true, 'playback never started in this browser; the pause transition needs a sounding score')
+      test.skip(true, 'headless firefox on this runner has no audio output; the pause transition needs a sounding score')
     }
 
     const playingTransport = await transport(page, '일시정지').boundingBox()
