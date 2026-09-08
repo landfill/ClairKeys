@@ -32,3 +32,11 @@ A revised candidate replaces that exact snapshot URL in the disposable container
 - Saved v4 setup/maintenance and updated description through environment UI. Save readback and actual agent entry are next checks.
 
 - Saved environment readback exactly shows v4 scripts and updated description. GitHub-only network remains unchanged. Retried existing issue110 task after save; agent entry is pending.
+
+## Actual task entered agent phase
+
+Retry produced a new execution URL: https://chatgpt.com/codex/cloud/tasks/task_e_6a9fccc505288322a1d8e8272bd6f1c5 (source trial task_e_6a9f619af7e083228648e7c39c9734d2). Actual setup reached CLAIRKEYS_SETUP_V4_OK at08:57:53 UTC and entered the agent phase. Agent commands read AGENTS.md/recovery files and checked runtime/Git state. Node22.22.2/npm11.4.2/Python3.10.20 were confirmed.
+
+The agent reports initial branch work, no origin configured and gh unauthenticated. It is proceeding to attach the public origin and implement/validate before authenticated publication. This is a separate cloud publication limitation, not a recurrence of startup failure. No credentials or broader network permissions were added. Codex UI PR publication has not yet been verified. The independent issue task remains running; its eventual implementation/PR completion is not claimed by this infrastructure repair.
+
+Setup and maintenance changes were saved and read back before this retry. Browser packages are installed only in OpenAI's disposable Ubuntu cloud container, never on the user's Mac or Supabase project. Existing user-local HANDOFF changes were restored and compared; settings and screenshots remain untouched. Main status-record push check-runs was initially empty (not a passing CI claim).

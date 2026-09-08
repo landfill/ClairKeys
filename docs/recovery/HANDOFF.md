@@ -4,7 +4,7 @@
 
 - Reproduced Prisma hang despite checkpoint suppression; closed stdin fixes generation. Saved v4 setup/maintenance use `exec </dev/null`, installed Prisma CLI and bounded commands.
 - Full install and cache restore reached both success markers and platform Test complete. Ubuntu snapshot apt stalls required the same noble suites through the official archive mirror; full Python/Playwright/PostgreSQL packages installed.
-- Retried the existing #110 cloud task with saved v4. Actual agent entry, GitHub authentication and PR publication remain separate checks; no code/merge/deploy or permission widening. [Repair evidence](validation/2026-09-08-codex-cloud-startup-repair.md).
+- Actual #110 retry passed startup and entered agent execution at08:57:53 UTC. Agent read recovery files and checked runtimes; initial cloud origin is absent and gh is unauthenticated. Implementation continues in the linked task; cloud PR publication remains unverified. No merge/deploy or permission widening. [Repair evidence](validation/2026-09-08-codex-cloud-startup-repair.md).
 
 ## Practice pause no longer ends the practice run (2026-09-08)
 
