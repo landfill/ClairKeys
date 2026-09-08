@@ -31,7 +31,9 @@ export default function SheetMusicPage() {
   const [animationData, setAnimationData] = useState<CanonicalAnimationData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isPlaybackActive, setIsPlaybackActive] = useState(false)
+  // The practice session, not the sounding score: a pause keeps the focused
+  // player, so the header and the info card stay away until the reader stops.
+  const [isSessionActive, setIsSessionActive] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -152,28 +154,28 @@ export default function SheetMusicPage() {
 
   return (
     <MainLayout>
-        {!isPlaybackActive && (
+        {!isSessionActive && (
           <PageHeader
             title={sheetMusic.title}
             description={`${sheetMusic.composer}${sheetMusic.category ? ` • ${sheetMusic.category}` : ''}`}
           />
         )}
         
-        <Container className={isPlaybackActive ? 'px-0 py-0 sm:px-0 lg:px-0' : 'py-8'} size={isPlaybackActive ? 'full' : 'lg'}>
+        <Container className={isSessionActive ? 'px-0 py-0 sm:px-0 lg:px-0' : 'py-8'} size={isSessionActive ? 'full' : 'lg'}>
           <DemoProvenanceNotice
             provenance={sheetMusic.provenance}
-            isPlaybackActive={isPlaybackActive}
+            isPlaybackActive={isSessionActive}
           />
 
           {/* Falling Notes Player - MVP Style */}
           <FallingNotesPlayer 
             animationData={animationData} 
-            className={isPlaybackActive ? '' : 'mb-8'}
-            onPlaybackChange={setIsPlaybackActive}
+            className={isSessionActive ? '' : 'mb-8'}
+            onSessionChange={setIsSessionActive}
           />
 
           {/* Sheet Music Info */}
-          {!isPlaybackActive && <Card padding="lg">
+          {!isSessionActive && <Card padding="lg">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-accent">짧은 미리보기</p>

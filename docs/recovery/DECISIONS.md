@@ -2112,3 +2112,68 @@
   phase completion을 낮추지 않는다. stack ID는 sheet/system namespace 없이 비교하지 않는다.
 - Related: D-048; D-052; D-053; OMR-Q3-wedge-export-integrity;
   validation/2026-09-06-wedge-native-resume.md
+
+## D-056: 재생 화면의 주인은 `isPlaying`이 아니라 연습 세션이다 — 일시정지는 세션 안의 사건이다
+
+- Date: 2026-09-08
+- Status: Accepted
+- Note: D-055는 철회된 PR #147 브랜치에서 할당됐고 `main`에 병합되지 않았다. `reviews/PR-147.md`가
+  그 번호로 다른 결정을 지칭하므로 재사용하지 않고 D-056으로 건너뛴다.
+- Context:
+  - 이슈 [#146](https://github.com/landfill/ClairKeys/issues/146) 항목 6은 "재생하면 헤더 없는 집중
+    화면으로 바뀌고 일시정지하면 다시 설명이 긴 상세 화면으로 돌아간다. 같은 컨트롤의 위치와 모양도
+    크게 바뀐다"고 보고했다.
+  - 원인은 취향이 아니라 **상태 모델**이다. `isPlaying` 하나가 서로 다른 네 가지를 동시에 몰고 있었다:
+    오디오, `usePlaybackOrientation`의 engage, 페이지 chrome(`onPlaybackChange` → `PageHeader`·악보
+    정보 카드), 그리고 박스 높이(`boxHeight` ↔ 고정 330px).
+  - 그래서 일시정지 한 번이 **연습을 그만둔 것과 정확히 같은 동작**을 했다. 폰이 세로로 되돌아가고,
+    페이지가 재구성되고, 한 줄 바(⏸️가 맨 왼쪽)가 3행 블록(재생이 3열 그리드의 1번)으로 교체된다.
+    재개하려면 방금 손가락이 있던 자리가 아닌 곳에서 버튼을 다시 찾아야 한다.
+  - D-019 결정 6은 "회전은 컨트롤 압축을 반드시 동반한다"고 정했다. 그 결정은 **재생 중**을 기준으로
+    썼고 일시정지를 따로 다루지 않았다 — 압축 바가 일시정지를 넘겨 살아남아야 하는지는 미정이었다.
+- Decision:
+  1. `useFallingNotesPlayer`가 `isSessionActive`를 함께 소유한다. `play()`가 실제로 시작에 성공하면
+     열리고, **stop에서만** 닫힌다 — 사용자의 정지와 곡 끝의 auto-stop 둘 다 stop이다. `pause`는
+     세션을 닫지 않는다.
+  2. 화면·회전·페이지 chrome은 전부 `isSessionActive`를 읽는다. `isPlaying`은 이제 **소리가 나는지**
+     하나만 뜻하며, 압축 바의 트랜스포트 토글에만 쓰인다.
+  3. `CompactPlaybackBar`의 첫 슬롯은 같은 자리에서 ⏸️ ↔ ▶️로 토글한다. 크기·위치·나머지 컨트롤
+     순서는 바꾸지 않는다. 일시정지 중에도 seek, A-B, 속도, 음량은 그대로 살아 있다.
+  4. `orientation.exit()`는 세션의 하강 edge에서만 부른다. 일시정지는 전체화면·회전을 유지한다.
+  5. 재개도 **클릭 핸들러 안에서 동기적으로** `orientation.enter()`를 부른다(D-019 결정 3). 일시정지
+     사이에 브라우저가 전체화면을 놓았을 수 있고, 그 요청은 그 클릭에서만 승인된다.
+  6. 세션 안에서 재개가 실패하면 방향을 해제하지 않는다. 첫 재생 실패와 달리 사용자는 이미 조작
+     가능한 일시정지 화면에 있으므로, 되돌릴 것이 없다.
+  7. `FallingNotesPlayer`의 prop을 `onPlaybackChange` → `onSessionChange`로 바꾼다. 이름이 보고하는
+     사실과 달라지면 다음 세션이 다시 `isPlaying`으로 되돌린다.
+- Reason: 이슈가 요구한 것은 "전환을 부드럽게"가 아니라 **일시정지가 연습을 떠나는 것과 같아지지
+  않게** 하는 것이다. 그건 애니메이션이나 간격 조정으로 풀리지 않는다 — 두 개의 서로 다른 사실을 한
+  불리언이 대표하고 있었던 것이 결함 자체다.
+- Constraint: D-024 Directive에 따라 `playbackGeometry.ts`, `pianoLayout.ts`,
+  `usePlaybackOrientation.ts`의 상수·조건식은 건드리지 않는다. 실기기로 세 번 고친 D-021~D-023의
+  기하 계약은 그대로다 — 일시정지 중 박스는 재생 중과 **같은** 계획을 쓴다.
+- Constraint: D-019 결정 8에 따라 공유 `PlaybackControls`는 수정하지 않는다. `AnimationPlayer`와
+  데모 경로가 현재 형태에 의존한다.
+- Rejected:
+  - 일시정지도 계속 설정 화면으로 되돌린다 | 사용자가 보고한 결함 그 자체다.
+  - `isPlaying`의 의미를 "재생 중이거나 일시정지 중"으로 넓힌다 | 오디오 루프와 트랜스포트 토글이
+    실제 소리 여부를 필요로 한다. 한 불리언에 두 사실을 다시 싣는 같은 실수다.
+  - 일시정지에서 방향만 유지하고 chrome은 되돌린다 | 폰은 가로인데 페이지는 세로 레이아웃으로
+    재구성되는, 두 결함이 겹친 상태가 된다.
+  - `currentTime === 0`으로 정지와 일시정지를 구분한다 | 시작 직후 0초에서 일시정지하면 뒤집힌다.
+    구분은 추측이 아니라 lifecycle을 소유한 훅에서 나와야 한다.
+- Consequence:
+  - 일시정지 중에도 페이지 헤더와 악보 정보 카드는 나타나지 않는다. 거기로 돌아가는 경로는 정지(⏹️)
+    하나이며, 이 버튼은 압축 바에 이미 있고 위치가 바뀌지 않았다.
+  - 곡이 끝나면 auto-stop이 세션을 닫으므로 화면은 예전처럼 설정 상태로 복귀한다.
+  - 일시정지 상태의 시각적 표시는 트랜스포트의 ▶️ 아이콘과 멈춘 낙하 노트뿐이다. 가로 390px에서
+    문구를 더 넣을 자리가 없다. 실기기에서 이것으로 충분한지는 미검증이다.
+- Directive:
+  - 재생 화면의 새 조건식을 `isPlaying`으로 쓰지 않는다. 화면·회전·chrome은 `isSessionActive`다.
+  - 방향 요청을 `isPlaying`이나 `isSessionActive` effect로 옮기지 않는다. 사용자 활성화 창을 잃는다
+    (D-019 Directive).
+  - 압축 바의 첫 슬롯을 다른 동작으로 바꾸지 않는다. 그 자리의 안정성이 이 결정의 목적이다.
+- Related: 이슈 [#146](https://github.com/landfill/ClairKeys/issues/146), D-019, D-021, D-022, D-023,
+  D-024, `src/hooks/useFallingNotesPlayer.ts`,
+  `src/components/animation/FallingNotesPlayer.tsx`,
+  `src/components/playback/CompactPlaybackBar.tsx`

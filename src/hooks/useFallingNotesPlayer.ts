@@ -11,8 +11,13 @@ import { createLoopSection } from '@/utils/loopSection'
  * Based on MVP implementation for precise timing
  */
 export function useFallingNotesPlayer(notes: FallingNote[]) {
-  // Playback state
+  // Playback state. `isPlaying` is whether a score is sounding right now;
+  // `isSessionActive` is whether the reader is inside a practice run at all.
+  // They diverge on a pause, and the screen needs the second one: a pause is a
+  // moment inside the run, not a decision to leave it. Only a stop — the
+  // reader's, or the end of the piece — closes the session.
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isSessionActive, setIsSessionActive] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [tempoScale, setTempoScale] = useState(1.0)
   const [mute, setMute] = useState(false)
@@ -56,7 +61,10 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
       tempoScale,
       mute
     )
-    if (started) setIsPlaying(true)
+    if (started) {
+      setIsPlaying(true)
+      setIsSessionActive(true)
+    }
     return started
   }, [isPlaying, tempoScale, mute, notes, getCurrentTime, startAudio, updateTempoScale])
 
@@ -79,6 +87,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
    */
   const handleStop = useCallback(() => {
     setIsPlaying(false)
+    setIsSessionActive(false)
     reset()
     setCurrentTime(0)
   }, [reset])
@@ -229,6 +238,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
   return {
     // State
     isPlaying,
+    isSessionActive,
     currentTime,
     tempoScale,
     mute,
