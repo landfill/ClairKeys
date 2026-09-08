@@ -338,6 +338,7 @@ export default function FallingNotesPlayer({
           : undefined}
       >
       <div
+        data-testid="playback-box"
         className="w-full border rounded-2xl shadow overflow-hidden"
         style={{
           display: 'flex',
