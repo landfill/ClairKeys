@@ -1,5 +1,11 @@
 # Current Handoff
 
+## Cloud startup failure localized (2026-09-08)
+
+- Live P1/#110 trials both stop in v2 `timeout 60 npx --no-install prisma generate` with exit124 after npm succeeds; neither reaches agent implementation. Earlier upload trial reaches setup success marker yet reports platform1200-second timeout.
+- Saved environment is now v3 with explicit Prisma/service startup removed; no successful v3 execution observed. Cloud GitHub authentication/push/PR capability remains unverified.
+- Next: validate v3 platform completion, then isolate agent-phase Prisma generation and GitHub authentication. No permission expansion is supported by the observed failures. [Diagnosis and task links](validation/2026-09-08-codex-cloud-startup-diagnosis.md).
+
 ## Actual cloud issue trial dispatched (2026-09-08)
 
 - User authorized testing actual cloud implementation and PR creation. Submitted #146 upload-form
