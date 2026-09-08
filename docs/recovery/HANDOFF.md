@@ -21,6 +21,10 @@
   and the seek bar is zero-width — identically while playing and paused. Candidate for the #146 P2
   responsive bundle. [Evidence and commands](validation/2026-09-08-playback-session-transition.md),
   [review log](reviews/PR-150.md).
+- CI found what the local run could not: headless Firefox on the runner has no audio output, and the
+  session opens only when audio starts, so the E2E reported the runner. `37e766c` skips that case
+  only after asserting the screen is still the untouched setup screen. Final head `37e766c` has
+  **all 16 checks green**, E2E `47 passed, 3 skipped` (firefox only).
 - PR150 is review-ready and unmerged. **Explicit merge approval is required and not received.** No
   deployment, no issue closure. #146 keeps explore cards, upload form and the responsive pass open.
 

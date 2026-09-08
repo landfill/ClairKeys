@@ -78,6 +78,21 @@ spec therefore asserts **parity with the playing state** rather than absence of 
 a pause is responsible for without asserting away a defect it did not cause. Candidate for the #146
 P2 responsive bundle; not fixed here.
 
+## CI result and the firefox skip
+
+The first head `92beb3e` passed 13 of 16 checks and failed both E2E jobs on **firefox alone**
+(47 passed, 3 failed). The click landed and the compact bar never appeared: headless Firefox on the
+GitHub runner has no audio output, and the session opens only when audio actually starts, so the
+assertion was reporting the runner rather than the code. `37e766c` skips that case — but only after
+asserting the screen is still the untouched setup screen (stacked controls and page header present,
+no compact bar), so a half-entered session still fails loudly. Final head `37e766c`: **all 16 checks
+pass**, both E2E jobs `47 passed, 3 skipped`.
+
+Locally the same spec runs **15/15 with firefox included and not skipped**, because a desktop machine
+has the audio output the runner lacks. The post-fix local run used a temporary git worktree so the
+user's uncommitted changes in the primary tree were never stashed or touched; the worktree was removed
+afterwards.
+
 ## Not verified
 
 - Real hardware rotation and whether fullscreen survives a pause on a device. Headless Chromium
@@ -86,6 +101,8 @@ P2 responsive bundle; not fixed here.
 - Deployed-screen behaviour. No Vercel Production deployment or live-site check was performed; the
   PR's preview deployment was not inspected.
 - Audio correctness. The fixture score is synthetic and the sample set was not exercised for fidelity.
+- Firefox on CI. Its three cases are skipped there for want of an audio output; firefox coverage of
+  this transition comes from the local run only.
 
 ## Preservation
 
