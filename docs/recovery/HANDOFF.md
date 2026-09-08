@@ -31,6 +31,12 @@
   session opens only when audio starts, so the E2E reported the runner. `37e766c` skips that case
   only after asserting the screen is still the untouched setup screen. Final head `37e766c` has
   **all 16 checks green**, E2E `47 passed, 3 skipped` (firefox only).
+- Codex review (GitHub bot inline + a local Codex worker returning request-changes) found two P2s,
+  both fixed. `44d3d45`: keeping the compact bar through a pause exposed a deadlock — an abandoned
+  `startAudio` left `sampleStatus` at `loading`, so a paused seek or speed change disabled resume
+  **and** stop together. An in-flight load count hands the status back. `e0674fc`: the E2E skip now
+  requires firefox, so a real start failure fails instead of skipping. Head `e0674fc`, all 16 checks
+  green, jest 995.
 - PR150 is review-ready and unmerged. **Explicit merge approval is required and not received.** No
   deployment, no issue closure. #146 keeps explore cards, upload form and the responsive pass open.
 

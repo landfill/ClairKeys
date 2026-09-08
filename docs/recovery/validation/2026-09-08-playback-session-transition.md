@@ -93,6 +93,48 @@ has the audio output the runner lacks. The post-fix local run used a temporary g
 user's uncommitted changes in the primary tree were never stashed or touched; the worktree was removed
 afterwards.
 
+## Review round — 2026-09-08
+
+Two Codex reviews ran against `37e766c`: the GitHub `chatgpt-codex-connector` bot (one inline P2) and
+a locally dispatched Codex worker (**request changes**, two P2s). Both found the E2E skip.
+
+**Deadlock, reproduced then fixed (`44d3d45`).** `sampleStatus` reports the sample bank except for
+`loading`, which describes a request. `startAudio` sets `loading`, awaits the bank, and returns early
+on a superseded generation without restoring it. Keeping the compact bar alive through a pause is what
+first exposed the path: pause → seek or speed change calls `stopAudio()` with no replacement start, so
+`isReady` stayed false forever and **resume and stop were disabled together**, leaving no way out of
+the player. Fixed with a count of in-flight loads — an abandoned start reports the bank when it is the
+last one out, and stays quiet while a newer start owns the status.
+
+```
+npx jest src/hooks/__tests__/useFallingNotesAudioSamples.test.ts   # on parent 37e766c
+✕ releases the status when nothing takes the start over
+Tests: 1 failed, 15 passed, 16 total
+```
+
+After the fix both new assertions pass. The compact speed control also gained the
+`disabled={!isReady}` the setup screen has always had, so a speed change can no longer cancel a resume
+that is still starting; during playback the status resolves before a note sounds, so nothing closes.
+
+**E2E skip narrowed (`e0674fc`).** The skip asked only whether playback started, so a genuine loss of
+the transition would have skipped in Chromium and WebKit and reported green. It now requires
+`browserName === 'firefox'` and fails elsewhere with a message saying so; the setup-screen guard
+assertions stay.
+
+**Not adopted, recorded.** Paused seeking at 390px is the pre-existing compact-bar overflow already
+recorded above (#146 P2 responsive bundle). The paused keyboard seek step differs between the compact
+bar (5s arrows, no PageUp/Down) and the setup controls (1s arrows, 5s PageUp/Down); that is the bar as
+D-019 shipped it, not a behaviour this change altered.
+
+| Command on final head `e0674fc` | Result |
+|---|---|
+| `npx jest` | 995 passed / 102 suites |
+| `npx playwright test` | 50 passed, five browser projects, firefox not skipped locally |
+| `npx tsc --noEmit` | exit 0 |
+| `npm run lint` | ✔ no warnings or errors |
+| `npm run build` | succeeded |
+| PR CI | 16/16 pass; E2E `47 passed, 3 skipped` (firefox only) |
+
 ## Not verified
 
 - Real hardware rotation and whether fullscreen survives a pause on a device. Headless Chromium
@@ -103,6 +145,8 @@ afterwards.
 - Audio correctness. The fixture score is synthetic and the sample set was not exercised for fidelity.
 - Firefox on CI. Its three cases are skipped there for want of an audio output; firefox coverage of
   this transition comes from the local run only.
+- The resume deadlock on real hardware. It was reproduced and fixed against the hook's own sample-bank
+  double, not against a slow network on a device.
 
 ## Preservation
 
