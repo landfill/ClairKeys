@@ -51,6 +51,15 @@
 - Live P1/#110 trials both stop in v2 `timeout 60 npx --no-install prisma generate` with exit124 after npm succeeds; neither reaches agent implementation. Earlier upload trial reaches setup success marker yet reports platform1200-second timeout.
 - Saved environment is now v3 with explicit Prisma/service startup removed; no successful v3 execution observed. Cloud GitHub authentication/push/PR capability remains unverified.
 - Next: validate v3 platform completion, then isolate agent-phase Prisma generation and GitHub authentication. No permission expansion is supported by the observed failures. [Diagnosis and task links](validation/2026-09-08-codex-cloud-startup-diagnosis.md).
+## Priority work dispatched to independent cloud task (2026-09-08)
+
+- User requested cloud development that continues if the local session disconnects. Selected #146
+  P1 playback-control layout, matching the issue's order and current phase stage2.
+- Prior upload trial failed before implementation with startup1200-second timeouts. Updated setup
+  to install dependencies only with bounded commands; DB/browser startup moved to the agent phase.
+- New cloud task and recovered priority analysis: [dispatch and setup evidence](validation/2026-09-08-cloud-priority-dispatch.md).
+  Prompt covers implementation/verification/ready PR and independent continuation, with no merge,
+  deployment or issue closure. Use live task state for execution progress.
 
 ## Actual cloud issue trial dispatched (2026-09-08)
 
