@@ -1,5 +1,23 @@
 # Current Handoff
 
+## Practice pause no longer ends the practice run (2026-09-08)
+
+- #146 item 6 traced to one flag: `isPlaying` drove audio, orientation, page chrome and box height
+  together, so a pause turned the phone back, rebuilt the page and moved every control. PR
+  [#150](https://github.com/landfill/ClairKeys/pull/150) adds `isSessionActive`, closed only by a
+  stop (the reader's or the end of the piece), and the compact transport now toggles in place.
+- Regression evidence preceded the change (13 fail / 37 pass). After: 992 jest, 50 Playwright across
+  five browser projects, type/lint/build all pass. Real-browser measurement, not jsdom, confirms the
+  transport's bounding box and the box height are unchanged across pause and resume.
+- Geometry is untouched (D-024): the paused box uses the same plan the sounding one does. Rationale is
+  [D-056](DECISIONS.md); D-055 was skipped because the withdrawn PR #147 branch had claimed it.
+- Pre-existing defect recorded, not fixed: the compact bar overflows a 390px-wide viewport to 447px
+  and the seek bar is zero-width — identically while playing and paused. Candidate for the #146 P2
+  responsive bundle. [Evidence and commands](validation/2026-09-08-playback-session-transition.md),
+  [review log](reviews/PR-150.md).
+- PR150 is review-ready and unmerged. **Explicit merge approval is required and not received.** No
+  deployment, no issue closure. #146 keeps explore cards, upload form and the responsive pass open.
+
 ## Cloud startup failure localized (2026-09-08)
 
 - Live P1/#110 trials both stop in v2 `timeout 60 npx --no-install prisma generate` with exit124 after npm succeeds; neither reaches agent implementation. Earlier upload trial reaches setup success marker yet reports platform1200-second timeout.
