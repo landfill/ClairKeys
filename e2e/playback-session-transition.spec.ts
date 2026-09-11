@@ -25,6 +25,7 @@ const animation = {
 }
 
 const viewports = [
+  { name: '320 CSS pixels', width: 320, height: 800 },
   { name: 'phone portrait', width: 390, height: 844 },
   { name: 'phone landscape', width: 844, height: 390 },
   { name: 'desktop', width: 1280, height: 720 },
@@ -164,7 +165,8 @@ for (const viewport of viewports) {
         documentWidth: document.documentElement.scrollWidth,
       }))
       expect(metrics.width).toBeGreaterThanOrEqual(44)
-      expect(await page.getByTestId('compact-playback-bar').evaluate(element => (element as HTMLElement).offsetHeight)).toBe(56)
+      expect(await page.getByLabel('재생 속도').evaluate(element => (element as HTMLElement).offsetWidth)).toBeGreaterThanOrEqual(56)
+      expect(await page.getByTestId('compact-playback-bar').evaluate(element => (element as HTMLElement).offsetHeight)).toBe(viewport.width <= 375 ? 64 : 56)
       expect(metrics.documentWidth).toBeLessThanOrEqual(viewport.width)
       if (viewport.width === 390) {
         await page.screenshot({ path: test.info().outputPath('toolbar-390.png') })
