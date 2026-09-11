@@ -120,6 +120,9 @@ for (const viewport of viewports) {
       test.skip(true, 'headless firefox on this runner has no audio output; the pause transition needs a sounding score')
     }
 
+    // Exercise a nonzero pause position, as on slower CI audio startup.
+    await expect.poll(async () => Number(await page.getByRole('slider', { name: '재생 위치' }).getAttribute('aria-valuenow'))).toBeGreaterThanOrEqual(1)
+
     const playingTransport = await transport(page, '일시정지').boundingBox()
     const playingBox = await page.getByTestId('playback-box').boundingBox()
     const playingBar = await page.getByTestId('compact-playback-bar').boundingBox()
@@ -168,6 +171,10 @@ for (const viewport of viewports) {
       }
       await seek.focus()
       await expect(seek).toBeFocused()
+      // A pause can happen after playback has advanced on a slower runner.
+      // Establish the starting position before checking the relative step.
+      await seek.press('Home')
+      await expect(seek).toHaveAttribute('aria-valuenow', '0')
       await seek.press('ArrowRight')
       await expect(seek).toHaveAttribute('aria-valuenow', '5')
       await seek.press('Home')
