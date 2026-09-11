@@ -43,3 +43,7 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
 - 2026-09-11: PR150's session/pause change is already merged. Remaining narrow desktop seek
   defect was recovered locally after cloud setup failures and submitted in PR152. Local995 Jest,
   60 E2E,type/lint/build pass; hosted gates/review remain tracked in PR152 log. No issue completion.
+
+- 2026-09-12: PR152 explicitly approved and merged ase652c64. Narrow fine-pointer seeking,
+  speed width and keyboard focus fixes are in main. Explore/upload refinements remain; issue146
+  stays open. Post-merge verification is recorded in validation/2026-09-12-feature-merges.md.

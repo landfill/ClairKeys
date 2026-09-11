@@ -1,5 +1,18 @@
 # Current Handoff
 
+## Approved feature PRs merged (2026-09-12)
+
+- User explicitly approved PR151 and PR152. Exact heads, all hosted checks and unresolved-review
+  count0 were rechecked. PR151 merged as381a17f3b75fe7607008e59fb9655106432e1ac3; PR152 merged as
+  e652c643920625f3baccff4f0500110357aa2ba9. Local main synchronized with user changes preserved.
+- Both local/remote feature tips have zero commits outside origin/main. Existing user-owned
+  settings/HANDOFF/screenshots block branch deletion under AGENTS, so branches/worktrees remain.
+- Final merge has successful unit/type/lint/security gates and Vercel status; post-merge build/E2E
+  verification is being completed and tracked in [merge evidence](validation/2026-09-12-feature-merges.md).
+- #110 remains open for separate OMR image/config rollout and live callback validation. No VM
+  rollout was performed or inferred from code merge approval. #146 remains open for explore/upload
+  refinement; the narrow desktop toolbar slice is merged. Do not resume superseded cloud tasks.
+
 ## Feature checks verified after the security merge (2026-09-12)
 
 - Approved PR153 is merged as248666bf4ce7e9e1aba900bd66f8b31d26fb4f85; all six post-merge

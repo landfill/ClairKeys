@@ -47,3 +47,9 @@ the existing delivery retry contract.
 - Focused Python, Jest bridge, required Jest/type/lint/build checks pass.
 - Review-ready code and deployment-preparation documentation exist; actual VM rollout and live normal/
   rejection verification remain explicitly pending and issue #110 remains open.
+
+## Progress
+
+- 2026-09-12: PR151 explicitly approved and merged as381a17f. Code/tests/deployment preparation
+  are in main. Post-merge checks are being verified; OMR VM rollout and live callback verification
+  remain separate and unperformed. Issue110 stays open.
