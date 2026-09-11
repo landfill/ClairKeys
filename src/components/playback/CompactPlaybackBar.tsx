@@ -1,5 +1,6 @@
 'use client'
 
+import { useSyncExternalStore } from 'react'
 import { Button } from '@/components/ui'
 
 /**
@@ -43,6 +44,17 @@ export interface CompactPlaybackBarProps {
   className?: string
 }
 
+const NARROW_DESKTOP_QUERY = '(max-width: 639px) and (pointer: fine)'
+const isNarrowDesktop = () => typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' && window.matchMedia(NARROW_DESKTOP_QUERY).matches
+const serverSnapshot = () => false
+function subscribeToLayout(onChange: () => void) {
+  if (typeof window.matchMedia !== 'function') return () => {}
+  const query = window.matchMedia(NARROW_DESKTOP_QUERY)
+  query.addEventListener('change', onChange)
+  return () => query.removeEventListener('change', onChange)
+}
+
 const SPEEDS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
 const SEEK_STEP_SEC = 5
 
@@ -74,6 +86,7 @@ export default function CompactPlaybackBar({
   onLoopClear,
   className = '',
 }: CompactPlaybackBarProps) {
+  const narrowDesktop = useSyncExternalStore(subscribeToLayout, isNarrowDesktop, serverSnapshot)
   const progress = duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0
 
   const clamp = (time: number) => Math.min(duration, Math.max(0, time))
@@ -105,6 +118,23 @@ export default function CompactPlaybackBar({
     event.preventDefault()
     onSeek(clamp(next()))
   }
+
+  const seekControl = (
+    <div
+      className="compact-playback-seek h-2 min-w-0 flex-1 cursor-pointer rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      onClick={handleSeek}
+      onKeyDown={handleSeekKey}
+      role="slider"
+      tabIndex={0}
+      aria-label="재생 위치"
+      aria-valuemin={0}
+      aria-valuemax={Math.round(duration)}
+      aria-valuenow={Math.round(currentTime)}
+      aria-valuetext={`${formatTime(currentTime)} / ${formatTime(duration)}`}
+    >
+      <div className="h-2 rounded-full bg-blue-600" style={{ width: `${progress}%` }} />
+    </div>
+  )
 
   return (
     <div
@@ -151,20 +181,7 @@ export default function CompactPlaybackBar({
         {formatTime(currentTime)} / {formatTime(duration)}
       </span>
 
-      <div
-        className="compact-playback-seek h-2 min-w-0 flex-1 cursor-pointer rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        onClick={handleSeek}
-        onKeyDown={handleSeekKey}
-        role="slider"
-        tabIndex={0}
-        aria-label="재생 위치"
-        aria-valuemin={0}
-        aria-valuemax={Math.round(duration)}
-        aria-valuenow={Math.round(currentTime)}
-        aria-valuetext={`${formatTime(currentTime)} / ${formatTime(duration)}`}
-      >
-        <div className="h-2 rounded-full bg-blue-600" style={{ width: `${progress}%` }} />
-      </div>
+      {!narrowDesktop && seekControl}
 
       {/* Disabled while the samples load, exactly as the setup screen's speed
           control is. During playback this is always enabled — the status has
@@ -189,6 +206,7 @@ export default function CompactPlaybackBar({
           for choosing DEFAULT_MASTER_GAIN by ear during playback. */}
       <input
         type="range"
+        tabIndex={0}
         min={0}
         max={maxVolume}
         step={0.01}
@@ -200,6 +218,8 @@ export default function CompactPlaybackBar({
       <span className="hidden shrink-0 w-10 text-right text-xs font-mono tabular-nums text-ink-muted sm:inline">
         {volume.toFixed(2)}
       </span>
+      {/* DOM order follows the second seek row only in the matching layout. */}
+      {narrowDesktop && seekControl}
     </div>
   )
 }

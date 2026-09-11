@@ -169,6 +169,15 @@ for (const viewport of viewports) {
       if (viewport.width === 390) {
         await page.screenshot({ path: test.info().outputPath('toolbar-390.png') })
       }
+      await transport(page, '정지').focus()
+      await page.keyboard.press('Tab')
+      if (viewport.width < 640) {
+        await expect(page.getByLabel('재생 속도')).toBeFocused()
+        await page.keyboard.press('Tab')
+        await expect(page.getByLabel('음량 (master gain)')).toBeFocused()
+        await page.keyboard.press('Tab')
+      }
+      await expect(seek).toBeFocused()
       await seek.focus()
       await expect(seek).toBeFocused()
       // A pause can happen after playback has advanced on a slower runner.
