@@ -1,5 +1,21 @@
 # Current Handoff
 
+## Security prerequisite verified; explicit merge approval needed (2026-09-12)
+
+- PR153 exact head eea2cad6dea948f8b0f0ad7d256de1abe84db353 has all14 check-runs successful,
+  including Security Audit/Scan and both E2E jobs. Vercel succeeds; CodeRabbit skipped review.
+  Coordinator inspected the dependency-only diff and verified local tests. No actionable PR153
+  comments exist. It is non-draft and mergeable; main merge awaits explicit user approval.
+- PR152 now at9999180 fixes all three accessibility findings: Tab order,320px speed width and
+  seek focus across resizing. Regression-first reproductions and final65 E2E/995 Jest/type/lint/build
+  pass locally. All three observed review threads are resolved; newest hosted run still needs checking.
+  The320px toolbar is64px high;390px remains56px. Playback-box/audio/session logic stays unchanged.
+- Next: approve and merge PR153, verify main checks, then bring main into PR151/152 and run their
+  mandatory gates. Their old security failures cannot disappear until the manifests reach them.
+  Main itself still has the old dependencies, so its status-only pushes retain the known audit failure.
+- No code merge, production rollout or issue closure has occurred. Branch cleanup remains subject
+  to user-owned changes and contained-tip checks; existing local settings/HANDOFF/screenshots are preserved.
+
 ## Required security gate repair submitted (2026-09-12)
 
 - User explicitly requested resolving the mandatory checks. Dependency-only PR153 at eea2cad

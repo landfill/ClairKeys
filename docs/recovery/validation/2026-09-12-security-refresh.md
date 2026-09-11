@@ -31,3 +31,9 @@ No security threshold or suppression changed. Sharp override stays within0.35; Y
 
 No main merge, production deployment, or application behavior changes. Live vulnerability
 exploitability is not asserted; these updates address the audit's reported vulnerable versions.
+
+## Hosted completion
+
+Exact PR153 head eea2cad6dea948f8b0f0ad7d256de1abe84db353 has14 successful check-runs.
+Both E2E jobs and all mandatory gates pass. No unresolved review feedback was returned.
+Await explicit merge approval before changing main code; PR151/152 need subsequent propagation.
