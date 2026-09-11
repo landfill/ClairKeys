@@ -191,6 +191,19 @@ for (const viewport of viewports) {
       await seek.press('Home')
       await expect(seek).toHaveAttribute('aria-valuenow', '0')
       if (viewport.width === 390) {
+        for (const label of ['재생 속도', '음량 (master gain)']) {
+          const control = page.getByLabel(label)
+          await control.evaluate(element => element.setAttribute('data-focus-probe', 'retained'))
+          await control.focus()
+          await page.setViewportSize({ width: 844, height: viewport.height })
+          await expect(control).toBeFocused()
+          await expect(control).toHaveAttribute('data-focus-probe', 'retained')
+          await page.setViewportSize({ width: viewport.width, height: viewport.height })
+          await expect(control).toBeFocused()
+          await expect(control).toHaveAttribute('data-focus-probe', 'retained')
+          await control.evaluate(element => element.removeAttribute('data-focus-probe'))
+        }
+        await seek.focus()
         await page.setViewportSize({ width: 844, height: viewport.height })
         await expect(seek).toBeFocused()
         await page.setViewportSize({ width: viewport.width, height: viewport.height })
