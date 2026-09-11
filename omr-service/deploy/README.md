@@ -29,7 +29,7 @@ Vercel ──HTTP──> <VM_PUBLIC_IP>:3000 ──> container :8000
 | Path | Purpose | Mode |
 |---|---|---|
 | `/etc/systemd/system/clairkeys-omr.service` | Unit; a copy is committed here as `clairkeys-omr.service` | 644 |
-| `/etc/clairkeys-omr.env` | `ENVIRONMENT`, `OMR_SHARED_SECRET`, `AUDIVERIS_MAX_CONCURRENCY` | **600** |
+| `/etc/clairkeys-omr.env` | `ENVIRONMENT`, `OMR_SHARED_SECRET`, `CLAIRKEYS_CALLBACK_ORIGIN`, `AUDIVERIS_MAX_CONCURRENCY` | **600** |
 | `/data` | Bind-mounted to the container's `/data` | — |
 
 **The secret lives in the env file, not the unit.** `podman generate systemd
@@ -56,6 +56,7 @@ umask 077
 {
   echo "ENVIRONMENT=production"
   echo "OMR_SHARED_SECRET=$(openssl rand -hex 32)"
+  echo "CLAIRKEYS_CALLBACK_ORIGIN=https://clairkeys.vercel.app"
   echo "AUDIVERIS_MAX_CONCURRENCY=1"
 } > /etc/clairkeys-omr.env
 chmod 600 /etc/clairkeys-omr.env
@@ -69,6 +70,13 @@ systemctl enable --now clairkeys-omr
 `AUDIVERIS_MAX_CONCURRENCY=1` is load-bearing: one Audiveris JVM is configured
 for 3 GB and the VM has 15 GiB, but concurrency was pinned at 1 when the box was
 provisioned at 4 GB (PR #36) and nothing has re-measured it since.
+
+`CLAIRKEYS_CALLBACK_ORIGIN` is also load-bearing. It is the one origin allowed to receive the
+completion request and `X-ClairKeys-Token`. Production accepts HTTPS only and compares scheme,
+hostname, and effective port exactly; a hostname suffix or different port is not equivalent.
+Only an explicit `ENVIRONMENT=development` permits HTTP. Missing or invalid configuration fails
+closed: conversion results remain available through `/result`, but callback delivery is recorded as
+failed without making an HTTP request. Do not deploy the enforcing image before adding this variable.
 
 ## Repeat deployment
 
@@ -111,6 +119,37 @@ systemctl status clairkeys-omr --no-pager
 After a successful restart, repeat the external `/health` and unauthorized
 `/process` checks below. The unit removes a stale cidfile before each start, so
 the restart result is now a meaningful deployment signal.
+
+### Callback-origin upgrade checks
+
+Before restart, confirm names and permissions without printing either secret or the callback value:
+
+```bash
+test "$(stat -c '%a' /etc/clairkeys-omr.env)" = 600
+grep -q '^ENVIRONMENT=production$' /etc/clairkeys-omr.env
+grep -q '^OMR_SHARED_SECRET=.' /etc/clairkeys-omr.env
+grep -q '^CLAIRKEYS_CALLBACK_ORIGIN=https://.' /etc/clairkeys-omr.env
+```
+
+After the standard health/auth probes, perform one normal upload using the application and verify its
+OMR status reports `delivery_status=delivered`. Then use a **local/mock transport and fake token only**
+to verify a suffix host, wrong scheme/port, and redirect are rejected without a second destination
+request. Never send a production token to a test destination. The repository regression is the safe
+pre-rollout form of that check:
+
+```bash
+cd /opt/clairkeys-deploy/omr-service
+python3 -m unittest tests.test_callback_delivery tests.test_service_contract
+```
+
+Inspect the service journal by job id and status only. Callback URLs, their queries, response bodies,
+and tokens must not appear in logs. A rejected delivery must leave the job `completed` and its
+`/result/{job_id}` payload readable.
+
+If normal delivery fails after the upgrade, roll back the container to the previously recorded image
+ID using the repeat-deployment procedure and restart the unit. Keep the new environment entry in place
+(old images ignore it), verify `/health`, unauthorized `/process`, and a full conversion again, and
+record the failed image SHA. Do not weaken the origin or switch production to HTTP as a rollback.
 
 ## Confirming it actually works
 

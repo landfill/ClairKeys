@@ -42,6 +42,7 @@ jobs:
             tests:
               - '**/*.test.*'
               - '**/*.spec.*'
+              - 'omr-service/**'
               - 'jest.config.js'
               - 'jest.setup.js'
               - 'playwright.config.ts'

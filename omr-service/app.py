@@ -28,10 +28,12 @@ from omr.audiveris import AudiverisProcessor
 from omr.auth import SharedSecretError, verify_shared_secret
 from omr.delivery import (
     CALLBACK_TIMEOUT_SECONDS,
+    CallbackOriginError,
     INITIAL_BACKOFF_SECONDS,
     MAX_DELIVERY_ATTEMPTS,
     is_retryable_status,
     next_backoff_seconds,
+    validate_callback_url,
 )
 from omr.converter import MusicXMLToClairKeysConverter
 
@@ -244,8 +246,17 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
     and its delivery task, but browser navigation no longer does. The shared
     secret authenticates the callback; storage credentials remain on Next.js.
     """
-    if not callback_url:
-        logger.warning("No completion callback configured for job %s", job_id)
+    try:
+        safe_callback_url = validate_callback_url(callback_url)
+    except CallbackOriginError as error:
+        processing_jobs[job_id]["delivery_status"] = "failed"
+        logger.error(
+            "Completion callback destination rejected for job %s: %s; "
+            "the result remains available through GET /result/%s",
+            job_id,
+            error,
+            job_id,
+        )
         return
 
     secret = (os.getenv("OMR_SHARED_SECRET") or "").strip()
@@ -258,21 +269,23 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
 
     for attempt in range(1, MAX_DELIVERY_ATTEMPTS + 1):
         try:
-            async with httpx.AsyncClient(timeout=CALLBACK_TIMEOUT_SECONDS) as client:
+            async with httpx.AsyncClient(
+                timeout=CALLBACK_TIMEOUT_SECONDS,
+                follow_redirects=False,
+            ) as client:
                 response = await client.post(
-                    callback_url,
+                    safe_callback_url,
                     json={"job_id": job_id},
                     headers={"X-ClairKeys-Token": secret},
                 )
             if 200 <= response.status_code < 300:
                 processing_jobs[job_id]["delivery_status"] = "delivered"
-                logger.info("Delivered completed job %s to %s", job_id, callback_url)
+                logger.info("Delivered completed job %s", job_id)
                 return
             logger.error(
-                "Completion callback for job %s returned %s: %s",
+                "Completion callback for job %s returned %s",
                 job_id,
                 response.status_code,
-                response.text,
             )
             if not is_retryable_status(response.status_code):
                 # The answer will not change. Say so now, in the log, rather
@@ -288,8 +301,11 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
                     job_id,
                 )
                 return
-        except Exception as error:
-            logger.error("Completion callback for job %s failed: %s", job_id, error)
+        except Exception:
+            # Transport exceptions commonly embed the full request URL. The
+            # callback may carry a token in its query, so log only stable
+            # operational context here.
+            logger.error("Completion callback transport failed for job %s", job_id)
 
         if attempt == MAX_DELIVERY_ATTEMPTS:
             processing_jobs[job_id]["delivery_status"] = "failed"
