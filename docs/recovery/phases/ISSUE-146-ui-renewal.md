@@ -39,3 +39,7 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
   Exact-SHA Vercel Production deployment succeeded; live home and static artifact verified.
   Local 977 tests/type/lint/build and final PR CI/E2E passed. Post-merge checks tracked in PR148 log.
   Phase remains IN_PROGRESS for stages2–4. No note-label or playback behavior change in this slice.
+
+- 2026-09-11: PR150's session/pause change is already merged. Remaining narrow desktop seek
+  defect was recovered locally after cloud setup failures and submitted in PR152. Local995 Jest,
+  60 E2E,type/lint/build pass; hosted gates/review remain tracked in PR152 log. No issue completion.

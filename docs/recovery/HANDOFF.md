@@ -1,5 +1,77 @@
 # Current Handoff
 
+## Security prerequisite verified; explicit merge approval needed (2026-09-12)
+
+- PR153 exact head eea2cad6dea948f8b0f0ad7d256de1abe84db353 has all14 check-runs successful,
+  including Security Audit/Scan and both E2E jobs. Vercel succeeds; CodeRabbit skipped review.
+  Coordinator inspected the dependency-only diff and verified local tests. No actionable PR153
+  comments exist. It is non-draft and mergeable; main merge awaits explicit user approval.
+- PR152 now at9999180 fixes all three accessibility findings: Tab order,320px speed width and
+  seek focus across resizing. Regression-first reproductions and final65 E2E/995 Jest/type/lint/build
+  pass locally. All three observed review threads are resolved; newest hosted run still needs checking.
+  The320px toolbar is64px high;390px remains56px. Playback-box/audio/session logic stays unchanged.
+- Next: approve and merge PR153, verify main checks, then bring main into PR151/152 and run their
+  mandatory gates. Their old security failures cannot disappear until the manifests reach them.
+  Main itself still has the old dependencies, so its status-only pushes retain the known audit failure.
+- No code merge, production rollout or issue closure has occurred. Branch cleanup remains subject
+  to user-owned changes and contained-tip checks; existing local settings/HANDOFF/screenshots are preserved.
+
+## Required security gate repair submitted (2026-09-12)
+
+- User explicitly requested resolving the mandatory checks. Dependency-only PR153 at eea2cad
+  upgrades Next15.5.25, sharp0.35.4, js-yaml3.15.2/4.3.2 and humanfs/node0.16.8.
+  Audit4→0; clean install,995 Jest,50 E2E,type/lint/build and AVIF roundtrip pass locally.
+  Hosted Security Audit, unit/type/lint/build pass; remaining gates and review tracked in
+  [PR153](reviews/PR-153.md). Code merge still requires explicit approval for PR153.
+- PR152 WebKit timing correction passes both hosted E2E jobs. Its separate unit runner failure
+  was Docker Hub HTTP500 while pulling postgres:15 before tests, not an assertion failure.
+- PR152 bf3cc63 fixes narrow visual/Tab order and explicit WebKit volume focus;60 local E2E pass.
+  Review3990463502 is resolved. New320px speed-width review3990552825 is being handled locally.
+- PR151/152 must receive the security update after its approved main merge, then rerun hosted
+  checks. No audit threshold change, bypass, main code merge or production rollout occurred.
+
+## CI failure diagnosis after local recovery (2026-09-12)
+
+- PR151's functional CI passes; security audit/scan fail on locked dependency advisories.
+- PR152 also failed five WebKit transition cases: the keyboard assertion assumed a zero-second
+  pause, but CI paused at1–2 seconds, so +5 correctly produced6–7. Reproduced locally at6.
+- Test-only64483f5 now deliberately reaches a nonzero play position and presses Home before
+  asserting the5-second step. All25 local transition tests and tsc pass; hosted results pending.
+- Separate new PR152 review3990463502 identifies visual/tab-order mismatch at narrow widths;
+  still OPEN. Dependency updates are also outstanding. Do not claim delivery-ready status.
+
+## Both cloud work items recovered locally into PRs (2026-09-11)
+
+- PR151 at8f1d7fe now passes hosted unit, type, lint, build, both E2E jobs and Vercel preview.
+  All three initial bot review threads were resolved after the local corrections. Required security
+  audit/scan and their aggregate gate still fail on existing dependency advisories; not merge-ready.
+- #146 narrow fine-pointer toolbar correction was implemented locally as2297edd and published
+  in non-draft PR152. The seek target no longer collapses at390px; the56px bar height, pause parity,
+  touch rotation and audio logic are unchanged. Local995 Jest and60 E2E tests pass, plus type/lint/build.
+- Review/CI state belongs in [PR151](reviews/PR-151.md) and [PR152](reviews/PR-152.md).
+  [Toolbar validation](validation/2026-09-11-toolbar-local.md) records regression and limits.
+- Next independent follow-up candidate: dependency-only security repair for Next/sharp/js-yaml/
+  humanfs, then revalidate these PRs. No application fix is declared fully complete with failed gates.
+  Both issues remain open; no code merge or production rollout was performed.
+
+## Repeated cloud setup failures; local recovery started (2026-09-11)
+
+- Both resumed tasks failed before agent execution with setup exit124. #146 logs show
+  Playwright system packages (284 new packages/154MB) stalled downloading from Ubuntu archive
+  under the saved300-second limit. This is separate from application test failures.
+- A v5 candidate split install-deps900s/browser downloads240s. Its interactive test was cancelled
+  after prolonged package installation when the user asked to consider local fallback. No success
+  or timeout result is claimed for this cancelled test; v5 was not saved and v4 remains configured.
+- Coordinator is continuing locally, with isolated worktrees under `.worktrees/` in this project.
+  Existing user settings/HANDOFF/screenshots remain untouched. Cloud tasks remain failed and are
+  not being retried, avoiding concurrent edits.
+- PR151 local recovery head8f1d7fe fixes port0/empty-port acceptance, actual HTTPX URL log exposure,
+  and missing Python dependencies in all Jest CI workflows. Main/document conflicts are resolved.
+  Local Jest997, Python160 with6 skips, type/lint/build passed; hosted checks are still required.
+  [Evidence](validation/2026-09-11-local-cloud-recovery.md), [review](reviews/PR-151.md).
+- #146 toolbar work is now being recovered locally from latest main. No merge/deployment/issue
+  closure has occurred. The separate npm security-audit dependency failure remains unresolved.
+
 ## Cloud access restored and callback changes recovered (2026-09-11)
 
 - User signed into the original account in external Edge; both existing task pages now open.
