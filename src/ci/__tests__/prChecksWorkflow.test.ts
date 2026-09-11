@@ -15,4 +15,9 @@ describe('PR summary workflow', () => {
     expect(summaryJob).not.toContain('issues.createComment')
     expect(summaryJob).not.toMatch(/permissions:\n      issues: write/)
   })
+
+  it('routes OMR service changes through the required unit-test job', () => {
+    expect(workflow).toMatch(/tests:\s+[\s\S]*- 'omr-service\/\*\*'/)
+    expect(workflow).toContain("needs.changes.outputs.tests == 'true'")
+  })
 })

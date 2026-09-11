@@ -2177,3 +2177,45 @@
   D-024, `src/hooks/useFallingNotesPlayer.ts`,
   `src/components/animation/FallingNotesPlayer.tsx`,
   `src/components/playback/CompactPlaybackBar.tsx`
+
+## D-057: OMR 완료 콜백은 설정된 단일 origin으로만 비밀을 전달한다
+
+- Date: 2026-09-08
+- Status: Accepted
+- Applies to: `omr-service/omr/delivery.py`, `omr-service/app.py`의 `notify_completion`
+- Context:
+  - D-036은 Next.js가 콜백 주소를 요청 헤더에서 추측하지 않게 했지만, OMR 서비스는 `/process`로 받은
+    `callback_url`에 공유 비밀을 붙이기 전에 목적지를 독립적으로 검증하지 않는다.
+  - `/process` 호출자는 이미 공유 비밀을 알아야 하므로 이는 독립 인증 우회가 아니라, 잘못된 값이나 비밀을
+    아는 호출자가 그 비밀을 다른 목적지로 전달시키는 일을 막는 이중 방어다.
+  - 운영 VM에는 `CLAIRKEYS_CALLBACK_ORIGIN`이 아직 없으므로 코드 병합만으로 rollout을 완료할 수 없다.
+- Decision:
+  1. 허용 목적지는 `CLAIRKEYS_CALLBACK_ORIGIN` 하나다. 설정과 callback 모두 절대 HTTP(S) URL로 파싱하고
+     **scheme, 정규화된 hostname, effective port**를 정확히 비교한다. 기본 포트는 HTTPS 443, HTTP 80이다.
+  2. 운영 및 명시되지 않은 환경은 HTTPS만 허용한다. 정확히 `ENVIRONMENT=development`인 경우에만 설정과
+     callback의 HTTP를 허용한다.
+  3. 설정 누락·공백·파싱 오류·origin이 아닌 설정(path/query/fragment 포함), callback userinfo·fragment·
+     모호한 authority·다른 포트·suffix hostname은 fail closed다. 거부는 HTTP client 생성 전에 일어나고
+     `delivery_status=failed`를 기록한다.
+  4. callback의 path와 query는 Next.js endpoint를 지정하는 유효한 일부지만 신뢰 결정이나 로그에는 쓰지
+     않는다. 원본 URL, query/token, 응답 body, 공유 비밀은 어떤 성공·실패 로그에도 남기지 않는다.
+  5. HTTP redirect는 자동 추적하지 않는다. 3xx는 기존 retryable status 흐름을 따르되 Location 목적지로
+     비밀을 전달하지 않는다.
+  6. 목적지 거부는 전달 실패일 뿐 변환 실패가 아니다. `status=completed`, `animation_data`, `/result` fallback은
+     유지한다. 정상 목적지의 12회 retry, exponential backoff, delivery status, 70초 timeout 계약도 유지한다.
+- Reason: 비밀을 포함하는 outbound 요청의 마지막 경계는 송신자다. 생성자 검증만 믿지 않고 송신 직전에
+  단일 설정 origin과 대조해야 redirect나 후속 호출 경로가 같은 보장을 우회하지 못한다.
+- Rejected:
+  - hostname suffix 또는 hostname만 비교 | sibling/subdomain과 포트·스킴 변경을 허용해 origin 경계가 아니다.
+  - callback 전체 URL을 설정값과 문자열로 비교 | endpoint path/query 변경까지 배포 설정으로 결합하며 origin
+    정책보다 과도하다.
+  - redirect마다 Location을 재검증해 추적 | 현재 callback은 redirect가 필요 없고 transport 동작을 넓힌다.
+- Constraint: 운영 VM 설정·이미지 배포·실제 token/외부 callback 검증은 별도 명시 승인 전 수행하지 않는다.
+- Confidence: high
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: `notify_completion`에서 HTTP client를 만들기 전에 검증하고, callback URL이나 응답 body를 로그에
+  다시 추가하지 않는다. VM rollout 전 `CLAIRKEYS_CALLBACK_ORIGIN`을 설정하지 않으면 전달은 의도적으로 닫힌다.
+- Tested: 구현 전 `python3 -m unittest tests.test_callback_delivery`가 새 API 부재로 실패함.
+- Not-tested: 실제 VM 환경 설정, 이미지 실행, 운영 정상 callback 및 외부 거부 확인.
+- Related: 이슈 [#110](https://github.com/landfill/ClairKeys/issues/110), D-018, D-036
