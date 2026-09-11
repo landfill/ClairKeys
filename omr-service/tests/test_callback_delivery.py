@@ -48,6 +48,14 @@ class CallbackOriginPolicyTests(unittest.TestCase):
                 origin="http://localhost:3000",
             )
 
+    def test_http_requires_the_exact_development_marker(self):
+        for environment in ('Development', 'DEVELOPMENT', ' development ',
+                            'development\n', 'staging', 'production', ''):
+            with self.subTest(environment=environment):
+                with self.assertRaises(CallbackOriginError):
+                    self.validate('http://localhost:3000/finalize',
+                                  origin='http://localhost:3000', environment=environment)
+
     def test_missing_or_invalid_configuration_fails_closed(self):
         invalid_origins = ("", "not-a-url", "https://user@app.example.com", "https://app.example.com/path")
         for origin in invalid_origins:
@@ -171,6 +179,21 @@ class CompletionDeliveryRuntimeTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(
                     app.processing_jobs[self.job_id]["delivery_status"], "failed"
                 )
+
+    async def test_nonexact_development_marker_never_constructs_transport(self):
+        for environment in ('Development', 'DEVELOPMENT', ' development '):
+            with self.subTest(environment=environment):
+                with mock.patch.dict(os.environ, {
+                    'CLAIRKEYS_CALLBACK_ORIGIN': 'http://localhost:3000',
+                    'ENVIRONMENT': environment,
+                }):
+                    with (
+                        mock.patch.object(app.httpx, 'AsyncClient') as factory,
+                        mock.patch.object(app, 'MAX_DELIVERY_ATTEMPTS', 1),
+                    ):
+                        await app.notify_completion('http://localhost:3000/finalize', self.job_id)
+                        factory.assert_not_called()
+                self.assertEqual(app.processing_jobs[self.job_id]['delivery_status'], 'failed')
 
     async def test_valid_delivery_keeps_timeout_status_and_disables_redirects(self):
         calls = []

@@ -71,7 +71,7 @@ def validate_callback_url(callback_url: Optional[str]) -> str:
         raise CallbackOriginError("callback origin configuration is not an origin")
 
     is_development = (
-        os.getenv("ENVIRONMENT", "production").strip().lower() == "development"
+        os.getenv("ENVIRONMENT", "production") == "development"
     )
     if not is_development and (
         configured.scheme != "https" or callback.scheme != "https"
