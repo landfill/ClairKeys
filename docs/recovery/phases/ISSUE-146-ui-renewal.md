@@ -44,6 +44,9 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
   defect was recovered locally after cloud setup failures and submitted in PR152. Local995 Jest,
   60 E2E,type/lint/build pass; hosted gates/review remain tracked in PR152 log. No issue completion.
 
-- 2026-09-12: PR152 explicitly approved and merged ase652c64. Narrow fine-pointer seeking,
+- 2026-09-12: PR152 explicitly approved and merged as e652c64. Narrow fine-pointer seeking,
   speed width and keyboard focus fixes are in main. Explore/upload refinements remain; issue146
   stays open. Post-merge verification is recorded in validation/2026-09-12-feature-merges.md.
+
+- 2026-09-12: All six exact-merge checks passed for PR152. Exact-merge Vercel Production succeeded
+  and public CSS delivery was verified. Remaining explore/upload work keeps this phase IN_PROGRESS.

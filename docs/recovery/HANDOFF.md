@@ -1,5 +1,18 @@
 # Current Handoff
 
+## Feature merge delivery verified (2026-09-12)
+
+- PR151 merge381a17f3b75fe7607008e59fb9655106432e1ac3 and PR152 mergee652c643920625f3baccff4f0500110357aa2ba9
+  each have six successful post-merge check-runs, including E2E. No failed/pending check-run remains
+  on either exact merge. Final exact-merge Vercel Production deployment6396973814 succeeded.
+- Public https://clairkeys.vercel.app/ returned200; its linked stylesheet contains the new compact
+  toolbar/selector/volume rules. This verifies served UI assets, not a live OMR conversion.
+- Callback code/test/deployment-preparation phase is DONE. Issue110 stays OPEN for the separately
+  approved OMR VM image/config rollout and live callback verification. No OMR runtime was changed.
+- UI issue146 remains IN_PROGRESS for explore/upload refinements; the toolbar slice is delivered.
+- Existing user-owned settings/HANDOFF edit/eight screenshots are preserved. All merged feature
+  tips are contained in main, but branch/worktree cleanup remains blocked by those changes.
+
 ## Approved feature PRs merged (2026-09-12)
 
 - User explicitly approved PR151 and PR152. Exact heads, all hosted checks and unresolved-review

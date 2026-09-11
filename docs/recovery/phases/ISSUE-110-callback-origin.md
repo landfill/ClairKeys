@@ -1,6 +1,6 @@
 # ISSUE-110 — Completion Callback Origin Boundary
 
-Status: `IN_PROGRESS`
+Status: `DONE`
 
 ## Objective
 
@@ -53,3 +53,6 @@ the existing delivery retry contract.
 - 2026-09-12: PR151 explicitly approved and merged as381a17f. Code/tests/deployment preparation
   are in main. Post-merge checks are being verified; OMR VM rollout and live callback verification
   remain separate and unperformed. Issue110 stays open.
+
+- 2026-09-12: All six exact-merge checks passed. This code/test/deployment-preparation phase is
+  complete; the separately scoped OMR rollout/live verification remains outstanding in issue110.
