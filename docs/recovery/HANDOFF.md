@@ -1,5 +1,19 @@
 # Current Handoff
 
+## Both cloud work items recovered locally into PRs (2026-09-11)
+
+- PR151 at8f1d7fe now passes hosted unit, type, lint, build, both E2E jobs and Vercel preview.
+  All three initial bot review threads were resolved after the local corrections. Required security
+  audit/scan and their aggregate gate still fail on existing dependency advisories; not merge-ready.
+- #146 narrow fine-pointer toolbar correction was implemented locally as2297edd and published
+  in non-draft PR152. The seek target no longer collapses at390px; the56px bar height, pause parity,
+  touch rotation and audio logic are unchanged. Local995 Jest and60 E2E tests pass, plus type/lint/build.
+- Review/CI state belongs in [PR151](reviews/PR-151.md) and [PR152](reviews/PR-152.md).
+  [Toolbar validation](validation/2026-09-11-toolbar-local.md) records regression and limits.
+- Next independent follow-up candidate: dependency-only security repair for Next/sharp/js-yaml/
+  humanfs, then revalidate these PRs. No application fix is declared fully complete with failed gates.
+  Both issues remain open; no code merge or production rollout was performed.
+
 ## Repeated cloud setup failures; local recovery started (2026-09-11)
 
 - Both resumed tasks failed before agent execution with setup exit124. #146 logs show
