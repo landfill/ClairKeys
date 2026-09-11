@@ -1,5 +1,24 @@
 # Current Handoff
 
+## OMR callback-origin deployment verified (2026-09-12)
+
+- User explicitly authorized OMR VM rollout. Deployed exact mergee652c643920625f3baccff4f0500110357aa2ba9
+  as imagef858f14e0524230add2ce2f42aabc77c825d8f1a870bdc31f447a229d39d5f1d after offline image tests:
+  162 cases,6 documented private-fixture skips. Production remains active/healthy; external health200
+  and unauthenticated process401. Prior PR145 image retained as rollback-pr151-20260912.
+- Added only CLAIRKEYS_CALLBACK_ORIGIN=https://clairkeys.vercel.app to the mode600 VM env file;
+  existing secret unchanged. Production web auth callback origins independently matched this value.
+  Root-only prior env backup retained. No unit, concurrency or recognition-engine change.
+- Real app upload of the existing Bach validation PDF created private sheet55. Job
+  a906bfc9-9e95-4714-9aa9-4c9763b2cd85 reports completed/delivered,514 notes,147.75 seconds.
+  Stored result loads, playback advanced to10 seconds, and pause/stop worked. Test score55 is retained
+  for user review; no existing score was edited or removed.
+- Runtime env/image, log non-disclosure and automatic job-directory cleanup verified. Negative
+  destinations were tested with fake tokens/mock transport in the same image, not production tokens.
+- Deployment scope is complete. Issue110 remains administratively open; no issue-close action was
+  requested. Recognition-quality warnings on the Bach fixture remain outside this delivery change.
+  [Full deployment evidence](validation/2026-09-12-callback-vm-deployment.md).
+
 ## Feature merge delivery verified (2026-09-12)
 
 - PR151 merge381a17f3b75fe7607008e59fb9655106432e1ac3 and PR152 mergee652c643920625f3baccff4f0500110357aa2ba9

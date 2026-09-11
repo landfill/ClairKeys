@@ -56,3 +56,7 @@ the existing delivery retry contract.
 
 - 2026-09-12: All six exact-merge checks passed. This code/test/deployment-preparation phase is
   complete; the separately scoped OMR rollout/live verification remains outstanding in issue110.
+
+- 2026-09-12: Separate user-approved VM rollout completed. Exact-image offline regression, canonical
+  origin configuration, restart/health/auth and actual app callback delivered/storage/playback verified.
+  See validation/2026-09-12-callback-vm-deployment.md. Issue110 remains administratively open.
