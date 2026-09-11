@@ -9,6 +9,7 @@
 - [Fix CompactPlaybackBar responsive defect](https://chatgpt.com/codex/cloud/tasks/task_e_6aa00288378c8322ba9c72f475b5fa32): remaining #146 narrow pointer:fine390px overflow/zero-width seek; preserve D-056/session/audio/orientation. Requested branch codex/issue-146-compact-toolbar-cloud.
 - [Implement issue110 callback URL validation](https://chatgpt.com/codex/cloud/tasks/task_e_6aa002b0e40c8322a876e3d379366416): independent OMR code/test/deploy-preparation docs. Requested branch codex/issue-110-callback-origin-cloud-v4. Do not reuse/publish prior cancelled dde7bfe.
 - Both fresh tasks were accepted on main in ClairKeys environment; initial cache-maintenance/repo-refresh states observed. Prompts require cloud-local implementation, tests, Lore commits and ready PR preparation without local-coordinator dependency. gh credentials remain absent unless independently verified; PR creation may need the Codex UI. No merge/deploy/issue closure authorized.
+- Subsequent live logs confirm both passed setup into agent execution: #146 read CompactPlaybackBar/FallingNotesPlayer and searched session/orientation regressions; #110 fetched public origin, created/tracked main and confirmed main=origin/main=ba19ca1 with behind=0 before reading project instructions. This confirms analysis has started, not implementation/test completion or PR publication.
 
 Date: 2026-09-08 KST
 

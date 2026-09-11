@@ -1,5 +1,31 @@
 # Current Handoff
 
+## Cloud access restored and callback changes recovered (2026-09-11)
+
+- User signed into the original account in external Edge; both existing task pages now open.
+  Current local app session remained active. Earlier browser-access blocker is resolved.
+- #110 was recovered through the UI as non-draft PR151. Its published commit is d07b855,
+  distinct from the cloud-local 381397a reported previously. Review found port-zero aliasing,
+  missing CI Python dependencies, and stale recovery-document conflicts; fixes were requested
+  in the same cloud task. [PR151 review](reviews/PR-151.md) tracks live delivery blockers.
+- #146's captured diff contains only an E2E change although logs show implementation and
+  partial verification. The same task was resumed to recover files and resolve mobile checks.
+  Neither task is complete; no merge/deployment/issue closure was performed.
+- Previous status commit a193181 passed five checks but Security Audit failed at
+  `npm audit --audit-level high --json` (exit1). Logs do not expose the advisory details;
+  this failure remains unresolved and must not be reported as green.
+
+## Cloud result retrieval blocked by current browser access (2026-09-11)
+
+- Both previously dispatched task URLs redirect to the Codex onboarding page in Chrome,
+  which asks to connect GitHub. The in-app browser redirects to a signed-out ChatGPT page.
+  Neither task's result, completion status or diff could be read; do not infer task failure.
+- GitHub read-only checks found no open PR and no remote head for either requested cloud branch.
+  Next action: restore access to the account that created the tasks, recover their results,
+  then verify and prepare review-ready PRs. No duplicate implementation was started.
+- Local main was fast-forwarded to 39c5bb8 with the pre-existing HANDOFF edit restored;
+  settings and eight local screenshots remain untouched. See [retrieval evidence](validation/2026-09-11-cloud-result-retrieval.md).
+
 ## Independent cloud issue work newly authorized and dispatched (2026-09-08)
 
 - Current user explicitly requested actual priority issue implementation, multiple independent
