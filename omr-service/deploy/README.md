@@ -135,11 +135,14 @@ After the standard health/auth probes, perform one normal upload using the appli
 OMR status reports `delivery_status=delivered`. Then use a **local/mock transport and fake token only**
 to verify a suffix host, wrong scheme/port, and redirect are rejected without a second destination
 request. Never send a production token to a test destination. The repository regression is the safe
-pre-rollout form of that check:
+pre-rollout form of that check. Run it in the newly built image, which contains the supported
+Python runtime and service dependencies; the Rocky VM host's Python is not suitable. Use the same
+commit tag built above, without mounting the production environment file:
 
 ```bash
-cd /opt/clairkeys-deploy/omr-service
-python3 -m unittest tests.test_callback_delivery tests.test_service_contract
+podman run --rm --network none --workdir /app --entrypoint python3 \
+  "clairkeys-omr:<commit>" \
+  -m unittest tests.test_callback_delivery tests.test_service_contract
 ```
 
 Inspect the service journal by job id and status only. Callback URLs, their queries, response bodies,
