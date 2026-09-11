@@ -50,3 +50,6 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
 
 - 2026-09-12: All six exact-merge checks passed for PR152. Exact-merge Vercel Production succeeded
   and public CSS delivery was verified. Remaining explore/upload work keeps this phase IN_PROGRESS.
+
+- 2026-09-12: GitHub issue146 progress synchronized with PR148/150/152 delivery. Playback-transition
+  criterion marked complete; issue remains OPEN for explore/upload and remaining UI checks.

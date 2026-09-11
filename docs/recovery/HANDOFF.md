@@ -1,5 +1,16 @@
 # Current Handoff
 
+## GitHub issue state synchronized with delivery (2026-09-12)
+
+- User requested issue-state synchronization. Issue110 body now records PR151 implementation,
+  VM configuration/deployment, offline negative cases and actual delivered callback/storage/playback.
+  Closed as COMPLETED after readback; no remaining callback rollout is pending from this deployment.
+- Issue146 remains OPEN. Body now records PR148/150/152 delivery and checks the playback-transition
+  completion item. Explore/upload and remaining whole-UI checks stay outstanding. Historical audit
+  text is explicitly labeled; CSS-zoom versus native/device verification limits remain clear.
+- Both published bodies were read back and exactly matched the prepared text. Issue titles and
+  historical detail sections were preserved. [Synchronization evidence](validation/2026-09-12-issue-status-sync.md).
+
 ## OMR callback-origin deployment verified (2026-09-12)
 
 - User explicitly authorized OMR VM rollout. Deployed exact mergee652c643920625f3baccff4f0500110357aa2ba9
