@@ -1,5 +1,23 @@
 # Current Handoff
 
+## Repeated cloud setup failures; local recovery started (2026-09-11)
+
+- Both resumed tasks failed before agent execution with setup exit124. #146 logs show
+  Playwright system packages (284 new packages/154MB) stalled downloading from Ubuntu archive
+  under the saved300-second limit. This is separate from application test failures.
+- A v5 candidate split install-deps900s/browser downloads240s. Its interactive test was cancelled
+  after prolonged package installation when the user asked to consider local fallback. No success
+  or timeout result is claimed for this cancelled test; v5 was not saved and v4 remains configured.
+- Coordinator is continuing locally, with isolated worktrees under `.worktrees/` in this project.
+  Existing user settings/HANDOFF/screenshots remain untouched. Cloud tasks remain failed and are
+  not being retried, avoiding concurrent edits.
+- PR151 local recovery head8f1d7fe fixes port0/empty-port acceptance, actual HTTPX URL log exposure,
+  and missing Python dependencies in all Jest CI workflows. Main/document conflicts are resolved.
+  Local Jest997, Python160 with6 skips, type/lint/build passed; hosted checks are still required.
+  [Evidence](validation/2026-09-11-local-cloud-recovery.md), [review](reviews/PR-151.md).
+- #146 toolbar work is now being recovered locally from latest main. No merge/deployment/issue
+  closure has occurred. The separate npm security-audit dependency failure remains unresolved.
+
 ## Cloud access restored and callback changes recovered (2026-09-11)
 
 - User signed into the original account in external Edge; both existing task pages now open.
