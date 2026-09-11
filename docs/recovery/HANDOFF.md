@@ -1,5 +1,15 @@
 # Current Handoff
 
+## CI failure diagnosis after local recovery (2026-09-12)
+
+- PR151's functional CI passes; security audit/scan fail on locked dependency advisories.
+- PR152 also failed five WebKit transition cases: the keyboard assertion assumed a zero-second
+  pause, but CI paused at1–2 seconds, so +5 correctly produced6–7. Reproduced locally at6.
+- Test-only64483f5 now deliberately reaches a nonzero play position and presses Home before
+  asserting the5-second step. All25 local transition tests and tsc pass; hosted results pending.
+- Separate new PR152 review3990463502 identifies visual/tab-order mismatch at narrow widths;
+  still OPEN. Dependency updates are also outstanding. Do not claim delivery-ready status.
+
 ## Both cloud work items recovered locally into PRs (2026-09-11)
 
 - PR151 at8f1d7fe now passes hosted unit, type, lint, build, both E2E jobs and Vercel preview.
