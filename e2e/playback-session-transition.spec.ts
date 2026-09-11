@@ -190,10 +190,20 @@ for (const viewport of viewports) {
       await expect(seek).toHaveAttribute('aria-valuenow', '5')
       await seek.press('Home')
       await expect(seek).toHaveAttribute('aria-valuenow', '0')
+      if (viewport.width === 390) {
+        await page.setViewportSize({ width: 844, height: viewport.height })
+        await expect(seek).toBeFocused()
+        await page.setViewportSize({ width: viewport.width, height: viewport.height })
+        await expect(seek).toBeFocused()
+        await seek.press('ArrowRight')
+        await expect(seek).toHaveAttribute('aria-valuenow', '5')
+        await seek.press('Home')
+        await expect(seek).toHaveAttribute('aria-valuenow', '0')
+      }
     }
 
     // Pause preserves the frame and transport across the responsive layout.
-    expect(await page.getByTestId('compact-playback-bar').boundingBox()).toEqual(playingBar)
+    await expect.poll(() => page.getByTestId('compact-playback-bar').boundingBox()).toEqual(playingBar)
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(playingOverflow)
 
     // Resuming puts pause back in the very slot it left.

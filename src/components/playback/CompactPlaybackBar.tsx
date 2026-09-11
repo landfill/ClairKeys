@@ -1,6 +1,6 @@
 'use client'
 
-import { useSyncExternalStore } from 'react'
+import { useCallback, useLayoutEffect, useRef, useSyncExternalStore } from 'react'
 import { Button } from '@/components/ui'
 
 /**
@@ -48,12 +48,6 @@ const NARROW_DESKTOP_QUERY = '(max-width: 639px) and (pointer: fine)'
 const isNarrowDesktop = () => typeof window !== 'undefined' &&
   typeof window.matchMedia === 'function' && window.matchMedia(NARROW_DESKTOP_QUERY).matches
 const serverSnapshot = () => false
-function subscribeToLayout(onChange: () => void) {
-  if (typeof window.matchMedia !== 'function') return () => {}
-  const query = window.matchMedia(NARROW_DESKTOP_QUERY)
-  query.addEventListener('change', onChange)
-  return () => query.removeEventListener('change', onChange)
-}
 
 const SPEEDS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
 const SEEK_STEP_SEC = 5
@@ -86,7 +80,24 @@ export default function CompactPlaybackBar({
   onLoopClear,
   className = '',
 }: CompactPlaybackBarProps) {
+  const seekRef = useRef<HTMLDivElement>(null)
+  const restoreSeekFocus = useRef(false)
+  const subscribeToLayout = useCallback((onChange: () => void) => {
+    if (typeof window.matchMedia !== 'function') return () => {}
+    const query = window.matchMedia(NARROW_DESKTOP_QUERY)
+    const handleChange = () => {
+      // Capture focus before React moves the control to its new reading order.
+      restoreSeekFocus.current = document.activeElement === seekRef.current
+      onChange()
+    }
+    query.addEventListener('change', handleChange)
+    return () => query.removeEventListener('change', handleChange)
+  }, [])
   const narrowDesktop = useSyncExternalStore(subscribeToLayout, isNarrowDesktop, serverSnapshot)
+  useLayoutEffect(() => {
+    if (restoreSeekFocus.current) seekRef.current?.focus({ preventScroll: true })
+    restoreSeekFocus.current = false
+  }, [narrowDesktop])
   const progress = duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0
 
   const clamp = (time: number) => Math.min(duration, Math.max(0, time))
@@ -121,6 +132,7 @@ export default function CompactPlaybackBar({
 
   const seekControl = (
     <div
+      ref={seekRef}
       className="compact-playback-seek h-2 min-w-0 flex-1 cursor-pointer rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       onClick={handleSeek}
       onKeyDown={handleSeekKey}
