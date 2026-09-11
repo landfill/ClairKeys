@@ -1,5 +1,21 @@
 # Current Handoff
 
+## Approved security prerequisite merged and propagated (2026-09-12)
+
+- User approved PR153. Rechecked exact head eea2cad/all hosted checks/no unresolved review, then
+  merged as248666bf4ce7e9e1aba900bd66f8b31d26fb4f85. Main was fast-forwarded with the pre-existing
+  HANDOFF edit temporarily stashed and restored. Both security branch tips have zero commits
+  outside main; branch cleanup is blocked by preserved user-owned changes, so no branch was deleted.
+- Exact-merge Vercel Production deployment6396546356 succeeded. Main Security Audit/type/lint/unit/
+  post-merge build passed; final E2E completion is tracked in PR153 log.
+- PR151 incorporated main and fixed the exact-development-marker review in0cba56d. Local Python162
+  cases with6 skips and callback bridge pass; combined-dependency Jest997/type/lint pass.
+- PR152 incorporated main in fbc9364 and added DOM-identity/focus evidence in724d5db. Review's claim
+  that speed/volume remount was falsified in real browsers: nodes and focus survive both resize
+  directions. Local30 transition tests and combined-dependency Jest995/type/lint pass.
+- Both feature heads were pushed and hosted gates are running. Observed review threads resolved;
+  consult PR151/152 logs for current delivery status. Neither feature PR has merge approval yet.
+
 ## Security prerequisite verified; explicit merge approval needed (2026-09-12)
 
 - PR153 exact head eea2cad6dea948f8b0f0ad7d256de1abe84db353 has all14 check-runs successful,
