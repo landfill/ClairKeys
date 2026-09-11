@@ -3,8 +3,8 @@
 Date: 2026-09-12
 Merge: 248666bf4ce7e9e1aba900bd66f8b31d26fb4f85
 
-- `gh pr view153` and reviewThreads verified exact head/all checks/no unresolved findings.
-- `gh pr merge153 --merge --match-head-commit eea2cad6dea948f8b0f0ad7d256de1abe84db353`
+- `gh pr view 153` and reviewThreads verified exact head/all checks/no unresolved findings.
+- `gh pr merge 153 --merge --match-head-commit eea2cad6dea948f8b0f0ad7d256de1abe84db353`
   with Lore subject/body succeeded after explicit user approval.
 - Scoped HANDOFF stash/pull --ff-only/stash pop succeeded without conflicts. User changes preserved.
 - `git rev-list --count origin/main..codex/ci-security-dependencies` and remote equivalent:0 each.
