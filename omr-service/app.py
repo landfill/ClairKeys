@@ -22,6 +22,8 @@ from typing import Optional
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+# HTTPX INFO request logs contain the complete callback URL, including query tokens.
+logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 from omr.audiveris import AudiverisProcessor

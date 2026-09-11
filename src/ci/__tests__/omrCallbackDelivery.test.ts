@@ -7,10 +7,12 @@ describe('OMR completion callback delivery gate', () => {
     const result = spawnSync(
       process.env.PYTHON_BIN || 'python3',
       ['-m', 'unittest', 'tests.test_callback_delivery'],
-      { cwd: serviceRoot, encoding: 'utf8' },
+      { cwd: serviceRoot, encoding: 'utf8', timeout: 60_000 },
     )
 
     expect(result.error).toBeUndefined()
-    expect(result.status).toBe(0)
+    if (result.status !== 0) {
+      throw new Error(`Python callback regressions failed:\n${result.stdout}\n${result.stderr}`)
+    }
   })
 })

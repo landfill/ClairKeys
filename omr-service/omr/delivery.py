@@ -29,7 +29,7 @@ def _parse_http_url(value: Optional[str], label: str) -> SplitResult:
         parsed = urlsplit(value)
         # Accessing these properties performs urllib's bracket and port checks.
         hostname = parsed.hostname
-        parsed.port
+        port = parsed.port
     except ValueError as error:
         raise CallbackOriginError(f"{label} is malformed") from error
 
@@ -41,6 +41,8 @@ def _parse_http_url(value: Optional[str], label: str) -> SplitResult:
         or parsed.password is not None
         or parsed.fragment
         or hostname.endswith(".")
+        or parsed.netloc.endswith(":")
+        or port == 0
     ):
         raise CallbackOriginError(f"{label} is malformed")
     return parsed
@@ -51,7 +53,7 @@ def _origin_tuple(parsed: SplitResult) -> Tuple[str, str, int]:
     hostname = parsed.hostname
     if hostname is None:  # `_parse_http_url` is the only constructor path.
         raise CallbackOriginError("URL hostname is missing")
-    return parsed.scheme, hostname.lower(), parsed.port or default_port
+    return parsed.scheme, hostname.lower(), default_port if parsed.port is None else parsed.port
 
 
 def validate_callback_url(callback_url: Optional[str]) -> str:

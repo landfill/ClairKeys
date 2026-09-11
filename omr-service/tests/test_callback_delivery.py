@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import logging
 import sys
 import unittest
 from pathlib import Path
@@ -68,6 +69,18 @@ class CallbackOriginPolicyTests(unittest.TestCase):
             with self.subTest(callback_url=callback_url):
                 with self.assertRaises(CallbackOriginError):
                     self.validate(callback_url)
+
+    def test_explicit_zero_or_malformed_ports_are_rejected(self):
+        for authority in ('app.example.com:0', 'app.example.com:',
+                          'app.example.com:65536', 'app.example.com:bad'):
+            for config in (False, True):
+                with self.subTest(authority=authority, config=config):
+                    with self.assertRaises(CallbackOriginError):
+                        self.validate(
+                            'https://app.example.com/finalize' if config else f'https://{authority}/finalize',
+                            origin=f'https://{authority}' if config else 'https://app.example.com',
+                        )
+
 
 
 class _Response:
@@ -188,6 +201,54 @@ class CompletionDeliveryRuntimeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(calls), 2)
         self.assertTrue(all(call[1]["follow_redirects"] is False for call in calls))
         self.assertEqual(app.processing_jobs[self.job_id]["delivery_status"], "failed")
+
+    async def test_real_httpx_transport_never_logs_url_query_or_response(self):
+        requests = []
+        def respond(request):
+            requests.append(request)
+            return app.httpx.Response(400, text='response-secret-marker')
+
+        client_type = app.httpx.AsyncClient
+        def factory(**kwargs):
+            return client_type(transport=app.httpx.MockTransport(respond), **kwargs)
+
+        with self.assertLogs(level=logging.INFO) as captured:
+            with mock.patch.object(app.httpx, 'AsyncClient', side_effect=factory):
+                await app.notify_completion(
+                    'https://app.example.com/private-path?token=query-secret-marker', self.job_id)
+
+        self.assertEqual(len(requests), 1)
+        self.assertEqual(app.processing_jobs[self.job_id]['delivery_status'], 'failed')
+        logged = '\n'.join(captured.output)
+        for marker in ('app.example.com', 'private-path', 'query-secret-marker',
+                       'response-secret-marker', 'fake-secret'):
+            self.assertNotIn(marker, logged)
+
+    async def test_transport_exception_is_redacted_and_retried(self):
+        calls = []
+        def fail(request):
+            calls.append(request)
+            raise app.httpx.ConnectError('exception-secret-marker', request=request)
+
+        client_type = app.httpx.AsyncClient
+        def factory(**kwargs):
+            return client_type(transport=app.httpx.MockTransport(fail), **kwargs)
+
+        with self.assertLogs(level=logging.INFO) as captured:
+            with (
+                mock.patch.object(app.httpx, 'AsyncClient', side_effect=factory),
+                mock.patch.object(app, 'MAX_DELIVERY_ATTEMPTS', 2),
+                mock.patch.object(app.asyncio, 'sleep', new=mock.AsyncMock()),
+            ):
+                await app.notify_completion(
+                    'https://app.example.com/private-path?token=query-secret-marker', self.job_id)
+
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(app.processing_jobs[self.job_id]['delivery_status'], 'failed')
+        logged = '\n'.join(captured.output)
+        for marker in ('exception-secret-marker', 'query-secret-marker', 'fake-secret'):
+            self.assertNotIn(marker, logged)
+
 
 
 if __name__ == "__main__":
