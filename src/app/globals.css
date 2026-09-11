@@ -213,3 +213,27 @@ body.playback-rotated {
 .tab-navigation button:hover {
   background: var(--ck-surface);
 }
+
+/* Narrow desktop windows need a separate seek row inside the existing 56px bar.
+   Touch devices keep their existing landscape/rotation layout. */
+@media (max-width: 639px) and (pointer: fine) {
+  .compact-playback-bar {
+    display: grid;
+    grid-template-columns: 40px max-content 40px minmax(0, 1fr) 56px;
+    grid-template-rows: 40px 8px;
+    gap: 4px;
+    padding-block: 2px;
+  }
+  .compact-playback-transport { grid-column: 1; grid-row: 1; }
+  .compact-playback-loop { grid-column: 2; grid-row: 1; }
+  .compact-playback-stop { grid-column: 3; grid-row: 1; }
+  .compact-playback-speed {
+    grid-column: 4;
+    grid-row: 1;
+    min-width: 0;
+    width: 100%;
+    padding-inline: 4px;
+  }
+  .compact-playback-volume { grid-column: 5; grid-row: 1; width: 56px; }
+  .compact-playback-seek { grid-column: 1 / -1; grid-row: 2; }
+}

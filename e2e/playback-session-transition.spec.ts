@@ -28,6 +28,8 @@ const viewports = [
   { name: 'phone portrait', width: 390, height: 844 },
   { name: 'phone landscape', width: 844, height: 390 },
   { name: 'desktop', width: 1280, height: 720 },
+  { name: 'large desktop', width: 1440, height: 900 },
+  { name: 'large desktop with CSS zoom 200%', width: 1440, height: 900, zoom: 2 },
 ]
 
 /**
@@ -82,6 +84,9 @@ for (const viewport of viewports) {
     await serveFixture(page)
     await page.setViewportSize({ width: viewport.width, height: viewport.height })
     await page.goto('/sheet/1')
+    if ('zoom' in viewport) {
+      await page.evaluate(zoom => { document.documentElement.style.zoom = String(zoom) }, viewport.zoom)
+    }
 
     // Setup screen: the stacked control block and the page header are here.
     await expect(page.getByTestId('playback-primary-controls')).toBeVisible()
@@ -135,11 +140,8 @@ for (const viewport of viewports) {
     expect(pausedTransport).toEqual(playingTransport)
     expect(pausedBox).toEqual(playingBox)
 
-    // Everything the reader might reach for while paused is still there and
-    // still operable. `toBeVisible` is the wrong question at 390px: the seek
-    // bar already computes to zero width there while the score is sounding,
-    // which is a pre-existing narrow-width defect of the bar rather than
-    // anything a pause introduces (see the parity assertion below).
+    // Existing touch/rotation paths retain their parity coverage. The new
+    // layout regression specifically targets narrow fine-pointer windows.
     for (const control of [
       page.getByRole('slider', { name: '재생 위치' }),
       transport(page, '구간 시작 A 설정'),
@@ -151,11 +153,28 @@ for (const viewport of viewports) {
       await expect(control).toBeEnabled()
     }
 
-    // The bar occupies exactly what it did a moment ago, overflow included.
-    // This pins the claim this change is responsible for — a pause costs the
-    // layout nothing — without asserting away a defect it did not cause. The
-    // compact bar overflows a 390px-wide viewport by 57px in both states; that
-    // belongs to the narrow-width pass of #146, not here.
+    const finePointer = await page.evaluate(() => matchMedia('(pointer: fine)').matches)
+    if (finePointer) {
+      const seek = page.getByRole('slider', { name: '재생 위치' })
+      const metrics = await seek.evaluate(element => ({
+        width: (element as HTMLElement).offsetWidth,
+        documentWidth: document.documentElement.scrollWidth,
+      }))
+      expect(metrics.width).toBeGreaterThanOrEqual(44)
+      expect(await page.getByTestId('compact-playback-bar').evaluate(element => (element as HTMLElement).offsetHeight)).toBe(56)
+      expect(metrics.documentWidth).toBeLessThanOrEqual(viewport.width)
+      if (viewport.width === 390) {
+        await page.screenshot({ path: test.info().outputPath('toolbar-390.png') })
+      }
+      await seek.focus()
+      await expect(seek).toBeFocused()
+      await seek.press('ArrowRight')
+      await expect(seek).toHaveAttribute('aria-valuenow', '5')
+      await seek.press('Home')
+      await expect(seek).toHaveAttribute('aria-valuenow', '0')
+    }
+
+    // Pause preserves the frame and transport across the responsive layout.
     expect(await page.getByTestId('compact-playback-bar').boundingBox()).toEqual(playingBar)
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(playingOverflow)
 

@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui'
 
 /**
- * One-row transport for a screen that is being watched rather than set up.
+ * Compact transport for an active practice session.
  *
  * `PlaybackControls` stacks three rows and costs 152px, and the player adds an
  * instruction line, a sample-status line and a volume row on top of it — 264px
@@ -109,7 +109,7 @@ export default function CompactPlaybackBar({
   return (
     <div
       data-testid="compact-playback-bar"
-      className={`flex items-center gap-3 h-14 px-1 ${className}`}
+      className={`compact-playback-bar flex items-center gap-3 h-14 px-1 ${className}`}
     >
       {/* One slot, two states. A pause used to replace this bar with the
           three-row setup block, so resuming meant finding the transport
@@ -121,12 +121,12 @@ export default function CompactPlaybackBar({
         aria-label={isPlaying ? '일시정지' : '재생'}
         variant="outline"
         size="md"
-        className="h-10 w-10 shrink-0 p-0 !px-0 !py-0 text-lg leading-none"
+        className="compact-playback-transport h-10 w-10 shrink-0 p-0 !px-0 !py-0 text-lg leading-none"
       >
         {isPlaying ? '⏸️' : '▶️'}
       </Button>
       {onLoopStart && onLoopEnd && onLoopClear && (
-        <div className="flex shrink-0 gap-1" data-testid="compact-loop-controls">
+        <div className="compact-playback-loop flex shrink-0 gap-1" data-testid="compact-loop-controls">
           <Button type="button" onClick={onLoopStart} disabled={!isReady} variant="outline" size="sm" className="h-10 w-10 p-0 !px-0 !py-0 border-hand-left text-xs text-hand-left" title="구간 시작 A 설정" aria-label="구간 시작 A 설정">A</Button>
           <Button type="button" onClick={onLoopEnd} disabled={!isReady || loopStart === null} variant="outline" size="sm" className="h-10 w-10 p-0 !px-0 !py-0 border-hand-right text-xs text-hand-right" title="구간 끝 B 설정" aria-label="구간 끝 B 설정">B</Button>
           <Button type="button" onClick={onLoopClear} disabled={!isReady || loopStart === null} variant={loopEnd !== null ? 'primary' : 'ghost'} size="sm" className="h-10 w-10 p-0 !px-0 !py-0 text-xs" aria-label="A-B 구간 반복 초기화" title="A-B 구간 반복 초기화">↻</Button>
@@ -139,7 +139,7 @@ export default function CompactPlaybackBar({
         aria-label="정지"
         variant="outline"
         size="md"
-        className="h-10 w-10 shrink-0 p-0 text-lg leading-none"
+        className="compact-playback-stop h-10 w-10 shrink-0 p-0 text-lg leading-none"
       >
         ⏹️
       </Button>
@@ -152,7 +152,7 @@ export default function CompactPlaybackBar({
       </span>
 
       <div
-        className="h-2 min-w-0 flex-1 cursor-pointer rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="compact-playback-seek h-2 min-w-0 flex-1 cursor-pointer rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         onClick={handleSeek}
         onKeyDown={handleSeekKey}
         role="slider"
@@ -176,7 +176,7 @@ export default function CompactPlaybackBar({
         onChange={event => onSpeedChange(parseFloat(event.target.value))}
         disabled={!isReady}
         aria-label="재생 속도"
-        className="h-10 shrink-0 rounded-full border border-rule-strong bg-surface px-3 text-xs text-ink shadow-sm disabled:opacity-50"
+        className="compact-playback-speed h-10 shrink-0 rounded-full border border-rule-strong bg-surface px-3 text-xs text-ink shadow-sm disabled:opacity-50"
       >
         {SPEEDS.map(speed => (
           <option key={speed} value={speed}>
@@ -195,7 +195,7 @@ export default function CompactPlaybackBar({
         value={volume}
         onChange={event => onVolumeChange(parseFloat(event.target.value))}
         aria-label="음량 (master gain)"
-        className="w-20 shrink-0"
+        className="compact-playback-volume w-20 shrink-0"
       />
       <span className="hidden shrink-0 w-10 text-right text-xs font-mono tabular-nums text-ink-muted sm:inline">
         {volume.toFixed(2)}
