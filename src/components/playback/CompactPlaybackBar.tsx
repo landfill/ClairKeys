@@ -1,9 +1,10 @@
 'use client'
 
+import { useCallback, useLayoutEffect, useRef, useSyncExternalStore } from 'react'
 import { Button } from '@/components/ui'
 
 /**
- * One-row transport for a screen that is being watched rather than set up.
+ * Compact transport for an active practice session.
  *
  * `PlaybackControls` stacks three rows and costs 152px, and the player adds an
  * instruction line, a sample-status line and a volume row on top of it — 264px
@@ -43,6 +44,11 @@ export interface CompactPlaybackBarProps {
   className?: string
 }
 
+const NARROW_DESKTOP_QUERY = '(max-width: 639px) and (pointer: fine)'
+const isNarrowDesktop = () => typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' && window.matchMedia(NARROW_DESKTOP_QUERY).matches
+const serverSnapshot = () => false
+
 const SPEEDS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
 const SEEK_STEP_SEC = 5
 
@@ -74,6 +80,24 @@ export default function CompactPlaybackBar({
   onLoopClear,
   className = '',
 }: CompactPlaybackBarProps) {
+  const seekRef = useRef<HTMLDivElement>(null)
+  const restoreSeekFocus = useRef(false)
+  const subscribeToLayout = useCallback((onChange: () => void) => {
+    if (typeof window.matchMedia !== 'function') return () => {}
+    const query = window.matchMedia(NARROW_DESKTOP_QUERY)
+    const handleChange = () => {
+      // Capture focus before React moves the control to its new reading order.
+      restoreSeekFocus.current = document.activeElement === seekRef.current
+      onChange()
+    }
+    query.addEventListener('change', handleChange)
+    return () => query.removeEventListener('change', handleChange)
+  }, [])
+  const narrowDesktop = useSyncExternalStore(subscribeToLayout, isNarrowDesktop, serverSnapshot)
+  useLayoutEffect(() => {
+    if (restoreSeekFocus.current) seekRef.current?.focus({ preventScroll: true })
+    restoreSeekFocus.current = false
+  }, [narrowDesktop])
   const progress = duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0
 
   const clamp = (time: number) => Math.min(duration, Math.max(0, time))
@@ -106,10 +130,28 @@ export default function CompactPlaybackBar({
     onSeek(clamp(next()))
   }
 
+  const seekControl = (
+    <div
+      ref={seekRef}
+      className="compact-playback-seek h-2 min-w-0 flex-1 cursor-pointer rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      onClick={handleSeek}
+      onKeyDown={handleSeekKey}
+      role="slider"
+      tabIndex={0}
+      aria-label="재생 위치"
+      aria-valuemin={0}
+      aria-valuemax={Math.round(duration)}
+      aria-valuenow={Math.round(currentTime)}
+      aria-valuetext={`${formatTime(currentTime)} / ${formatTime(duration)}`}
+    >
+      <div className="h-2 rounded-full bg-blue-600" style={{ width: `${progress}%` }} />
+    </div>
+  )
+
   return (
     <div
       data-testid="compact-playback-bar"
-      className={`flex items-center gap-3 h-14 px-1 ${className}`}
+      className={`compact-playback-bar flex items-center gap-3 h-14 px-1 ${className}`}
     >
       {/* One slot, two states. A pause used to replace this bar with the
           three-row setup block, so resuming meant finding the transport
@@ -121,12 +163,12 @@ export default function CompactPlaybackBar({
         aria-label={isPlaying ? '일시정지' : '재생'}
         variant="outline"
         size="md"
-        className="h-10 w-10 shrink-0 p-0 !px-0 !py-0 text-lg leading-none"
+        className="compact-playback-transport h-10 w-10 shrink-0 p-0 !px-0 !py-0 text-lg leading-none"
       >
         {isPlaying ? '⏸️' : '▶️'}
       </Button>
       {onLoopStart && onLoopEnd && onLoopClear && (
-        <div className="flex shrink-0 gap-1" data-testid="compact-loop-controls">
+        <div className="compact-playback-loop flex shrink-0 gap-1" data-testid="compact-loop-controls">
           <Button type="button" onClick={onLoopStart} disabled={!isReady} variant="outline" size="sm" className="h-10 w-10 p-0 !px-0 !py-0 border-hand-left text-xs text-hand-left" title="구간 시작 A 설정" aria-label="구간 시작 A 설정">A</Button>
           <Button type="button" onClick={onLoopEnd} disabled={!isReady || loopStart === null} variant="outline" size="sm" className="h-10 w-10 p-0 !px-0 !py-0 border-hand-right text-xs text-hand-right" title="구간 끝 B 설정" aria-label="구간 끝 B 설정">B</Button>
           <Button type="button" onClick={onLoopClear} disabled={!isReady || loopStart === null} variant={loopEnd !== null ? 'primary' : 'ghost'} size="sm" className="h-10 w-10 p-0 !px-0 !py-0 text-xs" aria-label="A-B 구간 반복 초기화" title="A-B 구간 반복 초기화">↻</Button>
@@ -139,7 +181,7 @@ export default function CompactPlaybackBar({
         aria-label="정지"
         variant="outline"
         size="md"
-        className="h-10 w-10 shrink-0 p-0 text-lg leading-none"
+        className="compact-playback-stop h-10 w-10 shrink-0 p-0 text-lg leading-none"
       >
         ⏹️
       </Button>
@@ -151,20 +193,7 @@ export default function CompactPlaybackBar({
         {formatTime(currentTime)} / {formatTime(duration)}
       </span>
 
-      <div
-        className="h-2 min-w-0 flex-1 cursor-pointer rounded-full bg-gray-200 hover:bg-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        onClick={handleSeek}
-        onKeyDown={handleSeekKey}
-        role="slider"
-        tabIndex={0}
-        aria-label="재생 위치"
-        aria-valuemin={0}
-        aria-valuemax={Math.round(duration)}
-        aria-valuenow={Math.round(currentTime)}
-        aria-valuetext={`${formatTime(currentTime)} / ${formatTime(duration)}`}
-      >
-        <div className="h-2 rounded-full bg-blue-600" style={{ width: `${progress}%` }} />
-      </div>
+      {!narrowDesktop && seekControl}
 
       {/* Disabled while the samples load, exactly as the setup screen's speed
           control is. During playback this is always enabled — the status has
@@ -176,7 +205,7 @@ export default function CompactPlaybackBar({
         onChange={event => onSpeedChange(parseFloat(event.target.value))}
         disabled={!isReady}
         aria-label="재생 속도"
-        className="h-10 shrink-0 rounded-full border border-rule-strong bg-surface px-3 text-xs text-ink shadow-sm disabled:opacity-50"
+        className="compact-playback-speed h-10 shrink-0 rounded-full border border-rule-strong bg-surface px-3 text-xs text-ink shadow-sm disabled:opacity-50"
       >
         {SPEEDS.map(speed => (
           <option key={speed} value={speed}>
@@ -189,17 +218,20 @@ export default function CompactPlaybackBar({
           for choosing DEFAULT_MASTER_GAIN by ear during playback. */}
       <input
         type="range"
+        tabIndex={0}
         min={0}
         max={maxVolume}
         step={0.01}
         value={volume}
         onChange={event => onVolumeChange(parseFloat(event.target.value))}
         aria-label="음량 (master gain)"
-        className="w-20 shrink-0"
+        className="compact-playback-volume w-20 shrink-0"
       />
       <span className="hidden shrink-0 w-10 text-right text-xs font-mono tabular-nums text-ink-muted sm:inline">
         {volume.toFixed(2)}
       </span>
+      {/* DOM order follows the second seek row only in the matching layout. */}
+      {narrowDesktop && seekControl}
     </div>
   )
 }

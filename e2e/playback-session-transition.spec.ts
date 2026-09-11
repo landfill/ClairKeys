@@ -25,9 +25,12 @@ const animation = {
 }
 
 const viewports = [
+  { name: '320 CSS pixels', width: 320, height: 800 },
   { name: 'phone portrait', width: 390, height: 844 },
   { name: 'phone landscape', width: 844, height: 390 },
   { name: 'desktop', width: 1280, height: 720 },
+  { name: 'large desktop', width: 1440, height: 900 },
+  { name: 'large desktop with CSS zoom 200%', width: 1440, height: 900, zoom: 2 },
 ]
 
 /**
@@ -82,6 +85,9 @@ for (const viewport of viewports) {
     await serveFixture(page)
     await page.setViewportSize({ width: viewport.width, height: viewport.height })
     await page.goto('/sheet/1')
+    if ('zoom' in viewport) {
+      await page.evaluate(zoom => { document.documentElement.style.zoom = String(zoom) }, viewport.zoom)
+    }
 
     // Setup screen: the stacked control block and the page header are here.
     await expect(page.getByTestId('playback-primary-controls')).toBeVisible()
@@ -115,6 +121,9 @@ for (const viewport of viewports) {
       test.skip(true, 'headless firefox on this runner has no audio output; the pause transition needs a sounding score')
     }
 
+    // Exercise a nonzero pause position, as on slower CI audio startup.
+    await expect.poll(async () => Number(await page.getByRole('slider', { name: '재생 위치' }).getAttribute('aria-valuenow'))).toBeGreaterThanOrEqual(1)
+
     const playingTransport = await transport(page, '일시정지').boundingBox()
     const playingBox = await page.getByTestId('playback-box').boundingBox()
     const playingBar = await page.getByTestId('compact-playback-bar').boundingBox()
@@ -135,11 +144,8 @@ for (const viewport of viewports) {
     expect(pausedTransport).toEqual(playingTransport)
     expect(pausedBox).toEqual(playingBox)
 
-    // Everything the reader might reach for while paused is still there and
-    // still operable. `toBeVisible` is the wrong question at 390px: the seek
-    // bar already computes to zero width there while the score is sounding,
-    // which is a pre-existing narrow-width defect of the bar rather than
-    // anything a pause introduces (see the parity assertion below).
+    // Existing touch/rotation paths retain their parity coverage. The new
+    // layout regression specifically targets narrow fine-pointer windows.
     for (const control of [
       page.getByRole('slider', { name: '재생 위치' }),
       transport(page, '구간 시작 A 설정'),
@@ -151,12 +157,66 @@ for (const viewport of viewports) {
       await expect(control).toBeEnabled()
     }
 
-    // The bar occupies exactly what it did a moment ago, overflow included.
-    // This pins the claim this change is responsible for — a pause costs the
-    // layout nothing — without asserting away a defect it did not cause. The
-    // compact bar overflows a 390px-wide viewport by 57px in both states; that
-    // belongs to the narrow-width pass of #146, not here.
-    expect(await page.getByTestId('compact-playback-bar').boundingBox()).toEqual(playingBar)
+    const finePointer = await page.evaluate(() => matchMedia('(pointer: fine)').matches)
+    if (finePointer) {
+      const seek = page.getByRole('slider', { name: '재생 위치' })
+      const metrics = await seek.evaluate(element => ({
+        width: (element as HTMLElement).offsetWidth,
+        documentWidth: document.documentElement.scrollWidth,
+      }))
+      expect(metrics.width).toBeGreaterThanOrEqual(44)
+      expect(await page.getByLabel('재생 속도').evaluate(element => (element as HTMLElement).offsetWidth)).toBeGreaterThanOrEqual(56)
+      expect(await page.getByTestId('compact-playback-bar').evaluate(element => (element as HTMLElement).offsetHeight)).toBe(viewport.width <= 375 ? 64 : 56)
+      expect(metrics.documentWidth).toBeLessThanOrEqual(viewport.width)
+      if (viewport.width === 390) {
+        await page.screenshot({ path: test.info().outputPath('toolbar-390.png') })
+      }
+      await transport(page, '정지').focus()
+      await page.keyboard.press('Tab')
+      if (viewport.width < 640) {
+        await expect(page.getByLabel('재생 속도')).toBeFocused()
+        await page.keyboard.press('Tab')
+        await expect(page.getByLabel('음량 (master gain)')).toBeFocused()
+        await page.keyboard.press('Tab')
+      }
+      await expect(seek).toBeFocused()
+      await seek.focus()
+      await expect(seek).toBeFocused()
+      // A pause can happen after playback has advanced on a slower runner.
+      // Establish the starting position before checking the relative step.
+      await seek.press('Home')
+      await expect(seek).toHaveAttribute('aria-valuenow', '0')
+      await seek.press('ArrowRight')
+      await expect(seek).toHaveAttribute('aria-valuenow', '5')
+      await seek.press('Home')
+      await expect(seek).toHaveAttribute('aria-valuenow', '0')
+      if (viewport.width === 390) {
+        for (const label of ['재생 속도', '음량 (master gain)']) {
+          const control = page.getByLabel(label)
+          await control.evaluate(element => element.setAttribute('data-focus-probe', 'retained'))
+          await control.focus()
+          await page.setViewportSize({ width: 844, height: viewport.height })
+          await expect(control).toBeFocused()
+          await expect(control).toHaveAttribute('data-focus-probe', 'retained')
+          await page.setViewportSize({ width: viewport.width, height: viewport.height })
+          await expect(control).toBeFocused()
+          await expect(control).toHaveAttribute('data-focus-probe', 'retained')
+          await control.evaluate(element => element.removeAttribute('data-focus-probe'))
+        }
+        await seek.focus()
+        await page.setViewportSize({ width: 844, height: viewport.height })
+        await expect(seek).toBeFocused()
+        await page.setViewportSize({ width: viewport.width, height: viewport.height })
+        await expect(seek).toBeFocused()
+        await seek.press('ArrowRight')
+        await expect(seek).toHaveAttribute('aria-valuenow', '5')
+        await seek.press('Home')
+        await expect(seek).toHaveAttribute('aria-valuenow', '0')
+      }
+    }
+
+    // Pause preserves the frame and transport across the responsive layout.
+    await expect.poll(() => page.getByTestId('compact-playback-bar').boundingBox()).toEqual(playingBar)
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(playingOverflow)
 
     // Resuming puts pause back in the very slot it left.
