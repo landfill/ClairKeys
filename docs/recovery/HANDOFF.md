@@ -1,5 +1,19 @@
 # Current Handoff
 
+## Feature checks verified after the security merge (2026-09-12)
+
+- Approved PR153 is merged as248666bf4ce7e9e1aba900bd66f8b31d26fb4f85; all six post-merge
+  checks and exact-merge Vercel Production deployment succeeded. Dependency phase is DONE.
+- PR151 atacc43fbf3128281eb6084e1478af763fe24f75df and PR152 at724d5db6009080f99f7b223f9f1231b65ee9e97b
+  each have14 successful check-runs, successful Vercel preview, no unresolved review threads,
+  and non-draft/mergeable state at verification. CodeRabbit skipped review, not an approval.
+- Remaining action is explicit approval to merge PR151 and PR152. The user's preceding approval
+  covered PR153 only. Recheck exact heads/gates before merging either feature.
+- #110 will still require separately approved OMR image/config rollout and live callback validation;
+  #146 retains explore/upload work. Neither issue should auto-close on these feature merges.
+- Existing user settings/HANDOFF edit/screenshots remain preserved. Branch cleanup is blocked by
+  those user-owned changes under the lifecycle rule; all worktrees and branches remain available.
+
 ## Approved security prerequisite merged and propagated (2026-09-12)
 
 - User approved PR153. Rechecked exact head eea2cad/all hosted checks/no unresolved review, then

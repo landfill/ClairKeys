@@ -16,3 +16,10 @@ Merge: 248666bf4ce7e9e1aba900bd66f8b31d26fb4f85
 - Callback: full Jest997/type/lint pass on combined deps; final Python162/6 skips and focused bridge pass.
 - Toolbar: full Jest995/type/lint pass on combined deps;30 transition E2E pass with DOM/focus retention.
 - Hosted outcomes and reviews are recorded in PR151/152/153 logs. No feature merge or OMR VM rollout.
+
+## Final hosted validation
+
+- PR151 acc43fbf3128281eb6084e1478af763fe24f75df:14 successful check-runs, no unresolved reviews.
+- PR152 724d5db6009080f99f7b223f9f1231b65ee9e97b:14 successful check-runs, no unresolved reviews.
+- Both are non-draft and mergeable, and both Vercel previews succeed. Their merges are not approved yet.
+- PR153 exact merge has six successful post-merge checks and successful Production deployment.
