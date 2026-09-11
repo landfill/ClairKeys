@@ -1,5 +1,19 @@
 # Current Handoff
 
+## Required security gate repair submitted (2026-09-12)
+
+- User explicitly requested resolving the mandatory checks. Dependency-only PR153 at eea2cad
+  upgrades Next15.5.25, sharp0.35.4, js-yaml3.15.2/4.3.2 and humanfs/node0.16.8.
+  Audit4→0; clean install,995 Jest,50 E2E,type/lint/build and AVIF roundtrip pass locally.
+  Hosted Security Audit, unit/type/lint/build pass; remaining gates and review tracked in
+  [PR153](reviews/PR-153.md). Code merge still requires explicit approval for PR153.
+- PR152 WebKit timing correction passes both hosted E2E jobs. Its separate unit runner failure
+  was Docker Hub HTTP500 while pulling postgres:15 before tests, not an assertion failure.
+- PR152 bf3cc63 fixes narrow visual/Tab order and explicit WebKit volume focus;60 local E2E pass.
+  Review3990463502 is resolved. New320px speed-width review3990552825 is being handled locally.
+- PR151/152 must receive the security update after its approved main merge, then rerun hosted
+  checks. No audit threshold change, bypass, main code merge or production rollout occurred.
+
 ## CI failure diagnosis after local recovery (2026-09-12)
 
 - PR151's functional CI passes; security audit/scan fail on locked dependency advisories.
