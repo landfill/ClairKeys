@@ -1,5 +1,16 @@
 # Current Handoff
 
+## Cloud result retrieval blocked by current browser access (2026-09-11)
+
+- Both previously dispatched task URLs redirect to the Codex onboarding page in Chrome,
+  which asks to connect GitHub. The in-app browser redirects to a signed-out ChatGPT page.
+  Neither task's result, completion status or diff could be read; do not infer task failure.
+- GitHub read-only checks found no open PR and no remote head for either requested cloud branch.
+  Next action: restore access to the account that created the tasks, recover their results,
+  then verify and prepare review-ready PRs. No duplicate implementation was started.
+- Local main was fast-forwarded to 39c5bb8 with the pre-existing HANDOFF edit restored;
+  settings and eight local screenshots remain untouched. See [retrieval evidence](validation/2026-09-11-cloud-result-retrieval.md).
+
 ## Independent cloud issue work newly authorized and dispatched (2026-09-08)
 
 - Current user explicitly requested actual priority issue implementation, multiple independent
