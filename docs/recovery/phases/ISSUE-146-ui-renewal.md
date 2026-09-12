@@ -93,3 +93,12 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
   commits parsed as zero because wrapped values break git's parser; the commits were rewritten with
   single-line trailers (trees identical) and now parse 11/10/10. Stage4 still remains, so this phase
   stays `IN_PROGRESS` and issue146 stays OPEN.
+
+- 2026-09-12: PR157 explicitly approved and merged as 925e75832787c861308fc381b82d753ccb8b4bc1. All
+  six check-runs on the exact merge commit succeeded. Stage3 is now complete: the explore screen
+  shipped in PR155 and the upload form is grouped into `악보 파일` / `곡 정보` / `선택 설정` with
+  `fieldset`/`legend`, the required row splits only at `md` per D-059, and the drop zone's padding is
+  reduced. Fields, validation, defaults and the submit payload are unchanged. Only stage4 remains —
+  verify existing states and responsive behaviour including keyboard focus and zoom — so this phase
+  stays `IN_PROGRESS` and issue146 stays OPEN. Post-merge verification is recorded in
+  [upload form validation](../validation/2026-09-12-upload-form-grouping.md).

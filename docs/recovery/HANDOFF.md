@@ -1,5 +1,51 @@
 # Current Handoff
 
+## PR157 merged on explicit instruction; issue146 stage3 is complete, stage4 is not (2026-09-12)
+
+- User explicitly instructed the merge by PR number. Exact head 46c0d4c, all 16 checks, non-draft and
+  MERGEABLE/CLEAN were rechecked immediately before merging, and all five review threads were
+  resolved after being answered.
+- [PR157](reviews/PR-157.md) merged as 925e75832787c861308fc381b82d753ccb8b4bc1. ALL SIX CHECK-RUNS
+  ON THAT EXACT MERGE COMMIT SUCCEEDED: E2E Tests, Post-merge build, Post-merge tests, Run Tests,
+  Lint, Security Audit. The merge commit's own Lore trailers parse (8), checked before pushing.
+- Local `main` fast-forwarded to 925e758. The incoming commits touch only `DECISIONS.md`,
+  `OMRUploadForm.tsx`, its test and the new E2E spec — NOT HANDOFF.md — so the pull was safe, and the
+  user's uncommitted HANDOFF edit was verified byte-identical against a pre-pull backup afterwards.
+- Both branch tips had zero commits outside `main`, so `codex/issue-146-upload-form-grouping` was
+  deleted on origin and locally. Remaining branches are only
+  `codex/issue-130-directional-budget` (2 unique commits, unfinished fingering work, no PR) and
+  `codex/issue-124-finger-badge` (2 unique commits although issue124 closed NOT_PLANNED — abandon or
+  revive is still undecided). No PR is open.
+- Verified on merged `main`: `md:grid-cols-2` at `OMRUploadForm.tsx:420`, `min-w-0` on all three
+  fieldsets (341/406/463), D-059 present, jest upload 59/59.
+- ISSUE146 STAGE3 IS COMPLETE — explore shipped in PR155, the upload form in PR157. ISSUE146 ITSELF
+  IS STILL OPEN and the phase stays `IN_PROGRESS`, because STAGE4 REMAINS: verify existing states
+  and responsive behaviour including keyboard focus and zoom. Do not close #146 on the strength of
+  stage3.
+- TWO RULES THIS SLICE ADDED, both worth obeying without rediscovering them:
+  - `min-w-0` goes on every new `fieldset`. The UA stylesheet's `min-inline-size: min-content`
+    applies to `fieldset` alone and Tailwind preflight does not reset it; without `min-w-0` a group
+    overflows the document on narrow screens, and only measurement reveals it.
+  - D-059: a two-column row splits by WIDTH, never by device class. The rule is "a split field never
+    gets narrower than the width a phone gives it in one column", baseline = the single-column width
+    at 390px. Cite D-059 rather than "desktop/mobile" anywhere else this pattern appears.
+- LORE TRAILERS MUST STAY ON ONE LINE. Wrapping a `Rejected:` or `Tested:` value onto an unindented
+  continuation line makes git reject the entire block, so the message looks correct while tooling
+  reads nothing. `git log -1 --format=full`, which LORE_COMMIT_PROTOCOL rule7 prescribes, CANNOT
+  detect this — it prints the message, not the parse. Also run
+  `git show -s --format='%(trailers:only=true)' <sha> | grep -cE '^[A-Za-z-]+:'` and expect non-zero.
+- STILL BROKEN AND LEFT ALONE: `192c62c` on `main` parses 0 trailers. `main` history is not rewritten
+  without explicit approval. `bbe463d` and the merge commit 925e758 are correct.
+- A REVIEW PATTERN WORTH REMEMBERING. The Lore-trailer finding was raised four times. The first was
+  correct and was fixed; the next three each cited a DIFFERENT SHA that does not exist in this
+  repository (`2ddc085e`, `14c73f51`, `0ac34911`) while every branch commit parsed 10–11 trailers
+  with `Confidence`, `Scope-risk` and `Tested` present. Verify a review's evidence before redoing
+  work on it — and measure where a review points even when its reasoning is wrong, because the
+  breakpoint finding's citation was also wrong and there was a real defect where it pointed.
+- Still unverified for the upload form and carried into stage4: real device touch, real landscape
+  hardware, the browser's own zoom (CSS zoom does not re-evaluate media queries), screen reader
+  output, measured colour contrast, and the real sign-in flow.
+
 ## PR157 review handled by measuring; the column breakpoint was genuinely wrong (2026-09-12)
 
 - [PR157](reviews/PR-157.md) head is now 46c0d4cebaf85112a2dfbdf01a947ebe9ca77b81. All 16 hosted

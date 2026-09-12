@@ -178,3 +178,25 @@ same mistake appeared in a PR.
 | `npx tsc --noEmit` | 0 errors |
 | `npm run build` | success |
 | hosted checks on 46c0d4c | 16/16 pass |
+
+## Post-merge verification (2026-09-12)
+
+Merged as `925e75832787c861308fc381b82d753ccb8b4bc1` on explicit user instruction.
+
+| Check | Result |
+|---|---|
+| check-runs on the exact merge commit | 6/6 success (E2E, Post-merge build, Post-merge tests, Run Tests, Lint, Security Audit) |
+| local `main` after `git pull --ff-only` | `925e758` |
+| user's uncommitted HANDOFF edit after pull | byte-identical to the pre-pull backup |
+| `md:grid-cols-2` present on merged main | yes, `OMRUploadForm.tsx:420` |
+| `min-w-0` on all three fieldsets | yes, lines 341 / 406 / 463 |
+| D-059 present on merged main | yes |
+| `npx jest src/components/upload` on merged main | 59/59 pass |
+
+Both branch tips had zero commits outside `main`, so the branch was deleted on origin and locally.
+The merge commit's own Lore trailers parse (8), which was checked before pushing rather than after.
+
+Stage 3 is complete. Stage 4 — existing states and responsive behaviour including keyboard focus and
+zoom — is untouched by this slice and still carries the unverified list above: real device touch,
+real landscape hardware, the browser's own zoom, screen reader output, measured colour contrast, and
+the real sign-in flow.
