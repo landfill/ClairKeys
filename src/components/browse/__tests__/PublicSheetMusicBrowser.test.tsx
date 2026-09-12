@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import PublicSheetMusicBrowser from '../PublicSheetMusicBrowser'
 import type { SheetMusicWithOwner } from '@/types/sheet-music'
 
@@ -113,6 +113,44 @@ describe('PublicSheetMusicBrowser', () => {
     for (const link of links) {
       expect(link).toHaveAttribute('href', '/sheet/2')
     }
+  })
+
+  it('never suppresses the repository-wide keyboard focus ring', async () => {
+    const { container } = render(<PublicSheetMusicBrowser />)
+    await waitFor(() => expect(screen.getByRole('heading', { name: '추천 악보' })).toBeInTheDocument())
+
+    // globals.css states outright that `outline: none` must not appear anywhere: the
+    // playback slider already lost its focus indicator that way once.
+    const suppressed = Array.from(container.querySelectorAll<HTMLElement>('[class]'))
+      .map((n) => n.className)
+      .filter((c) => typeof c === 'string' && /outline-none/.test(c))
+
+    expect(suppressed).toEqual([])
+  })
+
+  it('leaves a modified click to the browser so a card can open in a new tab', async () => {
+    const onSheetMusicClick = jest.fn()
+    render(<PublicSheetMusicBrowser onSheetMusicClick={onSheetMusicClick} />)
+    await waitFor(() => expect(screen.getByRole('heading', { name: '추천 악보' })).toBeInTheDocument())
+
+    const card = screen.getAllByRole('link', { name: /월광 소나타/ })[0]
+
+    for (const modifier of ['metaKey', 'ctrlKey', 'shiftKey', 'altKey'] as const) {
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })
+      Object.defineProperty(event, modifier, { value: true })
+      fireEvent(card, event)
+      expect(onSheetMusicClick).not.toHaveBeenCalled()
+      expect(event.defaultPrevented).toBe(false)
+    }
+
+    // A middle-click is also a new-tab request.
+    const middle = new MouseEvent('click', { bubbles: true, cancelable: true, button: 1 })
+    fireEvent(card, middle)
+    expect(onSheetMusicClick).not.toHaveBeenCalled()
+
+    // A plain activation still uses the caller's existing navigation.
+    fireEvent.click(card)
+    expect(onSheetMusicClick).toHaveBeenCalledTimes(1)
   })
 
   it('still reports an error state with a retry action', async () => {

@@ -51,11 +51,17 @@ export default function PublicSheetMusicBrowser({
 
   // The card is a real link so keyboard, middle-click and open-in-new-tab all work.
   // When a caller supplies onSheetMusicClick we defer to it exactly as before, so the
-  // existing router-push navigation contract is unchanged.
+  // existing router-push navigation contract is unchanged — but only for a plain
+  // activation. A modified click (Cmd/Ctrl/Shift/Alt) or a non-primary button is the
+  // reader asking for a new tab or window, and swallowing it here would defeat the
+  // reason these cards became links at all.
   const linkProps = (sheetMusic: SheetMusicWithOwner) => ({
     href: `/sheet/${sheetMusic.id}`,
     onClick: (event: MouseEvent<HTMLAnchorElement>) => {
       if (!onSheetMusicClick) return
+      const wantsNewContext =
+        event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0
+      if (wantsNewContext) return
       event.preventDefault()
       onSheetMusicClick(sheetMusic)
     }
@@ -115,7 +121,7 @@ export default function PublicSheetMusicBrowser({
               <Link
                 key={sheetMusic.id}
                 {...linkProps(sheetMusic)}
-                className="group block focus-visible:outline-none"
+                className="group block"
               >
                 {/* No stored preview image exists, so the card leads with the title
                     instead of a placeholder surface that implies one does. */}
@@ -156,7 +162,7 @@ export default function PublicSheetMusicBrowser({
               <Link
                 key={sheetMusic.id}
                 {...rankedLinkProps(sheetMusic, index)}
-                className="group block focus-visible:outline-none"
+                className="group block"
               >
                 <Card padding="none" className="flex h-full min-w-0 items-center gap-3 p-3 group-hover:shadow-md group-focus-visible:shadow-md transition-shadow">
                   <span
@@ -200,7 +206,7 @@ export default function PublicSheetMusicBrowser({
               <Link
                 key={sheetMusic.id}
                 {...linkProps(sheetMusic)}
-                className="group block focus-visible:outline-none"
+                className="group block"
               >
                 <Card padding="none" className="flex h-full min-w-0 flex-col gap-1 p-4 group-hover:shadow-md group-focus-visible:shadow-md transition-shadow">
                   <h3

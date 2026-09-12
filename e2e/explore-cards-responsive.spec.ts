@@ -121,6 +121,18 @@ test('reaches and opens the first explore card with the keyboard alone', async (
     focused = await firstCard.evaluate(node => node === document.activeElement)
   }
 
+  // jsdom cannot compute an outline, so the focus indicator is measured here. globals.css
+  // states that `outline: none` must not appear anywhere; a card that only deepens its
+  // shadow on focus is not a keyboard focus indicator.
+  if (focused) {
+    const outline = await firstCard.evaluate(node => {
+      const style = getComputedStyle(node)
+      return { width: style.outlineWidth, style: style.outlineStyle }
+    })
+    expect(outline.style).not.toBe('none')
+    expect(parseFloat(outline.width)).toBeGreaterThanOrEqual(2)
+  }
+
   if (!focused) {
     // WebKit follows the macOS "press Tab to highlight each item" setting and does
     // not put links in the tab order by default. That is a platform behaviour, not
@@ -158,4 +170,29 @@ test('announces which explore tab is selected', async ({ page }) => {
   await searchTab.click()
   await expect(searchTab).toHaveAttribute('aria-pressed', 'true')
   await expect(browseTab).toHaveAttribute('aria-pressed', 'false')
+})
+
+test('leaves a modified click to the browser instead of navigating in place', async ({ page }) => {
+  await serveFixture(page)
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await page.goto('/explore')
+
+  await expect(page.getByRole('heading', { name: '추천 악보' })).toBeVisible()
+  const firstCard = page.locator('.public-sheet-music-browser a[href^="/sheet/"]').first()
+
+  // The explore page supplies onSheetMusicClick, so an unconditional preventDefault would
+  // turn a new-tab request into an in-place router push and defeat the point of the links.
+  const context = page.context()
+  const before = page.url()
+  await firstCard.click({ modifiers: ['ControlOrMeta'] })
+  await expect(page).toHaveURL(before)
+
+  // Close anything the browser did open for the new-tab request.
+  for (const other of context.pages()) {
+    if (other !== page) await other.close()
+  }
+
+  // A plain activation still navigates.
+  await firstCard.click()
+  await expect(page).toHaveURL(/\/sheet\/1$/)
 })
