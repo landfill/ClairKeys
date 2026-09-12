@@ -1,5 +1,34 @@
 # Current Handoff
 
+## Explore cards unified and submitted; upload form still outstanding (2026-09-12)
+
+- Issue146 stage3 was split. [PR155](reviews/PR-155.md) delivers the EXPLORE screen only; the upload
+  form's required/optional grouping is a separate slice and is NOT in it. Issue146 does not close here.
+- The three explore sections now share one field order (title, composer, category, uploader/date).
+  The `SHEET MUSIC / 악보 미리보기` placeholder was removed rather than resized — no stored preview
+  image exists, so a smaller box would keep the same false promise. Cards became real links, so
+  keyboard users can reach a sheet at all; callers passing `onSheetMusicClick` still get the exact
+  previous router-push navigation, so the page's behaviour is unchanged.
+- Three `전체 보기` buttons had no handler and no destination and were removed. Wiring them would
+  require a listing route that issue146 forbids.
+- The3/4/8 section sizes and data order are PRESERVED and now asserted. Do not "fix" the visible
+  repetition by giving the sections different data — the shared feed is the current API contract.
+- Regression evidence preceded implementation: the component had no test at all, and 5 of8 new cases
+  failed on the audited defects before the fix while the3 preserved-contract cases passed throughout.
+- New `e2e/explore-cards-responsive.spec.ts` measures320/390x844/844x390/1280x720/1440x900 and CSS
+  zoom200% across five browser projects, and it earned its place immediately: it caught a document
+  overflow (1692px against a1440px viewport) that THIS branch had introduced through an `sr-only`
+  rank span escaping a truncating heading. That was confirmed against a clean main worktree before
+  being repaired, not written off as a CSS-zoom artifact.
+- Local: jest browse8/8; full jest1004 passed/1 failed; full Playwright105/105; explore spec40/40;
+  tsc, ESLint and build clean. The single unit failure is omrCallbackDelivery with `fastapi` absent
+  from this machine, reproduced on clean main; this branch touches no Python or omr-service file.
+- NOT verified: real device, native browser zoom, screen reader, colour-contrast measurement, and
+  live-data rendering (no local database — route fixtures were used). CSS zoom does not re-evaluate
+  media queries and is not equivalent to browser zoom.
+- [PR154](reviews/PR-154.md) (OMR-Q2 plan, docs only) is also open. Neither PR has merge approval.
+  Next code slice: issue146 upload form grouping. [Explore evidence](validation/2026-09-12-explore-cards.md).
+
 ## Branch hygiene restored and the OMR-Q2 plan submitted for review (2026-09-12)
 
 - User asked for a next-work review. Entry state was already clean: main at49cdc49 equal to origin,

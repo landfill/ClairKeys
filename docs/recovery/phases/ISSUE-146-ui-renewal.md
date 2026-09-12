@@ -53,3 +53,13 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
 
 - 2026-09-12: GitHub issue146 progress synchronized with PR148/150/152 delivery. Playback-transition
   criterion marked complete; issue remains OPEN for explore/upload and remaining UI checks.
+
+- 2026-09-12: Stage3 explore slice submitted as [PR155](../reviews/PR-155.md). The three sections now
+  share one field order, the non-existent preview placeholder is removed rather than resized, cards
+  became real links, three handler-less `전체 보기` controls were removed and the palette is fully
+  tokenised. The 3/4/8 sections and their data order are preserved and now asserted. Regression test
+  preceded implementation: 5 of 8 cases failed on the audited defects before the fix. New
+  `e2e/explore-cards-responsive.spec.ts` measures 320/390x844/844x390/1280x720/1440x900 and CSS zoom
+  200% in five browser projects and caught a document overflow this branch had introduced, confirmed
+  against clean main before repair. Evidence: [explore card validation](../validation/2026-09-12-explore-cards.md).
+  Upload form spacing remains outstanding, so this phase stays `IN_PROGRESS`.
