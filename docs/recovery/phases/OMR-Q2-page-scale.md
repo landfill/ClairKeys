@@ -37,6 +37,11 @@ not be silently omitted. Retain the existing timeout, concurrency, original-outp
 
 ## Progress
 
+- 2026-09-12: This plan reached main through [PR154](../reviews/PR-154.md), merged as
+  dc4fb5f9acf8af5fce7ddbad903f5ccd72a56d58 with all six check-runs successful. The plan had lived
+  only on a branch since 2026-09-06 while its experiment evidence went straight to main as a
+  validation record. Merging the plan authorizes no runtime change: the gate below is still unpassed.
+
 - 2026-09-06: Experiment1 ran on the unchanged TruongCa music pages1-2. Selected300dpi produced37 notes
   and0 of41 opening reference matches; 400dpi produced441 notes and41 of41, with per-page staff coverage
   4->10 and raw measure stacks4/5->15/16. Cost rose45.909s->98.242s. This is measured XML improvement on

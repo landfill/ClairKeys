@@ -1,5 +1,35 @@
 # Current Handoff
 
+## PR154 and PR155 merged on explicit approval; PR156 rationale settled (2026-09-12)
+
+- User explicitly approved merging PR154 and PR155 (those two by number). Both exact heads, all
+  checks and non-draft/MERGEABLE state were rechecked immediately before each merge, and all three
+  outstanding review threads were resolved after being answered or fixed.
+- [PR154](reviews/PR-154.md) merged as dc4fb5f9acf8af5fce7ddbad903f5ccd72a56d58 and
+  [PR155](reviews/PR-155.md) as 0639bfe0b92b688e48c0a00ea1cefc9528215e3d. BOTH exact merge commits
+  have all six check-runs successful, including E2E and post-merge build.
+- Local main fast-forwarded to0639bfe. The user's uncommitted HANDOFF edit and the eight private
+  ui-audit PNGs are preserved untouched. Both merged branch tips had zero commits outside main and
+  were deleted locally and on origin.
+- PR154 authorizes NO OMR runtime change. The OMR-Q2 runtime implementation gate is recorded as
+  unpassed, no400dpi or page-filter policy is deployed, and production constants are unchanged.
+- ISSUE146 IS NOT CLOSED. Only the explore screen shipped. Stage3's upload form grouping remains and
+  the phase stays `IN_PROGRESS`.
+- User settled the PR156 content question: this codebase is not Claude-specific, so
+  `.claude/settings.local.json` does not need to be tracked. The untracking in PR156 therefore stays
+  as written and is NOT reduced to the PNGs alone. The user named only154 and155 for merging, so
+  [PR156](reviews/PR-156.md) is still open and still needs an explicit merge instruction.
+- Remaining open branches: `codex/issue-146-untrack-private-audit-evidence` (PR156, open),
+  `codex/issue-130-directional-budget` (2 unique commits, unfinished fingering work, no PR),
+  `codex/issue-124-finger-badge` (2 unique commits although issue124 closed NOT_PLANNED — abandon
+  or revive is undecided).
+- Next code slice: issue146 upload form. Group PDF file / required song info / optional settings
+  inside the existing single form, two-column title+composer on desktop and one column on mobile,
+  compress the drop area. Fields, validation, defaults and submit behaviour must not change.
+  `src/components/upload/OMRUploadForm.tsx` owns it per the ROADMAP file-ownership table.
+- Still unverified for the explore screen: real device touch, native browser zoom (CSS zoom does not
+  re-evaluate media queries), screen reader, colour-contrast measurement, and live-data rendering.
+
 ## Lost the user's uncommitted .claude/settings.local.json edit — cause and lesson (2026-09-12)
 
 - WHAT WAS LOST: the working-tree modification to `.claude/settings.local.json` (5 insertions,

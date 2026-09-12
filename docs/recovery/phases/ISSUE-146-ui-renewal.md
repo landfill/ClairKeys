@@ -63,3 +63,9 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
   200% in five browser projects and caught a document overflow this branch had introduced, confirmed
   against clean main before repair. Evidence: [explore card validation](../validation/2026-09-12-explore-cards.md).
   Upload form spacing remains outstanding, so this phase stays `IN_PROGRESS`.
+
+- 2026-09-12: PR155 explicitly approved and merged as 0639bfe0b92b688e48c0a00ea1cefc9528215e3d.
+  All six check-runs on the exact merge commit succeeded. The explore screen slice is delivered:
+  one field order across the three sections, the false preview surface removed, cards reachable by
+  keyboard with the global focus ring intact and modified clicks left to the browser. Stage3's
+  upload form grouping remains, so this phase stays `IN_PROGRESS` and issue146 stays OPEN.
