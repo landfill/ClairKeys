@@ -45,8 +45,9 @@ describe('LibrarySheetMusicList', () => {
     expect(screen.getByText('변환 오류')).toBeInTheDocument()
     expect(screen.getByText('확인 필요')).toBeInTheDocument()
     expect(screen.queryByText('pending')).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '연습 시작' })).toHaveAttribute('href', '/sheet/1')
-    expect(screen.getAllByRole('link', { name: '다시 업로드' })).toHaveLength(2)
+    // stage4에서 카드 동작의 접근 가능한 이름에 곡명이 붙었다. 보이는 글자와 이동 경로는 그대로다.
+    expect(screen.getByRole('link', { name: '연습 가능 연습 시작' })).toHaveAttribute('href', '/sheet/1')
+    expect(screen.getAllByRole('link', { name: /다시 업로드$/ })).toHaveLength(2)
   })
 
   it('edits a user title from the keyboard-accessible dialog', async () => {
@@ -89,6 +90,71 @@ describe('LibrarySheetMusicList', () => {
 
     expect(screen.getByText('악보가 없습니다')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '새 악보 업로드' })).toHaveAttribute('href', '/upload')
+  })
+
+  /**
+   * 이슈 #146 stage 4. 불러오기가 실패했을 때 "악보가 없습니다"라고 말하면 원인이 바뀌는데
+   * 다음 행동은 그대로다 — 목록을 못 받은 사람에게 업로드를 권하게 된다. DS-7의 규칙은
+   * 무엇이 잘못됐는지와 무엇을 하면 되는지를 함께 말하는 것이다.
+   */
+  it('reports a failed load as a failure instead of an empty library', () => {
+    mockUseSheetMusic.mockReturnValue({
+      ...mockUseSheetMusic(),
+      sheetMusic: [],
+      error: 'Failed to fetch sheet music: Internal Server Error',
+    })
+
+    render(<LibrarySheetMusicList />)
+
+    expect(screen.getByRole('alert')).toHaveTextContent('악보 목록을 불러오지 못했습니다')
+    expect(screen.queryByText('악보가 없습니다')).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: '새 악보 업로드' })).not.toBeInTheDocument()
+  })
+
+  it('retries the same query from the failure state', () => {
+    mockUseSheetMusic.mockReturnValue({
+      ...mockUseSheetMusic(),
+      sheetMusic: [],
+      error: 'Failed to fetch sheet music: Internal Server Error',
+    })
+
+    render(<LibrarySheetMusicList selectedCategoryId={3} searchQuery="" />)
+    fetchUserSheetMusic.mockClear()
+
+    fireEvent.click(screen.getByRole('button', { name: '다시 시도' }))
+
+    expect(fetchUserSheetMusic).toHaveBeenCalledWith({ categoryId: 3, search: undefined })
+  })
+
+  /**
+   * `useSheetMusic`의 `error`는 수정·삭제 실패에도 설정된다. 그 값을 그대로 읽어 목록을 대체하면
+   * 제목 저장이 실패한 사람이 "목록을 불러오지 못했습니다"를 보게 된다 — 원인을 잘못 말하는 것은
+   * 빈 상태로 말하는 것과 같은 결함이다. 그래서 실패 화면은 보여줄 목록이 없을 때만 나온다.
+   */
+  it('keeps the list when the failure was a save, not a load', () => {
+    mockUseSheetMusic.mockReturnValue({
+      ...mockUseSheetMusic(),
+      sheetMusic: sheets,
+      error: 'Failed to update sheet music: Internal Server Error',
+    })
+
+    render(<LibrarySheetMusicList />)
+
+    expect(screen.getAllByText('연습 가능')).toHaveLength(2)
+    expect(screen.queryByText('악보 목록을 불러오지 못했습니다')).not.toBeInTheDocument()
+  })
+
+  it('does not hide a real failure behind the raw server message', () => {
+    mockUseSheetMusic.mockReturnValue({
+      ...mockUseSheetMusic(),
+      sheetMusic: [],
+      error: 'Failed to fetch sheet music: Internal Server Error',
+    })
+
+    render(<LibrarySheetMusicList />)
+
+    // 원시 서버 문구 노출 금지는 이슈 #146의 상태 표현 규칙이다.
+    expect(screen.queryByText(/Internal Server Error/)).not.toBeInTheDocument()
   })
 
   it('uses a rounded category control surface', () => {

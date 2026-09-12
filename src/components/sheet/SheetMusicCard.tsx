@@ -87,20 +87,28 @@ export function SheetMusicCard({
         {/* Spacer to push buttons to bottom */}
         <div className="flex-1"></div>
 
-        {/* Action buttons */}
+        {/*
+          Action buttons. 목록에는 카드가 여럿이므로 각 동작의 접근 가능한 이름에 곡명을 붙인다 —
+          "삭제"만으로는 어느 악보의 삭제인지 이름으로 고를 수 없다. 보이는 글자는 그대로 둔다.
+        */}
         <div className="space-y-2 pt-2 flex-shrink-0">
           {availability === 'ready' || availability === undefined ? (
-            <Link href={`/sheet/${sheetMusic.id}`} className="block w-full">
+            <Link href={`/sheet/${sheetMusic.id}`} className="block w-full" aria-label={`${sheetMusic.title} 연습 시작`}>
               <Button as="span" className="w-full min-h-11 whitespace-nowrap" size="sm">
                 연습 시작
               </Button>
             </Link>
           ) : availability === 'processing' ? (
-            <Button className="flex-1" size="sm" disabled>
+            /*
+              `flex-1`은 부모가 flex가 아니어서 아무 효과가 없었고, `min-h-11`이 없어 이 버튼만
+              32px였다. 같은 자리의 같은 역할이 상태에 따라 크기가 달라지면 변환이 끝나는 순간
+              카드가 흔들린다 (이슈 #146 stage 4).
+            */
+            <Button className="w-full min-h-11 whitespace-nowrap" size="sm" disabled aria-label={`${sheetMusic.title} 처리 중`}>
               처리 중
             </Button>
           ) : (
-            <Link href="/upload" className="block w-full">
+            <Link href="/upload" className="block w-full" aria-label={`${sheetMusic.title} 다시 업로드`}>
               <Button as="span" className="w-full min-h-11 whitespace-nowrap" size="sm">
                 다시 업로드
               </Button>
@@ -127,6 +135,8 @@ export function SheetMusicCard({
                     variant="outline"
                     size="sm"
                     className="min-w-0 w-full min-h-11 whitespace-nowrap"
+                    aria-expanded={showMoveMenu}
+                    aria-label={`${sheetMusic.title} 카테고리 이동`}
                   >
                     이동
                   </Button>
@@ -165,6 +175,7 @@ export function SheetMusicCard({
                   variant="outline"
                   size="sm"
                   className="min-w-0 w-full min-h-11 whitespace-nowrap text-state-error hover:border-state-error"
+                  aria-label={`${sheetMusic.title} 삭제`}
                 >
                   삭제
                 </Button>

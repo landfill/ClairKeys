@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useState } from 'react'
 import { useSheetMusic } from '@/hooks/useSheetMusic'
 import { useCategories } from '@/hooks/useCategories'
 import { SheetMusicCard } from '@/components/sheet/SheetMusicCard'
@@ -28,7 +28,7 @@ export function LibrarySheetMusicList({
   onCategorySelect,
   onSheetMusicMove
 }: LibrarySheetMusicListProps) {
-  const { sheetMusic, loading: sheetMusicLoading, fetchUserSheetMusic, updateSheetMusic, deleteSheetMusic } = useSheetMusic()
+  const { sheetMusic, loading: sheetMusicLoading, error: loadError, fetchUserSheetMusic, updateSheetMusic, deleteSheetMusic } = useSheetMusic()
   const { categories } = useCategories()
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery)
   const [editingSheet, setEditingSheet] = useState<SheetMusicWithCategory | null>(null)
@@ -49,20 +49,20 @@ export function LibrarySheetMusicList({
   }, [searchQuery])
 
   // 데이터 로드. 카테고리 변경은 즉시 반영하고 키 입력만 debounce한다.
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        await fetchUserSheetMusic({
-          categoryId: selectedCategoryId || undefined,
-          search: debouncedSearchQuery || undefined
-        })
-      } catch (error) {
-        console.error('Failed to load sheet music:', error)
-      }
+  const loadSheetMusic = useCallback(async () => {
+    try {
+      await fetchUserSheetMusic({
+        categoryId: selectedCategoryId || undefined,
+        search: debouncedSearchQuery || undefined
+      })
+    } catch (error) {
+      console.error('Failed to load sheet music:', error)
     }
-    
-    loadData()
   }, [selectedCategoryId, debouncedSearchQuery, fetchUserSheetMusic])
+
+  useEffect(() => {
+    loadSheetMusic()
+  }, [loadSheetMusic])
 
   // 필터링 및 정렬
   const filteredAndSortedSheetMusic = sheetMusic
@@ -155,6 +155,26 @@ export function LibrarySheetMusicList({
     return <Loading />
   }
 
+  /*
+    불러오기 실패. 빈 상태보다 먼저 판정해야 한다 — 목록을 받지 못한 것과 목록이 비어 있는 것은
+    원인이 다르므로 다음 행동도 다르다. 이전에는 둘이 같은 화면이어서 실패한 사람에게 업로드를
+    권했다 (이슈 #146 stage 4). 원시 서버 문구는 노출하지 않는다.
+
+    `useSheetMusic`의 `error`는 목록 조회뿐 아니라 수정·삭제 실패에도 설정된다. 그래서 조건을
+    "보여줄 목록이 없는데 실패했다"로 좁힌다 — 저장이 실패한 경우에는 목록과 그 자리의 인라인
+    안내가 그대로 유지돼야 하고, 목록을 이미 받아 둔 상태의 재조회 실패도 화면을 비우지 않는다.
+  */
+  if (loadError && filteredAndSortedSheetMusic.length === 0) {
+    return (
+      <StatusState
+        tone="error"
+        title="악보 목록을 불러오지 못했습니다"
+        detail="연결을 확인한 뒤 다시 시도해 주세요. 악보는 지워지지 않았습니다."
+        action={<Button variant="outline" onClick={() => { loadSheetMusic() }}>다시 시도</Button>}
+      />
+    )
+  }
+
   // 빈 상태
   if (filteredAndSortedSheetMusic.length === 0) {
     return (
@@ -216,7 +236,7 @@ export function LibrarySheetMusicList({
           </h3>
         </div>
         
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))] gap-4">
+        <div data-testid="library-sheet-grid" className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))] gap-4">
           {filteredAndSortedSheetMusic.map((sheet) => (
             <SheetMusicCard
               key={sheet.id}
