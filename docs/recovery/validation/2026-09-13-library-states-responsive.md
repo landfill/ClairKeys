@@ -187,3 +187,21 @@ WebKit 키보드 측정: 같은 화면에서 Tab 60회 — Desktop Safari·iPhon
 정정: 이 기록 앞부분과 첫 PR 본문은 `src/hooks` diff가 비어 있다고 적었다. 이 라운드에서
 `useSheetMusic.ts`가 바뀌었다(반환값 추가). API·DB·데이터 계약은 그대로다.
 
+## 3차 리뷰 라운드와 병합 후 확인 (2026-09-13)
+
+`95ab62f`: 편집 대화상자를 닫으면 포커스가 `body`로 떨어지던 결함을 수정. 강화한 E2E가 `8fbc367`
+빌드에서 5개 브라우저 프로젝트 모두 `toBeFocused`로 실패한 뒤 통과. 로컬 전체 jest 1026 passed /
+1 failed(`fastapi` 환경 격차), lint 0/0, tsc 0 errors, `CI=1 npx playwright test` 235/235.
+
+병합: `194ffb8ff04cb0cb3cdacd1ff541631045d0c4b1` (사용자 명시 지시, head `95ab62f` 일치 강제).
+
+| 확인 | 결과 |
+|---|---|
+| 머지 직전 head / 체크 / unresolved 스레드 / 상태 | `95ab62f` / 14/14 success / 0 / non-draft, MERGEABLE·CLEAN |
+| 병합 커밋 check-runs | 6/6 success (E2E, Post-merge build, Post-merge tests, Run Tests, Lint, Security Audit) |
+| 병합 커밋 Lore trailer | 8개 파싱 |
+| `git pull --ff-only` 후 사용자 미커밋 HANDOFF 편집 | 파일·diff 모두 병합 전 백업과 바이트 동일 |
+| 병합된 `main`의 대상 jest (library·sheet·ui·category·useSheetMusic) | 82/82 |
+| 작업 브랜치 tip | 로컬·원격 모두 `main` 밖 고유 커밋 0 → 원격·로컬 삭제, worktree 제거 |
+| #146 PR 6건의 계약·기하 diff | `src/app/api`·`prisma`·`src/types`·`src/services`·`src/lib`·`omr-service`·재생 기하 3파일 모두 비어 있음 |
+

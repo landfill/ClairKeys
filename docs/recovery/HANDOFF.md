@@ -1,5 +1,43 @@
 # Current Handoff
 
+## PR158 merged and issue146 closed; stage4 is complete (2026-09-13)
+
+- [PR158](reviews/PR-158.md) merged on explicit user instruction as
+  `194ffb8ff04cb0cb3cdacd1ff541631045d0c4b1`, with `--match-head-commit 95ab62f`. Immediately before
+  merging: 14/14 checks success, 0 unresolved threads, non-draft, MERGEABLE/CLEAN. ALL SIX CHECK-RUNS ON
+  THE MERGE COMMIT SUCCEEDED. The merge commit parses 8 Lore trailers.
+- Local `main` fast-forwarded to 194ffb8. The user's uncommitted HANDOFF edit was verified byte-identical
+  (file and diff) against a pre-pull backup. Both branch tips had zero commits outside `main`; the
+  remote and local branch and the review worktree were removed. Remaining branches: `main` only.
+- ISSUE146 IS CLOSED AS COMPLETED and the phase is `DONE`. The user chose to close with the manual-only
+  conditions NAMED AS LIMITS, NOT CLAIMED: real device touch, real landscape hardware, the browser's own
+  zoom, screen reader output, measured colour contrast, the real sign-in flow. All nine issue checkboxes
+  were synced with PR and validation evidence. "전후 화면" were recorded as measurement tables, not
+  screenshots, and the issue says so.
+- Contract check across the whole issue: all six merge commits (PR148/150/152/155/157/158) have an empty
+  diff for `src/app/api`, `prisma`, `src/types`, `src/services`, `src/lib`, `omr-service` and the three
+  playback geometry files. PR158 did change the internal `useSheetMusic` hook (the list load now returns
+  whether it succeeded); request and response shapes are unchanged.
+- THREE REVIEW ROUNDS FOUND REAL DEFECTS, all reproduced by measurement before fixing:
+  - A failed category reload hid behind cached rows. THE LIST NOW TRACKS THE LOAD'S OWN OUTCOME — do not
+    go back to judging failure by the hook's shared `error` or by row count.
+  - Same-titled cards, including the common same-day re-upload, had identical action names and
+    descriptions. The upload time in seconds is now in each action's description. Keep the duplicate
+    fixture identical except for upload time.
+  - Cancelling the title editor dropped focus to `body`. Focus now returns to the edit action.
+- REVIEW PATTERN, NOW SEEN IN TWO PRs: the Lore-trailer finding was raised four times on PR158 and cited
+  SHAs that do not exist in this repository (`383f3f18…`, `ad03de6…`); every branch commit parsed 9–13
+  trailers. The same reviewer's five P2 functional findings were all real. Check a cited SHA with
+  `git cat-file -t` before acting, and reproduce functional findings rather than dismissing them.
+- Wait for the reviewer to finish on a new head before merging: twice on PR158 a new finding arrived
+  right after checks turned green.
+- DERIVED OBSERVATIONS, NOT FIXED AND NOT TRACKED YET: the shared `ConfirmDialog` uses the raw palette
+  (`bg-white`, `red-*`); `unknown` availability offers `다시 업로드` as its primary action. Open issues
+  only if the user wants them.
+- Next action: no UI renewal work remains. Choose the next track with the user — open issues include
+  #134 (timing), #130 (fingering, awaiting human reference evidence), #149 (dev integration environment),
+  #127, #126, #125, #121, and ROADMAP P1-B (`NOT_STARTED`).
+
 ## Issue146 stage4 submitted as PR158; measuring 내 악보 found four real defects (2026-09-13)
 
 - [PR158](reviews/PR-158.md) at `c72d5fb8b9dd223def5676d7c654390350ab4800` is open, non-draft and

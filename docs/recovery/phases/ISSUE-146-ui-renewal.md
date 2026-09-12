@@ -1,6 +1,6 @@
 # ISSUE-146 — UI renewal without feature expansion
 
-Status: `IN_PROGRESS`
+Status: `DONE`
 Base: existing main behavior; PR147 is withdrawn and must not be included.
 
 ## Objective
@@ -150,3 +150,17 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
   [library states validation](../validation/2026-09-13-library-states-responsive.md). Stage4's
   completion criteria are written into this document by PR158 itself, because defining them is a
   plan change and not a status record.
+
+- 2026-09-13: [PR158](../reviews/PR-158.md) merged on explicit user instruction as
+  `194ffb8ff04cb0cb3cdacd1ff541631045d0c4b1` after three Codex review rounds. Real defects found and
+  fixed in review: a failed category reload hid behind cached rows (the load's own outcome is now
+  tracked), same-titled and same-day re-uploaded cards had identical action names and descriptions
+  (upload time in seconds is now in the description), and cancelling the title editor dropped focus
+  to `body` (focus now returns to the edit action). Three trailer findings cited SHAs that do not
+  exist in this repository and were rejected with evidence. All six check-runs on the merge commit
+  succeeded. Issue146 was closed as completed on the user's decision to close with the manual-only
+  conditions named as limits rather than claimed: real device touch, real landscape hardware, the
+  browser's own zoom, screen reader output, measured colour contrast and the real sign-in flow.
+  Status is `DONE`. Two derived observations were left unfixed and are not part of this phase: the
+  shared `ConfirmDialog` still uses the raw palette, and `unknown` availability offers `다시 업로드`.
+
