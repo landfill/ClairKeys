@@ -145,7 +145,7 @@ for (const viewport of viewports) {
       if (!drop || !titleField || !composerField) return null
       const box = (node: Element) => {
         const rect = node.getBoundingClientRect()
-        return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, height: rect.height }
+        return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, height: rect.height, width: rect.width }
       }
       const dropStyle = getComputedStyle(drop)
       return {
@@ -170,8 +170,67 @@ for (const viewport of viewports) {
     // 필드는 좌우 어디로도 자기 칸 밖으로 나가지 않는다.
     expect(geometry!.title.left).toBeGreaterThanOrEqual(0)
     expect(geometry!.composer.right).toBeLessThanOrEqual(overflow.clientWidth + 1)
+
+    // 두 칸으로 쪼갠 곳에서는 각 칸이 휴대폰이 한 칸으로 받는 폭(390px에서 308px)보다 넓어야
+    // 한다. 이 단언이 `phone landscape`(844x390)를 다룬다 — 거기서는 두 칸이 유지되고 각 칸이
+    // 365px다. 세로가 390px뿐인 화면에서 굳이 쌓으면 가장 부족한 자원을 더 쓰게 되고, 칸은
+    // 휴대폰보다 넓으니 읽기 문제도 아니다. 기기 종류가 아니라 폭이 기준이다.
+    const sideBySide =
+      Math.abs(geometry!.title.top - geometry!.composer.top) <= 2 &&
+      geometry!.composer.left >= geometry!.title.right
+    if (sideBySide) {
+      expect(geometry!.title.width).toBeGreaterThan(308)
+    }
   })
 }
+
+/** 곡명·저작자가 한 줄인지, 그때 칸이 얼마나 넓은지. */
+async function requiredRow(page: import('@playwright/test').Page) {
+  return page.evaluate(() => {
+    const title = document.getElementById('sheet-title')!.getBoundingClientRect()
+    const composer = document.getElementById('sheet-composer')!.getBoundingClientRect()
+    return {
+      // 같은 줄이라는 건 "위가 같고, 하나가 다른 하나의 오른쪽에 있다"로만 확인할 수 있다.
+      sideBySide: Math.abs(title.top - composer.top) <= 2 && composer.left >= title.right,
+      stacked: composer.top >= title.bottom,
+      fieldWidth: title.width,
+    }
+  })
+}
+
+/**
+ * 쪼개는 경계를 양쪽에서 고정한다.
+ *
+ * 규칙은 "데스크톱"이나 "모바일"이 아니라 폭이다. 쪼갠 칸이 휴대폰이 한 칸으로 받는 폭보다
+ * 좁아지면 쪼개는 목적이 사라지므로, 그 값을 기준선으로 삼는다. 처음에는 경계가 `sm`(640px)
+ * 이었고 정확히 640px에서 각 칸이 263px — 390px 휴대폰의 308px보다 좁았다. 지금 경계는
+ * `md`(768px)이고, 이 테스트가 639/768 양쪽을 눌러 두므로 다시 앞당기면 깨진다.
+ */
+test('never splits the required row into columns narrower than a phone gets', async ({ page }) => {
+  await serveFixture(page)
+  await page.goto('/upload')
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.reload()
+  await expect(page.getByLabel(/곡명/)).toBeVisible()
+  const phone = await requiredRow(page)
+  expect(phone.stacked).toBe(true)
+  expect(phone.sideBySide).toBe(false)
+
+  // 경계 바로 아래는 아직 한 줄로 쌓여 있다.
+  await page.setViewportSize({ width: 767, height: 900 })
+  await expect(async () => {
+    expect((await requiredRow(page)).stacked).toBe(true)
+  }).toPass()
+
+  // 경계 위로 올라가면 두 칸이 되고, 그때 각 칸은 휴대폰 한 칸보다 넓어야 한다.
+  await page.setViewportSize({ width: 768, height: 900 })
+  await expect(async () => {
+    expect((await requiredRow(page)).sideBySide).toBe(true)
+  }).toPass()
+  const split = await requiredRow(page)
+  expect(split.fieldWidth).toBeGreaterThan(phone.fieldWidth)
+})
 
 test('puts 곡명 and 저작자 side by side on a wide screen', async ({ page }) => {
   await serveFixture(page)
@@ -179,15 +238,7 @@ test('puts 곡명 and 저작자 side by side on a wide screen', async ({ page })
   await page.goto('/upload')
   await expect(page.getByLabel(/곡명/)).toBeVisible()
 
-  const rows = await page.evaluate(() => {
-    const title = document.getElementById('sheet-title')!.getBoundingClientRect()
-    const composer = document.getElementById('sheet-composer')!.getBoundingClientRect()
-    return { titleTop: title.top, composerTop: composer.top, titleRight: title.right, composerLeft: composer.left }
-  })
-
-  // 같은 줄이라는 건 "위가 같고, 하나가 다른 하나의 오른쪽에 있다"로만 확인할 수 있다.
-  expect(Math.abs(rows.titleTop - rows.composerTop)).toBeLessThanOrEqual(2)
-  expect(rows.composerLeft).toBeGreaterThanOrEqual(rows.titleRight)
+  expect((await requiredRow(page)).sideBySide).toBe(true)
 })
 
 test('stacks 곡명 and 저작자 on a narrow screen', async ({ page }) => {
@@ -196,14 +247,8 @@ test('stacks 곡명 and 저작자 on a narrow screen', async ({ page }) => {
   await page.goto('/upload')
   await expect(page.getByLabel(/곡명/)).toBeVisible()
 
-  const rows = await page.evaluate(() => {
-    const title = document.getElementById('sheet-title')!.getBoundingClientRect()
-    const composer = document.getElementById('sheet-composer')!.getBoundingClientRect()
-    return { titleBottom: title.bottom, composerTop: composer.top }
-  })
-
   // 좁은 화면에서 두 칸으로 쪼개면 한글 제목이 두 글자마다 줄바꿈된다.
-  expect(rows.composerTop).toBeGreaterThanOrEqual(rows.titleBottom)
+  expect((await requiredRow(page)).stacked).toBe(true)
 })
 
 test('keeps a visible focus ring on the regrouped required fields', async ({ page }) => {

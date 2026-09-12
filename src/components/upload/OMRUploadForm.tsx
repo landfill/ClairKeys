@@ -410,8 +410,14 @@ export default function OMRUploadForm({
           {/*
             넓은 화면에서만 두 칸이다. 좁은 화면에서 쪼개면 한글 제목이 몇 글자마다 줄바꿈되어
             읽기 어려워지고, 두 입력이 서로를 밀어낸다.
+
+            경계가 `md`(768px)인 이유는 측정이다. `sm`(640px)에 두면 정확히 640px에서 각 칸이
+            263px가 되는데, 390px 휴대폰이 한 칸으로 받는 308px보다 좁다 — 화면을 넓혔더니
+            입력칸이 좁아지는 셈이라 쪼개는 목적 자체가 사라진다. 768px에서는 327px로 휴대폰
+            한 칸보다 넓다. 규칙은 "쪼갠 칸이 휴대폰 한 칸보다 좁아지지 않는다"이고,
+            `e2e/upload-form-grouping.spec.ts`가 그 경계를 양쪽에서 고정한다.
           */}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             {/* 곡명 */}
             <div>
               <label htmlFor="sheet-title" className="mb-2 block text-sm font-medium text-ink">
