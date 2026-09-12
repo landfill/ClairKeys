@@ -7,7 +7,7 @@ Depends on: Love Affair, Satie and Always real-API references; D-048/D-049 const
 
 Find and implement a bounded common recognition improvement for input/page/staff/measure loss. Do not
 replace an explicit conversion failure with a musically corrupted success or claim metadata repair as OMR repair.
-This work is independent of unmerged OMR-Q1 key metadata.
+This work is independent of OMR-Q1 key metadata, which reached `DONE` in main after this plan was drafted.
 
 ## Experiments before policy
 
@@ -34,6 +34,18 @@ not be silently omitted. Retain the existing timeout, concurrency, original-outp
 - Normal controls do not regress; no unsupported success is silently stored.
 - Source PDFs remain only user-local or bounded VM analysis copies; no source PDF enters Git.
 - Focused/full regression and VM/API checks support a ready PR. Explicit merge/rollout approvals apply.
+
+## Progress
+
+- 2026-09-06: Experiment1 ran on the unchanged TruongCa music pages1-2. Selected300dpi produced37 notes
+  and0 of41 opening reference matches; 400dpi produced441 notes and41 of41, with per-page staff coverage
+  4->10 and raw measure stacks4/5->15/16. Cost rose45.909s->98.242s. This is measured XML improvement on
+  one source, not a global400dpi policy.
+- 2026-09-06: 400dpi still omits the final printed measure31 and exports no whole-note types. A preliminary
+  independent page probe separates the text credit page but undercounts Always staves and fails Satie bbox
+  parsing, so it is not production-ready. Evidence: [page/scale experiments](../validation/2026-09-06-page-scale-experiments.md).
+- The runtime implementation gate below has NOT been passed. No400dpi or page-filter policy was deployed and
+  production recognition constants are unchanged. Normal-control and fallback validation remain outstanding.
 
 ## Exclusions
 
