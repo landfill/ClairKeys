@@ -161,3 +161,29 @@ pause on phone portrait`로, 이 슬라이스가 건드리지 않은 기존 스�
 실기기 터치, 실제 가로 방향 하드웨어, 브라우저 자체의 확대(CSS zoom은 media query를 다시 평가하지
 않는다), 스크린리더의 실제 출력, 계측된 색 대비, 실제 로그인 흐름. E2E는 D-058 선례대로 세션
 쿠키를 발급해 화면을 띄우기만 하며 인증에 대해 아무것도 주장하지 않는다.
+
+## 리뷰 대응 라운드 — `2e66e30` (2026-09-13)
+
+Codex P2 3건을 측정으로 재현하고 고쳤다(P1 trailer 지적은 사실 아님 — 12개 파싱). 세부는
+[PR158 리뷰 로그](../reviews/PR-158.md).
+
+**위의 "측정이 바꾼 판단" 첫 항목은 틀렸다.** `loadError && 목록이 비어 있음`으로 좁힌 조건은 저장
+실패는 올바르게 걸러 냈지만, 전체 목록을 받은 뒤 카테고리 조회만 실패하는 경우를 놓쳤다. 훅이
+이전 행을 유지하고 카테고리는 로컬 필터에도 없으므로 이전 행이 새 카테고리 이름 아래 그대로 보였다.
+훅의 `error`도, 남은 행 수도 "지금 보이는 행이 방금 요청한 질의의 결과인가"를 말해 주지 못한다.
+그래서 조회 함수가 성공 여부를 돌려주고, 목록은 가장 최근 조회의 결과로만 실패를 추적한다.
+
+WebKit 키보드 측정: 같은 화면에서 Tab 60회 — Desktop Safari·iPhone 12 WebKit의 정지 지점은
+`input:내 악보 검색`, `select:악보 정렬`뿐이었고, 크로미움은 `제목 수정` 버튼에 도달했다.
+
+| 명령 | 결과 |
+|---|---|
+| 새 E2E를 수정 전 빌드 `c72d5fb`에 실행 (chromium·webkit) | 4 failed / 26 passed — 재현 |
+| 대상 jest (hooks·library·sheet·ui·category) | 80/80 |
+| `npx jest --runInBand` | 1024 passed, 1 failed (`fastapi` 환경 격차) |
+| `npx next lint` / `npx tsc --noEmit` | 0/0 / 0 errors |
+| `CI=1 npx playwright test` | 235/235, flaky 0 |
+
+정정: 이 기록 앞부분과 첫 PR 본문은 `src/hooks` diff가 비어 있다고 적었다. 이 라운드에서
+`useSheetMusic.ts`가 바뀌었다(반환값 추가). API·DB·데이터 계약은 그대로다.
+
