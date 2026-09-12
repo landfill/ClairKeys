@@ -172,9 +172,9 @@ for (const viewport of viewports) {
     expect(geometry!.composer.right).toBeLessThanOrEqual(overflow.clientWidth + 1)
 
     // 두 칸으로 쪼갠 곳에서는 각 칸이 휴대폰이 한 칸으로 받는 폭(390px에서 308px)보다 넓어야
-    // 한다. 이 단언이 `phone landscape`(844x390)를 다룬다 — 거기서는 두 칸이 유지되고 각 칸이
-    // 365px다. 세로가 390px뿐인 화면에서 굳이 쌓으면 가장 부족한 자원을 더 쓰게 되고, 칸은
-    // 휴대폰보다 넓으니 읽기 문제도 아니다. 기기 종류가 아니라 폭이 기준이다.
+    // 한다(D-059). 이 단언이 `phone landscape`(844x390)를 다룬다 — 거기서는 두 칸이 유지되고
+    // 각 칸이 365px다. 세로가 390px뿐인 화면에서 굳이 쌓으면 가장 부족한 자원을 더 쓰게 되고,
+    // 칸은 휴대폰보다 넓으니 읽기 문제도 아니다. 기기 종류가 아니라 폭이 기준이다.
     const sideBySide =
       Math.abs(geometry!.title.top - geometry!.composer.top) <= 2 &&
       geometry!.composer.left >= geometry!.title.right
@@ -201,10 +201,10 @@ async function requiredRow(page: import('@playwright/test').Page) {
 /**
  * 쪼개는 경계를 양쪽에서 고정한다.
  *
- * 규칙은 "데스크톱"이나 "모바일"이 아니라 폭이다. 쪼갠 칸이 휴대폰이 한 칸으로 받는 폭보다
- * 좁아지면 쪼개는 목적이 사라지므로, 그 값을 기준선으로 삼는다. 처음에는 경계가 `sm`(640px)
- * 이었고 정확히 640px에서 각 칸이 263px — 390px 휴대폰의 308px보다 좁았다. 지금 경계는
- * `md`(768px)이고, 이 테스트가 639/768 양쪽을 눌러 두므로 다시 앞당기면 깨진다.
+ * 규칙은 D-059가 정한다 — "데스크톱"이나 "모바일"이 아니라 폭이다. 쪼갠 칸이 휴대폰이 한 칸으로
+ * 받는 폭보다 좁아지면 쪼개는 목적이 사라지므로, 그 값을 기준선으로 삼는다. 처음에는 경계가
+ * `sm`(640px)이었고 정확히 640px에서 각 칸이 263px — 390px 휴대폰의 308px보다 좁았다. 지금
+ * 경계는 `md`(768px)이고, 이 테스트가 767/768 양쪽을 눌러 두므로 다시 앞당기면 깨진다.
  */
 test('never splits the required row into columns narrower than a phone gets', async ({ page }) => {
   await serveFixture(page)
