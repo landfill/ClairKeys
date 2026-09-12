@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Badge, Button, StatusState } from '@/components/ui'
+import { useState, useEffect, useCallback, type MouseEvent, type ReactNode } from 'react'
+import Link from 'next/link'
+import { Badge, Button, Card, StatusState } from '@/components/ui'
 import { SheetMusicWithOwner } from '@/types/sheet-music'
 
 interface PublicSheetMusicBrowserProps {
@@ -9,6 +10,9 @@ interface PublicSheetMusicBrowserProps {
   showSections?: Array<'featured' | 'popular' | 'recent'>
   className?: string
 }
+
+const formatDate = (date: Date | string) =>
+  new Date(date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
 
 export default function PublicSheetMusicBrowser({
   onSheetMusicClick,
@@ -20,11 +24,7 @@ export default function PublicSheetMusicBrowser({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadPublicSheets()
-  }, [])
-
-  const loadPublicSheets = async () => {
+  const loadPublicSheets = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -43,20 +43,59 @@ export default function PublicSheetMusicBrowser({
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('ko-KR', {
-      month: 'short',
-      day: 'numeric'
-    })
-  }
+  useEffect(() => {
+    loadPublicSheets()
+  }, [loadPublicSheets])
+
+  // The card is a real link so keyboard, middle-click and open-in-new-tab all work.
+  // When a caller supplies onSheetMusicClick we defer to it exactly as before, so the
+  // existing router-push navigation contract is unchanged — but only for a plain
+  // activation. A modified click (Cmd/Ctrl/Shift/Alt) or a non-primary button is the
+  // reader asking for a new tab or window, and swallowing it here would defeat the
+  // reason these cards became links at all.
+  const linkProps = (sheetMusic: SheetMusicWithOwner) => ({
+    href: `/sheet/${sheetMusic.id}`,
+    onClick: (event: MouseEvent<HTMLAnchorElement>) => {
+      if (!onSheetMusicClick) return
+      const wantsNewContext =
+        event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0
+      if (wantsNewContext) return
+      event.preventDefault()
+      onSheetMusicClick(sheetMusic)
+    }
+  })
+
+  // The ranked rows show their position as a decorative badge, so the rank has to
+  // reach assistive technology some other way. It goes in the link's accessible
+  // name rather than a visually hidden span: sr-only positioning escapes the
+  // truncating heading and widens the document under CSS zoom.
+  const rankedLinkProps = (sheetMusic: SheetMusicWithOwner, index: number) => ({
+    ...linkProps(sheetMusic),
+    'aria-label': `${index + 1}위, ${sheetMusic.title}, ${sheetMusic.composer}`
+  })
+
+  const Meta = ({ sheetMusic }: { sheetMusic: SheetMusicWithOwner }) => (
+    <p className="flex min-w-0 items-center gap-1 text-xs text-ink-muted">
+      <span className="truncate">{sheetMusic.owner?.name || '익명'}</span>
+      <span aria-hidden="true">·</span>
+      <span className="shrink-0">{formatDate(sheetMusic.createdAt)}</span>
+    </p>
+  )
+
+  const Section = ({ title, children }: { title: string; children: ReactNode }) => (
+    <section>
+      <h2 className="text-xl font-bold text-ink mb-3">{title}</h2>
+      {children}
+    </section>
+  )
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">악보를 불러오는 중...</span>
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+        <span className="ml-3 text-ink-muted">악보를 불러오는 중...</span>
       </div>
     )
   }
@@ -73,169 +112,126 @@ export default function PublicSheetMusicBrowser({
   }
 
   return (
-    <div className={`public-sheet-music-browser space-y-8 ${className}`}>
+    <div className={`public-sheet-music-browser space-y-6 ${className}`}>
       {/* Featured Section */}
       {showSections.includes('featured') && popularSheets.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-ink">추천 악보</h2>
-            <Button variant="outline" size="sm">
-              전체 보기
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Section title="추천 악보">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {popularSheets.slice(0, 3).map((sheetMusic) => (
-              <div
+              <Link
                 key={sheetMusic.id}
-                className="group bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
-                onClick={() => onSheetMusicClick?.(sheetMusic)}
+                {...linkProps(sheetMusic)}
+                className="group block"
               >
-                {/* Placeholder for sheet music preview image */}
-                <div className="h-40 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-accent mb-2">SHEET MUSIC</div>
-                    <p className="text-sm text-gray-600">악보 미리보기</p>
-                  </div>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
-                    {sheetMusic.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-2">
-                    {sheetMusic.composer}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>
-                      {sheetMusic.owner?.name || '익명'}
-                    </span>
-                    <span>
-                      {formatDate(sheetMusic.createdAt)}
-                    </span>
-                  </div>
-                  
-                  {sheetMusic.category && (
-                    <div className="mt-2">
-                      <Badge tone="info">
-                        {sheetMusic.category.name}
-                      </Badge>
+                {/* No stored preview image exists, so the card leads with the title
+                    instead of a placeholder surface that implies one does. */}
+                <Card padding="none" className="h-full min-w-0 flex flex-col group-hover:shadow-md group-focus-visible:shadow-md transition-shadow duration-200">
+                  <div className="flex flex-1 flex-col gap-1 p-4">
+                    <h3
+                      title={sheetMusic.title}
+                      className="font-semibold text-base text-ink break-words line-clamp-2 group-hover:text-accent transition-colors"
+                    >
+                      {sheetMusic.title}
+                    </h3>
+                    <p className="text-sm text-ink-muted break-words line-clamp-1">
+                      {sheetMusic.composer}
+                    </p>
+                    {sheetMusic.category && (
+                      <div className="mt-1">
+                        <Badge className="truncate">{sheetMusic.category.name}</Badge>
+                      </div>
+                    )}
+                    <div className="flex-1" />
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <Meta sheetMusic={sheetMusic} />
+                      <span className="shrink-0 text-xs font-medium text-accent">연습 시작 →</span>
                     </div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                </Card>
+              </Link>
             ))}
           </div>
-        </section>
+        </Section>
       )}
 
       {/* Popular Section */}
       {showSections.includes('popular') && popularSheets.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-ink">인기 악보</h2>
-            <Button variant="outline" size="sm">
-              전체 보기
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Section title="인기 악보">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {popularSheets.slice(0, 4).map((sheetMusic, index) => (
-              <div
+              <Link
                 key={sheetMusic.id}
-                className="flex items-center p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer"
-                onClick={() => onSheetMusicClick?.(sheetMusic)}
+                {...rankedLinkProps(sheetMusic, index)}
+                className="group block"
               >
-                {/* Ranking Number */}
-                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white mr-4 ${
-                  index === 0 ? 'bg-yellow-500' : 
-                  index === 1 ? 'bg-gray-400' :
-                  index === 2 ? 'bg-amber-600' : 'bg-blue-500'
-                }`}>
-                  {index + 1}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 truncate">
-                    {sheetMusic.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 truncate">
-                    {sheetMusic.composer}
-                  </p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    {sheetMusic.category && (
-                      <span className="text-xs text-blue-600">
-                        {sheetMusic.category.name}
-                      </span>
-                    )}
-                    <span className="text-xs text-gray-500">
-                      {sheetMusic.owner?.name || '익명'}
-                    </span>
+                <Card padding="none" className="flex h-full min-w-0 items-center gap-3 p-3 group-hover:shadow-md group-focus-visible:shadow-md transition-shadow">
+                  <span
+                    aria-hidden="true"
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
+                      index < 3 ? 'bg-accent text-on-accent' : 'bg-surface-muted text-ink'
+                    }`}
+                  >
+                    {index + 1}
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <h3
+                      title={sheetMusic.title}
+                      className="font-semibold text-base text-ink truncate group-hover:text-accent transition-colors"
+                    >
+                      {sheetMusic.title}
+                    </h3>
+                    <p className="text-sm text-ink-muted truncate">{sheetMusic.composer}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {sheetMusic.category && (
+                        <Badge className="truncate">{sheetMusic.category.name}</Badge>
+                      )}
+                      <Meta sheetMusic={sheetMusic} />
+                    </div>
                   </div>
-                </div>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="ml-3"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onSheetMusicClick?.(sheetMusic)
-                  }}
-                >
-                  재생
-                </Button>
-              </div>
+
+                  <span className="shrink-0 text-xs font-medium text-accent">연습 시작 →</span>
+                </Card>
+              </Link>
             ))}
           </div>
-        </section>
+        </Section>
       )}
 
       {/* Recent Section */}
       {showSections.includes('recent') && recentSheets.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-ink">최신 악보</h2>
-            <Button variant="outline" size="sm">
-              전체 보기
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Section title="최신 악보">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {recentSheets.slice(0, 8).map((sheetMusic) => (
-              <div
+              <Link
                 key={sheetMusic.id}
-                className="bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer p-4"
-                onClick={() => onSheetMusicClick?.(sheetMusic)}
+                {...linkProps(sheetMusic)}
+                className="group block"
               >
-                <div className="text-center mb-3">
-                  <div className="w-12 h-12 mx-auto bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center text-lg mb-2">
-                    <span className="text-sm font-medium text-accent">곡</span>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {formatDate(sheetMusic.createdAt)}
-                  </div>
-                </div>
-                
-                <h3 className="font-medium text-gray-900 text-sm mb-1 text-center truncate">
-                  {sheetMusic.title}
-                </h3>
-                <p className="text-gray-600 text-xs text-center truncate">
-                  {sheetMusic.composer}
-                </p>
-                
-                <div className="mt-3 text-center">
+                <Card padding="none" className="flex h-full min-w-0 flex-col gap-1 p-4 group-hover:shadow-md group-focus-visible:shadow-md transition-shadow">
+                  <h3
+                    title={sheetMusic.title}
+                    className="font-semibold text-sm text-ink break-words line-clamp-2 group-hover:text-accent transition-colors"
+                  >
+                    {sheetMusic.title}
+                  </h3>
+                  <p className="text-xs text-ink-muted break-words line-clamp-1">
+                    {sheetMusic.composer}
+                  </p>
                   {sheetMusic.category && (
-                    <Badge>
-                      {sheetMusic.category.name}
-                    </Badge>
+                    <div className="mt-1">
+                      <Badge className="truncate">{sheetMusic.category.name}</Badge>
+                    </div>
                   )}
-                </div>
-              </div>
+                  <div className="flex-1" />
+                  <div className="mt-2">
+                    <Meta sheetMusic={sheetMusic} />
+                  </div>
+                </Card>
+              </Link>
             ))}
           </div>
-        </section>
+        </Section>
       )}
 
       {/* Empty State */}
