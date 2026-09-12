@@ -1,5 +1,20 @@
 # Current Handoff
 
+## Branch cleanup approved and archived (2026-09-13)
+
+- User explicitly approved an exception to the branch-deletion rule for unique commits and the
+  existing user-owned HANDOFF edit: preserve both tips as remote tags, then delete both branches.
+- `codex/issue-124-finger-badge` archived at `archive/2026-09-13-issue-124-finger-badge`
+  (`e6077015c57d58fb6f74ff20881e0d564a98628d`); PR147 remains closed without merge and issue124 NOT_PLANNED.
+- `codex/issue-130-directional-budget` archived at `archive/2026-09-13-issue-130-directional-budget`
+  (`7a3d5e80273964ab14ae1fa3ebaea1934f54f3fb`); these are superseded experiments, not a merge candidate.
+  Issue130 remains open and model work awaits human reference fingering evidence.
+- `git ls-remote` verified both remote tag SHAs exactly matched the remote branch tips before deletion.
+  Both local and remote branches were then deleted; `git branch -a` lists only main and origin/main
+  (plus origin/HEAD). No application code was changed or merged; tests were not rerun for ref cleanup.
+- The pre-existing HANDOFF edit is preserved uncommitted and excluded from this status commit.
+- Next action remains issue146 stage4: existing states, responsive behavior, keyboard focus and zoom.
+
 ## PR157 merged on explicit instruction; issue146 stage3 is complete, stage4 is not (2026-09-12)
 
 - User explicitly instructed the merge by PR number. Exact head 46c0d4c, all 16 checks, non-draft and
