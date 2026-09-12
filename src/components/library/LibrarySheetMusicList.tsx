@@ -41,6 +41,9 @@ export function LibrarySheetMusicList({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [loadFailed, setLoadFailed] = useState(false)
   const latestLoad = useRef(0)
+  // 편집 대화상자를 연 동작. 닫힐 때 포커스를 여기로 돌려준다 — 그러지 않으면 사라지는 버튼과 함께
+  // 포커스가 `body`로 떨어져 키보드 사용자는 목록 맨 앞부터 다시 Tab해야 한다 (PR158 3차 리뷰).
+  const editTrigger = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -124,6 +127,7 @@ export function LibrarySheetMusicList({
   }
 
   const openTitleEditor = (sheet: SheetMusicWithCategory) => {
+    editTrigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     setTitle(sheet.title)
     setTitleError(null)
     setTempo('')
@@ -157,6 +161,15 @@ export function LibrarySheetMusicList({
       setSaving(false)
     }
   }
+
+  // 대화상자가 닫힌 뒤(취소·저장 성공) 연 동작으로 포커스를 돌려준다. 카드는 id를 key로 다시
+  // 그려지므로 저장 뒤에도 같은 버튼이 남아 있다. 그 사이 버튼이 사라졌다면 아무것도 하지 않는다.
+  useEffect(() => {
+    if (editingSheet !== null) return
+    const trigger = editTrigger.current
+    editTrigger.current = null
+    if (trigger && trigger.isConnected) trigger.focus()
+  }, [editingSheet])
 
   // 로딩 상태
   if (sheetMusicLoading) {

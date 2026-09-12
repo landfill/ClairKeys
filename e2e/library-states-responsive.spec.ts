@@ -450,8 +450,12 @@ test('opens the title editor with the keyboard and puts focus inside it', async 
   await expect(dialog).toBeVisible()
   await expect(dialog.getByLabel('제목')).toBeFocused()
 
-  // 취소는 목록으로 돌아가고, 제목은 바뀌지 않는다.
-  await dialog.getByRole('button', { name: '취소' }).click()
+  // 취소는 목록으로 돌아가고, 제목은 바뀌지 않는다. "목록으로 돌아간다"는 포커스까지 포함한다 —
+  // 대화상자를 연 동작으로 돌아가지 않으면 포커스가 `body`로 떨어져 키보드 사용자는 목록 맨 앞부터
+  // 다시 Tab해야 한다 (PR158 3차 리뷰). 키보드로만 닫는다.
+  await dialog.getByRole('button', { name: '취소' }).focus()
+  await page.keyboard.press('Enter')
   await expect(dialog).toHaveCount(0)
   await expect(page.getByRole('heading', { level: 3, name: LONG_TITLE })).toBeVisible()
+  await expect(editButton).toBeFocused()
 })

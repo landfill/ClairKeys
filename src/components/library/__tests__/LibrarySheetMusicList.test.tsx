@@ -82,6 +82,35 @@ describe('LibrarySheetMusicList', () => {
     expect(updateSheetMusic).not.toHaveBeenCalled()
   })
 
+  /**
+   * PR158 3차 리뷰(P2). 편집 대화상자를 닫으면 포커스가 사라지는 버튼과 함께 `body`로 떨어져,
+   * 키보드 사용자는 목록 맨 앞부터 다시 Tab해야 했다. 닫힌 뒤에는 대화상자를 연 동작으로 돌아간다.
+   */
+  it('returns focus to the edit action when the title editor is cancelled', () => {
+    render(<LibrarySheetMusicList />)
+
+    const edit = screen.getByRole('button', { name: '연습 가능 제목 수정' })
+    edit.focus()
+    fireEvent.click(edit)
+    fireEvent.click(screen.getByRole('button', { name: '취소' }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '연습 가능 제목 수정' })).toHaveFocus()
+  })
+
+  it('returns focus to the edit action after a successful save', async () => {
+    render(<LibrarySheetMusicList />)
+
+    const edit = screen.getByRole('button', { name: '연습 가능 제목 수정' })
+    edit.focus()
+    fireEvent.click(edit)
+    fireEvent.change(screen.getByLabelText('제목'), { target: { value: '새 제목' } })
+    fireEvent.click(screen.getByRole('button', { name: '저장' }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(screen.getByRole('button', { name: '연습 가능 제목 수정' })).toHaveFocus()
+  })
+
   it('offers an upload action for an empty library', () => {
     mockUseSheetMusic.mockReturnValue({
       ...mockUseSheetMusic(),
