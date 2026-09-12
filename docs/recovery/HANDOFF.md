@@ -1,5 +1,58 @@
 # Current Handoff
 
+## Issue146 stage4 submitted as PR158; measuring 내 악보 found four real defects (2026-09-13)
+
+- [PR158](reviews/PR-158.md) at `c72d5fb8b9dd223def5676d7c654390350ab4800` is open, non-draft and
+  MERGEABLE. NO MERGE APPROVAL EXISTS and green checks are not approval. Read the PR, not this line,
+  for hosted results.
+- `/library` WAS THE ONE AUDITED SCREEN WITH NO BROWSER-MEASURED EVIDENCE. Stage1 (PR148) fixed its
+  card widths and button wrapping, but that judgement was a human looking at the screen. Measuring
+  it found four defects that had survived:
+  - A FAILED LIST LOAD RENDERED THE EMPTY-LIBRARY SCREEN, down to the same words, so someone whose
+    request failed was offered an upload. Now a separate `StatusState` `tone="error"` with a
+    `다시 시도` that repeats the same query.
+  - The processing card's primary action was 32px tall and 64px wide while every other state was
+    44px and full width. `flex-1` had no effect because the parent is not flex, and `min-h-11` was
+    missing.
+  - The loading state had no `role`, no accessible name, and used `text-blue-600` — the only place
+    in the app still on the raw palette instead of `--ck-accent`.
+  - Nine card-action accessible names were duplicates: only `수정` carried the sheet title, so
+    "삭제" was heard once per card with nothing to tell them apart.
+- ALSO: `/library`'s content area repeated the `min-h-screen` that `MainLayout` already has, leaving
+  1116px empty below the empty state — the document was exactly two screens (1692 = 844×2). No other
+  page has this duplication. `min-h-screen` BELONGS TO `MainLayout`; do not add it again inside a page.
+- Regression evidence preceded implementation: jest 8 failed / 11 passed, Playwright 11 of 14 failed
+  on the unmodified component. Three Playwright cases passed before and after (fruitless search,
+  keyboard reach with the focus ring, edit-dialog focus) and were kept as invariant guards.
+- MEASUREMENT CHANGED THE WORK TWICE, both worth carrying forward:
+  - The failure condition had to be NARROWED to `loadError && 목록이 비어 있음`. `useSheetMusic`'s
+    `error` is set by update and delete failures too, so reading it plainly would report a failed
+    title save as a failed list load. Pinned by
+    `keeps the list when the failure was a save, not a load`.
+  - The empty-state criterion became "the gap below the card is under one screen" instead of
+    "document height under 1.6× the viewport". The multiplier was a number with no basis and it
+    counted legitimate content (header, tabs, search). Verified by re-adding `min-h-screen` in the
+    same build: 1116px (fails) → 687px (passes).
+- Local: target jest 52/52, full jest 1020 passed / 1 failed (the known `fastapi` gap), lint 0/0,
+  `tsc --noEmit` 0 errors, build success, the new spec 70/70 across five browser projects, and
+  `CI=1 npx playwright test` 229 passed / 1 flaky / 0 failed (the flaky one is the pre-existing
+  `[webkit] playback-session-transition`). Default local parallelism once failed 8 firefox cases in
+  specs this slice does not touch; the same project alone passes 46/46 and the CI configuration
+  passes. Recorded rather than painted green — the hosted E2E job is the authority.
+- FOUND AND DELIBERATELY NOT FIXED, so nobody records it as done: `ConfirmDialog` (the delete
+  confirmation) still uses `bg-white`, `bg-gray-500` and `red-*`. Issue146 asks for the existing
+  confirmation dialog to be preserved and this component is shared with screens outside stage4.
+  `availability === 'unknown'` still offers `다시 업로드` as its primary action. About 237px of the
+  remaining 687px gap comes from `MainLayout`'s own `min-h-screen` stacking with the header and
+  footer — a global layout property, not a `/library` defect.
+- ISSUE146 IS STILL OPEN and the phase stays `IN_PROGRESS`. Stage4's manual-only conditions are
+  named as outstanding, not claimed: real device touch, real landscape hardware, the browser's own
+  zoom (CSS zoom does not re-evaluate media queries), screen reader output, measured colour
+  contrast, and the real sign-in flow. Stage4's completion criteria now exist in the phase document,
+  added by PR158 itself because defining them is a plan change rather than a status record.
+- Next action: watch PR158's hosted checks and review, answer findings with measurement, and wait
+  for the user's explicit merge approval.
+
 ## Branch cleanup approved and archived (2026-09-13)
 
 - User explicitly approved an exception to the branch-deletion rule for unique commits and the

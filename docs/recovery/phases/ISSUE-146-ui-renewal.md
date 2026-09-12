@@ -102,3 +102,27 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
   verify existing states and responsive behaviour including keyboard focus and zoom — so this phase
   stays `IN_PROGRESS` and issue146 stays OPEN. Post-merge verification is recorded in
   [upload form validation](../validation/2026-09-12-upload-form-grouping.md).
+
+- 2026-09-13: Stage4 submitted as [PR158](../reviews/PR-158.md) at `c72d5fb`. `/library` was the one
+  audited screen with no browser-measured evidence, and measuring it found four real defects: a
+  failed list load rendered the empty-library screen down to the same words, the processing card's
+  primary action was 32px where every other state was 44px, the loading state had no role and no
+  name and used `text-blue-600` instead of the palette tokens, and nine card-action accessible
+  names were duplicates because only `수정` carried the title. The content area also repeated
+  `MainLayout`'s `min-h-screen`, leaving 1116px empty below the empty state — the document was
+  exactly two screens tall. Regression evidence preceded implementation: jest 8 failed / 11 passed
+  and Playwright 11 of 14 failed on the unmodified component. New
+  `e2e/library-states-responsive.spec.ts` measures 320/390x844/844x390/1280x720/1440x900 and CSS
+  zoom 200% in five browser projects, and covers loading, empty, fruitless search, processing,
+  conversion failure and load failure plus keyboard reach, focus ring and the edit dialog's focus.
+  Measurement changed the work twice — the failure condition was narrowed to `loadError && 목록이
+  비어 있음` so a failed save is not reported as a failed load, and the empty-state criterion became
+  "the gap below the card is under one screen" instead of an arbitrary 1.6× of document height.
+  Fields, queries, sorting, search, move, the delete confirmation and the submit path are unchanged,
+  and so is every visible label. Stage4's manual-only conditions (real device touch, real landscape
+  hardware, the browser's own zoom, screen reader output, measured colour contrast, the real
+  sign-in flow) are named as outstanding rather than claimed, so this phase stays `IN_PROGRESS` and
+  issue146 stays OPEN. Evidence:
+  [library states validation](../validation/2026-09-13-library-states-responsive.md). Stage4's
+  completion criteria are written into this document by PR158 itself, because defining them is a
+  plan change and not a status record.
