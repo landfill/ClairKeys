@@ -1,5 +1,29 @@
 # Current Handoff
 
+## Lost the user's uncommitted .claude/settings.local.json edit — cause and lesson (2026-09-12)
+
+- WHAT WAS LOST: the working-tree modification to `.claude/settings.local.json` (5 insertions,
+  2 deletions against the committed version; the file is a permission allowlist). It is NOT
+  recoverable — it never entered the index, a stash or the object store, and no backup exists.
+  The file is now identical to main's committed version.
+- CAUSE, precisely: `.claude/settings.local.json` is listed in `.gitignore` AND was tracked.
+  Git silently overwrites IGNORED files during checkout instead of refusing as it does for
+  ordinary untracked files. Creating `codex/issue-146-untrack-private-audit-evidence`,
+  committing the `git rm --cached`, then `git checkout main` made git restore main's committed
+  version over the modified working copy with no warning and no prompt.
+- This violated the AGENTS rule that pre-existing uncommitted changes are user-owned and must not
+  be reverted. The revert was indirect, through a branch switch, which is exactly why it slipped
+  past: no command in the session names the file.
+- LESSON for the next session: a path that is both tracked and gitignored is a trap. Before any
+  branch switch that changes whether such a path is tracked, copy the working file outside the
+  repository first — `git status` will keep showing it as an ordinary modification right up to the
+  moment checkout discards it.
+- PR156 removes this specific trap: once the file is untracked on main there is no committed
+  version for a checkout to restore over it. That makes the incident concrete evidence for the
+  change rather than a hypothetical.
+- No other user-owned change was affected. The8 ui-audit PNGs are intact and still untracked, and
+  the pre-existing HANDOFF edit is intact and still uncommitted.
+
 ## All three open PRs are green and awaiting explicit merge approval (2026-09-12)
 
 - [PR155](reviews/PR-155.md) at1304be5: all14 hosted check-runs SUCCESS — both E2E jobs, Security
