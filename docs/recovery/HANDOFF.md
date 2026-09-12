@@ -1,5 +1,33 @@
 # Current Handoff
 
+## PR156 merged; the permanent cleanup blocker is finally gone (2026-09-12)
+
+- User confirmed the rationale (this codebase is not Claude-specific, so
+  `.claude/settings.local.json` needs no tracking) and then explicitly instructed the merge.
+  [PR156](reviews/PR-156.md) merged as 9b62ec459a3ba1e46e3cb16375cca9df38a3070f; all six check-runs
+  on that exact merge commit succeeded. Exact head, checks and MERGEABLE/CLEAN were rechecked first
+  and the one false P1 thread was resolved after being answered.
+- THE FILE WAS BACKED UP BEFORE PULLING, and that was necessary rather than cautious. Pulling the
+  merge deletes `.claude/settings.local.json` from the working tree and then removes the now-empty
+  `.claude/` directory. This session had ALREADY lost the user's edit to that same file earlier
+  today via the tracked-and-gitignored checkout trap, so the file was copied outside the repository
+  first and restored into a recreated `.claude/` afterwards.
+- Verified end state: the file exists locally with its allowlist intact; `git check-ignore -v`
+  reports `.gitignore:55`; `git ls-files .claude/` returns0; `git status` lists neither the file nor
+  the eight ui-audit PNGs.
+- THE BLOCKER IS CLEARED. `git status` now shows only the user's uncommitted HANDOFF edit, which is
+  an ordinary committable change. The permanently-uncommittable paths no longer appear in it, so
+  AGENTS lifecycle rule7 can clear normally instead of blocking every session forever.
+- Anyone pulling on ANOTHER machine still loses their own `.claude/settings.local.json` and should
+  back it up before pulling. The PR body and merge message both say so.
+- All three PRs from this session are merged and their branches deleted. Remaining branches are only
+  `codex/issue-130-directional-budget` (2 unique commits, unfinished fingering work, no PR) and
+  `codex/issue-124-finger-badge` (2 unique commits although issue124 closed NOT_PLANNED — abandon or
+  revive is still undecided). No PR is open.
+- Next code slice: issue146 upload form grouping in `src/components/upload/OMRUploadForm.tsx`.
+  Fields, validation, defaults and submit behaviour must not change. Issue146 stays OPEN and its
+  phase stays `IN_PROGRESS`.
+
 ## PR154 and PR155 merged on explicit approval; PR156 rationale settled (2026-09-12)
 
 - User explicitly approved merging PR154 and PR155 (those two by number). Both exact heads, all
