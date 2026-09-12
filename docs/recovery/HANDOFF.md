@@ -1,5 +1,50 @@
 # Current Handoff
 
+## Issue146 stage3 upload form submitted as PR157; measurement changed the work twice (2026-09-12)
+
+- [PR157](reviews/PR-157.md) at e3d5d325cb37821f112ef6ca660f9e9e08c74800 is open, non-draft and
+  MERGEABLE. NO MERGE APPROVAL EXISTS and none is implied by green checks. Hosted results were still
+  running when this was written — read the PR, not this line, for their outcome.
+- The single upload form is now three `fieldset`/`legend` groups: `악보 파일`, `곡 정보`,
+  `선택 설정`. 곡명 and 저작자 share a row only above the `sm` breakpoint. Drop-zone vertical
+  padding is reduced. FIELDS, VALIDATION, DEFAULTS AND THE SUBMIT PAYLOAD ARE UNCHANGED — the
+  component's logic region (lines 1–324) has no diff at all.
+- Regression evidence preceded implementation, and is recorded in
+  [upload form validation](validation/2026-09-12-upload-form-grouping.md): jest 3 failed / 24 passed
+  and Playwright 7 of 9 failed against the unmodified component.
+- MEASUREMENT CHANGED THE WORK TWICE, and both are worth carrying forward. (1) Group description
+  paragraphs added in the first attempt pushed the 곡명 input from 535px down to 579px — they spent
+  the entire drop-zone saving and were copy no phase document had asked for, so they were removed.
+  (2) `<fieldset>` carries the UA stylesheet's `min-inline-size: min-content`, which Tailwind
+  preflight does not reset; it overflowed the document to 386px at a 320px viewport until `min-w-0`
+  was added to all three. NEITHER WAS VISIBLE WITHOUT MEASURING. If you add a `fieldset` anywhere in
+  this codebase, add `min-w-0` with it.
+- THE FORM IS NOT UNIFORMLY SHORTER. It lost 30px on wide screens and gained 36–40px on narrow ones,
+  because two extra group headings cost more than the compression saves where no column collapses.
+  Only the drop area was compressed. Do not restate this as "the upload form was compressed".
+- A WebKit CSS-zoom discrepancy (`documentElement.scrollWidth` 1982 vs `body.scrollWidth` 991 at a
+  1440px viewport) was confirmed pre-existing by building clean `main` (64989c7) in a separate
+  worktree and measuring it in the same WebKit — identical values. The zoom case now asserts
+  `body.scrollWidth`; the five non-zoom viewports still assert both.
+- NEW PRECEDENT, D-058: this is the suite's first spec to open a protected route. `/upload` is
+  guarded by `withAuth` server-side and `AuthGuard` client-side, so a route fixture alone left all
+  nine cases on the home page. The spec now mints a next-auth session cookie with the same
+  `test-secret` CI supplies. It is a rendering fixture and asserts nothing about authentication.
+- Local verification: jest upload 27/27, full jest 1010 passed / 1 failed, Playwright 155/155 across
+  five browser projects, lint 0/0, `tsc --noEmit` 0 errors, `npm run build` success. The one unit
+  failure is `omrCallbackDelivery`, which needs `fastapi` and is absent on this machine — CI decides
+  it, as it did for PR155.
+- ISSUE146 IS NOT CLOSED BY THIS PR. Stage4 remains: existing states and responsive behaviour
+  including keyboard focus and zoom. The phase stays `IN_PROGRESS`.
+- Still unverified and carried forward: real device touch, the browser's own zoom (CSS zoom does not
+  re-evaluate media queries), screen reader, measured colour contrast, and the real sign-in flow.
+- Other branches are unchanged: `codex/issue-130-directional-budget` (2 unique commits, unfinished
+  fingering work, no PR) and `codex/issue-124-finger-badge` (2 unique commits although issue124
+  closed NOT_PLANNED — abandon or revive is still undecided).
+- `docs/recovery/HANDOFF.md` is now 4,900+ lines / 437KB and every session must read it. Splitting
+  older entries into `docs/recovery/archive/` is a real candidate for a next step; it is a state
+  record, not a protocol change, so it needs no PR.
+
 ## PR156 merged; the permanent cleanup blocker is finally gone (2026-09-12)
 
 - User confirmed the rationale (this codebase is not Claude-specific, so

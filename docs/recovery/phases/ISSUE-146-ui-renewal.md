@@ -69,3 +69,16 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
   one field order across the three sections, the false preview surface removed, cards reachable by
   keyboard with the global focus ring intact and modified clicks left to the browser. Stage3's
   upload form grouping remains, so this phase stays `IN_PROGRESS` and issue146 stays OPEN.
+
+- 2026-09-12: Stage3's remaining upload-form work submitted as [PR157](../reviews/PR-157.md). The
+  single form is grouped into `악보 파일` / `곡 정보` / `선택 설정` with `fieldset`/`legend`, so the
+  boundary reaches people who do not see the screen; 곡명 and 저작자 share a row only above the `sm`
+  breakpoint; the drop zone's vertical padding is reduced. Fields, validation, defaults and the
+  submit payload are unchanged and the component's logic region has no diff. Regression evidence
+  preceded implementation: jest 3 failed / 24 passed and Playwright 7 of 9 failed on the unmodified
+  component. New `e2e/upload-form-grouping.spec.ts` measures 320/390x844/844x390/1280x720/1440x900
+  and CSS zoom 200% in five browser projects, and caught a `fieldset` min-content overflow this
+  branch had introduced, repaired before submission. It is also the suite's first protected-route
+  spec; the session-cookie precedent is recorded as D-058. Evidence:
+  [upload form validation](../validation/2026-09-12-upload-form-grouping.md).
+  Stage4 verification remains, so this phase stays `IN_PROGRESS` and issue146 stays OPEN.
