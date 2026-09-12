@@ -55,7 +55,20 @@ export function SheetMusicCard({
     unknown: { label: '확인 필요', icon: '?', tone: 'neutral' as const },
   }[availability]
 
-  const describedBy = `${metaId}-composer ${metaId}-badges ${metaId}-date`
+  /*
+    보이는 날짜는 일 단위라, 변환 실패 뒤 같은 PDF를 같은 날 다시 올린 두 카드는 저작자·배지·날짜가
+    모두 같다 — 가장 흔한 중복인데 이름과 설명이 완전히 같아졌다 (PR158 2차 리뷰). 올린 시각을 초
+    단위로 설명에 더한다. 사람에게 의미 있는 구별 정보이고, 카드의 보이는 표현은 바꾸지 않는다.
+  */
+  const uploadedAt = new Date(sheetMusic.createdAt).toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+  const describedBy = `${metaId}-composer ${metaId}-badges ${metaId}-date ${metaId}-uploaded`
 
   return (
     <Card padding="none" className="group min-w-0 hover:shadow-md transition-shadow duration-200 h-full flex flex-col">
@@ -88,6 +101,7 @@ export function SheetMusicCard({
         <p id={`${metaId}-date`} className="text-xs text-ink-muted flex-shrink-0">
           {formatDate(sheetMusic.createdAt)}
         </p>
+        <span id={`${metaId}-uploaded`} className="sr-only">{`${uploadedAt} 업로드`}</span>
 
         {/* Spacer to push buttons to bottom */}
         <div className="flex-1"></div>

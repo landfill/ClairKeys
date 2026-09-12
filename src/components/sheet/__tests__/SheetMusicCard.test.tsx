@@ -61,8 +61,13 @@ describe('SheetMusicCard', () => {
     render(
       <>
         <SheetMusicCard sheetMusic={sheetMusic} availability="ready" onEdit={jest.fn()} onDelete={jest.fn()} />
+        {/*
+          가장 흔한 중복은 변환 실패 뒤 같은 PDF를 같은 날 다시 올리는 경우다 — 저작자·분류·공개·상태·
+          날짜가 모두 같고 올린 시각만 다르다(PR158 2차 리뷰). 첫 판 테스트는 저작자와 날짜를 바꿔서
+          이 경우를 피해 갔다.
+        */}
         <SheetMusicCard
-          sheetMusic={{ ...sheetMusic, id: 28, composer: '다른 편곡자', createdAt: new Date('2026-09-02') }}
+          sheetMusic={{ ...sheetMusic, id: 28, createdAt: new Date('2026-08-28T06:30:00.000Z') }}
           availability="ready"
           onEdit={jest.fn()}
           onDelete={jest.fn()}
@@ -78,7 +83,7 @@ describe('SheetMusicCard', () => {
       return ids.map(id => document.getElementById(id)?.textContent?.trim() ?? '').join(' ')
     })
     expect(descriptions[0]).toContain('조')
-    expect(descriptions[1]).toContain('다른 편곡자')
+    expect(descriptions[1]).toContain('조')
     expect(descriptions[0]).not.toEqual(descriptions[1])
 
     // 관리 동작도 같은 설명을 가리킨다.

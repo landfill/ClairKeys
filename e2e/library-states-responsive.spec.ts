@@ -358,7 +358,13 @@ test('keeps the processing card action the same size as a playable one', async (
 test('gives every card action a name that says which sheet it acts on', async ({ page }) => {
   // 제목은 유일하지 않다(같은 PDF를 두 번 올릴 수 있다). 같은 제목 두 장을 섞어, 이름만이 아니라
   // 이름과 설명을 합친 것이 동작을 구별하는지 본다 (PR158 리뷰).
-  const duplicate = { ...sheet(5, LONG_TITLE, 'ready'), composer: '다른 편곡자', createdAt: '2026-09-05T00:00:00.000Z' }
+  //
+  // 중복 fixture는 가장 흔한 경우로 만든다 — 변환 실패 뒤 같은 PDF를 같은 날 다시 올리면 저작자·
+  // 분류·공개·상태·날짜가 모두 같고 올린 시각만 다르다. 첫 판은 저작자와 날짜를 바꿔 이 경우를
+  // 피해 갔다 (PR158 2차 리뷰).
+  const original = sheets[0]
+  const duplicate = { ...original, id: 5, createdAt: '2026-09-01T06:30:00.000Z' }
+  expect(duplicate.isPublic).toBe(original.isPublic)
   await serveFixture(page, { list: [...sheets, duplicate] })
   await page.setViewportSize({ width: 1280, height: 720 })
   await page.goto('/library')
