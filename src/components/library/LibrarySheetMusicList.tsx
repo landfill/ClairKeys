@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useCallback, useEffect, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useSheetMusic } from '@/hooks/useSheetMusic'
 import { useCategories } from '@/hooks/useCategories'
 import { SheetMusicCard } from '@/components/sheet/SheetMusicCard'
@@ -28,7 +28,7 @@ export function LibrarySheetMusicList({
   onCategorySelect,
   onSheetMusicMove
 }: LibrarySheetMusicListProps) {
-  const { sheetMusic, loading: sheetMusicLoading, error: loadError, fetchUserSheetMusic, updateSheetMusic, deleteSheetMusic } = useSheetMusic()
+  const { sheetMusic, loading: sheetMusicLoading, fetchUserSheetMusic, updateSheetMusic, deleteSheetMusic } = useSheetMusic()
   const { categories } = useCategories()
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery)
   const [editingSheet, setEditingSheet] = useState<SheetMusicWithCategory | null>(null)
@@ -39,6 +39,8 @@ export function LibrarySheetMusicList({
   const [tempoError, setTempoError] = useState<string | undefined>()
   const [saving, setSaving] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [loadFailed, setLoadFailed] = useState(false)
+  const latestLoad = useRef(0)
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -49,14 +51,22 @@ export function LibrarySheetMusicList({
   }, [searchQuery])
 
   // 데이터 로드. 카테고리 변경은 즉시 반영하고 키 입력만 debounce한다.
+  //
+  // 실패 여부는 조회 함수가 돌려준 값으로만 판정한다. 훅의 `error`는 수정·삭제 실패에도 설정되고,
+  // 조회가 실패해도 이전 행이 남는다 — 전체 목록을 받은 뒤 카테고리 조회가 실패하면 이전 행이 새
+  // 카테고리 이름 아래 그대로 보였다 (PR158 리뷰). 늦게 도착한 이전 요청이 최신 결과를 덮지 않도록
+  // 가장 최근 요청의 결과만 반영한다.
   const loadSheetMusic = useCallback(async () => {
+    const request = ++latestLoad.current
     try {
-      await fetchUserSheetMusic({
+      const succeeded = await fetchUserSheetMusic({
         categoryId: selectedCategoryId || undefined,
         search: debouncedSearchQuery || undefined
       })
+      if (request === latestLoad.current) setLoadFailed(succeeded === false)
     } catch (error) {
       console.error('Failed to load sheet music:', error)
+      if (request === latestLoad.current) setLoadFailed(true)
     }
   }, [selectedCategoryId, debouncedSearchQuery, fetchUserSheetMusic])
 
@@ -95,11 +105,9 @@ export function LibrarySheetMusicList({
     try {
       await updateSheetMusic(sheetMusicId, { categoryId: newCategoryId })
       onSheetMusicMove?.(sheetMusicId, newCategoryId)
-      // 선택된 카테고리에서 이동한 항목을 제거하기 위해 한 번만 새로고침한다.
-      await fetchUserSheetMusic({
-        categoryId: selectedCategoryId || undefined,
-        search: debouncedSearchQuery || undefined
-      })
+      // 선택된 카테고리에서 이동한 항목을 제거하기 위해 한 번만 새로고침한다. 실패 추적이 한
+      // 경로에만 있도록 같은 조회 함수를 쓴다.
+      await loadSheetMusic()
     } catch (error) {
       console.error('Failed to move sheet music:', error)
     }
@@ -160,11 +168,12 @@ export function LibrarySheetMusicList({
     원인이 다르므로 다음 행동도 다르다. 이전에는 둘이 같은 화면이어서 실패한 사람에게 업로드를
     권했다 (이슈 #146 stage 4). 원시 서버 문구는 노출하지 않는다.
 
-    `useSheetMusic`의 `error`는 목록 조회뿐 아니라 수정·삭제 실패에도 설정된다. 그래서 조건을
-    "보여줄 목록이 없는데 실패했다"로 좁힌다 — 저장이 실패한 경우에는 목록과 그 자리의 인라인
-    안내가 그대로 유지돼야 하고, 목록을 이미 받아 둔 상태의 재조회 실패도 화면을 비우지 않는다.
+    판정은 가장 최근 조회의 실패 여부(`loadFailed`)다. 훅의 `error`나 남은 행 수로 판정하지 않는다 —
+    `error`는 저장 실패에도 설정되고, 행은 실패한 조회 뒤에도 이전 질의의 것이 남는다. 이전 행을
+    보여 주면 다른 카테고리·검색어의 결과를 지금 질의의 결과처럼 말하게 된다. 저장·삭제 실패는
+    `loadFailed`를 건드리지 않으므로 목록과 그 자리의 인라인 안내가 그대로 유지된다.
   */
-  if (loadError && filteredAndSortedSheetMusic.length === 0) {
+  if (loadFailed) {
     return (
       <StatusState
         tone="error"

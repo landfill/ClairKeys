@@ -89,6 +89,8 @@ interface FixtureOptions {
   status?: number
   /** 목록 응답을 늦춰 로딩 상태를 관찰 가능하게 만든다. */
   delayMs?: number
+  /** `categoryId`가 붙은 조회만 실패시킨다 — 전체 목록을 받은 뒤의 필터 재조회 실패. */
+  failFiltered?: boolean
 }
 
 async function serveFixture(page: Page, options: FixtureOptions = {}) {
@@ -127,8 +129,9 @@ async function serveFixture(page: Page, options: FixtureOptions = {}) {
     url => url.pathname === '/api/sheet',
     async route => {
       if (options.delayMs) await new Promise(resolve => setTimeout(resolve, options.delayMs))
-      if (options.status && options.status >= 400) {
-        await route.fulfill({ status: options.status, contentType: 'application/json', body: '{"error":"server"}' })
+      const filtered = new URL(route.request().url()).searchParams.has('categoryId')
+      if ((options.status && options.status >= 400) || (options.failFiltered && filtered)) {
+        await route.fulfill({ status: options.status ?? 500, contentType: 'application/json', body: '{"error":"server"}' })
         return
       }
       await route.fulfill({
@@ -265,6 +268,27 @@ test('says the library could not be loaded instead of claiming it is empty', asy
   await expect(page.getByRole('link', { name: /새 악보 업로드$/ })).toHaveCount(0)
 })
 
+/**
+ * PR158 리뷰(P2). 전체 목록을 받아 둔 뒤 카테고리를 골랐는데 그 조회만 실패하면, 훅은 이전 행을
+ * 유지하고 카테고리는 로컬 필터에도 없다. 남은 행 수로 실패를 판정하면 이전 행이 새 카테고리
+ * 이름 아래 그대로 보이고 다시 시도할 방법도 없었다.
+ */
+test('does not pass off earlier rows as the result of a category load that failed', async ({ page }) => {
+  await serveFixture(page, { failFiltered: true })
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await page.goto('/library')
+
+  await expect(page.getByTestId('library-sheet-grid')).toBeVisible()
+  await page.getByRole('button', { name: /카테고리별/ }).click()
+  await page.getByRole('button', { name: /클래식/ }).click()
+
+  const alert = page.locator('section[role="alert"]')
+  await expect(alert).toContainText('악보 목록을 불러오지 못했습니다')
+  await expect(alert.getByRole('button', { name: '다시 시도' })).toBeVisible()
+  await expect(page.getByTestId('library-sheet-grid')).toHaveCount(0)
+  await expect(page.getByRole('heading', { level: 3, name: LONG_TITLE })).toHaveCount(0)
+})
+
 test('offers an upload action for an empty library and does not leave a blank screen under it', async ({ page }) => {
   await serveFixture(page, { list: [] })
   await page.setViewportSize({ width: 390, height: 844 })
@@ -332,19 +356,30 @@ test('keeps the processing card action the same size as a playable one', async (
 })
 
 test('gives every card action a name that says which sheet it acts on', async ({ page }) => {
-  await serveFixture(page)
+  // 제목은 유일하지 않다(같은 PDF를 두 번 올릴 수 있다). 같은 제목 두 장을 섞어, 이름만이 아니라
+  // 이름과 설명을 합친 것이 동작을 구별하는지 본다 (PR158 리뷰).
+  const duplicate = { ...sheet(5, LONG_TITLE, 'ready'), composer: '다른 편곡자', createdAt: '2026-09-05T00:00:00.000Z' }
+  await serveFixture(page, { list: [...sheets, duplicate] })
   await page.setViewportSize({ width: 1280, height: 720 })
   await page.goto('/library')
 
   await expect(page.getByTestId('library-sheet-grid')).toBeVisible()
 
   // 카드가 여럿일 때 "삭제"라는 이름만 들리면 어느 악보의 삭제인지 알 수 없다. 화면 없이 쓰는
-  // 사람에게는 이름이 유일해야 동작을 고를 수 있다.
-  const names = await cardActions(page).evaluateAll(nodes =>
-    nodes.map(node => (node.getAttribute('aria-label') || node.textContent || '').trim()),
+  // 사람에게는 이름(또는 이름과 설명)이 유일해야 동작을 고를 수 있다.
+  const identities = await cardActions(page).evaluateAll(nodes =>
+    nodes.map(node => {
+      const name = (node.getAttribute('aria-label') || node.textContent || '').trim()
+      const description = (node.getAttribute('aria-describedby') || '')
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(id => document.getElementById(id)?.textContent?.replace(/\s+/g, ' ').trim() ?? '')
+        .join(' ')
+      return `${name} — ${description}`
+    }),
   )
-  const duplicates = names.filter((name, index) => names.indexOf(name) !== index)
-  expect(duplicates, `카드 동작 이름이 중복된다: ${duplicates.join(', ')}`).toEqual([])
+  const duplicates = identities.filter((identity, index) => identities.indexOf(identity) !== index)
+  expect(duplicates, `카드 동작을 구별할 수 없다: ${duplicates.join(', ')}`).toEqual([])
 })
 
 test('reaches a card action with the keyboard and shows where the focus is', async ({ page, browserName }) => {
@@ -362,9 +397,27 @@ test('reaches a card action with the keyboard and shows where the focus is', asy
   }
 
   if (!focused) {
-    // WebKit은 macOS의 "Tab으로 각 항목 강조" 설정을 따라 기본적으로 링크를 탭 순서에 넣지
-    // 않는다. 버튼은 들어가야 하므로, 허용 범위를 실제로 필요한 프로젝트에만 묶어 둔다.
+    // WebKit은 macOS의 "Tab으로 각 항목 강조" 설정을 따라 기본적으로 Tab을 입력창과 select에만
+    // 멈춘다. 이 저장소에서 측정한 결과 데스크톱·모바일 WebKit 모두 버튼과 링크를 하나도 거치지
+    // 않았고, 크로미움은 같은 화면에서 이 버튼에 도달했다.
+    //
+    // 그렇다고 `focus()`만 호출하고 통과시키면 버튼을 순차 이동에서 빼는 회귀(`tabindex="-1"`,
+    // 비활성화)를 WebKit에서 놓친다 (PR158 리뷰). 그래서 WebKit에서도 두 가지를 단정한다 —
+    // Tab이 이 페이지에서 실제로 작동하고(검색 입력창에 멈춘다), 이 버튼은 플랫폼 설정만 켜면
+    // 순차 이동에 들어가는 요소다(`tabIndex >= 0`, 비활성 아님).
     expect(browserName, '키보드로 카드 관리 동작에 닿지 못했다').toBe('webkit')
+    await page.locator('body').focus()
+    let reachedSearch = false
+    for (let step = 0; step < 20 && !reachedSearch; step += 1) {
+      await page.keyboard.press('Tab')
+      reachedSearch = await page.getByLabel('내 악보 검색').evaluate(node => node === document.activeElement)
+    }
+    expect(reachedSearch, 'WebKit에서 Tab이 폼 컨트롤에도 멈추지 않는다').toBe(true)
+    const sequential = await editButton.evaluate(node => ({
+      tabIndex: (node as HTMLElement).tabIndex,
+      disabled: (node as HTMLButtonElement).disabled,
+    }))
+    expect(sequential).toEqual({ tabIndex: 0, disabled: false })
     await editButton.focus()
   }
 

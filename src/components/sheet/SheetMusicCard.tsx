@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import Link from 'next/link'
 import { SheetMusicWithCategory } from '@/types/sheet-music'
 import { Category } from '@/types/category'
@@ -31,6 +31,9 @@ export function SheetMusicCard({
 }: SheetMusicCardProps) {
   const [showMoveMenu, setShowMoveMenu] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  // 제목은 유일하지 않다. 눈으로 보는 사람이 같은 제목의 카드를 저작자·분류·날짜로 구별하듯,
+  // 각 동작은 그 정보를 설명으로 가리킨다 (PR158 리뷰).
+  const metaId = useId()
 
   const handleMove = (newCategoryId: number | null) => {
     onMove?.(sheetMusic.id, newCategoryId)
@@ -52,6 +55,8 @@ export function SheetMusicCard({
     unknown: { label: '확인 필요', icon: '?', tone: 'neutral' as const },
   }[availability]
 
+  const describedBy = `${metaId}-composer ${metaId}-badges ${metaId}-date`
+
   return (
     <Card padding="none" className="group min-w-0 hover:shadow-md transition-shadow duration-200 h-full flex flex-col">
       <div className="p-5 space-y-3 flex-1 flex flex-col">
@@ -60,11 +65,11 @@ export function SheetMusicCard({
           <h3 title={sheetMusic.title} className="font-semibold text-lg text-ink break-words line-clamp-2 group-hover:text-accent transition-colors min-h-[3.5rem]">
             {sheetMusic.title}
           </h3>
-          <p className="text-ink-muted text-sm break-words line-clamp-2">{sheetMusic.composer}</p>
+          <p id={`${metaId}-composer`} className="text-ink-muted text-sm break-words line-clamp-2">{sheetMusic.composer}</p>
         </div>
 
         {/* Category and visibility info */}
-        <div className="flex flex-wrap items-center gap-1.5 text-xs flex-shrink-0">
+        <div id={`${metaId}-badges`} className="flex flex-wrap items-center gap-1.5 text-xs flex-shrink-0">
           <Badge className="truncate">
             📁 {sheetMusic.category?.name || '미분류'}
           </Badge>
@@ -80,7 +85,7 @@ export function SheetMusicCard({
         </div>
 
         {/* Date */}
-        <p className="text-xs text-ink-muted flex-shrink-0">
+        <p id={`${metaId}-date`} className="text-xs text-ink-muted flex-shrink-0">
           {formatDate(sheetMusic.createdAt)}
         </p>
 
@@ -93,7 +98,7 @@ export function SheetMusicCard({
         */}
         <div className="space-y-2 pt-2 flex-shrink-0">
           {availability === 'ready' || availability === undefined ? (
-            <Link href={`/sheet/${sheetMusic.id}`} className="block w-full" aria-label={`${sheetMusic.title} 연습 시작`}>
+            <Link href={`/sheet/${sheetMusic.id}`} className="block w-full" aria-label={`${sheetMusic.title} 연습 시작`} aria-describedby={describedBy}>
               <Button as="span" className="w-full min-h-11 whitespace-nowrap" size="sm">
                 연습 시작
               </Button>
@@ -104,11 +109,11 @@ export function SheetMusicCard({
               32px였다. 같은 자리의 같은 역할이 상태에 따라 크기가 달라지면 변환이 끝나는 순간
               카드가 흔들린다 (이슈 #146 stage 4).
             */
-            <Button className="w-full min-h-11 whitespace-nowrap" size="sm" disabled aria-label={`${sheetMusic.title} 처리 중`}>
+            <Button className="w-full min-h-11 whitespace-nowrap" size="sm" disabled aria-label={`${sheetMusic.title} 처리 중`} aria-describedby={describedBy}>
               처리 중
             </Button>
           ) : (
-            <Link href="/upload" className="block w-full" aria-label={`${sheetMusic.title} 다시 업로드`}>
+            <Link href="/upload" className="block w-full" aria-label={`${sheetMusic.title} 다시 업로드`} aria-describedby={describedBy}>
               <Button as="span" className="w-full min-h-11 whitespace-nowrap" size="sm">
                 다시 업로드
               </Button>
@@ -123,6 +128,7 @@ export function SheetMusicCard({
                   size="sm"
                   className="min-w-0 w-full min-h-11 whitespace-nowrap"
                   aria-label={`${sheetMusic.title} 제목 수정`}
+                  aria-describedby={describedBy}
                 >
                   수정
                 </Button>
@@ -137,6 +143,7 @@ export function SheetMusicCard({
                     className="min-w-0 w-full min-h-11 whitespace-nowrap"
                     aria-expanded={showMoveMenu}
                     aria-label={`${sheetMusic.title} 카테고리 이동`}
+                    aria-describedby={describedBy}
                   >
                     이동
                   </Button>
@@ -176,6 +183,7 @@ export function SheetMusicCard({
                   size="sm"
                   className="min-w-0 w-full min-h-11 whitespace-nowrap text-state-error hover:border-state-error"
                   aria-label={`${sheetMusic.title} 삭제`}
+                  aria-describedby={describedBy}
                 >
                   삭제
                 </Button>

@@ -23,6 +23,8 @@ describe('LibrarySheetMusicList', () => {
   beforeEach(() => {
     jest.useRealTimers()
     jest.clearAllMocks()
+    fetchUserSheetMusic.mockReset()
+    fetchUserSheetMusic.mockResolvedValue(true)
     mockUseSheetMusic.mockReturnValue({
       sheetMusic: sheets,
       loading: false,
@@ -96,42 +98,65 @@ describe('LibrarySheetMusicList', () => {
    * 이슈 #146 stage 4. 불러오기가 실패했을 때 "악보가 없습니다"라고 말하면 원인이 바뀌는데
    * 다음 행동은 그대로다 — 목록을 못 받은 사람에게 업로드를 권하게 된다. DS-7의 규칙은
    * 무엇이 잘못됐는지와 무엇을 하면 되는지를 함께 말하는 것이다.
+   *
+   * 실패 여부는 `fetchUserSheetMusic`이 돌려주는 값으로 판정한다. 훅의 `error`는 수정·삭제
+   * 실패에도 설정되고, 조회가 실패해도 이전 행이 남으므로 행 수로도 판정할 수 없다(PR158 리뷰).
    */
-  it('reports a failed load as a failure instead of an empty library', () => {
-    mockUseSheetMusic.mockReturnValue({
-      ...mockUseSheetMusic(),
-      sheetMusic: [],
-      error: 'Failed to fetch sheet music: Internal Server Error',
-    })
+  it('reports a failed load as a failure instead of an empty library', async () => {
+    fetchUserSheetMusic.mockResolvedValue(false)
+    mockUseSheetMusic.mockReturnValue({ ...mockUseSheetMusic(), sheetMusic: [] })
 
     render(<LibrarySheetMusicList />)
 
-    expect(screen.getByRole('alert')).toHaveTextContent('악보 목록을 불러오지 못했습니다')
+    expect(await screen.findByRole('alert')).toHaveTextContent('악보 목록을 불러오지 못했습니다')
     expect(screen.queryByText('악보가 없습니다')).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: '새 악보 업로드' })).not.toBeInTheDocument()
   })
 
-  it('retries the same query from the failure state', () => {
-    mockUseSheetMusic.mockReturnValue({
-      ...mockUseSheetMusic(),
-      sheetMusic: [],
-      error: 'Failed to fetch sheet music: Internal Server Error',
-    })
+  it('retries the same query from the failure state', async () => {
+    fetchUserSheetMusic.mockResolvedValue(false)
+    mockUseSheetMusic.mockReturnValue({ ...mockUseSheetMusic(), sheetMusic: [] })
 
     render(<LibrarySheetMusicList selectedCategoryId={3} searchQuery="" />)
+    const retry = await screen.findByRole('button', { name: '다시 시도' })
     fetchUserSheetMusic.mockClear()
 
-    fireEvent.click(screen.getByRole('button', { name: '다시 시도' }))
+    fireEvent.click(retry)
 
     expect(fetchUserSheetMusic).toHaveBeenCalledWith({ categoryId: 3, search: undefined })
   })
 
   /**
-   * `useSheetMusic`의 `error`는 수정·삭제 실패에도 설정된다. 그 값을 그대로 읽어 목록을 대체하면
-   * 제목 저장이 실패한 사람이 "목록을 불러오지 못했습니다"를 보게 된다 — 원인을 잘못 말하는 것은
-   * 빈 상태로 말하는 것과 같은 결함이다. 그래서 실패 화면은 보여줄 목록이 없을 때만 나온다.
+   * PR158 리뷰(P2). 전체 목록을 받아 둔 뒤 카테고리를 골랐는데 그 조회가 실패하면, 훅은 이전 행을
+   * 유지하고 카테고리는 로컬 필터에도 없다. 행 수로 판정하면 이전 행이 새 카테고리 이름 아래
+   * 그대로 보이고 다시 시도할 방법도 없다.
    */
-  it('keeps the list when the failure was a save, not a load', () => {
+  it('reports a failed filtered reload even while earlier rows are still cached', async () => {
+    fetchUserSheetMusic.mockResolvedValue(false)
+
+    render(<LibrarySheetMusicList selectedCategoryId={7} />)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('악보 목록을 불러오지 못했습니다')
+    expect(screen.queryByText('처리 중 악보')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '다시 시도' })).toBeInTheDocument()
+  })
+
+  it('clears the failure once a retry succeeds', async () => {
+    fetchUserSheetMusic.mockResolvedValueOnce(false).mockResolvedValue(true)
+
+    render(<LibrarySheetMusicList />)
+    fireEvent.click(await screen.findByRole('button', { name: '다시 시도' }))
+
+    await waitFor(() => expect(screen.queryByText('악보 목록을 불러오지 못했습니다')).not.toBeInTheDocument())
+    expect(screen.getByText('처리 중 악보')).toBeInTheDocument()
+  })
+
+  /**
+   * `useSheetMusic`의 `error`는 수정·삭제 실패에도 설정된다. 그 값을 읽어 목록을 대체하면
+   * 제목 저장이 실패한 사람이 "목록을 불러오지 못했습니다"를 보게 된다 — 원인을 잘못 말하는 것은
+   * 빈 상태로 말하는 것과 같은 결함이다.
+   */
+  it('keeps the list when the failure was a save, not a load', async () => {
     mockUseSheetMusic.mockReturnValue({
       ...mockUseSheetMusic(),
       sheetMusic: sheets,
@@ -140,11 +165,13 @@ describe('LibrarySheetMusicList', () => {
 
     render(<LibrarySheetMusicList />)
 
+    await waitFor(() => expect(fetchUserSheetMusic).toHaveBeenCalled())
     expect(screen.getAllByText('연습 가능')).toHaveLength(2)
     expect(screen.queryByText('악보 목록을 불러오지 못했습니다')).not.toBeInTheDocument()
   })
 
-  it('does not hide a real failure behind the raw server message', () => {
+  it('does not hide a real failure behind the raw server message', async () => {
+    fetchUserSheetMusic.mockResolvedValue(false)
     mockUseSheetMusic.mockReturnValue({
       ...mockUseSheetMusic(),
       sheetMusic: [],
@@ -154,6 +181,7 @@ describe('LibrarySheetMusicList', () => {
     render(<LibrarySheetMusicList />)
 
     // 원시 서버 문구 노출 금지는 이슈 #146의 상태 표현 규칙이다.
+    await screen.findByRole('alert')
     expect(screen.queryByText(/Internal Server Error/)).not.toBeInTheDocument()
   })
 

@@ -53,6 +53,43 @@ describe('SheetMusicCard', () => {
   })
 
   /**
+   * PR158 리뷰(P2). `SheetMusicCard.title`은 유일하지 않다 — 같은 PDF를 두 번 올리면 제목이 같은
+   * 카드가 두 장 생긴다. 이름에 곡명만 붙이면 두 카드의 동작 이름이 다시 같아진다. 눈으로 보는
+   * 사람은 저작자·분류·날짜로 구별하므로, 같은 정보를 각 동작의 설명(`aria-describedby`)으로 준다.
+   */
+  it('describes each action with the metadata that tells same-titled sheets apart', () => {
+    render(
+      <>
+        <SheetMusicCard sheetMusic={sheetMusic} availability="ready" onEdit={jest.fn()} onDelete={jest.fn()} />
+        <SheetMusicCard
+          sheetMusic={{ ...sheetMusic, id: 28, composer: '다른 편곡자', createdAt: new Date('2026-09-02') }}
+          availability="ready"
+          onEdit={jest.fn()}
+          onDelete={jest.fn()}
+        />
+      </>
+    )
+
+    const practice = screen.getAllByRole('link', { name: `${sheetMusic.title} 연습 시작` })
+    expect(practice).toHaveLength(2)
+
+    const descriptions = practice.map(link => {
+      const ids = (link.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean)
+      return ids.map(id => document.getElementById(id)?.textContent?.trim() ?? '').join(' ')
+    })
+    expect(descriptions[0]).toContain('조')
+    expect(descriptions[1]).toContain('다른 편곡자')
+    expect(descriptions[0]).not.toEqual(descriptions[1])
+
+    // 관리 동작도 같은 설명을 가리킨다.
+    for (const name of [`${sheetMusic.title} 제목 수정`, `${sheetMusic.title} 삭제`]) {
+      const [first, second] = screen.getAllByRole('button', { name })
+      expect(first.getAttribute('aria-describedby')).toBe(practice[0].getAttribute('aria-describedby'))
+      expect(second.getAttribute('aria-describedby')).toBe(practice[1].getAttribute('aria-describedby'))
+    }
+  })
+
+  /**
    * 처리 중 카드의 주 동작만 `flex-1`을 들고 있었다. 부모가 flex가 아니라 아무 효과가 없고,
    * `min-h-11`이 없어 다른 상태보다 낮다. 같은 자리의 같은 역할이 상태에 따라 크기가 달라지면
    * 변환이 끝나는 순간 카드가 흔들린다. 실제 높이는 E2E가 잰다.
