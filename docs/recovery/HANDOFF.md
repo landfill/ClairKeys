@@ -1,5 +1,29 @@
 # Current Handoff
 
+## All three open PRs are green and awaiting explicit merge approval (2026-09-12)
+
+- [PR155](reviews/PR-155.md) at1304be5: all14 hosted check-runs SUCCESS — both E2E jobs, Security
+  Audit, Security Scan, CodeQL, Build Check, Vercel preview. Non-draft, MERGEABLE, both review
+  threads answered and fixed. The hosted run also PASSES omrCallbackDelivery, the suite that fails
+  on this machine for lack of `fastapi`; CI is the authority for it.
+- [PR154](reviews/PR-154.md) at581cda7 (OMR-Q2 plan, docs only) and [PR156](reviews/PR-156.md) at
+  c8ae0cb (untrack private audit evidence): 9 SUCCESS each with the docs-only jobs correctly
+  skipped by `Detect changes`; no failing or pending check. Their single P1 findings were false and
+  were answered rather than obeyed.
+- Direct-push verification per AGENTS note2: main acba532 has all six check-runs successful,
+  including E2E.
+- NO PR HAS MERGE APPROVAL. Each needs an explicit decision, and PR156 needs a decision rather than
+  just approval — it removes `.claude/settings.local.json` from tracking, which deletes any other
+  clone's working copy on pull.
+- Next code slice when work resumes: issue146 upload form — group PDF file / required song info /
+  optional settings inside the existing single form, two-column title+composer on desktop and one
+  column on mobile, compress the drop area. Fields, validation, defaults and submit behaviour must
+  not change. `src/components/upload/OMRUploadForm.tsx` (551 lines) is the owner per the ROADMAP
+  file-ownership table; DS-7 only unifies its error wording.
+- Still unverified for the explore screen and carried forward: real device touch, native browser
+  zoom (CSS zoom does not re-evaluate media queries), screen reader, colour-contrast measurement,
+  and live-data rendering — the local runs had no database and used route fixtures.
+
 ## Review handled on three open PRs; two real defects, two false findings (2026-09-12)
 
 - [PR155](reviews/PR-155.md) head is now1304be5. Codex raised two P2 findings and BOTH were correct;
