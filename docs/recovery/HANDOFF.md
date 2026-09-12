@@ -1,5 +1,38 @@
 # Current Handoff
 
+## Review handled on three open PRs; two real defects, two false findings (2026-09-12)
+
+- [PR155](reviews/PR-155.md) head is now1304be5. Codex raised two P2 findings and BOTH were correct;
+  each had cancelled part of the slice's own purpose, so both were fixed rather than deferred.
+  (1) The card links carried `focus-visible:outline-none`, so keyboard focus showed only a shadow
+  change. `globals.css` states that `outline: none` must not appear anywhere and records that the
+  playback slider already lost its indicator the same way — making cards reachable and then hiding
+  focus is worse than leaving them unreachable, because it looks finished. (2) `onClick` called
+  `preventDefault()` unconditionally and `/explore` always passes `onSheetMusicClick`, so Cmd/Ctrl
+  and Shift clicks router-pushed in place; open-in-new-tab was a stated reason for the links and did
+  not work on the only page using this component.
+- Both fixes are measured, not trusted. jsdom computes no outline, so E2E asserts computed outline
+  width>=2px on the focused card, and the unit suite forbids an `outline-none` class ever returning.
+  Clicks are checked both ways: all four modifiers plus middle-click leave the handler uncalled, and
+  a ControlOrMeta click leaves the URL unchanged before a plain click navigates.
+- [PR154](reviews/PR-154.md) and [PR156](reviews/PR-156.md) each received a P1 claiming the commit
+  omits mandatory Lore trailers. BOTH claims are FALSE — 581cda7 and c8ae0cb each carry Constraint,
+  Rejected, Confidence, Scope-risk, Reversibility, Directive, Tested, Not-tested and Related, with
+  no key outside the protocol. The review appears to have read the PR description, which is Markdown
+  with headings. Answered on both threads with the reproduction command; no correct commit was
+  rewritten or force-pushed to satisfy a false finding.
+- [PR156](reviews/PR-156.md) is new and needs a user decision, not just approval: it untracks
+  `.claude/settings.local.json`, which was ALREADY in `.gitignore` but tracked from before that rule,
+  so the rule was inert. Untracking clears the AGENTS rule7 blocker permanently, but anyone pulling
+  it loses their own working copy of that file. The PR offers to shrink to the PNGs alone, at the
+  cost of the blocker not clearing. The ignore is scoped to the one private audit directory; the16
+  finger-badge and ui-renewal screenshots stay tracked on purpose.
+- Verification after fixes: jest browse10/10, explore E2E45/45 across five browser projects, full
+  jest1006 passed, tsc/ESLint/build clean. One full-run failure in playback-session-transition on
+  webkit phone portrait is recorded as a FLAKE, not a result: that spec depends on audio startup
+  timing, this branch touches no playback file, and a repeated re-run passed12/12.
+- No PR has merge approval. Three are open:155 (explore cards),154 (OMR-Q2 plan, docs),156 (untrack).
+
 ## Explore cards unified and submitted; upload form still outstanding (2026-09-12)
 
 - Issue146 stage3 was split. [PR155](reviews/PR-155.md) delivers the EXPLORE screen only; the upload
