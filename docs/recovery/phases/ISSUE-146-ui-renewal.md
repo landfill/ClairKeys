@@ -28,6 +28,30 @@ queries, actions, upload contract, note numbers, playback timing and musical dat
 - Regression evidence precedes behavior changes; local tests/type/lint/build and hosted checks pass.
 - Scope remains in review until explicit PR merge approval; #146 is not closed by this slice.
 
+## Stage 4 completion criteria
+
+Stage 1~3이 화면을 바꿨으므로, 이 단계는 바뀐 화면들의 **기존 상태와 반응형·키보드·확대**가
+여전히 성립하는지 측정으로 판정한다. 새 상태나 새 오류 분류를 만들지 않는다.
+
+- 기존 상태(로딩·빈 목록·검색 결과 없음·처리 중·변환 오류·불러오기 실패)가 각각 무엇이
+  잘못됐는지와 다음 행동을 함께 말한다. **불러오기 실패가 빈 목록으로 표시되지 않는다.**
+- 로딩 상태에 접근 가능한 이름이 있고, 색은 `--ck-*` 토큰을 쓴다.
+- 목록 카드의 모든 동작이 44px 이상 높이를 갖고, 상태가 바뀌어도 같은 자리의 주 동작 크기가
+  유지된다. 상태별로 카드가 흔들리지 않는다.
+- 목록 동작의 접근 가능한 이름이 대상 악보를 식별한다 — 카드가 여럿일 때 이름이 중복되지 않는다.
+- 320 / 390×844 / 844×390 / 1280×720 / 1440×900과 CSS 200% 확대에서 문서 가로 넘침이 없고,
+  문서 끝에서 플로팅 업로드 버튼이 카드 동작을 덮지 않는다.
+- 키보드만으로 카드 관리 동작에 도달하며 전역 포커스 링이 보인다. 제목 편집 대화상자가 열리면
+  포커스가 그 안으로 들어가고, 취소가 목록으로 돌아온다.
+- 회귀 근거가 구현보다 먼저 기록된다. `npm run lint`, `npx tsc --noEmit`, `npm test`,
+  `npm run build`, `npm run test:e2e`의 실제 결과를 기록하며 build가 타입·린트 검사를 대신한다고
+  쓰지 않는다.
+- 신규 기능·라우트·API·DB·애니메이션 데이터 계약 변경이 없음을 diff로 확인한다.
+
+이 단계로 충족되지 **않는** 것(명시해야 하며 충족으로 기록하지 않는다): 실기기 터치, 실제 가로
+방향 하드웨어, 브라우저 자체의 확대(CSS zoom은 media query를 다시 평가하지 않는다), 스크린리더의
+실제 출력, 계측된 색 대비, 실제 로그인 흐름.
+
 ## Validation limits
 
 Browser visual inspection and layout bounds are not human readability or learning-outcome measurements.
