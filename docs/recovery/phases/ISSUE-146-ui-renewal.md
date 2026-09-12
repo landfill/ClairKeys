@@ -82,3 +82,14 @@ Static image source is the existing HOME_SAMPLE_ANIMATION fixture, not a claim o
   spec; the session-cookie precedent is recorded as D-058. Evidence:
   [upload form validation](../validation/2026-09-12-upload-form-grouping.md).
   Stage4 verification remains, so this phase stays `IN_PROGRESS` and issue146 stays OPEN.
+
+- 2026-09-12: [PR157](../reviews/PR-157.md) review round handled; head is `46c0d4c` with all 16
+  hosted checks passing. Two P1 findings were answered with measurement rather than obeyed. The
+  column breakpoint moved from `sm` to `md` because at exactly 640px each split field was 263px,
+  narrower than the 308px a 390px phone gets in one column — widening the screen shrank the input.
+  The rule is now recorded as D-059 in width terms, because "desktop two-column / mobile one column"
+  names no width and therefore cannot be verified; the E2E pins 390/767/768 and asserts at every
+  viewport that a split field stays wider than the phone baseline. Lore trailers on this branch's
+  commits parsed as zero because wrapped values break git's parser; the commits were rewritten with
+  single-line trailers (trees identical) and now parse 11/10/10. Stage4 still remains, so this phase
+  stays `IN_PROGRESS` and issue146 stays OPEN.

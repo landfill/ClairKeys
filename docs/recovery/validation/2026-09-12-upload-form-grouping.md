@@ -98,3 +98,83 @@ authority for that suite, as recorded for PR155.
 Real device touch, the browser's own zoom (CSS zoom does not re-evaluate media queries), screen
 reader output, measured colour contrast, and the real sign-in flow. The E2E mints a session cookie
 to render the page (D-058) and asserts nothing about authentication.
+
+## Review round: two P1 findings, handled differently (2026-09-12)
+
+Head advanced to `46c0d4cebaf85112a2dfbdf01a947ebe9ca77b81`. All 16 hosted checks pass on it;
+non-draft, MERGEABLE. No merge approval exists.
+
+### The breakpoint was in the wrong place — accepted, with a different cause than reported
+
+Codex reported that 844×390 renders two columns and called it a contract violation, citing D-058 at
+`DECISIONS.md:2229`. The citation was wrong twice: D-058 governs the protected-route E2E fixture,
+and the column criterion lived in `HANDOFF.md:100`. But measuring the breakpoint exposed a real
+defect next to it.
+
+| Viewport | Columns | 곡명 field width |
+|---|---|---|
+| 390×844 | 1 | 308 |
+| 639×900 | 1 | 557 |
+| 640×900 (old boundary) | 2 | **263** |
+| 768×1024 (new boundary) | 2 | 327 |
+| 844×390 | 2 | 365 |
+
+At exactly 640px the `sm` breakpoint split each field to 263px — narrower than the 308px a 390px
+phone gets in a single column. Widening the screen made the input smaller, which defeats the reason
+for splitting at all. The boundary moved to `md` (768px).
+
+The prescription to stack 844×390 was declined, with measurement: each field is 365px there, wider
+than the phone baseline, and stacking would spend more of the scarcest resource on a screen only
+390px tall. Instead the rule is now asserted rather than incidental — a new case pins 390 / 767 /
+768 on both sides of the boundary, and every viewport case asserts that a split field is wider than
+the baseline. That assertion is what covers `phone landscape`.
+
+### The governing criterion was rewritten before the code was kept — D-059
+
+Codex then observed, correctly, that D-058's own Context still stated the criterion in device terms
+while the code had moved to a width rule. That inconsistency was introduced by this branch. AGENTS
+requires the decision record to change before the implementation deviates, so `46c0d4c` adds D-059
+("쪼갠 칸이 휴대폰이 한 칸으로 받는 폭보다 좁아지지 않는다", baseline = the single-column width at
+390px), removes the column wording from D-058's Context, and cites D-059 from both the component and
+the spec. The code behaviour is identical to `8d8c1c4`.
+
+Device terms cannot be verified: "one column on mobile" does not say at which width it is judged, so
+it cannot be moved into a test — and in this repository it was in fact translated into the wrong
+boundary. Width and field width are both measurable, so the rule and its verification are now
+written in the same language.
+
+### Lore trailers were genuinely broken, then genuinely fixed
+
+The second finding was correct on its first appearance. `git show -s --format='%(trailers:only)'`
+returned nothing for `e3d5d32` and `ecff241`, while `64989c7` — the repository's previous Lore
+commit — returned 8. Cause: `Rejected:` and `Tested:` values were wrapped onto unindented
+continuation lines, which makes git's trailer parser reject the whole block. The message looks
+correct to a reader while tooling reads nothing, and `git log -1 --format=full` cannot reveal this
+because it prints the message rather than the parse.
+
+The three commits were rewritten with single-line trailers, trees verified identical
+(`git diff --stat` empty) before force-pushing. Parsed counts are now 11 / 10 / 10, and `46c0d4c`
+has 10.
+
+The finding's repeat against `8d8c1c4` was not acted on: it cited
+`14c73f5153f8a55379fd4f207f8059604db0afa5`, which does not exist in this repository
+(`git cat-file -t` → `could not get object info`), and the commit it named parses 10 trailers.
+
+### Not fixed, and recorded as such
+
+`192c62c`, the handoff commit pushed directly to `main` earlier in this session, has the same
+unparseable-trailer defect (0 parsed). Rewriting `main` history is not done without explicit
+approval, so it stays as-is. This is a concrete instance of the AGENTS warning that direct commits
+also remove the review that would have caught the error — a reviewer caught it here only because the
+same mistake appeared in a PR.
+
+### Commands and results at 46c0d4c
+
+| Command | Result |
+|---|---|
+| `npx playwright test` | 160/160 pass, 5 browser projects |
+| `npx jest src/components/upload` | 59/59 pass |
+| `npm run lint` | 0 warnings, 0 errors |
+| `npx tsc --noEmit` | 0 errors |
+| `npm run build` | success |
+| hosted checks on 46c0d4c | 16/16 pass |

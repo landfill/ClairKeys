@@ -1,5 +1,49 @@
 # Current Handoff
 
+## PR157 review handled by measuring; the column breakpoint was genuinely wrong (2026-09-12)
+
+- [PR157](reviews/PR-157.md) head is now 46c0d4cebaf85112a2dfbdf01a947ebe9ca77b81. All 16 hosted
+  checks pass, non-draft, MERGEABLE. NO MERGE APPROVAL EXISTS and green checks are not approval.
+- Codex raised two P1 findings. Both were answered with evidence rather than obeyed or waved off,
+  and one of them found a defect I had shipped.
+- THE COLUMN BREAKPOINT WAS IN THE WRONG PLACE. At exactly 640px, `sm:grid-cols-2` split each field
+  to 263px — NARROWER than the 308px a 390px phone gets in a single column. Widening the screen
+  shrank the input, which defeats the reason for splitting. Moved to `md` (768px), where it is
+  327px. The reported cause and citation were both wrong (D-058 governs the E2E fixture, not
+  columns), but measuring where it pointed found the real thing. MEASURE WHERE A REVIEW POINTS EVEN
+  WHEN ITS REASONING IS WRONG.
+- The prescription to stack 844×390 was DECLINED with measurement: 365px per field there, wider than
+  the phone baseline, on the viewport with the least vertical room (390px tall). That judgement is
+  now written into D-059 instead of living only in a reply, so the next session does not have to ask
+  whether the doc or the code is right.
+- NEW DECISION D-059: the split boundary is decided by width, not device class. The rule is "a split
+  field never gets narrower than the width a phone gives it in one column", baseline = the
+  single-column width at 390px. Device terms cannot be verified — "one column on mobile" names no
+  width, so it cannot move into a test, and in this repository it was translated into the wrong
+  boundary. D-058's Context was corrected to stop restating the criterion. When adding a two-column
+  row anywhere else, cite D-059 rather than "desktop/mobile".
+- LORE TRAILERS WERE SILENTLY BROKEN ON THIS BRANCH AND THIS IS THE MOST REUSABLE LESSON HERE.
+  `e3d5d32` and `ecff241` parsed ZERO trailers while 64989c7 parses 8. Cause: `Rejected:` and
+  `Tested:` values were wrapped onto unindented continuation lines, which makes git reject the whole
+  block as trailers. KEEP EVERY TRAILER ON ONE LINE however long, the way 64989c7 does.
+- `git log -1 --format=full`, which LORE_COMMIT_PROTOCOL rule7 prescribes, CANNOT CATCH THIS. It
+  prints the message, not the parse. Also run
+  `git show -s --format='%(trailers:only=true)' <sha> | grep -cE '^[A-Za-z-]+:'` and expect a
+  non-zero count. The three branch commits were rewritten with single-line trailers, trees verified
+  identical via empty `git diff --stat` before force-push, and now parse 11/10/10.
+- NOT FIXED, DELIBERATELY: `192c62c`, the handoff commit this session pushed directly to `main`, has
+  the same defect (0 parsed). `main` history is not rewritten without explicit approval, so it stays
+  wrong. This is a concrete instance of the AGENTS warning that direct commits also remove the
+  review that would have caught the mistake — a reviewer caught it only because the same error also
+  appeared in a PR.
+- The repeat of the trailer finding against `8d8c1c4` was NOT acted on: it cited
+  `14c73f5153f8a55379fd4f207f8059604db0afa5`, absent from this repository, and named a commit that
+  parses 10. Verify a review's evidence before redoing work on it.
+- Local verification at 46c0d4c: Playwright 160/160 across five browser projects, jest upload 59/59,
+  lint 0/0, `tsc --noEmit` 0 errors, `npm run build` success.
+- ISSUE146 IS STILL NOT CLOSED. Stage4 remains: existing states and responsive behaviour including
+  keyboard focus and zoom. The phase stays `IN_PROGRESS`.
+
 ## Issue146 stage3 upload form submitted as PR157; measurement changed the work twice (2026-09-12)
 
 - [PR157](reviews/PR-157.md) at e3d5d325cb37821f112ef6ca660f9e9e08c74800 is open, non-draft and
