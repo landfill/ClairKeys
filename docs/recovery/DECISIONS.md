@@ -2219,3 +2219,44 @@
 - Tested: 구현 전 `python3 -m unittest tests.test_callback_delivery`가 새 API 부재로 실패함.
 - Not-tested: 실제 VM 환경 설정, 이미지 실행, 운영 정상 callback 및 외부 거부 확인.
 - Related: 이슈 [#110](https://github.com/landfill/ClairKeys/issues/110), D-018, D-036
+
+## D-058: 보호 경로 E2E는 로그인 흐름을 재현하지 않고 세션 쿠키를 직접 발행한다
+
+- Date: 2026-09-12
+- Status: Accepted
+- Applies to: `e2e/` 전체, 처음 적용된 곳은 `e2e/upload-form-grouping.spec.ts`
+- Context:
+  - 이슈 #146 stage3의 남은 작업은 업로드 폼 그룹핑이고, 그 완료 조건(데스크톱 2열/모바일 1열,
+    드롭존 압축)은 전부 기하 측정이다. jsdom은 레이아웃을 계산하지 않으므로 jest로는 증명할 수 없다.
+  - `/upload`는 두 겹으로 막혀 있다. `src/middleware.ts`의 `withAuth`가 해독 가능한 next-auth JWT
+    쿠키 없이는 서버에서 요청을 되돌리고, 그 뒤 `AuthGuard`가 `useSession`으로 다시 막는다.
+    `/api/auth/session` 라우트 픽스처는 두 번째만 통과시킨다 — 요청이 페이지에 닿지도 못한다.
+  - 기존 E2E 스펙은 `/`, `/explore`, `/sheet/1`만 연다. 보호 경로를 여는 스펙은 이번이 처음이다.
+  - PR #12가 이슈 #7에서 걷어낸 것은 "아무도 만들지 않은 동작을 단언하던 spec"이지, auth fixture
+    자체를 금지한 결정은 기록에 없다.
+- Decision:
+  1. 보호 경로를 여는 스펙은 `next-auth/jwt`의 `encode`로 세션 쿠키를 직접 만들어 컨텍스트에 넣는다.
+     비밀은 `process.env.NEXTAUTH_SECRET ?? 'test-secret'`이고, CI 워크플로가 이미 같은 값을 준다.
+  2. 이것은 렌더링 픽스처이지 로그인 테스트가 아니다. OAuth, session 콜백, DB 동기화에 대해서는
+     아무것도 단언하지 않으며 스펙 주석에 그 한계를 명시한다.
+  3. 쿠키만으로는 `AuthGuard`가 통과되지 않으므로 `/api/auth/session` 라우트 픽스처를 함께 쓴다.
+     이렇게 하면 DB 없이도 화면이 뜬다.
+- Reason: 미들웨어가 요구하는 것은 "해독되는 토큰"뿐이다(`authorized` 콜백은 `!!token`만 본다).
+  실제 로그인 흐름을 재현하면 DB·OAuth 공급자·비밀이 전부 따라오고, 그건 폼의 레이아웃을 재려고
+  치르기에는 과도한 비용이다. 측정 불가를 이유로 검증을 생략하면 규약이 금지하는 완료 주장이 된다.
+- Rejected:
+  - 실제 로그인 흐름 자동화 | OAuth 공급자와 DB가 필요하고, 이 슬라이스가 검증하려는 것과 무관하다.
+  - E2E를 포기하고 jest의 클래스 단언으로 대체 | Tailwind 클래스가 붙어 있다는 사실은 2열로 배치됐다는
+    증거가 아니다. jsdom은 `sm:` 브레이크포인트를 평가하지 않는다.
+  - 업로드 폼을 공개 경로에 복제한 데모 페이지 | 검증 대상과 다른 화면을 재는 것이고 제품에 없는 라우트가 는다.
+- Constraint: `NEXTAUTH_SECRET`은 테스트 값이다. 이 기법을 운영 비밀이 들어간 환경에 쓰지 않는다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 이 쿠키가 통과시키는 범위를 넘어서는 주장을 하지 않는다. 인증·세션·권한 자체를 검증하는
+  스펙이 필요해지면 이 픽스처를 근거로 삼지 말고 별도 단계로 설계한다. 두 번째 보호 경로 스펙이
+  생기면 `signIn` 헬퍼를 공용 모듈로 옮긴다 — 지금은 호출자가 하나뿐이라 스펙 안에 둔다.
+- Tested: 이 쿠키 없이는 `/upload` 요청이 홈으로 되돌아가 9개 케이스 전부 실패했고, 쿠키를 넣은 뒤
+  폼이 렌더되어 5개 브라우저 프로젝트에서 측정이 가능해졌다.
+- Not-tested: 실제 OAuth 로그인, session 콜백의 DB 조회, 만료·갱신 동작.
+- Related: 이슈 [#146](https://github.com/landfill/ClairKeys/issues/146), 이슈 #7, PR #12
