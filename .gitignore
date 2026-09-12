@@ -50,7 +50,15 @@ next-env.d.ts
 /mvp
 
 # Claude Code local settings
+# Declared here since the rule was added, but the file was already tracked, so the
+# rule had no effect. Untracked in the same commit that added this note.
 .claude/settings.local.json
+
+# Private UI audit captures (issue #146).
+# These frames contain the signed-in account's name and library contents, and this
+# repository is public, so they can never be committed. The audit's own evidence
+# policy says so. Other validation screenshots stay tracked; only this set is private.
+docs/recovery/validation/2026-09-07-ui-audit/*.png
 
 # local agent/hook runtime state
 /.omx/
