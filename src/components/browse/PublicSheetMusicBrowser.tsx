@@ -61,6 +61,15 @@ export default function PublicSheetMusicBrowser({
     }
   })
 
+  // The ranked rows show their position as a decorative badge, so the rank has to
+  // reach assistive technology some other way. It goes in the link's accessible
+  // name rather than a visually hidden span: sr-only positioning escapes the
+  // truncating heading and widens the document under CSS zoom.
+  const rankedLinkProps = (sheetMusic: SheetMusicWithOwner, index: number) => ({
+    ...linkProps(sheetMusic),
+    'aria-label': `${index + 1}위, ${sheetMusic.title}, ${sheetMusic.composer}`
+  })
+
   const Meta = ({ sheetMusic }: { sheetMusic: SheetMusicWithOwner }) => (
     <p className="flex min-w-0 items-center gap-1 text-xs text-ink-muted">
       <span className="truncate">{sheetMusic.owner?.name || '익명'}</span>
@@ -146,7 +155,7 @@ export default function PublicSheetMusicBrowser({
             {popularSheets.slice(0, 4).map((sheetMusic, index) => (
               <Link
                 key={sheetMusic.id}
-                {...linkProps(sheetMusic)}
+                {...rankedLinkProps(sheetMusic, index)}
                 className="group block focus-visible:outline-none"
               >
                 <Card padding="none" className="flex h-full min-w-0 items-center gap-3 p-3 group-hover:shadow-md group-focus-visible:shadow-md transition-shadow">
@@ -164,7 +173,6 @@ export default function PublicSheetMusicBrowser({
                       title={sheetMusic.title}
                       className="font-semibold text-base text-ink truncate group-hover:text-accent transition-colors"
                     >
-                      <span className="sr-only">{index + 1}위. </span>
                       {sheetMusic.title}
                     </h3>
                     <p className="text-sm text-ink-muted truncate">{sheetMusic.composer}</p>

@@ -31,7 +31,7 @@ export default function ExplorePage() {
       
       <Container className="py-6">
         {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-6 p-1 bg-surface-muted rounded-full max-w-md mx-auto">
+        <div data-testid="explore-tabs" className="flex space-x-1 mb-6 p-1 bg-surface-muted rounded-full max-w-md mx-auto">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
