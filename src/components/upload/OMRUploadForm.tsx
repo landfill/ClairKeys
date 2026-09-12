@@ -322,199 +322,244 @@ export default function OMRUploadForm({
 
   return (
     <section className="bg-surface rounded-lg border border-rule p-6">
-      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-        <div>
-          <h2 className="text-lg font-semibold text-ink">악보 파일</h2>
-          <p className="mt-1 text-sm text-ink-muted">
+      {/*
+        폼은 하나지만 읽는 사람에게는 세 가지 질문이다 — 무엇을 올리나, 무엇을 반드시 적나,
+        무엇을 골라서 적나. 평평하게 나열하면 필수와 선택이 같은 무게로 보인다. 묶음을
+        `fieldset`/`legend`로 두면 간격으로만 만든 묶음과 달리 화면을 보지 않는 사람에게도
+        같은 구분이 전달되고, 시각적 그룹과 접근성 그룹이 갈라지지 않는다.
+
+        그룹 사이는 `space-y-8`, 그룹 안은 그보다 좁게 둔다. 근접성이 경계를 만든다.
+      */}
+      {/*
+        `min-w-0`이 붙은 이유는 취향이 아니다. 브라우저 UA 스타일시트는 `fieldset`에만
+        `min-inline-size: min-content`를 걸어 두고, Tailwind preflight도 이 값은 되돌리지 않는다.
+        그대로 두면 빠르기 입력과 박 단위 select가 나란히 선 flex 행의 min-content 폭이 그룹의
+        하한이 되어, 320px 화면에서 문서가 386px로 넘쳤다. `div`를 `fieldset`으로 바꾸면서
+        같이 딸려 온 함정이라 실제로 측정될 때까지 보이지 않았다.
+      */}
+      <form onSubmit={handleSubmit} className="space-y-8" noValidate>
+        <fieldset className="min-w-0 space-y-3">
+          <legend>
+            <h2 className="text-lg font-semibold text-ink">악보 파일</h2>
+          </legend>
+          <p className="text-sm text-ink-muted">
             연주하고 싶은 악보의 PDF를 올려 주세요.
           </p>
-        </div>
 
-        {/* 파일 선택 */}
-        <div>
-          {/*
-            드롭존 전체가 `<label>`이다. 파일 입력은 `sr-only`지만 숨겨지지 않아 Tab으로 도달하고
-            Enter·Space로 열린다. 시각적 포커스는 `focus-within`이 드롭존 테두리로 옮겨 준다.
-          */}
-          <label
-            htmlFor={fileInputId}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors focus-within:border-accent ${
-              isDragging ? 'border-accent bg-surface-muted' : 'border-rule-strong hover:bg-surface-muted'
-            }`}
-          >
-            <UploadIcon size={32} className="text-ink-muted" aria-hidden="true" />
-            <span className="text-base font-medium text-ink">
-              PDF 악보를 끌어다 놓거나 선택하세요
-            </span>
-            <span className="text-sm text-ink-muted">
-              PDF 파일, 최대 {MAX_UPLOAD_MB}MB, 암호가 걸리지 않은 파일
-            </span>
-            <input
-              id={fileInputId}
-              ref={fileInputRef}
-              name="file-upload"
-              type="file"
-              className="sr-only"
-              accept="application/pdf,.pdf"
-              onChange={handleFileSelect}
-              disabled={isBusy}
-            />
-          </label>
+          {/* 파일 선택 */}
+          <div>
+            {/*
+              드롭존 전체가 `<label>`이다. 파일 입력은 `sr-only`지만 숨겨지지 않아 Tab으로 도달하고
+              Enter·Space로 열린다. 시각적 포커스는 `focus-within`이 드롭존 테두리로 옮겨 준다.
 
-          {selectedFile && !failure && (
-            <p className="mt-3 text-sm text-ink">
-              선택한 파일: <span className="font-medium">{selectedFile.name}</span>
-            </p>
-          )}
-
-          {errors.file && (
-            <p className="mt-2 text-sm text-state-error">{errors.file}</p>
-          )}
-        </div>
-
-        {/* 실패 안내. 색이 아니라 아이콘과 문장이 상태를 말한다. */}
-        {failure && (
-          <StatusState title={failure.title} detail={failure.detail} action={failure.action} tone="error" />
-        )}
-
-        {/* 곡명 */}
-        <div>
-          <label htmlFor="sheet-title" className="mb-2 block text-sm font-medium text-ink">
-            곡명 <span className="text-state-error">*</span>
-          </label>
-          <input
-            id="sheet-title"
-            type="text"
-            value={formData.title}
-            onChange={(e) => handleInputChange('title', e.target.value)}
-            aria-invalid={Boolean(errors.title)}
-            className={`w-full rounded-2xl border px-3 py-2 transition-colors focus:border-accent ${
-              errors.title ? 'border-state-error' : 'border-rule-strong'
-            }`}
-            placeholder="곡명을 입력하세요"
-            disabled={isBusy}
-          />
-          {errors.title && <p className="mt-1 text-sm text-state-error">{errors.title}</p>}
-        </div>
-
-        {/* 저작자 */}
-        <div>
-          <label htmlFor="sheet-composer" className="mb-2 block text-sm font-medium text-ink">
-            저작자 <span className="text-state-error">*</span>
-          </label>
-          <input
-            id="sheet-composer"
-            type="text"
-            value={formData.composer}
-            onChange={(e) => handleInputChange('composer', e.target.value)}
-            aria-invalid={Boolean(errors.composer)}
-            className={`w-full rounded-2xl border px-3 py-2 transition-colors focus:border-accent ${
-              errors.composer ? 'border-state-error' : 'border-rule-strong'
-            }`}
-            placeholder="작곡가 또는 저작자를 입력하세요"
-            disabled={isBusy}
-          />
-          {errors.composer && <p className="mt-1 text-sm text-state-error">{errors.composer}</p>}
-        </div>
-
-        <TempoInput value={formData.tempo} unit={tempoUnit}
-          onChange={value => handleInputChange('tempo', value)} onUnitChange={setTempoUnit}
-          disabled={isBusy} error={errors.tempo} />
-
-        {/* 카테고리 */}
-        <div>
-          <label htmlFor={categorySelectId} className="mb-2 block text-sm font-medium text-ink">
-            카테고리
-          </label>
-          <div className="space-y-2">
-            <select
-              id={categorySelectId}
-              value={formData.categoryId || ''}
-              onChange={(e) =>
-                handleInputChange('categoryId', e.target.value ? parseInt(e.target.value) : null)
-              }
-              className="w-full rounded-2xl border border-rule-strong px-3 py-2 transition-colors focus:border-accent"
-              disabled={isBusy || isLoadingCategories}
+              세로 여백은 `py-10`에서 줄였다. 클릭 대상은 여전히 100px가 넘고, 줄어든 만큼
+              첫 화면에서 "무엇을 적어야 하는지"가 함께 보인다.
+            */}
+            <label
+              htmlFor={fileInputId}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors focus-within:border-accent sm:px-6 ${
+                isDragging ? 'border-accent bg-surface-muted' : 'border-rule-strong hover:bg-surface-muted'
+              }`}
             >
-              <option value="">카테고리 선택 (선택사항)</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-
-            {!showNewCategoryInput ? (
-              <button
-                type="button"
-                onClick={() => setShowNewCategoryInput(true)}
-                className="text-sm font-medium text-accent hover:text-accent-hover"
+              <UploadIcon size={32} className="text-ink-muted" aria-hidden="true" />
+              <span className="text-base font-medium text-ink">
+                PDF 악보를 끌어다 놓거나 선택하세요
+              </span>
+              <span className="text-sm text-ink-muted">
+                PDF 파일, 최대 {MAX_UPLOAD_MB}MB, 암호가 걸리지 않은 파일
+              </span>
+              <input
+                id={fileInputId}
+                ref={fileInputRef}
+                name="file-upload"
+                type="file"
+                className="sr-only"
+                accept="application/pdf,.pdf"
+                onChange={handleFileSelect}
                 disabled={isBusy}
-              >
-                + 새 카테고리 만들기
-              </button>
-            ) : (
-              <div className="flex gap-2">
-                <label htmlFor="new-category" className="sr-only">
-                  새 카테고리 이름
-                </label>
-                <input
-                  id="new-category"
-                  type="text"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="새 카테고리 이름"
-                  className="flex-1 rounded-2xl border border-rule-strong px-3 py-2 transition-colors focus:border-accent"
-                  disabled={isCreatingCategory}
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleCreateCategory}
-                  disabled={!newCategoryName.trim() || isCreatingCategory}
-                >
-                  {isCreatingCategory ? '만드는 중...' : '만들기'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setShowNewCategoryInput(false)
-                    setNewCategoryName('')
-                  }}
-                  disabled={isCreatingCategory}
-                >
-                  취소
-                </Button>
-              </div>
+              />
+            </label>
+
+            {selectedFile && !failure && (
+              <p className="mt-3 text-sm text-ink">
+                선택한 파일: <span className="font-medium">{selectedFile.name}</span>
+              </p>
             )}
 
-            {errors.category && <p className="text-sm text-state-error">{errors.category}</p>}
+            {errors.file && (
+              <p className="mt-2 text-sm text-state-error">{errors.file}</p>
+            )}
           </div>
-        </div>
 
-        {/* 공개 여부 */}
-        <div>
-          <label className="flex items-start">
-            <input
-              type="checkbox"
-              checked={formData.isPublic}
-              onChange={(e) => handleInputChange('isPublic', e.target.checked)}
-              className="mt-1 rounded border-rule-strong"
-              disabled={isBusy}
-            />
-            <span className="ml-3">
-              <span className="text-sm font-medium text-ink">다른 사용자와 공유 (공개 설정)</span>
-              <span className="mt-1 block text-xs text-ink-muted">
-                공개로 설정하면 다른 사용자가 이 악보를 탐색에서 찾고 연주할 수 있습니다.
+          {/*
+            실패 안내. 색이 아니라 아이콘과 문장이 상태를 말한다. 파일 덩어리 안에 두는 이유는
+            거부당한 것이 파일이기 때문이다 — 폼 바닥으로 내려가면 어느 입력이 문제인지 잃는다.
+          */}
+          {failure && (
+            <StatusState title={failure.title} detail={failure.detail} action={failure.action} tone="error" />
+          )}
+        </fieldset>
+
+        <fieldset className="min-w-0 space-y-3">
+          <legend>
+            <h2 className="text-lg font-semibold text-ink">곡 정보</h2>
+          </legend>
+          {/*
+            넓은 화면에서만 두 칸이다. 좁은 화면에서 쪼개면 한글 제목이 몇 글자마다 줄바꿈되어
+            읽기 어려워지고, 두 입력이 서로를 밀어낸다.
+
+            경계가 `md`(768px)인 이유는 측정이고, 규칙은 D-059에 있다. `sm`(640px)에 두면 정확히
+            640px에서 각 칸이 263px가 되는데, 390px 휴대폰이 한 칸으로 받는 308px보다 좁다 —
+            화면을 넓혔더니 입력칸이 좁아지는 셈이라 쪼개는 목적 자체가 사라진다. 768px에서는
+            327px로 휴대폰 한 칸보다 넓다. 규칙은 "쪼갠 칸이 휴대폰 한 칸보다 좁아지지 않는다"이고
+            `e2e/upload-form-grouping.spec.ts`가 그 경계를 양쪽에서 고정한다.
+          */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* 곡명 */}
+            <div>
+              <label htmlFor="sheet-title" className="mb-2 block text-sm font-medium text-ink">
+                곡명 <span className="text-state-error">*</span>
+              </label>
+              <input
+                id="sheet-title"
+                type="text"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                aria-invalid={Boolean(errors.title)}
+                className={`w-full rounded-2xl border px-3 py-2 transition-colors focus:border-accent ${
+                  errors.title ? 'border-state-error' : 'border-rule-strong'
+                }`}
+                placeholder="곡명을 입력하세요"
+                disabled={isBusy}
+              />
+              {errors.title && <p className="mt-1 text-sm text-state-error">{errors.title}</p>}
+            </div>
+
+            {/* 저작자 */}
+            <div>
+              <label htmlFor="sheet-composer" className="mb-2 block text-sm font-medium text-ink">
+                저작자 <span className="text-state-error">*</span>
+              </label>
+              <input
+                id="sheet-composer"
+                type="text"
+                value={formData.composer}
+                onChange={(e) => handleInputChange('composer', e.target.value)}
+                aria-invalid={Boolean(errors.composer)}
+                className={`w-full rounded-2xl border px-3 py-2 transition-colors focus:border-accent ${
+                  errors.composer ? 'border-state-error' : 'border-rule-strong'
+                }`}
+                placeholder="작곡가 또는 저작자를 입력하세요"
+                disabled={isBusy}
+              />
+              {errors.composer && <p className="mt-1 text-sm text-state-error">{errors.composer}</p>}
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset className="min-w-0 space-y-4">
+          <legend>
+            <h2 className="text-lg font-semibold text-ink">선택 설정</h2>
+          </legend>
+          <TempoInput value={formData.tempo} unit={tempoUnit}
+            onChange={value => handleInputChange('tempo', value)} onUnitChange={setTempoUnit}
+            disabled={isBusy} error={errors.tempo} />
+
+          {/* 카테고리 */}
+          <div>
+            <label htmlFor={categorySelectId} className="mb-2 block text-sm font-medium text-ink">
+              카테고리
+            </label>
+            <div className="space-y-2">
+              <select
+                id={categorySelectId}
+                value={formData.categoryId || ''}
+                onChange={(e) =>
+                  handleInputChange('categoryId', e.target.value ? parseInt(e.target.value) : null)
+                }
+                className="w-full rounded-2xl border border-rule-strong px-3 py-2 transition-colors focus:border-accent"
+                disabled={isBusy || isLoadingCategories}
+              >
+                <option value="">카테고리 선택 (선택사항)</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+
+              {!showNewCategoryInput ? (
+                <button
+                  type="button"
+                  onClick={() => setShowNewCategoryInput(true)}
+                  className="text-sm font-medium text-accent hover:text-accent-hover"
+                  disabled={isBusy}
+                >
+                  + 새 카테고리 만들기
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <label htmlFor="new-category" className="sr-only">
+                    새 카테고리 이름
+                  </label>
+                  <input
+                    id="new-category"
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="새 카테고리 이름"
+                    className="flex-1 rounded-2xl border border-rule-strong px-3 py-2 transition-colors focus:border-accent"
+                    disabled={isCreatingCategory}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleCreateCategory}
+                    disabled={!newCategoryName.trim() || isCreatingCategory}
+                  >
+                    {isCreatingCategory ? '만드는 중...' : '만들기'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowNewCategoryInput(false)
+                      setNewCategoryName('')
+                    }}
+                    disabled={isCreatingCategory}
+                  >
+                    취소
+                  </Button>
+                </div>
+              )}
+
+              {errors.category && <p className="text-sm text-state-error">{errors.category}</p>}
+            </div>
+          </div>
+
+          {/* 공개 여부 */}
+          <div>
+            <label className="flex items-start">
+              <input
+                type="checkbox"
+                checked={formData.isPublic}
+                onChange={(e) => handleInputChange('isPublic', e.target.checked)}
+                className="mt-1 rounded border-rule-strong"
+                disabled={isBusy}
+              />
+              <span className="ml-3">
+                <span className="text-sm font-medium text-ink">다른 사용자와 공유 (공개 설정)</span>
+                <span className="mt-1 block text-xs text-ink-muted">
+                  공개로 설정하면 다른 사용자가 이 악보를 탐색에서 찾고 연주할 수 있습니다.
+                </span>
               </span>
-            </span>
-          </label>
-        </div>
+            </label>
+          </div>
+        </fieldset>
 
         {/*
           제출 전에 알아야 할 것. 홈이 이미 "변환에 1~3분, 페이지를 닫아도 계속됩니다"라고

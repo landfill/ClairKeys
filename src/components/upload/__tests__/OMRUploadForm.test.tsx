@@ -397,6 +397,79 @@ describe('OMRUploadForm', () => {
     })
   })
 
+  /**
+   * 이슈 #146 stage3. 폼은 하나지만 읽는 사람에게는 세 가지 질문이다 — 무엇을 올리나, 무엇을
+   * 반드시 적나, 무엇을 골라서 적나. 평평한 필드 나열은 그 경계를 지워서 필수와 선택을 같은
+   * 무게로 보이게 만든다. 경계를 `fieldset`/`legend`로 두면 화면을 보지 않아도 같은 구분이
+   * 전달되고, 시각적 묶음과 접근성 묶음이 갈라지지 않는다.
+   *
+   * jsdom은 레이아웃을 계산하지 않는다. 데스크톱 2열/모바일 1열 전환과 드롭존 높이는 여기서
+   * 증명할 수 없고 `e2e/upload-form-grouping.spec.ts`가 실제 브라우저에서 측정한다.
+   */
+  describe('입력 그룹 (이슈 #146)', () => {
+    it('세 덩어리로 나뉘고 각 덩어리에 이름이 있다', async () => {
+      render(<OMRUploadForm />)
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+      expect(screen.getByRole('group', { name: '악보 파일' })).toBeInTheDocument()
+      expect(screen.getByRole('group', { name: '곡 정보' })).toBeInTheDocument()
+      expect(screen.getByRole('group', { name: '선택 설정' })).toBeInTheDocument()
+    })
+
+    it('필수 항목과 선택 항목이 서로 다른 덩어리에 있다', async () => {
+      render(<OMRUploadForm />)
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+      const required = screen.getByRole('group', { name: '곡 정보' })
+      expect(required).toContainElement(screen.getByLabelText(/곡명/))
+      expect(required).toContainElement(screen.getByLabelText(/저작자/))
+
+      const optional = screen.getByRole('group', { name: '선택 설정' })
+      expect(optional).toContainElement(screen.getByLabelText('빠르기 (BPM)'))
+      expect(optional).toContainElement(screen.getByLabelText('카테고리'))
+      expect(optional).toContainElement(screen.getByRole('checkbox'))
+
+      // 필수가 선택 덩어리로 새어 들어가면 그룹 이름 자체가 거짓이 된다.
+      expect(optional).not.toContainElement(screen.getByLabelText(/곡명/))
+      expect(required).not.toContainElement(screen.getByLabelText('카테고리'))
+    })
+
+    it('파일과 그 거부 사유는 같은 덩어리에 머문다', async () => {
+      render(<OMRUploadForm />)
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+      const fileGroup = screen.getByRole('group', { name: '악보 파일' })
+      expect(fileGroup).toContainElement(fileInput())
+
+      await selectFile(pdfFile('locked.pdf', { encrypted: true }))
+
+      // 사유가 파일 덩어리 밖으로 나가면 어느 입력이 잘못됐는지 가리키지 못한다.
+      expect(fileGroup).toContainElement(await screen.findByText('암호가 걸린 PDF입니다'))
+    })
+
+    it('덩어리를 나눠도 컨트롤 구성과 순서는 그대로다', async () => {
+      render(<OMRUploadForm />)
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+      // 이 슬라이스는 배치만 바꾼다. 필드가 사라지거나 순서가 뒤집히면 Tab 순서와 제출 값이
+      // 함께 바뀌므로, 묶음 자체보다 이 목록이 더 강한 회귀 방어선이다.
+      const controls = Array.from(
+        document.querySelectorAll<HTMLElement>('form input, form select, form textarea')
+      ).map(node => node.getAttribute('type') ?? node.tagName.toLowerCase())
+
+      expect(controls).toEqual([
+        'file',
+        'text', // 곡명
+        'text', // 저작자
+        'text', // 빠르기 (BPM)
+        'select', // 박 단위
+        'range', // 빠르기 슬라이더
+        'select', // 카테고리
+        'checkbox', // 공개 설정
+      ])
+    })
+  })
+
   it('사용자에게 보이는 문구에 기술 용어가 없다', async () => {
     render(<OMRUploadForm />)
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
