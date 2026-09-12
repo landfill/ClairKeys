@@ -47,13 +47,20 @@ describe('PublicSheetMusicBrowser', () => {
     expect(screen.getByRole('heading', { name: '인기 악보' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '최신 악보' })).toBeInTheDocument()
 
-    // Section sizes are part of the preserved contract: 3 / 4 / 8 from the same feed.
-    const titlesIn = (heading: string) =>
-      Array.from(sectionFor(heading).querySelectorAll('h3')).map((n) => n.textContent?.trim())
+    // Section sizes and ordering are the preserved contract: 3 / 4 / 8 from the same feed.
+    // Assert the hrefs rather than rendered text, so ordering stays verifiable independently
+    // of presentation details such as the screen-reader-only rank prefix.
+    const hrefsIn = (heading: string) =>
+      Array.from(sectionFor(heading).querySelectorAll('a[href]')).map((n) => n.getAttribute('href'))
 
-    expect(titlesIn('추천 악보')).toEqual([sheets[0].title, sheets[1].title, sheets[2].title])
-    expect(titlesIn('인기 악보')).toEqual(sheets.map((s) => s.title))
-    expect(titlesIn('최신 악보')).toEqual(sheets.map((s) => s.title))
+    expect(hrefsIn('추천 악보')).toEqual(['/sheet/1', '/sheet/2', '/sheet/3'])
+    expect(hrefsIn('인기 악보')).toEqual(['/sheet/1', '/sheet/2', '/sheet/3', '/sheet/4'])
+    expect(hrefsIn('최신 악보')).toEqual(['/sheet/1', '/sheet/2', '/sheet/3', '/sheet/4'])
+
+    // Every section still renders each sheet's own title.
+    for (const heading of ['추천 악보', '인기 악보', '최신 악보']) {
+      expect(within(sectionFor(heading)).getByText(sheets[1].title)).toBeInTheDocument()
+    }
   })
 
   it('never renders a preview surface for sheets that have no preview image', async () => {

@@ -29,9 +29,9 @@ export default function ExplorePage() {
         description="다른 사용자들이 공유한 악보를 찾아보고 연습해보세요"
       />
       
-      <Container className="py-8">
+      <Container className="py-6">
         {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-8 p-1 bg-surface-muted rounded-full max-w-md mx-auto">
+        <div className="flex space-x-1 mb-6 p-1 bg-surface-muted rounded-full max-w-md mx-auto">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
@@ -39,6 +39,7 @@ export default function ExplorePage() {
               variant={activeTab === tab.id ? 'outline' : 'ghost'}
               size="sm"
               className="flex-1"
+              aria-pressed={activeTab === tab.id}
             >
               <span>{tab.label}</span>
             </Button>
@@ -46,15 +47,9 @@ export default function ExplorePage() {
         </div>
 
         {/* Tab Content */}
-        <div className="min-h-screen">
+        <div>
           {activeTab === 'browse' && (
-            <div className="space-y-8">
-              <div className="text-center mb-8">
-                <h2 className="text-lg text-gray-600">
-                  인기 있는 악보와 최신 악보를 둘러보세요
-                </h2>
-              </div>
-              
+            <div>
               <PublicSheetMusicBrowser 
                 onSheetMusicClick={handleSheetMusicClick}
                 showSections={['featured', 'popular', 'recent']}
@@ -64,13 +59,11 @@ export default function ExplorePage() {
           )}
 
           {activeTab === 'search' && (
-            <div className="space-y-6">
-              <div className="text-center mb-8">
-                <h2 className="text-lg text-gray-600">
-                  원하는 악보를 검색하고 필터를 사용해 찾아보세요
-                </h2>
-              </div>
-              
+            <div className="space-y-4">
+              <p className="text-center text-sm text-ink-muted">
+                원하는 악보를 검색하고 필터를 사용해 찾아보세요
+              </p>
+
               <SheetMusicSearch 
                 onResultClick={handleSheetMusicClick}
                 showFilters={true}
@@ -88,6 +81,7 @@ export default function ExplorePage() {
               onClick={() => router.push('/upload')}
               className="h-14 w-14 p-0 text-xl shadow-lg"
               title="악보 업로드"
+              aria-label="악보 업로드"
             >
               +
             </Button>
