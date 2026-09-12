@@ -12,18 +12,25 @@ export function useSheetMusic() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  /**
+   * 조회가 성공했는지를 돌려준다. `error`는 수정·삭제 실패와 한 칸을 쓰고, 실패해도 이전 행을
+   * 유지하므로 호출자는 그 둘로는 "지금 행이 방금 요청한 질의의 결과인가"를 알 수 없다.
+   * 이전 행을 유지하는 동작은 이 훅을 쓰는 카테고리 화면을 위해 그대로 둔다 (PR158 리뷰).
+   */
   const fetchUserSheetMusic = useCallback(async (params?: {
     categoryId?: number
     search?: string
     public?: boolean
-  }) => {
+  }): Promise<boolean> => {
     try {
       setLoading(true)
       setError(null)
       const response = await SheetMusicService.getUserSheetMusic(params)
       setSheetMusic(response.sheetMusic)
+      return true
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch sheet music')
+      return false
     } finally {
       setLoading(false)
     }

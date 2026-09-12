@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useSheetMusic } from '@/hooks/useSheetMusic'
 import { useCategories } from '@/hooks/useCategories'
 import { SheetMusicCard } from '@/components/sheet/SheetMusicCard'
@@ -39,6 +39,11 @@ export function LibrarySheetMusicList({
   const [tempoError, setTempoError] = useState<string | undefined>()
   const [saving, setSaving] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [loadFailed, setLoadFailed] = useState(false)
+  const latestLoad = useRef(0)
+  // 편집 대화상자를 연 동작. 닫힐 때 포커스를 여기로 돌려준다 — 그러지 않으면 사라지는 버튼과 함께
+  // 포커스가 `body`로 떨어져 키보드 사용자는 목록 맨 앞부터 다시 Tab해야 한다 (PR158 3차 리뷰).
+  const editTrigger = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -49,20 +54,28 @@ export function LibrarySheetMusicList({
   }, [searchQuery])
 
   // 데이터 로드. 카테고리 변경은 즉시 반영하고 키 입력만 debounce한다.
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        await fetchUserSheetMusic({
-          categoryId: selectedCategoryId || undefined,
-          search: debouncedSearchQuery || undefined
-        })
-      } catch (error) {
-        console.error('Failed to load sheet music:', error)
-      }
+  //
+  // 실패 여부는 조회 함수가 돌려준 값으로만 판정한다. 훅의 `error`는 수정·삭제 실패에도 설정되고,
+  // 조회가 실패해도 이전 행이 남는다 — 전체 목록을 받은 뒤 카테고리 조회가 실패하면 이전 행이 새
+  // 카테고리 이름 아래 그대로 보였다 (PR158 리뷰). 늦게 도착한 이전 요청이 최신 결과를 덮지 않도록
+  // 가장 최근 요청의 결과만 반영한다.
+  const loadSheetMusic = useCallback(async () => {
+    const request = ++latestLoad.current
+    try {
+      const succeeded = await fetchUserSheetMusic({
+        categoryId: selectedCategoryId || undefined,
+        search: debouncedSearchQuery || undefined
+      })
+      if (request === latestLoad.current) setLoadFailed(succeeded === false)
+    } catch (error) {
+      console.error('Failed to load sheet music:', error)
+      if (request === latestLoad.current) setLoadFailed(true)
     }
-    
-    loadData()
   }, [selectedCategoryId, debouncedSearchQuery, fetchUserSheetMusic])
+
+  useEffect(() => {
+    loadSheetMusic()
+  }, [loadSheetMusic])
 
   // 필터링 및 정렬
   const filteredAndSortedSheetMusic = sheetMusic
@@ -95,11 +108,9 @@ export function LibrarySheetMusicList({
     try {
       await updateSheetMusic(sheetMusicId, { categoryId: newCategoryId })
       onSheetMusicMove?.(sheetMusicId, newCategoryId)
-      // 선택된 카테고리에서 이동한 항목을 제거하기 위해 한 번만 새로고침한다.
-      await fetchUserSheetMusic({
-        categoryId: selectedCategoryId || undefined,
-        search: debouncedSearchQuery || undefined
-      })
+      // 선택된 카테고리에서 이동한 항목을 제거하기 위해 한 번만 새로고침한다. 실패 추적이 한
+      // 경로에만 있도록 같은 조회 함수를 쓴다.
+      await loadSheetMusic()
     } catch (error) {
       console.error('Failed to move sheet music:', error)
     }
@@ -116,6 +127,7 @@ export function LibrarySheetMusicList({
   }
 
   const openTitleEditor = (sheet: SheetMusicWithCategory) => {
+    editTrigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     setTitle(sheet.title)
     setTitleError(null)
     setTempo('')
@@ -150,9 +162,39 @@ export function LibrarySheetMusicList({
     }
   }
 
+  // 대화상자가 닫힌 뒤(취소·저장 성공) 연 동작으로 포커스를 돌려준다. 카드는 id를 key로 다시
+  // 그려지므로 저장 뒤에도 같은 버튼이 남아 있다. 그 사이 버튼이 사라졌다면 아무것도 하지 않는다.
+  useEffect(() => {
+    if (editingSheet !== null) return
+    const trigger = editTrigger.current
+    editTrigger.current = null
+    if (trigger && trigger.isConnected) trigger.focus()
+  }, [editingSheet])
+
   // 로딩 상태
   if (sheetMusicLoading) {
     return <Loading />
+  }
+
+  /*
+    불러오기 실패. 빈 상태보다 먼저 판정해야 한다 — 목록을 받지 못한 것과 목록이 비어 있는 것은
+    원인이 다르므로 다음 행동도 다르다. 이전에는 둘이 같은 화면이어서 실패한 사람에게 업로드를
+    권했다 (이슈 #146 stage 4). 원시 서버 문구는 노출하지 않는다.
+
+    판정은 가장 최근 조회의 실패 여부(`loadFailed`)다. 훅의 `error`나 남은 행 수로 판정하지 않는다 —
+    `error`는 저장 실패에도 설정되고, 행은 실패한 조회 뒤에도 이전 질의의 것이 남는다. 이전 행을
+    보여 주면 다른 카테고리·검색어의 결과를 지금 질의의 결과처럼 말하게 된다. 저장·삭제 실패는
+    `loadFailed`를 건드리지 않으므로 목록과 그 자리의 인라인 안내가 그대로 유지된다.
+  */
+  if (loadFailed) {
+    return (
+      <StatusState
+        tone="error"
+        title="악보 목록을 불러오지 못했습니다"
+        detail="연결을 확인한 뒤 다시 시도해 주세요. 악보는 지워지지 않았습니다."
+        action={<Button variant="outline" onClick={() => { loadSheetMusic() }}>다시 시도</Button>}
+      />
+    )
   }
 
   // 빈 상태
@@ -216,7 +258,7 @@ export function LibrarySheetMusicList({
           </h3>
         </div>
         
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))] gap-4">
+        <div data-testid="library-sheet-grid" className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))] gap-4">
           {filteredAndSortedSheetMusic.map((sheet) => (
             <SheetMusicCard
               key={sheet.id}

@@ -95,8 +95,13 @@ export default function LibraryPage() {
             </div>
           </div>
 
-          {/* Content Area */}
-          <div className="min-h-screen">
+          {/*
+            Content Area. 여기 있던 `min-h-screen`은 `MainLayout`이 이미 갖고 있는 것 위에 한 번
+            더 얹혀, 카드가 몇 장이든 화면 하나만큼의 빈 영역을 목록 아래에 만들었다. 빈 상태에서는
+            문서가 정확히 두 화면(1692px / 844px)이 되어, 더 있는지 확인하러 내려간 사람이 아무것도
+            없는 화면을 봤다 (이슈 #146 stage 4).
+          */}
+          <div>
             <LibrarySheetMusicList
               selectedCategoryId={activeTab === 'categories' ? selectedCategoryId : null}
               searchQuery={searchQuery}
@@ -111,6 +116,7 @@ export default function LibraryPage() {
             <Button
               onClick={() => router.push('/upload')}
               className="h-14 w-14 p-0 text-xl fab-button"
+              data-testid="library-upload-fab"
               title="새 악보 업로드"
               aria-label="새 악보 업로드"
             >
