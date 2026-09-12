@@ -1,5 +1,33 @@
 # Current Handoff
 
+## Branch hygiene restored and the OMR-Q2 plan submitted for review (2026-09-12)
+
+- User asked for a next-work review. Entry state was already clean: main at49cdc49 equal to origin,
+  six successful check-runs on that commit, zero open PRs, and issue146 the only `IN_PROGRESS` phase.
+- `codex/issue-130-directional-budget` existed ONLY in this local clone: two unpushed 2026-09-05 commits
+  carrying regression-first fingering work (`fingeringUtils.ts` +54). That violated the repository-only
+  context rule, so it was pushed to origin and is now recoverable elsewhere. It has no PR and is unfinished.
+- User explicitly approved deleting contained branches. Each of the five was re-verified at zero commits
+  outside main immediately before deletion, then removed locally and on origin:
+  ci-security-dependencies, issue-110-callback-review (remote `implement-issue-#110-callback_url-validation`),
+  issue-146-playback-session, issue-146-toolbar-local, issue-146-ui-renewal. The three clean worktrees
+  under `.worktrees/` were removed first. Nothing unique to any tip was destroyed.
+- `codex/issue-124-finger-badge` was NOT deleted: it holds two unique commits with real code changes
+  (`visualUtils.ts`, `FallingNotes.tsx`) although issue124 closed NOT_PLANNED. Abandon-or-revive is undecided.
+- `codex/omr-page-scale-validation` was NOT stuck for lack of a direct commit — its phase doc defines
+  `Objective`/`Work stages`, which AGENTS.md excludes from the direct-main exception, so it always needed
+  review and never got a PR. Rebased onto main (it was116 commits behind), corrected its stale
+  "unmerged OMR-Q1" claim, recorded the measured experiment results and the unpassed runtime gate, and
+  opened [PR154](reviews/PR-154.md). Docs only; merge still needs explicit approval and authorizes no
+  400dpi or page-filter change.
+- Known conflict, unresolved: AGENTS lifecycle rule7 blocks branch cleanup while user-owned uncommitted
+  changes exist, but the eight `validation/2026-09-07-ui-audit/*.png` can never be committed — issue146
+  itself forbids publishing them because they contain account and library data, and this repository is
+  public. User chose to gitignore them. Note that `.claude/settings.local.json` is TRACKED and modified,
+  so gitignoring the PNGs alone does not clear the blocker; untracking it would delete it from other
+  clones on pull, which is a separate decision.
+- Next work chosen by user: issue146 stage3 — explore cards and upload form. Phase stays `IN_PROGRESS`.
+
 ## GitHub issue state synchronized with delivery (2026-09-12)
 
 - User requested issue-state synchronization. Issue110 body now records PR151 implementation,
