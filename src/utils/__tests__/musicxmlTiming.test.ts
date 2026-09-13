@@ -36,6 +36,33 @@ it('gives sound offset priority and does not let a later first mark describe the
   expect(data.notes[0].duration).toBe(1.5)
 })
 
+const rest = (duration: number) => `<note><rest/><duration>${duration}</duration></note>`
+
+it('reads a first tempo mark that only silence precedes as the opening tempo', () => {
+  // Audiveris anchors a printed opening mark to the nearest symbol, which can be a leading rest.
+  const data = convert(`<part id="P1"><measure number="1">${attributes}${rest(1)}${mark(69)}${note('C',2)}${rest(1)}</measure></part>`)
+  expect(data).toMatchObject({ tempo: 69, tempoSource: 'score', timingReferenceBpm: 69, scoreTempo: 69 })
+  expect(data.notes[0]).toMatchObject({ start: Number((60 / 69).toFixed(6)), duration: Number((120 / 69).toFixed(6)) })
+})
+
+it('keeps a first mark that another part sounds before as a later change', () => {
+  const data = convert(`<part id="P1"><measure number="1">${attributes}${rest(1)}${mark(120)}${note('C',3)}</measure></part><part id="P2"><measure number="1">${attributes}${note('E',4)}</measure></part>`)
+  expect(data).toMatchObject({ tempo: null, tempoSource: 'unknown', timingReferenceBpm: 60, scoreTempo: null })
+  expect(data.notes.find((n: { midi: number }) => n.midi === 60)).toMatchObject({ start: 1, duration: 1.5 })
+})
+
+it('reads a mark after entirely silent bars as the opening but keeps later changes in place', () => {
+  const data = convert(`<part id="P1"><measure number="1">${attributes}${rest(4)}</measure><measure number="2">${mark(90)}${note('C',1)}${mark(45)}${note('D',1)}</measure></part>`)
+  expect(data).toMatchObject({ tempoSource: 'score', scoreTempo: 90 })
+  expect(data.notes).toMatchObject([{ start: Number((240 / 90).toFixed(6)), duration: Number((60 / 90).toFixed(6)) }, { duration: Number((60 / 45).toFixed(6)) }])
+})
+
+it('lets the user override win over a mark read as the opening tempo', () => {
+  const data = convert(`<part id="P1"><measure number="1">${attributes}${rest(1)}${mark(69)}${note('C',3)}</measure></part>`, 46)
+  expect(data).toMatchObject({ tempo: 46, tempoSource: 'user', timingReferenceBpm: 46, scoreTempo: 69 })
+  expect(data.notes[0]).toMatchObject({ start: Number((60 / 46).toFixed(6)) })
+})
+
 it('ignores a direction offset without sound=yes for playback', () => {
   const data = convert(`<part id="P1"><measure number="1">${attributes}${mark(60)}${note('C',1)}<direction><offset>1</offset><sound tempo="120"/></direction>${note('D',1)}</measure></part>`)
   expect(data.notes).toMatchObject([{ duration: 1 }, { start: 1, duration: 0.5 }])

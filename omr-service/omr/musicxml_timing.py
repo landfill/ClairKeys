@@ -142,7 +142,28 @@ def scan_score(root: ET.Element, read_tempo: Callable) -> ScoreTimeline:
                 if position not in owners or owners[position] == part_index:
                     tempos[position] = bpm
                     owners[position] = part_index
+    _anchor_silent_opening_tempo(parts, starts, tempos)
     return ScoreTimeline(parts, starts, tempos, warnings)
+
+
+def _anchor_silent_opening_tempo(parts: list, starts: list, tempos: dict) -> None:
+    """D-060: a first mark that no note sounds before is the opening tempo.
+
+    OMR anchors a printed opening mark to the nearest symbol, which can be a
+    leading rest. Moving only that first mark changes nothing but the silence
+    before the first note; a mark any part has already sounded before stays a
+    later change.
+    """
+    if not tempos or Fraction(0) in tempos:
+        return
+    first_mark = min(tempos)
+    first_sound = min((starts[part_index][index] + onset
+                       for part_index, part in enumerate(parts)
+                       for index, measure in enumerate(part)
+                       for element, onset, _ in measure.notes
+                       if element.find('rest') is None), default=None)
+    if first_sound is None or first_mark <= first_sound:
+        tempos[Fraction(0)] = tempos.pop(first_mark)
 
 
 class QuarterClock:

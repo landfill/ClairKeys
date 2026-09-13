@@ -1,0 +1,1602 @@
+{
+  "sourceIssue": 134,
+  "sourcePdfSha256": "34d06c77398470ea6f9bf15d9cd5724a0db94c904eb81107c5ca29d2f1be5478",
+  "scope": "All 17 printed bars of the one-page source, read visually from the embedded 2480x3508 page image on 2026-09-13. Raw pitched and rest events before tie merging, plus the notes that start a tie. Bar 1 agrees with clair-de-lune-reference.json. Sounding pitch only: enharmonic spelling, voices, stems, slurs, dynamics and fingering are outside this contract.",
+  "timeSignature": "9/8",
+  "openingTempo": {
+    "printed": "Largo (dotted quarter = 46)",
+    "quarterBpm": 69,
+    "quarterPosition": 0
+  },
+  "measures": [
+    {
+      "number": "1",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 79,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 79,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 64,
+          "staff": 2,
+          "onset": 0.5,
+          "duration": 1.0
+        },
+        {
+          "midi": 67,
+          "staff": 2,
+          "onset": 0.5,
+          "duration": 1.0
+        },
+        {
+          "midi": 64,
+          "staff": 2,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 67,
+          "staff": 2,
+          "onset": 1.5,
+          "duration": 3.0
+        }
+      ],
+      "restEvents": [
+        {
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 0.5
+        }
+      ],
+      "tieStarts": [
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 1.0
+        },
+        {
+          "midi": 79,
+          "staff": 1,
+          "onset": 1.0
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 3.0
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 3.0
+        },
+        {
+          "midi": 64,
+          "staff": 2,
+          "onset": 0.5
+        },
+        {
+          "midi": 67,
+          "staff": 2,
+          "onset": 0.5
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 65,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 68,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 65,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 68,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": [
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 1.5
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 1.5
+        },
+        {
+          "midi": 65,
+          "staff": 2,
+          "onset": 0.0
+        },
+        {
+          "midi": 68,
+          "staff": 2,
+          "onset": 0.0
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 0.75
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 2.25,
+          "duration": 0.75
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 0.75
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 3.75,
+          "duration": 0.75
+        },
+        {
+          "midi": 64,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 67,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 64,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 67,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": [
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 1.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 2.25
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 3.75
+        },
+        {
+          "midi": 64,
+          "staff": 2,
+          "onset": 0.0
+        },
+        {
+          "midi": 67,
+          "staff": 2,
+          "onset": 0.0
+        }
+      ],
+      "readingNote": "The printed 2 marks above the two beamed pairs are duplets: two eighths fill one dotted-quarter beat (0.75 quarter each). The A4 dotted half and the final C5 both tie into bar 4."
+    },
+    {
+      "number": "4",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 62,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 65,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 62,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 65,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": [
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 1.5
+        },
+        {
+          "midi": 62,
+          "staff": 2,
+          "onset": 0.0
+        },
+        {
+          "midi": 65,
+          "staff": 2,
+          "onset": 0.0
+        }
+      ],
+      "readingNote": "Only B4 continues into bar 5; the lower voice of bar 5 starts on F4."
+    },
+    {
+      "number": "5",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 2.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 2.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 3.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 4.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 65,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 65,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 60,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 62,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 59,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 62,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": [
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 4.0
+        }
+      ],
+      "readingNote": "The F4 dotted half shares the stem of the first beamed B4 eighth; the F4 dotted quarter sits under the G4 eighth at beat 3."
+    },
+    {
+      "number": "6",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 65,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 65,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 64,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 62,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 62,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 57,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 60,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 56,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 59,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": [
+        {
+          "midi": 64,
+          "staff": 1,
+          "onset": 3.0
+        }
+      ],
+      "readingNote": "Only the upper E4 ties into bar 7. The curve under bar 7 is the phrase slur continuing across the system break, not a D4 tie."
+    },
+    {
+      "number": "7",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 64,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 64,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 65,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 64,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 2.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 64,
+          "staff": 1,
+          "onset": 2.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 62,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 64,
+          "staff": 1,
+          "onset": 3.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 62,
+          "staff": 1,
+          "onset": 4.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 60,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 60,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 57,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 57,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": [
+        {
+          "midi": 62,
+          "staff": 1,
+          "onset": 4.0
+        }
+      ],
+      "readingNote": "The augmentation dot in the space above the C4 ledger belongs to the C4 dotted half, not to the E4 eighth on the bottom line."
+    },
+    {
+      "number": "8",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 62,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 60,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 62,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 60,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 59,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 57,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 55,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 43,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": []
+    },
+    {
+      "number": "9",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 79,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 48,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 48,
+          "staff": 2,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 1.5,
+          "duration": 3.0
+        }
+      ],
+      "restEvents": [
+        {
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 0.5
+        }
+      ],
+      "tieStarts": [
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 3.0
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 3.0
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 0.5
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 1.0
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 1.0
+        }
+      ],
+      "readingNote": "Bass: the upper voice is an eighth rest, E3 eighth, E3/G3 eighth and the C3/E3/G3 dotted half, with E3 and G3 tied through; the lower voice is a C3 dotted quarter whose C3 is struck again as the shared lowest head of the dotted half. Onsets align vertically with the treble G4 (1.0) and E5/G5 (1.5). The shared C3 head is one sounding event."
+    },
+    {
+      "number": "10",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 1.0
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 57,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 57,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": [
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 1.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 0.5
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 0.0
+        },
+        {
+          "midi": 57,
+          "staff": 2,
+          "onset": 0.0
+        }
+      ],
+      "readingNote": "The short arc starting at the D5 dot ends on the first D5 of bar 11: a tie, beneath the longer phrase slur."
+    },
+    {
+      "number": "11",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 79,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": [
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 3.0
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 3.0
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 0.0
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 0.0
+        }
+      ]
+    },
+    {
+      "number": "12",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 74,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 1.0
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 3.0
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 57,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 57,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": [
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 0.5
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 0.0
+        },
+        {
+          "midi": 57,
+          "staff": 2,
+          "onset": 0.0
+        }
+      ]
+    },
+    {
+      "number": "13",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 60,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 62,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 60,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 64,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 60,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 64,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [
+        {
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        }
+      ],
+      "tieStarts": [
+        {
+          "midi": 52,
+          "staff": 2,
+          "onset": 0.0
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 0.0
+        }
+      ]
+    },
+    {
+      "number": "14",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 65,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 65,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 72,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 65,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 50,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 50,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [
+        {
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        }
+      ],
+      "tieStarts": [
+        {
+          "midi": 50,
+          "staff": 2,
+          "onset": 0.0
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 0.0
+        }
+      ]
+    },
+    {
+      "number": "15",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 69,
+          "staff": 1,
+          "onset": 0.5,
+          "duration": 0.5
+        },
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 71,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 65,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 67,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 43,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 50,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 53,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 43,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [
+        {
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 0.5
+        }
+      ],
+      "tieStarts": []
+    },
+    {
+      "number": "16",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 79,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 79,
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.5
+        },
+        {
+          "midi": 36,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 1.0
+        },
+        {
+          "midi": 43,
+          "staff": 2,
+          "onset": 1.0,
+          "duration": 0.5
+        },
+        {
+          "midi": 48,
+          "staff": 2,
+          "onset": 1.5,
+          "duration": 1.5
+        },
+        {
+          "midi": 55,
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.5
+        }
+      ],
+      "restEvents": [],
+      "tieStarts": [
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 0.0
+        },
+        {
+          "midi": 79,
+          "staff": 1,
+          "onset": 0.0
+        }
+      ]
+    },
+    {
+      "number": "17",
+      "quarterLength": 4.5,
+      "pitchedEvents": [
+        {
+          "midi": 76,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 79,
+          "staff": 1,
+          "onset": 0.0,
+          "duration": 3.0
+        },
+        {
+          "midi": 60,
+          "staff": 2,
+          "onset": 0.0,
+          "duration": 3.0
+        }
+      ],
+      "restEvents": [
+        {
+          "staff": 1,
+          "onset": 3.0,
+          "duration": 1.0
+        },
+        {
+          "staff": 1,
+          "onset": 4.0,
+          "duration": 0.5
+        },
+        {
+          "staff": 2,
+          "onset": 3.0,
+          "duration": 1.0
+        },
+        {
+          "staff": 2,
+          "onset": 4.0,
+          "duration": 0.5
+        }
+      ],
+      "tieStarts": []
+    }
+  ]
+}
