@@ -4,7 +4,7 @@ Last updated: 2026-09-13 KST
 
 ## Current phase
 
-문서 규약 최적화: [PR160 검토 기록](reviews/PR-160.md). 코드 변경 없이 규칙 중복·충돌을 정리했다.
+문서 규약 최적화는 PR160 `d7bfbc8`로 병합됐다. [검토·병합 기록](reviews/PR-160.md).
 
 **[#134 인식 품질 개선](phases/ISSUE-134-recognition-quality.md) — IN_PROGRESS.**
 시작 템포 수정은 운영 반영됐지만 점·타이·리듬 오류는 남아 있다.
@@ -34,6 +34,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   [17마디 기준 비교](validation/2026-09-13-issue-134-residual-timing.md).
 
 ## Known blockers / constraints
+
+- PR160 로컬·원격 tip은 main에 포함됐다. 기존 사용자 미커밋 이력 메모가 남아 있어 규약에 따라
+  `codex/doc-agent-contract` 로컬·원격 브랜치를 보존했다. 사용자 변경이 해소된 뒤 정리한다.
 
 - #134 완료에는 실제 재변환·플레이어 청취·사용자 확인이 남아 있다.
   이번 배포 검증은 운영 모듈 스모크이며 웹 업로드→콜백→플레이어 E2E가 아니다.
