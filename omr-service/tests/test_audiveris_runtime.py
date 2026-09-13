@@ -293,6 +293,43 @@ class DeploymentStaticContractTests(unittest.TestCase):
             patch_file.read_text(encoding="utf-8"),
         )
 
+    def test_every_engine_links_a_line_third_dot_to_the_head_below_it(self):
+        """Dot order must not decide which line head keeps its augmentation dot.
+
+        In a chord whose two heads sit on adjacent lines, the dot between them
+        belongs to the lower head. Stock 5.11.0 hands it to the upper head when
+        that dot is processed first, the upper dot then finds no head, and
+        LINKS rounds the chord's [1, 0] dots to zero (#134, D-062).
+        """
+        dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
+        patch_file = OMR_SERVICE_ROOT / "audiveris-patches/0002-line-head-dot-link.patch"
+
+        self.assertTrue(patch_file.is_file())
+        patch_text = patch_file.read_text(encoding="utf-8")
+        self.assertIn("head.getChord() == firstChord", patch_text)
+        self.assertIn("head.getCenter().y > dotCenter.y", patch_text)
+        self.assertIn(
+            "4741eeafed3105f42e908dcb810eea65d7e41400a305f1a693ed7235dc5fa87b",
+            dockerfile,
+        )
+        checksum = dockerfile.index('echo "${AUGMENTATION_DOT_INTER_SHA256}')
+        normalize = dockerfile.index("sed -i 's/\\r$//'", checksum)
+        apply_patch = dockerfile.index("--input=/tmp/dot-link.patch", normalize)
+        update_normal = dockerfile.index(
+            "--file /opt/audiveris/lib/app/audiveris.jar", apply_patch
+        )
+        copy_recovery = dockerfile.index(
+            "cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery"
+        )
+        self.assertLess(checksum, normalize)
+        self.assertLess(normalize, apply_patch)
+        # The recovery engine is copied from the normal one, so it inherits the fix.
+        self.assertLess(update_normal, copy_recovery)
+        self.assertIn(
+            "grep -Fqx 'org/audiveris/omr/sig/inter/AugmentationDotInter.class'",
+            dockerfile,
+        )
+
     def test_container_replaces_english_data_with_checksum_pinned_legacy_model(self):
         dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
 

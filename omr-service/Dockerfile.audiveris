@@ -10,6 +10,7 @@ ARG OPENJDK_25_URL=https://download.java.net/java/GA/jdk25.0.2/b1e0dfa218384cb99
 ARG OPENJDK_25_SHA256=555ce0821e4fe175ea50d54518cd6fbece9663c1998de529bc6ce429534457df
 ARG AUDIVERIS_SOURCE_COMMIT=9e1e55cd2746037d059345881c53e6a6754bffbd
 ARG LEDGERS_POST_ANALYSIS_SHA256=81202a3d8b10912c132a8340d3de6d6a70782d39cd15e0972410a95212f46f3c
+ARG AUGMENTATION_DOT_INTER_SHA256=4741eeafed3105f42e908dcb810eea65d7e41400a305f1a693ed7235dc5fa87b
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -76,16 +77,42 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -f "/tmp/${AUDIVERIS_DEB}" /tmp/eng.traineddata \
     && rm -rf /var/lib/apt/lists/*
 
-# Keep the official installation byte-identical for the normal path. The
-# alternate installation differs only by a pinned LedgersPostAnalysis class
-# whose one-pixel upper-height exception requires an explicit recovery region.
+# Both installations carry one pinned AugmentationDotInter fix (D-062): a dot
+# between two line heads of one chord belongs to the head below it, so the
+# order in which that chord's dots are processed cannot drop both dots. The
+# alternate installation is copied after that fix, so wedge candidates and the
+# selected graph link dots alike, and additionally differs by a pinned
+# LedgersPostAnalysis class whose one-pixel upper-height exception requires an
+# explicit recovery region.
 COPY audiveris-patches/0001-region-scoped-ledger-recovery.patch /tmp/ledger-recovery.patch
+COPY audiveris-patches/0002-line-head-dot-link.patch /tmp/dot-link.patch
 RUN mkdir -p \
       /tmp/jdk25 \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter \
       /tmp/ledger-classes \
+      /tmp/dot-classes \
     && curl -fsSL "${OPENJDK_25_URL}" -o /tmp/openjdk25.tar.gz \
     && echo "${OPENJDK_25_SHA256}  /tmp/openjdk25.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/openjdk25.tar.gz -C /tmp/jdk25 --strip-components=1 \
+    && curl -fsSL \
+      "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java" \
+      -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java \
+    && echo "${AUGMENTATION_DOT_INTER_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java" \
+      | sha256sum -c - \
+    && sed -i 's/\r$//' \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java \
+    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace \
+      --input=/tmp/dot-link.patch \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' \
+      -cp '/opt/audiveris/lib/app/*' -d /tmp/dot-classes \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java \
+    && /tmp/jdk25/bin/jar --update \
+      --file /opt/audiveris/lib/app/audiveris.jar \
+      -C /tmp/dot-classes org/audiveris/omr/sig/inter \
+    && /tmp/jdk25/bin/jar --list \
+      --file /opt/audiveris/lib/app/audiveris.jar \
+      | grep -Fqx 'org/audiveris/omr/sig/inter/AugmentationDotInter.class' \
     && curl -fsSL \
       "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java" \
       -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java \
@@ -95,7 +122,6 @@ RUN mkdir -p \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java \
     && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace \
       --input=/tmp/ledger-recovery.patch \
-    && tar -xzf /tmp/openjdk25.tar.gz -C /tmp/jdk25 --strip-components=1 \
     && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' \
       -cp '/opt/audiveris/lib/app/*' -d /tmp/ledger-classes \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java \
@@ -108,8 +134,8 @@ RUN mkdir -p \
       | grep -Fqx 'org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.class' \
     && /opt/audiveris/bin/Audiveris -version \
     && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
-    && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes \
-      /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch
+    && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes \
+      /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch /tmp/dot-link.patch
 
 # Create working directory
 WORKDIR /app

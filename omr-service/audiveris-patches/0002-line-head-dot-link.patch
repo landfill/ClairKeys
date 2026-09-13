@@ -1,0 +1,30 @@
+diff --git a/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java b/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java
+index 1220726..9cbc49a 100644
+--- a/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java
++++ b/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java
+@@ -456,7 +456,24 @@ public class AugmentationDotInter
+             }
+         }
+ 
+-        return (!links.isEmpty()) ? links.get(0) : null;
++        if (links.isEmpty()) {
++            return null;
++        }
++
++        // A dot for a head on line lies in the space above that head.
++        // Within the first candidate chord, the head below the dot therefore wins, whatever the
++        // order in which the dots of this chord are processed.
++        final HeadChordInter firstChord = ((HeadInter) links.get(0).partner).getChord();
++
++        for (Link link : links) {
++            HeadInter head = (HeadInter) link.partner;
++
++            if ((head.getChord() == firstChord) && (head.getCenter().y > dotCenter.y)) {
++                return link;
++            }
++        }
++
++        return links.get(0);
+     }
+ 
+     //------------//
