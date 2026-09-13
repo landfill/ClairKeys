@@ -24,6 +24,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   User-approved isolated VM stage run traced dots: LINKS deletes 8 SYMBOLS dots via a line-line third
   chord linking only one dot then `countDots` rint(0.5)=0 (plus one tie-cut dot in m1). Ties are fixed at
   CURVES: 10 undetected, 5 cross-system mis-pairings, 1 slur misclassification. No fix adopted yet.
+- 2026-09-13: User-approved OMR VM rollout of `e5ee7bb` (image `bd2d5e6e…`, rollback tag
+  `rollback-pr159-20260913`). Image tests 172 OK/6 skipped; health 200, unauthorized 401. Production
+  smoke: 163 notes, tempo/scoreTempo 69 (was null), 143/191 events unchanged. Dots/ties remain; IN_PROGRESS.
 
 ## Objective
 

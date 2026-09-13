@@ -1,5 +1,29 @@
 # Current Handoff
 
+## D-060 deployed to the OMR VM; Clair's opening tempo is now 69 in production (2026-09-13)
+
+- On the user's explicit approval ("3"), `e5ee7bb` is live. Image `bd2d5e6e…`, `current` retagged;
+  the previous `f858f14e…` is kept as `localhost/clairkeys-omr:rollback-pr159-20260913`. The unit, env
+  and engine are unchanged. [Deployment record](validation/2026-09-13-d060-opening-tempo-deployment.md).
+- Image tests 172 OK / 6 skipped. External health on PORT 3000 returns 200 and unauthorized
+  `/process` returns 401; the unit publishes 3000→8000, so port 8000 is not reachable from outside.
+- Production-module smoke on the issue PDF: 163 notes, 9/8, tempo and scoreTempo 69 (previously
+  null/null). 143/191 events and exact bars 8/15/16/17 are unchanged. The selected XML events are
+  identical to the 2026-09-06 production output, so only tempo interpretation changed.
+- The web upload→callback→player path was NOT exercised. Stored scores are not reconverted; the user
+  must re-upload to see it in the app. Dots and ties remain. #134 stays OPEN pending listening and
+  user confirmation.
+- VM cleanup:
+  - The PDF and .omr were deleted.
+  - The XML/JSON/log files remain in `/data/analysis/pr159-live-R6a7yJ`.
+  - `/tmp` build and test logs remain on the VM.
+  - A combined "collect + rm -rf root" command was denied by the auto-permission check; do not retry
+    it bundled.
+- Next action (user decision):
+  - (1) the dot-link engine patch candidate;
+  - (2) the tie work;
+  - (3) optional app re-upload and listening check for #134.
+
 ## Issue134 dot processing order confirmed by VIP log rerun (2026-09-13)
 
 - The user asked for it explicitly. SYMBOLS was rerun from the saved CURVES checkpoint with
