@@ -1,5 +1,34 @@
 # Current Handoff
 
+## Issue134 residual errors separated against every printed bar; PR159 submitted (2026-09-13)
+
+- [PR159](reviews/PR-159.md) at `bec1e34` is open and non-draft. It does NOT complete #134:
+  the body carries no closing keyword, and `closingIssuesReferences` is empty. NO MERGE OR DEPLOY
+  APPROVAL EXISTS.
+- New source reference `fixtures/recognition/clair-de-lune-full-reference.json` covers all 17 bars of the
+  original PDF (`34d06c…`): 191 raw events, 43 tie starts, opening ♩=69@0. The evaluator now names
+  mismatches by kind.
+- The production result (VM `retry.mxl` `878039a1…`, events identical to the repo retry fixture):
+  - 143/191 events, exact bars 8/15/16/17, ties 23/43.
+  - PITCH ERRORS 0. What remains is rhythm and ties: 11 lost dots, one misattributed dot, m3 duplets,
+    the m5 false triplet and its missing lower voice, m9 bass voices, and 20 missing tie starts.
+- D-060 (in PR159): a first tempo mark that no note sounds before is the opening tempo. Clair's Largo
+  goes from null/unknown/60 to 69/score/69; all 163 notes keep pitch and duration and shift by
+  −0.065218s. 26 other MusicXML inputs, including the real Satie/Always/Love diagnostics, are unchanged.
+- The evaluator cannot tell a lost duplet from a lost dot (identical duration). Read m3 C5 as a duplet.
+- Hypothesis, not proven: a dot touching a tie curve loses one of the two (m1, m2, m10); parallel
+  chord ties often lose one. That is engine-level. Do NOT patch dots or ties into exported XML —
+  D-049 and D-052 still forbid it.
+- Next action:
+  1. Watch PR159's checks and review.
+  2. Ask the user for approval of an isolated VM staged-checkpoint experiment on the same PDF
+     (SYMBOLS/LINKS/RHYTHMS for m1/m2/m10, separate `/data/analysis` root, one JVM, 300s).
+  3. Merge only on explicit approval; deploying needs its own approval.
+  4. #134 still needs production re-conversion and listening after any fix.
+- [Validation](validation/2026-09-13-issue-134-residual-timing.md). Code work happens in worktree
+  `../ClairKeys-issue134`. The user's pre-existing uncommitted HANDOFF edit is preserved and was
+  excluded from this commit.
+
 ## PR158 merged and issue146 closed; stage4 is complete (2026-09-13)
 
 - [PR158](reviews/PR-158.md) merged on explicit user instruction as

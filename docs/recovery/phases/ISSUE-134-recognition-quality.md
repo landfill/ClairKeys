@@ -15,6 +15,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   image equality, external health/auth and real production-module PDF smoke verified (28.704s,9/8,
   163 notes, one overflow). First-bar6/10 and beginning-tempo null remain, so the overall phase stays
   IN_PROGRESS. Live-smoke PDF/image checkpoints removed; diagnostic XML/JSON retained.
+- 2026-09-13: PR159 submitted, not merged or deployed. Full 17-bar source reference (191 events, 43 tie
+  starts, opening ♩=69@0) and evaluator categories pin the production result at 143/191, exact bars
+  8/15/16/17, ties 23/43, pitch errors 0; remaining defects are dots/tuplets/voices/ties. D-060 reads the
+  rest-anchored Largo mark as the opening tempo (null → 69). Engine-level dot/tie work needs VM approval;
+  the phase stays IN_PROGRESS.
 
 ## Objective
 
