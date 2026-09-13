@@ -2353,3 +2353,44 @@
 - Confidence: high
 - Scope-risk: narrow
 - Related: AGENTS.md, WORKFLOW.md, PROJECT_REFERENCE.md
+
+## D-062: 줄 위 두 머리 사이의 점은 아래 머리의 점이다 — 이 한 규칙만 기본 엔진에 패치한다
+
+- Date: 2026-09-13
+- Status: Proposed; accepted when the #134 dot-link PR merges. Not deployed
+- Context:
+  - #134 VIP 로그로 확정한 기전: 한 화음의 두 머리가 인접한 두 줄 위에 있으면 점 두 개가 위 칸과 사이 칸에 찍힌다.
+    `DotFactory.lateDotChecks`는 정수 left x로만 정렬하므로 사이 칸 점이 먼저 처리될 수 있다. 이때
+    `AugmentationDotInter.lookupHeadLink`는 칸 사이 머리가 없으면 `links.get(0)`, 즉 가장 위 머리를 고른다.
+    위 점은 연결할 머리가 없어 inter가 되지 않고, LINKS의 `countDots`가 [1, 0]을 `rint(0.5)=0`으로 반올림해
+    남은 점까지 지운다.
+  - 같은 메서드의 주석은 "칸 사이 머리 → 아래 줄 머리 → 위 줄 머리" 우선순위를 적어 두었지만 구현에는 둘째
+    단계가 없다. pinned `9e1e55cd…`와 2026-09-13 upstream master의 파일이 같다.
+  - 동률 순서가 실행마다 달라진다. 같은 PDF를 기본 엔진으로 세 번 돌리면 원본 기준 이벤트가 143/141/143이다.
+  - 지금까지 recovery engine은 가드가 붙은 후보 경로에서만 썼다(D-054). 하지만 이 결함은 특정 악보가 아니라
+    흔한 화음 모양에서 일어나고, 판정에 쓸 신호도 이미 그래프 안에 있다. 사후 가드로 감싸면 D-049/D-052처럼
+    XML을 비교하는 복잡한 경로가 필요하고, 가드가 모든 정상 악보에서 같은 오류를 잡지도 못한다.
+- Decision:
+  1. `lookupHeadLink`에서 칸 사이 머리 우선은 그대로 둔다. 그런 머리가 없으면 첫 후보 화음 안에서
+     점보다 아래(center y가 큰) 머리를 고른다. 없으면 기존처럼 `links.get(0)`이다.
+     y 허용치(0.8/1.2 interline) 때문에 후보 줄 머리는 점 바로 위·아래 줄뿐이다.
+  2. 다른 화음의 머리는 새 규칙의 대상이 아니다. 후보가 여러 화음에 걸친 경우의 결과는 바뀌지 않는다.
+  3. `Dot.byAbscissa` 정렬, `countDots` 반올림, 점 생성·삭제 임계값, rest/double-dot 연결은 바꾸지 않는다.
+  4. 패치는 `omr-service/audiveris-patches/0002-line-head-dot-link.patch` 하나다. Docker 빌드는 sha256으로 고정한
+     pinned 원본 한 파일에 적용하고, 컴파일한 클래스로 `/opt/audiveris` jar의 해당 클래스만 교체한다.
+     recovery engine은 그 뒤에 복사한다. 그래야 D-054 wedge 후보와 선택 graph가 같은 점 규칙을 쓰고,
+     relation 동일성 가드가 엔진 차이 때문에 흔들리지 않는다.
+  5. XML·JSON의 점·음가를 사후에 고치지 않는다(D-049/D-052 유지). 달라지는 것은 엔진이 원래 인식한 점
+     glyph의 연결뿐이다.
+- Rejected: `Dot.byAbscissa`에 top 동률 해소를 추가 | m2 RH처럼 아래 점의 left가 1px 작으면 동률이 아니라서 순서가 그대로 틀리고, 순서를 고쳐도 머리 선택은 여전히 `links.get(0)`에 달려 있다
+- Rejected: `countDots`에서 [1, 0]을 1로 올림 | 원인이 아니라 결과를 덮는다. 위 점이 실제로 없는 화음에도 점을 퍼뜨린다
+- Rejected: 가드가 붙은 후보 재인식으로만 적용 | 같은 결함이 정상 악보에도 있고(대조군 2곡에서 발견), 정상 경로 결과의 비결정성을 남긴다
+- Rejected: exported XML의 점·음가를 사후 보정 | D-049/D-052 금지
+- Constraint: Audiveris 5.11.0 release jar와 pinned 소스가 같아야 한다. 패치 없는 pinned 소스로 컴파일한 클래스는 release jar 클래스와 `javap -c -p` 명령 수준에서 같다(상수 풀 번호 제외)
+- Confidence: high
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 이 패치를 넓혀 점 삭제 규칙이나 정렬을 바꾸지 않는다. Audiveris 버전을 올릴 때는 upstream 반영 여부를 먼저 확인하고, 반영되지 않았으면 sha256·패치·바이트코드 대조를 다시 한다
+- Tested: 로컬 amd64 이미지(main 대 패치)로 PDF 13개를 실제 wrapper·converter에 통과. 12개 성공 PDF 중 9개는 raw 이벤트와 canonical 음표가 같다. 달라진 3개(Clair 5화음, Première Gymnopédie 1화음, 달빛 쉬운편곡 6화음)는 모두 줄 위 3도 계열 점 추가이고, 원본 이미지와 마디 길이가 맞다. Clair 원본 기준 이벤트 143 → 153/191. 패치 엔진 3회 반복 결과가 같다
+- Not-tested: 운영 VM 배포와 같은 PDF 재업로드, 플레이어 청취, 여러 화음에 걸친 후보 모양의 실제 사례
+- Related: #134, D-049, D-052, D-054, validation/2026-09-13-issue-134-dot-head-link.md
