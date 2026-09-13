@@ -27,6 +27,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-13: User-approved OMR VM rollout of `e5ee7bb` (image `bd2d5e6e…`, rollback tag
   `rollback-pr159-20260913`). Image tests 172 OK/6 skipped; health 200, unauthorized 401. Production
   smoke: 163 notes, tempo/scoreTempo 69 (was null), 143/191 events unchanged. Dots/ties remain; IN_PROGRESS.
+- 2026-09-14: PR161 submitted (D-062), not merged or deployed. lookupHeadLink now prefers the head below
+  the dot within the first chord, so both line-third dots survive. Local amd64 main-vs-patched images over
+  13 PDFs: 9/12 identical, 3 gain only source-confirmed line-third dots; Clair 143 → 153/191 (missing-dot
+  12 → 4), stable over 3 runs while stock varied 143/141. Ties, m1 RH tie-cut dot and tuplets remain.
 
 ## Objective
 
