@@ -1,5 +1,24 @@
 # Current Handoff
 
+## Issue134 dot processing order confirmed by VIP log rerun (2026-09-13)
+
+- The user asked for it explicitly. SYMBOLS was rerun from the saved CURVES checkpoint with
+  `GlyphIndex.vipGlyphs` under the same isolation. No PDF was uploaded; the VM folder was deleted and
+  production is healthy. [Validation section](validation/2026-09-13-issue-134-dot-tie-stages.md).
+- CONFIRMED BY LOG, NO LONGER INFERENCE: in m1 LH, m2 RH, m3 LH (twice) and m13 RH the lower dot is
+  processed first. It claims the upper head, and the upper dot never becomes an inter. All four
+  kept controls process the upper dot first.
+- `Dot.byAbscissa` compares integer left x only. Ties keep insertion order, which is not top-down and
+  varies between runs from the same checkpoint: m7 bass kept both dots this time and lost one before.
+  Expect run-to-run dot differences in production for this PDF.
+- This favours candidate (a), choosing the head below a dot that sits between two line heads, over
+  just sorting. No patch has been adopted, built or deployed.
+- Next action (user decision):
+  - (1) build and validate a pinned 5.11.0 dot-link patch candidate in isolation, with
+    Satie/Always/Love non-regression;
+  - (2) the tie work;
+  - (3) deploy approval for D-060.
+
 ## PR159 merged; isolated VM stage run traced #134's lost dots and ties to the engine (2026-09-13)
 
 - [PR159](reviews/PR-159.md) is merged as `e5ee7bb` on explicit approval; post-merge checks 6/6.
