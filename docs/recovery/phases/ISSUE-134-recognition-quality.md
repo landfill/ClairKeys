@@ -31,6 +31,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   the dot within the first chord, so both line-third dots survive. Local amd64 main-vs-patched images over
   13 PDFs: 9/12 identical, 3 gain only source-confirmed line-third dots; Clair 143 → 153/191 (missing-dot
   12 → 4), stable over 3 runs while stock varied 143/141. Ties, m1 RH tie-cut dot and tuplets remain.
+- 2026-09-14: PR161 merged as `34f9e7e` on explicit approval (PR checks 16/16, post-merge 6/6). Review
+  added a native line-third fixture (stock fails 3/3, patched passes 3/3; image suite 174 OK). Not deployed;
+  VM rollout needs separate approval. Branch kept because a user uncommitted change remains.
 
 ## Objective
 

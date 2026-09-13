@@ -7,15 +7,15 @@ Last updated: 2026-09-14 KST
 문서 규약 최적화는 PR160 `d7bfbc8`로 병합됐다. [검토·병합 기록](reviews/PR-160.md).
 
 **[#134 인식 품질 개선](phases/ISSUE-134-recognition-quality.md) — IN_PROGRESS.**
-시작 템포 수정은 운영 반영됐다. 줄 위 3도 점 누락 수정은 [PR161](reviews/PR-161.md)(D-062)로 제출됐다.
+시작 템포 수정은 운영 반영됐다. 줄 위 3도 점 누락 수정은 [PR161](reviews/PR-161.md)(D-062)로 main에 병합됐다(`34f9e7e`). 운영에는 아직 반영되지 않았다.
 타이·리듬 오류는 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **PR161 리뷰 루프**: 현재 head의 CI·리뷰를 확인하고 [리뷰 로그](reviews/PR-161.md)를 갱신한다.
-   병합은 사용자의 명시적 승인 후에만 한다. 운영 VM 배포는 별도 승인이 필요하다.
+1. **OMR VM 배포(승인 필요)**: `34f9e7e`로 이미지를 빌드한다. 이미지 테스트에서 native 줄 위 3도 suite가
+   skip 없이 통과하는지 확인한다. 롤백 태그를 만든 뒤 교체한다.
 2. **배포 후 앱 확인**: 같은 PDF를 재업로드하고 플레이어에서 청취한다. 기존 저장 악보는 자동 재변환되지 않는다.
 3. **타이 인식 개선**: CURVES 단계의 누락·오분류를 별도 조사한다(점 패치와 분리).
 
@@ -25,7 +25,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   9/8·163음. 원본 이벤트 **143/191**, 정확한 마디 8·15·16·17은 이전과 동일하다.
   이미지 테스트 172 OK / 6 skipped, 외부 health 200·무인증 process 401.
   [배포·롤백 근거](validation/2026-09-13-d060-opening-tempo-deployment.md), [PR159](reviews/PR-159.md).
-- **점 패치(PR161, 운영 미반영)**: 로컬 amd64 이미지로 main과 패치를 PDF 13개에 비교했다.
+- **점 패치(PR161 병합 `34f9e7e`, 운영 미반영)**: 로컬 amd64 이미지로 main과 패치를 PDF 13개에 비교했다.
   - 성공 12개 중 9개는 결과가 같다. 3개(Clair·Première Gymnopédie·달빛 쉬운편곡)는 원본에 있는
     줄 위 3도 점만 늘었다.
   - Clair 원본 이벤트 143 → **153/191**. 패치 엔진은 3회 결과가 같고, 기본 엔진은 143/141로 흔들렸다.
@@ -37,8 +37,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Known blockers / constraints
 
-- PR160 로컬·원격 tip은 main에 포함됐다. 기존 사용자 미커밋 이력 메모가 남아 있어 규약에 따라
-  `codex/doc-agent-contract` 로컬·원격 브랜치를 보존했다. 사용자 변경이 해소된 뒤 정리한다.
+- PR160·PR161 로컬·원격 tip은 main에 포함됐다. 사용자의 미커밋 이력 메모
+  (`validation/2026-09-13-handoff-history.md`)가 남아 있어 규약에 따라 두 브랜치를 보존했다.
+  보존한 브랜치는 `codex/doc-agent-contract`, `codex/issue-134-dot-head-link`이고, 사용자 변경이 해소된 뒤 정리한다.
 
 - 로컬 Docker 이미지 `clairkeys-omr:stock-main`·`dot-link`는 검증용이다. 운영 이미지와 같다고 주장하지 않는다.
   배포 시 VM에서 병합 커밋으로 새로 빌드하고 이미지 테스트를 다시 실행해야 한다.
