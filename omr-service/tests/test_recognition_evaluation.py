@@ -212,6 +212,13 @@ class ProductionRecognitionBaselineTests(unittest.TestCase):
         self.assertEqual((sum(t[0] for t in ties), sum(sum(t) for t in ties)), (23, 43))
         self.assertTrue(all(m['meterMatches'] for m in result['measures']))
 
+    def test_opening_largo_mark_is_read_as_the_opening_tempo(self):
+        # Audiveris anchors "Largo (dotted quarter = 46)" after the first rest;
+        # nothing sounds before it, so it is the printed opening tempo.
+        self.assertEqual(self.result['openingTempo'],
+                         {'expectedQuarterBpm': 69, 'actualQuarterBpm': 69.0, 'matches': True})
+
+
 
 if __name__ == '__main__':
     unittest.main()

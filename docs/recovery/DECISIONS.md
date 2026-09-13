@@ -2305,3 +2305,40 @@
 - Tested: Playwright 160/160 (5개 브라우저 프로젝트), jest upload 59/59, lint 0 warnings/0 errors, tsc 0 errors. 경계 양쪽(390/767/768)과 모든 뷰포트 케이스에서 규칙이 단언된다.
 - Not-tested: 실제 가로 모드 기기, 브라우저 자체 확대, 스크린리더.
 - Related: 이슈 #146, PR157, D-058
+
+## D-060: 소리가 나기 전의 첫 템포 표기는 곡 시작 템포다 (D-048 결정 4 일부 대체)
+
+- Date: 2026-09-13
+- Status: Accepted when the #134 residual-timing PR merges; not deployed
+- Replaces: D-048 결정 4의 "0박에 표기된 템포만 곡 시작 metadata를 결정한다"를 아래 조건으로 좁힌다.
+  그 결정이 막으려던 것(음이 이미 울린 뒤의 템포 변경을 곡 전체 템포로 끌어올리는 일)은 그대로 막는다.
+- Context:
+  - #134 원본은 첫 마디 위에 "Largo (♩. = 46)"를 인쇄한다. Audiveris 5.11.0은 이 direction을 가장
+    가까운 기호인 첫 8분쉼표 뒤(0.5박)에 붙여 export한다. 기본 인식과 9/8 재시도 결과, 그리고
+    2026-09-06 운영 스모크 `retry.mxl`(878039a1…)이 모두 같다.
+  - D-048 결정 4 때문에 이 곡의 `scoreTempo`는 null, `tempoSource`는 unknown이고, 사용자 템포가
+    없으면 첫 0.5박을 기본 60으로 재생한 뒤 69로 바뀐다. 인쇄된 곡 시작 템포가 있는데 "미상"으로
+    표시되는 것이 #134의 남은 템포 위치 오류다.
+  - 0.5박 이전에는 어느 파트에도 음표가 없다. 첫 표기를 0으로 옮겨도 달라지는 것은 첫 음 앞 무음의
+    길이(0.5s → 0.435s)뿐이고 어떤 음의 음가나 상대 위치도 바뀌지 않는다.
+- Decision:
+  1. 0박에 템포가 없고, 전역 템포 지도에서 가장 이른 템포 표기의 위치가 모든 파트의 첫 비쉼표 음표
+     onset보다 늦지 않으면 그 표기를 0박으로 옮긴다. 비쉼표 음표에는 unpitched와 grace도 포함한다
+     (보수적으로 "소리가 날 수 있는 모든 음표"). 음표가 전혀 없는 악보도 옮긴다.
+  2. 옮기는 것은 가장 이른 표기 하나뿐이다. 그 뒤의 템포 변경은 원래 위치를 유지한다.
+  3. 판단은 D-048의 전역 위치(파트별 시작 + 마디 내 onset, playback offset 반영)로 한다. 마디 번호나
+     "첫 마디" 같은 위치 규칙을 쓰지 않는다. 한 파트라도 먼저 소리가 나면 기존대로 나중 변경이다.
+  4. 사용자 override 우선순위와 canonical 필드(`tempo`, `tempoSource`, `timingReferenceBpm`,
+     `scoreTempo`) 형태는 바꾸지 않는다. XML/음표/음가/타이는 어떤 것도 고치지 않는다.
+  5. D-049 재시도 가드의 시작 템포 비교는 같은 `scan_score`를 쓰므로 원본과 후보에 동일하게 적용된다.
+- Rejected: MusicXML direction을 사후에 0박으로 다시 쓴다 | 인식 결과 파일을 고치는 것은 D-049/D-052의 금지와 같고, 해석으로 충분하다
+- Rejected: 첫 마디 안의 첫 템포는 무조건 시작 템포 | pickup이나 다른 파트가 먼저 울린 뒤의 실제 변경을 곡 전체에 퍼뜨린다
+- Rejected: 쉼표 앞뒤 템포 차이를 경고로만 남긴다 | 인쇄된 시작 템포를 계속 미상으로 표시하고 재생 시작 60 BPM도 그대로 남는다
+- Constraint: 기존 저장 악보는 재변환되지 않는다. 운영 반영은 병합 후 별도 배포 승인이 필요하다
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 이 규칙을 "마디 번호"나 "첫 direction" 기준으로 넓히지 않는다. 소리보다 앞선 표기인지가 유일한 조건이다
+- Tested: 운영 retry fixture의 시작 템포 None → 69, 합성 MusicXML 4건(쉼표 뒤 표기, 다른 파트 선행음, 무음 마디 뒤 표기와 후속 변경, 사용자 override)
+- Not-tested: 운영 VM 배포 후 같은 PDF 재변환, 실제 플레이어 청취
+- Related: #134, D-048, D-049, fixtures/recognition/clair-de-lune-full-reference.json
