@@ -20,6 +20,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   8/15/16/17, ties 23/43, pitch errors 0; remaining defects are dots/tuplets/voices/ties. D-060 reads the
   rest-anchored Largo mark as the opening tempo (null → 69). Engine-level dot/tie work needs VM approval;
   the phase stays IN_PROGRESS.
+- 2026-09-13: PR159 merged as `e5ee7bb` on explicit approval (post-merge checks 6/6); not deployed.
+  User-approved isolated VM stage run traced dots: LINKS deletes 8 SYMBOLS dots via a line-line third
+  chord linking only one dot then `countDots` rint(0.5)=0 (plus one tie-cut dot in m1). Ties are fixed at
+  CURVES: 10 undetected, 5 cross-system mis-pairings, 1 slur misclassification. No fix adopted yet.
 
 ## Objective
 

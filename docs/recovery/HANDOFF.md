@@ -1,5 +1,36 @@
 # Current Handoff
 
+## PR159 merged; isolated VM stage run traced #134's lost dots and ties to the engine (2026-09-13)
+
+- [PR159](reviews/PR-159.md) is merged as `e5ee7bb` on explicit approval; post-merge checks 6/6.
+  NOT DEPLOYED, so production still reports scoreTempo null for this PDF until a separate deploy is
+  approved. #134 stays OPEN. The branch and worktree are removed; `main` is the only branch.
+- The user approved an isolated VM stage run and it is done: CURVES/SYMBOLS/LINKS/RHYTHMS/PAGE plus
+  the production meter retry, using the production image in network-none containers. The VM staging
+  was deleted and production is healthy. [Validation](validation/2026-09-13-issue-134-dot-tie-stages.md).
+  Outputs, including image-bearing .omr, stay only in git-excluded `local-test-data/results/issue134-dots-2026-09-13/`.
+- DOTS:
+  - LINKS deletes 8 SYMBOLS dots. On line-line third chords only one dot became an inter, and it
+    was linked to the upper head. `countDots` then rounds [1,0] with `Math.rint(0.5)=0` and deletes
+    the remaining dot too.
+  - m1 RH differs: its dot is cut by the tie curve glyph.
+  - `Dot.byAbscissa` compares integer left x only, which breaks `lookupHeadLink`'s top-down
+    assumption. This processing order is STRONGLY SUPPORTED INFERENCE, NOT LOGGED.
+  - A sub-pixel centroid ordering hypothesis was falsified and dropped.
+- TIES are fixed at CURVES and never revised later. Of 20 missing tie starts:
+  - 10 curves are never detected (long parallel ties inside the staff);
+  - 5 are cross-system pieces paired with slur pieces;
+  - 1 same-pitch arc is classified as a slur;
+  - 4 cascade from earlier rhythm errors.
+- The stage rerun matched the 2026-09-06 production events except the m10 bass dot. Checkpoint
+  reload can shift a result slightly; do not treat one run as fully deterministic.
+- Next action (user decision):
+  - (1) a debug-log rerun to confirm dot order;
+  - (2) a pinned-5.11.0 dot-link patch candidate — prefer the head below the dot for line-line
+    heads — with Satie/Always/Love non-regression;
+  - (3) the tie work, which is broader;
+  - (4) a separate deploy approval for D-060.
+
 ## Issue134 residual errors separated against every printed bar; PR159 submitted (2026-09-13)
 
 - [PR159](reviews/PR-159.md) at `bec1e34` is open and non-draft. It does NOT complete #134:
