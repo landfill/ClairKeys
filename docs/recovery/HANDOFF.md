@@ -4,6 +4,8 @@ Last updated: 2026-09-13 KST
 
 ## Current phase
 
+문서 규약 최적화: [PR160 검토 기록](reviews/PR-160.md). 코드 변경 없이 규칙 중복·충돌을 정리했다.
+
 **[#134 인식 품질 개선](phases/ISSUE-134-recognition-quality.md) — IN_PROGRESS.**
 시작 템포 수정은 운영 반영됐지만 점·타이·리듬 오류는 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
