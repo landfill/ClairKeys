@@ -8,6 +8,8 @@ const PYTHON = process.env.PYTHON_BIN || 'python3'
 describe('OMR processor and recognition evaluation contracts', () => {
   it.each([
     'test_audiveris_runtime.py',
+    // Skips without a native engine; the OMR image test run executes it.
+    'test_line_third_dots_native.py',
     'test_recognition_evaluation.py',
     'test_meter_retry.py',
     'test_meter_retry_runtime.py',
