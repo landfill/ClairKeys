@@ -1,124 +1,72 @@
 # Branch, Validation, PR, and Review Workflow
 
-## 1. 작업 시작
+핵심 규칙·시작 시 읽기 순서·상태 기록 분류는 [AGENTS.md](../../AGENTS.md)가 기준이다.
+이 문서는 그 규칙을 실행하는 절차다. 기본 브랜치와 신규 PR base는 `main`이다.
+DOC-1의 과거 `master` 전환 예외는 [당시 phase](phases/DOC-1-default-branch-main-migration.md)에 남긴다.
 
-DOC-1은 `main` 생성 전 기본 브랜치 rename을 준비하므로 `master`에서 분기하고 PR base도 `master`를 사용하는 일회성 예외다. 아래 일반 규칙은 DOC-1 병합과 GitHub branch rename이 완료된 뒤 적용한다.
+## 1. 작업 준비와 구현
 
-```text
-git fetch origin, then if main is behind origin/main: git pull --ff-only (if on main) or git fetch origin main:main (if on another branch)
-→ read AGENTS.md
-→ read docs/recovery/README.md
-→ read docs/recovery/HANDOFF.md
-→ read the current phase document named by HANDOFF.md
-→ read docs/recovery/WORKFLOW.md
-→ read docs/recovery/BASELINE.md
-→ read docs/recovery/LORE_COMMIT_PROTOCOL.md
-→ inspect git branch/status
-→ create codex/<phase>-<topic> branch from main
-→ write or update phase plan
-```
+1. AGENTS의 세션 시작 절차로 원격 동기화·사용자 변경 확인·문서 읽기를 마친다.
+2. 최신 main에서 `codex/<phase>-<topic>`을 만든다. 관련 phase 계획을 확인하거나 작성한다.
+3. 동작 변경은 재현 테스트·fixture와 실패 결과를 먼저 확보한다.
+4. 하나의 원인 또는 계약을 수정하고 관련 필수 검증을 실행한다. 스펙 이탈은 phase·DECISIONS를 먼저 수정한다.
+5. 검증 명령·결과·baseline 차이·미검증 범위를 `validation/YYYY-MM-DD-<phase>-<slug>.md`에 기록한다.
+6. 변경 내용을 AGENTS의 커밋 분류에 따라 작업 브랜치와 main 상태 기록으로 분리한다.
 
-- 기본 브랜치에서 파일을 수정하지 않는다.
-- 작업 트리가 dirty하면 기존 변경의 소유권을 확인하고 자신의 파일만 선별한다.
-- 단계별 브랜치를 재사용하지 않는다. 이미 PR이 종료된 브랜치는 새 작업에 사용하지 않는다.
+## 2. 커밋과 상태 기록
 
-## 2. 구현 순서
+- 작업 브랜치에는 코드·테스트·규약·계획·관련 결정을 커밋한다. 하나의 커밋은 하나의 결정 단위다.
+- 파일을 명시적으로 stage하고 `git status --short`와 staged diff로 사용자 변경이 섞이지 않았는지 확인한다.
+- 커밋 형식과 trailer는 [Lore](LORE_COMMIT_PROTOCOL.md)를 따른다.
+- 상태 기록은 매 작업 단위 직후 main에 반영한다. 별도 상태 기록 PR은 만들지 않는다.
 
-1. 문제를 재현하거나 golden fixture를 추가한다.
-2. 실패하는 검증 결과를 기록한다.
-3. 하나의 원인 또는 계약을 수정한다.
-4. 좁은 테스트에서 전체 검증 순으로 실행한다.
-5. `docs/recovery/validation/YYYY-MM-DD-<phase>-<slug>.md`를 작성한다.
-6. `docs/recovery/HANDOFF.md`와 단계 상태(`docs/recovery/phases/*.md`)를 갱신한다.
-7. 단계 완료 시점의 다음 행동과 blocker가 프로젝트 내부 HANDOFF에 남아 있는지 확인한다.
+작업 브랜치에서 상태 기록을 작성했다면 다음 순서로 분리한다:
 
-5·6·7단계의 문서 갱신은 코드 작업 브랜치의 커밋이 아니다 — `main`에 직접 커밋한다 (AGENTS.md "핸드오프 문서는 즉시 `main` 커밋" 참조). 코드 작업 브랜치에는 1~4단계, 즉 코드와 테스트 변경만 남는다.
+1. 작업 브랜치 변경을 선별 커밋한다. 사용자 변경을 임의 stash·reset하지 않는다.
+2. 원격을 fetch하고 main을 fast-forward한다. 상태 파일 변경이 안전하게 이동 가능한지 확인한 뒤 main으로 전환한다.
+   전환이 사용자 변경과 충돌하면 중단하고 blocker를 기록한다. 강제 전환하지 않는다.
+3. 상태 파일만 stage하고 내용·명령·SHA·결과 및 사용자 변경 제외 여부를 확인한다.
+4. Lore 형식으로 커밋·push하고 해당 SHA의 check-runs를 확인한다. 실패가 있으면 즉시 다음 상태 기록 커밋에 남긴다.
+5. 작업이 남으면 작업 브랜치로 돌아간다. main에만 둔 상태 기록을 코드 커밋에 다시 섞지 않는다.
 
-## 3. 커밋
+## 3. PR과 리뷰 반복
 
-이 절은 코드 작업 브랜치의 커밋에 적용한다. `docs/recovery/HANDOFF.md`, phase 상태, `validation/`, `reviews/` 같은 핸드오프 문서는 브랜치 없이 `main`에 직접 커밋하며(AGENTS.md 참조), 아래 stage·Lore 형식 규칙은 그 커밋에도 동일하게 적용한다.
+1. 검증된 범위로 non-draft PR을 생성한다. 목적·범위·제외 범위·위험·검증·baseline 차이·rollback 방법을 설명한다.
+2. 번호가 생기면 즉시 `reviews/PR-<number>.md`를 만들고 HANDOFF에서 연결한다. §2에 따라 main에 기록한다.
+3. 현재 head의 CI와 리뷰를 확인하고 각 finding을 아래 상태로 분류한다.
+4. 유효한 finding은 재현 → 최소 수정 → 검증 → 작업 브랜치 커밋·push 후 재확인한다.
+5. 리뷰 로그를 main에 갱신한다. 리뷰·CI 수정이 끝날 때까지 반복한다.
 
-- 관련 파일만 명시적으로 stage한다. `git add .`는 사용하지 않는다.
-- 한 커밋은 하나의 결정 또는 검증 가능한 변화만 담는다.
-- [`docs/recovery/LORE_COMMIT_PROTOCOL.md`](LORE_COMMIT_PROTOCOL.md)에 정의된 형식과 필수 trailer를 사용한다.
+| 리뷰 상태 | 의미 |
+|---|---|
+| OPEN | 미검토 |
+| ACCEPTED | 유효하며 수정 예정 |
+| FIXED | 수정·검증 완료 |
+| REJECTED | 근거를 기록하고 적용하지 않음 |
+| SUPERSEDED | 후속 리뷰·설계로 대체 |
 
-예시:
+리뷰 루프 종료에는 필수 CI 성공, 미해결 actionable review와 새 실패 없음, 최신 리뷰 로그·HANDOFF가 필요하다.
+기준선 때문에 실행 불가능한 검증은 이유와 후속 단계를 기록하며 전체 검증 성공으로 표현하지 않는다.
+이 상태에서도 대상 PR의 명시적 병합 승인을 기다린다.
 
-```text
-Make animation data portable across conversion and playback
+## 4. 승인 후 병합과 정리
 
-The Python converter and TypeScript player used incompatible note and
-hand fields, so the boundary now uses one versioned contract.
+1. 대상 PR 승인 후 현재 head의 CI·리뷰·mergeability를 다시 확인하고 병합한다.
+2. main에 실제 병합 커밋이 반영됐는지 및 그 커밋의 체크 결과를 확인한다.
+3. 원격 ref를 fetch하고 로컬·원격 작업 브랜치 tip 모두 최신 main에 포함됐는지 확인한다.
+4. 사용자 미커밋 변경 또는 어느 tip의 고유 커밋이 있으면 두 브랜치를 보존하고 HANDOFF에 blocker를 기록한다.
+5. 두 tip 모두 포함되고 사용자 미커밋 변경이 없으면 원격 브랜치 삭제 → main 이동 → 로컬 브랜치 삭제 순서로 정리한다.
+6. 병합·검증·정리 결과를 HANDOFF·phase 상태·validation·review에 main 직접 커밋으로 남긴다.
+7. 다음 코드 작업은 최신 main에서 새 브랜치를 만든다.
 
-Constraint: Existing stored animation files require a compatibility reader
-Rejected: Cast remote JSON to PianoAnimationData | hides malformed data
-Confidence: high
-Scope-risk: moderate
-Directive: Change the animation schema only through a versioned migration
-Tested: Contract fixtures and parser unit tests
-Not-tested: Full Audiveris output corpus
-```
+단계 DONE은 병합과 완료 조건 충족 후에만 확정한다. 마감 PR에 예정 상태를 담았다면 병합 순간부터 효력이 생긴다.
+예정 DONE만으로 의존 단계 브랜치를 시작하지 않는다.
 
-## 4. PR 생성
+## 5. 세션 종료 확인
 
-- PR base는 실제 기본 브랜치인 `main`을 사용한다.
-- DOC-1 migration PR만 rename 전 실제 기본 브랜치인 `master`를 base로 사용한다.
-- PR은 처음부터 review-ready 상태로 생성한다. Draft PR은 사용하지 않으며, 실수로 Draft가 생성되면 즉시 ready for review로 전환한다.
-- PR 본문에는 목적, 범위, 제외 범위, 위험, 검증, baseline 차이, rollback 방법을 포함한다.
-- PR 번호가 생기면 즉시 `docs/recovery/reviews/PR-<number>.md`를 생성한다 — 이 파일도 핸드오프 문서이므로 PR 브랜치가 아니라 `main`에 직접 커밋한다.
-
-## 5. 리뷰·CI 반복
-
-```text
-fetch PR checks and unresolved comments
-→ classify every item
-→ reproduce actionable feedback
-→ make smallest fix
-→ run focused and required verification
-→ commit and push the fix to the PR branch
-→ before committing the review log: git fetch origin, fast-forward local main if behind (AGENTS.md 0번 규칙과 동일)
-→ stage only the review log (and HANDOFF, if it changed); confirm with git status --short that no code or contract file is staged
-→ commit and push directly to main
-→ query gh api .../commits/<sha>/check-runs and record the result in the next handoff commit if anything failed
-→ repeat until clean
-```
-
-리뷰 항목 상태:
-
-- `OPEN`: 미검토
-- `ACCEPTED`: 유효하며 수정 예정
-- `FIXED`: 수정·검증·커밋 완료
-- `REJECTED`: 적용하지 않으며 근거 기록
-- `SUPERSEDED`: 후속 리뷰나 설계 변경으로 대체
-
-다음 조건을 모두 만족할 때만 리뷰 루프가 끝난다.
-
-- 필수 CI가 모두 성공하거나 저장소 기준선상 불가능한 이유와 후속 단계가 명시됨
-- 해결되지 않은 actionable review가 없음
-- 새 실패가 없음
-- review log와 `docs/recovery/HANDOFF.md`가 최신임
-
-## 6. 병합 정책
-
-- 코드 에이전트는 대상 PR에 대한 사용자의 명시적 승인 없이 `main`에 병합하지 않는다. PR 생성, ready 전환, 초록 CI, 승인 리뷰 또는 이전 단계의 일반 지시는 병합 승인으로 해석하지 않는다.
-- 병합 승인 후에도 현재 head의 필수 CI, unresolved actionable review, mergeability를 다시 확인한 뒤 병합한다.
-- 병합 후에만 단계 상태를 `DONE`으로 바꾼다. 단, 마감 PR이 상태 변경 자체를 운반할 때는 `DONE`을 병합 예정 상태로 기록하고 해당 표시는 `main` 병합 순간에만 효력이 생긴다.
-- 마감 PR이 열려 있는 동안에는 `DONE` 예정 표시만으로 의존 단계 브랜치를 시작하지 않는다.
-- 병합 직후 원격 `main`에 병합 커밋이 반영됐는지 확인하고 최신 `main`으로 이동한다.
-- 삭제 전에 원격 ref를 fetch하고 최신 `main`에 로컬 작업 브랜치 tip과 원격 작업 브랜치 tip이 모두 포함됐는지 확인한다. 어느 한쪽에라도 고유 커밋이 있거나 사용자 소유 미커밋 변경이 있으면 원격·로컬 브랜치를 모두 보존하고 프로젝트 HANDOFF에 blocker로 기록한다.
-- 두 tip이 모두 병합된 경우에만 원격 작업 브랜치를 삭제한 뒤 로컬 작업 브랜치도 삭제한다.
-- 병합 결과와 다음 행동은 HANDOFF·phase·validation·review 기록에 반영한다. 병합 이후에만 확정 가능한 SHA나 상태를 포함해, 이 기록은 `main`에 직접 커밋한다 — 이것만을 위한 별도 handoff-sync 브랜치나 PR을 만들지 않는다.
-- 다음 단계에 코드 작업이 필요하면 최신 `main`에서 새 `codex/<phase>-<topic>` 브랜치를 만든다.
-
-## 7. HANDOFF 저장 위치
-
-- canonical HANDOFF는 `docs/recovery/HANDOFF.md`다.
-- 단계 범위와 완료 조건은 `docs/recovery/phases/`, 실행 증거는 `docs/recovery/validation/`, PR 피드백은 `docs/recovery/reviews/`, 변경된 결정은 `docs/recovery/DECISIONS.md`에 저장한다.
-- 채팅 메시지, `/tmp`, 홈 디렉터리, 외부 메모 또는 도구 내부 상태는 보조 정보일 뿐이며 단독 인계 수단이 될 수 없다.
-- 각 단계의 커밋, PR, 리뷰 수정, 병합, 브랜치 정리 결과는 다음 세션이 프로젝트 파일만 읽고 복원할 수 있도록 기록한다.
-- durable HANDOFF에는 병합 순간 stale해지는 PR `OPEN`/ready 상태나 현재 작업 브랜치를 고정하지 않는다. transient 상태는 `reviews/PR-<number>.md`와 GitHub live state에서 확인한다.
-- `HANDOFF.md`, `phases/*.md`의 `Status`·`Progress`, `validation/`, `reviews/`, `ROADMAP.md`의 상태 칼럼은 PR·리뷰 대상이 아니라 `main`에 즉시 커밋하는 대상이다. `DECISIONS.md`의 신규 항목은 예외가 아니다 — 결정을 기록하는 행위 자체가 판단이므로, 그 결정이 뒤따르는 코드·규약·계획 변경과 같은 브랜치·PR에서 함께 커밋한다. AGENTS.md "핸드오프 문서는 즉시 `main` 커밋" 절이 정의를 갖는 canonical 위치이며, 이 문서는 그 목록을 따른다.
-
-## Default branch invariant
-
-DOC-1 완료 후 GitHub default branch, `origin/HEAD`, 로컬 추적 브랜치와 신규 PR base는 모두 `main`이어야 한다. 과거 clone은 GitHub 안내에 따라 로컬 브랜치 이름과 upstream을 갱신하고, Actions·배포·ruleset에서 남은 `master` 참조가 없는지 확인한다.
+- 해당 작업의 필수 검증과 미검증 범위가 validation에 있는가?
+- 현재 상태·다음 행동·blocker가 간결한 HANDOFF에 있고 상세 근거로 연결되는가?
+- 결정 변경이 관련 작업 브랜치·PR에 포함되고 상태 기록은 main에 반영됐는가?
+- PR은 non-draft이며 최신 CI·리뷰 결과가 기록됐는가?
+- 병합했다면 main 반영과 브랜치 정리 또는 보존 사유가 기록됐는가?
+- 사용자 변경을 보존했고 모든 인계 근거가 저장소 안에 있는가?

@@ -1,184 +1,70 @@
 # ClairKeys Agent Operating Contract
 
-이 파일은 ClairKeys에서 작업하는 모든 코드 에이전트(세션·머신·에이전트 종류를 가리지 않는다)의 공통 진입점이다.
+모든 세션·머신·에이전트의 공통 규약이다. 핵심 규칙과 커밋 분류는 이 파일,
+실행 절차는 [WORKFLOW](docs/recovery/WORKFLOW.md), 커밋 형식은 [Lore](docs/recovery/LORE_COMMIT_PROTOCOL.md)가 기준이다.
 
-## 핵심 원칙 — 맥락은 저장소 안에만 남긴다
+## 세션 시작
 
-에이전트의 개인 메모리(예: Claude Code의 `~/.claude/.../memory/`)는 세션·머신·에이전트 종류가 달라지면 접근할 수 없다. 이 프로젝트에 관한 진행 상태·결정·다음 할 일·막힌 지점은 전부 저장소 안 파일(`docs/recovery/`)에 기록하고, 개인 메모리에는 의존하지 않는다. 하위 에이전트(subagent)를 띄운 경우에도 그 결과와 결정은 이 규약대로 `docs/recovery/`에 회수하며, 하위 에이전트의 개인 메모리에만 남기지 않는다.
+1. 문서를 읽기 전에 `git fetch origin`을 실행하고 `git branch --show-current`, `git status --short`를 확인한다.
+2. `git rev-list --count main..origin/main`이 0이 아니면 로컬 `main`을 fast-forward한다.
+   현재 `main`이면 `git pull --ff-only`, 다른 브랜치이면 `git fetch origin main:main`을 사용한다.
+   충돌·분기·사용자 변경 때문에 안전하게 동기화할 수 없으면 덮어쓰지 말고 blocker를 기록한다.
+3. 다음 순서로 읽는다:
+   [README](docs/recovery/README.md) → [HANDOFF](docs/recovery/HANDOFF.md) → HANDOFF의 현재 phase →
+   [WORKFLOW](docs/recovery/WORKFLOW.md) → [BASELINE](docs/recovery/BASELINE.md) → [Lore](docs/recovery/LORE_COMMIT_PROTOCOL.md).
+4. HANDOFF의 `Current phase`, `Next action`, `Known blockers`와 phase의 진입·완료 조건으로 범위를 정한다.
+   사용자 요청이 다른 작업이면 해당 범위를 우선하고, 범위 밖 문제는 후속 단계 후보로 기록한다.
+5. 코드·규약·계획 변경은 최신 `main`에서 `codex/<phase>-<topic>` 브랜치를 만든 뒤 시작한다.
+   종료된 PR 브랜치는 재사용하지 않는다. 상태 기록은 아래 직접 커밋 예외를 따른다.
 
-새 세션은 코드 수정 전에 반드시 다음을 순서대로 수행한다.
+## 변경·검증·승인
 
-0. **원격 동기화** — 문서를 읽기 전에 저장소부터 최신으로 만든다. `git fetch origin` 후 로컬 `main`이 `origin/main`보다 뒤처져 있으면(`git rev-list --count main..origin/main`이 0이 아니면) 동기화한다: 현재 `main`에 있다면 `git pull --ff-only`, 다른 브랜치(예: 재개한 작업 브랜치)에 있다면 `main`을 체크아웃하지 않고 `git fetch origin main:main`으로 바로 fast-forward한다. 다른 머신·다른 에이전트(클라우드 세션 포함)가 병합한 결과가 원격에만 있을 수 있다 — 낡은 클론에서 읽은 HANDOFF는 낡은 진실이고, 낡은 base에서 딴 브랜치는 불필요한 충돌을 만든다.
-1. `docs/recovery/README.md`
-2. `docs/recovery/HANDOFF.md`
-3. 현재 작업 단계 문서
-4. `docs/recovery/WORKFLOW.md`
-5. `docs/recovery/BASELINE.md`
-6. `docs/recovery/LORE_COMMIT_PROTOCOL.md`
+- 기존 미커밋 변경은 사용자 소유다. 되돌리거나 자신의 커밋에 섞지 않는다.
+- 한 PR에는 하나의 단계 또는 명확한 목적만 담는다. 관련 파일만 명시적으로 stage한다.
+- 동작 변경 전에 회귀 테스트 또는 재현 fixture를 추가한다. 관련 필수 검증의 명령·결과·한계를 기록해야 구현 완료를 주장할 수 있다.
+- 스펙·phase와 달라야 한다면 관련 phase와 `docs/recovery/DECISIONS.md`에 이유를 먼저 기록한 뒤 구현한다.
+- 모든 커밋은 Lore 형식을 따른다. Lore에 정의된 trailer key만 허용하며 `Co-Authored-By:`·`Claude-Session:` 등 에이전트 서명을 넣지 않는다.
+- PR은 생성부터 review-ready여야 한다. Draft로 생성했다면 즉시 ready로 전환한다.
+- PR 생성 후 CI와 리뷰를 확인하고 actionable feedback의 수정·검증·커밋·푸시를 반복한다.
+- **main 병합은 대상 PR에 대한 사용자의 명시적 승인 후에만 한다.** 초록 CI·승인 리뷰·리뷰 준비·과거 포괄적 지시는 병합 승인이 아니다.
+- 승인 후에도 현재 head의 CI·리뷰·병합 가능 상태를 다시 확인하고, 병합 후 main 반영을 검증한다.
+- 브랜치 삭제 전 원격 ref를 fetch하고 로컬·원격 tip 모두 최신 main에 포함됐는지 확인한다.
+  사용자 미커밋 변경 또는 어느 tip의 고유 커밋이라도 있으면 둘 다 보존하고 HANDOFF에 blocker를 기록한다.
+  모두 포함된 경우에만 원격 브랜치 삭제 → 로컬 main 이동 → 로컬 브랜치 삭제 순서로 정리한다.
 
-## 절대 규칙
+## 커밋 대상 분류
 
-- `master` 또는 `main`에 직접 커밋하지 않는다. 단, 아래 "핸드오프 문서는 즉시 `main` 커밋" 절에 정의된 문서는 예외로, PR·리뷰 없이 바로 `main`에 커밋·푸시한다.
-- 모든 작업은 `codex/<phase>-<topic>` 형식의 별도 브랜치에서 수행한다. (역시 핸드오프 문서 예외 적용)
-- 기존 미커밋 변경은 사용자 소유로 간주하고 되돌리거나 함께 커밋하지 않는다.
-- 한 PR에는 하나의 단계 또는 하나의 명확한 목적만 포함한다.
-- PR은 생성 시점부터 리뷰 가능한 상태여야 한다. Draft PR은 생성하지 않으며, 실수로 Draft가 생성되면 즉시 ready for review로 전환한다.
-- 동작 변경 전 회귀 테스트 또는 재현 fixture를 먼저 추가한다.
-- 구현 완료 주장은 검증 명령과 결과가 기록된 경우에만 한다.
-- 구현이 스펙·phase 문서와 달라야 할 이유가 생기면 코드부터 고치지 않는다. 관련 phase 문서와 `docs/recovery/DECISIONS.md`를 먼저 갱신해 이유를 기록한 뒤 구현한다. 임의 이탈은 다음 세션에게 "문서와 코드 중 뭐가 맞나"라는 혼란을 남긴다.
-- 커밋은 `docs/recovery/LORE_COMMIT_PROTOCOL.md`에 정의된 Lore Commit Protocol을 따른다. 커밋 메시지에 에이전트 서명이나 세션 트레일러(`Co-Authored-By:`, `Claude-Session:` 등)를 넣지 않는다 — Lore 형식이 정의한 trailer key만 사용한다.
-- PR 생성 후 CI와 리뷰 피드백을 확인하고, 수정·검증·커밋·푸시를 반복한다.
-- `main` 병합은 대상 PR에 대한 사용자의 명시적 승인 후에만 수행한다. 리뷰 준비 완료, 승인 리뷰, 초록 CI 또는 과거의 포괄적 지시는 병합 승인으로 간주하지 않는다.
-- 병합 승인을 받으면 현재 CI와 리뷰 상태를 다시 확인하고 PR을 병합한 뒤, `main` 반영을 검증하고 원격·로컬 작업 브랜치를 정리한다.
-- 정규 HANDOFF와 검증·리뷰 기록은 모두 이 프로젝트 경로 안에 저장한다. 채팅, `/tmp`, 홈 디렉터리, 에이전트 개인 메모리 또는 외부 노트만으로 인계를 대신하지 않는다.
-- HANDOFF와 검증 기록은 세션 종료를 기다리지 않고, 작업 단위(커밋·PR·이슈 처리 등)가 끝날 때마다 즉시 갱신한다. 기록하는 날짜는 항상 실제 절대 날짜(YYYY-MM-DD)로 쓰고, "어제"·"다음에" 같은 상대 표현은 쓰지 않는다 — 다음 세션이 오독한다.
+기본 브랜치 `main`/`master`에 직접 커밋하지 않는다. 아래 **상태 기록만** PR·리뷰·병합 승인 없이 main에 즉시 커밋·푸시한다.
+분류는 파일명뿐 아니라 변경 내용으로 판단하며, 혼합 변경은 분리한다.
 
-## 핸드오프 문서는 즉시 `main` 커밋
+| main 직접 커밋: 사실·상태 기록 | 작업 브랜치와 PR: 판단·동작 변경 |
+|---|---|
+| `docs/recovery/HANDOFF.md` 현재 상태 | 애플리케이션 코드 |
+| `docs/recovery/phases/*.md`의 Status·Progress | phase의 Objective·Work stages·Completion criteria 등 계획 |
+| `docs/recovery/validation/*.md` 검증 기록 | `AGENTS.md`, `WORKFLOW.md`, `LORE_COMMIT_PROTOCOL.md`, `BASELINE.md`, `README.md` 등 규약 |
+| `docs/recovery/reviews/*.md` PR 리뷰 기록 | `docs/recovery/DECISIONS.md` 신규 결정: 관련 변경과 같은 PR |
+| `docs/recovery/ROADMAP.md` 상태 칼럼 | ROADMAP 단계 구성·선행조건, 기타 상태 기록이 아닌 문서 |
 
-다음 문서는 사실을 기록할 뿐 코드나 규약을 바꾸지 않는 **상태 기록**이다. 브랜치·PR·리뷰·병합 승인 절차 없이 `main`에 바로 커밋·푸시한다:
+직접 커밋도 매번 원격 동기화 → 해당 파일만 stage·검토 → Lore 커밋 → main push 순서로 수행한다.
+명령·SHA·결과를 스스로 재확인한다. 직접 push는 required checks를 우회할 수 있으므로 직후
+`gh api repos/<owner>/<repo>/commits/<sha>/check-runs`로 확인하고, 실패는 즉시 다음 상태 기록 커밋에 남긴다.
+작업 브랜치와 상태 기록을 분리하는 상세 절차는 [WORKFLOW](docs/recovery/WORKFLOW.md)를 따른다.
 
-- `docs/recovery/HANDOFF.md`
-- `docs/recovery/phases/*.md`의 `Status`·`Progress` 갱신
-- `docs/recovery/validation/*.md` (신규 검증 기록)
-- `docs/recovery/reviews/*.md` (PR 리뷰 로그)
-- `docs/recovery/ROADMAP.md`의 상태(`상태` 칼럼) 갱신
+## 인계와 완료
 
-다음은 예외가 아니다 — 여전히 브랜치·PR·리뷰·명시적 병합 승인 절차를 따른다:
+- 진행·결정·다음 행동·blocker와 하위 에이전트 결과는 모두 저장소 `docs/recovery/`에 회수한다.
+  개인 메모리·채팅·임시 경로·외부 노트만으로 인계하지 않는다.
+- 커밋·PR 생성·리뷰 수정·병합·이슈 처리 등 작업 단위가 끝나면 즉시 상태 기록을 갱신한다.
+  세션 종료까지 미루지 않고 날짜는 `YYYY-MM-DD`로 쓴다.
+- HANDOFF는 **현재 상태·다음 행동·제약·근거 링크**를 갱신한다. 과거 세션 본문을 계속 덧붙이지 않는다.
+  상세 범위는 phase, 검증은 validation, 리뷰는 reviews, 결정은 DECISIONS에 둔다.
+- 병합 후 낡을 PR OPEN·READY_FOR_REVIEW·작업 브랜치 상태는 HANDOFF에 고정하지 않는다.
+  해당 리뷰 로그와 GitHub live state로 확인한다. 세션 종료 전 모든 근거가 저장소에 있는지 확인한다.
+- 타입 검사·린트를 생략한 빌드를 전체 검증 성공으로, 설명 없는 테스트 실패를 기존 실패로 기록하지 않는다.
+- 인메모리 큐를 영속 큐로, 데모 멜로디 생성을 실제 악보 변환으로 표현하지 않는다.
+- 미해결 actionable review·실패 CI가 남은 작업을 완료로 표시하지 않는다.
 
-- 애플리케이션 코드 전체
-- 규약·프로토콜 자체를 바꾸는 문서: `AGENTS.md`, `docs/recovery/WORKFLOW.md`, `docs/recovery/LORE_COMMIT_PROTOCOL.md`, `docs/recovery/BASELINE.md`, `docs/recovery/README.md`
-- 계획 자체를 바꾸는 것: `docs/recovery/ROADMAP.md`의 단계 구성·선행조건 변경, `docs/recovery/phases/*.md`의 `Objective`·`Work stages`·`Completion criteria` 변경
-- `docs/recovery/DECISIONS.md`의 신규 항목 — 결정을 기록하는 행위 자체가 판단이므로 예외가 아니다. 해당 결정이 뒤따르는 동작·규약·계획 변경과 같은 브랜치·PR에서 함께 커밋한다
+## 필요할 때 읽을 문서
 
-구분 기준: 상태 기록은 검토가 아니라 사실 확인의 문제이고, 이걸 PR로 돌리면 "PR이 자신의 병합 사실을 기록하는 PR을 또 만드는" 자기참조 루프가 생긴다. 코드와 규약·계획·결정은 실제 판단이 필요하므로 리뷰·승인의 가치가 있다.
-
-직접 커밋 절차 (매번):
-
-1. `git fetch origin` 후 로컬 `main`이 뒤처져 있으면 동기화한다(0번 원격 동기화 규칙과 동일한 방법). 다른 세션·에이전트가 그 사이 같은 핸드오프 문서에 직접 커밋했을 수 있다.
-2. 관련 파일만 명시적으로 stage하고 `git status --short`로 확인한다. 코드나 규약 파일이 섞여 들어가지 않았는지 반드시 확인한다.
-3. Lore 형식으로 커밋하고 `main`에 push한다.
-4. push 직후 `gh api repos/<owner>/<repo>/commits/<sha>/check-runs`로 required check 결과를 확인하고, 실패가 있으면 즉시 다음 핸드오프 커밋에 기록한다 (주의 2).
-
-주의: 이 예외는 검증 기록의 오류를 리뷰가 잡아줄 기회도 함께 없앤다 — 실제로 이 저장소에서 PR 리뷰가 검증 기록의 잘못된 명령어·모호한 커밋 해시를 잡아낸 적이 있다. 즉시 커밋하기 전에 스스로 한 번 더 확인한다.
-
-주의 2: `main` branch protection의 required status check(이슈 #9)는 PR 머지 버튼만 막을 뿐, 이 절이 허용하는 직접 push는 막지 못한다. GitHub은 이런 직접 push를 "Bypassed rule violations"로 기록한다(실제로 이 규칙을 추가한 직후 `docs/recovery/HANDOFF.md`/`reviews/PR-17.md` 직접 커밋에서 확인됨). CI가 사전에 그 커밋을 검증하지 않았다는 뜻이므로, push 직후 `gh api repos/<owner>/<repo>/commits/<sha>/check-runs`로 최소한 사후 확인은 한다.
-
-## 단계별 전달·병합 수명주기
-
-각 작업 단계는 아래 순서를 끝까지 따른다.
-
-1. 최신 `main`에서 `codex/<phase>-<topic>` 작업 브랜치를 만든다.
-2. 회귀 근거를 먼저 준비하고, 하나의 결정 단위로 Lore 커밋한다.
-3. 단계 범위가 검증되면 Draft가 아닌 review-ready PR을 생성한다.
-4. PR 번호가 생기면 즉시 `docs/recovery/HANDOFF.md`와 `docs/recovery/reviews/PR-<number>.md`에 기록한다 — 이건 핸드오프 문서이므로 PR 브랜치가 아니라 `main`에 바로 커밋한다. CI·리뷰 수정마다 `docs/recovery/reviews/PR-<number>.md`를 같은 방식으로 갱신한다.
-5. 모든 필수 체크와 actionable review를 처리한 뒤에도 사용자의 명시적 병합 승인을 기다린다.
-6. 승인을 받으면 PR을 병합하고 `main`의 반영 커밋·체크를 확인한다.
-7. 원격 ref를 fetch한 뒤 최신 `main`에 로컬·원격 작업 브랜치 tip이 모두 포함됐는지 확인한다. 사용자 소유 미커밋 변경이나 어느 tip에든 고유 커밋이 있으면 어떤 브랜치도 삭제하지 않고 HANDOFF에 blocker로 기록한다. 두 tip이 모두 병합된 경우에만 원격 작업 브랜치를 삭제하고, 로컬에서 `main`으로 이동한 뒤 로컬 작업 브랜치도 삭제한다.
-8. 병합 결과와 다음 단계를 HANDOFF·phase·validation·review 기록에 `main`에 직접 커밋으로 남긴다 — 이 기록을 위해 별도 PR을 만들지 않는다. 다음 단계 코드 작업이 필요하면 그때 새 브랜치를 만든다.
-
-HANDOFF의 canonical entrypoint는 `docs/recovery/HANDOFF.md`다. 세부 근거는 `docs/recovery/phases/`, `docs/recovery/validation/`, `docs/recovery/reviews/`, `docs/recovery/DECISIONS.md`에 둔다. PR이 병합되면 stale해질 `OPEN`, `READY_FOR_REVIEW`, 작업 브랜치 같은 transient 상태는 durable HANDOFF에 고정하지 않고 PR review log와 GitHub live state로 확인한다.
-
-## 세션 시작 체크리스트
-
-1. `git fetch origin` 후 로컬 `main`이 뒤처져 있으면 동기화한다: `main`에 있다면 `git pull --ff-only`, 다른 브랜치에 있다면 `git fetch origin main:main`.
-2. `git branch --show-current`와 `git status --short`를 확인한다.
-3. 기본 브랜치라면 코드를 수정하기 전에 작업 브랜치를 만든다.
-4. `docs/recovery/HANDOFF.md`에서 `Current phase`, `Next action`, `Known blockers`를 확인한다.
-5. 현재 단계 문서의 진입 조건과 완료 조건을 확인한다.
-6. 작업 계획을 세우고 범위를 벗어나는 문제는 새 단계 후보로 기록한다.
-
-## 세션 종료 체크리스트
-
-1. 단계별 필수 검증을 실행한다.
-2. 결과를 `docs/recovery/validation/`에 기록한다 — `main`에 직접 커밋한다.
-3. `docs/recovery/HANDOFF.md`를 실제 현재 상태로 갱신한다 — `main`에 직접 커밋한다.
-4. 결정이 바뀌었다면 `docs/recovery/DECISIONS.md`에 추가한다 — `main`에 직접 커밋한다.
-5. 코드 변경이 있다면 관련 파일만 선별해 작업 브랜치에 커밋한다.
-6. PR이 있다면 `docs/recovery/reviews/PR-<number>.md`를 갱신한다 — `main`에 직접 커밋한다.
-7. PR은 Draft가 아닌 review-ready 상태인지 확인한다.
-8. 병합을 수행했다면 `main` 반영과 원격·로컬 작업 브랜치 정리를 확인한다.
-9. HANDOFF와 모든 인계 근거가 프로젝트 경로 안에 존재하는지 확인한다.
-
-## 금지되는 완료 상태
-
-- 빌드가 타입 검사 또는 린트를 생략했는데 전체 검증 성공으로 기록하는 것
-- 테스트 실패를 설명 없이 기존 실패로 간주하는 것
-- 인메모리 큐를 영속 큐로 표현하는 것
-- 데모 멜로디 생성을 실제 악보 변환으로 표현하는 것
-- 리뷰 코멘트나 실패한 CI가 남은 상태를 완료로 표시하는 것
-
-## Project Reference
-
-이 섹션은 예전 `CLAUDE.md`에 있던 프로젝트 참조 정보를 옮긴 것이다. 작업 규약이 아니라 코드베이스에 대한 설명이므로, 위 규약 섹션들과 달리 코드가 바뀌면 낡아질 수 있다 — 불확실하면 실제 코드를 우선한다.
-
-### Project Overview
-
-ClairKeys is an AI-powered piano learning application that converts PDF sheet music into interactive piano animations. The app features real-time piano visualization, audio playback with Tone.js, and mobile-optimized touch interfaces.
-
-### Architecture Overview
-
-#### Key Data Flow
-
-The application follows this core data pipeline:
-
-1. **PDF Upload** → `src/app/upload/page.tsx`
-2. **OMR Processing** → `omr-service/` (Python Flask service)
-3. **Animation Generation** → Converts MusicXML to ClairKeys JSON format
-4. **Storage** → Animation data stored in Supabase Storage buckets
-5. **Playback** → `src/services/animationEngine.ts` coordinates audio and visual
-
-#### Authentication Architecture
-
-Using JWT-based sessions with manual user ID handling:
-- `src/lib/auth/config.ts` - NextAuth configuration with custom callbacks
-- Database user records are manually synchronized during OAuth flow
-- Custom callbacks ensure consistent user IDs between JWT and database
-
-### OMR Service Integration
-
-#### External Python Service (`omr-service/`)
-- Standalone FastAPI service for PDF → MusicXML → ClairKeys JSON
-- Containerized with Podman and managed by systemd on a NAVER Cloud VM
-- Uses Audiveris for optical music recognition
-- Asynchronous processing with job status tracking
-
-#### Integration Points
-- `src/app/api/omr/upload/route.ts` - Proxy to OMR service
-- `src/app/api/omr/status/[jobId]/route.ts` - Job status polling
-- Processing status stored in `ProcessingJob` database table
-
-### Testing Strategy
-
-#### E2E Tests (Playwright)
-- `e2e/application-smoke.spec.ts` - Public-route cross-browser smoke checks (home page, viewport/zoom, explore navigation); replaces the earlier dashboard/auth-fixture specs that PR #12 removed as aspirational (issue #7)
-
-### Environment Configuration
-
-#### Required Environment Variables
-```env
-# Database
-DATABASE_URL=postgresql://...
-
-# NextAuth.js
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret
-
-# OAuth Providers
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
-GITHUB_CLIENT_ID=...
-GITHUB_CLIENT_SECRET=...
-
-# Supabase Storage
-NEXT_PUBLIC_SUPABASE_URL=https://project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
-```
-
-### Deployment Notes
-
-#### Database Migrations
-- Use `npm run db:migrate` for production schema changes
-- `npm run db:push` for development rapid prototyping
-- Seed data available via `npm run seed`
-
+- [프로젝트 구조·환경·DB 명령](docs/recovery/PROJECT_REFERENCE.md)
+- [로드맵](docs/recovery/ROADMAP.md) · [기술 결정](docs/recovery/DECISIONS.md)

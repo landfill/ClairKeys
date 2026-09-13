@@ -2342,3 +2342,14 @@
 - Tested: 운영 retry fixture의 시작 템포 None → 69, 합성 MusicXML 4건(쉼표 뒤 표기, 다른 파트 선행음, 무음 마디 뒤 표기와 후속 변경, 사용자 override)
 - Not-tested: 운영 VM 배포 후 같은 PDF 재변환, 실제 플레이어 청취
 - Related: #134, D-048, D-049, fixtures/recognition/clair-de-lune-full-reference.json
+
+## D-061: 에이전트 규약과 실행 절차의 중복 제거
+
+- Date: 2026-09-13
+- Status: Proposed; accepted when the documentation PR merges
+- Context: AGENTS.md가 시작·종료·병합 절차를 반복하며 WORKFLOW.md와 중복된다. 종료 체크리스트의 DECISIONS 직접 커밋 지시는 같은 파일의 명시적 제외 규칙과 충돌한다.
+- Decision: AGENTS.md는 핵심 불변 조건·읽기 순서·커밋 분류의 기준으로 유지하고, 실행 절차는 WORKFLOW.md에 둔다. DECISIONS 변경은 관련 규약·계획·코드와 같은 PR로 처리한다. 프로젝트 설명은 PROJECT_REFERENCE.md로 분리한다. HANDOFF는 현재 요약을 갱신하고 상세 경과는 근거 문서에 둔다.
+- Constraint: 사용자 변경 보호, 회귀 근거 선행, Lore, review-ready PR, 대상 PR 명시적 병합 승인, 양쪽 tip 확인 후 브랜치 정리 규칙을 유지한다.
+- Confidence: high
+- Scope-risk: narrow
+- Related: AGENTS.md, WORKFLOW.md, PROJECT_REFERENCE.md
