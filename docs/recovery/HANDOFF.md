@@ -15,7 +15,11 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 ## Next action
 
 1. **플레이어 청취 확인(사용자)**: 앱에서 재변환한 Clair(job `21171e30…`)를 들어 보고 결과를 기록한다.
-2. **타이 인식 개선**: CURVES 단계의 누락·오분류를 별도 조사한다(점 패치와 분리).
+2. **타이 "곡선 없음" 10건 개선 방향 결정(사용자)**: [조사](validation/2026-09-14-issue-134-tie-curves.md)로 기전 두 가지를 확인했다.
+   - A 오선 접선 purge 3건
+   - B 끝이 오선에 흡수돼 머리 연결 실패 7건
+   - 후보 1(머리 연결 확장), 2(purge 예외), 3(NO_STAFF 골격) 중 무엇을 실험할지 정한 뒤 phase·DECISIONS를 갱신하고 브랜치에서 구현한다.
+3. **나머지 누락 타이 10건 조사**: 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
    남은 점 오류(m1 RH 타이가 점을 자름, m3 둘잇단, m7 C4 오배정)는 각각 원인이 다르다.
 
 ## Latest verified result
@@ -34,7 +38,10 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   - Clair 원본 이벤트 143 → **153/191**. 패치 엔진은 3회 결과가 같고, 기본 엔진은 143/141로 흔들렸다.
   - 남은 점 오류: m1 RH(타이가 점을 자름), m3 둘잇단, m7 C4 오배정.
   - [검증](validation/2026-09-13-issue-134-dot-head-link.md), [VIP 원인](validation/2026-09-13-issue-134-dot-tie-stages.md).
-- **누락 타이 20개**: 미검출 10, cross-system 오연결 5, slur 오분류 1, 선행 리듬 오류 파생 4.
+- **누락 타이 20개**(PR161 운영 스모크에서도 동일): 미검출 10, cross-system 오연결 5, slur 오분류 1, 선행 리듬 오류 파생 4.
+  - 미검출 10건은 모두 왼손 렌즈 모양 타이다. A(오선 접선 purge) 3건, B(머리 연결 실패) 7건.
+  - B의 곡선 끝은 머리에서 2.2 IL 이상 떨어져 있고, 인식된 타이는 1.1 IL 이내다.
+  - [조사](validation/2026-09-14-issue-134-tie-curves.md). 로컬 진단 이미지 `clairkeys-omr:tie-diag`는 로그만 추가한 빌드다.
   [단계별 실험·VIP 로그](validation/2026-09-13-issue-134-dot-tie-stages.md),
   [17마디 기준 비교](validation/2026-09-13-issue-134-residual-timing.md).
 

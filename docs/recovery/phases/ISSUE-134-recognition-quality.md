@@ -40,6 +40,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   app (job `21171e30…`, 163 notes; its MusicXML is deleted by the service). User-approved production smoke:
   153/191 events (was 143), missing-dot 12 → 4, tempo 69; MusicXML equals the local patched result apart from
   identification metadata. Player listening, ties and remaining dots pending; IN_PROGRESS.
+- 2026-09-14: Tie investigation (local only, no code change). Ties are unchanged by PR161 (20 missing).
+  All 10 "no curve" misses are LH lens-shaped ties tangent to staff lines. Mechanism A (3): purgeStaffLines
+  deletes the candidate as a staff line ending. Mechanism B (7): the curve survives, but its ends are absorbed
+  into staff lines 2.2+ IL from heads (detected ties ≤1.1 IL; coverageHExt 2.0 IL), so ClumpPruner selects
+  nothing. Evidence: log-only diagnostic build. Fix direction not chosen.
 
 ## Objective
 
