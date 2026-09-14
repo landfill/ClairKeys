@@ -34,6 +34,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-14: PR161 merged as `34f9e7e` on explicit approval (PR checks 16/16, post-merge 6/6). Review
   added a native line-third fixture (stock fails 3/3, patched passes 3/3; image suite 174 OK). Not deployed;
   VM rollout needs separate approval. Branch kept because a user uncommitted change remains.
+- 2026-09-14: User-approved OMR VM rollout of `34f9e7e` (image `71594a4a…`, rollback tag
+  `rollback-pr161-20260914`). Image tests 174 OK/6 skipped with the native line-third dot test passing (not
+  skipped); patched class present in both engines; health 200, unauthorized 401. No real-PDF production smoke
+  or app re-upload yet, so Clair 153/191 is unconfirmed in production. Ties remain; IN_PROGRESS.
 
 ## Objective
 
