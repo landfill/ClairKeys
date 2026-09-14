@@ -69,12 +69,44 @@ podman run --rm --network none --workdir /app -v /opt/clairkeys-deploy/fixtures:
 - env·secret·unit·ingress는 바꾸지 않았다.
 - 롤백: `podman tag localhost/clairkeys-omr:rollback-pr161-20260914 localhost/clairkeys-omr:current` 후 재시작.
 
+## 앱 재변환 (사용자)
+
+- 사용자가 앱에서 Clair를 다시 변환했다고 알렸다.
+- 운영 로그 확인:
+  - 새 이미지 컨테이너가 2026-09-14 19:50 KST에 시작했고, 그 뒤 job `21171e30-3bc6-43a1-8ddd-bdc5ad35fd5e`이 처리됐다.
+  - 9/8 재해석 선택, 163음, 완료와 `/result` 전달 200.
+- 서비스는 성공한 작업의 MusicXML을 지우므로 이 작업은 원본 기준 평가를 할 수 없다(`/data/processing`에 폴더 없음).
+  음 개수 163은 배포 전과 같다. 점은 음 개수가 아니라 길이를 바꾸므로 이 수만으로는 개선을 판단할 수 없다.
+
+## 실제 운영 모듈 스모크 (저장 악보·DB 변경 없음)
+
+- 승인: 사용자가 "PDF 올려서 스모크 진행해"로 PDF의 VM 업로드와 스모크 실행을 명시 승인했다.
+- 새 임시 root `/data/analysis/pr161-live-Dvps30`을 만들었다. PR159 root는 건드리지 않았다.
+  - `smoke_retry.py`(`10aff167…`)와 기준표(`bba17974…`, 저장소 fixture와 동일)를 PR159 root에서 복사했다.
+  - 입력 `input.pdf` sha256 `34d06c77…e5478`이 기준 입력과 일치했다.
+- 실행 직전 JVM 0, 실행 이미지 `71594a4a…`.
+- 실행: `podman exec -e PYTHONPATH=/app clairkeys-omr-prod python3 <root>/smoke_retry.py <root>/input.pdf <root>/result <root>/clair-de-lune-full-reference.json` → exit 0.
+- report 결과:
+  - `processorSource=/app/omr/audiveris.py`, 28.365초.
+  - 선택 `meter-retry-aoi6vm97/retry.mxl`, 9/8, 163음, tempo·scoreTempo 69.
+  - 경고는 bar 9 overflow 하나로 PR159와 같다.
+- 원본 17마디 기준 평가: **이벤트 153/191**(PR159 운영 143/191), 정확한 마디 8·15·16·17.
+  - 분류 `duration 4, extra-dot 1, missing 3, missing-dot 4, onset 18, onset-and-duration 8`.
+  - PR159 운영과 비교해 missing-dot 12 → 4, onset-and-duration 10 → 8이다. 나머지 분류는 같다.
+  - openingTempo 기대 69 = 실제 69, 일치.
+  - 남은 missing-dot 4건은 로컬 비교와 같은 위치다: m1 RH C5·E5(1.5 → 1.0), m3 RH, m7 C4(짝을 이루는 extra-dot 1).
+- 로컬 패치 이미지 결과와의 동일성:
+  - 운영 `retry.mxl`(`bb4c0994…`)과 로컬 dot 결과(`issue134-dot-link-2026-09-13/dot/…/retry.mxl`, `ef2f02d2…`)는 파일 sha가 다르다.
+  - `identification`/`encoding` 요소를 제거하면 MusicXML 트리가 같고, 평가 결과 전체가 같다.
+    두 파일 차이는 인코딩 날짜 등 메타데이터뿐이다.
+- 회수: PDF·`.omr`을 제외한 9개 파일을 `local-test-data/results/dot-deploy-2026-09-14/live/`로 가져왔고 sha256 9/9가 일치했다.
+- 정리: 회수와 분리한 명령으로 `input.pdf`, `result/input.omr`, `result/meter-retry-aoi6vm97/retry.omr`만 지웠다.
+  이후 root 안 `*.pdf|*.omr|*.png`는 0개이고, XML·JSON·로그·스크립트 9개는 VM root에 남아 있다.
+- 최종: 서비스 active, image `71594a4a…` healthy, JVM 0, 외부 health 200.
+
 ## 한계와 남은 범위
 
-- **운영 모듈 스모크(실제 PDF 변환)는 이번 배포에서 실행하지 않았다.**
-  - 원본 PDF를 VM에 올리려면 따로 확인이 필요하다. 과거 실험 승인을 확대하지 않았다.
-  - 운영 경로에서 Clair 153/191이 재현되는지는 아직 확인되지 않았다. 근거는 로컬 amd64 이미지 비교뿐이다.
-  - 운영 이미지에서 확인한 것은 합성 fixture 기반 native 테스트 통과까지다.
-- 웹 앱 업로드→저장→콜백→플레이어 경로도 실행하지 않았다. 기존 저장 악보는 재변환되지 않으므로 재업로드가 필요하다.
+- 운영 수치는 운영 모듈 스모크로 확인했다. 앱 재변환 작업 자체의 MusicXML은 삭제돼 평가하지 못했다.
+- 플레이어 청취와 사용자 확인 결과는 아직 기록되지 않았다.
 - 남은 오류: 타이 누락, m1 RH 점, m3 둘잇단, m7 C4. #134는 OPEN이다.
 - VM `/tmp`의 build·test 로그(`/tmp/build-34f9e7e….log`, `/tmp/image-tests-34f9e7e….log`)는 로컬로 회수했고 VM에서는 지우지 않았다(PDF·이미지 없음).

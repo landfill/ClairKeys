@@ -8,24 +8,24 @@ Last updated: 2026-09-14 KST
 
 **[#134 인식 품질 개선](phases/ISSUE-134-recognition-quality.md) — IN_PROGRESS.**
 시작 템포 수정은 운영 반영됐다. 줄 위 3도 점 누락 수정 [PR161](reviews/PR-161.md)(D-062, `34f9e7e`)도
-2026-09-14 OMR VM에 배포됐다. 실제 PDF 운영 재검증은 아직 하지 않았다. 타이·리듬 오류는 남아 있다.
+2026-09-14 OMR VM에 배포됐고, 운영 스모크에서 Clair 153/191을 확인했다. 타이·리듬 오류는 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **배포 후 실제 입력 확인**: 운영에서 Clair가 153/191로 재현되는지 확인한다. 두 가지 경로가 있다.
-   - 앱에 같은 PDF를 재업로드하고 플레이어에서 청취한다(사용자). 기존 저장 악보는 자동 재변환되지 않는다.
-   - PR159식 운영 모듈 스모크를 한다. PDF를 VM에 올려야 하므로 사용자 확인이 먼저 필요하다.
+1. **플레이어 청취 확인(사용자)**: 앱에서 재변환한 Clair(job `21171e30…`)를 들어 보고 결과를 기록한다.
 2. **타이 인식 개선**: CURVES 단계의 누락·오분류를 별도 조사한다(점 패치와 분리).
+   남은 점 오류(m1 RH 타이가 점을 자름, m3 둘잇단, m7 C4 오배정)는 각각 원인이 다르다.
 
 ## Latest verified result
 
 - **OMR 운영(2026-09-14)**: PR161 `34f9e7e` 배포 완료. image `71594a4a…`, 롤백 태그 `rollback-pr161-20260914`(`bd2d5e6e…`).
   - 이미지 테스트 174 OK / 6 skipped. native 줄 위 3도 테스트는 skip 없이 ok다.
   - 외부 health 200, 무인증 process 401.
-  - 실제 PDF 운영 스모크는 하지 않았다.
-  - [배포·롤백 근거](validation/2026-09-14-d062-line-third-dot-deployment.md).
+  - 운영 모듈 스모크: Clair 9/8·163음·tempo 69, 원본 이벤트 **153/191**(PR159 143), missing-dot 12 → 4.
+    MusicXML은 메타데이터를 빼면 로컬 패치 결과와 같다.
+  - [배포·스모크·롤백 근거](validation/2026-09-14-d062-line-third-dot-deployment.md).
 - **직전 운영 기준(PR159 `e5ee7bb`)**: Clair tempo/scoreTempo **69**, 9/8·163음, 원본 이벤트 **143/191**.
   [근거](validation/2026-09-13-d060-opening-tempo-deployment.md).
 - **점 패치 로컬 비교(PR161)**: 로컬 amd64 이미지로 main과 패치를 PDF 13개에 비교했다.
@@ -45,7 +45,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   보존한 브랜치는 `codex/doc-agent-contract`, `codex/issue-134-dot-head-link`이고, 사용자 변경이 해소된 뒤 정리한다.
 
 - 로컬 Docker 이미지 `clairkeys-omr:stock-main`·`dot-link`는 검증용이다. 운영 이미지와 같다고 주장하지 않는다.
-  로컬 153/191 결과를 운영 결과로 기록하지 않는다.
+  운영 수치는 운영 스모크 기록(`pr161-live-Dvps30`)을 근거로 한다.
 - #134 완료에는 실제 재변환·플레이어 청취·사용자 확인이 남아 있다.
   PR159 배포 검증은 운영 모듈 스모크이며 웹 업로드→콜백→플레이어 E2E가 아니다.
 - D-049 / D-052: exported XML/JSON에 점·타이·음표를 임의로 보충하지 않는다.
@@ -54,7 +54,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 - 원본 PDF·이미지 포함 OMR은 Git에 넣지 않는다. 로컬 실험 산출물은 Git 제외
   `local-test-data/results/issue134-dots-2026-09-13/`, 점 패치 corpus 비교는
   `local-test-data/results/issue134-dot-link-2026-09-13/`에 있다.
-- VM `/data/analysis/pr159-live-R6a7yJ`에는 XML/JSON/로그가 남고 PDF·OMR은 삭제됐다.
+- VM `/data/analysis/pr159-live-R6a7yJ`·`pr161-live-Dvps30`에는 XML/JSON/로그가 남고 PDF·OMR은 삭제됐다.
   VM `/tmp` 빌드·테스트 로그(PR159·PR161)도 남아 있다. 외부 health 포트는 **3000**이다.
   회수와 원격 root 전체 삭제를 묶은 명령은 자동 승인 검사에서 거부된 이력이 있다.
 

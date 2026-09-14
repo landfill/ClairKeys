@@ -36,8 +36,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   VM rollout needs separate approval. Branch kept because a user uncommitted change remains.
 - 2026-09-14: User-approved OMR VM rollout of `34f9e7e` (image `71594a4a…`, rollback tag
   `rollback-pr161-20260914`). Image tests 174 OK/6 skipped with the native line-third dot test passing (not
-  skipped); patched class present in both engines; health 200, unauthorized 401. No real-PDF production smoke
-  or app re-upload yet, so Clair 153/191 is unconfirmed in production. Ties remain; IN_PROGRESS.
+  skipped); patched class present in both engines; health 200, unauthorized 401. User re-converted Clair in the
+  app (job `21171e30…`, 163 notes; its MusicXML is deleted by the service). User-approved production smoke:
+  153/191 events (was 143), missing-dot 12 → 4, tempo 69; MusicXML equals the local patched result apart from
+  identification metadata. Player listening, ties and remaining dots pending; IN_PROGRESS.
 
 ## Objective
 
