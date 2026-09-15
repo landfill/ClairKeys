@@ -80,6 +80,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   different-abscissa candidates chosen by order, not grade (0 corpus cases). Needs user decision before PR. IN_PROGRESS.
 - 2026-09-15: User accepted both concerns as D-064 decision 5 (known limits). PR163 opened non-draft (head `220f6d7`), not merged
   or deployed; merge and VM rollout each need explicit approval. IN_PROGRESS.
+- 2026-09-15: PR163 merged as `0e3dc61` on explicit approval (PR checks all pass, Codex review no findings, post-merge 6/6); branch
+  deleted. User-approved OMR VM rollout: image `2a71ede5…`, rollback tag `rollback-pr163-20260915`. Image tests 177 OK/6 skipped with the
+  native cross-chord dot test passing; dot class hash equals the locally verified build; health 200, unauthorized 401. Production
+  recognition not yet checked (needs app re-conversion or an approved smoke). IN_PROGRESS.
 
 ## Objective
 

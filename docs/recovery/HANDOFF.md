@@ -9,22 +9,25 @@ Last updated: 2026-09-15 KST
 **[#134 인식 품질 개선](phases/ISSUE-134-recognition-quality.md) — IN_PROGRESS.**
 시작 템포 수정은 운영 반영됐다. 줄 위 3도 점 누락 수정 [PR161](reviews/PR-161.md)(D-062, `34f9e7e`)은
 2026-09-14 배포돼 운영 스모크에서 Clair 153/191을 확인했다. 타이 기전 B 수정 [PR162](reviews/PR-162.md)(D-063, `0a22d2f`)는
-2026-09-15 배포돼 운영 스모크에서 타이 29/43을 확인했다. 나머지 타이·리듬 오류는 남아 있다.
+2026-09-15 배포돼 운영 스모크에서 타이 29/43을 확인했다. 다른 화음 사이 점 수정 [PR163](reviews/PR-163.md)(D-064, `0e3dc61`)은
+2026-09-15 배포됐고 운영 인식 결과는 아직 확인하지 않았다. 나머지 타이·리듬 오류는 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **[PR163](reviews/PR-163.md)(D-064, 기전 A) CI·리뷰 확인 → 병합 승인 대기**: 사용자는 워커 우려 2건을 한계로 수용했다(D-064 결정 5).
-   Codex 검증 PASS WITH CONCERNS: Clair 153 → 160/191(m7만), corpus 안정 회귀 0. [검증](validation/2026-09-15-issue-134-cross-chord-dot-head-link.md).
-   병합과 운영 배포는 각각 별도 승인이 필요하다.
+1. **D-064 운영 인식 확인(선택, 승인 필요)**: PR163 `0e3dc61`은 병합·배포됐다([리뷰](reviews/PR-163.md), [배포](validation/2026-09-15-d064-cross-chord-dot-deployment.md)).
+   운영 Clair 160/191 확인은 앱 재변환이나 별도 승인된 운영 모듈 PDF 스모크가 필요하다. 로컬 근거: [검증](validation/2026-09-15-issue-134-cross-chord-dot-head-link.md).
 2. **남은 박 위치 기전**: [조사](validation/2026-09-15-issue-134-onset-mechanisms.md) D m9 빔·곡선 겹침, C m5 빈 머리 → 셋잇단,
    B 2도 반대편 머리 누락은 단계 추적 후 구현. E m3 둘잇단 미지원은 범위가 커서 보류 후보.
 3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
 
 ## Latest verified result
 
-- **D-064 로컬 검증(2026-09-15, 미배포)**: 전체 Dockerfile 이미지 `d064-patched` 177 OK/skip 0. 새 fixture d063 3/3 실패 → d064 3/3 통과.
+- **OMR 운영(2026-09-15)**: PR163 `0e3dc61` 배포 완료. image `2a71ede5…`, 롤백 태그 `rollback-pr163-20260915`(`f5959ea9…`).
+  이미지 테스트 177 OK / 6 skipped, native 점·타이 테스트 3개 skip 없이 ok. 점 클래스 해시가 로컬 검증 빌드와 같다. health 200, 무인증 process 401.
+  운영 인식 스모크는 하지 않았다. [배포 근거](validation/2026-09-15-d064-cross-chord-dot-deployment.md).
+- **D-064 로컬 검증(2026-09-15)**: 전체 Dockerfile 이미지 `d064-patched` 177 OK/skip 0. 새 fixture d063 3/3 실패 → d064 3/3 통과.
   Clair 3회 160/191(m7 onset 5·점 오류 2 해소, 기전 B missing 1 남음), 타이 29/43·tempo 69 불변. corpus 10/12 동일,
   Love는 비결정성, truongca는 양쪽 같은 기존 실패. [기록](validation/2026-09-15-issue-134-cross-chord-dot-head-link.md).
 - **OMR 운영(2026-09-15)**: PR162 `0a22d2f` 배포 완료. image `f5959ea9…`, 롤백 태그 `rollback-pr162-20260915`(`71594a4a…`).
@@ -40,8 +43,6 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   - 운영 모듈 스모크: Clair 9/8·163음·tempo 69, 원본 이벤트 **153/191**(PR159 143), missing-dot 12 → 4.
     MusicXML은 메타데이터를 빼면 로컬 패치 결과와 같다.
   - [배포·스모크·롤백 근거](validation/2026-09-14-d062-line-third-dot-deployment.md).
-- **직전 운영 기준(PR159 `e5ee7bb`)**: Clair tempo/scoreTempo **69**, 9/8·163음, 원본 이벤트 **143/191**.
-  [근거](validation/2026-09-13-d060-opening-tempo-deployment.md).
 - **점 패치 로컬 비교(PR161)**: 로컬 amd64 이미지로 main과 패치를 PDF 13개에 비교했다.
   - 성공 12개 중 9개는 결과가 같다. 3개(Clair·Première Gymnopédie·달빛 쉬운편곡)는 원본에 있는
     줄 위 3도 점만 늘었다.
@@ -57,13 +58,13 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Known blockers / constraints
 
-- 2026-09-15: PR160·PR161·PR162 작업 브랜치는 로컬·원격 tip 모두 main 대비 고유 커밋 0을 확인하고
+- 2026-09-15: PR160–PR163 작업 브랜치는 로컬·원격 tip 모두 main 대비 고유 커밋 0을 확인하고
   사용자 지시("굳이 필요없다면 버릴것")로 원격 → 로컬 순서로 삭제했다.
   사용자의 미커밋 이력 메모(`validation/2026-09-13-handoff-history.md`)는 손대지 않고 그대로 둔다.
 
 - 로컬 Docker 이미지 `clairkeys-omr:stock-main`·`dot-link`·`d063-patched`는 검증용이다. 운영 이미지와 같다고 주장하지 않는다.
   `d063-patched`(`7cb6700d…`)는 현재 운영(PR162)과 Clair MusicXML이 메타데이터를 빼면 같아 다음 엔진 실험의 기준선으로 쓸 수 있다.
-  `d064-patched`는 D-064 브랜치 `deb3708`의 Dockerfile 빌드, `d064-exp`는 클래스 교체 실험 이미지다.
+  `d064-patched`는 D-064 브랜치 `deb3708`의 Dockerfile 빌드로, 점 클래스 해시가 현재 운영(PR163)과 같다. `d064-exp`는 클래스 교체 실험 이미지다.
   그래프 덤프 도구는 Git 제외 `local-test-data/results/issue134-onsets-2026-09-15/dump_region.py`다.
   운영 수치는 운영 스모크 기록(`pr162-live-pkmvlC`)을 근거로 한다.
 - #134 판단은 원본 기준표 평가(phase 완료 조건)로 한다. 2026-09-15 사용자는 악보를 읽지 않으며 청취로 이상한 곳을
