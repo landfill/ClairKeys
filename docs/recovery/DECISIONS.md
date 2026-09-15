@@ -2452,20 +2452,25 @@
   - 줄 위 머리의 점은 그 위 칸에 찍는다는 원리는 머리가 같은 화음인지와 무관하다.
 - Decision:
   1. `lookupHeadLink`에서 칸 사이 머리 우선은 그대로 둔다. 그런 머리가 없으면 **모든 후보 화음**에서 점보다 아래(center y가 큰)
-     머리를 고른다. 후보는 화음 순서(abscissa)·화음 안 위→아래 순서로 모이므로, 첫 화음에 아래 머리가 있으면 D-062와 결과가 같다.
-     아래 머리가 없으면 기존처럼 `links.get(0)`이다.
+     머리를 고른다. 후보 링크는 화음 순서(abscissa)·화음 안 위→아래 순서로 모인다. 따라서 **연결 후보가 나온 첫 화음**에 아래
+     머리 후보가 있으면 D-062와 결과가 같다. 이미 점이 있거나 x/y/grade에서 탈락한 머리는 후보가 아니다. 모든 후보가 점보다 위면
+     기존처럼 `links.get(0)`이다.
   2. D-062 결정 1·3·5는 유지한다. 정렬, `countDots` 반올림, 점 생성·삭제 임계값, rest/double-dot 연결, y 허용치는 바꾸지 않는다.
   3. 패치는 새 파일이 아니라 기존 `0002-line-head-dot-link.patch`의 같은 hunk를 바꾼다. 적용 원본 sha256, Docker 적용 순서,
      recovery engine 복사 방식은 D-062 결정 4와 같다.
   4. XML·JSON의 점·음가를 사후에 고치지 않는다(D-049/D-052 유지).
-- Rejected: 같은 x(겹친 머리)의 다른 화음으로만 제한 | 머리 x 겹침 기준값이 새로 필요하고, 줄 위 머리의 점 위치 원리는 x와 무관하다. 대신 corpus 비교로 확인한다
+  5. 알려진 한계(2026-09-15 사용자 결정으로 수용): 새 규칙은 성부·기둥 방향·x 겹침·relation grade를 보지 않는다. 그래서 (a) 아래 성부가
+     줄 위 머리의 점을 아래 칸에 찍었고 그 아래에 다른 화음의 줄 위 머리가 있으면 점이 그 머리로 가고, (b) x 위치가 다른 화음의
+     아래 머리도 grade가 더 낮아도 순서로 이긴다. Codex 코드 리뷰가 두 경로를 확인했고, corpus 12곡에서는 0건이다.
+- Rejected: 같은 x(겹친 머리)의 다른 화음으로만 제한 | 머리 x 겹침 기준값이 새로 필요하고, 줄 위 머리의 점 위치 원리는 x와 무관하다. corpus 사례가 0건이라 한계로 기록한다(사용자 결정)
 - Rejected: 새 패치 파일 0004로 D-062 패치 위에 덧댐 | 같은 메서드 같은 줄을 두 번 패치하게 되어 적용 순서에 묶이고 검토가 어렵다
 - Rejected: 화음 정렬 순서를 바꿔 아래 화음을 먼저 둠 | 다른 기호 연결에도 영향을 주고, 순서가 아니라 머리 선택 규칙이 원인이다
 - Constraint: D-062와 같은 pinned `AugmentationDotInter.java` sha256 `4741eeaf…`
 - Confidence: medium
 - Scope-risk: moderate
 - Reversibility: clean
-- Directive: 다성부에서 아래 성부 줄 위 머리의 점을 아래 칸에 찍은 악보가 나오면(그 칸 아래에 다른 화음의 줄 위 머리가 있을 때) 이 규칙이 점을 잘못 옮길 수 있다. 그런 사례가 확인되면 이 결정을 다시 판단한다
-- Tested: 코디네이터 실험 이미지 `d064-exp`(`d063-patched` + 패치 클래스 교체, Dockerfile 빌드 아님): fixture 4/8 → 8/8. Clair 1회 원본 이벤트 153 → 160/191, 바뀐 마디는 m7뿐(onset 5·extra-dot·missing-dot 해소, 기전 B의 missing C4 1건 남음), 타이 29/43·tempo 69 불변
-- Not-tested: Codex 워커 독립 검증(전체 Dockerfile 빌드·이미지 테스트·fixture 판별·Clair 반복·corpus 회귀) 진행 전, 운영 VM 배포·재업로드
-- Related: #134, D-049, D-052, D-062, validation/2026-09-15-issue-134-onset-mechanisms.md
+- Directive: 결정 5의 (a)·(b) 사례가 실제 악보에서 확인되면 이 결정을 다시 판단한다. 좁힐 때는 성부·x 겹침 조건을 fixture로 먼저 고정한다. fixture의 두 화음 순서는 둘 다 유지한다(아래 화음이 먼저인 순서는 D-062 엔진에서도 통과한다)
+- Tested: 코디네이터 실험 이미지 `d064-exp`(클래스 교체): fixture 8/8, Clair 1회 160/191
+- Tested: Codex 워커(`gpt-5.6-sol` high) 독립 검증 PASS WITH CONCERNS. 전체 Dockerfile 이미지 `d064-patched` 177 OK/skip 0, normal·recovery 클래스 해시 동일. 새 fixture d063-patched 3/3 실패(두 엔진 모두 위 화음이 먼저인 4마디만), d064-patched 3/3 통과. Clair 3회 동일: 원본 이벤트 153 → 160/191, 바뀐 마디는 m7뿐(onset 5·extra-dot·missing-dot 해소, 기전 B의 missing C4 1건 남음), 타이 29/43·canonical 157·tempo 69 불변, 그래프에서 점이 C4 머리에 연결됨. corpus 12곡 중 10곡 raw·canonical 동일, Love는 재실행한 D-063·D-064가 같아 비결정성, truongca는 양쪽 같은 기존 실패
+- Not-tested: 운영 VM 배포·재업로드, 결정 5의 (a)·(b) 실제 사례와 공유 머리·쉼표 동시 도달·겹점 fixture
+- Related: #134, D-049, D-052, D-062, validation/2026-09-15-issue-134-onset-mechanisms.md, validation/2026-09-15-issue-134-cross-chord-dot-head-link.md
