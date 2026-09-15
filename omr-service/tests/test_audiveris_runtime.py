@@ -330,6 +330,48 @@ class DeploymentStaticContractTests(unittest.TestCase):
             dockerfile,
         )
 
+    def test_every_engine_retries_staff_line_tie_ends_only_as_ties(self):
+        """A flat tie merged into a staff line must still reach its heads.
+
+        The skeleton keeps staff lines, so such a tie's curve ends where it leaves
+        the line, beyond the standard 2.0 interline link coverage. Only clumps the
+        standard look-up leaves empty are retried with a wider coverage on staff
+        line ends, and the result is kept only as a tie (#134, D-063).
+        """
+        dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
+        patch_file = OMR_SERVICE_ROOT / "audiveris-patches/0003-staff-line-tie-head-link.patch"
+
+        self.assertTrue(patch_file.is_file())
+        patch_text = patch_file.read_text(encoding="utf-8")
+        self.assertIn("final boolean onStaffLine = (selected == null);", patch_text)
+        self.assertIn("if (onStaffLine && !selected.slur.isTie())", patch_text)
+        self.assertIn("canBeTie(slur, linkPair)", patch_text)
+        self.assertIn("3.5,", patch_text)
+        self.assertIn("0.25,", patch_text)
+        for checksum in (
+            "d9f92f97b42aad8c3763bdae7db35b272b394b2154014c03b665baaf12fbe797",
+            "0b77cf4e453559b34cfccd9b5f00666f4718ff3d3993f9948e1c58a901dc0d12",
+        ):
+            self.assertIn(checksum, dockerfile)
+        checksum = dockerfile.index('echo "${CLUMP_PRUNER_SHA256}')
+        normalize = dockerfile.index("sed -i 's/\\r$//'", checksum)
+        apply_patch = dockerfile.index("--input=/tmp/tie-link.patch", normalize)
+        update_normal = dockerfile.index(
+            "-C /tmp/tie-classes org/audiveris/omr/sheet/curve", apply_patch
+        )
+        copy_recovery = dockerfile.index(
+            "cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery"
+        )
+        self.assertLess(dockerfile.index('echo "${SLUR_LINKER_SHA256}'), normalize)
+        self.assertLess(checksum, normalize)
+        self.assertLess(normalize, apply_patch)
+        # The recovery engine is copied from the normal one, so it inherits the fix.
+        self.assertLess(update_normal, copy_recovery)
+        self.assertIn(
+            "grep -Fqx 'org/audiveris/omr/sheet/curve/ClumpPruner$ClumpLinker.class'",
+            dockerfile,
+        )
+
     def test_container_replaces_english_data_with_checksum_pinned_legacy_model(self):
         dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
 

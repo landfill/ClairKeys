@@ -11,6 +11,8 @@ ARG OPENJDK_25_SHA256=555ce0821e4fe175ea50d54518cd6fbece9663c1998de529bc6ce42953
 ARG AUDIVERIS_SOURCE_COMMIT=9e1e55cd2746037d059345881c53e6a6754bffbd
 ARG LEDGERS_POST_ANALYSIS_SHA256=81202a3d8b10912c132a8340d3de6d6a70782d39cd15e0972410a95212f46f3c
 ARG AUGMENTATION_DOT_INTER_SHA256=4741eeafed3105f42e908dcb810eea65d7e41400a305f1a693ed7235dc5fa87b
+ARG SLUR_LINKER_SHA256=d9f92f97b42aad8c3763bdae7db35b272b394b2154014c03b665baaf12fbe797
+ARG CLUMP_PRUNER_SHA256=0b77cf4e453559b34cfccd9b5f00666f4718ff3d3993f9948e1c58a901dc0d12
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -79,19 +81,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Both installations carry one pinned AugmentationDotInter fix (D-062): a dot
 # between two line heads of one chord belongs to the head below it, so the
-# order in which that chord's dots are processed cannot drop both dots. The
-# alternate installation is copied after that fix, so wedge candidates and the
-# selected graph link dots alike, and additionally differs by a pinned
+# order in which that chord's dots are processed cannot drop both dots. They
+# also carry one pinned SlurLinker/ClumpPruner fix (D-063): when no slur of a
+# clump links heads with the standard coverage, a flat curve ending on a staff
+# line is retried with a wider coverage on that end and accepted only as a tie.
+# The alternate installation is copied after both fixes, so wedge candidates
+# and the selected graph link dots and ties alike, and additionally differs by a pinned
 # LedgersPostAnalysis class whose one-pixel upper-height exception requires an
 # explicit recovery region.
 COPY audiveris-patches/0001-region-scoped-ledger-recovery.patch /tmp/ledger-recovery.patch
 COPY audiveris-patches/0002-line-head-dot-link.patch /tmp/dot-link.patch
+COPY audiveris-patches/0003-staff-line-tie-head-link.patch /tmp/tie-link.patch
 RUN mkdir -p \
       /tmp/jdk25 \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve \
       /tmp/ledger-classes \
       /tmp/dot-classes \
+      /tmp/tie-classes \
     && curl -fsSL "${OPENJDK_25_URL}" -o /tmp/openjdk25.tar.gz \
     && echo "${OPENJDK_25_SHA256}  /tmp/openjdk25.tar.gz" | sha256sum -c - \
     && tar -xzf /tmp/openjdk25.tar.gz -C /tmp/jdk25 --strip-components=1 \
@@ -114,6 +122,34 @@ RUN mkdir -p \
       --file /opt/audiveris/lib/app/audiveris.jar \
       | grep -Fqx 'org/audiveris/omr/sig/inter/AugmentationDotInter.class' \
     && curl -fsSL \
+      "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java" \
+      -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java \
+    && curl -fsSL \
+      "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java" \
+      -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java \
+    && echo "${SLUR_LINKER_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java" \
+      | sha256sum -c - \
+    && echo "${CLUMP_PRUNER_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java" \
+      | sha256sum -c - \
+    && sed -i 's/\r$//' \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java \
+    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace \
+      --input=/tmp/tie-link.patch \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' \
+      -cp '/opt/audiveris/lib/app/*' -d /tmp/tie-classes \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java \
+    && /tmp/jdk25/bin/jar --update \
+      --file /opt/audiveris/lib/app/audiveris.jar \
+      -C /tmp/tie-classes org/audiveris/omr/sheet/curve \
+    && /tmp/jdk25/bin/jar --list \
+      --file /opt/audiveris/lib/app/audiveris.jar \
+      | grep -Fqx 'org/audiveris/omr/sheet/curve/SlurLinker.class' \
+    && /tmp/jdk25/bin/jar --list \
+      --file /opt/audiveris/lib/app/audiveris.jar \
+      | grep -Fqx 'org/audiveris/omr/sheet/curve/ClumpPruner$ClumpLinker.class' \
+    && curl -fsSL \
       "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java" \
       -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java \
     && echo "${LEDGERS_POST_ANALYSIS_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java" \
@@ -135,7 +171,8 @@ RUN mkdir -p \
     && /opt/audiveris/bin/Audiveris -version \
     && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
     && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes \
-      /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch /tmp/dot-link.patch
+      /tmp/tie-classes /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
+      /tmp/dot-link.patch /tmp/tie-link.patch
 
 # Create working directory
 WORKDIR /app

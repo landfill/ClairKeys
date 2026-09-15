@@ -1,0 +1,281 @@
+diff --git a/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java b/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java
+index 578b5b7..d6355c5 100644
+--- a/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java
+@@ -170,6 +170,14 @@ public class ClumpPruner
+             // Select the slur with best chord links, if any
+             SlurEntry selected = linker.selectSlur(areas);
+
++            // Only when the standard look-up finds nothing, retry as a tie whose end(s) merged
++            // into a staff line. Any clump selected by the standard look-up is left unchanged.
++            final boolean onStaffLine = (selected == null);
++
++            if (onStaffLine) {
++                selected = linker.selectStaffLineTie();
++            }
++
+             if (selected != null) {
+                 // Either linked head may have a mirror head, so select proper head for tie.
+                 // NOTA: It is a bit early to check for a tie, since for instance clef changes or
+@@ -207,6 +215,10 @@ public class ClumpPruner
+                     }
+                 }
+
++                if (onStaffLine && !selected.slur.isTie()) {
++                    continue; // Widened links are accepted for ties only
++                }
++
+                 // Put everything into sig
+                 linker.doLink(selected);
+
+@@ -291,6 +303,37 @@ public class ClumpPruner
+             }
+         }
+
++        //----------//
++        // canBeTie //
++        //----------//
++        /**
++         * Check whether the linked heads could be tied, as checked once a slur is selected.
++         *
++         * @param slur  the slur candidate
++         * @param links the links on both sides
++         * @return true if a tie is possible
++         */
++        private boolean canBeTie (SlurInter slur,
++                                  Map<HorizontalSide, SlurHeadLink> links)
++        {
++            final HeadInter leftHead = (HeadInter) links.get(LEFT).partner;
++            final HeadInter rightHead = (HeadInter) links.get(RIGHT).partner;
++
++            if ((leftHead.getIntegerPitch() != rightHead.getIntegerPitch()) || (leftHead
++                    .getStaff() != rightHead.getStaff())) {
++                return false;
++            }
++
++            final HeadInter leftMirror = (HeadInter) leftHead.getMirror();
++            final HeadInter rightMirror = (HeadInter) rightHead.getMirror();
++
++            return slur.isSpaceClear(leftHead, rightHead, sysChords) || slur.isSpaceClear(
++                    leftMirror,
++                    rightHead,
++                    sysChords) || slur.isSpaceClear(leftHead, rightMirror, sysChords) || slur
++                            .isSpaceClear(leftMirror, rightMirror, sysChords);
++        }
++
+         //--------------//
+         // filterChords //
+         //--------------//
+@@ -446,6 +489,61 @@ public class ClumpPruner
+
+             return selectAmong(entries);
+         }
++
++        //--------------------//
++        // selectStaffLineTie //
++        //--------------------//
++        /**
++         * Select the best tie candidate in clump, using look-up areas widened on slur ends
++         * that lie on a staff line.
++         * <p>
++         * Only candidates linked on both sides to heads that could be tied are considered.
++         *
++         * @return the entry for best tie candidate and its links, or null
++         */
++        public SlurEntry selectStaffLineTie ()
++        {
++            final List<SlurEntry> entries = new ArrayList<>();
++
++            for (Inter inter : clump) {
++                final SlurInter slur = (SlurInter) inter;
++                final Map<HorizontalSide, Area> lineAreas;
++
++                try {
++                    lineAreas = slurLinker.defineStaffLineAreaPair(slur, system);
++                } catch (Exception ignored) {
++                    continue;
++                }
++
++                if (lineAreas == null) {
++                    continue;
++                }
++
++                final Map<HorizontalSide, List<Inter>> lineChords = new EnumMap<>(
++                        HorizontalSide.class);
++
++                for (HorizontalSide side : HorizontalSide.values()) {
++                    lineChords.put(
++                            side,
++                            Inters.intersectedInters(sysChords, null, lineAreas.get(side)
++                                    .getBounds()));
++                }
++
++                final Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
++                        slur,
++                        lineAreas,
++                        system,
++                        lineChords);
++
++                if ((linkPair != null) && (linkPair.get(LEFT) != null) && (linkPair.get(
++                        RIGHT) != null) && canBeTie(slur, linkPair)) {
++                    logger.debug("{} staff line tie candidate", slur);
++                    entries.add(new SlurEntry(slur, linkPair));
++                }
++            }
++
++            return selectAmong(entries);
++        }
+     }
+
+     //~ Inner Classes ------------------------------------------------------------------------------
+diff --git a/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java b/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java
+index afad847..554882c 100644
+--- a/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java
+@@ -189,6 +189,51 @@ public class SlurLinker
+      * @return the area on both slur sides
+      */
+     public Map<HorizontalSide, Area> defineAreaPair (SlurInter slur)
++    {
++        return defineAreaPair(slur, params.coverageHExt, params.coverageHExt, true);
++    }
++
++    //-------------------------//
++    // defineStaffLineAreaPair //
++    //-------------------------//
++    /**
++     * Define wider look-up areas for a rather horizontal slur with at least one end lying
++     * on a staff line.
++     * <p>
++     * A flat tie inside a staff can merge with a staff line in the skeleton, so the slur ends
++     * where the curve leaves that line, farther from its head than the standard coverage.
++     * On each such end, the horizontal extension is widened; other ends keep the standard one.
++     *
++     * @param slur   the slur being processed
++     * @param system the containing system
++     * @return the area on both slur sides, or null if no widening applies
++     */
++    public Map<HorizontalSide, Area> defineStaffLineAreaPair (SlurInter slur,
++                                                              SystemInfo system)
++    {
++        if (!isHorizontal(slur)) {
++            return null;
++        }
++
++        final CubicCurve2D curve = slur.getCurve();
++        final boolean firstOnLine = isOnStaffLine(curve.getP1(), system);
++        final boolean lastOnLine = isOnStaffLine(curve.getP2(), system);
++
++        if (!firstOnLine && !lastOnLine) {
++            return null;
++        }
++
++        return defineAreaPair(
++                slur,
++                firstOnLine ? params.staffLineCoverageHExt : params.coverageHExt,
++                lastOnLine ? params.staffLineCoverageHExt : params.coverageHExt,
++                false);
++    }
++
++    private Map<HorizontalSide, Area> defineAreaPair (SlurInter slur,
++                                                      int firstHExt,
++                                                      int lastHExt,
++                                                      boolean attach)
+     {
+         final CubicCurve2D curve = slur.getCurve();
+         final Point first = rounded(curve.getP1());
+@@ -208,8 +253,8 @@ public class SlurLinker
+         // Qualify the slur as horizontal or vertical
+         if (isHorizontal(slur)) {
+             // Horizontal: Use base parallel to slur
+-            firstExt = extension(mid, first, params.coverageHExt);
+-            lastExt = extension(mid, last, params.coverageHExt);
++            firstExt = extension(mid, first, firstHExt);
++            lastExt = extension(mid, last, lastHExt);
+             firstBase = new Point2D.Double(
+                     firstExt.getX(),
+                     firstExt.getY() + (vDir * params.coverageHDepth));
+@@ -290,12 +335,15 @@ public class SlurLinker
+         Area firstArea = new Area(firstPath);
+         ///info.setArea(firstArea, true);
+         areaMap.put(LEFT, firstArea);
+-        slur.addAttachment("F", firstArea);
+
+         Area lastArea = new Area(lastPath);
+         ///info.setArea(lastArea, false);
+         areaMap.put(RIGHT, lastArea);
+-        slur.addAttachment("L", lastArea);
++
++        if (attach) {
++            slur.addAttachment("F", firstArea);
++            slur.addAttachment("L", lastArea);
++        }
+
+         return areaMap;
+     }
+@@ -364,6 +412,30 @@ public class SlurLinker
+                 || (slurWidth >= params.wideSlurWidth);
+     }
+
++    //---------------//
++    // isOnStaffLine //
++    //---------------//
++    /**
++     * Report whether the provided slur end lies on a staff line.
++     *
++     * @param end    the slur end point
++     * @param system the containing system
++     * @return true if very close to a staff line of a non-tablature staff
++     */
++    private boolean isOnStaffLine (Point2D end,
++                                   SystemInfo system)
++    {
++        final Staff staff = system.getClosestStaff(end);
++
++        if ((staff == null) || staff.isTablature()) {
++            return false;
++        }
++
++        final double toLine = staff.getClosestStaffLine(end).yAt(end.getX()) - end.getY();
++
++        return abs(toLine) <= params.maxStaffLineDy;
++    }
++
+     //--------//
+     // lookup //
+     //--------//
+@@ -635,6 +707,14 @@ public class SlurLinker
+                 2.0, // Was 1.25, now extended to cope with possible aug. dot between head and slur
+                 "Length of extension for horizontal slur coverage");
+
++        private final Scale.Fraction staffLineCoverageHExt = new Scale.Fraction(
++                3.5,
++                "Length of extension for horizontal tie end lying on a staff line");
++
++        private final Scale.Fraction maxStaffLineDy = new Scale.Fraction(
++                0.25,
++                "Maximum vertical distance from slur end to staff line");
++
+         private final Scale.Fraction coverageHIn = new Scale.Fraction(
+                 0.5,
+                 "Internal abscissa of horizontal slur coverage");
+@@ -696,6 +776,10 @@ public class SlurLinker
+     {
+         final int coverageHExt;
+
++        final int staffLineCoverageHExt;
++
++        final double maxStaffLineDy;
++
+         final int coverageVExt;
+
+         final int coverageHIn;
+@@ -728,6 +812,8 @@ public class SlurLinker
+         Parameters (Scale scale)
+         {
+             coverageHExt = scale.toPixels(constants.coverageHExt);
++            staffLineCoverageHExt = scale.toPixels(constants.staffLineCoverageHExt);
++            maxStaffLineDy = scale.toPixelsDouble(constants.maxStaffLineDy);
+             coverageHIn = scale.toPixels(constants.coverageHIn);
+             coverageHDepth = scale.toPixels(constants.coverageHDepth);
+             coverageVExt = scale.toPixels(constants.coverageVExt);
