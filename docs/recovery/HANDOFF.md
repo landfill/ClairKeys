@@ -15,11 +15,11 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 ## Next action
 
 1. **플레이어 청취 확인(사용자)**: 앱에서 재변환한 Clair(job `21171e30…`)를 들어 보고 결과를 기록한다.
-2. **타이 기전 B 수정 D-063 — 구현·독립 검증 완료, 사용자 결정 대기**: 브랜치 `codex/issue-134-tie-head-link`(`3876875`, 미푸시).
+2. **타이 기전 B 수정 D-063 — [PR162](reviews/PR-162.md) 리뷰·CI 확인 중**: 병합·배포는 각각 사용자 승인 필요.
    - Codex 워커(`gpt-5.6-sol` high) 판정 PASS WITH CONCERNS. Clair 타이 23 → 29/43, 누락 20 → 14, 오검출·이벤트 불변, 3회 동일.
-   - Love 첫 실행 fallback은 순차 반복 dot-link 0/6·patched 0/6, Love에서 D-063 후보 0건, 차이는 m27 tenuto 1개뿐 → 비결정성일 가능성 높음.
-   - **결정 필요(사용자)**: LINKS에서 타이가 해제되면 넓힌 곡선이 슬러로 남는 경로(Medium)를 D-063 한계로 기록할지(A), 막는 패치를 더할지(B).
-   - [검증 기록](validation/2026-09-15-issue-134-staff-line-tie-head-link.md). 결정 뒤 D-063 문구 반영 → 패치 공백 정리 → push → PR.
+   - Love 첫 실행 fallback은 순차 반복 dot-link 0/6·patched 0/6, D-063 후보 0건 → 비결정성일 가능성 높음.
+   - LINKS 해제 시 슬러로 남는 경로는 사용자 결정으로 D-063 한계(결정 4)로 기록했다.
+   - [검증 기록](validation/2026-09-15-issue-134-staff-line-tie-head-link.md).
 3. **나머지 누락 타이 10건 조사**: 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
    남은 점 오류(m1 RH 타이가 점을 자름, m3 둘잇단, m7 C4 오배정)는 각각 원인이 다르다.
 
