@@ -69,6 +69,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Remaining: mechanism A (3), m12 crossing (1), cross-system (5), slur misclassification (1), rhythm-derived (4). IN_PROGRESS.
 - 2026-09-15: The user does not read scores and cannot identify wrong spots by listening, so player listening is no longer a
   pending user step; progress is judged by the source reference evaluation named in the completion criteria.
+- 2026-09-15: Onset investigation (final graph only, no code change). The 26 onset errors sit in m3/m5/m7/m9: m7 dot
+  between heads of two different chords linked to the upper head (D-062 excluded case); m5/m7 second-apart lower-voice
+  heads right of the stem missing; m5 void F4 head replaced by a TUPLET_THREE at its position; m9 LH beam absent where a
+  long tie runs along it; m3 duplet "2" has no Audiveris shape. Fix direction not chosen.
 
 ## Objective
 
