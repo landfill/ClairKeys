@@ -66,7 +66,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-15: User-approved production module smoke (`pr162-live-pkmvlC`): Clair 9/8, 157 notes (tied continuations merged),
   tempo 69, 153/191 events and categories unchanged, tie starts 23 → 29/43 (missing 20 → 14, unexpected 2), exact bars
   2/4/8/11/15/16/17 (were 8/15/16/17); MusicXML equals the local verified result apart from metadata. PDF/OMR removed.
-  Remaining: mechanism A (3), m12 crossing (1), cross-system (5), slur misclassification (1), rhythm-derived (4); listening. IN_PROGRESS.
+  Remaining: mechanism A (3), m12 crossing (1), cross-system (5), slur misclassification (1), rhythm-derived (4). IN_PROGRESS.
+- 2026-09-15: The user does not read scores and cannot identify wrong spots by listening, so player listening is no longer a
+  pending user step; progress is judged by the source reference evaluation named in the completion criteria.
 
 ## Objective
 
