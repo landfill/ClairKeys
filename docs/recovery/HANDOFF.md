@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-09-14 KST
+Last updated: 2026-09-15 KST
 
 ## Current phase
 
@@ -15,10 +15,10 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 ## Next action
 
 1. **플레이어 청취 확인(사용자)**: 앱에서 재변환한 Clair(job `21171e30…`)를 들어 보고 결과를 기록한다.
-2. **타이 "곡선 없음" 10건 개선 방향 결정(사용자)**: [조사](validation/2026-09-14-issue-134-tie-curves.md)로 기전 두 가지를 확인했다.
-   - A 오선 접선 purge 3건
-   - B 끝이 오선에 흡수돼 머리 연결 실패 7건
-   - 후보 1(머리 연결 확장), 2(purge 예외), 3(NO_STAFF 골격) 중 무엇을 실험할지 정한 뒤 phase·DECISIONS를 갱신하고 브랜치에서 구현한다.
+2. **타이 "곡선 없음" 10건 — 후보 1 진행 중(2026-09-15 사용자 선택)**: [조사](validation/2026-09-14-issue-134-tie-curves.md)의 기전 B(끝이 오선에 흡수돼 머리 연결 실패 7건)를 겨냥한다.
+   - 머리 연결 단계에서 오선 위 곡선 끝을 머리 쪽으로 연장하거나 탐색 범위를 넓힌다. A(purge 3건)·후보 2·3은 이번 범위 밖이다.
+   - phase·DECISIONS를 먼저 갱신하고 같은 워크트리의 `codex/issue-134-tie-head-link` 브랜치에서 구현한다.
+   - 검증은 사용자 지시에 따라 Codex 워커(`gpt-5.6-sol`, reasoning effort high)가 수행한다.
 3. **나머지 누락 타이 10건 조사**: 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
    남은 점 오류(m1 RH 타이가 점을 자름, m3 둘잇단, m7 C4 오배정)는 각각 원인이 다르다.
 
@@ -47,9 +47,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Known blockers / constraints
 
-- PR160·PR161 로컬·원격 tip은 main에 포함됐다. 사용자의 미커밋 이력 메모
-  (`validation/2026-09-13-handoff-history.md`)가 남아 있어 규약에 따라 두 브랜치를 보존했다.
-  보존한 브랜치는 `codex/doc-agent-contract`, `codex/issue-134-dot-head-link`이고, 사용자 변경이 해소된 뒤 정리한다.
+- 2026-09-15: 보존하던 `codex/doc-agent-contract`(PR160)·`codex/issue-134-dot-head-link`(PR161)는
+  로컬·원격 tip 모두 main 대비 고유 커밋 0을 확인하고 사용자 지시로 원격 → 로컬 순서로 삭제했다.
+  사용자의 미커밋 이력 메모(`validation/2026-09-13-handoff-history.md`)는 손대지 않고 그대로 둔다.
 
 - 로컬 Docker 이미지 `clairkeys-omr:stock-main`·`dot-link`는 검증용이다. 운영 이미지와 같다고 주장하지 않는다.
   운영 수치는 운영 스모크 기록(`pr161-live-Dvps30`)을 근거로 한다.

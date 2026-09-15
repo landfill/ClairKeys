@@ -45,6 +45,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   deletes the candidate as a staff line ending. Mechanism B (7): the curve survives, but its ends are absorbed
   into staff lines 2.2+ IL from heads (detected ties ≤1.1 IL; coverageHExt 2.0 IL), so ClumpPruner selects
   nothing. Evidence: log-only diagnostic build. Fix direction not chosen.
+- 2026-09-15: User chose candidate 1 (extend head linking for curve ends absorbed into staff lines; targets
+  mechanism B only). Work starts on `codex/issue-134-tie-head-link` in the same worktree; verification is
+  delegated to a Codex worker (`gpt-5.6-sol`, effort high). PR160/PR161 branches were deleted after confirming
+  both tips are contained in main.
 
 ## Objective
 
