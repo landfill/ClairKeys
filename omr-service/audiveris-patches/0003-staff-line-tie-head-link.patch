@@ -5,7 +5,7 @@ index 578b5b7..d6355c5 100644
 @@ -170,6 +170,14 @@ public class ClumpPruner
              // Select the slur with best chord links, if any
              SlurEntry selected = linker.selectSlur(areas);
- 
+
 +            // Only when the standard look-up finds nothing, retry as a tie whose end(s) merged
 +            // into a staff line. Any clump selected by the standard look-up is left unchanged.
 +            final boolean onStaffLine = (selected == null);
@@ -20,18 +20,18 @@ index 578b5b7..d6355c5 100644
 @@ -207,6 +215,10 @@ public class ClumpPruner
                      }
                  }
- 
+
 +                if (onStaffLine && !selected.slur.isTie()) {
 +                    continue; // Widened links are accepted for ties only
 +                }
 +
                  // Put everything into sig
                  linker.doLink(selected);
- 
+
 @@ -291,6 +303,37 @@ public class ClumpPruner
              }
          }
- 
+
 +        //----------//
 +        // canBeTie //
 +        //----------//
@@ -67,7 +67,7 @@ index 578b5b7..d6355c5 100644
          // filterChords //
          //--------------//
 @@ -446,6 +489,61 @@ public class ClumpPruner
- 
+
              return selectAmong(entries);
          }
 +
@@ -126,7 +126,7 @@ index 578b5b7..d6355c5 100644
 +            return selectAmong(entries);
 +        }
      }
- 
+
      //~ Inner Classes ------------------------------------------------------------------------------
 diff --git a/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java b/app/src/main/java/org/audiveris/omr/sheet/curve/SlurLinker.java
 index afad847..554882c 100644
@@ -200,7 +200,7 @@ index afad847..554882c 100644
          ///info.setArea(firstArea, true);
          areaMap.put(LEFT, firstArea);
 -        slur.addAttachment("F", firstArea);
- 
+
          Area lastArea = new Area(lastPath);
          ///info.setArea(lastArea, false);
          areaMap.put(RIGHT, lastArea);
@@ -210,13 +210,13 @@ index afad847..554882c 100644
 +            slur.addAttachment("F", firstArea);
 +            slur.addAttachment("L", lastArea);
 +        }
- 
+
          return areaMap;
      }
 @@ -364,6 +412,30 @@ public class SlurLinker
                  || (slurWidth >= params.wideSlurWidth);
      }
- 
+
 +    //---------------//
 +    // isOnStaffLine //
 +    //---------------//
@@ -247,7 +247,7 @@ index afad847..554882c 100644
 @@ -635,6 +707,14 @@ public class SlurLinker
                  2.0, // Was 1.25, now extended to cope with possible aug. dot between head and slur
                  "Length of extension for horizontal slur coverage");
- 
+
 +        private final Scale.Fraction staffLineCoverageHExt = new Scale.Fraction(
 +                3.5,
 +                "Length of extension for horizontal tie end lying on a staff line");
@@ -262,13 +262,13 @@ index afad847..554882c 100644
 @@ -696,6 +776,10 @@ public class SlurLinker
      {
          final int coverageHExt;
- 
+
 +        final int staffLineCoverageHExt;
 +
 +        final double maxStaffLineDy;
 +
          final int coverageVExt;
- 
+
          final int coverageHIn;
 @@ -728,6 +812,8 @@ public class SlurLinker
          Parameters (Scale scale)
