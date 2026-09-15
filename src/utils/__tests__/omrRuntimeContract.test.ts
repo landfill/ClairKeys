@@ -10,6 +10,7 @@ describe('OMR processor and recognition evaluation contracts', () => {
     'test_audiveris_runtime.py',
     // Skips without a native engine; the OMR image test run executes it.
     'test_line_third_dots_native.py',
+    'test_cross_chord_dots_native.py',
     'test_staff_line_ties_native.py',
     'test_recognition_evaluation.py',
     'test_meter_retry.py',
