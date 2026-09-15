@@ -7,26 +7,29 @@ Last updated: 2026-09-15 KST
 문서 규약 최적화는 PR160 `d7bfbc8`로 병합됐다. [검토·병합 기록](reviews/PR-160.md).
 
 **[#134 인식 품질 개선](phases/ISSUE-134-recognition-quality.md) — IN_PROGRESS.**
-시작 템포 수정은 운영 반영됐다. 줄 위 3도 점 누락 수정 [PR161](reviews/PR-161.md)(D-062, `34f9e7e`)도
-2026-09-14 OMR VM에 배포됐고, 운영 스모크에서 Clair 153/191을 확인했다. 타이·리듬 오류는 남아 있다.
+시작 템포 수정은 운영 반영됐다. 줄 위 3도 점 누락 수정 [PR161](reviews/PR-161.md)(D-062, `34f9e7e`)은
+2026-09-14 배포돼 운영 스모크에서 Clair 153/191을 확인했다. 타이 기전 B 수정 [PR162](reviews/PR-162.md)(D-063, `0a22d2f`)는
+2026-09-15 배포됐다(운영 인식 확인 전). 나머지 타이·리듬 오류는 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
 1. **플레이어 청취 확인(사용자)**: 앱에서 재변환한 Clair(job `21171e30…`)를 들어 보고 결과를 기록한다.
-2. **타이 기전 B 수정 D-063 — [PR162](reviews/PR-162.md) 병합(`0a22d2f`), OMR VM 배포 진행 중(사용자 승인)**.
-   - 배포 뒤 이미지 테스트(네이티브 타이 테스트 실행 확인)·health·auth를 확인한다. PDF 업로드 스모크는 별도 승인이 필요하다.
-   - 로컬 검증: Clair 타이 23 → 29/43, 누락 20 → 14, 오검출·이벤트 불변. LINKS 해제 시 슬러로 남는 경로는 D-063 결정 4 한계.
-   - [검증 기록](validation/2026-09-15-issue-134-staff-line-tie-head-link.md).
+2. **타이 기전 B 수정 D-063 운영 확인**: PR162(`0a22d2f`)가 2026-09-15 OMR VM에 배포됐다. 운영 인식 결과는 아직 확인 전이다.
+   - 앱에서 Clair 재변환(사용자) 또는 운영 모듈 PDF 스모크(별도 승인)로 타이 29/43 재현을 확인한다.
+   - LINKS 해제 시 슬러로 남는 경로는 D-063 결정 4 한계. [배포 기록](validation/2026-09-15-d063-staff-line-tie-deployment.md).
 3. **나머지 누락 타이 10건 조사**: 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
    남은 점 오류(m1 RH 타이가 점을 자름, m3 둘잇단, m7 C4 오배정)는 각각 원인이 다르다.
 
 ## Latest verified result
 
-- **D-063 로컬 검증(2026-09-15)**: 전체 Dockerfile 이미지 176 OK/skip 0, fixture stock 0/8 → patched 8/8, 13 PDF 중 10 동일.
-  Love 첫 실행 fallback은 반복 12회에서 재현 안 됨(D-063 후보 0건). [기록](validation/2026-09-15-issue-134-staff-line-tie-head-link.md).
-- **OMR 운영(2026-09-14)**: PR161 `34f9e7e` 배포 완료. image `71594a4a…`, 롤백 태그 `rollback-pr161-20260914`(`bd2d5e6e…`).
+- **OMR 운영(2026-09-15)**: PR162 `0a22d2f` 배포 완료. image `f5959ea9…`, 롤백 태그 `rollback-pr162-20260915`(`71594a4a…`).
+  - 이미지 테스트 176 OK / 6 skipped. 네이티브 타이·점 테스트는 skip 없이 ok. health 200, 무인증 process 401.
+  - 운영 인식 스모크는 미실행. [배포 근거](validation/2026-09-15-d063-staff-line-tie-deployment.md).
+- **D-063 로컬 검증(2026-09-15)**: 전체 Dockerfile 이미지 176 OK/skip 0, fixture stock 0/8 → patched 8/8, Clair 타이 23 → 29/43
+  (누락 20 → 14, 오검출·이벤트 153/191 불변). corpus 12개 중 10개 동일. [기록](validation/2026-09-15-issue-134-staff-line-tie-head-link.md).
+- **직전 운영(2026-09-14)**: PR161 `34f9e7e` 배포. image `71594a4a…`, 롤백 태그 `rollback-pr161-20260914`(`bd2d5e6e…`).
   - 이미지 테스트 174 OK / 6 skipped. native 줄 위 3도 테스트는 skip 없이 ok다.
   - 외부 health 200, 무인증 process 401.
   - 운영 모듈 스모크: Clair 9/8·163음·tempo 69, 원본 이벤트 **153/191**(PR159 143), missing-dot 12 → 4.

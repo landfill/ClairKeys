@@ -60,6 +60,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-15: User accepted the LINKS demotion path as D-063 decision 4. PR162 merged as `0a22d2f` on explicit
   approval (PR checks all pass, Codex review no findings, post-merge 6/6); branch deleted. OMR VM rollout separately
   approved and in progress. IN_PROGRESS.
+- 2026-09-15: User-approved OMR VM rollout of `0a22d2f` (image `f5959ea9…`, rollback tag `rollback-pr162-20260915`).
+  Image tests 176 OK/6 skipped with both native tie and dot tests passing; patched curve classes in both engines;
+  health 200, unauthorized 401. Production recognition not yet checked (needs app re-conversion or approved smoke). IN_PROGRESS.
 
 ## Objective
 
