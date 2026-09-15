@@ -36,7 +36,7 @@
 | 8 | 시간 | patched/dot-link 0.71–0.92배. 날짜·캐시·부하가 달라 방향성 참고만 |
 | 추가 | `npm test -- --runInBand src/utils/__tests__/omrRuntimeContract.test.ts` | 1 suite / 12 tests 통과 |
 
-### Love Affair 첫 실행 회귀 (미해결)
+### Love Affair 첫 실행 회귀
 
 - 첫 corpus 실행에서 patched가 31마디 wedge 결과 대신 30마디 whole-note 결과를 선택했다.
   마디 21 전체(음 13개·쉼표 1개) 누락, canonical 431 → 418, 길이 123.0 → 119.25. 타이 수 29는 같다.
@@ -46,6 +46,16 @@
   dot-link는 기존 기록 1회 + 반복 2회 모두 31마디였다. 반복 중 patched 2회·dot 2회는 동시에 돌아 시간 비교에서 제외했다.
 - 따라서 관찰은 **patched 1/4 실패, dot-link 0/3 실패**다. 워커는 D-063 타이 결과 밖의 네이티브 비결정성으로 판단했지만,
   기준선에서 같은 실패가 재현되지 않아 D-063과 무관하다고 **아직 입증하지 못했다**. PR 전 추가 반복이 필요하다.
+- **추가 순차 반복(같은 날, Codex 워커 sol high)**: dot-link·patched를 번갈아 겹치지 않게 각 6회 실행했다.
+  - fallback **dot-link 0/6, patched 0/6**. 12회 모두 31마디 wedge 선택, canonical 431, 길이 123.0.
+    `events.json`·canonical notes 해시가 12회 모두 같다. D-054 게이트 전 항목 12/12 통과.
+  - patched DEBUG 실행: 초기 인식·whole-note 재인식·wedge 재인식 모두 `staff line tie candidate` **0건**
+    (ClumpPruner DEBUG 81/94/94줄로 로깅 활성 확인). wedge PAGE 이어 실행은 CURVES 이후라 ClumpPruner를 호출하지 않는다.
+  - 첫 실행의 fallback 그래프 차이는 마디 27의 `TENUTO` articulation inter 1개와 `chord-articulation` relation 1개 추가뿐이다.
+    슬러·타이·곡선 inter·relation 변화는 없다.
+  - 결론: **D-063 직접 영향이 아닌 엔진 비결정성일 가능성이 높다(likely)**. 기준선에서 같은 실패를 재현하지 못했고
+    첫 실행에는 DEBUG가 없어 "입증"은 아니다. 12회 표본으로 아주 드문 확률 변화는 배제할 수 없다.
+  - 근거: `codex-verification/love-determinism/REPORT.md`, `analysis.json`, `prior-fallback-analysis.json`.
 - 2026-09-15 앞선 채팅의 "D-063이 wedge 후보의 슬러 구성을 바꿨다"는 중간 설명은 워커 최종 진단으로 정정됐다(슬러 게이트는 통과).
 
 ### 코드 리뷰 우려
@@ -59,5 +69,5 @@
 ## 미검증·한계
 
 - 운영 VM 이미지 빌드·테스트, 배포, 웹 업로드→플레이어 E2E, 청취.
-- LINKS 해제 경로의 실행 재현, Love 기준선 반복에서의 같은 실패 여부.
+- LINKS 해제 경로의 실행 재현. Love 드문 wedge fallback의 기준선 재현(12회 순차 반복에서 양쪽 모두 0회).
 - 변경이 없는 corpus 출력은 구조 비교만 했고 페이지별 시각 재검토는 하지 않았다.

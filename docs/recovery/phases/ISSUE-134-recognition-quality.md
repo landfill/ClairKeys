@@ -54,6 +54,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   unexpected and 153/191 events unchanged, deterministic). Corpus 10/12 identical; Love's first patched run lost m21
   (30-measure fallback, D-054 guard failed on an m27 articulation) while 3 reruns and 3 dot-link runs did not. Open: Love
   baseline repeats and the LINKS tie-demotion path. No PR yet.
+- 2026-09-15: Love determinism repeats (sequential, alternating): fallback dot-link 0/6, patched 0/6, identical outputs;
+  D-063 candidates on Love 0; the first-run fallback differed only by one m27 tenuto. Likely engine nondeterminism, not
+  proven. Remaining before PR: user decision on the LINKS tie-demotion path, patch whitespace cleanup.
 
 ## Objective
 
