@@ -9,16 +9,15 @@ Last updated: 2026-09-15 KST
 **[#134 인식 품질 개선](phases/ISSUE-134-recognition-quality.md) — IN_PROGRESS.**
 시작 템포 수정은 운영 반영됐다. 줄 위 3도 점 누락 수정 [PR161](reviews/PR-161.md)(D-062, `34f9e7e`)은
 2026-09-14 배포돼 운영 스모크에서 Clair 153/191을 확인했다. 타이 기전 B 수정 [PR162](reviews/PR-162.md)(D-063, `0a22d2f`)는
-2026-09-15 배포됐다(운영 인식 확인 전). 나머지 타이·리듬 오류는 남아 있다.
+2026-09-15 배포돼 운영 스모크에서 타이 29/43을 확인했다. 나머지 타이·리듬 오류는 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **플레이어 청취 확인(사용자)**: 앱에서 재변환한 Clair(job `21171e30…`)를 들어 보고 결과를 기록한다.
-2. **타이 기전 B 수정 D-063 운영 확인**: PR162(`0a22d2f`)가 2026-09-15 OMR VM에 배포됐다. 운영 인식 결과는 아직 확인 전이다.
-   - 앱에서 Clair 재변환(사용자) 또는 운영 모듈 PDF 스모크(별도 승인)로 타이 29/43 재현을 확인한다.
-   - LINKS 해제 시 슬러로 남는 경로는 D-063 결정 4 한계. [배포 기록](validation/2026-09-15-d063-staff-line-tie-deployment.md).
+1. **플레이어 청취 확인(사용자)**: D-063 배포 뒤 앱에서 Clair를 다시 변환해 들어 보고 결과를 기록한다(이전 job `21171e30…`은 D-063 전).
+2. **남은 타이 결정(사용자)**: D-063 운영 스모크로 기전 B 6건 회복을 확인했다. 남은 "곡선 없음"은 기전 A(오선 접선 purge) 3건과 m12 X자 교차 1건이다.
+   - 후보 2(purge 예외)를 실험할지 정한다. LINKS 해제 시 슬러로 남는 경로는 D-063 결정 4 한계다.
 3. **나머지 누락 타이 10건 조사**: 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
    남은 점 오류(m1 RH 타이가 점을 자름, m3 둘잇단, m7 C4 오배정)는 각각 원인이 다르다.
 
@@ -26,7 +25,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 - **OMR 운영(2026-09-15)**: PR162 `0a22d2f` 배포 완료. image `f5959ea9…`, 롤백 태그 `rollback-pr162-20260915`(`71594a4a…`).
   - 이미지 테스트 176 OK / 6 skipped. 네이티브 타이·점 테스트는 skip 없이 ok. health 200, 무인증 process 401.
-  - 운영 인식 스모크는 미실행. [배포 근거](validation/2026-09-15-d063-staff-line-tie-deployment.md).
+  - 운영 모듈 스모크: Clair 9/8·**157음**·tempo 69, 원본 이벤트 153/191(불변), 타이 시작 **29/43**(PR161 23), 누락 14, 오검출 2.
+    정확한 마디 2·4·8·11·15·16·17(PR161 8·15·16·17). MusicXML은 메타데이터를 빼면 로컬 검증 결과와 같다.
+  - [배포·스모크·롤백 근거](validation/2026-09-15-d063-staff-line-tie-deployment.md).
 - **D-063 로컬 검증(2026-09-15)**: 전체 Dockerfile 이미지 176 OK/skip 0, fixture stock 0/8 → patched 8/8, Clair 타이 23 → 29/43
   (누락 20 → 14, 오검출·이벤트 153/191 불변). corpus 12개 중 10개 동일. [기록](validation/2026-09-15-issue-134-staff-line-tie-head-link.md).
 - **직전 운영(2026-09-14)**: PR161 `34f9e7e` 배포. image `71594a4a…`, 롤백 태그 `rollback-pr161-20260914`(`bd2d5e6e…`).
@@ -57,7 +58,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   사용자의 미커밋 이력 메모(`validation/2026-09-13-handoff-history.md`)는 손대지 않고 그대로 둔다.
 
 - 로컬 Docker 이미지 `clairkeys-omr:stock-main`·`dot-link`는 검증용이다. 운영 이미지와 같다고 주장하지 않는다.
-  운영 수치는 운영 스모크 기록(`pr161-live-Dvps30`)을 근거로 한다.
+  운영 수치는 운영 스모크 기록(`pr162-live-pkmvlC`)을 근거로 한다.
 - #134 완료에는 실제 재변환·플레이어 청취·사용자 확인이 남아 있다.
   PR159 배포 검증은 운영 모듈 스모크이며 웹 업로드→콜백→플레이어 E2E가 아니다.
 - D-049 / D-052: exported XML/JSON에 점·타이·음표를 임의로 보충하지 않는다.
@@ -66,8 +67,8 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 - 원본 PDF·이미지 포함 OMR은 Git에 넣지 않는다. 로컬 실험 산출물은 Git 제외
   `local-test-data/results/issue134-dots-2026-09-13/`, 점 패치 corpus 비교는
   `local-test-data/results/issue134-dot-link-2026-09-13/`에 있다.
-- VM `/data/analysis/pr159-live-R6a7yJ`·`pr161-live-Dvps30`에는 XML/JSON/로그가 남고 PDF·OMR은 삭제됐다.
-  VM `/tmp` 빌드·테스트 로그(PR159·PR161)도 남아 있다. 외부 health 포트는 **3000**이다.
+- VM `/data/analysis/pr159-live-R6a7yJ`·`pr161-live-Dvps30`·`pr162-live-pkmvlC`에는 XML/JSON/로그가 남고 PDF·OMR은 삭제됐다.
+  VM `/tmp` 빌드·테스트 로그(PR159·PR161·PR162)도 남아 있다. 외부 health 포트는 **3000**이다.
   회수와 원격 root 전체 삭제를 묶은 명령은 자동 승인 검사에서 거부된 이력이 있다.
 
 ## Other tracks / evidence index

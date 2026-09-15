@@ -61,9 +61,31 @@ podman run --rm --network none --workdir /app -v /opt/clairkeys-deploy/fixtures:
 - env·secret·unit·ingress는 바꾸지 않았다.
 - 롤백: `podman tag localhost/clairkeys-omr:rollback-pr162-20260915 localhost/clairkeys-omr:current` 후 `systemctl restart clairkeys-omr`.
 
+## 실제 운영 모듈 스모크 (저장 악보·DB 변경 없음)
+
+- 승인: 사용자가 운영 확인 방법으로 "후자"(운영 모듈 PDF 스모크)를 골라 PDF의 VM 업로드와 실행을 명시 승인했다.
+- 새 임시 root `/data/analysis/pr162-live-pkmvlC`를 만들었다. PR161 root는 읽기만 했다.
+  - `smoke_retry.py`(`10aff167…`)와 기준표(`bba17974…`, 저장소 fixture와 동일)를 PR161 root에서 복사했다.
+  - 입력 `input.pdf` sha256 `34d06c77…e5478`이 기준 입력과 일치했다.
+- 실행 직전(한 명령의 조건): JVM 0, 실행 이미지 `f5959ea9…`.
+- 실행: `podman exec -e PYTHONPATH=/app clairkeys-omr-prod python3 <root>/smoke_retry.py <root>/input.pdf <root>/result <root>/clair-de-lune-full-reference.json` → exit 0.
+- report 결과: `processorSource=/app/omr/audiveris.py`, 28.31초, 선택 `meter-retry-0zjhhk92/retry.mxl`, 9/8, **157음**(PR161 운영 163), tempo·scoreTempo 69.
+  경고는 bar 9 overflow 하나로 PR161과 같다.
+- 원본 17마디 기준 평가:
+  - 이벤트 **153/191**(PR161 운영과 같음). 분류 `duration 4, extra-dot 1, missing 3, missing-dot 4, onset 18, onset-and-duration 8`도 PR161과 같다.
+  - 타이 시작 **29/43**(PR161 운영 23), 누락 **14**(20), 오검출 **2**(2, m3 MIDI 76·m5 MIDI 67 그대로).
+  - 정확한 마디 **2·4·8·11·15·16·17**(PR161 운영 8·15·16·17). 회복된 타이가 있는 m2·m4·m11이 정확해졌다.
+  - openingTempo 기대 69 = 실제 69.
+  - 157음은 새로 이어진 타이 6개가 canonical에서 한 음으로 합쳐진 결과다.
+- 로컬 결과와의 동일성: 운영 `retry.mxl`과 Codex 검증 이미지 `d063-patched` Clair 결과(`codex-verification/patched/clair-1`)는
+  `identification`/`encoding`을 제거하면 MusicXML 트리가 같고, 평가 JSON 전체가 바이트 단위로 같다.
+- 회수: PDF·`.omr`을 제외한 9개 파일을 `local-test-data/results/tie-deploy-2026-09-15/live/`로 가져왔고 sha256 9/9가 일치했다.
+- 정리: 회수와 분리한 명령으로 `input.pdf`, `result/input.omr`, `result/meter-retry-0zjhhk92/retry.omr`만 지웠다.
+  이후 root 안 `*.pdf|*.omr|*.png`는 0개이고, XML·JSON·로그·스크립트 9개는 VM root에 남아 있다.
+- 최종: 서비스 active, image `f5959ea9…` healthy, JVM 0, 외부 health 200.
+
 ## 한계와 남은 범위
 
-- 운영에서 Clair 인식 결과는 아직 확인하지 않았다. 로컬 검증(타이 23 → 29/43)만 있다.
-  운영 모듈 스모크(PDF VM 업로드) 또는 앱 재변환은 별도 승인·사용자 행동이 필요하다.
+- 운영 수치는 운영 모듈 스모크로 확인했다. 웹 업로드→콜백→플레이어 E2E는 아니다.
 - 플레이어 청취, LINKS 해제 경로(D-063 결정 4) 실사례, 기전 A 3건·m12 X자 교차·시스템 경계 오연결 등 나머지 누락 타이는 남아 있다. #134는 OPEN이다.
 - VM `/tmp`의 build·test 로그는 로컬로 회수했고 VM에서는 지우지 않았다(PDF·이미지 없음).

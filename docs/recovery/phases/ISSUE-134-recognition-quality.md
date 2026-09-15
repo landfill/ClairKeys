@@ -63,6 +63,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-15: User-approved OMR VM rollout of `0a22d2f` (image `f5959ea9…`, rollback tag `rollback-pr162-20260915`).
   Image tests 176 OK/6 skipped with both native tie and dot tests passing; patched curve classes in both engines;
   health 200, unauthorized 401. Production recognition not yet checked (needs app re-conversion or approved smoke). IN_PROGRESS.
+- 2026-09-15: User-approved production module smoke (`pr162-live-pkmvlC`): Clair 9/8, 157 notes (tied continuations merged),
+  tempo 69, 153/191 events and categories unchanged, tie starts 23 → 29/43 (missing 20 → 14, unexpected 2), exact bars
+  2/4/8/11/15/16/17 (were 8/15/16/17); MusicXML equals the local verified result apart from metadata. PDF/OMR removed.
+  Remaining: mechanism A (3), m12 crossing (1), cross-system (5), slur misclassification (1), rhythm-derived (4); listening. IN_PROGRESS.
 
 ## Objective
 
