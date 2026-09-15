@@ -15,10 +15,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 ## Next action
 
 1. **플레이어 청취 확인(사용자)**: 앱에서 재변환한 Clair(job `21171e30…`)를 들어 보고 결과를 기록한다.
-2. **타이 기전 B 수정 D-063 — [PR162](reviews/PR-162.md) 리뷰·CI 확인 중**: 병합·배포는 각각 사용자 승인 필요.
-   - Codex 워커(`gpt-5.6-sol` high) 판정 PASS WITH CONCERNS. Clair 타이 23 → 29/43, 누락 20 → 14, 오검출·이벤트 불변, 3회 동일.
-   - Love 첫 실행 fallback은 순차 반복 dot-link 0/6·patched 0/6, D-063 후보 0건 → 비결정성일 가능성 높음.
-   - LINKS 해제 시 슬러로 남는 경로는 사용자 결정으로 D-063 한계(결정 4)로 기록했다.
+2. **타이 기전 B 수정 D-063 — [PR162](reviews/PR-162.md) 병합(`0a22d2f`), OMR VM 배포 진행 중(사용자 승인)**.
+   - 배포 뒤 이미지 테스트(네이티브 타이 테스트 실행 확인)·health·auth를 확인한다. PDF 업로드 스모크는 별도 승인이 필요하다.
+   - 로컬 검증: Clair 타이 23 → 29/43, 누락 20 → 14, 오검출·이벤트 불변. LINKS 해제 시 슬러로 남는 경로는 D-063 결정 4 한계.
    - [검증 기록](validation/2026-09-15-issue-134-staff-line-tie-head-link.md).
 3. **나머지 누락 타이 10건 조사**: 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
    남은 점 오류(m1 RH 타이가 점을 자름, m3 둘잇단, m7 C4 오배정)는 각각 원인이 다르다.
@@ -50,8 +49,8 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Known blockers / constraints
 
-- 2026-09-15: 보존하던 `codex/doc-agent-contract`(PR160)·`codex/issue-134-dot-head-link`(PR161)는
-  로컬·원격 tip 모두 main 대비 고유 커밋 0을 확인하고 사용자 지시로 원격 → 로컬 순서로 삭제했다.
+- 2026-09-15: PR160·PR161·PR162 작업 브랜치는 로컬·원격 tip 모두 main 대비 고유 커밋 0을 확인하고
+  사용자 지시("굳이 필요없다면 버릴것")로 원격 → 로컬 순서로 삭제했다.
   사용자의 미커밋 이력 메모(`validation/2026-09-13-handoff-history.md`)는 손대지 않고 그대로 둔다.
 
 - 로컬 Docker 이미지 `clairkeys-omr:stock-main`·`dot-link`는 검증용이다. 운영 이미지와 같다고 주장하지 않는다.

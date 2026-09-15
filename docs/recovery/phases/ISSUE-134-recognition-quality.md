@@ -57,6 +57,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-15: Love determinism repeats (sequential, alternating): fallback dot-link 0/6, patched 0/6, identical outputs;
   D-063 candidates on Love 0; the first-run fallback differed only by one m27 tenuto. Likely engine nondeterminism, not
   proven. Remaining before PR: user decision on the LINKS tie-demotion path, patch whitespace cleanup.
+- 2026-09-15: User accepted the LINKS demotion path as D-063 decision 4. PR162 merged as `0a22d2f` on explicit
+  approval (PR checks all pass, Codex review no findings, post-merge 6/6); branch deleted. OMR VM rollout separately
+  approved and in progress. IN_PROGRESS.
 
 ## Objective
 
