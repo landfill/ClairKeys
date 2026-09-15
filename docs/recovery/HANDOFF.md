@@ -15,13 +15,19 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **박 위치 오류 수정 방향 결정(사용자)**: [조사](validation/2026-09-15-issue-134-onset-mechanisms.md)로 26건을 네 마디·다섯 기전으로 나눴다.
-   - A m7 다른 화음 사이 점(D-062 결정 2 확장, 작음), D m9 빔·곡선 겹침, C m5 빈 머리 → 셋잇단, B 2도 반대편 머리 누락, E m3 둘잇단 미지원(큼).
-   - 추천 순서: A 구현 → D·C·B 단계 추적. E는 범위가 커서 보류 후보.
-2. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
+1. **기전 A(D-064) 범위 결정(사용자) → PR**: 브랜치 `codex/issue-134-cross-chord-dot` `deb3708`(push 전).
+   Codex 검증 PASS WITH CONCERNS: Clair 153 → 160/191(m7만), corpus 안정 회귀 0. [검증](validation/2026-09-15-issue-134-cross-chord-dot-head-link.md).
+   - 결정할 것: 다른 x 위치·다른 성부의 아래 머리도 순서로 고르는 넓은 규칙을 알려진 한계로 받을지, x 겹침 조건으로 좁힐지.
+   - 결정 뒤 D-064 문구("첫 후보 화음" → 연결 후보가 있는 첫 화음)와 Tested를 고치고 PR을 만든다.
+2. **남은 박 위치 기전**: [조사](validation/2026-09-15-issue-134-onset-mechanisms.md) D m9 빔·곡선 겹침, C m5 빈 머리 → 셋잇단,
+   B 2도 반대편 머리 누락은 단계 추적 후 구현. E m3 둘잇단 미지원은 범위가 커서 보류 후보.
+3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
 
 ## Latest verified result
 
+- **D-064 로컬 검증(2026-09-15, 미배포)**: 전체 Dockerfile 이미지 `d064-patched` 177 OK/skip 0. 새 fixture d063 3/3 실패 → d064 3/3 통과.
+  Clair 3회 160/191(m7 onset 5·점 오류 2 해소, 기전 B missing 1 남음), 타이 29/43·tempo 69 불변. corpus 10/12 동일,
+  Love는 비결정성, truongca는 양쪽 같은 기존 실패. [기록](validation/2026-09-15-issue-134-cross-chord-dot-head-link.md).
 - **OMR 운영(2026-09-15)**: PR162 `0a22d2f` 배포 완료. image `f5959ea9…`, 롤백 태그 `rollback-pr162-20260915`(`71594a4a…`).
   - 이미지 테스트 176 OK / 6 skipped. 네이티브 타이·점 테스트는 skip 없이 ok. health 200, 무인증 process 401.
   - 운영 모듈 스모크: Clair 9/8·**157음**·tempo 69, 원본 이벤트 153/191(불변), 타이 시작 **29/43**(PR161 23), 누락 14, 오검출 2.
@@ -58,6 +64,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 - 로컬 Docker 이미지 `clairkeys-omr:stock-main`·`dot-link`·`d063-patched`는 검증용이다. 운영 이미지와 같다고 주장하지 않는다.
   `d063-patched`(`7cb6700d…`)는 현재 운영(PR162)과 Clair MusicXML이 메타데이터를 빼면 같아 다음 엔진 실험의 기준선으로 쓸 수 있다.
+  `d064-patched`는 D-064 브랜치 `deb3708`의 Dockerfile 빌드, `d064-exp`는 클래스 교체 실험 이미지다.
   그래프 덤프 도구는 Git 제외 `local-test-data/results/issue134-onsets-2026-09-15/dump_region.py`다.
   운영 수치는 운영 스모크 기록(`pr162-live-pkmvlC`)을 근거로 한다.
 - #134 판단은 원본 기준표 평가(phase 완료 조건)로 한다. 2026-09-15 사용자는 악보를 읽지 않으며 청취로 이상한 곳을

@@ -73,6 +73,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   between heads of two different chords linked to the upper head (D-062 excluded case); m5/m7 second-apart lower-voice
   heads right of the stem missing; m5 void F4 head replaced by a TUPLET_THREE at its position; m9 LH beam absent where a
   long tie runs along it; m3 duplet "2" has no Audiveris shape. Fix direction not chosen.
+- 2026-09-15: User chose mechanism A first. D-064 (replaces D-062 decision 2) implemented on `codex/issue-134-cross-chord-dot`
+  (`deb3708`, not pushed): the head below the dot wins across all candidate chords. Codex worker (`gpt-5.6-sol` high): PASS WITH
+  CONCERNS. Image 177 OK/skip 0; new fixture d063 3/3 fail vs d064 3/3 pass; Clair 153 → 160/191 x3 (only m7; ties 29/43, tempo 69);
+  corpus 10/12 identical, Love nondeterminism, truongca same existing failure. Concerns: lower-voice dot-below convention and
+  different-abscissa candidates chosen by order, not grade (0 corpus cases). Needs user decision before PR. IN_PROGRESS.
 
 ## Objective
 
