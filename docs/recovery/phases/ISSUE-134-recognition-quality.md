@@ -49,6 +49,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   mechanism B only). Work starts on `codex/issue-134-tie-head-link` in the same worktree; verification is
   delegated to a Codex worker (`gpt-5.6-sol`, effort high). PR160/PR161 branches were deleted after confirming
   both tips are contained in main.
+- 2026-09-15: D-063 implemented on `codex/issue-134-tie-head-link` (`3876875`, not pushed). Codex worker verification:
+  PASS WITH CONCERNS. Full image 176 OK, fixture stock 0/8 vs patched 8/8, Clair ties 23 → 29/43 (missing 20 → 14,
+  unexpected and 153/191 events unchanged, deterministic). Corpus 10/12 identical; Love's first patched run lost m21
+  (30-measure fallback, D-054 guard failed on an m27 articulation) while 3 reruns and 3 dot-link runs did not. Open: Love
+  baseline repeats and the LINKS tie-demotion path. No PR yet.
 
 ## Objective
 
