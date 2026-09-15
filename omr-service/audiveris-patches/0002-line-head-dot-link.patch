@@ -1,30 +1,27 @@
 diff --git a/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java b/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java
-index 1220726..9cbc49a 100644
+index 1220726..19dc984 100644
 --- a/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java
 +++ b/app/src/main/java/org/audiveris/omr/sig/inter/AugmentationDotInter.java
-@@ -456,7 +456,24 @@ public class AugmentationDotInter
+@@ -455,8 +455,22 @@ public class AugmentationDotInter
+                 return link;
              }
          }
  
--        return (!links.isEmpty()) ? links.get(0) : null;
-+        if (links.isEmpty()) {
-+            return null;
-+        }
-+
 +        // A dot for a head on line lies in the space above that head.
-+        // Within the first candidate chord, the head below the dot therefore wins, whatever the
-+        // order in which the dots of this chord are processed.
-+        final HeadChordInter firstChord = ((HeadInter) links.get(0).partner).getChord();
-+
++        // Among line heads, the head below the dot therefore wins, whether it belongs to the
++        // first candidate chord or to another chord (a lower voice sharing the abscissa), and
++        // whatever the order in which dots and chords are processed.
++        // Links are gathered chord by chord, so a head below the dot in the first chord keeps
++        // precedence over one in a later chord.
 +        for (Link link : links) {
 +            HeadInter head = (HeadInter) link.partner;
 +
-+            if ((head.getChord() == firstChord) && (head.getCenter().y > dotCenter.y)) {
++            if (head.getCenter().y > dotCenter.y) {
 +                return link;
 +            }
 +        }
 +
-+        return links.get(0);
+         return (!links.isEmpty()) ? links.get(0) : null;
      }
  
      //------------//

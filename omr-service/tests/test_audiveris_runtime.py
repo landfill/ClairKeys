@@ -299,15 +299,18 @@ class DeploymentStaticContractTests(unittest.TestCase):
         In a chord whose two heads sit on adjacent lines, the dot between them
         belongs to the lower head. Stock 5.11.0 hands it to the upper head when
         that dot is processed first, the upper dot then finds no head, and
-        LINKS rounds the chord's [1, 0] dots to zero (#134, D-062).
+        LINKS rounds the chord's [1, 0] dots to zero (#134, D-062). The same
+        holds when the lower head belongs to another voice's chord at the same
+        abscissa, which stock hands the dot to the upper voice (D-064).
         """
         dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
         patch_file = OMR_SERVICE_ROOT / "audiveris-patches/0002-line-head-dot-link.patch"
 
         self.assertTrue(patch_file.is_file())
         patch_text = patch_file.read_text(encoding="utf-8")
-        self.assertIn("head.getChord() == firstChord", patch_text)
         self.assertIn("head.getCenter().y > dotCenter.y", patch_text)
+        # D-064 removed the first-chord restriction of D-062 decision 2.
+        self.assertNotIn("firstChord", patch_text)
         self.assertIn(
             "4741eeafed3105f42e908dcb810eea65d7e41400a305f1a693ed7235dc5fa87b",
             dockerfile,

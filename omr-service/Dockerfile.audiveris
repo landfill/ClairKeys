@@ -79,9 +79,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -f "/tmp/${AUDIVERIS_DEB}" /tmp/eng.traineddata \
     && rm -rf /var/lib/apt/lists/*
 
-# Both installations carry one pinned AugmentationDotInter fix (D-062): a dot
-# between two line heads of one chord belongs to the head below it, so the
-# order in which that chord's dots are processed cannot drop both dots. They
+# Both installations carry one pinned AugmentationDotInter fix (D-062, D-064): a
+# dot between two line heads belongs to the head below it, whether that head is
+# in the same chord or in another voice's chord, so neither dot order nor chord
+# order can drop a chord's dots or give a dot to the upper voice. They
 # also carry one pinned SlurLinker/ClumpPruner fix (D-063): when no slur of a
 # clump links heads with the standard coverage, a flat curve ending on a staff
 # line is retried with a wider coverage on that end and accepted only as a tie.
