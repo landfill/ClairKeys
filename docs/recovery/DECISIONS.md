@@ -2394,3 +2394,40 @@
 - Tested: 로컬 amd64 이미지(main 대 패치)로 PDF 13개를 실제 wrapper·converter에 통과. 12개 성공 PDF 중 9개는 raw 이벤트와 canonical 음표가 같다. 달라진 3개(Clair 5화음, Première Gymnopédie 1화음, 달빛 쉬운편곡 6화음)는 모두 줄 위 3도 계열 점 추가이고, 원본 이미지와 마디 길이가 맞다. Clair 원본 기준 이벤트 143 → 153/191. 패치 엔진 3회 반복 결과가 같다
 - Not-tested: 운영 VM 배포와 같은 PDF 재업로드, 플레이어 청취, 여러 화음에 걸친 후보 모양의 실제 사례
 - Related: #134, D-049, D-052, D-054, validation/2026-09-13-issue-134-dot-head-link.md
+
+## D-063: 오선에 흡수된 평평한 타이 끝은 표준 연결이 비었을 때만 넓혀 다시 찾고, 타이일 때만 받는다
+
+- Date: 2026-09-15
+- Status: Proposed; accepted when the #134 tie head-link PR merges. Not deployed
+- Context:
+  - [타이 곡선 조사](validation/2026-09-14-issue-134-tie-curves.md)의 기전 B: 보표 안의 평평한 렌즈형 타이는 오선이 남은 골격에서
+    끝이 오선에 흡수된다. 곡선은 weed·등급을 통과하지만 끝이 머리에서 2.2 IL 이상 떨어져, `SlurLinker`의 수평 탐색
+    범위 `coverageHExt` 2.0 IL 밖이 된다. 한쪽만 연결되면 orphan 검사에서 떨어져 clump가 아무것도 고르지 못한다.
+  - 흡수된 끝은 가장 가까운 오선 중심에서 0.0–4.1px(interline 20px, 최대 0.21 IL) 떨어져 있다. 선 두께가 3–4px이라
+    `SlursBuilder`의 `maxStaffLineDy` 0.2 IL은 선 가장자리에 걸친 끝(m4 위 타이 4.1px)을 놓친다.
+  - 사용자는 2026-09-15 후보 1(머리 연결 단계 확장)을 골랐다. 후보 2(purge 예외, 기전 A)와 3(NO_STAFF 골격)은 범위 밖이다.
+- Decision:
+  1. `ClumpPruner.prune`에서 기존 `selectSlur`가 결과를 낸 clump는 그대로 둔다. 결과가 null일 때만 같은 system에서
+     `selectStaffLineTie`로 다시 찾는다. 따라서 지금 슬러·타이가 선택되는 clump의 결과는 바뀌지 않는다.
+  2. 재탐색은 수평 슬러의 끝 가운데 가장 가까운 오선(탭 보표 제외)에서 0.25 IL 이내인 끝에만 수평 확장
+     3.5 IL을 쓴다. 다른 끝과 수직 슬러는 기존 영역을 쓴다. 후보 화음은 넓힌 영역 bounds로 다시 거른다.
+  3. 재탐색 후보는 양쪽이 모두 연결되고, 기존 타이 판정과 같은 조건(같은 정수 음높이·같은 보표, 머리·mirror 조합 중
+     하나라도 `isSpaceClear`)을 만족할 때만 남긴다. 선택 뒤 `setTie(true)`가 되지 않으면 sig에 넣지 않는다.
+     넓힌 영역으로 새 슬러를 만들지 않는다.
+  4. 기본 weed·purge(`purgeStaffLines`)·등급·`coverageHExt` 2.0 IL·orphan 규칙·LINKS 단계의 타이 재확인은 바꾸지 않는다.
+  5. 패치는 `omr-service/audiveris-patches/0003-staff-line-tie-head-link.patch` 하나다. D-062와 같이 sha256으로 고정한
+     pinned 원본 두 파일에 적용하고, 컴파일한 `org/audiveris/omr/sheet/curve` 클래스를 기본 엔진 jar에 넣은 뒤
+     recovery engine을 복사한다.
+  6. XML·JSON의 타이를 사후에 보충하지 않는다(D-049/D-052 유지). 엔진이 원래 검출한 곡선의 머리 연결만 달라진다.
+- Rejected: `coverageHExt`를 전역으로 3.5 IL로 넓힘 | 이미 결과가 있는 clump의 선택과 정상 슬러 연결까지 바뀐다
+- Rejected: 넓힌 영역에서 슬러도 받음 | 목적은 타이이고, 머리에서 먼 곡선을 슬러로 받으면 오검출 슬러가 늘 수 있다
+- Rejected: 재탐색 끝 판정에 `maxStaffLineDy` 0.2 IL을 그대로 씀 | m4 위 타이 끝이 4.1px로 0.1px 넘어 회복되지 않았다(실측)
+- Rejected: 후보 2·3을 함께 적용 | 사용자가 후보 1만 선택했다. 기전 A 3건과 X자 교차로 쪼개진 m12 아래 타이는 별도 판단이 필요하다
+- Constraint: pinned `9e1e55cd…`의 `SlurLinker.java`·`ClumpPruner.java` sha256이 Dockerfile 값과 같아야 한다
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 재탐색을 표준 선택보다 앞에 두거나 슬러까지 받도록 넓히지 않는다. 3.5 IL·0.25 IL을 바꾸면 합성 fixture와 corpus 비교를 다시 한다
+- Tested: 구현 중 로컬 실험 이미지(dot-link 위 두 클래스만 교체). Clair 원본 기준 타이 시작 23 → 29/43, 누락 20 → 14, 오검출 2 → 2, 이벤트 153/191 유지. 합성 fixture: 교체 전 0/8, 교체 후 8/8 타이. 독립 검증은 Codex 워커 결과로 validation에 기록한다
+- Not-tested: 전체 Dockerfile 이미지 빌드와 이미지 테스트, 13개 PDF corpus 회귀, 운영 배포·재업로드·청취
+- Related: #134, D-049, D-052, D-062, validation/2026-09-14-issue-134-tie-curves.md
