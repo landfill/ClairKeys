@@ -78,6 +78,8 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   CONCERNS. Image 177 OK/skip 0; new fixture d063 3/3 fail vs d064 3/3 pass; Clair 153 → 160/191 x3 (only m7; ties 29/43, tempo 69);
   corpus 10/12 identical, Love nondeterminism, truongca same existing failure. Concerns: lower-voice dot-below convention and
   different-abscissa candidates chosen by order, not grade (0 corpus cases). Needs user decision before PR. IN_PROGRESS.
+- 2026-09-15: User accepted both concerns as D-064 decision 5 (known limits). PR163 opened non-draft (head `220f6d7`), not merged
+  or deployed; merge and VM rollout each need explicit approval. IN_PROGRESS.
 
 ## Objective
 

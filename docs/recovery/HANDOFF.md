@@ -15,10 +15,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **기전 A(D-064) 범위 결정(사용자) → PR**: 브랜치 `codex/issue-134-cross-chord-dot` `deb3708`(push 전).
+1. **[PR163](reviews/PR-163.md)(D-064, 기전 A) CI·리뷰 확인 → 병합 승인 대기**: 사용자는 워커 우려 2건을 한계로 수용했다(D-064 결정 5).
    Codex 검증 PASS WITH CONCERNS: Clair 153 → 160/191(m7만), corpus 안정 회귀 0. [검증](validation/2026-09-15-issue-134-cross-chord-dot-head-link.md).
-   - 결정할 것: 다른 x 위치·다른 성부의 아래 머리도 순서로 고르는 넓은 규칙을 알려진 한계로 받을지, x 겹침 조건으로 좁힐지.
-   - 결정 뒤 D-064 문구("첫 후보 화음" → 연결 후보가 있는 첫 화음)와 Tested를 고치고 PR을 만든다.
+   병합과 운영 배포는 각각 별도 승인이 필요하다.
 2. **남은 박 위치 기전**: [조사](validation/2026-09-15-issue-134-onset-mechanisms.md) D m9 빔·곡선 겹침, C m5 빈 머리 → 셋잇단,
    B 2도 반대편 머리 누락은 단계 추적 후 구현. E m3 둘잇단 미지원은 범위가 커서 보류 후보.
 3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
