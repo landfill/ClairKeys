@@ -84,6 +84,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   deleted. User-approved OMR VM rollout: image `2a71ede5…`, rollback tag `rollback-pr163-20260915`. Image tests 177 OK/6 skipped with the
   native cross-chord dot test passing; dot class hash equals the locally verified build; health 200, unauthorized 401. Production
   recognition not yet checked (needs app re-conversion or an approved smoke). IN_PROGRESS.
+- 2026-09-15: User re-converted Clair in the app after the rollout (job `03f3153e…`, generated 20:54 KST). Its stored animation JSON has
+  157 notes identical field-by-field to the locally verified d064 run, and differs from the previous production result only in m7's 14
+  notes (C4 regains its dotted half, E4 becomes a plain eighth, the following 12 notes move back by 0.25 beat). The full-reference
+  160/191 was not re-evaluated in production because the service deletes the MusicXML. IN_PROGRESS.
 
 ## Objective
 

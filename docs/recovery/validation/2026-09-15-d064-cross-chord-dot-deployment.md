@@ -58,9 +58,20 @@ podman run --rm --network none --workdir /app -v /opt/clairkeys-deploy/fixtures:
 - env·secret·unit·ingress는 바꾸지 않았다.
 - 롤백: `podman tag localhost/clairkeys-omr:rollback-pr163-20260915 localhost/clairkeys-omr:current` 후 `systemctl restart clairkeys-omr`.
 
+## 운영 재변환 결과 확인 (2026-09-16 기록, 변환은 2026-09-15)
+
+- 사용자가 배포 후 앱에서 Clair를 다시 변환하고 결과 애니메이션 JSON의 공개 URL을 제공했다(Supabase `animation-data` 버킷,
+  `804629/omr_03f3153e-….json`, 회수본 sha256 `6f75bafb…`). 새 업로드·VM 접근·DB 변경은 없다.
+- `generated_at` 2026-09-15T11:54:34Z = 20:54 KST로 전환(20:38 KST) 이후 변환이다. tempo 69, 9/8, duration 65.434783, 157음.
+- **운영 157음이 로컬 검증 결과(`d064-patched` clair-1의 `animation.json`)와 필드까지 완전히 같다**(midi·start·duration·hand·voice·staff).
+- 직전 운영(D-063 기준선 `patched/clair-1`)과는 14음이 다르고 모두 m7 구간(23.26초~)이다:
+  C4 1.73913 → 2.608696초(점2분 회복), E4 0.652174 → 0.434783초(점8분 → 8분), 뒤 음 12개가 각각 0.217초(0.25박)씩 앞당겨졌다.
+- 한계: 이 비교는 canonical 애니메이션 기준이다. 원본 기준표 평가(160/191)는 MusicXML raw 이벤트로 하는데 서비스가 MusicXML을 지우므로
+  운영에서 직접 재평가하지 않았다. 다만 canonical 결과가 160/191을 낸 로컬 실행과 동일하다.
+- 회수: `local-test-data/results/cross-chord-dot-deploy-2026-09-15/live-app-animation.json`(Git 제외).
+
 ## 한계와 남은 범위
 
-- 운영 인식 결과(Clair 160/191)는 아직 확인하지 않았다. 앱 재변환 또는 별도 승인된 운영 모듈 PDF 스모크가 필요하다.
-  로컬 근거는 [D-064 검증](2026-09-15-issue-134-cross-chord-dot-head-link.md)이다.
+- 운영 인식은 위 재변환 결과로 확인했다. 운영 모듈 PDF 스모크나 웹 업로드→콜백→플레이어 E2E는 하지 않았다.
 - D-064 결정 5의 알려진 한계, 기전 B·C·D·E와 남은 타이는 그대로다. #134는 OPEN이다.
 - VM `/tmp`의 build·test 로그는 로컬로 회수했고 VM에서는 지우지 않았다(PDF·이미지 없음).
