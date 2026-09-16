@@ -88,6 +88,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   157 notes identical field-by-field to the locally verified d064 run, and differs from the previous production result only in m7's 14
   notes (C4 regains its dotted half, E4 becomes a plain eighth, the following 12 notes move back by 0.25 beat). The full-reference
   160/191 was not re-evaluated in production because the service deletes the MusicXML. IN_PROGRESS.
+- 2026-09-16: Mechanism D stage trace (local only, no code change). BeamsBuilder creates the m9 LH beam at 1805-1903, then
+  `extendToSpot` stretches it to 1920 into the long tie curve's blob (grade 0.550 -> 0.528). The real right stem is then 21px inside,
+  so computeBeamPortion calls it CENTER, the stretched end has no stem (`Cannot link both sides`), and SigReducer's
+  checkBeamsHaveBothStems deletes the beam at REDUCTION, turning two eighths into quarters. Fix direction not chosen.
 
 ## Objective
 

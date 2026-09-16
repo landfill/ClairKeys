@@ -16,10 +16,12 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **남은 박 위치 기전 D·C·B 단계 추적**: 아래 2번 참조. D-064(PR163 `0e3dc61`)는 병합·배포·운영 확인까지 끝났다
-   ([리뷰](reviews/PR-163.md), [배포·확인](validation/2026-09-15-d064-cross-chord-dot-deployment.md)).
-2. **남은 박 위치 기전**: [조사](validation/2026-09-15-issue-134-onset-mechanisms.md) D m9 빔·곡선 겹침, C m5 빈 머리 → 셋잇단,
-   B 2도 반대편 머리 누락은 단계 추적 후 구현. E m3 둘잇단 미지원은 범위가 커서 보류 후보.
+1. **기전 D 수정 방향 결정(사용자)**: [단계 추적](validation/2026-09-16-issue-134-m9-beam-stage-trace.md)으로 원인을 확정했다.
+   빔이 `extendToSpot`으로 타이 곡선까지 늘어나 끝 portion을 잃고 REDUCTION에서 삭제된다(m9 duration 3 + onset 8).
+   - 후보 1 `extendToSpot` 제한(원인 지점, 작음~중간), 후보 2 `checkBeamsHaveBothStems`에서 삭제 대신 빔 축소(위험 큼),
+     후보 3 `maxExtensionToSpot` 축소(전역 상수, 근거 약함). 추천은 후보 1.
+2. **남은 기전**: C m5 빈 머리 → 셋잇단, B 2도 반대편 머리 누락은 같은 방식으로 단계 추적이 필요하다.
+   E m3 둘잇단 미지원은 범위가 커서 보류 후보. D-064(PR163 `0e3dc61`)는 병합·배포·운영 확인까지 끝났다.
 3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
 
 ## Latest verified result
