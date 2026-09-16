@@ -16,10 +16,11 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **기전 D 수정 방향 결정(사용자)**: [단계 추적](validation/2026-09-16-issue-134-m9-beam-stage-trace.md)으로 원인을 확정했다.
-   빔이 `extendToSpot`으로 타이 곡선까지 늘어나 끝 portion을 잃고 REDUCTION에서 삭제된다(m9 duration 3 + onset 8).
-   - 후보 1 `extendToSpot` 제한(원인 지점, 작음~중간), 후보 2 `checkBeamsHaveBothStems`에서 삭제 대신 빔 축소(위험 큼),
-     후보 3 `maxExtensionToSpot` 축소(전역 상수, 근거 약함). 추천은 후보 1.
+1. **기전 D 후속 결정(사용자)**: 승인받은 후보 1(`extendToSpot` 가드)을 구현해 실험 이미지로 확인했다.
+   가드는 동작하고 오른쪽 기둥이 `RIGHT`로 붙지만 **Clair 결과는 불변**이다. 빔 검출이 양 끝을 각각 약 9px씩
+   곡선까지 물고 시작해 왼쪽 연결이 `checkLink` 등급에서 떨어지기 때문이다(원본 실측: 실제 빔 1814–1900).
+   [기록](validation/2026-09-16-issue-134-m9-beam-stage-trace.md). 후보 1+(끝을 기둥까지 축소)·2·3·보류 중 선택이 필요하다.
+   브랜치 `codex/issue-134-m9-beam-extension`은 커밋 없이 비어 있고, 실험 패치는 Git 제외 경로에 있다.
 2. **남은 기전**: C m5 빈 머리 → 셋잇단, B 2도 반대편 머리 누락은 같은 방식으로 단계 추적이 필요하다.
    E m3 둘잇단 미지원은 범위가 커서 보류 후보. D-064(PR163 `0e3dc61`)는 병합·배포·운영 확인까지 끝났다.
 3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.

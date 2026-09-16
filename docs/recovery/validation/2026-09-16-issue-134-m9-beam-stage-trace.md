@@ -51,3 +51,33 @@
 - 왼쪽 기둥이 LEFT로 연결되지 못한 세부 판정(`BeamLinker.linkSides`가 어느 profile에서 포기했는지)은 로그의 `Cannot link both sides`까지만 확인했다.
 - DEBUG 실행에서 `StemBuilder.toString`이 로그 포맷 중 예외를 던지는 스택이 242회 찍힌다. 로깅 전용 문제이고 INFO 기본 실행에는 나타나지 않는다.
 - 기전 C(m5)·B(m5·m7)는 아직 추적하지 않았다.
+
+## 후보 1 구현 시도와 실측 (2026-09-16, 로컬 전용·커밋 없음)
+
+사용자가 후보 1을 승인해 `codex/issue-134-m9-beam-extension` 브랜치를 만들고 실험 패치를 작성했다.
+**저장소에는 아직 커밋하지 않았다.** 패치·이미지는 Git 제외 `issue134-beams-2026-09-16/{patch,build,diag}`에 있다.
+
+- 패치 내용: `BeamsBuilder.extendToSpot`에서, 늘리려는 쪽 빔 끝에 이미 기둥 seed가 있으면 확장하지 않는다.
+  판정 폭은 뒤에서 끝 portion을 정하는 값과 같은 `BeamStemRelation.getXInGapMaximum(0)`(0.5 IL)이다.
+- 실험 이미지 `clairkeys-omr:d065-exp`(= `d064-patched` + 패치 클래스): 가드는 의도대로 동작한다.
+  m9 빔은 1805–1903으로 유지되고(`found spot#819` 메시지 사라짐), **오른쪽 기둥이 `beam-portion=RIGHT`로 연결**된다(grade 0.601).
+- 그런데 **Clair 결과는 그대로다**: 160/191, 분류·타이·tempo 전부 불변. 빔은 여전히 REDUCTION에서 삭제된다.
+- 로그 추가 진단 빌드 `clairkeys-omr:d065-diag`로 왼쪽 실패 지점을 특정했다:
+  `VLinker{beam#909-Vlnk-TL-1} fail: checkLink null, stem StemInter#0{(0.751) STEM} profile 4` →
+  `BeamLinker{beam#909} side LEFT link=false`. 즉 `BeamStemRelation.checkRelation`의 등급이 최소값 미만이다.
+- 원본 픽셀 실측(`pdftoppm -r 300`, 크롭 `crops/m9-beam-1.png`, 열별 어두운 픽셀 구간):
+  - 실제 빔 잉크는 **x 1814–1900**(두께 14px, 아래 끝 y 2056)이고 두 기둥 사이다.
+  - 그 바깥 x 1770–1812와 1902–1948은 두께 8–11px의 **곡선**이 이어진다.
+  - 엔진이 만든 빔 item(1805–1903)은 **양쪽 끝이 각각 약 9px씩 곡선 쪽으로 넘어가 있다**. 확장 전에 이미 그렇다.
+  - 그래서 왼쪽 기둥(x≈1814.6)은 빔 왼쪽 끝에서 8.1px 안쪽이고, LEFT portion의 `xGap`이 -8.1px(겹침)이 되어 등급이 떨어진다.
+
+결론: 후보 1은 필요하지만 충분하지 않다. 오른쪽 끝의 잘못된 확장은 막지만, **빔 검출 자체가 양 끝을 곡선까지 물고 시작**한다.
+
+### 다시 좁힌 후속 후보 (결정 필요, 미실행)
+
+| 후보 | 내용 | 평가 |
+| --- | --- | --- |
+| 1+ | 후보 1에 더해, 끝에 기둥 seed가 없고 안쪽에 seed가 있으면 빔 끝을 그 seed까지 **줄인다**(BEAMS 단계) | 원인 지점. 기하 변경이라 corpus 회귀를 넓게 봐야 한다 |
+| 2 | `SigReducer.checkBeamsHaveBothStems`에서 삭제 대신 바깥 기둥까지 축소 | REDUCTION 전역 규칙이라 위험이 더 크다 |
+| 3 | `BeamStemRelation`의 겹침 허용(`xInGapMax` 0.5 IL)이나 등급 하한 완화 | 전역 상수. 빔·기둥 오연결이 늘 수 있다 |
+| 4 | 보류 | m9 11건(duration 3 + onset 8)은 남는다 |
