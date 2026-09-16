@@ -16,17 +16,20 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **기전 D 후속 결정(사용자)**: 승인받은 후보 1(`extendToSpot` 가드)을 구현해 실험 이미지로 확인했다.
-   가드는 동작하고 오른쪽 기둥이 `RIGHT`로 붙지만 **Clair 결과는 불변**이다. 빔 검출이 양 끝을 각각 약 9px씩
-   곡선까지 물고 시작해 왼쪽 연결이 `checkLink` 등급에서 떨어지기 때문이다(원본 실측: 실제 빔 1814–1900).
-   [기록](validation/2026-09-16-issue-134-m9-beam-stage-trace.md). 후보 1+(끝을 기둥까지 축소)·2·3·보류 중 선택이 필요하다.
-   브랜치 `codex/issue-134-m9-beam-extension`은 커밋 없이 비어 있고, 실험 패치는 Git 제외 경로에 있다.
+1. **D-065 검증 5~8단계 이어서 실행**: 브랜치 `codex/issue-134-m9-beam-extension` `362a00f`(push 전).
+   2026-09-16에 1~4단계는 통과했다(빌드·이미지 테스트 179 OK/skip 0). fixture 판별 6회, Clair 3회, corpus 12곡, 시간 측정이 남았다.
+   [기록](validation/2026-09-16-issue-134-m9-beam-stage-trace.md), 지시서는 Git 제외
+   `local-test-data/results/issue134-beams-2026-09-16/codex-verification/PROMPT.md`.
+   코드 리뷰 우려 1건(끝 seed 미검출 정상 빔을 잘못 자를 수 있음)은 corpus 결과로 판단한다. 그 뒤 PR을 만든다.
 2. **남은 기전**: C m5 빈 머리 → 셋잇단, B 2도 반대편 머리 누락은 같은 방식으로 단계 추적이 필요하다.
    E m3 둘잇단 미지원은 범위가 커서 보류 후보. D-064(PR163 `0e3dc61`)는 병합·배포·운영 확인까지 끝났다.
 3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
 
 ## Latest verified result
 
+- **D-065 로컬 검증(2026-09-16, 진행 중·미배포)**: 실험 이미지에서 Clair 160 → **171/191** 3회 동일(m9 오류 11건 해소, 타이·tempo 불변).
+  전체 빌드 `d065-patched` 이미지 테스트 179 OK/skip 0. fixture 판별·corpus 회귀는 남았다.
+  [기록](validation/2026-09-16-issue-134-m9-beam-stage-trace.md).
 - **OMR 운영(2026-09-15)**: PR163 `0e3dc61` 배포 완료. image `2a71ede5…`, 롤백 태그 `rollback-pr163-20260915`(`f5959ea9…`).
   이미지 테스트 177 OK / 6 skipped, native 점·타이 테스트 3개 skip 없이 ok. 점 클래스 해시가 로컬 검증 빌드와 같다. health 200, 무인증 process 401.
   사용자의 앱 재변환(20:54 KST) 애니메이션 157음이 로컬 검증 결과와 완전히 같고, 직전 운영과는 m7 14음만 다르다

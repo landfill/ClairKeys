@@ -92,6 +92,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   `extendToSpot` stretches it to 1920 into the long tie curve's blob (grade 0.550 -> 0.528). The real right stem is then 21px inside,
   so computeBeamPortion calls it CENTER, the stretched end has no stem (`Cannot link both sides`), and SigReducer's
   checkBeamsHaveBothStems deletes the beam at REDUCTION, turning two eighths into quarters. Fix direction not chosen.
+- 2026-09-16: User approved candidate 1, then candidate 1+ after the guard alone changed nothing. D-065 implemented on
+  `codex/issue-134-m9-beam-extension` (`362a00f`, not pushed): refuse a spot extension at an anchored end, and pull a beam end
+  back to the stem seed just inside it. Experiment image: fixture 0/4 on the baseline vs 4/4 patched; Clair 160 -> 171/191 in 3
+  identical runs, only m9 changes. Codex worker stopped after check 4 at the user's request: integrity pass, build pass
+  (BeamsBuilder class differs from baseline), image tests 179 OK/skip 0; one review concern (a normal beam whose end seed is
+  undetected could be trimmed). Checks 5-8 (fixture discrimination, Clair, corpus, timing) remain. IN_PROGRESS.
 
 ## Objective
 

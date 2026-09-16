@@ -81,3 +81,26 @@
 | 2 | `SigReducer.checkBeamsHaveBothStems`에서 삭제 대신 바깥 기둥까지 축소 | REDUCTION 전역 규칙이라 위험이 더 크다 |
 | 3 | `BeamStemRelation`의 겹침 허용(`xInGapMax` 0.5 IL)이나 등급 하한 완화 | 전역 상수. 빔·기둥 오연결이 늘 수 있다 |
 | 4 | 보류 | m9 11건(duration 3 + onset 8)은 남는다 |
+
+## D-065 구현과 검증 진행 (2026-09-16, 4단계에서 중단)
+
+- 사용자가 후보 1+를 승인해 브랜치 `codex/issue-134-m9-beam-extension` 커밋 `362a00f`을 만들었다(push·PR 없음).
+  패치 `omr-service/audiveris-patches/0004-beam-end-stem-anchor.patch`, Dockerfile 배선, 합성 fixture·네이티브 테스트,
+  정적 계약, Jest 목록, [D-065](../DECISIONS.md).
+- 코디네이터 실험 이미지 `d065-exp`(클래스 교체): fixture는 기준 `d064-patched`에서 4마디 모두 8분음표가 4분음표가 되고 음표도
+  하나 잃는 반면 패치에서는 4마디 모두 정확하다. Clair 3회 모두 원본 이벤트 160 → **171/191**, 바뀐 마디는 m9뿐
+  (duration 3 + onset 6 + onset-and-duration 2 해소), 타이 29/43·tempo 69 불변, raw 이벤트 해시 3회 동일.
+- Codex 워커(`gpt-5.6-sol` high)를 실행했고 **사용자 요청으로 4단계까지만 하고 중단**했다. REPORT.md는 아직 없다.
+  산출물은 `issue134-beams-2026-09-16/codex-verification/`(`codex-exec.log`, `logs/`, `integrity/`).
+
+| # | 검증 | 결과(2026-09-16) |
+|---|---|---|
+| 1 | 패치 무결성 | **통과**. GitHub raw·로컬 pinned·Dockerfile 해시가 모두 `fa9505b6…`, LF 정규화 후 whitespace 완화 없이 적용, 실험 이미지 컴파일 소스와 바이트 동일 |
+| 2 | 코드 리뷰 | **우려 1건**: 최소 폭·재계산 grade 가드는 남은 구간의 빔 품질만 보므로, 끝 seed가 검출되지 않은 정상 빔을 안쪽 seed까지 잘못 자르는 것을 막지 못한다. 순회·연속 trim은 제거된 inter 재사용이나 무한 반복 구조가 아니다 |
+| 3 | 전체 `--no-cache` 빌드 `d065-patched` | **통과**. 178.34초, 체크섬 8개 OK, `patching file` 5개 파일. normal·recovery `BeamsBuilder.class` 해시 `8d352ee1…`로 같고 기준 이미지 `324132f0…`과 다름 |
+| 4 | 이미지 테스트 | **179 OK / skip 0**. `test_curve_along_beam_native`·`test_cross_chord_dots_native`·`test_line_third_dots_native`·`test_staff_line_ties_native` 모두 실행·통과 |
+| 5–8 | fixture 판별 6회, Clair 3회, corpus 12곡, 시간 | **미실행**. 내일 이어서 한다 |
+
+- 이어서 하기 위한 조건은 모두 남아 있다: 이미지 `clairkeys-omr:d065-patched`(및 기준 `d064-patched`), 기준 결과
+  `issue134-cross-chord-dot-2026-09-15/codex-verification/{clair,corpus}`, 지시서 `codex-verification/PROMPT.md`.
+- 우려 2는 corpus 회귀(7단계)에서 실제 사례가 나오는지로 판단한다.
