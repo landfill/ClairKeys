@@ -1,0 +1,215 @@
+diff --git a/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java b/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java
+index df39fc6..bb61a3b 100644
+--- a/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java
+@@ -255,12 +255,15 @@ public class BeamsBuilder
+         createBeams();
+
+         // Then, extend beams as much as possible
+         sortedBeamSpots.removeAll(assignedSpots);
+         extendBeams();
+
++        // Then, pull back beam ends that overshot their stem seed
++        trimBeams();
++
+         // Finally, retrieve beam hooks
+         sortedBeamSpots.removeAll(assignedSpots);
+         buildHooks();
+
+         // Group system beams into beam groups
+         BeamGroupInter.populateSystem(system);
+@@ -1100,12 +1103,26 @@ public class BeamsBuilder
+      */
+     private boolean extendToSpot (AbstractBeamInter beam,
+                                   HorizontalSide side,
+                                   Integer maxDx)
+     {
+         final boolean logging = beam.isVip() || logger.isDebugEnabled();
++        final Scale scale = sheet.getScale();
++
++        // A beam end that already carries a stem seed is a real beam end.
++        // Extending it to a neighbouring spot (for instance the ink of a slur or tie running
++        // along the beam) would push that stem away from the end portion, and a beam without a
++        // stem on one of its end portions is later deleted by SigReducer.
++        if (hasSideStumpSeed(beam, side, scale.toPixels(BeamStemRelation.getXInGapMaximum(0)))) {
++            if (logging) {
++                logger.info("{} keeps {} end anchored on a stem seed", beam, side);
++            }
++
++            return false;
++        }
++
+         final int dx = (maxDx == null) ? params.maxExtensionToSpot
+                 : Math.min(params.maxExtensionToSpot, maxDx);
+         final Area luArea = sideAreaOf("O", beam, side, 0, dx, 0);
+         final List<Glyph> spots = new ArrayList<>(
+                 Glyphs.intersectedGlyphs(sortedBeamSpots, luArea));
+         Collections.sort(spots, Glyphs.byAbscissa);
+@@ -1131,12 +1148,150 @@ public class BeamsBuilder
+             return extendToPoint(beam, side, extPt);
+         }
+
+         return false;
+     }
+
++    //-------------------//
++    // hasSideStumpSeed //
++    //-------------------//
++    /**
++     * Report whether a stem seed already reaches the provided beam side end.
++     * <p>
++     * @param beam     the beam to check
++     * @param side     the horizontal side of the beam
++     * @param anchorDx width of the inner strip checked at that end
++     * @return true if a stem seed is present in that strip
++     */
++    private boolean hasSideStumpSeed (AbstractBeamInter beam,
++                                      HorizontalSide side,
++                                      int anchorDx)
++    {
++        final Area anchorArea = sideAreaOf(null, beam, side, params.maxStemBeamGapY, 0, anchorDx);
++
++        return !Glyphs.intersectedGlyphs(sortedSystemSeeds, anchorArea).isEmpty();
++    }
++
++    //------------//
++    // trimBeams //
++    //------------//
++    /**
++     * Pull back each beam end that overshot the stem seed it should stop at.
++     * <p>
++     * A beam whose ink merges with a slur or tie running along it can be built a bit beyond its
++     * last stem. The stem then sits inside the beam rather than on its end portion, which both
++     * weakens the beam-stem relation and, in {@code SigReducer}, has the beam deleted for lacking
++     * a stem on that end. Stem seeds are far more reliable than the outline of merged ink, so the
++     * end is moved back to the outermost seed when one is close enough inside.
++     */
++    private void trimBeams ()
++    {
++        for (Inter inter : new ArrayList<>(rawSystemBeams)) {
++            if (inter.isRemoved()) {
++                continue;
++            }
++
++            AbstractBeamInter beam = (AbstractBeamInter) inter;
++
++            if (beam.isHook()) {
++                continue; // A hook legitimately ends away from any stem
++            }
++
++            for (HorizontalSide side : HorizontalSide.values()) {
++                if (beam.isRemoved()) {
++                    break;
++                }
++
++                final AbstractBeamInter trimmed = trimToStumpSeed(beam, side);
++
++                if (trimmed != null) {
++                    beam = trimmed;
++                }
++            }
++        }
++    }
++
++    //-----------------//
++    // trimToStumpSeed //
++    //-----------------//
++    /**
++     * Try to pull the provided beam side back to the outermost stem seed inside it.
++     *
++     * @param beam the beam to trim
++     * @param side the horizontal side to trim
++     * @return the resulting beam if trimming was done, null otherwise
++     */
++    private AbstractBeamInter trimToStumpSeed (AbstractBeamInter beam,
++                                               HorizontalSide side)
++    {
++        final Scale scale = sheet.getScale();
++
++        // Here the seed must sit on the very end: a seed even slightly inside already weakens
++        // the beam-stem relation that BeamStemRelation grades on this end.
++        if (hasSideStumpSeed(beam, side, scale.toPixels(BeamStemRelation.getXOutGapMaximum(0)))) {
++            return null; // This end is already anchored on a seed
++        }
++
++        final int maxTrim = scale.toPixels(constants.maxTrimToSeed);
++        final Area trimArea = sideAreaOf(null, beam, side, params.maxStemBeamGapY, 0, maxTrim);
++        final List<Glyph> seeds = new ArrayList<>(
++                Glyphs.intersectedGlyphs(sortedSystemSeeds, trimArea));
++
++        if (seeds.isEmpty()) {
++            return null;
++        }
++
++        Collections.sort(seeds, Glyphs.byAbscissa);
++
++        final Glyph seed = (side == LEFT) ? seeds.get(0) : seeds.get(seeds.size() - 1);
++        final Line2D median = beam.getMedian();
++        final Line2D seedLine = new Line2D.Double(
++                seed.getStartPoint(Orientation.VERTICAL),
++                seed.getStopPoint(Orientation.VERTICAL));
++        final Point2D trimPt = LineUtil.intersection(median, seedLine);
++        final Line2D newMedian = (side == LEFT) ? new Line2D.Double(trimPt, median.getP2())
++                : new Line2D.Double(median.getP1(), trimPt);
++
++        final ItemParameters itemParams = getItemParams(beam);
++
++        if ((newMedian.getX2() - newMedian.getX1()) < itemParams.minBeamWidthLow) {
++            return null; // Refuse to trim a beam below its minimum width
++        }
++
++        final double distImpact = ((Impacts) beam.getImpacts()).getDistImpact();
++        final BeamItem newItem = new BeamItem(newMedian, beam.getHeight());
++
++        if (beam.isVip()) {
++            newItem.setVip(true);
++        }
++
++        final Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact, itemParams);
++
++        if ((impacts == null) || (impacts.getGrade() < BeamInter.getMinGrade())) {
++            return null;
++        }
++
++        final AbstractBeamInter newBeam = itemParams.isSmall
++                ? new SmallBeamInter(impacts, newMedian, beam.getHeight())
++                : new BeamInter(impacts, newMedian, beam.getHeight());
++
++        if (beam.isVip()) {
++            newBeam.setVip(true);
++        }
++
++        registerBeam(newBeam);
++        rawSystemBeams.add(newBeam);
++        beam.remove();
++
++        if (beam.isVip() || logger.isDebugEnabled()) {
++            logger.info("{} trimmed on {} to seed#{} as {}", beam, side, seed.getId(), newBeam);
++        }
++
++        return newBeam;
++    }
++
+     //--------------//
+     // extendToStem //
+     //--------------//
+     /**
+      * Try to extend the provided beam on the desired side to a stem seed within reach.
+      *
+@@ -1713,12 +1868,16 @@ public class BeamsBuilder
+                 "Maximum beam horizontal extension to stem seed");
+
+         private final Scale.Fraction maxExtensionToSpot = new Scale.Fraction(
+                 0.5,
+                 "Maximum beam horizontal extension to spot");
+
++        private final Scale.Fraction maxTrimToSeed = new Scale.Fraction(
++                1.0,
++                "Maximum beam horizontal trim back to a stem seed");
++
+         private final Scale.Fraction beltMarginDx = new Scale.Fraction(
+                 0.25,
+                 "Horizontal belt margin checked around beam");
+
+         private final Scale.Fraction beltMarginDy = new Scale.Fraction(
+                 0.15,
