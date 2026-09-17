@@ -13,7 +13,6 @@ ARG LEDGERS_POST_ANALYSIS_SHA256=81202a3d8b10912c132a8340d3de6d6a70782d39cd15e09
 ARG AUGMENTATION_DOT_INTER_SHA256=4741eeafed3105f42e908dcb810eea65d7e41400a305f1a693ed7235dc5fa87b
 ARG SLUR_LINKER_SHA256=d9f92f97b42aad8c3763bdae7db35b272b394b2154014c03b665baaf12fbe797
 ARG CLUMP_PRUNER_SHA256=0b77cf4e453559b34cfccd9b5f00666f4718ff3d3993f9948e1c58a901dc0d12
-ARG BEAMS_BUILDER_SHA256=fa9505b66f2bae9d03a49b69f2f26a27c4c40a4ac18e973123935fe99a84c483
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -87,28 +86,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # also carry one pinned SlurLinker/ClumpPruner fix (D-063): when no slur of a
 # clump links heads with the standard coverage, a flat curve ending on a staff
 # line is retried with a wider coverage on that end and accepted only as a tie.
-# They also carry one pinned BeamsBuilder fix (D-065): a beam end that overshot
-# its stem, because the ink of a slur or tie running along the beam merged into
-# it, is pulled back to that stem instead of keeping an end with no stem, which
-# SigReducer would delete.
-# The alternate installation is copied after these fixes, so wedge candidates
+# The alternate installation is copied after both fixes, so wedge candidates
 # and the selected graph link dots and ties alike, and additionally differs by a pinned
 # LedgersPostAnalysis class whose one-pixel upper-height exception requires an
 # explicit recovery region.
 COPY audiveris-patches/0001-region-scoped-ledger-recovery.patch /tmp/ledger-recovery.patch
 COPY audiveris-patches/0002-line-head-dot-link.patch /tmp/dot-link.patch
 COPY audiveris-patches/0003-staff-line-tie-head-link.patch /tmp/tie-link.patch
-COPY audiveris-patches/0004-beam-end-stem-anchor.patch /tmp/beam-anchor.patch
 RUN mkdir -p \
       /tmp/jdk25 \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve \
-      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/beam \
       /tmp/ledger-classes \
       /tmp/dot-classes \
       /tmp/tie-classes \
-      /tmp/beam-classes \
     && curl -fsSL "${OPENJDK_25_URL}" -o /tmp/openjdk25.tar.gz \
     && echo "${OPENJDK_25_SHA256}  /tmp/openjdk25.tar.gz" | sha256sum -c - \
     && tar -xzf /tmp/openjdk25.tar.gz -C /tmp/jdk25 --strip-components=1 \
@@ -159,24 +151,6 @@ RUN mkdir -p \
       --file /opt/audiveris/lib/app/audiveris.jar \
       | grep -Fqx 'org/audiveris/omr/sheet/curve/ClumpPruner$ClumpLinker.class' \
     && curl -fsSL \
-      "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java" \
-      -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java \
-    && echo "${BEAMS_BUILDER_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java" \
-      | sha256sum -c - \
-    && sed -i 's/\r$//' \
-      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java \
-    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace \
-      --input=/tmp/beam-anchor.patch \
-    && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' \
-      -cp '/opt/audiveris/lib/app/*' -d /tmp/beam-classes \
-      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java \
-    && /tmp/jdk25/bin/jar --update \
-      --file /opt/audiveris/lib/app/audiveris.jar \
-      -C /tmp/beam-classes org/audiveris/omr/sheet/beam \
-    && /tmp/jdk25/bin/jar --list \
-      --file /opt/audiveris/lib/app/audiveris.jar \
-      | grep -Fqx 'org/audiveris/omr/sheet/beam/BeamsBuilder.class' \
-    && curl -fsSL \
       "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java" \
       -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java \
     && echo "${LEDGERS_POST_ANALYSIS_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java" \
@@ -198,8 +172,8 @@ RUN mkdir -p \
     && /opt/audiveris/bin/Audiveris -version \
     && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
     && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes \
-      /tmp/tie-classes /tmp/beam-classes /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
-      /tmp/dot-link.patch /tmp/tie-link.patch /tmp/beam-anchor.patch
+      /tmp/tie-classes /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
+      /tmp/dot-link.patch /tmp/tie-link.patch
 
 # Create working directory
 WORKDIR /app

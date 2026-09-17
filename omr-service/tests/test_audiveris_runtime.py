@@ -375,45 +375,6 @@ class DeploymentStaticContractTests(unittest.TestCase):
             dockerfile,
         )
 
-    def test_every_engine_pulls_a_beam_end_back_to_its_stem(self):
-        """A beam must not keep an end that runs past the stem it belongs to.
-
-        When the ink of a slur or tie running along a beam merges into it, the
-        beam is built past its stems. That stem then sits inside the beam rather
-        than on its end portion, and SigReducer deletes the beam for lacking a
-        stem there, turning the beamed notes into quarters (#134, D-065).
-        """
-        dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
-        patch_file = OMR_SERVICE_ROOT / "audiveris-patches/0004-beam-end-stem-anchor.patch"
-
-        self.assertTrue(patch_file.is_file())
-        patch_text = patch_file.read_text(encoding="utf-8")
-        self.assertIn("trimBeams();", patch_text)
-        self.assertIn("hasSideStumpSeed(beam, side,", patch_text)
-        self.assertIn("getXOutGapMaximum(0)", patch_text)
-        self.assertIn("getXInGapMaximum(0)", patch_text)
-        self.assertIn(
-            "fa9505b66f2bae9d03a49b69f2f26a27c4c40a4ac18e973123935fe99a84c483",
-            dockerfile,
-        )
-        checksum = dockerfile.index('echo "${BEAMS_BUILDER_SHA256}')
-        normalize = dockerfile.index("sed -i 's/\\r$//'", checksum)
-        apply_patch = dockerfile.index("--input=/tmp/beam-anchor.patch", normalize)
-        update_normal = dockerfile.index(
-            "-C /tmp/beam-classes org/audiveris/omr/sheet/beam", apply_patch
-        )
-        copy_recovery = dockerfile.index(
-            "cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery"
-        )
-        self.assertLess(checksum, normalize)
-        self.assertLess(normalize, apply_patch)
-        # The recovery engine is copied from the normal one, so it inherits the fix.
-        self.assertLess(update_normal, copy_recovery)
-        self.assertIn(
-            "grep -Fqx 'org/audiveris/omr/sheet/beam/BeamsBuilder.class'",
-            dockerfile,
-        )
-
     def test_container_replaces_english_data_with_checksum_pinned_legacy_model(self):
         dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
 
