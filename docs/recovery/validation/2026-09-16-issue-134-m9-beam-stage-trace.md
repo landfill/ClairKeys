@@ -104,3 +104,16 @@
 - 이어서 하기 위한 조건은 모두 남아 있다: 이미지 `clairkeys-omr:d065-patched`(및 기준 `d064-patched`), 기준 결과
   `issue134-cross-chord-dot-2026-09-15/codex-verification/{clair,corpus}`, 지시서 `codex-verification/PROMPT.md`.
 - 우려 2는 corpus 회귀(7단계)에서 실제 사례가 나오는지로 판단한다.
+
+## 2026-09-17 — 커밋 위치 정정과 5~8단계 재개
+
+- 확인: D-065 코드 커밋 `362a00f`은 작업 브랜치가 아니라 **main 위에서 만들어져 origin까지 push**돼 있었다.
+  reflog가 경위를 보여준다 — 브랜치는 `e4db4b6`에서 만들어졌지만 곧 `checkout: moving from codex/issue-134-m9-beam-extension to main`
+  이후 main에서 커밋됐다. 로컬 브랜치 tip은 `e4db4b6`에 머물렀고 원격에는 브랜치가 없었다. 이전 기록의 "브랜치 `362a00f`(push 전)"은 사실과 달랐다.
+- CI: main tip `4fb9a85`의 check-run 6개(Lint·Run Tests·E2E·Security Audit·Post-merge build/tests)는 모두 success다.
+  `362a00f` 자체에는 check-run이 없다. 운영은 PR163 `0e3dc61`이고 배포 이미지에는 영향이 없다.
+- 조치(사용자 결정): main에서 `362a00f`을 revert(`1391c4d`, push 완료)하고, 같은 변경을
+  `codex/issue-134-m9-beam-extension`에 cherry-pick(`b59ea08`, main `1391c4d` 위)했다.
+  `git diff 362a00f b59ea08 -- omr-service src docs/recovery/DECISIONS.md`는 비어 있다.
+- 1~4단계 근거는 그대로 쓴다: 검증 이미지 `clairkeys-omr:d065-patched`와 기준 `d064-patched`가 로컬에 남아 있고 코드가 동일하므로 재빌드하지 않는다.
+- 재개 지시서 `codex-verification/PROMPT-resume.md`의 브랜치·커밋 참조를 `b59ea08`/`1391c4d`로 고쳤다(원본은 `.bak`).

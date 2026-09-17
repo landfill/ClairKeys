@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-09-16 KST
+Last updated: 2026-09-17 KST
 
 ## Current phase
 
@@ -16,11 +16,12 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **D-065 검증 5~8단계 이어서 실행**: 브랜치 `codex/issue-134-m9-beam-extension` `362a00f`(push 전).
+1. **D-065 검증 5~8단계 이어서 실행**: 브랜치 `codex/issue-134-m9-beam-extension` `b59ea08`(push 전).
    2026-09-16에 1~4단계는 통과했다(빌드·이미지 테스트 179 OK/skip 0). fixture 판별 6회, Clair 3회, corpus 12곡, 시간 측정이 남았다.
-   [기록](validation/2026-09-16-issue-134-m9-beam-stage-trace.md), 지시서는 Git 제외
-   `local-test-data/results/issue134-beams-2026-09-16/codex-verification/PROMPT.md`.
+   [기록](validation/2026-09-16-issue-134-m9-beam-stage-trace.md), 재개 지시서는 Git 제외
+   `local-test-data/results/issue134-beams-2026-09-16/codex-verification/PROMPT-resume.md`.
    코드 리뷰 우려 1건(끝 seed 미검출 정상 빔을 잘못 자를 수 있음)은 corpus 결과로 판단한다. 그 뒤 PR을 만든다.
+   검증 이미지 `clairkeys-omr:d065-patched`와 기준 `d064-patched`는 2026-09-17에도 남아 있어 1~4단계 재실행은 필요 없다.
 2. **남은 기전**: C m5 빈 머리 → 셋잇단, B 2도 반대편 머리 누락은 같은 방식으로 단계 추적이 필요하다.
    E m3 둘잇단 미지원은 범위가 커서 보류 후보. D-064(PR163 `0e3dc61`)는 병합·배포·운영 확인까지 끝났다.
 3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
@@ -64,6 +65,12 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   [17마디 기준 비교](validation/2026-09-13-issue-134-residual-timing.md).
 
 ## Known blockers / constraints
+
+- 2026-09-17: D-065 코드가 2026-09-16에 작업 브랜치가 아니라 **main에 직접 커밋·push**됐다(`362a00f`). 검증 1~4단계만 끝난
+  엔진 변경이 기본 브랜치에 남아 있었다. 사용자 결정으로 main에서 revert(`1391c4d`, push 완료)하고 같은 변경을
+  `codex/issue-134-m9-beam-extension`에 cherry-pick(`b59ea08`)했다. `git diff 362a00f b59ea08 -- omr-service src`는 비어 있어
+  1~4단계 근거는 그대로 유효하다. 운영은 PR163 `0e3dc61`로 변함없고 배포 이미지는 영향받지 않는다.
+  D-065는 검증 5~8단계를 마친 뒤 PR로만 main에 돌아온다.
 
 - 2026-09-15: PR160–PR163 작업 브랜치는 로컬·원격 tip 모두 main 대비 고유 커밋 0을 확인하고
   사용자 지시("굳이 필요없다면 버릴것")로 원격 → 로컬 순서로 삭제했다.
