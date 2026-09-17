@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-09-17 KST
+Last updated: 2026-09-17 KST (저녁)
 
 ## Current phase
 
@@ -16,18 +16,25 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **D-065 검증 5~8단계 이어서 실행**: 브랜치 `codex/issue-134-m9-beam-extension` `b59ea08`(push 전).
-   2026-09-16에 1~4단계는 통과했다(빌드·이미지 테스트 179 OK/skip 0). fixture 판별 6회, Clair 3회, corpus 12곡, 시간 측정이 남았다.
-   [기록](validation/2026-09-16-issue-134-m9-beam-stage-trace.md), 재개 지시서는 Git 제외
-   `local-test-data/results/issue134-beams-2026-09-16/codex-verification/PROMPT-resume.md`.
-   코드 리뷰 우려 1건(끝 seed 미검출 정상 빔을 잘못 자를 수 있음)은 corpus 결과로 판단한다. 그 뒤 PR을 만든다.
-   검증 이미지 `clairkeys-omr:d065-patched`와 기준 `d064-patched`는 2026-09-17에도 남아 있어 1~4단계 재실행은 필요 없다.
+1. **D-065를 PR로 낼지 사용자에게 확인받는다.** 2차 독립 검증이 **PASS WITH CONCERNS**로 끝났다
+   ([기록](validation/2026-09-17-issue-134-m9-beam-trim-thickness.md)). 브랜치 `codex/issue-134-m9-beam-extension`
+   `bea1431`(push·PR 없음)은 Clair 171/191을 유지하면서 corpus 비교 가능한 11곡이 D-064와 같고, 1차에서 FAIL이던
+   Deborah m24 회귀는 `events.json` 바이트 동일로 사라졌다. 남은 것은 실행된 손해가 아니라 Medium 3·Low 2건의 우려다.
+   선택지는 (a) 우려를 known limit으로 명시하고 그대로 PR, (b) 두께 미달로 거부한 후보를 남기지 않도록 먼저 수정
+   — 진짜 빔까지 살릴 가능성이 있으나 BEAMS 단계 범위가 커지고 corpus 재검증이 필요하다, (c) fixture에 "진짜 빔도 읽혀야 한다"를
+   추가 — 지금은 실패하므로 (b)가 선행돼야 한다. **PR·병합·배포는 각각 사용자 승인이 필요하다.**
 2. **남은 기전**: C m5 빈 머리 → 셋잇단, B 2도 반대편 머리 누락은 같은 방식으로 단계 추적이 필요하다.
    E m3 둘잇단 미지원은 범위가 커서 보류 후보. D-064(PR163 `0e3dc61`)는 병합·배포·운영 확인까지 끝났다.
 3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
 
 ## Latest verified result
 
+- **D-065 2차 독립 검증(2026-09-17, 미배포·PR 없음) — PASS WITH CONCERNS**: 브랜치 `bea1431`.
+  Clair **171/191** 3회 동일(바뀐 마디는 m9뿐, 타이 29/43·tempo 69 불변), corpus 비교 가능한 11곡 모두 D-064와 동일,
+  Deborah `events.json` 바이트 동일(`d8b378e3…`), 이미지 테스트 **180 OK/skip 0**, `--no-cache` 빌드 171.24초.
+  1차(2026-09-16 재개분)는 Deborah m24에서 슬러가 빔으로 남아 canonical 330개 중 127개가 앞당겨지는 회귀로 **FAIL**이었고,
+  자를 수 있는 후보에 두께 조건(D-065 결정 3b, 기준 빔 두께의 0.95)을 두어 해소했다.
+  남은 우려는 Medium 3·Low 2건이며 실행된 회귀는 없다. [기록](validation/2026-09-17-issue-134-m9-beam-trim-thickness.md).
 - **D-065 로컬 검증(2026-09-16, 진행 중·미배포)**: 실험 이미지에서 Clair 160 → **171/191** 3회 동일(m9 오류 11건 해소, 타이·tempo 불변).
   전체 빌드 `d065-patched` 이미지 테스트 179 OK/skip 0. fixture 판별·corpus 회귀는 남았다.
   [기록](validation/2026-09-16-issue-134-m9-beam-stage-trace.md).
@@ -65,6 +72,11 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   [17마디 기준 비교](validation/2026-09-13-issue-134-residual-timing.md).
 
 ## Known blockers / constraints
+
+- 2026-09-17: 브랜치 `codex/issue-134-m9-beam-extension`은 `bea1431`(두께 가드·새 fixture) ← `b59ea08`(D-065 원본) ←
+  main `1391c4d` 순서이며 **origin에 push되지 않았다**. 다른 머신에서 재개하려면 먼저 push해야 한다. 또한 이 브랜치는
+  main의 상태 기록 커밋(`c8afda2` 이후)을 포함하지 않는다. 사용자 미커밋 파일 때문에 rebase를 하지 않았고, 그 파일은 건드리지 않았다.
+  검증 이미지 `clairkeys-omr:{d064-patched, d065-patched, d065b-patched, d065b-codex-verification}`도 이 머신에만 있다.
 
 - 2026-09-17: D-065 코드가 2026-09-16에 작업 브랜치가 아니라 **main에 직접 커밋·push**됐다(`362a00f`). 검증 1~4단계만 끝난
   엔진 변경이 기본 브랜치에 남아 있었다. 사용자 결정으로 main에서 revert(`1391c4d`, push 완료)하고 같은 변경을

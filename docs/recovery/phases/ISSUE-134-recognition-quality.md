@@ -121,6 +121,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
    - D-049의 보수적인 6/9 재판독 후보를 먼저 격리 검증한다. 두 보표의 이미지 근거와 기존 리듬
      모순이 모두 있을 때만 내부 그래프의 박자 해석을 재시도하며, 점음표/붙임줄 전체 해결과 구별한다.
 5. 별도 PR·CI·판단에 따른 병합 후 VM 배포 및 동일 입력 재검증을 수행한다.
+- 2026-09-17: D-065(m9 왼손 빔) 1차 독립 검증은 corpus에서 **FAIL**이었다. Deborah's Theme m24에서 빔 위를 지나는 슬러가
+  잘린 뒤 두 번째 빔 그룹으로 남아 세 음이 중복되고 인쇄된 D♯4가 사라졌으며, 마디가 1박 짧아져 canonical 330개 중 127개의
+  시작이 앞당겨졌다. 자를 수 있는 후보에 두께 조건(기준 빔 두께의 0.95, D-065 결정 3b)을 추가하고 Deborah m24형 합성 fixture를
+  더한 뒤 2차 독립 검증을 처음부터 다시 돌려 **PASS WITH CONCERNS**를 받았다. Clair 171/191 3회 동일, corpus 비교 가능한
+  11곡 모두 D-064와 동일, Deborah는 바이트 동일, 이미지 테스트 180 OK/skip 0. 남은 우려는 Medium 3·Low 2건이고 실행된 회귀는
+  없다. 브랜치 `bea1431`은 push·PR 전이며 배포도 없다. 운영은 PR163 `0e3dc61` 그대로다. 이 단계는 IN_PROGRESS.
+  [기록](../validation/2026-09-17-issue-134-m9-beam-trim-thickness.md).
 
 ## Completion criteria
 
