@@ -1,8 +1,7 @@
 diff --git a/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java b/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java
-index df39fc6..bb61a3b 100644
 --- a/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java
 +++ b/app/src/main/java/org/audiveris/omr/sheet/beam/BeamsBuilder.java
-@@ -255,12 +255,15 @@ public class BeamsBuilder
+@@ -255,12 +255,15 @@
          createBeams();
 
          // Then, extend beams as much as possible
@@ -18,7 +17,7 @@ index df39fc6..bb61a3b 100644
 
          // Group system beams into beam groups
          BeamGroupInter.populateSystem(system);
-@@ -1100,12 +1103,26 @@ public class BeamsBuilder
+@@ -1100,12 +1103,26 @@
       */
      private boolean extendToSpot (AbstractBeamInter beam,
                                    HorizontalSide side,
@@ -45,13 +44,15 @@ index df39fc6..bb61a3b 100644
          final List<Glyph> spots = new ArrayList<>(
                  Glyphs.intersectedGlyphs(sortedBeamSpots, luArea));
          Collections.sort(spots, Glyphs.byAbscissa);
-@@ -1131,12 +1148,150 @@ public class BeamsBuilder
+@@ -1129,12 +1146,163 @@
+             Point2D extPt = LineUtil.intersectionAtX(median, x);
+
              return extendToPoint(beam, side, extPt);
          }
 
          return false;
-     }
-
++    }
++
 +    //-------------------//
 +    // hasSideStumpSeed //
 +    //-------------------//
@@ -126,6 +127,19 @@ index df39fc6..bb61a3b 100644
 +    {
 +        final Scale scale = sheet.getScale();
 +
++        // Trimming rescues a candidate that would otherwise be dropped for lacking a stem on an
++        // end portion, so it must not rescue ink that is not a beam at all. The ink of a slur or
++        // tie that runs between two stems is thinner than a real beam of the same sheet, while a
++        // real beam whose end merged with such ink keeps the sheet's beam thickness. Only a
++        // candidate at least as thick as a genuine beam of this sheet may be trimmed.
++        final ItemParameters heightParams = ((beam instanceof SmallBeamInter)
++                && (smallParams != null)) ? smallParams : stdParams;
++
++        if (beam.getHeight() < (heightParams.typicalHeight
++                * constants.minTrimHeightRatio.getValue())) {
++            return null; // Too thin to be a beam of this sheet
++        }
++
 +        // Here the seed must sit on the very end: a seed even slightly inside already weakens
 +        // the beam-stem relation that BeamStemRelation grades on this end.
 +        if (hasSideStumpSeed(beam, side, scale.toPixels(BeamStemRelation.getXOutGapMaximum(0)))) {
@@ -188,28 +202,30 @@ index df39fc6..bb61a3b 100644
 +        }
 +
 +        return newBeam;
-+    }
-+
+     }
+
      //--------------//
      // extendToStem //
      //--------------//
      /**
-      * Try to extend the provided beam on the desired side to a stem seed within reach.
-      *
-@@ -1713,12 +1868,16 @@ public class BeamsBuilder
+@@ -1712,12 +1880,20 @@
+                 1.0,
                  "Maximum beam horizontal extension to stem seed");
 
          private final Scale.Fraction maxExtensionToSpot = new Scale.Fraction(
                  0.5,
                  "Maximum beam horizontal extension to spot");
-
++
 +        private final Scale.Fraction maxTrimToSeed = new Scale.Fraction(
 +                1.0,
 +                "Maximum beam horizontal trim back to a stem seed");
 +
++        private final Constant.Ratio minTrimHeightRatio = new Constant.Ratio(
++                0.95,
++                "Minimum height of a trimmable beam, specified as ratio of typical beam");
+
          private final Scale.Fraction beltMarginDx = new Scale.Fraction(
                  0.25,
                  "Horizontal belt margin checked around beam");
 
          private final Scale.Fraction beltMarginDy = new Scale.Fraction(
-                 0.15,

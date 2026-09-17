@@ -392,6 +392,10 @@ class DeploymentStaticContractTests(unittest.TestCase):
         self.assertIn("hasSideStumpSeed(beam, side,", patch_text)
         self.assertIn("getXOutGapMaximum(0)", patch_text)
         self.assertIn("getXInGapMaximum(0)", patch_text)
+        # Only ink as thick as a real beam of the sheet may be trimmed, so that the
+        # curve of a slur crossing a group's stems cannot be kept as a beam.
+        self.assertIn("minTrimHeightRatio", patch_text)
+        self.assertIn("heightParams.typicalHeight", patch_text)
         self.assertIn(
             "fa9505b66f2bae9d03a49b69f2f26a27c4c40a4ac18e973123935fe99a84c483",
             dockerfile,

@@ -2495,12 +2495,21 @@
      안쪽 1.0 IL(`maxTrimToSeed`) 안에 seed가 있으면, 빔 끝을 그 seed의 중앙선 교점까지 **줄인다**.
   3. 줄인 결과가 `minBeamWidthLow`보다 좁거나 impacts 등급이 `BeamInter.getMinGrade()` 미만이면 줄이지 않는다.
      줄이기는 확장과 같은 방식으로 새 `BeamInter`를 만들고 원래 빔을 제거한다.
+  3b. **두께가 그 악보의 빔에 못 미치는 후보는 아예 줄이지 않는다.** 후보의 높이가
+     `stdParams.typicalHeight`(`SmallBeamInter`면 `smallParams`)의 `minTrimHeightRatio`(0.95) 미만이면 줄이기를 포기한다.
+     줄이기는 `checkBeamsHaveBothStems`가 지울 후보를 되살리는 동작이므로, 빔이 아닌 잉크까지 되살리면 안 된다.
+     실측 근거(2026-09-17): 살려야 하는 Clair m9 빔은 12.8 / 악보 기준 11 = 1.16, Deborah m24의 진짜 빔은 11.1 / 11 = 1.01인 반면
+     같은 마디에서 빔이 되어 버린 **슬러는 9.8 / 11 = 0.89**, 합성 fixture에서는 진짜 빔 14.1 / 14 = 1.01 대 슬러 12.0 / 14 = 0.86이다.
+     기존 높이 검사(`minHeightLow` = typical × 0.7)는 이 둘을 가르지 못한다.
   4. 빔 검출 임계값·spot 생성·`maxExtensionToSpot`(0.5 IL)·`maxExtensionToStem`(1.0 IL)·`checkBeamsHaveBothStems` 삭제 규칙·
      `BeamStemRelation` 상수는 바꾸지 않는다.
   5. 패치는 `omr-service/audiveris-patches/0004-beam-end-stem-anchor.patch` 하나다. D-062·D-063과 같이 sha256으로 고정한
      pinned `BeamsBuilder.java`(`fa9505b6…`)에 적용하고, 컴파일한 `org/audiveris/omr/sheet/beam` 클래스를 기본 엔진 jar에 넣은 뒤
      recovery engine을 복사한다.
   6. XML·JSON의 음가를 사후에 고치지 않는다(D-049/D-052 유지). 엔진이 원래 검출한 빔의 범위만 달라진다.
+- Rejected: 두께 조건 없이 폭·등급 가드만 유지 | 2026-09-17 corpus 검증에서 Deborah m24의 슬러가 빔으로 남아 세 음이 중복되고
+  인쇄된 D♯4가 사라졌으며 마디가 1박 짧아져 이후 330개 중 127개의 시작이 앞당겨졌다
+- Rejected: 줄인 빔의 등급 하한을 올려 구분 | 실측 차이가 작다(살릴 Clair 0.537 대 지울 슬러 0.474). 두께 비는 0.89 대 1.16으로 여유가 크다
 - Rejected: `extendToSpot` 금지만 적용 | 실측으로 확인했다. 빔 검출이 이미 양 끝을 곡선까지 물고 시작하므로 Clair 결과가 바뀌지 않는다
 - Rejected: `SigReducer.checkBeamsHaveBothStems`에서 삭제 대신 축소 | REDUCTION 전역 규칙이고, 이미 관계·등급이 정해진 뒤라 되돌릴 정보가 적다
 - Rejected: `maxExtensionToSpot`이나 `BeamStemRelation`의 겹침 허용·등급 하한 완화 | 전역 상수라 근거가 약하고 빔·기둥 오연결이 늘 수 있다
@@ -2513,5 +2522,10 @@
 - Tested: 코디네이터 실험 이미지 `d065-exp`(`d064-patched` + 패치 클래스 교체, Dockerfile 빌드 아님): 합성 fixture는 기준 이미지에서 4마디 모두
   8분음표가 4분음표가 되고 음표도 하나 잃으며, 패치에서는 4마디 모두 맞다. Clair 3회 동일: 원본 이벤트 160 → 171/191, 바뀐 마디는 m9뿐
   (duration 3 + onset 6 + onset-and-duration 2 해소), 타이 29/43·tempo 69 불변, raw 이벤트 해시 3회 동일
-- Not-tested: Codex 워커 독립 검증(전체 Dockerfile 빌드·이미지 테스트·corpus 회귀) 진행 전, 운영 VM 배포·재업로드
+- Tested: 좁힌 가드의 코디네이터 실측(2026-09-17, 전체 Dockerfile 빌드 `d065b-patched`): Clair 171/191 유지(카테고리 분포도 같다),
+  Deborah는 `events.json`이 D-064 기준과 **바이트 단위로 동일**해 회귀가 사라졌다. 새 합성 fixture는 `d064-patched` OK,
+  `d065b-patched` OK, 좁히기 전 `d065-patched` FAILED로 판별된다
+- Not-tested: Codex 워커 독립 검증(무결성·리뷰·전체 빌드·이미지 테스트·fixture 6회·Clair 3회·corpus 12곡·시간) 재실행 전, 운영 VM 배포·재업로드
+- Known limit: 두께 조건은 진짜 빔을 되살릴 기회도 함께 줄인다. Deborah m24의 진짜 빔(d065에서는 살아나 C♯4·B3를 되찾았다)과
+  합성 fixture의 빔은 좁힌 뒤 다시 살아나지 않아 D-064와 같은 결과로 돌아간다. 왜 비율 1.01인 후보까지 빠지는지는 확인되지 않았다
 - Related: #134, D-049, D-052, D-062, D-063, D-064, validation/2026-09-16-issue-134-m9-beam-stage-trace.md
