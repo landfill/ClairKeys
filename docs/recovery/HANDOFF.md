@@ -88,9 +88,12 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   사용자 지시("굳이 필요없다면 버릴것")로 원격 → 로컬 순서로 삭제했다.
   사용자의 미커밋 이력 메모(`validation/2026-09-13-handoff-history.md`)는 손대지 않고 그대로 둔다.
 
-- 로컬 Docker 이미지 `clairkeys-omr:stock-main`·`dot-link`·`d063-patched`는 검증용이다. 운영 이미지와 같다고 주장하지 않는다.
-  `d063-patched`(`7cb6700d…`)는 현재 운영(PR162)과 Clair MusicXML이 메타데이터를 빼면 같아 다음 엔진 실험의 기준선으로 쓸 수 있다.
-  `d064-patched`는 D-064 브랜치 `deb3708`의 Dockerfile 빌드로, 점 클래스 해시가 현재 운영(PR163)과 같다. `d064-exp`는 클래스 교체 실험 이미지다.
+- 로컬 Docker 이미지는 검증용이며 운영 이미지와 같다고 주장하지 않는다. 2026-09-17 디스크 정리로 남은 것은 넷뿐이다:
+  `d064-patched`(D-064 브랜치 `deb3708`의 Dockerfile 빌드, 점 클래스 해시가 운영 PR163과 같은 **기준선**,
+  `BeamsBuilder.class` `324132f0…`), `d065-patched`(두께 가드 전 D-065, 새 fixture가 FAILED로 판별됨을 보이는 유일한 수단),
+  `d065b-patched`(코디네이터 빌드, `8d15e1b2…`), `d065b-codex-verification`(워커 빌드).
+  `stock-main`·`dot-link`·`d063-patched`·`d064-exp`·`d065-exp`·`d065-diag`·`tie-link-exp`·`tie-diag`는 삭제했다.
+  PR161·PR162 시절 기준선이 다시 필요하면 해당 커밋에서 Dockerfile로 재빌드한다(약 3분).
   그래프 덤프 도구는 Git 제외 `local-test-data/results/issue134-onsets-2026-09-15/dump_region.py`다.
   운영 수치는 PR162까지는 운영 스모크 기록(`pr162-live-pkmvlC`), PR163은 사용자의 앱 재변환 애니메이션 회수본을 근거로 한다.
 - #134 판단은 원본 기준표 평가(phase 완료 조건)로 한다. 2026-09-15 사용자는 악보를 읽지 않으며 청취로 이상한 곳을
