@@ -19,8 +19,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **[PR165](reviews/PR-165.md)의 CI와 리뷰를 확인하고 actionable feedback에 대응한다.** 사용자가 기전 B를 골랐고
-   구현·로컬 검증을 마친 뒤 PR 생성을 승인했다(head `9645772`, non-draft, MERGEABLE). Clair 171 → **173/191** 3회 동일,
+1. **[PR165](reviews/PR-165.md)의 병합 승인을 기다린다.** 사용자가 기전 B를 골랐고 구현·검증 후 PR 생성을 승인했다.
+   head `9645772`는 hosted 체크 **16/16 pass**, Codex 자동 리뷰 **지적 0건**, `mergeStateStatus=CLEAN`,
+   미해결 actionable review 없음이다. Clair 171 → **173/191** 3회 동일,
    타이·tempo·정확한 마디 불변, corpus 비교 가능한 11곡 모두 기준선과 바이트 동일, 이미지 테스트 182 OK/skip 6이다.
    1차 시도는 예외 범위에 같은 pitch를 포함해 두 곡에서 음이 두 번 나오는 회귀가 있었고, 범위를 정확히 한 칸으로 좁혀 해소했다.
    [검증 기록](validation/2026-09-18-issue-134-second-interval-head.md). **PR·병합·배포는 각각 사용자 승인이 필요하다.**
