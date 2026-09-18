@@ -182,6 +182,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Baseline freshly measures 182/191 and 30/43 ties; the latest experiment measures 185/191 and 30/43. Final image tests,
   corrected reload fixture, three runs, corpus and PR gates remain. [Validation](../validation/2026-09-19-issue-134-shared-stem-chord-split.md).
 
+- 2026-09-19: Candidate `a9f2d35` final Docker image scores 185/191 and 30/43 ties in three identical runs, changing only m5/m7.
+  Native tests (including reload) pass. The first full suite missed repository-root fixture mounts (47 file-not-found errors);
+  a corrected full run and paired 12-score corpus comparison are pending. Not merged or deployed.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
