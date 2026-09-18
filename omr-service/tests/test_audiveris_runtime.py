@@ -462,6 +462,60 @@ class DeploymentStaticContractTests(unittest.TestCase):
             dockerfile,
         )
 
+    def test_every_engine_keeps_a_shared_stem_void_head_on_the_beat(self):
+        """A lower voice's void head on a beamed stem must survive and not slow the beat.
+
+        analyzeChords excluded every pair of heads of different duration on one
+        stem, deleting a printed dotted half written under a beamed eighth. Kept,
+        that void head then set its chord's duration as the bottom note, a half
+        halved by the beam, which pushed the measure by half a beat (#134, D-067).
+        """
+        dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
+        reducer_patch = OMR_SERVICE_ROOT / "audiveris-patches/0006-shared-stem-void-head.patch"
+        chord_patch = OMR_SERVICE_ROOT / "audiveris-patches/0007-beamed-chord-black-duration.patch"
+
+        self.assertTrue(reducer_patch.is_file())
+        reducer_text = reducer_patch.read_text(encoding="utf-8")
+        self.assertIn("excludeDurations(oneDurSet, otherDurSet)", reducer_text)
+        self.assertIn("isSharedStemVoid(i1, i2) || isSharedStemVoid(i2, i1)", reducer_text)
+        # Only a void head that is not a duplicate reading of a black notehead, and
+        # that reads like a printed head, is spared.
+        self.assertIn("minSharedStemVoidGrade", reducer_text)
+        self.assertIn("0.5,", reducer_text)
+        self.assertIn("((Exclusion) rel).cause != OVERLAP", reducer_text)
+
+        self.assertTrue(chord_patch.is_file())
+        chord_text = chord_patch.read_text(encoding="utf-8")
+        self.assertIn("if (noteShape == Shape.NOTEHEAD_VOID) {", chord_text)
+        self.assertIn("other.getShape() == Shape.NOTEHEAD_BLACK", chord_text)
+
+        self.assertIn(
+            "c65453b636f624054c40675aaa877d17d0e7b1551fb4457702e91d33b0f7588c",
+            dockerfile,
+        )
+        second_head = dockerfile.index("--input=/tmp/second-head.patch")
+        shared_stem = dockerfile.index("--input=/tmp/shared-stem.patch", second_head)
+        compile_reducer = dockerfile.index("-d /tmp/reducer-classes", shared_stem)
+        checksum = dockerfile.index('echo "${ABSTRACT_CHORD_INTER_SHA256}')
+        normalize = dockerfile.index("sed -i 's/\\r$//'", checksum)
+        apply_chord = dockerfile.index("--input=/tmp/chord-duration.patch", normalize)
+        update_normal = dockerfile.index(
+            "-C /tmp/chord-classes org/audiveris/omr/sig/inter", apply_chord
+        )
+        copy_recovery = dockerfile.index(
+            "cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery"
+        )
+        # Both SigReducer patches are applied before that class is compiled once.
+        self.assertLess(shared_stem, compile_reducer)
+        self.assertLess(checksum, normalize)
+        self.assertLess(normalize, apply_chord)
+        # The recovery engine is copied from the normal one, so it inherits both fixes.
+        self.assertLess(update_normal, copy_recovery)
+        self.assertIn(
+            "grep -Fqx 'org/audiveris/omr/sig/inter/AbstractChordInter.class'",
+            dockerfile,
+        )
+
     def test_container_replaces_english_data_with_checksum_pinned_legacy_model(self):
         dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
 

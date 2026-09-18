@@ -1,0 +1,26 @@
+--- a/app/src/main/java/org/audiveris/omr/sig/inter/AbstractChordInter.java
++++ b/app/src/main/java/org/audiveris/omr/sig/inter/AbstractChordInter.java
+@@ -563,6 +563,23 @@
+                         dur = Shape.NOTEHEAD_BLACK.getNoteDuration();
+                     }
+ 
++                    /*
++                     * A beamed or flagged chord cannot be a half note. When the bottom note is
++                     * a void head of another voice sharing the stem of black heads, as a
++                     * dotted half written under a beamed eighth, the beams belong to the black
++                     * heads, so the duration is taken from them, the same way the mirror case
++                     * above counts its void head as black.
++                     */
++                    if (noteShape == Shape.NOTEHEAD_VOID) {
++                        for (Inter other : notes) {
++                            if (other.getShape() == Shape.NOTEHEAD_BLACK) {
++                                dur = Shape.NOTEHEAD_BLACK.getNoteDuration();
++
++                                break;
++                            }
++                        }
++                    }
++
+                     for (int i = 0; i < fbn; i++) {
+                         dur = dur.divides(2);
+                     }
