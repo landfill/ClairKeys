@@ -189,6 +189,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-19: Corrected full image suite passes: 186 total, 180 passed, 6 skipped (retained local diagnostics absent); all nine native tests run.
   Paired baseline/candidate runs over all twelve corpus PDFs have started. PR/merge/deployment remain pending.
 
+- 2026-09-19: Local D-068 verification complete at `63487c0`: all twelve corpus PDFs rerun on both images; eleven successes are raw-byte
+  identical and animation-identical except generated_at, while truongca fails at the same page3 SCALE exception on both. No new regression.
+  Final diff self-reviewed; limitations recorded. Next: non-draft PR and current-head CI/review. Not merged or deployed.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

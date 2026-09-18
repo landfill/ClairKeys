@@ -2,7 +2,7 @@
 
 ## 범위 / 현재 상태
 
-- 작업 브랜치: `codex/issue-134-shared-stem-chord-split`. 구현 후보 `1ee36a3`, patch context 공백 정리 `a9f2d35` 커밋. 최종 검증 중. PR·병합·배포 없음.
+- 작업 브랜치: `codex/issue-134-shared-stem-chord-split`. 구현 후보 `1ee36a3`, patch context 공백 정리 `a9f2d35` 커밋. 검증 완료·결정 정리 `63487c0`. PR 생성/CI·리뷰 전, 병합·배포 없음.
 - 목표: D-067 뒤 남은 m5 duration 2건·m7 duration 1건. 원본 XML/JSON의 사후 수정 없음.
 - 사용자 승인: 로컬 Docker 실행·빌드·검증, 커밋·push·non-draft PR와 리뷰 대응. 병합·운영 변경 미승인.
 - 사용자 변경 `validation/2026-09-13-handoff-history.md`는 보존한다.
@@ -75,7 +75,76 @@
 - 상태 기록 커밋 `b7795d5` push 직후 check-runs를 조회했다. 후속 조회에서 Post-merge build/tests, Security Audit, Lint, Run Tests 성공;
   E2E Tests는 진행 중이었다. 이후 상태도 확인한다.
 
-## 아직 필요한 검증
+## Corpus 12곡 — 기준선/패치 각각 새 실행
 
-- corpus12곡 기준선·패치 순차 재실행 및 diff, 실패·비결정성 조사, 시간·메모리 확인.
-- 최종 자체 리뷰, PR·CI·자동 리뷰 대응.
+- 모든 PDF를 ASCII 이름으로 복사하고 같은 입력을 `d067b-patched` → `d068-patched` 순서로 처리했다. JVM은 한 번에 하나만 실행했다.
+- 각 이미지는 `docker run --rm --platform linux/amd64 --memory=5g -v <산출물>:/work --entrypoint sh <image>`에서
+  `cd /app && PYTHONPATH=/app python3 /work/run_case.py /work/inputs/score-NN.pdf /work/corpus/score-NN/<baseline|patched>`를 실행했다.
+  `run_case.py`는 실제 `AudiverisProcessor.process_pdf` 선택 결과를 `MusicXMLToClairKeysConverter.convert`로 변환하고,
+  각 raw note의 part/measure/pitch/rest/chord/grace/duration/type/dots/voice/staff/tie/timeMod를 `events.json`으로 기록한다.
+- 성공11곡의 **events.json 바이트가 모두 동일**하다. 애니메이션 JSON은 `generated_at`만 달랐고 그 필드를 뺀 나머지 전체 객체가 모두 같다.
+- 실패1곡은 두 이미지 모두 exit1. truongca PDF 3쪽의 SCALE 단계에서 `StepException: No regularly spaced lines found`,
+  `ScaleBuilder$HistoKeeper.retrieveInterlinePeaks(ScaleBuilder.java:746)`가 발생하고 export가 중단됐다.
+  예외 chain을 코드로 비교해 동일함을 확인했고 이전 D-067 로그에도 같은 실패가 있다. 이 곡을 통과로 세지 않는다.
+  패치 분리 로그는 이 곡을 포함한 corpus 전체에서0건이다. 목표 Clair에서만 세 머리를 분리했다.
+- 패치 성공곡 처리 23.858–104.037초, 자식 최대RSS 상한1,433,868 KiB(약1.37GiB); 전부 timeout900초와 컨테이너5GB 제한 내다.
+  단일 실행 시간 비교는 성능 개선을 입증하는 benchmark가 아니다.
+
+| 입력 | 기준선 초 | 패치 초 | raw/animation 결과 |
+|---|---:|---:|---|
+| Always_With_Me_2pages_300dpi.pdf | 34.036 | 36.647 | raw 바이트 동일 / 생성시각 외 동일 |
+| Deborahs_Theme_Luciano_Lombardi_2pages_300dpi.pdf | 55.711 | 53.154 | raw 바이트 동일 / 생성시각 외 동일 |
+| Love_Affair_Piano_Solo.pdf | 104.502 | 104.037 | raw 바이트 동일 / 생성시각 외 동일 |
+| Merry_Go_Round_of_Life_2pages_300dpi.pdf | 26.195 | 28.859 | raw 바이트 동일 / 생성시각 외 동일 |
+| My_Neighbor_Totoro_2pages_300dpi.pdf | 36.701 | 40.230 | raw 바이트 동일 / 생성시각 외 동일 |
+| Premiere_Gymnopedie_300dpi.pdf | 25.447 | 23.858 | raw 바이트 동일 / 생성시각 외 동일 |
+| Princess_Mononoke_Ashitaka_and_San_print_300dpi.pdf | 62.851 | 58.307 | raw 바이트 동일 / 생성시각 외 동일 |
+| Toy Story- You’ve Got a friend in me - easy ver.pdf | 30.835 | 35.144 | raw 바이트 동일 / 생성시각 외 동일 |
+| bach-wtk1-prelude1.pdf | 35.688 | 35.718 | raw 바이트 동일 / 생성시각 외 동일 |
+| piano_piano-solo-love-affair-ennio-morricone-truongca.com.pdf | exit1 | exit1 | 같은 3쪽 SCALE 실패 |
+| satie-gymnopedie-1.pdf | 28.492 | 28.397 | raw 바이트 동일 / 생성시각 외 동일 |
+| 드비시달빛.pdf | 40.990 | 38.439 | raw 바이트 동일 / 생성시각 외 동일 |
+
+성공곡 raw SHA256(양쪽 동일):
+
+```text
+Always_With_Me_2pages_300dpi.pdf: a06b622c3a9ac4a25b0a4c5fe8b8d91ed4e558452dd8366583103b6e8dc2cea3
+Deborahs_Theme_Luciano_Lombardi_2pages_300dpi.pdf: d8b378e331fb5565d5a5fc69fdb780fceb65fe4f7a32c5ef01f1851b3f72cd5f
+Love_Affair_Piano_Solo.pdf: 58025f4b37aa919e819914c0901c6fd1eaa4fcbfcd8684a5b23b40bf88899215
+Merry_Go_Round_of_Life_2pages_300dpi.pdf: b3ecd778191ad375c05e5a14756ecf7bedbe92478a8986c2c9473ac8a962a612
+My_Neighbor_Totoro_2pages_300dpi.pdf: 7755c5cdcf3b0b157e4069af77f28146eb78f82c2529960c47d64db459dae2f7
+Premiere_Gymnopedie_300dpi.pdf: 1e885cc5497aa261645bf18fb4026af0e2b924be794b062fb41fe87f854ecd86
+Princess_Mononoke_Ashitaka_and_San_print_300dpi.pdf: 4494ae6758201e3b4065ffd851b197d3f554419958991804a31e57657b94340d
+Toy Story- You’ve Got a friend in me - easy ver.pdf: 9979440c2c9f4e1e7dcb3d08a0fa350faa9a887d4ff2c1cfe11f5323cfc92ea3
+bach-wtk1-prelude1.pdf: 0bcb86c4d1ce867c75ed6a654fb1785b04df63a2c8a4d3a366610cd21d4936fa
+satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb4bd1e6eb
+드비시달빛.pdf: ac2f87f479b411dff240acb7d7fe5adb2e64029a7fa1fda7e6fdd681ec8794ff
+```
+
+## 자체 리뷰 — D-068 최종 diff
+
+- 범위: 최신 main과 작업 head의 6개 파일. 점/타이 보충을 출력 XML·JSON에 넣지 않고 엔진의 검출된 머리·점·관계를 사용한다.
+- 그래프 무결성: 최종안은 head-stem·beam-stem 관계를 이동/삭제하지 않는다. 원래 화음에서 머리 membership만 옮기고 동일 기둥을 사용한다.
+- 빔 소유: 긴 화음의 getBeams/getFlagsNumber뿐 아니라 빔의 getChords/getHeadChords에서도 제외하므로 리듬 그룹과 음가 계산이 일치한다.
+- 보존/재실행: XML attribute로 소유를 저장한다. normal/recovery의 생성→OMR저장→재로딩→재export에서 실제 음높이·시작 박·길이·점·성부가 같다.
+  재실행 시 긴 화음은 빔이 없고 짧은 화음에는 긴 머리가 없어 같은 분리가 반복되지 않는다.
+- 점과 성부: countDots 전에 분리하여 긴 음의 점 삭제를 막는다. SameTimeRelation으로 onset을 보존한다. 일반적인 점 없는 2도는 분리하지 않는다.
+- 타이: 분리 직후 관찰한 m4→m5 회귀를 복구했다. 같은 기둥·명시적 SameTimeRelation·분리 속성이 있는 끝점의 동시 화음만
+  장애물에서 제외한다. 다른 시점·기둥의 화음은 기존 검사를 받는다. Clair 모든 마디의 누락/오검출 타이 목록이 기준선과 같다.
+- 보수적 제외: small, mirror, 다른 staff, 여러 긴 머리, 빔 없는 화음은 대상이 아니다. 점4분 검은 머리는 점1개·반대편 점 없는 정확한2도 이웃이 필요하다.
+- 빌드: 소스4개를 기존 pinned commit과 각각의 SHA로 검증하고 함께 컴파일한다. recovery는 주입 후 복사한다. 두 jar의 클래스 해시 및
+  이미지 안의 Dockerfile/patch/test 소스 해시를 최종 작업 파일과 대조했다.
+- 사용자 변경/규약: history 메모는 stage하지 않았다. 코드·계획·결정은 작업 브랜치, 상태·검증은 main에 별도 기록했다.
+- 수정한 finding: patch context의 공백-only 줄 → 정리·재빌드·클래스 동일 확인. 재로딩 테스트의 export 경로 → 기존 export를 먼저 지워
+  stale XML을 읽을 가능성 제거. 이미지 suite의 외부 fixture 마운트 누락 → 읽기 전용 참조 연결 후 전체 suite 재실행 성공.
+- 알려진 한계: 일반 점음표 화음에서 다른 머리의 점이 인식되지 않으면, 점을 가진 밀린2도가 독립 성부처럼 보일 가능성이 있다.
+  형태 근거와 단일 후보로 범위를 제한했지만 모든 판형에서 이 모호성이 사라졌다고 주장하지 않는다. corpus 확인 결과는 최종 기록을 따른다.
+- 결론: 자체 리뷰에서 미해결 구현 finding은 없다. corpus 비교까지 통과했으며 최신 PR CI/자동 리뷰가 남았다.
+
+## 최종 범위와 한계
+
+- 목표 duration3건 해소. Clair 완전 일치 마디는 2·4·5·7·8·11·15·16·17로 7→9개다. m1 점 누락2, m3 둘잇단4 및 타이13누락은 남았다.
+- 모든 마디의 쉼표 mismatch 목록·박자표·마디 길이 계약은 기준선과 같다. 신규 실패나 미해결 자체 리뷰 finding은 없다.
+- 이미지 안의 Dockerfile/patch/fixture/test 소스 SHA도 작업 파일과 동일함을 별도 검증했다.
+- `76e4e0b` 상태 기록 커밋의 체크6개는 E2E를 포함해 전부 성공했다. 이는 구현 PR의 CI를 대신하지 않는다.
+- 아직 수행하지 않은 범위: 구현 PR CI·자동 리뷰, main 병합, 운영 배포·재업로드. 사용자 병합/배포 승인은 없다.
