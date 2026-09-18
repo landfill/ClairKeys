@@ -1,10 +1,11 @@
 --- a/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsLinker.java
 +++ b/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsLinker.java
-@@ -21,6 +21,11 @@
+@@ -21,6 +21,12 @@
  // </editor-fold>
  package org.audiveris.omr.sheet.symbol;
 
 +import org.audiveris.omr.glyph.Shape;
++import org.audiveris.omr.sheet.Staff;
 +import org.audiveris.omr.sig.inter.StemInter;
 +import org.audiveris.omr.sig.relation.HeadStemRelation;
 +import org.audiveris.omr.sig.relation.SameTimeRelation;
@@ -12,7 +13,7 @@
  import org.audiveris.omr.sheet.SystemInfo;
  import org.audiveris.omr.sheet.rhythm.MeasureStack;
  import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
-@@ -347,6 +352,74 @@
+@@ -347,6 +353,81 @@
          }
      }
 
@@ -38,6 +39,13 @@
 +                heads.add(head);
 +            }
 +            if (!eligible) {
++                continue;
++            }
++            // A chord can be single-staff while its shared beam group crosses staves.
++            final Staff staff = chord.getTopStaff();
++            final BeamGroupInter group = chord.getBeamGroup();
++            if (staff == null || group == null || group.getChords().stream().anyMatch(
++                    sibling -> sibling.getStaves().stream().anyMatch(s -> s != staff))) {
 +                continue;
 +            }
 +            final List<HeadInter> longs = new ArrayList<>();
@@ -87,7 +95,7 @@
      //---------//
      // process //
      //---------//
-@@ -355,6 +428,7 @@
+@@ -355,6 +436,7 @@
       */
      public void process ()
      {

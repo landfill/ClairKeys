@@ -122,6 +122,27 @@ class SharedStemDurationsNativeTests(unittest.TestCase):
         if not ran:
             self.skipTest("no native Audiveris installation")
 
+    def test_cross_staff_beam_groups_are_not_split(self):
+        ran = False
+        fixture = Path(os.getenv("SHARED_STEM_FIXTURE_CLASSES", "/opt/clairkeys-test-classes"))
+        for label, configured in ENGINES:
+            executable = Path(configured)
+            if not _available(executable):
+                continue
+            ran = True
+            with self.subTest(engine=label):
+                self.assertTrue((fixture / "SharedStemBeamGroupFixture.class").is_file(),
+                                "native graph fixture must be compiled by the image build")
+                home = executable.parent.parent
+                completed = subprocess.run(
+                    [str(home / "lib/runtime/bin/java"), "--enable-native-access=ALL-UNNAMED",
+                     "-Djava.awt.headless=true", "-cp", f"{home}/lib/app/*:{fixture}",
+                     "SharedStemBeamGroupFixture"], capture_output=True, text=True, timeout=30)
+                self.assertEqual(completed.returncode, 0, completed.stdout[-2000:] + completed.stderr[-2000:])
+                self.assertIn("cross-staff abstention and same-staff control OK", completed.stdout)
+        if not ran:
+            self.skipTest("no native Audiveris installation")
+
     def test_each_engine_separates_the_dotted_half_from_the_beamed_voice(self):
         self._check_split(False)
 

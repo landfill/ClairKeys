@@ -110,6 +110,7 @@ COPY audiveris-patches/0005-second-interval-head-prune.patch /tmp/second-head.pa
 COPY audiveris-patches/0006-shared-stem-void-head.patch /tmp/shared-stem.patch
 COPY audiveris-patches/0007-beamed-chord-black-duration.patch /tmp/chord-duration.patch
 COPY audiveris-patches/0008-shared-stem-chord-split.patch /tmp/chord-split.patch
+COPY tests/SharedStemBeamGroupFixture.java /tmp/SharedStemBeamGroupFixture.java
 RUN mkdir -p \
       /tmp/jdk25 \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger \
@@ -264,6 +265,8 @@ RUN mkdir -p \
       -C /tmp/split-classes org/audiveris/omr \
     && /tmp/jdk25/bin/jar --list --file /opt/audiveris/lib/app/audiveris.jar \
       | grep -Fqx 'org/audiveris/omr/sheet/symbol/SymbolsLinker.class' \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -cp '/opt/audiveris/lib/app/*' \
+      -d /opt/clairkeys-test-classes /tmp/SharedStemBeamGroupFixture.java \
     && cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery \
     && /tmp/jdk25/bin/jar --update \
       --file /opt/clairkeys-audiveris-recovery/lib/app/audiveris.jar \
@@ -274,7 +277,7 @@ RUN mkdir -p \
     && /opt/audiveris/bin/Audiveris -version \
     && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
     && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes /tmp/reducer-classes /tmp/chord-classes \
-      /tmp/tie-classes /tmp/beam-classes /tmp/split-classes /tmp/chord-split.patch /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
+      /tmp/tie-classes /tmp/beam-classes /tmp/split-classes /tmp/chord-split.patch /tmp/SharedStemBeamGroupFixture.java /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
       /tmp/dot-link.patch /tmp/tie-link.patch /tmp/beam-anchor.patch
 
 # Create working directory
