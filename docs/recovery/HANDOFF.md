@@ -19,12 +19,17 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **기전 C(m5 빈 머리 → 셋잇단)의 단계 추적으로 간다.** D-065는 배포·운영 확인까지 끝났고 **m9는 이벤트 오류 0건**이 됐다.
-   잔여 20건의 분포(171/191 평가 기준)는 **m5 13 · m3 4 · m1 2 · m7 1**이라 m5 하나가 65%다.
-   m5는 기전 C와 B가 겹쳐 있다: `duration 0.5 → 0.3333`이 세 개 나타나는 것이 C의 지문(빈 머리 F4 점2분이 `TUPLET_THREE`로 읽혀
-   B4·A4·B4가 1/3박이 됨)이고, `missing F4@0 dur 3.0`이 그 빈 머리 자체다. `missing F4@3 dur 1.5`와 m7의 `missing C4@3`은 기전 B다.
-   D-065와 같은 방식으로 HEADS/SYMBOLS 단계를 분리해 빈 머리가 어디서 탈락하는지 먼저 확정한다.
-   [기전 조사](validation/2026-09-15-issue-134-onset-mechanisms.md).
+1. **기전 B·C의 수정 방향을 사용자가 고른다. 단계 추적은 끝났고 두 원인이 소스 줄 단위로 확정됐다**
+   ([기록](validation/2026-09-18-issue-134-m5-empty-head-stage-trace.md)). 잔여 20건은 **m5 13 · m3 4 · m1 2 · m7 1**이다.
+   - **기전 C**(m5 첫 화음, 파급 큼): 빈 머리 F4 점2분은 HEADS에서 검출되고 STEMS에서 공유 기둥에 가장 높은 점수(0.998)로
+     연결됐다가, `SigReducer.analyzeChords` **317행**의 "한 기둥에서 음가가 다른 머리끼리 INCOMPATIBLE 배제"에 걸려
+     ctx-grade가 낮다는 이유로 지워진다(0.899 < 0.943). 그 뒤 SYMBOLS가 남은 잉크를 `TUPLET_THREE`로 읽는다.
+     두 성부가 기둥을 공유하는 표기에 대한 예외가 엔진에 **없다**. REDUCTION 전역 규칙이라 범위가 넓다.
+   - **기전 B**(m5 둘째 화음·m7, 파급 작음·안전): 2도로 붙어 기둥 반대편에 밀린 F4/C4 머리가
+     `SigReducer.pruneStemHeads`에서 `STEM_BOTTOM`인데 headSide가 RIGHT가 아니라는 이유로 간선이 끊기고,
+     이어지는 `checkHeads`가 기둥 없는 머리로 지운다. **`checkHeadSide`에는 이미 1~2도 이웃 예외가 있으나
+     `checkStemEndingHeads`가 먼저 실행돼 적용될 기회가 없다.** 엔진 자신의 예외를 앞 단계에도 주는 좁은 수정이다.
+   - 두 원인은 독립이므로 규약대로 각각 별도 PR이 된다. 어느 것을 먼저 할지 정해야 한다.
 2. **후속 후보(우선순위 낮음)**: 기전 E(m3 둘잇단)는 엔진 `Shape`에 `TUPLET_TWO`가 없어 범위가 가장 크다.
    m1의 missing-dot 2건은 타이가 점을 자르는 별개 원인이다.
    D-065 후속(두께로 거부한 후보를 `rawSystemBeams`에 남기지 않기)은 진짜 빔까지 살릴 가능성이 있으나
