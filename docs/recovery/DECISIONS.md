@@ -2549,3 +2549,49 @@
 - Known limit: 새 fixture는 "진짜 빔도 읽히는지"를 검사하지 않는다(두 빌드 모두 못 읽는다). 그래서 위 첫 번째 기전이 통과 상태로 숨을 수 있다
 - Related: #134, D-049, D-052, D-062, D-063, D-064, validation/2026-09-16-issue-134-m9-beam-stage-trace.md,
   validation/2026-09-17-issue-134-m9-beam-trim-thickness.md
+
+## D-066: 2도의 밀린 머리는 쪽을 판정하기 전에 잘라내지 않는다
+
+- Date: 2026-09-18
+- Status: Proposed; accepted when the #134 second-interval PR merges. Not deployed
+- Context:
+  - [단계 추적](validation/2026-09-18-issue-134-m5-empty-head-stage-trace.md): Clair m5 둘째 화음과 m7에서 2도로 붙은
+    아래 머리가 사라진다. 2도는 두 머리를 같은 쪽에 놓을 수 없어 하나를 기둥 반대편으로 밀어 새기는 표기다.
+  - 그 머리는 HEADS에서 검출되고 STEMS에서 기둥에 연결된다(`#1587` head-stem grade 0.874, ctx 0.951).
+    REDUCTION의 `SigReducer.pruneStemHeads`가 `STEM_BOTTOM`인데 `headSide != RIGHT`라는 이유로 간선을 끊고
+    (`VIP pruned HeadInter#1587 ... from StemInter#2790`), 바로 뒤 `checkHeads`의 `headHasStem`이
+    기둥 없는 머리로 지운다(ctx 0.951 → 0.883).
+  - **엔진에 이미 이 표기를 위한 예외가 있다.** `checkHeadSide`는 쪽이 틀린 머리를 지우기 전에
+    `lookupHead(stem, targetSide, targetPitch, staff)`를 pitch−1..pitch+1로 조회해, 반대쪽에 1~2도 떨어진 머리가 있으면 유지한다.
+    그러나 `checkStemEndingHeads`(pruneStemHeads)가 `checkHeads`보다 **먼저** 실행되고(로그 564행 → 565행),
+    먼저 간선을 끊어 버리므로 그 예외는 적용될 기회가 없다.
+- Decision:
+  1. `pruneStemHeads`가 간선을 끊기 전에 `hasDisplacedNeighbor(stem, head, headSide)`를 확인하고, 참이면 끊지 않는다.
+  2. `hasDisplacedNeighbor`는 반대쪽(`headSide.opposite()`)에서 같은 staff의 **pitch−1 또는 pitch+1** 머리를
+     `lookupHead`로 찾고, 하나라도 있으면 참이다. `checkHeadSide`와 같은 헬퍼·같은 개념을 쓰되 범위는 정확히 한 칸이다.
+     **같은 pitch는 포함하지 않는다.** 반대쪽 같은 pitch의 머리는 2도의 다른 음이 아니라 한 머리의 중복 판독이며,
+     그것을 잘라내는 것이 그 음이 두 번 나오지 않게 하는 일이다(2026-09-18 corpus 회귀로 확인).
+  3. `head.getStaff()`가 없으면 거짓을 반환한다. `lookupHead`가 staff를 요구하기 때문이다.
+  4. `pruneStemHeads`의 자르기 조건·`STEM_BOTTOM`/`STEM_TOP` 판정·`checkHeadSide`·`stemHasSingleHeadEnd`·
+     `analyzeChords`의 INCOMPATIBLE 배제는 바꾸지 않는다. 기전 C(빈 머리 → 셋잇단)는 이 결정의 범위 밖이다.
+  5. 패치는 `omr-service/audiveris-patches/0005-second-interval-head-prune.patch` 하나다. D-062~D-065와 같이 sha256으로 고정한
+     pinned `SigReducer.java`(`6d1b2517…`)에 적용하고, 컴파일한 `org/audiveris/omr/sig` 클래스를 기본 엔진 jar에 넣은 뒤
+     recovery engine을 복사한다.
+  6. XML·JSON의 음가를 사후에 고치지 않는다(D-049/D-052 유지). 엔진이 원래 검출한 머리가 살아남을 뿐이다.
+- Rejected: `checkStemEndingHeads`를 `checkHeads` 뒤로 옮긴다 | REDUCTION 단계 순서를 바꾸는 것이라 파급이 크고,
+  `checkHeads`가 먼저 돌면 다른 규칙들의 입력이 달라진다
+- Rejected: `pruneStemHeads`에서 자르지 말고 배제만 넣는다 | 자르기 자체를 없애면 진짜로 틀린 쪽에 있는 머리까지 남는다
+- Rejected: `checkHeadSide`와 똑같이 pitch−1..pitch+1(같은 pitch 포함)을 쓴다 | corpus 회귀로 확인된 실제 손해다.
+  Merry Go Round m18은 E♭5 2분이 두 번 나오고 D5 4분이 사라졌으며, Première Gymnopédie m16은 A4 점2분이 A4 2분 두 개가 됐다.
+  반대쪽 같은 pitch 머리는 한 머리의 중복 판독이다
+- Rejected: 예외 범위를 ±2로 넓힌다 | 2도는 정의상 한 칸이다. 넓히면 3도까지 살아남아 근거가 사라진다
+- Rejected: 기전 C(음가가 다른 머리끼리의 INCOMPATIBLE 배제)와 한 PR로 묶는다 | 원인이 다르고 범위도 다르다. 규약상 한 PR에 한 원인이다
+- Constraint: pinned `9e1e55cd…`의 `SigReducer.java` sha256이 Dockerfile 값과 같아야 한다
+- Confidence: medium
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 예외 범위를 바꾸면 `checkHeadSide`의 `targetPitch` 범위도 함께 보고, 합성 fixture와 corpus 비교를 다시 한다
+- Tested: 합성 fixture `second_interval_heads_fixture.py`는 Clair m5의 실측 픽셀 관계(기둥 분할, 머리 중심 9px 차, 기둥 2칸 겹침)를
+  그대로 옮겼고, VIP 로그에서 기준 이미지가 같은 경로로 지운다(`VIP pruned HeadInter#178 from StemInter#341` → `Removing`, ctx 0.946 → 0.830)
+- Tested: 판별 — `test_second_interval_heads_native`가 `d065b-patched`(운영 동등)에서 FAILED, `d066-patched`에서 OK
+- Related: #134, D-049, D-052, D-062, D-063, D-064, D-065, validation/2026-09-18-issue-134-m5-empty-head-stage-trace.md
