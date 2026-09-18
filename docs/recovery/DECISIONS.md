@@ -2595,3 +2595,45 @@
   그대로 옮겼고, VIP 로그에서 기준 이미지가 같은 경로로 지운다(`VIP pruned HeadInter#178 from StemInter#341` → `Removing`, ctx 0.946 → 0.830)
 - Tested: 판별 — `test_second_interval_heads_native`가 `d065b-patched`(운영 동등)에서 FAILED, `d066-patched`에서 OK
 - Related: #134, D-049, D-052, D-062, D-063, D-064, D-065, validation/2026-09-18-issue-134-m5-empty-head-stage-trace.md
+
+## D-067: 기둥을 공유하는 다른 성부의 빈 머리는 음가가 다르다는 이유로 배제하지 않는다
+
+- Date: 2026-09-18
+- Status: Proposed; accepted when the #134 shared-stem PR merges. Not deployed
+- Context:
+  - [단계 추적](validation/2026-09-18-issue-134-m5-empty-head-stage-trace.md): Clair m5 첫 화음은 검은 8분 B4와 점2분 F4(빈 머리)가
+    한 기둥을 공유하는 피아노 성부 공유 표기다. 빈 머리 `#1583`은 HEADS에서 검출되고 STEMS에서 그 기둥에 가장 높은 점수(0.998)로 연결된다.
+  - REDUCTION의 `SigReducer.analyzeChords`가 한 기둥에 연결된 머리를 모양의 고유 음가로 묶고, 음가가 다른 묶음끼리 **무조건**
+    INCOMPATIBLE 배제를 건다. 빈 머리는 ctx-grade가 조금 낮다는 이유(0.899 < 0.943)로 지워지고, SYMBOLS가 남은 잉크를 `TUPLET_THREE`로 읽어
+    B4·A4·B4가 1/3박이 된다.
+  - 이 규칙에는 엔진 안에도, 상위 Audiveris master에도 예외가 없다. 따를 선례가 없어 기준을 데이터로 정했다.
+  - [전수 조사](validation/2026-09-18-issue-134-shared-stem-duration-census.md): 12곡에서 한 기둥에 검은 머리와 함께 붙은 고유 빈 머리 5,400개 중
+    어떤 검은 머리와도 겹치지 않는 것은 160개다. 그 grade는 0.413 이하 143개와 0.555 이상 17개로 갈리고 사이 값은 없다.
+    0.40 이상 18개를 원본에서 모두 잘라 보니 0.555 이상 17개는 실제 빈 머리이고 0.413 하나는 가짜였다.
+    17개 중 16개는 지금도 REDUCTION을 통과하며(빈 머리만의 화음에서는 가짜 검은 머리 후보가 진다) 지워지는 것은 Clair `#1583`뿐이다.
+  - 사용자가 2026-09-18 이 기준을 승인했다.
+- Decision:
+  1. `analyzeChords`의 음가 배제를 `excludeDurations`로 바꾼다. 음가가 다른 두 머리 사이에 INCOMPATIBLE 배제를 넣되,
+     `isSharedStemVoid`가 참인 쌍은 건너뛴다.
+  2. `isSharedStemVoid(candidate, other)`는 다음이 **모두** 참일 때만 참이다.
+     candidate가 `NOTEHEAD_VOID`, other가 `NOTEHEAD_BLACK`이다(small 머리는 대상이 아니다).
+     candidate의 **고유** grade가 `minSharedStemVoidGrade`(0.5) 이상이다.
+     candidate가 **어떤 `NOTEHEAD_BLACK`과도 OVERLAP 배제가 없다.** 그런 배제가 있으면 그 검은 머리의 중복 판독이다.
+  3. 크기(small/standard) 배제, 빔 크기 배제, 빔·머리 크기 배제는 `exclude`를 그대로 쓴다. 바꾸지 않는다.
+  4. 배제를 넣지 않을 뿐이다. 두 머리는 다른 규칙(OVERLAP, 기둥 연결 등)으로는 여전히 지워질 수 있다.
+  5. 패치는 `omr-service/audiveris-patches/0006-shared-stem-void-head.patch`이며, D-066의 0005가 적용된 같은 pinned `SigReducer.java`
+     (`6d1b2517…`) 위에 차례로 적용한 뒤 한 번 컴파일한다.
+  6. XML·JSON의 음가를 사후에 고치지 않는다(D-049/D-052 유지). 엔진이 원래 검출한 머리가 살아남을 뿐이다.
+- Rejected: 음높이가 다르면 음가 배제를 하지 않는다 | 서로 겹치지 않는 쌍이 12곡에 3,332개이고 대부분 가짜 빈 머리다. 가짜 수천 개가 살아난다
+- Rejected: grade 조건 없이 "겹침 없음"만 본다 | 겹침 없는 빈 머리 160개 중 143개가 가짜(grade 0.413 이하)다
+- Rejected: 빔이 연결된 기둥에만 적용한다 | 더 좁지만 이 corpus에서 결과가 같고, 빔 없이 기둥을 공유하는 표기를 계속 놓친다.
+  사용자가 빔 조건 없는 기준을 골랐다
+- Rejected: 빈 머리의 ctx-grade로 비교한다 | ctx는 배제가 반영된 값이라 판정 기준이 순환한다. 고유 grade가 분포상 깨끗이 갈린다
+- Constraint: pinned `9e1e55cd…`의 `SigReducer.java` sha256이 Dockerfile 값과 같아야 하고 0005 다음에 적용돼야 한다
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 0.5는 13개 PDF 분포에서 정한 값이다. 바꾸려면 `census.py`로 겹침 없는 빈 머리 분포를 다시 재고 원본으로 확인한다
+- Directive: 예외를 받은 빈 머리와만 배제 관계였던 가짜 검은 머리가 살아날 수 있다. 변경 뒤 corpus 출력을 바이트 단위로 비교한다
+- Related: #134, D-049, D-052, D-066, validation/2026-09-18-issue-134-m5-empty-head-stage-trace.md,
+  validation/2026-09-18-issue-134-shared-stem-duration-census.md

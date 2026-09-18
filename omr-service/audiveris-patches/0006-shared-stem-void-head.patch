@@ -1,0 +1,105 @@
+--- a/app/src/main/java/org/audiveris/omr/sig/SigReducer.java
++++ b/app/src/main/java/org/audiveris/omr/sig/SigReducer.java
+@@ -314,7 +314,7 @@
+ 
+                 // Exclusion with other duration sets
+                 for (Set<Inter> otherDurSet : allDurSets.subList(is + 1, allDurSets.size())) {
+-                    exclude(oneDurSet, otherDurSet, INCOMPATIBLE);
++                    excludeDurations(oneDurSet, otherDurSet);
+                 }
+ 
+                 // Support within same duration set
+@@ -1448,8 +1448,82 @@
+         for (Inter i1 : set1) {
+             for (Inter i2 : set2) {
+                 sig.insertExclusion(i1, i2, cause);
++            }
++        }
++    }
++
++    //------------------//
++    // excludeDurations //
++    //------------------//
++    /**
++     * Insert INCOMPATIBLE exclusions between the heads of two duration sets found on
++     * one stem, except between a black head and a void head that stands for another
++     * voice sharing that stem.
++     *
++     * @param set1 heads of one intrinsic duration
++     * @param set2 heads of another intrinsic duration
++     */
++    private void excludeDurations (Set<Inter> set1,
++                                   Set<Inter> set2)
++    {
++        for (Inter i1 : set1) {
++            for (Inter i2 : set2) {
++                if (isSharedStemVoid(i1, i2) || isSharedStemVoid(i2, i1)) {
++                    continue;
++                }
++
++                sig.insertExclusion(i1, i2, INCOMPATIBLE);
++            }
++        }
++    }
++
++    //------------------//
++    // isSharedStemVoid //
++    //------------------//
++    /**
++     * Check whether a void head is a second voice sharing the stem of a black head,
++     * rather than a misreading of that black head's ink.
++     * <p>
++     * Piano scores often write a longer note of a lower voice on the stem of a beamed
++     * group, such as a dotted half under an eighth. Excluding every head of another
++     * duration on a stem then deletes the printed void head whenever the black head
++     * reads slightly better. Most void heads found on a stem are only duplicate
++     * readings of a black notehead, and those overlap it; a printed void head of its
++     * own overlaps no black head and reads as well as a printed notehead does.
++     *
++     * @param candidate the head that may be the shared-stem void head
++     * @param other     the head of another duration on the same stem
++     * @return true if no duration exclusion should link them
++     */
++    private boolean isSharedStemVoid (Inter candidate,
++                                      Inter other)
++    {
++        if ((candidate.getShape() != Shape.NOTEHEAD_VOID)
++                || (other.getShape() != Shape.NOTEHEAD_BLACK)) {
++            return false;
++        }
++
++        if (candidate.getGrade() < constants.minSharedStemVoidGrade.getValue()) {
++            return false;
++        }
++
++        for (Relation rel : sig.getRelations(candidate, Exclusion.class)) {
++            if (((Exclusion) rel).cause != OVERLAP) {
++                continue;
+             }
++
++            final Inter opposite = sig.getOppositeInter(candidate, rel);
++
++            if ((opposite != null) && (opposite.getShape() == Shape.NOTEHEAD_BLACK)) {
++                return false; // A duplicate reading of that black notehead
++            }
+         }
++
++        if (candidate.isVip() || other.isVip()) {
++            logger.info("VIP no duration exclusion between {} and {}", candidate, other);
++        }
++
++        return true;
+     }
+ 
+     //---------//
+@@ -2423,6 +2497,10 @@
+                 3,
+                 "Maximum width for slur around tuplet");
+ 
++        private final Constant.Ratio minSharedStemVoidGrade = new Constant.Ratio(
++                0.5,
++                "Minimum intrinsic grade for a void head to share a stem with a black head");
++
+         private final Constant.Ratio minIou = new Constant.Ratio(
+                 0.05,
+                 "Minimum IOU to detect general overlap");

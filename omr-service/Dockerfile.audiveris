@@ -101,6 +101,7 @@ COPY audiveris-patches/0002-line-head-dot-link.patch /tmp/dot-link.patch
 COPY audiveris-patches/0003-staff-line-tie-head-link.patch /tmp/tie-link.patch
 COPY audiveris-patches/0004-beam-end-stem-anchor.patch /tmp/beam-anchor.patch
 COPY audiveris-patches/0005-second-interval-head-prune.patch /tmp/second-head.patch
+COPY audiveris-patches/0006-shared-stem-void-head.patch /tmp/shared-stem.patch
 RUN mkdir -p \
       /tmp/jdk25 \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger \
@@ -187,6 +188,8 @@ RUN mkdir -p \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/SigReducer.java \
     && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace \
       --input=/tmp/second-head.patch \
+    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace \
+      --input=/tmp/shared-stem.patch \
     && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' \
       -cp '/opt/audiveris/lib/app/*' -d /tmp/reducer-classes \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/SigReducer.java \
