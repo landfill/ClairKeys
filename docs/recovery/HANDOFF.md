@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-09-18 KST (저녁)
+Last updated: 2026-09-19 KST
 
 ## Current phase
 
@@ -20,22 +20,14 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **기전 C(D-067)를 구현·검증한다.** 사용자가 기전 C를 고르고 예외 기준을 승인했다(2026-09-18):
-   "어떤 검은 머리와도 겹치지 않고 고유 grade가 0.5 이상인 빈 머리는 같은 기둥의 검은 머리와 음가 배제를 하지 않는다".
-   12곡 전수 조사에서 이 기준이 바꾸는 빈 머리는 Clair `#1583` 하나다([조사](validation/2026-09-18-issue-134-shared-stem-duration-census.md)).
-   남은 위험은 예외를 받은 빈 머리와만 배제 관계였던 가짜 검은 머리가 함께 살아나는 것이며, corpus 바이트 비교로 확인한다.
-   브랜치 `codex/issue-134-shared-stem-durations`. 재현 fixture → 패치 → 검증 → PR 순서다.
-2. **기전 C는 그대로 남아 있다.** 단계 추적은 끝났고 원인은 소스 줄 단위로 확정됐다
-   ([기록](validation/2026-09-18-issue-134-m5-empty-head-stage-trace.md)). 잔여 20건은 **m5 13 · m3 4 · m1 2 · m7 1**이다.
-   - **기전 C**(m5 첫 화음, 파급 큼): 빈 머리 F4 점2분은 HEADS에서 검출되고 STEMS에서 공유 기둥에 가장 높은 점수(0.998)로
-     연결됐다가, `SigReducer.analyzeChords` **317행**의 "한 기둥에서 음가가 다른 머리끼리 INCOMPATIBLE 배제"에 걸려
-     ctx-grade가 낮다는 이유로 지워진다(0.899 < 0.943). 그 뒤 SYMBOLS가 남은 잉크를 `TUPLET_THREE`로 읽는다.
-     두 성부가 기둥을 공유하는 표기에 대한 예외가 엔진에 **없다**. REDUCTION 전역 규칙이라 범위가 넓다.
-   - **기전 B**(m5 둘째 화음·m7, 파급 작음·안전): 2도로 붙어 기둥 반대편에 밀린 F4/C4 머리가
-     `SigReducer.pruneStemHeads`에서 `STEM_BOTTOM`인데 headSide가 RIGHT가 아니라는 이유로 간선이 끊기고,
-     이어지는 `checkHeads`가 기둥 없는 머리로 지운다. **`checkHeadSide`에는 이미 1~2도 이웃 예외가 있으나
-     `checkStemEndingHeads`가 먼저 실행돼 적용될 기회가 없다.** 엔진 자신의 예외를 앞 단계에도 주는 좁은 수정이다.
-   - 두 원인은 독립이므로 규약대로 각각 별도 PR이 된다. 어느 것을 먼저 할지 정해야 한다.
+1. **D-067(기전 C)을 PR로 낼지 사용자에게 확인받는다.** 구현·로컬 검증이 끝났다
+   ([기록](validation/2026-09-19-issue-134-shared-stem-void-head.md)). 브랜치 `codex/issue-134-shared-stem-durations`
+   `9ee1b6c`(push·PR 없음)는 두 패치를 함께 담는다: 0006(기둥 공유 빈 머리를 음가 배제에서 제외)과
+   0007(빔 달린 화음의 음가를 검은 머리에서 계산). **둘은 함께 가야 한다** — 0006만이면 화음이 4분이 되어 173에서 그대로다.
+   Clair 173 → **182/191** 3회 동일(m5만 변화, onset 8건 해소), corpus 비교 가능한 11곡 바이트 동일, 이미지 테스트 184 OK/skip 6.
+   남은 m5 duration 2·m7 duration 1은 빈 머리를 자기 화음으로 떼야 풀리며 후속 결정이다. **PR·병합·배포는 각각 사용자 승인이 필요하다.**
+2. **후속 후보**: 기둥 공유 빈 머리를 자기 화음으로 떼기(D-067 후속, 남은 duration 3건). `ChordSplitter`는 하위 화음이
+   기둥의 빔을 모두 받으므로 그대로 쓸 수 없다([D-067](DECISIONS.md)).
 3. **후속 후보(우선순위 낮음)**: 기전 E(m3 둘잇단)는 엔진 `Shape`에 `TUPLET_TWO`가 없어 범위가 가장 크다.
    m1의 missing-dot 2건은 타이가 점을 자르는 별개 원인이다.
    D-065 후속(두께로 거부한 후보를 `rawSystemBeams`에 남기지 않기)은 진짜 빔까지 살릴 가능성이 있으나
@@ -108,14 +100,10 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 - 2026-09-18: PR165 병합·배포 후 사용자 지시("브랜치 정리해")로 `codex/issue-134-second-interval-head`를 삭제했다.
   로컬·원격 tip 모두 `9645772`이고 main에 포함됨을 확인한 뒤 원격 → 로컬 순서로 지웠다.
-  사용자 미커밋 변경(`validation/2026-09-13-handoff-history.md`)은 손대지 않았다. 현재 작업 브랜치는 없다.
-  검증 이미지 `clairkeys-omr:d066b-patched`(`SigReducer.class` `da3b0721…`, 운영과 동등)와
-  좁히기 전 `d066-patched`가 이 머신에 추가됐다.
+  사용자 미커밋 변경(`validation/2026-09-13-handoff-history.md`)은 손대지 않았다.
 - 2026-09-18: PR164 병합·배포 후 사용자 지시("브랜치 정리")로 `codex/issue-134-m9-beam-extension`을 삭제했다.
   로컬·원격 tip 모두 `c36f26b`이고 main 대비 고유 커밋 0임을 확인한 뒤 원격 → 로컬 순서로 지웠다.
-  사용자 미커밋 변경(`validation/2026-09-13-handoff-history.md`)은 손대지 않고 그대로 뒀다. 현재 작업 브랜치는 없다.
-  검증 이미지 `clairkeys-omr:{d064-patched, d065-patched, d065b-patched, d065b-codex-verification}`는 이 머신에만 있고,
-  2026-09-18 현재 **Docker 데몬이 꺼져 있어** 재검증하려면 먼저 Docker Desktop을 실행해야 한다.
+  사용자 미커밋 변경(`validation/2026-09-13-handoff-history.md`)은 손대지 않고 그대로 뒀다.
 
 - 2026-09-17: D-065 코드가 2026-09-16에 작업 브랜치가 아니라 **main에 직접 커밋·push**됐다(`362a00f`). 검증 1~4단계만 끝난
   엔진 변경이 기본 브랜치에 남아 있었다. 사용자 결정으로 main에서 revert(`1391c4d`, push 완료)하고 같은 변경을
@@ -127,13 +115,13 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   사용자 지시("굳이 필요없다면 버릴것")로 원격 → 로컬 순서로 삭제했다.
   사용자의 미커밋 이력 메모(`validation/2026-09-13-handoff-history.md`)는 손대지 않고 그대로 둔다.
 
-- 로컬 Docker 이미지는 검증용이며 운영 이미지와 같다고 주장하지 않는다. 다만 `d065b-patched`의 `BeamsBuilder.class`(`8d15e1b2…`)는
-  2026-09-18 배포된 운영 이미지의 같은 클래스와 해시가 같다. 2026-09-17 디스크 정리로 남은 것은 넷뿐이다:
-  `d064-patched`(D-064 브랜치 `deb3708`의 Dockerfile 빌드, 점 클래스 해시가 운영 PR163과 같은 **기준선**,
-  `BeamsBuilder.class` `324132f0…`), `d065-patched`(두께 가드 전 D-065, 새 fixture가 FAILED로 판별됨을 보이는 유일한 수단),
-  `d065b-patched`(코디네이터 빌드, `8d15e1b2…`), `d065b-codex-verification`(워커 빌드).
-  `stock-main`·`dot-link`·`d063-patched`·`d064-exp`·`d065-exp`·`d065-diag`·`tie-link-exp`·`tie-diag`는 삭제했다.
-  PR161·PR162 시절 기준선이 다시 필요하면 해당 커밋에서 Dockerfile로 재빌드한다(약 3분).
+- 로컬 Docker 이미지는 검증용이며 운영 이미지와 같다고 주장하지 않는다. 2026-09-19 사용자 지시로 정리해 ClairKeys 이미지는 넷만 남았다:
+  **`d066b-patched`**(현재 운영 PR165와 같은 기준선, `SigReducer.class` `da3b0721…`), `d067b-patched`(D-067 검증 빌드),
+  `d065b-patched`(`BeamsBuilder.class` `8d15e1b2…`, PR164 기준선), `d064-patched`(PR163 기준선).
+  `d066-patched`·`d067-patched`·`d067-exp-chord`·`d065-patched`·`d065b-codex-verification`는 삭제했다. 과거 기준선이 다시 필요하면 해당
+  커밋에서 Dockerfile로 재빌드한다(약 3분). 같은 지시로 다른 프로젝트(bluekiwi) 컨테이너 3개를 중지·삭제했고 `bluekiwi_pgdata` 볼륨은 남겼다.
+  2026-09-18 Docker Desktop이 검증 도중 한 번 종료됐다. 컨테이너 메모리 제한을 6GB → 5GB로 낮췄고 이후 재발하지 않았다.
+  컨테이너 안 JVM은 비ASCII 파일 이름(`’`, 한글)을 읽지 못하므로 직접 Audiveris를 돌릴 땐 ASCII 이름으로 복사한다(운영 서비스는 `input.pdf`로 복사해 무관).
   그래프 덤프 도구는 Git 제외 `local-test-data/results/issue134-onsets-2026-09-15/dump_region.py`다.
   운영 수치는 PR162까지는 운영 스모크 기록(`pr162-live-pkmvlC`), PR163은 사용자의 앱 재변환 애니메이션 회수본을 근거로 한다.
 - #134 판단은 원본 기준표 평가(phase 완료 조건)로 한다. 2026-09-15 사용자는 악보를 읽지 않으며 청취로 이상한 곳을
