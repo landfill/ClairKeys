@@ -20,7 +20,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **D-067(기전 C)을 PR로 낼지 사용자에게 확인받는다.** 구현·로컬 검증이 끝났다
+1. **[PR166](reviews/PR-166.md)의 CI와 리뷰를 확인하고 actionable feedback에 대응한다.** 사용자가 PR 생성을 승인했다(head `9ee1b6c`). 구현·로컬 검증은 끝났다
    ([기록](validation/2026-09-19-issue-134-shared-stem-void-head.md)). 브랜치 `codex/issue-134-shared-stem-durations`
    `9ee1b6c`(push·PR 없음)는 두 패치를 함께 담는다: 0006(기둥 공유 빈 머리를 음가 배제에서 제외)과
    0007(빔 달린 화음의 음가를 검은 머리에서 계산). **둘은 함께 가야 한다** — 0006만이면 화음이 4분이 되어 173에서 그대로다.
