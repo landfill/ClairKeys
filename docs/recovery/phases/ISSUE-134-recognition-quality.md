@@ -124,6 +124,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   the local build that produced Clair 171/191, while the outgoing image hashed to the recorded D-064 baseline `324132f0…`. After the
   restart: healthy container, health 200, unauthorized 401, zero error/traceback lines in the service journal. Production recognition
   is **not yet checked** — the rollout approval did not include a PDF smoke, so it waits on an app re-conversion. IN_PROGRESS.
+- 2026-09-18: User re-converted Clair in the app after the rollout (job `57da14f3…`, generated 11:45 KST, after the 11:27 cutover).
+  Its stored animation JSON has 157 notes identical field-by-field to the worker's locally verified d065 run, the same run that scored
+  171/191, so the deployed engine reproduces the verified result. Against the previous production result the change is confined to m9:
+  E3 falls from four eighths to two, G3 from two to one, and the following 73 notes all shift earlier by exactly one eighth
+  (0.434783s at 69bpm), shortening the piece from 65.435s to 65.000s. No pitch, hand or staff changed; only voice ids were renumbered
+  around m9, and local verification renumbers them the same way. Measures 1-8 are untouched, so D-062/D-063/D-064 are preserved. The
+  full-reference 171/191 was not re-evaluated in production because the service deletes the MusicXML. IN_PROGRESS.
 
 ## Objective
 
