@@ -98,6 +98,19 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   identical runs, only m9 changes. Codex worker stopped after check 4 at the user's request: integrity pass, build pass
   (BeamsBuilder class differs from baseline), image tests 179 OK/skip 0; one review concern (a normal beam whose end seed is
   undetected could be trimmed). Checks 5-8 (fixture discrimination, Clair, corpus, timing) remain. IN_PROGRESS.
+- 2026-09-17: D-065 was moved off main. The engine change had been committed directly to `main` (`362a00f`) with only checks 1-4
+  done, so the user had it reverted (`1391c4d`) and cherry-picked onto `codex/issue-134-m9-beam-extension` (`b59ea08`). The first
+  full verification then FAILED: in Deborah's Theme m24 a slur crossing a beamed group's stems was trimmed back and kept as a beam,
+  duplicating the group, losing the printed D#4 and shortening the measure by a beat, which moved 127 of that score's 330 canonical
+  starts. Adding a thickness floor (D-065 decision 3b, 0.95 of the sheet's typical beam) removed it (`bea1431`). A second, from-scratch
+  eight-check independent verification came back PASS WITH CONCERNS: image tests 180 OK/skip 0, new fixture discriminates 3/3 each way,
+  Clair 171/191 three times with only m9 changing, all eleven comparable corpus scores identical to D-064, Deborah `events.json`
+  byte-identical. Concerns are Medium 3 / Low 2 with no executed regression. IN_PROGRESS.
+- 2026-09-18: The user chose option (a) — record the concerns as known limits and open the PR as verified. D-065's entry was corrected
+  first (`c36f26b`): the worker had disproved the coordinator's hypothesis that the guard refuses genuine beams at 1.01 of typical, so
+  the confirmed mechanism replaced it (a refused candidate stays in `rawSystemBeams`, STEMS reads the shared stem as CENTER, REDUCTION
+  drops both — landing on D-064's exact output), and all five concerns became explicit known limits. Branch pushed and
+  [PR164](../reviews/PR-164.md) opened non-draft at `c36f26b`. Not merged, not deployed; production stays PR163 `0e3dc61`. IN_PROGRESS.
 
 ## Objective
 

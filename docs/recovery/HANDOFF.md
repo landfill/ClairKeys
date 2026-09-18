@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-09-17 KST (저녁)
+Last updated: 2026-09-18 KST
 
 ## Current phase
 
@@ -16,20 +16,17 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **D-065를 PR로 낼지 사용자에게 확인받는다.** 2차 독립 검증이 **PASS WITH CONCERNS**로 끝났다
-   ([기록](validation/2026-09-17-issue-134-m9-beam-trim-thickness.md)). 브랜치 `codex/issue-134-m9-beam-extension`
-   `bea1431`(push·PR 없음)은 Clair 171/191을 유지하면서 corpus 비교 가능한 11곡이 D-064와 같고, 1차에서 FAIL이던
-   Deborah m24 회귀는 `events.json` 바이트 동일로 사라졌다. 남은 것은 실행된 손해가 아니라 Medium 3·Low 2건의 우려다.
-   선택지는 (a) 우려를 known limit으로 명시하고 그대로 PR, (b) 두께 미달로 거부한 후보를 남기지 않도록 먼저 수정
-   — 진짜 빔까지 살릴 가능성이 있으나 BEAMS 단계 범위가 커지고 corpus 재검증이 필요하다, (c) fixture에 "진짜 빔도 읽혀야 한다"를
-   추가 — 지금은 실패하므로 (b)가 선행돼야 한다. **PR·병합·배포는 각각 사용자 승인이 필요하다.**
+1. **[PR164](reviews/PR-164.md)의 CI와 리뷰를 확인하고 actionable feedback에 대응한다.** 2026-09-18 사용자가 선택지 (a)를
+   택해 D-065를 PR로 냈다(head `c36f26b`, non-draft, MERGEABLE). 2차 독립 검증의 Medium 3·Low 2는 D-065 Known limit과
+   리뷰 로그에 REJECTED(한계로 기록)로 남겼고 실행된 회귀는 0건이다.
+   **병합 승인은 없다. 운영 배포 승인도 별개다.** 운영은 여전히 PR163 `0e3dc61`이다.
 2. **남은 기전**: C m5 빈 머리 → 셋잇단, B 2도 반대편 머리 누락은 같은 방식으로 단계 추적이 필요하다.
    E m3 둘잇단 미지원은 범위가 커서 보류 후보. D-064(PR163 `0e3dc61`)는 병합·배포·운영 확인까지 끝났다.
 3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
 
 ## Latest verified result
 
-- **D-065 2차 독립 검증(2026-09-17, 미배포·PR 없음) — PASS WITH CONCERNS**: 브랜치 `bea1431`.
+- **D-065 2차 독립 검증(2026-09-17, 미배포) — PASS WITH CONCERNS**: [PR164](reviews/PR-164.md) `c36f26b`로 제출됐다(2026-09-18).
   Clair **171/191** 3회 동일(바뀐 마디는 m9뿐, 타이 29/43·tempo 69 불변), corpus 비교 가능한 11곡 모두 D-064와 동일,
   Deborah `events.json` 바이트 동일(`d8b378e3…`), 이미지 테스트 **180 OK/skip 0**, `--no-cache` 빌드 171.24초.
   1차(2026-09-16 재개분)는 Deborah m24에서 슬러가 빔으로 남아 canonical 330개 중 127개가 앞당겨지는 회귀로 **FAIL**이었고,
@@ -73,10 +70,12 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Known blockers / constraints
 
-- 2026-09-17: 브랜치 `codex/issue-134-m9-beam-extension`은 `bea1431`(두께 가드·새 fixture) ← `b59ea08`(D-065 원본) ←
-  main `1391c4d` 순서이며 **origin에 push되지 않았다**. 다른 머신에서 재개하려면 먼저 push해야 한다. 또한 이 브랜치는
-  main의 상태 기록 커밋(`c8afda2` 이후)을 포함하지 않는다. 사용자 미커밋 파일 때문에 rebase를 하지 않았고, 그 파일은 건드리지 않았다.
-  검증 이미지 `clairkeys-omr:{d064-patched, d065-patched, d065b-patched, d065b-codex-verification}`도 이 머신에만 있다.
+- 2026-09-18: 브랜치 `codex/issue-134-m9-beam-extension`을 origin에 push하고 [PR164](reviews/PR-164.md)를 열었다
+  (`c36f26b`(결정 기록 정정) ← `bea1431`(두께 가드·새 fixture) ← `b59ea08`(D-065 원본) ← main `1391c4d`).
+  이 브랜치는 그 이후 main의 상태 기록 커밋을 포함하지 않는다. 검증 기록이 `b59ea08`·`bea1431` SHA를 인용하므로 rebase하지 않았고,
+  세 점 diff는 의도한 9개 파일뿐이다. 사용자 미커밋 파일은 건드리지 않았다.
+  검증 이미지 `clairkeys-omr:{d064-patched, d065-patched, d065b-patched, d065b-codex-verification}`는 이 머신에만 있고,
+  2026-09-18 현재 **Docker 데몬이 꺼져 있어** 재검증하려면 먼저 Docker Desktop을 실행해야 한다.
 
 - 2026-09-17: D-065 코드가 2026-09-16에 작업 브랜치가 아니라 **main에 직접 커밋·push**됐다(`362a00f`). 검증 1~4단계만 끝난
   엔진 변경이 기본 브랜치에 남아 있었다. 사용자 결정으로 main에서 revert(`1391c4d`, push 완료)하고 같은 변경을
