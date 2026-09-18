@@ -157,6 +157,20 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   correct beats, which is m5's left-hand chord landing on the sixth eighth and the piece growing from 149.5 to exactly 150 eighths.
   Full-reference 173/191 was not re-evaluated in production because the service deletes the MusicXML. IN_PROGRESS.
 
+- 2026-09-18/19: Mechanism C. The kept void head needed two changes, not one. A twelve-score census of 5,400 void heads found that
+  only 160 overlap no black head and their grades split cleanly (none between 0.413 and 0.555); cropping all eighteen above 0.40 showed
+  the seventeen above the gap are printed half notes, sixteen of which already survive, so the approved criterion changes only Clair's
+  #1583. Keeping it alone left Clair at 173: the engine chorded it with the beamed eighth and read the chord's duration from it, a
+  quarter, pushing m5's right hand half a beat. Taking a beamed chord's duration from its black heads, after the engine's own mirror
+  exception, fixed that. Clair 173 -> 182/191 over three identical runs, only m5 changing; corpus byte-identical; image tests 184
+  OK/skip 6. [PR166](../reviews/PR-166.md) merged as `b15d0fd` (post-merge 6/6); Codex's one P2 about the validation record's absence
+  from the branch tree was answered and not applied under the records-on-main convention.
+- 2026-09-19: User-approved OMR VM rollout of `b15d0fd` (image `721ccc10…`, rollback `rollback-pr166-20260919`). Build applied all
+  eight patch lines with ten sha256 `: OK`; image tests 184 OK/6 skipped with all seven native tests running. Both patched classes,
+  `SigReducer` `3b84596b…` and `AbstractChordInter` `91081cfa…`, matched the local verified build in both jars before the cutover.
+  Health 200, unauthorized 401, zero journal errors. Production recognition not yet checked. Remaining m5/m7 dotted notes still
+  come out eighths until the void head gets a chord of its own. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
