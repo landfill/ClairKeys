@@ -160,3 +160,10 @@ satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb
 
 - `cacce3a` push 후 새 이미지 Clair3회 raw가 직전 최종 `5b23e6fa…`와 모두 바이트 동일함을 확인했다. 관련 Jest runtime contract17개도 통과했다.
   전체 suite와 corpus12곡은 새 패치 이미지로 다시 실행하며, 앞서 같은 세션에서 새로 생성한 d067b 기준선과 비교한다.
+
+- 최신 이미지 `d068b-patched`: `sha256:2384379676ab70d075690b34b92cae10d90d996750c55552e465c24a3587f314`.
+  SymbolsLinker.class는 `24516acfb886067f3e4fb54369eec5cc70affc5123af53dc9db89c45cecdd5c4`로 바뀌고,
+  나머지3개 패치 클래스는 위 초기 최종 표와 같다. 양쪽 엔진 해시 동일, 이미지 안의 Dockerfile·패치·Python/Java fixture 소스도 작업 파일과 동일하다.
+- 전체 이미지 suite 재실행 **187개 중181통과·6skip**, native10개 모두 실행(231.804초). 기존 skip6개의 이유는 동일하다.
+- [Codex 재리뷰](https://github.com/landfill/ClairKeys/pull/167#issuecomment-5737533847)는 `cacce3a`에서 완료, 새 finding0.
+  corpus 재실행 및 current-head E2E는 남았다.
