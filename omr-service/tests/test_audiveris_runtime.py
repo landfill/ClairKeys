@@ -418,6 +418,50 @@ class DeploymentStaticContractTests(unittest.TestCase):
             dockerfile,
         )
 
+    def test_every_engine_keeps_the_displaced_head_of_a_second(self):
+        """A second's displaced head must not be pruned before its side is judged.
+
+        Two heads a step apart cannot share a side of their stem, so one is
+        engraved on the other side. pruneStemHeads cuts such a head for sitting
+        at a stem end on the non-canonical side and checkHeads then deletes it
+        for having no stem, although checkHeadSide would have kept it had it run
+        first (#134, D-066).
+        """
+        dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
+        patch_file = OMR_SERVICE_ROOT / "audiveris-patches/0005-second-interval-head-prune.patch"
+
+        self.assertTrue(patch_file.is_file())
+        patch_text = patch_file.read_text(encoding="utf-8")
+        self.assertIn("hasDisplacedNeighbor(stem, head, headSide)", patch_text)
+        # The exception reuses the engine's own test, rather than inventing one.
+        self.assertIn("lookupHead(stem, targetSide, pitch - 1, staff)", patch_text)
+        self.assertIn("lookupHead(stem, targetSide, pitch + 1, staff)", patch_text)
+        # Exactly one step: a head at the same pitch on the other side is a duplicate
+        # reading of one notehead, and pruning it is what stops a doubled note.
+        self.assertNotIn("targetSide, pitch, staff", patch_text)
+        self.assertIn("headSide.opposite()", patch_text)
+        self.assertIn(
+            "6d1b2517d3d0fff6f37c337f6bb1fc02b4ab8ce1dd1dd0ecf3ab4d1e4b2ab244",
+            dockerfile,
+        )
+        checksum = dockerfile.index('echo "${SIG_REDUCER_SHA256}')
+        normalize = dockerfile.index("sed -i 's/\\r$//'", checksum)
+        apply_patch = dockerfile.index("--input=/tmp/second-head.patch", normalize)
+        update_normal = dockerfile.index(
+            "-C /tmp/reducer-classes org/audiveris/omr/sig", apply_patch
+        )
+        copy_recovery = dockerfile.index(
+            "cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery"
+        )
+        self.assertLess(checksum, normalize)
+        self.assertLess(normalize, apply_patch)
+        # The recovery engine is copied from the normal one, so it inherits the fix.
+        self.assertLess(update_normal, copy_recovery)
+        self.assertIn(
+            "grep -Fqx 'org/audiveris/omr/sig/SigReducer.class'",
+            dockerfile,
+        )
+
     def test_container_replaces_english_data_with_checksum_pinned_legacy_model(self):
         dockerfile = (OMR_SERVICE_ROOT / "Dockerfile.audiveris").read_text(encoding="utf-8")
 

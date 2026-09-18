@@ -1,0 +1,63 @@
+--- a/app/src/main/java/org/audiveris/omr/sig/SigReducer.java
++++ b/app/src/main/java/org/audiveris/omr/sig/SigReducer.java
+@@ -1806,6 +1806,42 @@
+         return null;
+     }
+ 
++    //-----------------------//
++    // hasDisplacedNeighbor //
++    //-----------------------//
++    /**
++     * Check whether the provided head is the displaced head of a second.
++     * <p>
++     * Two heads a step apart cannot both sit on the same side of their stem, so one of
++     * them is engraved on the other side. This is the shape that
++     * {@link #checkHeadSide(Inter)} already tolerates.
++     * <p>
++     * Only a head exactly one step away counts. A head at the very same pitch on the
++     * other side is a duplicate reading of one notehead, not the other note of a
++     * second, and pruning it is what keeps that note from being emitted twice.
++     *
++     * @param stem     the stem both heads are linked to
++     * @param head     the head found on the unexpected side
++     * @param headSide the side that head was found on
++     * @return true if another head of the same staff sits one step away on the opposite side
++     */
++    private boolean hasDisplacedNeighbor (StemInter stem,
++                                          HeadInter head,
++                                          HorizontalSide headSide)
++    {
++        final Staff staff = head.getStaff();
++
++        if (staff == null) {
++            return false;
++        }
++
++        final HorizontalSide targetSide = headSide.opposite();
++        final int pitch = head.getIntegerPitch();
++
++        return (lookupHead(stem, targetSide, pitch - 1, staff) != null)
++                || (lookupHead(stem, targetSide, pitch + 1, staff) != null);
++    }
++
+     //----------------//
+     // pruneStemHeads //
+     //----------------//
+@@ -1846,6 +1882,17 @@
+ 
+                 if (((portion == STEM_BOTTOM) && (headSide != RIGHT)) || ((portion == STEM_TOP)
+                         && (headSide != LEFT))) {
++                    // A second has to be engraved with one of its two heads displaced to
++                    // the other side of the stem, so a head with a neighbour a step away
++                    // on the opposite side is where it belongs, not on a wrong side.
++                    // checkHeads/checkHeadSide already keeps such a head, but it runs after
++                    // this method and only sees heads that still have a stem, so without the
++                    // same test here the link is cut first and the head is then deleted for
++                    // having no stem.
++                    if (hasDisplacedNeighbor(stem, head, headSide)) {
++                        continue;
++                    }
++
+                     if (stem.isVip() || head.isVip()) {
+                         logger.info("VIP pruned {} from {}", head, stem);
+                     }

@@ -14,6 +14,7 @@ ARG AUGMENTATION_DOT_INTER_SHA256=4741eeafed3105f42e908dcb810eea65d7e41400a305f1
 ARG SLUR_LINKER_SHA256=d9f92f97b42aad8c3763bdae7db35b272b394b2154014c03b665baaf12fbe797
 ARG CLUMP_PRUNER_SHA256=0b77cf4e453559b34cfccd9b5f00666f4718ff3d3993f9948e1c58a901dc0d12
 ARG BEAMS_BUILDER_SHA256=fa9505b66f2bae9d03a49b69f2f26a27c4c40a4ac18e973123935fe99a84c483
+ARG SIG_REDUCER_SHA256=6d1b2517d3d0fff6f37c337f6bb1fc02b4ab8ce1dd1dd0ecf3ab4d1e4b2ab244
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -99,6 +100,7 @@ COPY audiveris-patches/0001-region-scoped-ledger-recovery.patch /tmp/ledger-reco
 COPY audiveris-patches/0002-line-head-dot-link.patch /tmp/dot-link.patch
 COPY audiveris-patches/0003-staff-line-tie-head-link.patch /tmp/tie-link.patch
 COPY audiveris-patches/0004-beam-end-stem-anchor.patch /tmp/beam-anchor.patch
+COPY audiveris-patches/0005-second-interval-head-prune.patch /tmp/second-head.patch
 RUN mkdir -p \
       /tmp/jdk25 \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger \
@@ -177,6 +179,24 @@ RUN mkdir -p \
       --file /opt/audiveris/lib/app/audiveris.jar \
       | grep -Fqx 'org/audiveris/omr/sheet/beam/BeamsBuilder.class' \
     && curl -fsSL \
+      "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sig/SigReducer.java" \
+      -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/SigReducer.java \
+    && echo "${SIG_REDUCER_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/SigReducer.java" \
+      | sha256sum -c - \
+    && sed -i 's/\r$//' \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/SigReducer.java \
+    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace \
+      --input=/tmp/second-head.patch \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' \
+      -cp '/opt/audiveris/lib/app/*' -d /tmp/reducer-classes \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/SigReducer.java \
+    && /tmp/jdk25/bin/jar --update \
+      --file /opt/audiveris/lib/app/audiveris.jar \
+      -C /tmp/reducer-classes org/audiveris/omr/sig \
+    && /tmp/jdk25/bin/jar --list \
+      --file /opt/audiveris/lib/app/audiveris.jar \
+      | grep -Fqx 'org/audiveris/omr/sig/SigReducer.class' \
+    && curl -fsSL \
       "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java" \
       -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java \
     && echo "${LEDGERS_POST_ANALYSIS_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java" \
@@ -197,7 +217,7 @@ RUN mkdir -p \
       | grep -Fqx 'org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.class' \
     && /opt/audiveris/bin/Audiveris -version \
     && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
-    && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes \
+    && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes /tmp/reducer-classes \
       /tmp/tie-classes /tmp/beam-classes /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
       /tmp/dot-link.patch /tmp/tie-link.patch /tmp/beam-anchor.patch
 
