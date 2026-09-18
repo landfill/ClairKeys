@@ -104,10 +104,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Known blockers / constraints
 
-- 2026-09-18: PR165 병합·배포 후 브랜치 `codex/issue-134-second-interval-head`를 **보존했다.**
-  로컬·원격 tip 모두 `9645772`이고 main 대비 고유 커밋 0을 확인했지만, 사용자 미커밋 변경
-  (`validation/2026-09-13-handoff-history.md`)이 남아 있어 AGENTS 규약대로 지우지 않았다.
-  삭제하려면 사용자의 명시적 지시가 필요하다.
+- 2026-09-18: PR165 병합·배포 후 사용자 지시("브랜치 정리해")로 `codex/issue-134-second-interval-head`를 삭제했다.
+  로컬·원격 tip 모두 `9645772`이고 main에 포함됨을 확인한 뒤 원격 → 로컬 순서로 지웠다.
+  사용자 미커밋 변경(`validation/2026-09-13-handoff-history.md`)은 손대지 않았다. 현재 작업 브랜치는 없다.
   검증 이미지 `clairkeys-omr:d066b-patched`(`SigReducer.class` `da3b0721…`, 운영과 동등)와
   좁히기 전 `d066-patched`가 이 머신에 추가됐다.
 - 2026-09-18: PR164 병합·배포 후 사용자 지시("브랜치 정리")로 `codex/issue-134-m9-beam-extension`을 삭제했다.
