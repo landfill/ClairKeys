@@ -148,3 +148,12 @@ satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb
 - 이미지 안의 Dockerfile/patch/fixture/test 소스 SHA도 작업 파일과 동일함을 별도 검증했다.
 - `76e4e0b` 상태 기록 커밋의 체크6개는 E2E를 포함해 전부 성공했다. 이는 구현 PR의 CI를 대신하지 않는다.
 - 아직 수행하지 않은 범위: 구현 PR CI·자동 리뷰, main 병합, 운영 배포·재업로드. 사용자 병합/배포 승인은 없다.
+
+## PR167 리뷰 대응 — cacce3a (재검증 중)
+
+- 유효한 P1: candidate 내부 staff 검사만으로는 cross-staff beam group을 제외하지 못한다. `SharedStemBeamGroupFixture.java`는 실제
+  private splitter를 호출하는 그래프 경계 fixture이며, 다른 보표의 인접 화음이 같은 그룹에 있으면 mutation을 금지하고 같은 보표 제어는 허용한다.
+- 수정 전 `d068-patched`: pinned JDK25.0.2(SHA 검증)로 fixture를 컴파일해 실제 jar에 실행 → `AssertionError: cross-staff group was split`.
+- 수정 `cacce3a`: 그룹이 없거나 그룹 내 다른 보표가 있으면 분리하지 않는다. 새 fixture는 정식 Dockerfile 빌드에서 컴파일해 테스트 classpath에만 둔다.
+- `d068b-patched` 전체 빌드 성공. 새 그래프 native test normal/recovery 모두 통과(2.464초). 양성 raster/Clair/전체 suite/corpus 재실행은 진행 중이다.
+- Lore 미준수 지적은 GitHub API의 실제 커밋 원문으로 반증했고 REJECTED로 기록했다. 모든 구현 커밋에 Confidence/Scope-risk 및 검증 trailer가 있다.
