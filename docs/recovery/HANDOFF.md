@@ -12,19 +12,18 @@ Last updated: 2026-09-18 KST (저녁)
 2026-09-15 배포돼 운영 스모크에서 타이 29/43을 확인했다. 다른 화음 사이 점 수정 [PR163](reviews/PR-163.md)(D-064, `0e3dc61`)은
 2026-09-15 배포됐고 사용자의 앱 재변환 결과가 로컬 검증 결과와 같음을 확인했다.
 m9 빔 복원 [PR164](reviews/PR-164.md)(D-065, `bbcc09b`)는 2026-09-18 배포됐고 사용자의 앱 재변환 결과가
-로컬 검증 결과와 전 필드 같음을 확인했다.
+로컬 검증 결과와 전 필드 같음을 확인했다. 2도 밀린 머리 보존 [PR165](reviews/PR-165.md)(D-066, `f5be5f9`)는
+같은 날 병합·배포됐다(image `4c14123d…`).
 나머지 타이·리듬 오류는 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **[PR165](reviews/PR-165.md)의 병합 승인을 기다린다.** 사용자가 기전 B를 골랐고 구현·검증 후 PR 생성을 승인했다.
-   head `9645772`는 hosted 체크 **16/16 pass**, Codex 자동 리뷰 **지적 0건**, `mergeStateStatus=CLEAN`,
-   미해결 actionable review 없음이다. Clair 171 → **173/191** 3회 동일,
-   타이·tempo·정확한 마디 불변, corpus 비교 가능한 11곡 모두 기준선과 바이트 동일, 이미지 테스트 182 OK/skip 6이다.
-   1차 시도는 예외 범위에 같은 pitch를 포함해 두 곡에서 음이 두 번 나오는 회귀가 있었고, 범위를 정확히 한 칸으로 좁혀 해소했다.
-   [검증 기록](validation/2026-09-18-issue-134-second-interval-head.md). **PR·병합·배포는 각각 사용자 승인이 필요하다.**
+1. **D-066 운영 인식 결과를 사용자의 앱 재변환으로 확인한다(선택).** PR165는 2026-09-18 병합(`f5be5f9`)·배포됐다
+   (image `4c14123d…`, 롤백 태그 `rollback-pr165-20260918`). 배포 승인에 PDF 스모크는 포함하지 않아 **운영 인식 결과는 미확인**이다.
+   기대: Clair m5·m7에서 2도의 아래 음이 살아나 원본 기준 이벤트 171 → 173/191, canonical 음 159.
+   [배포 근거](validation/2026-09-18-d066-second-interval-deployment.md).
 2. **기전 C는 그대로 남아 있다.** 단계 추적은 끝났고 원인은 소스 줄 단위로 확정됐다
    ([기록](validation/2026-09-18-issue-134-m5-empty-head-stage-trace.md)). 잔여 20건은 **m5 13 · m3 4 · m1 2 · m7 1**이다.
    - **기전 C**(m5 첫 화음, 파급 큼): 빈 머리 F4 점2분은 HEADS에서 검출되고 STEMS에서 공유 기둥에 가장 높은 점수(0.998)로
@@ -45,7 +44,16 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Latest verified result
 
-- **OMR 운영(2026-09-18)**: PR164 `bbcc09b` 배포 완료. image `9eef7512…`, 롤백 태그 `rollback-pr164-20260918`(`2a71ede5…`).
+- **OMR 운영(2026-09-18, 최신)**: PR165 `f5be5f9` 배포 완료. image `4c14123d…`, 롤백 태그 `rollback-pr165-20260918`(`9eef7512…`).
+  이미지 테스트 **182 OK / 6 skipped**, 네이티브 6개가 skip 없이 ok.
+  `SigReducer.class` 해시가 normal·recovery 양쪽 모두 로컬 검증 빌드(`da3b0721…`)와 같고, 직전 운영은 `e4be8314…`로 기준선과 같다.
+  health 200, 무인증 process 401. **운영 인식 결과는 아직 확인하지 않았다.**
+  [배포 근거](validation/2026-09-18-d066-second-interval-deployment.md).
+- **D-066 로컬 검증(2026-09-18)**: 전체 빌드 `d066b-patched` 이미지 테스트 182 OK/skip 6.
+  새 fixture는 운영 동등 `d065b-patched`에서 FAILED, 패치에서 OK. Clair 171 → **173/191** 3회 동일(raw 해시 동일, m5·m7만 변화),
+  타이 29/43·tempo 69 불변, canonical 157 → 159. corpus 비교 가능한 11곡 모두 기준선과 바이트 동일.
+  [기록](validation/2026-09-18-issue-134-second-interval-head.md).
+- **직전 운영(2026-09-18)**: PR164 `bbcc09b` 배포 완료. image `9eef7512…`, 롤백 태그 `rollback-pr164-20260918`(`2a71ede5…`).
   이미지 테스트 **180 OK / 6 skipped**, 새 빔 네이티브 테스트 2개와 기존 네이티브 3개가 skip 없이 ok.
   `BeamsBuilder.class` 해시가 normal·recovery 양쪽 모두 로컬 검증 빌드(`8d15e1b2…`)와 같다. health 200, 무인증 process 401.
   사용자의 앱 재변환(11:45 KST) 애니메이션 **157음이 로컬 검증 결과와 전 필드 완전히 같다**(차이 0건).
@@ -96,6 +104,12 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Known blockers / constraints
 
+- 2026-09-18: PR165 병합·배포 후 브랜치 `codex/issue-134-second-interval-head`를 **보존했다.**
+  로컬·원격 tip 모두 `9645772`이고 main 대비 고유 커밋 0을 확인했지만, 사용자 미커밋 변경
+  (`validation/2026-09-13-handoff-history.md`)이 남아 있어 AGENTS 규약대로 지우지 않았다.
+  삭제하려면 사용자의 명시적 지시가 필요하다.
+  검증 이미지 `clairkeys-omr:d066b-patched`(`SigReducer.class` `da3b0721…`, 운영과 동등)와
+  좁히기 전 `d066-patched`가 이 머신에 추가됐다.
 - 2026-09-18: PR164 병합·배포 후 사용자 지시("브랜치 정리")로 `codex/issue-134-m9-beam-extension`을 삭제했다.
   로컬·원격 tip 모두 `c36f26b`이고 main 대비 고유 커밋 0임을 확인한 뒤 원격 → 로컬 순서로 지웠다.
   사용자 미커밋 변경(`validation/2026-09-13-handoff-history.md`)은 손대지 않고 그대로 뒀다. 현재 작업 브랜치는 없다.

@@ -131,6 +131,25 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   (0.434783s at 69bpm), shortening the piece from 65.435s to 65.000s. No pitch, hand or staff changed; only voice ids were renumbered
   around m9, and local verification renumbers them the same way. Measures 1-8 are untouched, so D-062/D-063/D-064 are preserved. The
   full-reference 171/191 was not re-evaluated in production because the service deletes the MusicXML. IN_PROGRESS.
+- 2026-09-18: Stage traces settled both of m5's losses. The empty F4 head is detected at HEADS and links to the shared stem with the
+  best head-stem grade on it, then REDUCTION's analyzeChords excludes heads of different intrinsic duration on one stem and the void
+  head loses to the black eighth on contextual grade; SYMBOLS only then reads the leftover ink as a triplet. The second F4 is a
+  different rule: pruneStemHeads cuts a head sitting at a stem end on the non-canonical side, which is how a second is engraved, and
+  checkHeads deletes it for having no stem, although checkHeadSide keeps exactly that shape when it runs. Both confirmed by VIP logs
+  and 300dpi crops; the two 2026-09-15 guesses were wrong.
+- 2026-09-18: User chose the second-interval fix (mechanism B). D-066 gives pruneStemHeads the neighbour test checkHeadSide already
+  uses, before the cut rather than after. The range had to be exactly one step: reusing checkHeadSide's pitch-1..pitch+1 also spared a
+  head at the same pitch on the other side, and the corpus showed that emitting a note twice, losing Merry Go Round m18's D5 and
+  Premiere Gymnopedie m16's dot. Narrowed, Clair goes 171 -> 173/191 over three identical runs with the raw event hash unchanged from
+  the wider attempt, only m5 and m7 differ, ties and tempo hold, and all eleven comparable corpus scores stay byte-identical. Image
+  tests 182 OK/skip 6 with the new native fixture discriminating against the production-equivalent build. [PR165](../reviews/PR-165.md)
+  merged as `f5be5f9` on explicit approval (post-merge checks 6/6).
+- 2026-09-18: User-approved OMR VM rollout of `f5be5f9` (image `4c14123d…`, rollback tag `rollback-pr165-20260918`). Preflight found no
+  JVM running; the build applied all six patches with every sha256 `: OK` and no rejected hunk. Image tests 182 OK/6 skipped with all
+  six native tests running. Before the cutover the patched `SigReducer.class` hashed to `da3b0721…` in both jars, matching the local
+  build that produced 173/191, while the outgoing image matched the recorded baseline. After the restart: healthy container, health
+  200, unauthorized 401, zero error lines in the journal. Production recognition is **not yet checked** — the rollout approval did not
+  include a PDF smoke. Mechanism C is untouched. IN_PROGRESS.
 
 ## Objective
 
