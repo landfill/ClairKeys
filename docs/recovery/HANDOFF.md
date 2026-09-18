@@ -10,25 +10,26 @@ Last updated: 2026-09-18 KST
 시작 템포 수정은 운영 반영됐다. 줄 위 3도 점 누락 수정 [PR161](reviews/PR-161.md)(D-062, `34f9e7e`)은
 2026-09-14 배포돼 운영 스모크에서 Clair 153/191을 확인했다. 타이 기전 B 수정 [PR162](reviews/PR-162.md)(D-063, `0a22d2f`)는
 2026-09-15 배포돼 운영 스모크에서 타이 29/43을 확인했다. 다른 화음 사이 점 수정 [PR163](reviews/PR-163.md)(D-064, `0e3dc61`)은
-2026-09-15 배포됐고 사용자의 앱 재변환 결과가 로컬 검증 결과와 같음을 확인했다. 나머지 타이·리듬 오류는 남아 있다.
+2026-09-15 배포됐고 사용자의 앱 재변환 결과가 로컬 검증 결과와 같음을 확인했다.
+m9 빔 복원 [PR164](reviews/PR-164.md)(D-065, `bbcc09b`)는 2026-09-18 병합됐으나 **아직 배포되지 않았다**.
+나머지 타이·리듬 오류는 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **[PR164](reviews/PR-164.md)의 병합 승인을 기다린다.** 2026-09-18 사용자가 선택지 (a)를 택해 D-065를 PR로 냈다
-   (head `c36f26b`, non-draft, `mergeStateStatus=CLEAN`). hosted 체크는 **전부 pass**, Codex 자동 리뷰는 **지적 0건**,
-   미해결 actionable review는 없다. 2차 독립 검증의 Medium 3·Low 2는 D-065 Known limit과 리뷰 로그에
-   REJECTED(한계로 기록)로 남겼고 실행된 회귀는 0건이다.
-   **병합 승인은 없다. 승인받으면 현재 head의 CI·리뷰·mergeability를 다시 확인한 뒤 병합한다. 운영 배포 승인은 또 별개다.**
-   운영은 여전히 PR163 `0e3dc61`이다.
+1. **D-065 운영 배포 여부를 사용자에게 확인받는다.** [PR164](reviews/PR-164.md)는 2026-09-18 사용자 승인으로 병합됐다
+   (병합 커밋 `bbcc09b`, Lore trailer 포함). **배포 승인은 받지 않았고 운영은 여전히 PR163 `0e3dc61`**이므로
+   D-065는 운영 엔진에 없다. 배포하면 Clair가 160 → 171/191이 될 것으로 예상되며, 확인 수단은 사용자의 앱 재변환이다.
+   승인 시 기존 절차(이미지 빌드 → 롤백 태그 → 이미지 테스트 → health·무인증 확인)를 따른다.
+   로컬 Docker 데몬이 꺼져 있어 재검증이 필요하면 먼저 실행해야 한다.
 2. **남은 기전**: C m5 빈 머리 → 셋잇단, B 2도 반대편 머리 누락은 같은 방식으로 단계 추적이 필요하다.
    E m3 둘잇단 미지원은 범위가 커서 보류 후보. D-064(PR163 `0e3dc61`)는 병합·배포·운영 확인까지 끝났다.
 3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
 
 ## Latest verified result
 
-- **D-065 2차 독립 검증(2026-09-17, 미배포) — PASS WITH CONCERNS**: [PR164](reviews/PR-164.md) `c36f26b`로 제출됐다(2026-09-18).
+- **D-065 2차 독립 검증(2026-09-17) — PASS WITH CONCERNS**: [PR164](reviews/PR-164.md)로 2026-09-18 병합됐다(`bbcc09b`). **미배포.**
   Clair **171/191** 3회 동일(바뀐 마디는 m9뿐, 타이 29/43·tempo 69 불변), corpus 비교 가능한 11곡 모두 D-064와 동일,
   Deborah `events.json` 바이트 동일(`d8b378e3…`), 이미지 테스트 **180 OK/skip 0**, `--no-cache` 빌드 171.24초.
   1차(2026-09-16 재개분)는 Deborah m24에서 슬러가 빔으로 남아 canonical 330개 중 127개가 앞당겨지는 회귀로 **FAIL**이었고,
@@ -72,10 +73,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Known blockers / constraints
 
-- 2026-09-18: 브랜치 `codex/issue-134-m9-beam-extension`을 origin에 push하고 [PR164](reviews/PR-164.md)를 열었다
-  (`c36f26b`(결정 기록 정정) ← `bea1431`(두께 가드·새 fixture) ← `b59ea08`(D-065 원본) ← main `1391c4d`).
-  이 브랜치는 그 이후 main의 상태 기록 커밋을 포함하지 않는다. 검증 기록이 `b59ea08`·`bea1431` SHA를 인용하므로 rebase하지 않았고,
-  세 점 diff는 의도한 9개 파일뿐이다. 사용자 미커밋 파일은 건드리지 않았다.
+- 2026-09-18: PR164 병합 후 브랜치 `codex/issue-134-m9-beam-extension`을 **보존했다.** 로컬·원격 tip 모두 `c36f26b`이고
+  main 대비 고유 커밋 0을 확인했지만, 사용자 미커밋 변경(`validation/2026-09-13-handoff-history.md`)이 남아 있어
+  AGENTS 규약대로 두 브랜치를 지우지 않았다. 삭제하려면 사용자의 명시적 지시가 필요하다.
   검증 이미지 `clairkeys-omr:{d064-patched, d065-patched, d065b-patched, d065b-codex-verification}`는 이 머신에만 있고,
   2026-09-18 현재 **Docker 데몬이 꺼져 있어** 재검증하려면 먼저 Docker Desktop을 실행해야 한다.
 

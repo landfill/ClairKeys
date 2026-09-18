@@ -111,6 +111,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   the confirmed mechanism replaced it (a refused candidate stays in `rawSystemBeams`, STEMS reads the shared stem as CENTER, REDUCTION
   drops both — landing on D-064's exact output), and all five concerns became explicit known limits. Branch pushed and
   [PR164](../reviews/PR-164.md) opened non-draft at `c36f26b`. Not merged, not deployed; production stays PR163 `0e3dc61`. IN_PROGRESS.
+- 2026-09-18: PR164 merged as `bbcc09b` on explicit approval. Before merging, the head `c36f26b` was re-checked: all hosted checks
+  pass, zero reviews and zero inline comments, Codex's automated review completed with no findings, `mergeStateStatus=CLEAN`. The
+  merge used `--match-head-commit` and carried a Lore-format message, so unlike PR163 the merge commit holds its trailers, including
+  a Directive that this approval does not cover the VM rollout. Both branch tips held zero unique commits against main but the branch
+  was kept because a user uncommitted change remains. **Not deployed** — production is still PR163 `0e3dc61`, so D-065 is not in the
+  running engine and Clair's expected 160 -> 171/191 has not been observed in production. IN_PROGRESS.
 
 ## Objective
 
