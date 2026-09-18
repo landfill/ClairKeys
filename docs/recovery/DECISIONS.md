@@ -2612,6 +2612,14 @@
     0.40 이상 18개를 원본에서 모두 잘라 보니 0.555 이상 17개는 실제 빈 머리이고 0.413 하나는 가짜였다.
     17개 중 16개는 지금도 REDUCTION을 통과하며(빈 머리만의 화음에서는 가짜 검은 머리 후보가 진다) 지워지는 것은 Clair `#1583`뿐이다.
   - 사용자가 2026-09-18 이 기준을 승인했다.
+  - **머리만 살리면 개선이 아니다.** `ChordsBuilder.connectHead`는 "이 시점엔 기둥마다 화음이 하나"라고 가정하고 기둥의 머리를 모두
+    한 화음에 넣는다. `AbstractChordInter.getDurationSansDotOrTuplet`은 화음 음가를 **맨 아래 음**(`notes.get(0)`)의 모양에서 가져오고
+    빔 수만큼 반으로 줄인다. 그래서 살아난 빈 머리가 B4 8분 화음의 맨 아래가 되어 화음을 2분 ÷ 2 = **4분**으로 만들고,
+    m5 오른손 음 8개가 모두 +0.5박 밀렸다(Clair 173/191 그대로, 셋잇단은 사라짐).
+  - 엔진에 비슷한 선례가 있다. 같은 메서드가 mirror로 공유된 빈 머리는 빔 쪽에서 검은 머리로 계산한다. 메서드 주석도
+    "화음의 음은 모두 음가가 같다고 가정한다. 그렇지 않으면 화음을 나눠야 한다"라고 적는다.
+  - 사용자가 2026-09-18 "화음 분리까지 단계 추적"을 고른 뒤, 좁은 화음 음가 규칙을 실험했고 이 조합으로 PR을 내는 안을 골랐다.
+    빈 머리를 자기 화음으로 떼는 완전한 분리는 후속 결정으로 남겼다.
 - Decision:
   1. `analyzeChords`의 음가 배제를 `excludeDurations`로 바꾼다. 음가가 다른 두 머리 사이에 INCOMPATIBLE 배제를 넣되,
      `isSharedStemVoid`가 참인 쌍은 건너뛴다.
@@ -2624,16 +2632,34 @@
   5. 패치는 `omr-service/audiveris-patches/0006-shared-stem-void-head.patch`이며, D-066의 0005가 적용된 같은 pinned `SigReducer.java`
      (`6d1b2517…`) 위에 차례로 적용한 뒤 한 번 컴파일한다.
   6. XML·JSON의 음가를 사후에 고치지 않는다(D-049/D-052 유지). 엔진이 원래 검출한 머리가 살아남을 뿐이다.
+  7. `AbstractChordInter.getDurationSansDotOrTuplet`에서 빔·꼬리가 있는 화음(`fbn > 0`)의 맨 아래 음이 `NOTEHEAD_VOID`이고
+     같은 화음에 `NOTEHEAD_BLACK`이 있으면, 음가를 검은 머리의 것으로 계산한다. 빔이 있는 화음은 2분음표가 될 수 없고,
+     그 빔은 검은 머리의 것이다. 기존 mirror 예외 바로 뒤에 둔다.
+  8. 7의 패치는 `omr-service/audiveris-patches/0007-beamed-chord-black-duration.patch`이며 pinned `AbstractChordInter.java`
+     (`c65453b6…`)에 적용하고 `org/audiveris/omr/sig/inter`에 주입한다. recovery 엔진 복사보다 앞이다.
+  9. **알려진 한계**: 빈 머리는 여전히 검은 머리와 한 화음이므로 그 화음의 음가(8분)를 받는다. Clair m5의 F4 점2분은 8분으로 나온다.
+     빈 머리를 자기 화음(빔 없음, 점 적용)으로 떼는 일은 화음 생성·빔 그룹·성부 배정을 건드리므로 별도 결정으로 한다.
+- Rejected: 빈 머리를 자기 화음으로 떼는 완전한 분리까지 한 PR에 담는다 | 범위가 크다. 사용자가 이 조합을 먼저 내고 분리는 후속으로 하기로 했다
+- Rejected: `ChordSplitter`를 그대로 쓴다 | 붙임줄 충돌용이며, 기둥을 공유하는 하위 화음은 기둥의 빔을 모두 받는다고 명시돼 있어 빈 머리 화음이 다시 4분이 된다
 - Rejected: 음높이가 다르면 음가 배제를 하지 않는다 | 서로 겹치지 않는 쌍이 12곡에 3,332개이고 대부분 가짜 빈 머리다. 가짜 수천 개가 살아난다
 - Rejected: grade 조건 없이 "겹침 없음"만 본다 | 겹침 없는 빈 머리 160개 중 143개가 가짜(grade 0.413 이하)다
 - Rejected: 빔이 연결된 기둥에만 적용한다 | 더 좁지만 이 corpus에서 결과가 같고, 빔 없이 기둥을 공유하는 표기를 계속 놓친다.
   사용자가 빔 조건 없는 기준을 골랐다
 - Rejected: 빈 머리의 ctx-grade로 비교한다 | ctx는 배제가 반영된 값이라 판정 기준이 순환한다. 고유 grade가 분포상 깨끗이 갈린다
 - Constraint: pinned `9e1e55cd…`의 `SigReducer.java` sha256이 Dockerfile 값과 같아야 하고 0005 다음에 적용돼야 한다
+- Constraint: pinned `9e1e55cd…`의 `AbstractChordInter.java` sha256(`c65453b6…`)이 Dockerfile 값과 같아야 한다
 - Confidence: medium
 - Scope-risk: moderate
 - Reversibility: clean
 - Directive: 0.5는 13개 PDF 분포에서 정한 값이다. 바꾸려면 `census.py`로 겹침 없는 빈 머리 분포를 다시 재고 원본으로 확인한다
 - Directive: 예외를 받은 빈 머리와만 배제 관계였던 가짜 검은 머리가 살아날 수 있다. 변경 뒤 corpus 출력을 바이트 단위로 비교한다
+- Directive: 결정 1~6과 7은 함께 가야 한다. 머리만 살리면 화음이 4분이 되어 박이 밀리고, 7만 있으면 발동할 대상이 없다
+- Tested: 합성 fixture `shared_stem_durations_fixture.py`는 Clair m5의 모양(빔 달린 8분 기둥에 점 붙은 빈 머리)을 그리고,
+  VIP 로그에서 기준 이미지가 같은 경로로 지운다(`INCOMPATIBLE` → `deleting weaker #193`, ctx 0.966 < 0.970)
+- Tested: 판별 — `test_shared_stem_durations_native`가 `d066b-patched`(운영 동등)에서 FAILED, `d067b-patched`에서 OK
+- Tested: 전체 빌드 `d067b-patched` 이미지 테스트 184 OK / 6 skipped, 네이티브 7개 모두 skip 없이 ok. Jest 계약 17/17
+- Tested: Clair 173 → 182/191 3회 동일(raw 해시 `e982df7a…`), 바뀐 마디는 m5뿐이고 맞춘 음 4 → 13, onset 오류 8건 해소,
+  타이 29 → 30, tempo 69·정확한 마디 불변. corpus 비교 가능한 11곡 모두 기준선과 바이트 동일
+- Not-tested: 운영 VM 배포·재업로드. 빈 머리를 자기 화음으로 떼는 완전한 분리(남은 m5 duration 2·m7 duration 1)
 - Related: #134, D-049, D-052, D-066, validation/2026-09-18-issue-134-m5-empty-head-stage-trace.md,
-  validation/2026-09-18-issue-134-shared-stem-duration-census.md
+  validation/2026-09-18-issue-134-shared-stem-duration-census.md, validation/2026-09-19-issue-134-shared-stem-void-head.md
