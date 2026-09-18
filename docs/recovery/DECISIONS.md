@@ -2684,10 +2684,18 @@
      다른 기둥·다른 시점의 화음은 기존 장애물 검사에 남긴다. corpus와 부정 fixture로 검증한다.
 - Rejected: ChordSplitter 그대로 사용 | 공유 기둥의 빔이 모든 하위 화음에 적용되어 긴 음이 다시 짧아진다
 - Rejected: 빈 머리만 분리 | 목표 중 점4분 검은 머리 두 건을 해결하지 못한다
-- Confidence: low
+- Confidence: medium
 - Scope-risk: moderate
 - Reversibility: clean
-- Tested: 새 dotted-half 회귀 단언은 d067b-patched normal/recovery 모두 eighth != half로 실패
-- Not-tested: 후보 구현, Clair 재평가, corpus 및 전체 이미지 검증
-- Directive: 구현 후보이며 기준표 개선과 corpus 회귀 검증 전 채택된 정책으로 표현하지 않는다
-- Related: #134, D-067
+- Known limits:
+  - 한 화음에서 긴 머리 하나만 분리한다. 여러 긴 머리, mirror, small, cross-staff 및 빔 없는 사례는 그대로 둔다.
+  - 일반 점음표 화음의 다른 점이 인식되지 않으면 점을 가진 밀린2도가 별도 긴 성부처럼 보일 수 있다. 형태 조건으로 범위를 제한하지만
+    모든 해상도·판형의 모호성을 해소한 것으로 주장하지 않는다. 새로운 사례는 원본과 대조하고 판별 fixture를 먼저 추가한다.
+- Tested: 기준선 d067b-patched에서 점2분·점4분 각3조옮김×2엔진=12개 양성 단언 모두 음가 차이로 실패. 일반 점 없는2도 제어는 통과
+- Tested: 최종 이미지 전체186개 중180통과·6skip. native9개 모두 실제 실행, normal/recovery에서 분리 후 OMR저장·재로딩·재export 동등
+- Tested: Clair 182→185/191, 타이30/43·tempo69·canonical160 유지, 3회 raw 해시 동일(5b23e6fa…). 바뀐 마디5·7뿐, 쉼표·박자표·마디 길이 보존
+- Tested: 타입 검사·lint·Jest105 suites/1038 tests 통과. pinned 소스4개 checksum·정식 Dockerfile 빌드, 양쪽 jar 클래스 해시 동일
+- Tested: corpus12곡 기준선/패치 순차 재실행. 성공11곡 raw events 바이트 동일·애니메이션 생성시각 외 전 필드 동일; truongca는 양쪽 같은 3쪽 SCALE 실패
+- Not-tested: 운영 VM 배포·재업로드, 테스트 corpus 밖의 판형·해상도
+- Directive: PR 병합 및 운영 배포는 별도 명시적 승인 후 수행한다. 출력 XML/JSON 사후 보정은 하지 않는다
+- Related: #134, D-067, validation/2026-09-19-issue-134-shared-stem-chord-split.md
