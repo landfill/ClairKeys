@@ -177,6 +177,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   and to A4 and B4 as whole eighths, the B4 tied in from m4 grows from 6.67 to exactly 7 eighths, and seven later notes move one eighth
   onto their beats. Love Affair and Deborah keep their note counts. IN_PROGRESS.
 
+- 2026-09-19: User authorized D-067 follow-up through local Docker verification and a review-ready PR, excluding merge/rollout.
+  Candidate `1ee36a3` on `codex/issue-134-shared-stem-chord-split` separates long chords while preserving stem relations.
+  Baseline freshly measures 182/191 and 30/43 ties; the latest experiment measures 185/191 and 30/43. Final image tests,
+  corrected reload fixture, three runs, corpus and PR gates remain. [Validation](../validation/2026-09-19-issue-134-shared-stem-chord-split.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
