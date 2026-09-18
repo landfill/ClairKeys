@@ -21,7 +21,8 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **D-068 [PR167](reviews/PR-167.md)의 CI·자동 리뷰를 확인한다.** non-draft로 생성했다. Codex의 cross-staff 그룹 제외 P1을 `cacce3a`로 수정했고 전체 재검증 중이다.
+1. **D-068 [PR167](reviews/PR-167.md)의 CI·자동 리뷰를 확인한다.** non-draft로 생성했다. Codex의 cross-staff 그룹 제외 P1을 `cacce3a`로 수정·push했다. 새 head 재리뷰·CI 및 전체 재검증 중이다.
+   새 이미지 Clair3회도 185/191·타이30/43·raw 바이트 동일이다.
    Lore trailer 누락 지적은 실제 커밋 원문으로 반증해 REJECTED 처리했다.
    로컬 검증은 Clair **185/191·타이30/43** 3회 동일, 전체 이미지180통과·6skip(native9개 모두 실행),
    corpus 성공11곡 동일·1곡 양쪽 같은 SCALE 실패다. [검증·자체 리뷰](validation/2026-09-19-issue-134-shared-stem-chord-split.md).

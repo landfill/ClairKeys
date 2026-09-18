@@ -157,3 +157,6 @@ satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb
 - 수정 `cacce3a`: 그룹이 없거나 그룹 내 다른 보표가 있으면 분리하지 않는다. 새 fixture는 정식 Dockerfile 빌드에서 컴파일해 테스트 classpath에만 둔다.
 - `d068b-patched` 전체 빌드 성공. 새 그래프 native test normal/recovery 모두 통과(2.464초). 양성 raster/Clair/전체 suite/corpus 재실행은 진행 중이다.
 - Lore 미준수 지적은 GitHub API의 실제 커밋 원문으로 반증했고 REJECTED로 기록했다. 모든 구현 커밋에 Confidence/Scope-risk 및 검증 trailer가 있다.
+
+- `cacce3a` push 후 새 이미지 Clair3회 raw가 직전 최종 `5b23e6fa…`와 모두 바이트 동일함을 확인했다. 관련 Jest runtime contract17개도 통과했다.
+  전체 suite와 corpus12곡은 새 패치 이미지로 다시 실행하며, 앞서 같은 세션에서 새로 생성한 d067b 기준선과 비교한다.
