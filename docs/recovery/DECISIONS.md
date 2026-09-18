@@ -2474,3 +2474,78 @@
 - Tested: Codex 워커(`gpt-5.6-sol` high) 독립 검증 PASS WITH CONCERNS. 전체 Dockerfile 이미지 `d064-patched` 177 OK/skip 0, normal·recovery 클래스 해시 동일. 새 fixture d063-patched 3/3 실패(두 엔진 모두 위 화음이 먼저인 4마디만), d064-patched 3/3 통과. Clair 3회 동일: 원본 이벤트 153 → 160/191, 바뀐 마디는 m7뿐(onset 5·extra-dot·missing-dot 해소, 기전 B의 missing C4 1건 남음), 타이 29/43·canonical 157·tempo 69 불변, 그래프에서 점이 C4 머리에 연결됨. corpus 12곡 중 10곡 raw·canonical 동일, Love는 재실행한 D-063·D-064가 같아 비결정성, truongca는 양쪽 같은 기존 실패
 - Not-tested: 운영 VM 배포·재업로드, 결정 5의 (a)·(b) 실제 사례와 공유 머리·쉼표 동시 도달·겹점 fixture
 - Related: #134, D-049, D-052, D-062, validation/2026-09-15-issue-134-onset-mechanisms.md, validation/2026-09-15-issue-134-cross-chord-dot-head-link.md
+
+## D-065: 빔 끝이 곡선 잉크 때문에 기둥을 지나쳤으면 그 기둥까지 되돌린다
+
+- Date: 2026-09-16
+- Status: Proposed; accepted when the #134 beam PR merges. Not deployed
+- Context:
+  - [단계 추적](validation/2026-09-16-issue-134-m9-beam-stage-trace.md): Clair m9 왼손 빔은 검출된다. 그런데 빔 잉크가 빔을 따라 지나는
+    긴 타이 곡선과 붙어 있어 `BeamsBuilder`가 빔을 두 기둥 **바깥까지** 만든다(원본 실측: 실제 빔 x 1814–1900, 만들어진 빔 1805–1903).
+    `extendToSpot`이 오른쪽을 1920까지 한 번 더 늘린다.
+  - 그 결과 기둥이 빔 끝 portion(`BeamStemRelation.computeBeamPortion`, 0.5 IL)을 잃거나(오른쪽 CENTER) 겹침이 커져
+    `checkRelation` 등급이 최소값 미만이 된다(왼쪽, 겹침 8.1px). `SigReducer.checkBeamsHaveBothStems`는 양 끝 중 하나라도
+    기둥이 없는 빔을 삭제한다. 그래서 8분음표 두 개가 4분음표가 되고 m9에 duration 3 + onset 8이 생긴다.
+  - 기둥 seed의 위치는 잉크가 섞인 빔 외곽선보다 훨씬 신뢰할 수 있다. BEAMS는 CURVES보다 먼저라 곡선을 먼저 지울 수는 없다.
+  - 사용자는 2026-09-16 후보 1(확장 금지)을 먼저 승인했고, 그것만으로는 Clair가 바뀌지 않음을 확인한 뒤 후보 1+(끝 축소)를 승인했다.
+- Decision:
+  1. `extendToSpot`은 늘리려는 쪽 빔 끝에서 `BeamStemRelation.getXInGapMaximum(0)`(0.5 IL) 안에 기둥 seed가 있으면 확장하지 않는다.
+     그 끝은 이미 실제 빔 끝이고, 더 늘리면 그 기둥이 끝 portion을 잃는다.
+  2. `extendBeams` 직후 `trimBeams`를 돌린다. hook이 아닌 빔의 각 끝에서, `getXOutGapMaximum(0)`(0.15 IL) 안에 seed가 없고
+     안쪽 1.0 IL(`maxTrimToSeed`) 안에 seed가 있으면, 빔 끝을 그 seed의 중앙선 교점까지 **줄인다**.
+  3. 줄인 결과가 `minBeamWidthLow`보다 좁거나 impacts 등급이 `BeamInter.getMinGrade()` 미만이면 줄이지 않는다.
+     줄이기는 확장과 같은 방식으로 새 `BeamInter`를 만들고 원래 빔을 제거한다.
+  3b. **두께가 그 악보의 빔에 못 미치는 후보는 아예 줄이지 않는다.** 후보의 높이가
+     `stdParams.typicalHeight`(`SmallBeamInter`면 `smallParams`)의 `minTrimHeightRatio`(0.95) 미만이면 줄이기를 포기한다.
+     줄이기는 `checkBeamsHaveBothStems`가 지울 후보를 되살리는 동작이므로, 빔이 아닌 잉크까지 되살리면 안 된다.
+     실측 근거(2026-09-17): 살려야 하는 Clair m9 빔은 12.8 / 악보 기준 11 = 1.16, Deborah m24의 진짜 빔은 11.1 / 11 = 1.01인 반면
+     같은 마디에서 빔이 되어 버린 **슬러는 9.8 / 11 = 0.89**, 합성 fixture에서는 진짜 빔 14.1 / 14 = 1.01 대 슬러 12.0 / 14 = 0.86이다.
+     기존 높이 검사(`minHeightLow` = typical × 0.7)는 이 둘을 가르지 못한다.
+  4. 빔 검출 임계값·spot 생성·`maxExtensionToSpot`(0.5 IL)·`maxExtensionToStem`(1.0 IL)·`checkBeamsHaveBothStems` 삭제 규칙·
+     `BeamStemRelation` 상수는 바꾸지 않는다.
+  5. 패치는 `omr-service/audiveris-patches/0004-beam-end-stem-anchor.patch` 하나다. D-062·D-063과 같이 sha256으로 고정한
+     pinned `BeamsBuilder.java`(`fa9505b6…`)에 적용하고, 컴파일한 `org/audiveris/omr/sheet/beam` 클래스를 기본 엔진 jar에 넣은 뒤
+     recovery engine을 복사한다.
+  6. XML·JSON의 음가를 사후에 고치지 않는다(D-049/D-052 유지). 엔진이 원래 검출한 빔의 범위만 달라진다.
+- Rejected: 두께 조건 없이 폭·등급 가드만 유지 | 2026-09-17 corpus 검증에서 Deborah m24의 슬러가 빔으로 남아 세 음이 중복되고
+  인쇄된 D♯4가 사라졌으며 마디가 1박 짧아져 이후 330개 중 127개의 시작이 앞당겨졌다
+- Rejected: 줄인 빔의 등급 하한을 올려 구분 | 실측 차이가 작다(살릴 Clair 0.537 대 지울 슬러 0.474). 두께 비는 0.89 대 1.16으로 여유가 크다
+- Rejected: `extendToSpot` 금지만 적용 | 실측으로 확인했다. 빔 검출이 이미 양 끝을 곡선까지 물고 시작하므로 Clair 결과가 바뀌지 않는다
+- Rejected: `SigReducer.checkBeamsHaveBothStems`에서 삭제 대신 축소 | REDUCTION 전역 규칙이고, 이미 관계·등급이 정해진 뒤라 되돌릴 정보가 적다
+- Rejected: `maxExtensionToSpot`이나 `BeamStemRelation`의 겹침 허용·등급 하한 완화 | 전역 상수라 근거가 약하고 빔·기둥 오연결이 늘 수 있다
+- Rejected: 곡선을 먼저 지우고 빔을 찾기 | BEAMS 단계는 CURVES보다 먼저다
+- Constraint: pinned `9e1e55cd…`의 `BeamsBuilder.java` sha256이 Dockerfile 값과 같아야 한다
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 줄이기를 hook이나 끝에 기둥이 있는 빔으로 넓히지 않는다. 0.15 IL·1.0 IL을 바꾸면 합성 fixture와 corpus 비교를 다시 한다
+- Tested: 코디네이터 실험 이미지 `d065-exp`(`d064-patched` + 패치 클래스 교체, Dockerfile 빌드 아님): 합성 fixture는 기준 이미지에서 4마디 모두
+  8분음표가 4분음표가 되고 음표도 하나 잃으며, 패치에서는 4마디 모두 맞다. Clair 3회 동일: 원본 이벤트 160 → 171/191, 바뀐 마디는 m9뿐
+  (duration 3 + onset 6 + onset-and-duration 2 해소), 타이 29/43·tempo 69 불변, raw 이벤트 해시 3회 동일
+- Tested: 좁힌 가드의 코디네이터 실측(2026-09-17, 전체 Dockerfile 빌드 `d065b-patched`): Clair 171/191 유지(카테고리 분포도 같다),
+  Deborah는 `events.json`이 D-064 기준과 **바이트 단위로 동일**해 회귀가 사라졌다. 새 합성 fixture는 `d064-patched` OK,
+  `d065b-patched` OK, 좁히기 전 `d065-patched` FAILED로 판별된다
+- Tested: Codex 워커 독립 검증(2026-09-17, `gpt-5.6-sol` high, 8단계 전부 재실행) — **PASS WITH CONCERNS**.
+  무결성(pinned `fa9505b6…` 일치·dry-run 성공), `--no-cache` 빌드 171.24초, 이미지 테스트 **180 OK / skip 0**,
+  새 fixture 판별 각 3회(`d064-patched` OK·좁히기 전 `d065-patched` FAILED·수정 OK), 기존 fixture는 d064 FAILED·수정 OK,
+  Clair 3회 **171/191** 동일(바뀐 마디는 m9뿐, 타이 29/43·tempo 69 불변, raw 이벤트 해시 `1f8f390d…` 동일),
+  corpus 12곡 중 비교 가능한 11곡 모두 D-064와 동일(truongca는 양쪽 다 기존 실패), 시간은 corpus 합계 D-064 대비 +1.5%.
+  Deborah m24 회귀 소멸은 `events.json` 바이트 동일(`d8b378e3…`)·canonical 330개 동일(`de709b8d…`)로 확인했다.
+  1차 검증분의 1~4단계 근거는 패치가 바뀌어 승계하지 않고 처음부터 다시 실행했다
+- Not-tested: 운영 VM 배포·재업로드. 끝 seed 누락, 얇지만 정당한 빔의 자르기, 추정된 빔 scale, 모집단 불일치에 대한 전용 fixture.
+  truongca 음 단위 비교(양쪽 다 성공 출력이 없다). 시간은 arm64 호스트의 amd64 에뮬레이션 순차 실행이고 메모리는 6GiB 상한만 두고 프로파일하지 않았다
+- Known limit: 두께로 거부한 후보는 `rawSystemBeams`에 그대로 남는다. `return null`은 "자르지 마라"일 뿐 "후보를 버려라"가 아니다.
+  남은 긴 가짜 후보가 STEMS에서 공유 기둥을 `CENTER`로 분류해 진짜 빔이 끝 관계를 얻지 못하고 REDUCTION이 둘 다 지운다.
+  Deborah m24가 그 경우이며 결과는 D-064(현재 운영)와 바이트 단위로 같다. 즉 새로 생긴 손해가 아니라 되살릴 기회를 잃는 것이다.
+  2026-09-17 워커가 BEAMS·STEMS 단계를 분리해 확정했다. "비율 1.01인 진짜 빔까지 가드가 거부한다"는 앞선 코디네이터 가설은 **사실이 아니다**.
+  진짜 빔 `#1616`(11.1/11)은 가드 빌드의 BEAMS에서 이미 양 끝이 기둥에 고정된 채 존재하므로 애초에 자르기 대상이 아니다
+- Known limit: `minTrimHeightRatio` 0.95는 보편적으로 안전한 하한이 아니다. corpus 7개 페이지에 비율 0.95 미만인 **인쇄된** 빔이 있다
+  (Always With Me 1: 23/82·최소 0.838, 2: 41/133·0.877, My Neighbor Totoro 1: 12/25·0.875, 2: 19/35·0.875,
+  Princess Mononoke 1·2·3: 2/65·4/43·3/61·최소 0.923). 워커가 각 페이지 최소값 위치를 원본에서 잘라 인쇄된 빔임을 확인했다.
+  이 빔들은 현재 자르기를 필요로 하지 않아 실행된 회귀는 없고, 필요해지는 경우에만 구제가 막힌다
+- Known limit: 끝 기둥 seed가 검출되지 않은 정상 빔이 안쪽 seed까지 잘릴 위험은 남는다. corpus 사례도 전용 fixture도 없다
+- Known limit: 모집단 선택은 `instanceof SmallBeamInter`인데 같은 메서드의 재계산은 엔진의 최근접 높이 규칙(`getItemParams`)을 쓴다.
+  둘이 어긋나는 corpus 사례는 없다
+- Known limit: 새 fixture는 "진짜 빔도 읽히는지"를 검사하지 않는다(두 빌드 모두 못 읽는다). 그래서 위 첫 번째 기전이 통과 상태로 숨을 수 있다
+- Related: #134, D-049, D-052, D-062, D-063, D-064, validation/2026-09-16-issue-134-m9-beam-stage-trace.md,
+  validation/2026-09-17-issue-134-m9-beam-trim-thickness.md
