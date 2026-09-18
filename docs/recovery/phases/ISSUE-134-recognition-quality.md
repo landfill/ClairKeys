@@ -150,6 +150,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   build that produced 173/191, while the outgoing image matched the recorded baseline. After the restart: healthy container, health
   200, unauthorized 401, zero error lines in the journal. Production recognition is **not yet checked** — the rollout approval did not
   include a PDF smoke. Mechanism C is untouched. IN_PROGRESS.
+- 2026-09-18: User re-converted Clair after the rollout (job `df02092f…`, generated 22:24 KST, after the 18:44 cutover); its job id came
+  from the VM container log since no URL was given. The stored animation's 159 notes match the locally verified d066b run field for
+  field, the run that scored 173/191. Aligned against the previous production result by pitch, length and hand, only three things
+  change: m5's G4 dotted eighth becomes the F4+G4 second, m7 gains its C4, and 110 later notes move half an eighth later onto their
+  correct beats, which is m5's left-hand chord landing on the sixth eighth and the piece growing from 149.5 to exactly 150 eighths.
+  Full-reference 173/191 was not re-evaluated in production because the service deletes the MusicXML. IN_PROGRESS.
 
 ## Objective
 
