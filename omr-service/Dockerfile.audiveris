@@ -17,6 +17,8 @@ ARG BEAMS_BUILDER_SHA256=fa9505b66f2bae9d03a49b69f2f26a27c4c40a4ac18e973123935fe
 ARG SIG_REDUCER_SHA256=6d1b2517d3d0fff6f37c337f6bb1fc02b4ab8ce1dd1dd0ecf3ab4d1e4b2ab244
 ARG ABSTRACT_CHORD_INTER_SHA256=c65453b636f624054c40675aaa877d17d0e7b1551fb4457702e91d33b0f7588c
 
+ARG SYMBOLS_LINKER_SHA256=c03f44d394b3236a752494882f14adb66c4daee8a02d64b3cbd8d8c6d8caee91
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV AUDIVERIS_EXECUTABLE=/opt/audiveris/bin/Audiveris
@@ -93,6 +95,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # its stem, because the ink of a slur or tie running along the beam merged into
 # it, is pulled back to that stem instead of keeping an end with no stem, which
 # SigReducer would delete.
+# D-068 splits independent long notes from beamed chords before dot cleanup.
+# It preserves the printed stem connections, stores per-chord beam ownership,
+# and keeps simultaneous split voices out of a tie endpoint's obstruction test.
 # The alternate installation is copied after these fixes, so wedge candidates
 # and the selected graph link dots and ties alike, and additionally differs by a pinned
 # LedgersPostAnalysis class whose one-pixel upper-height exception requires an
@@ -104,6 +109,7 @@ COPY audiveris-patches/0004-beam-end-stem-anchor.patch /tmp/beam-anchor.patch
 COPY audiveris-patches/0005-second-interval-head-prune.patch /tmp/second-head.patch
 COPY audiveris-patches/0006-shared-stem-void-head.patch /tmp/shared-stem.patch
 COPY audiveris-patches/0007-beamed-chord-black-duration.patch /tmp/chord-duration.patch
+COPY audiveris-patches/0008-shared-stem-chord-split.patch /tmp/chord-split.patch
 RUN mkdir -p \
       /tmp/jdk25 \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger \
@@ -231,6 +237,33 @@ RUN mkdir -p \
     && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' \
       -cp '/opt/audiveris/lib/app/*' -d /tmp/ledger-classes \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.java \
+    && mkdir -p /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol \
+    && curl -fsSL \
+      "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsLinker.java" \
+      -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsLinker.java \
+    && echo "${SYMBOLS_LINKER_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsLinker.java" \
+      | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsLinker.java \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sig/inter/HeadChordInter.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/HeadChordInter.java \
+    && echo "2da9fd939ba5f7053d6ee4c90930518fb77e2621f23265574b07d66d75ba74e3  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/HeadChordInter.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/HeadChordInter.java \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sig/inter/AbstractBeamInter.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/AbstractBeamInter.java \
+    && echo "9a9723bcbca45a686b643bc62b97df91137c341531c3862456916150c61b8d9c  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/AbstractBeamInter.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/AbstractBeamInter.java \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java \
+    && echo "317847fd072e85392d3adb961a42f7e0ab2087c7bdd8a6acc96dba8dfdf7e05f  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java \
+    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace --input=/tmp/chord-split.patch \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' \
+      -cp '/opt/audiveris/lib/app/*' -d /tmp/split-classes \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsLinker.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/HeadChordInter.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/AbstractBeamInter.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java \
+    && /tmp/jdk25/bin/jar --update --file /opt/audiveris/lib/app/audiveris.jar \
+      -C /tmp/split-classes org/audiveris/omr \
+    && /tmp/jdk25/bin/jar --list --file /opt/audiveris/lib/app/audiveris.jar \
+      | grep -Fqx 'org/audiveris/omr/sheet/symbol/SymbolsLinker.class' \
     && cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery \
     && /tmp/jdk25/bin/jar --update \
       --file /opt/clairkeys-audiveris-recovery/lib/app/audiveris.jar \
@@ -241,7 +274,7 @@ RUN mkdir -p \
     && /opt/audiveris/bin/Audiveris -version \
     && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
     && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes /tmp/reducer-classes /tmp/chord-classes \
-      /tmp/tie-classes /tmp/beam-classes /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
+      /tmp/tie-classes /tmp/beam-classes /tmp/split-classes /tmp/chord-split.patch /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
       /tmp/dot-link.patch /tmp/tie-link.patch /tmp/beam-anchor.patch
 
 # Create working directory
