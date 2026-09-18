@@ -117,6 +117,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   a Directive that this approval does not cover the VM rollout. Both branch tips held zero unique commits against main but the branch
   was kept because a user uncommitted change remains. **Not deployed** — production is still PR163 `0e3dc61`, so D-065 is not in the
   running engine and Clair's expected 160 -> 171/191 has not been observed in production. IN_PROGRESS.
+- 2026-09-18: User-approved OMR VM rollout of `bbcc09b` (image `9eef7512…`, rollback tag `rollback-pr164-20260918`). Preflight found
+  no JVM running and the deploy checkout clean; the build applied all five patches with every sha256 `: OK` and no rejected hunk.
+  Image tests 180 OK / 6 skipped, with both new beam native tests running rather than skipped, and the three older native tests too.
+  Before the cutover the patched `BeamsBuilder.class` was compared: both the normal and recovery jars hash to `8d15e1b2…`, the same as
+  the local build that produced Clair 171/191, while the outgoing image hashed to the recorded D-064 baseline `324132f0…`. After the
+  restart: healthy container, health 200, unauthorized 401, zero error/traceback lines in the service journal. Production recognition
+  is **not yet checked** — the rollout approval did not include a PDF smoke, so it waits on an app re-conversion. IN_PROGRESS.
 
 ## Objective
 
