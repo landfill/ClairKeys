@@ -23,8 +23,8 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 1. **D-068 공유 기둥 화음 분리를 검증 중이다.** 사용자 승인으로 `codex/issue-134-shared-stem-chord-split`에서 구현 후보
    `a9f2d35`까지 커밋했다. 최종 이미지 Clair **185/191, 타이30/43** 3회·raw 해시 동일로 대상 duration 3건을 해소했다.
-   native 9개는 모두 통과했고, 전체 suite는 저장소 참조 마운트를 바로잡아 재실행 중이다. corpus·PR 검증은 남았다.
-   다음은 전체 suite 완료 → corpus12곡 → 자체 리뷰·PR·CI다. 병합·운영 배포는 미승인이다.
+   전체 이미지 suite는 **180통과·6skip**(native9개 skip 없이 통과). corpus12곡 기준선/패치 비교 실행 중이며 PR 검증은 남았다.
+   다음은 corpus12곡 비교 완료 → 자체 리뷰·PR·CI다. 병합·운영 배포는 미승인이다.
    [진행·실패 실험·검증 기록](validation/2026-09-19-issue-134-shared-stem-chord-split.md).
    기준선 `d067b-patched` 재실행은 **182/191, 타이30/43(누락13)**이었다. 아래 타이29/43·누락14는 D-067 이전 수치다.
 2. **후속 후보**: 기둥 공유 빈 머리를 자기 화음으로 떼기(D-067 후속, 남은 duration 3건). `ChordSplitter`는 하위 화음이

@@ -186,6 +186,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Native tests (including reload) pass. The first full suite missed repository-root fixture mounts (47 file-not-found errors);
   a corrected full run and paired 12-score corpus comparison are pending. Not merged or deployed.
 
+- 2026-09-19: Corrected full image suite passes: 186 total, 180 passed, 6 skipped (retained local diagnostics absent); all nine native tests run.
+  Paired baseline/candidate runs over all twelve corpus PDFs have started. PR/merge/deployment remain pending.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

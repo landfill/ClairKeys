@@ -68,12 +68,14 @@
 - 새 fixture 기준선 판별 최종 재실행: 3조옮김×2양성종류×2엔진 **12개 모두 음가 단언 실패**, 테스트 오류0; 점 없는 2도 제어 및 재로딩은 통과.
 - 최종 이미지 내부 첫 전체 테스트: native 9개는 모두 실행·통과했으나 **47 errors / 3 skipped**.
   모두 외부 저장소 참조 파일 `/fixtures/recognition/...` 또는 `/src/app/api/omr/finalize/route.ts` 미마운트였다.
-  `-v "$PWD/fixtures:/fixtures:ro" -v "$PWD/src:/src:ro"`로 참조를 연결해 전체 suite를 재실행 중이다. 첫 실패를 통과로 처리하지 않는다.
+  `-v "$PWD/fixtures:/fixtures:ro" -v "$PWD/src:/src:ro"`로 참조를 연결한 전체 suite 재실행은 **186개 중180통과·6skip, 오류/실패0**(227.812초).
+  첫 실패는 테스트 실행 환경 설정 실패로 보존한다. native9개는 normal/recovery를 실제 실행했으며 새3개에는 저장/재로딩과 일반2도 제어가 포함된다.
+  skip6개는 보관된 local-test-data 진단 자료가 이미지에 없는 경우이며 핵심 native skip은 없다.
+  명령은 `docker run --rm --platform linux/amd64 --memory=5g -v "$PWD/fixtures:/fixtures:ro" -v "$PWD/src:/src:ro" --entrypoint sh clairkeys-omr:d068-patched -c 'ln -s /app /omr-service && cd /app && python3 -m unittest discover -s tests -v'`다.
 - 상태 기록 커밋 `b7795d5` push 직후 check-runs를 조회했다. 후속 조회에서 Post-merge build/tests, Security Audit, Lint, Run Tests 성공;
   E2E Tests는 진행 중이었다. 이후 상태도 확인한다.
 
 ## 아직 필요한 검증
 
-- 참조 파일 마운트를 바로잡은 최종 이미지 전체 테스트.
 - corpus12곡 기준선·패치 순차 재실행 및 diff, 실패·비결정성 조사, 시간·메모리 확인.
 - 최종 자체 리뷰, PR·CI·자동 리뷰 대응.
