@@ -16,10 +16,12 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **[PR164](reviews/PR-164.md)의 CI와 리뷰를 확인하고 actionable feedback에 대응한다.** 2026-09-18 사용자가 선택지 (a)를
-   택해 D-065를 PR로 냈다(head `c36f26b`, non-draft, MERGEABLE). 2차 독립 검증의 Medium 3·Low 2는 D-065 Known limit과
-   리뷰 로그에 REJECTED(한계로 기록)로 남겼고 실행된 회귀는 0건이다.
-   **병합 승인은 없다. 운영 배포 승인도 별개다.** 운영은 여전히 PR163 `0e3dc61`이다.
+1. **[PR164](reviews/PR-164.md)의 병합 승인을 기다린다.** 2026-09-18 사용자가 선택지 (a)를 택해 D-065를 PR로 냈다
+   (head `c36f26b`, non-draft, `mergeStateStatus=CLEAN`). hosted 체크는 **전부 pass**, Codex 자동 리뷰는 **지적 0건**,
+   미해결 actionable review는 없다. 2차 독립 검증의 Medium 3·Low 2는 D-065 Known limit과 리뷰 로그에
+   REJECTED(한계로 기록)로 남겼고 실행된 회귀는 0건이다.
+   **병합 승인은 없다. 승인받으면 현재 head의 CI·리뷰·mergeability를 다시 확인한 뒤 병합한다. 운영 배포 승인은 또 별개다.**
+   운영은 여전히 PR163 `0e3dc61`이다.
 2. **남은 기전**: C m5 빈 머리 → 셋잇단, B 2도 반대편 머리 누락은 같은 방식으로 단계 추적이 필요하다.
    E m3 둘잇단 미지원은 범위가 커서 보류 후보. D-064(PR163 `0e3dc61`)는 병합·배포·운영 확인까지 끝났다.
 3. **남은 타이**: 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
