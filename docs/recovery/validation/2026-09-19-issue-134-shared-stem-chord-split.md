@@ -2,7 +2,7 @@
 
 ## 범위 / 현재 상태
 
-- 작업 브랜치: `codex/issue-134-shared-stem-chord-split`. 구현 후보 `1ee36a3`, patch context 공백 정리 `a9f2d35` 커밋. 검증 완료·결정 정리 `63487c0`. PR 생성/CI·리뷰 전, 병합·배포 없음.
+- 작업 브랜치: `codex/issue-134-shared-stem-chord-split`. 구현 후보 `1ee36a3`, patch context 공백 정리 `a9f2d35` 커밋. 검증 완료·결정 정리 `63487c0`. [PR167](../reviews/PR-167.md) non-draft 생성, CI·자동 리뷰 진행 중. 병합·배포 없음.
 - 목표: D-067 뒤 남은 m5 duration 2건·m7 duration 1건. 원본 XML/JSON의 사후 수정 없음.
 - 사용자 승인: 로컬 Docker 실행·빌드·검증, 커밋·push·non-draft PR와 리뷰 대응. 병합·운영 변경 미승인.
 - 사용자 변경 `validation/2026-09-13-handoff-history.md`는 보존한다.

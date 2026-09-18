@@ -193,6 +193,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   identical and animation-identical except generated_at, while truongca fails at the same page3 SCALE exception on both. No new regression.
   Final diff self-reviewed; limitations recorded. Next: non-draft PR and current-head CI/review. Not merged or deployed.
 
+- 2026-09-19: [PR167](../reviews/PR-167.md) opened non-draft at `63487c0` after local gates and self-review. Current-head CI and automatic
+  review are pending; no merge or rollout approval. The overall recognition-quality phase remains IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
