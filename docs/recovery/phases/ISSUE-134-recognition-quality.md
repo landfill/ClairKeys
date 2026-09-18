@@ -171,6 +171,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Health 200, unauthorized 401, zero journal errors. Production recognition not yet checked. Remaining m5/m7 dotted notes still
   come out eighths until the void head gets a chord of its own. IN_PROGRESS.
 
+- 2026-09-19: User re-converted three scores after the rollout (Clair job `cfc0808d…`, 00:53 KST, after the 00:45 cutover; job ids from
+  the VM log). Clair's 160 notes match the locally verified d067b run field for field, the run that scored 182/191. Against the
+  previous production result only m5's right hand changes: the triplet A4/B4 at two-thirds of an eighth give way to the restored F4
+  and to A4 and B4 as whole eighths, the B4 tied in from m4 grows from 6.67 to exactly 7 eighths, and seven later notes move one eighth
+  onto their beats. Love Affair and Deborah keep their note counts. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

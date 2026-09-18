@@ -54,9 +54,23 @@ Rollback tag: `localhost/clairkeys-omr:rollback-pr166-20260919` → prior image
 - 롤백: `podman tag localhost/clairkeys-omr:rollback-pr166-20260919 localhost/clairkeys-omr:current` 후 `systemctl restart clairkeys-omr`.
   **0006·0007은 함께 되돌린다**(이미지 단위 롤백이라 자동으로 함께 돌아간다).
 
+## 운영 재변환 결과 확인 (2026-09-19)
+
+- 사용자가 배포 후 앱에서 세 곡을 다시 변환했다(00:49 KST부터 Love Affair `b1420053…` 431음, Deborah's Theme `9eec201c…` 330음,
+  Clair `cfc0808d…`). URL 없이 VM 컨테이너 로그에서 job id를 찾았다. Love Affair·Deborah의 음 수는 직전 운영과 같다.
+- Clair 결과를 Supabase `animation-data/804629/omr_cfc0808d-….json`에서 회수했다(sha256 `71f5eee9…`).
+  `generated_at` 2026-09-18T15:53:42Z = **00:53 KST**로 전환(00:45 KST) 이후 변환이다. tempo 69, 9/8, **160음**, duration 65.217392.
+- **운영 160음이 로컬 검증 결과(`issue134-shared-stem-2026-09-18/v2/clair-1/animation.json`)와 전 필드 같다**(차이 0건).
+- **직전 운영(D-066, 159음) 대비** 음높이·길이·손 시퀀스를 정렬해 보면 변화는 m5 오른손에만 있다.
+  - 셋잇단으로 나오던 A4·B4(각 ⅔×8분)가 사라지고 **F4(복원)·A4·B4가 각각 온전한 8분**으로 나온다.
+  - m4의 B4 길이가 6.67 → **7.00**×8분이 됐다. m5 첫 화음 B4로 이어지는 붙임줄의 뒤쪽 음이 ⅔에서 1이 되면서 합계가 바로잡혔다.
+  - 나머지 147음은 그대로이고 7음이 8분 하나만큼 뒤로 옮겨 제 박으로 갔다. 전체 길이는 65.217초로 같다.
+  - m5 왼손 B3/D4가 삭제·추가 쌍으로 보이는 것은 정렬 순서 때문이며 값(18.261초, 3×8분)은 같다.
+- 한계: canonical 애니메이션 기준 비교다. 서비스가 MusicXML을 지워 운영에서 182/191을 직접 재평가하지 않았다.
+- 회수: `local-test-data/results/shared-stem-deploy-2026-09-19/live-app-animation.json`(Git 제외).
+
 ## 한계와 남은 범위
 
-- **운영 인식 결과는 아직 확인하지 않았다.** 배포 승인에 PDF 업로드 스모크는 포함하지 않았다. 확인 수단은 사용자의 앱 재변환이다.
-  기대: Clair 160음, m5의 셋잇단이 사라지고 오른손 박이 맞는다. 원본 기준 182/191(로컬). 서비스가 MusicXML을 지워 운영에서 직접 재평가할 수는 없다.
+- 운영 PDF 스모크나 웹 업로드→콜백→플레이어 E2E는 하지 않았다. 확인은 위 재변환 결과에 근거한다.
 - D-067 알려진 한계: m5 F4 ×2·m7 C4가 점음표 대신 8분으로 나온다(빈 머리를 자기 화음으로 떼는 후속 작업 필요). 0.5 기준은 corpus 분포에서 정했다.
 - VM `/tmp`의 build·test 로그는 로컬로 회수했고 VM에서는 지우지 않았다.

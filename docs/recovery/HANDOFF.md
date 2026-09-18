@@ -14,16 +14,15 @@ Last updated: 2026-09-19 KST
 m9 빔 복원 [PR164](reviews/PR-164.md)(D-065, `bbcc09b`)는 2026-09-18 배포됐고 사용자의 앱 재변환 결과가
 로컬 검증 결과와 전 필드 같음을 확인했다. 2도 밀린 머리 보존 [PR165](reviews/PR-165.md)(D-066, `f5be5f9`)는
 같은 날 병합·배포됐고 사용자의 앱 재변환 결과가 로컬 검증 결과와 전 필드 같음을 확인했다.
-기둥 공유 빈 머리 [PR166](reviews/PR-166.md)(D-067, `b15d0fd`)은 2026-09-19 병합·배포됐다(image `721ccc10…`).
+기둥 공유 빈 머리 [PR166](reviews/PR-166.md)(D-067, `b15d0fd`)은 2026-09-19 병합·배포됐고 앱 재변환 결과가 로컬 검증과 전 필드 같다.
 나머지 타이·리듬 오류는 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **D-067 운영 인식 결과를 사용자의 앱 재변환으로 확인한다(선택).** PR166은 2026-09-19 병합(`b15d0fd`)·배포됐다
-   (image `721ccc10…`, 롤백 태그 `rollback-pr166-20260919`). 배포 승인에 PDF 스모크는 포함하지 않아 **운영 인식 결과는 미확인**이다.
-   기대: Clair 160음, m5 셋잇단이 사라지고 오른손 박이 맞는다(로컬 182/191). [배포 근거](validation/2026-09-19-d067-shared-stem-deployment.md).
+1. **다음 작업을 고른다. D-067은 배포·운영 확인까지 끝났다.** 잔여 9건(182/191): m5 duration 2·m7 duration 1
+   (아래 성부의 긴 음이 빔 달린 8분 화음에 합쳐져 8분으로 나옴), m3 4(기전 E 둘잇단), m1 점 누락 2(붙임줄이 점을 자름). 남은 타이 14건.
 2. **후속 후보**: 기둥 공유 빈 머리를 자기 화음으로 떼기(D-067 후속, 남은 duration 3건). `ChordSplitter`는 하위 화음이
    기둥의 빔을 모두 받으므로 그대로 쓸 수 없다([D-067](DECISIONS.md)).
 3. **후속 후보(우선순위 낮음)**: 기전 E(m3 둘잇단)는 엔진 `Shape`에 `TUPLET_TWO`가 없어 범위가 가장 크다.
@@ -37,8 +36,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 - **OMR 운영(2026-09-19, 최신)**: PR166 `b15d0fd` 배포 완료. image `721ccc10…`, 롤백 태그 `rollback-pr166-20260919`(`4c14123d…`).
   이미지 테스트 **184 OK / 6 skipped**, 네이티브 7개 skip 없이 ok. `SigReducer.class`(`3b84596b…`)·`AbstractChordInter.class`(`91081cfa…`)가
-  normal·recovery 양쪽 모두 로컬 검증 빌드와 같다. health 200, 무인증 401. **운영 인식 결과는 아직 확인하지 않았다.**
-  [배포 근거](validation/2026-09-19-d067-shared-stem-deployment.md).
+  normal·recovery 양쪽 모두 로컬 검증 빌드와 같다. health 200, 무인증 401. 사용자의 앱 재변환(00:53 KST) **160음이 로컬 검증과 전 필드 같다.**
+  직전 운영 대비 변화는 m5 오른손뿐이다: 셋잇단이 사라지고 F4(복원)·A4·B4가 온전한 8분이 됐다.
+  [배포·확인 근거](validation/2026-09-19-d067-shared-stem-deployment.md).
 - **D-067 로컬 검증(2026-09-19)**: Clair 173 → **182/191** 3회 동일(m5만 변화, onset 8건 해소), corpus 11곡 바이트 동일.
   [기록](validation/2026-09-19-issue-134-shared-stem-void-head.md).
 - **직전 운영(2026-09-18)**: PR165 `f5be5f9` 배포 완료. image `4c14123d…`, 롤백 태그 `rollback-pr165-20260918`(`9eef7512…`).
@@ -102,8 +102,8 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Known blockers / constraints
 
-- 2026-09-19: PR166 병합·배포 후 브랜치 `codex/issue-134-shared-stem-durations`를 **보존했다.** 로컬·원격 tip 모두 main 대비
-  고유 커밋 0이지만 사용자 미커밋 변경이 남아 있어 AGENTS 규약대로 지우지 않았다. 삭제하려면 사용자의 명시적 지시가 필요하다.
+- 2026-09-19: PR166 병합·배포 후 사용자 지시("브랜치 정리해")로 `codex/issue-134-shared-stem-durations`를 원격 → 로컬 순서로 삭제했다.
+  두 tip 모두 main에 포함됨을 확인했고 사용자 미커밋 변경은 손대지 않았다. 현재 작업 브랜치는 없다.
 - 2026-09-18: PR165 병합·배포 후 사용자 지시("브랜치 정리해")로 `codex/issue-134-second-interval-head`를 삭제했다.
   로컬·원격 tip 모두 `9645772`이고 main에 포함됨을 확인한 뒤 원격 → 로컬 순서로 지웠다.
   사용자 미커밋 변경(`validation/2026-09-13-handoff-history.md`)은 손대지 않았다.
