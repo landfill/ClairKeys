@@ -3,7 +3,7 @@
 @@ -21,6 +21,11 @@
  // </editor-fold>
  package org.audiveris.omr.sheet.symbol;
- 
+
 +import org.audiveris.omr.glyph.Shape;
 +import org.audiveris.omr.sig.inter.StemInter;
 +import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -15,7 +15,7 @@
 @@ -347,6 +352,74 @@
          }
      }
- 
+
 +    /** Separate independently engraved long notes before countDots discards their dots. */
 +    private void splitSharedStemChords ()
 +    {
@@ -99,16 +99,16 @@
 +++ b/app/src/main/java/org/audiveris/omr/sig/inter/HeadChordInter.java
 @@ -50,6 +50,7 @@
  import java.util.Set;
- 
+
  import javax.xml.bind.annotation.XmlRootElement;
 +import javax.xml.bind.annotation.XmlAttribute;
- 
+
  /**
   * Class <code>HeadChordInter</code> is a AbstractChordInter composed of heads and possibly
 @@ -92,6 +93,27 @@
          return Integer.compare(p1.x, p2.x);
      };
- 
+
 +    /** This independent long voice shares the ink of a beamed stem, not its beams. */
 +    @XmlAttribute(name = "stem-beams-excluded")
 +    private boolean stemBeamsExcluded;
@@ -131,7 +131,7 @@
 +    }
 +
      //~ Constructors -------------------------------------------------------------------------------
- 
+
      /**
 @@ -306,6 +328,9 @@
      @Override
@@ -141,12 +141,12 @@
 +            return 0;
 +        }
          int count = 0;
- 
+
          final StemInter stem = getStem();
 --- a/app/src/main/java/org/audiveris/omr/sig/inter/AbstractBeamInter.java
 +++ b/app/src/main/java/org/audiveris/omr/sig/inter/AbstractBeamInter.java
 @@ -311,7 +311,11 @@
- 
+
          // Linked head-chords
          for (StemInter stem : getStems()) {
 -            chords.addAll(stem.getChords());
@@ -156,10 +156,10 @@
 +                }
 +            }
          }
- 
+
          // Linked rest-chords
 @@ -402,7 +406,11 @@
- 
+
          // Linked head-chords
          for (StemInter stem : getStems()) {
 -            headChords.addAll(stem.getChords());
@@ -169,7 +169,7 @@
 +                }
 +            }
          }
- 
+
          final List<AbstractChordInter> chordList = new ArrayList<>(headChords);
 --- a/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java
 +++ b/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java
@@ -184,7 +184,7 @@
 @@ -765,6 +766,11 @@
          found.remove(leftChord);
          found.remove(rightChord);
- 
+
 +        // Independently timed voices split from an endpoint are at the endpoint,
 +        // not intervening chords. Keep all unrelated chords in the obstruction test.
 +        found.removeIf(inter -> isSharedStemSibling(inter, leftChord)
@@ -195,7 +195,7 @@
              found.remove(leftHead.getMirror().getEnsemble());
 @@ -800,6 +806,18 @@
          }
- 
+
          return true;
 +    }
 +
@@ -210,5 +210,5 @@
 +        return sig.getRelation(other, endpoint, SameTimeRelation.class) != null
 +                || sig.getRelation(endpoint, other, SameTimeRelation.class) != null;
      }
- 
+
      //-------//
