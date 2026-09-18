@@ -2525,7 +2525,27 @@
 - Tested: 좁힌 가드의 코디네이터 실측(2026-09-17, 전체 Dockerfile 빌드 `d065b-patched`): Clair 171/191 유지(카테고리 분포도 같다),
   Deborah는 `events.json`이 D-064 기준과 **바이트 단위로 동일**해 회귀가 사라졌다. 새 합성 fixture는 `d064-patched` OK,
   `d065b-patched` OK, 좁히기 전 `d065-patched` FAILED로 판별된다
-- Not-tested: Codex 워커 독립 검증(무결성·리뷰·전체 빌드·이미지 테스트·fixture 6회·Clair 3회·corpus 12곡·시간) 재실행 전, 운영 VM 배포·재업로드
-- Known limit: 두께 조건은 진짜 빔을 되살릴 기회도 함께 줄인다. Deborah m24의 진짜 빔(d065에서는 살아나 C♯4·B3를 되찾았다)과
-  합성 fixture의 빔은 좁힌 뒤 다시 살아나지 않아 D-064와 같은 결과로 돌아간다. 왜 비율 1.01인 후보까지 빠지는지는 확인되지 않았다
-- Related: #134, D-049, D-052, D-062, D-063, D-064, validation/2026-09-16-issue-134-m9-beam-stage-trace.md
+- Tested: Codex 워커 독립 검증(2026-09-17, `gpt-5.6-sol` high, 8단계 전부 재실행) — **PASS WITH CONCERNS**.
+  무결성(pinned `fa9505b6…` 일치·dry-run 성공), `--no-cache` 빌드 171.24초, 이미지 테스트 **180 OK / skip 0**,
+  새 fixture 판별 각 3회(`d064-patched` OK·좁히기 전 `d065-patched` FAILED·수정 OK), 기존 fixture는 d064 FAILED·수정 OK,
+  Clair 3회 **171/191** 동일(바뀐 마디는 m9뿐, 타이 29/43·tempo 69 불변, raw 이벤트 해시 `1f8f390d…` 동일),
+  corpus 12곡 중 비교 가능한 11곡 모두 D-064와 동일(truongca는 양쪽 다 기존 실패), 시간은 corpus 합계 D-064 대비 +1.5%.
+  Deborah m24 회귀 소멸은 `events.json` 바이트 동일(`d8b378e3…`)·canonical 330개 동일(`de709b8d…`)로 확인했다.
+  1차 검증분의 1~4단계 근거는 패치가 바뀌어 승계하지 않고 처음부터 다시 실행했다
+- Not-tested: 운영 VM 배포·재업로드. 끝 seed 누락, 얇지만 정당한 빔의 자르기, 추정된 빔 scale, 모집단 불일치에 대한 전용 fixture.
+  truongca 음 단위 비교(양쪽 다 성공 출력이 없다). 시간은 arm64 호스트의 amd64 에뮬레이션 순차 실행이고 메모리는 6GiB 상한만 두고 프로파일하지 않았다
+- Known limit: 두께로 거부한 후보는 `rawSystemBeams`에 그대로 남는다. `return null`은 "자르지 마라"일 뿐 "후보를 버려라"가 아니다.
+  남은 긴 가짜 후보가 STEMS에서 공유 기둥을 `CENTER`로 분류해 진짜 빔이 끝 관계를 얻지 못하고 REDUCTION이 둘 다 지운다.
+  Deborah m24가 그 경우이며 결과는 D-064(현재 운영)와 바이트 단위로 같다. 즉 새로 생긴 손해가 아니라 되살릴 기회를 잃는 것이다.
+  2026-09-17 워커가 BEAMS·STEMS 단계를 분리해 확정했다. "비율 1.01인 진짜 빔까지 가드가 거부한다"는 앞선 코디네이터 가설은 **사실이 아니다**.
+  진짜 빔 `#1616`(11.1/11)은 가드 빌드의 BEAMS에서 이미 양 끝이 기둥에 고정된 채 존재하므로 애초에 자르기 대상이 아니다
+- Known limit: `minTrimHeightRatio` 0.95는 보편적으로 안전한 하한이 아니다. corpus 7개 페이지에 비율 0.95 미만인 **인쇄된** 빔이 있다
+  (Always With Me 1: 23/82·최소 0.838, 2: 41/133·0.877, My Neighbor Totoro 1: 12/25·0.875, 2: 19/35·0.875,
+  Princess Mononoke 1·2·3: 2/65·4/43·3/61·최소 0.923). 워커가 각 페이지 최소값 위치를 원본에서 잘라 인쇄된 빔임을 확인했다.
+  이 빔들은 현재 자르기를 필요로 하지 않아 실행된 회귀는 없고, 필요해지는 경우에만 구제가 막힌다
+- Known limit: 끝 기둥 seed가 검출되지 않은 정상 빔이 안쪽 seed까지 잘릴 위험은 남는다. corpus 사례도 전용 fixture도 없다
+- Known limit: 모집단 선택은 `instanceof SmallBeamInter`인데 같은 메서드의 재계산은 엔진의 최근접 높이 규칙(`getItemParams`)을 쓴다.
+  둘이 어긋나는 corpus 사례는 없다
+- Known limit: 새 fixture는 "진짜 빔도 읽히는지"를 검사하지 않는다(두 빌드 모두 못 읽는다). 그래서 위 첫 번째 기전이 통과 상태로 숨을 수 있다
+- Related: #134, D-049, D-052, D-062, D-063, D-064, validation/2026-09-16-issue-134-m9-beam-stage-trace.md,
+  validation/2026-09-17-issue-134-m9-beam-trim-thickness.md
