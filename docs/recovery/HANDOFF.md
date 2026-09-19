@@ -16,27 +16,32 @@ m9 빔 복원 [PR164](reviews/PR-164.md)(D-065, `bbcc09b`)는 2026-09-18 배포�
 같은 날 병합·배포됐고 사용자의 앱 재변환 결과가 로컬 검증 결과와 전 필드 같음을 확인했다.
 기둥 공유 빈 머리 [PR166](reviews/PR-166.md)(D-067, `b15d0fd`)은 2026-09-19 병합·배포됐고 앱 재변환 결과가 로컬 검증과 전 필드 같다.
 공유 기둥 화음 분리 [PR167](reviews/PR-167.md)(D-068, `983caf9`)도 2026-09-19 배포했다. 이미지/native/클래스/health 검증은 완료했고,
-운영 원본 PDF 재변환은 아직 확인하지 않았다. 나머지 타이·리듬 오류는 남아 있다.
+그시점의운영원본PDF재변환은수행하지않았다. 이후m1점PR168과m3둘잇단PR169(9e4020a)을병합·배포했고,
+현재운영원본기준이벤트191/191·타이31/43을확인했다. 나머지타이12개는남아있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **PR169 사용자 승인 병합·브랜치 정리 완료.** merge`9e4020a`,양쪽tip1debdbb포함/고유0확인,
-   원격→main이동→로컬순정리,사용자미커밋메모보존. [병합/리뷰](reviews/PR-169.md).
-2. **승인된 VM 배포 진행 중.** 기존PR168/f14c2f83은active·healthy·JVM0,env/unit/processing보존.
-   정확한9e4020a/image850a4143빌드및JAR/소스/글꼴무결성완료,VM전체suite진행중이다.
-   병합후CI6/6성공. current는아직변경하지않았다.
-   [배포·검증·롤백](validation/2026-09-19-d070-duplet-deployment.md).
-3. 다음: 병합후checks·VM전체image/native·클래스/소스확인→idle재확인→rollback보존후전환→운영Clair스모크.
-   전체#134는IN_PROGRESS이고나머지타이12개와D-065후속은별도다.
+1. **[PR169](reviews/PR-169.md) 병합·브랜치정리·승인된VM배포완료.** 운영`9e4020a`,image850a4143,
+   rollback-pr169-20260919→f14c2f83보존. [배포·운영스모크·롤백](validation/2026-09-19-d070-duplet-deployment.md).
+2. 운영Clair **191/191·타이31/43·누락12·오검출0** 확인. 로컬과raw/평가전체동일,canonical은생성시각외동일.
+   기존저장악보는자동갱신되지않으며재변환이필요하다.웹업로드→callback→player E2E는이번배포에서미실행.
+3. 후속범위는나머지타이12개: m3 3·m9 4·m6/m10/m12/m13/m14 각1이다. D-065후속은별도낮은우선순위후보다.
+   전체#134는IN_PROGRESS이며,m3둘잇단4개는이번배포에서해결했다.
 
 ## Latest verified result
 
+- **OMR 운영 / PR169(2026-09-19 15:25 KST)**:9e4020a,image850a4143…,rollbackf14c2f83….
+  VM183통과/6진단skip(native12모두실행),normal/recovery각2,433JAR항목·source/fonts로컬동일.
+  active·healthy,외부200/401,journal오류0,기존env/unit/data보존. 운영모듈Clair **191/191·타이31/43·오검출0**,
+  raw191/canonical160/dots116/tempo69,로컬전필드동일(생성시각제외). 임시PDF/OMR3제거·잔여0.
+  원격/로컬브랜치정리와사용자메모보존완료. [검증/한계](validation/2026-09-19-d070-duplet-deployment.md).
+
 - **D-070 m3 로컬 / 2026-09-19**: d070b(`39381f8f…`), head1debdbb. Clair187→**191/191** 최종3회동일,
   타이일치30→31/43·오검출1→0(기존타이onset정렬),누락12개남음. 정식이미지183pass6진단skip/native12모두실행.
-  corpus11동일성공/1같은SCALE실패;타입/lint/Jest1038통과. 자체리뷰수정검증완료,[PR169](reviews/PR-169.md)최신필수CI모두성공·Codex리뷰완료·지적0. 9e4020a로병합됐고승인된VM배포진행중이다.
-  운영은아래PR168기준선그대로다. [근거·한계](validation/2026-09-19-issue-134-m3-duplet.md).
+  corpus11동일성공/1같은SCALE실패;타입/lint/Jest1038통과. 자체리뷰수정검증완료,[PR169](reviews/PR-169.md)최신필수CI모두성공·Codex리뷰완료·지적0. 9e4020a로병합·배포완료했다.
+  운영도위PR169스모크에서같은개선을확인했다. [근거·한계](validation/2026-09-19-issue-134-m3-duplet.md).
 
 - **OMR 운영 / PR168(2026-09-19 12:01 KST)**:6de51f1, imagef14c2f83…, rollbackb28cc02d….
   VM 이미지182통과/6진단skip(native11개 모두 실행),10클래스/내장 source가 로컬d069b와 동일.
@@ -129,6 +134,10 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   [17마디 기준 비교](validation/2026-09-13-issue-134-residual-timing.md).
 
 ## Known blockers / constraints
+
+- 2026-09-19: 사용자명시적승인으로PR169병합·원격→main→로컬브랜치정리·VM배포를완료했다.
+  사용자history메모SHA36207439…보존,운영9e4020a/850a4143,rollback-pr169-20260919보존.
+  공개원본동일성증명후허용된임시운영스모크191/191,PDF/OMR잔여0. [근거](validation/2026-09-19-d070-duplet-deployment.md).
 
 - 2026-09-19: 사용자 "브랜치 정리와 vm 배포도 완료하라" 지시에 따라 PR168 branch를 원격→로컬 순으로 삭제했다.
   fetch 후 두 tip2458daf의 main 포함/고유0을 확인했고 사용자 메모 SHA36207439…는 전후 동일하다.

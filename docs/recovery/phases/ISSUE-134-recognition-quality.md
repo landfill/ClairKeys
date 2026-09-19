@@ -345,6 +345,15 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   OS package24version differences are recorded rather than calling images identical. VMwhole-suite running,
   productionstillPR168;env/unit/existingdata fingerprints preserved. IN_PROGRESS.
 
+- 2026-09-19: Authorized PR169 rollout complete at15:25:51KST,exact9e4020a/image850a4143,
+  rollbackf14c2f83 retained. VM189tests183pass6diagnostic skips/native12run;each engine2433JAR entries/source/fonts
+  match local. Active/healthy/external200/401/journal errors0,env/unit/existingdata hashes preserved.
+  Initial original-score upload was blocked by automatic approval review; unauthenticated public-attachment
+  download proved exact PDF SHA equality,then the same command was approved on that evidence. Production
+  module smoke191/191,ties31/43,missing12/unexpected0,raw/evaluation equal local,canonical equal except timestamp.
+  TemporaryPDF/OMR3removed/no originals remain. Branches deleted,user note preserved. Overall#134 IN_PROGRESS;
+  web upload/callback/player E2E and live rollback were not performed. [Evidence](../validation/2026-09-19-d070-duplet-deployment.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
