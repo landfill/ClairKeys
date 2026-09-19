@@ -26,3 +26,20 @@
   -t localhost/clairkeys-omr:<merge> .` 실행중.배포checkout만정확한merge에detached이동했다.
   current태그·운영서비스는검증전에는바꾸지않는다.
 - Git제외근거:`local-test-data/results/d070-deploy-2026-09-19/`,VM `/tmp/pr169-*`.
+
+## 빌드·무결성 완료
+
+- VM image `850a41430be2c0cbab6846186c53fc981540dca42211706090f16561af373517`,revision9e4020a,
+  Docker HEALTHCHECK존재. current/운영은아직f14c2f83그대로다.
+- 고정checksum23건OK,patch적용21건.빌드로그SHA256
+  `75ae90ae883a3700d4f30036f81b310d155555bf60f1cfcea7ae9bcef7f0132d`.
+- normal/recovery각각**JAR전체2,433항목**이로컬최종d070b의해당엔진과바이트동일하다.
+  내장Dockerfile/patch/Java·Python소스전체및글꼴바이너리도같다. `integrity-comparison.json`에단언결과저장.
+- OS패키지는24개버전차이가있다(`os-package-differences.json`의local/VM방향별목록).
+  따라서이미지전체가동일하다고하지않는다.현재VM전체suite/native와이후실제운영Clair스모크로별도검증한다.
+- 기존processing데이터1파일74,577바이트의해시manifest를저장했다. manifest SHA256
+  `4f04c969efa971d87bf85fe73138c0b416a5c97e928746335ba096766fb004e5`.
+  전환전/스모크후기존파일내용도확인한다.기존env/unit은읽기전용검사했고변경하지않는다.
+- 네트워크없는5GB테스트컨테이너에서VM전체unittest실행중.운영비밀env는테스트컨테이너에전달하지않았다.
+- 정확한merge9e4020a후속checks**6/6성공**(E2E/빌드/테스트/lint/security)확인.
+  배포전외부health200·무인증POST/process401확인. 다음은VMsuite완료후idle재확인과rollback보존/전환이다.

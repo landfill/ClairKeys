@@ -340,6 +340,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   userhistory hash unchanged. Exact-merge VM build underway,oldPR168 healthy/idle,post-merge CI pending.
   [Deployment](../validation/2026-09-19-d070-duplet-deployment.md). Overall#134 stays IN_PROGRESS.
 
+- 2026-09-19: Exact merge9e4020a post-merge checks6/6pass. VMimage850a4143 built with23checksums/
+  21patch applications;each engine's2433JAR entries and all source/font binaries match locald070b.
+  OS package24version differences are recorded rather than calling images identical. VMwhole-suite running,
+  productionstillPR168;env/unit/existingdata fingerprints preserved. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

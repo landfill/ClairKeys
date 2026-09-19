@@ -25,7 +25,8 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 1. **PR169 사용자 승인 병합·브랜치 정리 완료.** merge`9e4020a`,양쪽tip1debdbb포함/고유0확인,
    원격→main이동→로컬순정리,사용자미커밋메모보존. [병합/리뷰](reviews/PR-169.md).
 2. **승인된 VM 배포 진행 중.** 기존PR168/f14c2f83은active·healthy·JVM0,env/unit/processing보존.
-   정확한9e4020a를별도태그로빌드중이며current는아직변경하지않았다.
+   정확한9e4020a/image850a4143빌드및JAR/소스/글꼴무결성완료,VM전체suite진행중이다.
+   병합후CI6/6성공. current는아직변경하지않았다.
    [배포·검증·롤백](validation/2026-09-19-d070-duplet-deployment.md).
 3. 다음: 병합후checks·VM전체image/native·클래스/소스확인→idle재확인→rollback보존후전환→운영Clair스모크.
    전체#134는IN_PROGRESS이고나머지타이12개와D-065후속은별도다.
