@@ -38,22 +38,34 @@ def write_pdf(jar_path: Path, output: Path, scenario: str = 'control') -> None:
         for bar in (1240, 2260):
             draw.rectangle((bar-1, top, bar+1, top+80), fill=0)
         for idx, x in enumerate((410, 700, 990, 1400, 1760, 2150)):
-            if scenario == 'staff_hugging' and system == 0 and idx >= 4:
+            if scenario == 'staff_hugging' and system == 0 and idx == 5:
                 continue
-            long_chord = scenario == 'staff_hugging' and system == 0 and idx == 3
+            if system == 1 and idx == 0:
+                x = 350
+            long_chord = scenario == 'staff_hugging' and system == 0 and idx == 4
             steps = (3, 5) if long_chord else (3, 5) if ((system == 0 and idx == 5) or (system == 1 and idx == 0)) else (4,)
+            if scenario == 'staff_hugging' and (long_chord or (system == 1 and idx == 0)):
+                steps = (2, 4)
             for step in steps:
-                glyph(x, top+10*step, 0xE0A3 if long_chord else 0xE0A4)
-                if long_chord:
-                    draw.ellipse((x+32, top+10*step-3, x+38, top+10*step+3), fill=0)
+                glyph(x, top+10*step, 0xE0A3 if scenario == 'staff_hugging' and system == 0 and idx == 3 else 0xE0A4)
             draw.rectangle((x+21, top+10*min(steps)-70, x+23, top+10*max(steps)), fill=0)
         if system == 0:
-            curve(1430 if scenario == 'staff_hugging' else 2180, 2255, top+20, top+20, -9)
-            curve(1430 if scenario == 'staff_hugging' else 2180, 2255, top+60, top+60, 9)
+            if scenario != 'staff_hugging':
+                curve(1790 if scenario == 'staff_hugging' else 2180, 2255,
+                      top+16 if scenario == 'staff_hugging' else top+20,
+                      top+16 if scenario == 'staff_hugging' else top+20, -9)
+            curve(1790 if scenario == 'staff_hugging' else 2180, 2255,
+                  top+44 if scenario == 'staff_hugging' else top+60,
+                  top+44 if scenario == 'staff_hugging' else top+60, 9)
             curve(440, 2140, top+20, top+20, -65)
         else:
-            curve(380 if scenario == 'small_arrival' else 365,
-                  392 if scenario == 'small_arrival' else 402, top+20, top+20, -8 if scenario == 'control' else -5)
-            curve(365, 402, top+60, top+60, 8)
-            curve(350, 980, top-35, top+20, -35)
+            if scenario != 'staff_hugging':
+                curve(305,
+                      329 if scenario == 'small_arrival' else 342,
+                      top+16 if scenario == 'staff_hugging' else top+20,
+                      top+16 if scenario == 'staff_hugging' else top+20,
+                      -8 if scenario != 'small_arrival' else -7)
+            curve(305, 342, top+44 if scenario == 'staff_hugging' else top+60,
+                  top+44 if scenario == 'staff_hugging' else top+60, 8)
+            curve(300, 980, top-35, top+20, -35)
     page.convert('1').save(output, resolution=300)

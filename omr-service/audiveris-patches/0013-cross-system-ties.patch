@@ -1,0 +1,203 @@
+--- a/app/src/main/java/org/audiveris/omr/sheet/Part.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/Part.java
+@@ -598,6 +598,26 @@
+         List<SlurInter> precedingOrphans = precedingPart.getSlurs(SlurInter.isEndingOrphan);
+         Collections.sort(precedingOrphans, SlurInter.verticalComparator);
+ 
++        // Reserve unambiguous same-pitch, same-side pairs before generic slur matching.
++        for (SlurInter slur : orphans) {
++            List<SlurInter> compatible = new ArrayList<>();
++            for (SlurInter prev : precedingOrphans) {
++                if (slur.getExtension(LEFT) == null && prev.getExtension(RIGHT) == null
++                        && boundaryTiePair(slur, prev)) {
++                    compatible.add(prev);
++                }
++            }
++            if (compatible.size() != 1) {
++                continue;
++            }
++            SlurInter prev = compatible.get(0);
++            long alternatives = orphans.stream().filter(other -> other.getExtension(LEFT) == null
++                    && boundaryTiePair(other, prev)).count();
++            if (alternatives == 1) {
++                links.put(slur, prev);
++            }
++        }
++
+         // Connect the orphans as much as possible
+         SlurLoop:
+         for (SlurInter slur : orphans) {
+@@ -614,7 +634,8 @@
+                 // Check right side of previous slur
+                 if ((prevSlur.getExtension(RIGHT) == null) && !links.containsValue(prevSlur)) {
+                     // Check pitches compatibility
+-                    if (slur.canExtend(prevSlur)) {
++                    if (!slur.isBoundaryTieOnly() && !prevSlur.isBoundaryTieOnly()
++                            && slur.canExtend(prevSlur)) {
+                         links.put(slur, prevSlur);
+ 
+                         continue SlurLoop;
+@@ -624,6 +645,11 @@
+         }
+ 
+         return links;
++    }
++
++    private static boolean boundaryTiePair (SlurInter slur, SlurInter prev)
++    {
++        return slur.isCrossTieCandidate(prev);
+     }
+ 
+     //-----------------//
+--- a/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java
++++ b/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java
+@@ -108,6 +108,27 @@
+ public class SlurInter
+         extends AbstractInter
+ {
++    /** A rescued boundary half must never be exported as an ordinary slur. */
++    @XmlAttribute(name = "boundary-tie-only")
++    private boolean boundaryTieOnly;
++
++    public boolean isBoundaryTieOnly ()
++    {
++        return boundaryTieOnly;
++    }
++
++    public void setBoundaryTieOnly (boolean value)
++    {
++        boundaryTieOnly = value;
++    }
++
++    /** Reserve only geometrically compatible halves that can represent the same note. */
++    public boolean isCrossTieCandidate (SlurInter previous)
++    {
++        return isAbove() == previous.isAbove() && canExtend(previous)
++                && areTieCompatible(previous.getHead(LEFT), getHead(RIGHT));
++    }
++
+     //~ Static fields/initializers -----------------------------------------------------------------
+ 
+     private static final Constants constants = new Constants();
+@@ -418,6 +439,15 @@
+             result = s1.getIndexInPart() == s2.getIndexInPart();
+         }
+ 
++        if (!result && (boundaryTieOnly || prevSlur.boundaryTieOnly)) {
++            // Accidentals and clef changes are final now. A provisional half cannot become a slur.
++            setExtension(LEFT, null);
++            prevSlur.setExtension(RIGHT, null);
++            remove();
++            prevSlur.remove();
++            return;
++        }
++
+         prevSlur.setTie(result);
+         this.setTie(result);
+ 
+--- a/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java
+@@ -230,11 +230,17 @@
+                     }
+                 }
+ 
+-                if (onStaffLine && !selected.slur.isTie()) {
++                if (selected.slur.isBoundaryTieOnly()
++                        && ((leftHead == null) == (rightHead == null))) {
++                    continue; // A rescued boundary curve must have exactly one linked head
++                }
++
++                if (onStaffLine && !selected.slur.isTie() && !selected.slur.isBoundaryTieOnly()) {
+                     continue; // Widened links are accepted for ties only
+                 }
+ 
+-                if (staffLineTiesOnly && hasTieOnSameSide(selected)) {
++                if ((staffLineTiesOnly || selected.slur.isBoundaryTieOnly())
++                        && hasTieOnSameSide(selected)) {
+                     continue; // A head holds at most one tie on each side
+                 }
+ 
+@@ -257,6 +263,9 @@
+     private boolean hasTieOnSameSide (SlurEntry entry)
+     {
+         for (HorizontalSide side : HorizontalSide.values()) {
++            if (entry.links.get(side) == null) {
++                continue;
++            }
+             final Inter head = entry.links.get(side).partner;
+             final SIGraph headSig = head.getSig();
+ 
+@@ -581,6 +590,11 @@
+                         RIGHT) != null) && canBeTie(slur, linkPair)) {
+                     logger.debug("{} staff line tie candidate", slur);
+                     entries.add(new SlurEntry(slur, linkPair));
++                } else if (linkPair != null && ((linkPair.get(LEFT) == null)
++                        != (linkPair.get(RIGHT) == null))) {
++                    // lookupLinkPair has validated the missing side's boundary position.
++                    slur.setBoundaryTieOnly(true);
++                    entries.add(new SlurEntry(slur, linkPair));
+                 }
+             }
+ 
+--- a/app/src/main/java/org/audiveris/omr/sheet/curve/SlursBuilder.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/curve/SlursBuilder.java
+@@ -365,14 +365,15 @@
+         // Slur wide enough
+         int width = abs(p2.x - p0.x);
+ 
+-        if (width < params.minSlurWidthLow) {
++        if (width < params.minSlurWidthLow && !isSmallBoundaryArc(slur)) {
+             logger.debug("Slur too narrow {} at {}", width, p0);
+ 
+             return null;
+         }
+ 
+-        double widthImpact = (width - params.minSlurWidthLow) / (params.minSlurWidthHigh
+-                - params.minSlurWidthLow);
++        final double minimumWidth = width < params.minSlurWidthLow && isSmallBoundaryArc(slur)
++                ? 0.5 * sheet.getScale().getInterline() : params.minSlurWidthLow;
++        double widthImpact = (width - minimumWidth) / (params.minSlurWidthHigh - minimumWidth);
+ 
+         // Slur high enough (bent enough)
+         double height = Line2D.ptLineDist(p0.x, p0.y, p2.x, p2.y, p1.x, p1.y);
+@@ -782,12 +783,40 @@
+             }
+         }
+ 
++        for (Inter inter : clump) {
++            SlurInter slur = (SlurInter) inter;
++            if (slur.getCurve().getX2() - slur.getCurve().getX1() < params.minSlurWidthLow) {
++                slur.setBoundaryTieOnly(true);
++            }
++        }
++
+         SlurInter selected = clumpPruner.prune(clump, staffLineTiesOnly);
+ 
+         if (selected != null) {
+             selected.getInfo().assign(); // Assign arcs
+             pageSlurs.add(selected);
+         }
++    }
++
++    private boolean isSmallBoundaryArc (SlurInfo slur)
++    {
++        Point first = slur.getEnd(true);
++        Point last = slur.getEnd(false);
++        int il = sheet.getScale().getInterline();
++        if (last.x - first.x < 0.5 * il) {
++            return false;
++        }
++        for (SystemInfo system : sheet.getSystemManager().getSystemsOf(first)) {
++            Staff staff = system.getClosestStaff(first);
++            if (staff != null && !staff.isTablature()
++                    && first.x >= staff.getHeaderStop()
++                    && last.x <= staff.getHeaderStop() + 4 * il
++                    && first.y >= staff.getFirstLine().yAt(first.x) - il
++                    && first.y <= staff.getLastLine().yAt(first.x) + il) {
++                return true;
++            }
++        }
++        return false;
+     }
+ 
+     //-----------//
