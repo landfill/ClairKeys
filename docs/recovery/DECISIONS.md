@@ -2845,7 +2845,7 @@
 ## D-073: 시스템 경계의 반쪽 곡선은 상대 곡선과 머리 근거를 함께 검증한다
 
 - Date: 2026-09-20
-- Status: Proposed; 후보 구현·정식 빌드·Clair 반복 완료, fixture/corpus/전체 검증 진행 중
+- Status: Proposed; 로컬 필수 검증 완료, PR CI/실제 리뷰 대기. 병합·배포 미승인
 - Context: d072b 기준선은191/191·타이37/43이다. 로그 전용 진단은 raw 결과가 기준선과 같으며,
   m4 A4/C5와 m9 C5 반쪽이 생성된 뒤 `Page.connectOrphanSlurs`의 `discardOrphans`에서 삭제됨을 확인했다.
   기존 위→아래 탐욕적 짝짓기는 타이 상대를 긴 이음줄이 먼저 소비할 수 있다. m3 A4·m7 E4는 반쪽이라
@@ -2877,7 +2877,14 @@
 - Tested: d072b 기준선 재실행191/191·타이37/43·오검출0, 로그 전용 실행 raw 동일, 실제 삭제 호출 스택 확인
 - Tested: 정식d073b 두 엔진 JAR2433항목 중19개(네 수정 클래스 계열)만 기준선과 다르며 변경 항목은 양쪽 동일
 - Tested: Clair3회191/191·타이42/43·오검출0, raw SHA8224a58a… 동일. 타입/lint/Jest105suites1038tests 통과
-- Not-tested: 전체 이미지 suite·최종 합성 fixture 판별·12곡 corpus(진행 중)·CI/리뷰
+- Tested: 경계 제한 후d073c 전체196개 중190통과·6보관진단skip, native19개 모두 실행. Clair3회도191/191·42/43·오검출0·동일raw
+- Tested: 최종12곡은10동일·모노노케 m41→m42 인쇄D♭5 타이1개 개선·truongca 동일3쪽SCALE실패(오류126줄 동일).
+  경계 제한 전후11곡 raw/canonical 내용과1곡 실패 동일. 기준선/후보 Python74·OS252패키지·의존JAR56개 동일
+- Tested: Part짝짓기·staff-hugging 생성악보는 기준선양쪽실패→후보양쪽통과. 일반/작은시작호는 기존정상대조군이고,
+  작은폭 새 경로는 Clair 실제m10 seed로 입증. 미짝페이지끝 부정fixture는 보강전후통과(유출재현을 주장하지 않음)
+- Tested: context공백만 정리한 최종d073d 정식재빌드. c/d 전체앱·런타임·테스트40955파일/JAR항목 중 입력patch파일 하나만 다르고
+  엔진클래스·앱실행코드·테스트·Python패키지는 동일. 새 native5개는 c이미지 전체suite에서양쪽통과
+- Not-tested: PR 최신 CI/실제 리뷰, 운영 VM·배포·웹E2E. Security Audit는 npm bulk503→quick400 오류를 조사/재시도 중이며 통과로 세지 않는다
 - Known limits: 이번 목표는 인식된 MusicXML 타이5개다. m3 C5는 출력 성부2→1이어서 현재 converter의
   같은 성부 tie 병합 계약으로는 병합되지 않는다(canonical154→150). converter 변경은 이번 범위 밖이다.
   시스템 시작의 작은 호 예외는0.5–0.7 IL 및 header4 IL 범위이며 다른 크기/배치를 모두 해결했다고 주장하지 않는다.
