@@ -246,6 +246,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-19: Codex rereview explicitly completed on2458daf with no findings; GraphQL threads0.
   Clean-image suite/repeats and current-head E2E remain in progress. IN_PROGRESS.
 
+- 2026-09-19: Latest d069b image again passes182/6 diagnostic skips with all11 native tests run.
+  Three additional Clair runs score187/191 and ties30/43 with identical raw output and preserved tie lists.
+  Codex rereview done; current-head E2E2 remains. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

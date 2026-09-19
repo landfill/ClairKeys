@@ -178,3 +178,21 @@ satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb
   `runtime-before-clean.json`/`runtime-after-clean.json` 객체 전체 equality로 확인했다.
 - corpus24회 결과는 이 실행 코드/의존성 동등성으로 새 이미지에도 적용한다. 이미지 suite와 Clair3회는 추가 실행 중이다.
   새 headCI와 Codex 재리뷰도 다시 확인한다. [리뷰 기록](../reviews/PR-168.md).
+
+## 최신2458daf / d069b 이미지 재검증 완료
+
+- 최종 image index `ba44da315a7a80d04252517ced3f8e266a43e7647c91abb47fe1b8c1f6526bd9`, tag `clairkeys-omr:d069b-patched`.
+  내장 Dockerfile/patch/Java·Python fixture 소스는2458daf와 일치한다. 최종 committed diff check도clean.
+- 런타임 동등성 manifest 두 파일의 SHA256은 모두
+  `bba5bfc11195a2fc4e85693c4b61f297bd74d3e8d0155cc439043d702ca1235e`이다.
+  source/class 동일성을 가정하지 않고40,909개 파일/JAR entry 및74 Python package를 실제 대조했다.
+- 최신 이미지 전체 unittest **188개 중182통과·6진단skip**,246.280초. 새 native 포함11개 전부 실제 실행.
+- 최신 이미지 Clair3회 전체 기준표 **187/191·타이30/43**. raw SHA는 앞선b985a110…와 동일하며
+  m1 두 음의 점·길이 외 필드/나머지마디/타이 누락·오검출 목록 보존 단언을 다시 통과했다.
+- clean-clair-1: 27.606초, 자식 최대RSS1,016,088KiB.
+- clean-clair-2: 30.085초, 자식 최대RSS1,078,672KiB.
+- clean-clair-3: 39.283초, 자식 최대RSS1,077,132KiB.
+- 최신 반복은27.606–39.283초로 앞선 실행보다 느렸으나 출력 차이가 없고 시간900초/메모리5GB/heap3GB 제한 내다.
+  성능 변화의 원인을 추정하거나 성능 개선을 주장하지 않는다. 관찰한 비결정성은 출력에 없다.
+- corpus12쌍은 위의 정확한 런타임/패키지 동등성으로 최종 이미지에도 유효하다. 동일 코드를24회 추가 실행하지는 않았다.
+- 최신 head2458daf Codex 실제 재리뷰 완료·새 지적0. 필수 E2E2개는 현재 진행 중이며 완료 전 goal을 닫지 않는다.
