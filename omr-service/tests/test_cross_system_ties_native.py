@@ -64,8 +64,23 @@ class CrossSystemTiesNativeTests(unittest.TestCase):
                           sorted(t.get('type') for t in n.findall('tie')))
                          for n in measures[2].findall('note') if n.find('pitch') is not None][:2]
                 pitches = ('B4', 'D5') if scenario == 'staff_hugging' else ('A4', 'C5')
-                self.assertEqual(sorted(starts), [(pitch, [] if scenario == 'staff_hugging' and pitch == 'D5' else ['start']) for pitch in pitches])
-                self.assertEqual(sorted(stops), [(pitch, [] if scenario == 'staff_hugging' and pitch == 'D5' else ['stop']) for pitch in pitches])
+                def expected_ties(kind):
+                    return [(pitch, [kind]) for pitch in pitches]
+                self.assertEqual(sorted(starts), expected_ties('start'))
+                self.assertEqual(sorted(stops), expected_ties('stop'))
+                self.assertEqual([(t.findtext('beats'), t.findtext('beat-type'))
+                                  for t in root.iter('time')], [('3', '4')])
+                for index, measure in enumerate(measures):
+                    pitched = [n for n in measure.findall('note') if n.find('pitch') is not None]
+                    expected_count = 3 if index in (0, 3) else 4
+                    if scenario == 'staff_hugging' and index == 1:
+                        expected_count = 3
+                    self.assertEqual(len(pitched), expected_count)
+                    for offset, note in enumerate(pitched):
+                        boundary = ((index == 1 and offset >= len(pitched)-2)
+                                    or (index == 2 and offset < 2))
+                        if not boundary:
+                            self.assertFalse(note.findall('tie'), 'unexpected non-boundary tie')
 
 
 if __name__ == '__main__':
