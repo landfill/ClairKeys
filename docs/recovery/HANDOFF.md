@@ -22,21 +22,28 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **[PR168](reviews/PR-168.md) 사용자 승인으로 병합 완료** (`6de51f1`, 2026-09-19). 현재 head CI/실제 재리뷰를 재확인하고 병합했으며 로컬 main에도 반영했다.
-   병합 커밋 후속 CI6개 통과. 사용자 추가 지시로 두 작업 브랜치를 정리했고 사용자 메모는 hash 동일하게 보존했다.
-   정확한 병합 커밋을 VM에 전환했고 health/auth 확인을 마쳤다. 운영 원본 스모크는 진행 중이다. [배포 기록](validation/2026-09-19-d069-m1-dot-deployment.md).
-2. **운영은 PR168 `6de51f1`로 전환했다.** imagef14c2f83, rollbackb28cc02d 보존. 원본 기준표의 운영 재평가는 진행 중이다.
+1. **[PR168](reviews/PR-168.md) 병합·브랜치 정리·VM 배포 완료.** 운영 `6de51f1`, imagef14c2f83,
+   rollback-pr168-20260919 보존. [배포·운영 스모크·롤백](validation/2026-09-19-d069-m1-dot-deployment.md).
+2. **운영 Clair 모듈 스모크187/191·타이30/43 확인.** 로컬 검증과 전 필드 동일(생성시각 제외).
+   기존 저장 악보는 자동 갱신되지 않는다. 웹 업로드→callback→player E2E는 이번 배포에서 수행하지 않았다.
 3. 후속 범위는 **m3 둘잇단4와 누락 타이13건 전체**다. m1 목표2건은 PR168 범위에서 해결했다.
    타이 누락은 m3 4·m9 4·m6/m10/m12/m13/m14 각1이며 현재 로컬 기준 오검출1도 남는다.
 4. D-065 후속(거부한 beam 후보를 rawSystemBeams에 남기지 않기)은 별도 범위/검증이 필요한 낮은 우선순위 후보다.
 
 ## Latest verified result
 
+- **OMR 운영 / PR168(2026-09-19 12:01 KST)**:6de51f1, imagef14c2f83…, rollbackb28cc02d….
+  VM 이미지182통과/6진단skip(native11개 모두 실행),10클래스/내장 source가 로컬d069b와 동일.
+  active·healthy, 외부200/401, journal오류0. 운영 컨테이너 Clair 모듈 스모크 **187/191·타이30/43**,
+  m1완전일치·raw191/canonical160·tempo69. 로컬 raw/평가객체 동일, animation 생성시각 외 동일.
+  원본PDF/OMR3개 제거·잔여0, env/unit/기존 processing 보존. 웹 업로드E2E는 미실행.
+  [배포 검증](validation/2026-09-19-d069-m1-dot-deployment.md).
+
 - **D-069 / PR168 로컬 최종(2026-09-19)**: d069b-patched(`ba44da31…`), head2458daf.
   Clair **185→187/191**, 최종 이미지3회 동일; m1 C5/E5 점·길이만 변경. 타이30/43 및 누락13/오검출1 개별 목록 보존.
   이미지182통과·6진단skip, native11개 모두 실행. corpus11곡 동일/1곡 동일3쪽 SCALE 실패; 공백 정리 재빌드의 런타임40,909항목 동일.
   타입/lint/Jest1038·최신 head 필수 CI(E2E2개 포함) 통과. Codex 실제 재리뷰 완료·지적0; CodeRabbit skip은 리뷰 통과로 미계상.
-  **m1 수정은 PR168로6de51f1에 병합, #134 phase는 IN_PROGRESS.** 운영 배포 미승인·미수행.
+  **m1 수정은 PR168로6de51f1에 병합·배포, #134 phase는 IN_PROGRESS.** 위 운영 스모크로 개선을 확인했다.
   [검증·한계·자체 리뷰](validation/2026-09-19-issue-134-m1-tie-cut-dots.md), [최신 CI/리뷰](reviews/PR-168.md).
 
 - **OMR 운영 / PR167(2026-09-19 10:05 KST)**: `983caf9`, image `b28cc02d…`, rollback `rollback-pr167-20260919`→`721ccc10…`.
@@ -119,7 +126,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 - 2026-09-19: 사용자 "브랜치 정리와 vm 배포도 완료하라" 지시에 따라 PR168 branch를 원격→로컬 순으로 삭제했다.
   fetch 후 두 tip2458daf의 main 포함/고유0을 확인했고 사용자 메모 SHA36207439…는 전후 동일하다.
-  VM 배포는 현재 진행 중이다. [검증/롤백 기록](validation/2026-09-19-d069-m1-dot-deployment.md).
+  VM 배포와 운영 원본 모듈 스모크까지 완료했다. [검증/롤백 기록](validation/2026-09-19-d069-m1-dot-deployment.md).
 
 - 2026-09-19: 사용자 "그럼 병합. 브랜치 정리, vm 배포" 지시로 PR167을 병합·배포하고 작업 브랜치를 원격→로컬 순서로 삭제했다.
   양쪽 tip cacce3a는 최신 main에 포함됨을 확인했다. 사용자 미커밋 history 메모는 전후 SHA 동일하게 보존했고 현재 main이다.
@@ -146,7 +153,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 - 로컬 Docker 이미지는 검증용이며 운영 이미지와 같다고 주장하지 않는다. 2026-09-19 초기 정리 뒤 남긴 기존 네 기준선은 모두 보존했다:
   **`d067b-patched`**(직전 운영 PR166과 클래스 해시가 같은 기준선), `d066b-patched`(PR165 기준선, `SigReducer.class` `da3b0721…`),
   `d065b-patched`(`BeamsBuilder.class` `8d15e1b2…`, PR164 기준선), `d064-patched`(PR163 기준선).
-  이번 작업에서 `d068-patched`(리뷰 전 재현용)·**`d068b-patched`**(PR167 최종 검증용)를 추가 보존해 현재6개다.
+  이번 작업에서 `d068-patched`(리뷰 전 재현용)·**`d068b-patched`**(PR167 최종 검증용)를 추가 보존해 당시6개였으며, PR168 검증의 d069-patched/d069b-patched도 보존했다.
   이번 중간 실험 d068-exp/d068-exp2/d068-exp3은 삭제했다.
   `d066-patched`·`d067-patched`·`d067-exp-chord`·`d065-patched`·`d065b-codex-verification`는 삭제했다. 과거 기준선이 다시 필요하면 해당
   커밋에서 Dockerfile로 재빌드한다(약 3분). 같은 지시로 다른 프로젝트(bluekiwi) 컨테이너 3개를 중지·삭제했고 `bluekiwi_pgdata` 볼륨은 남겼다.

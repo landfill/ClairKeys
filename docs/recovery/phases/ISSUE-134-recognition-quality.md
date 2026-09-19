@@ -276,6 +276,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   match local verification. Cutover to6de51f1/f14c2f83 at12:01:17 KST, rollbackb28cc02d retained,
   active/healthy and external200/401. Temporary original-score module smoke underway. IN_PROGRESS.
 
+- 2026-09-19: Authorized PR168 rollout complete at12:01:17 KST (6de51f1/imagef14c2f83), rollbackb28cc02d.
+  Full VM suite182 pass6 diagnostic skips, all11 native run;10 classes/sources match local. Active/healthy,
+  external200/401, zero journal errors. Running-container Clair smoke187/191 and ties30/43, m1 exact,
+  raw/evaluation identical to local and animation equal except timestamp. Temporary PDF/OMR3 removed;
+  production env/unit/data and user note preserved. Web upload/callback/player E2E not run. IN_PROGRESS.
+  [Deployment](../validation/2026-09-19-d069-m1-dot-deployment.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

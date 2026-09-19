@@ -1,9 +1,15 @@
 # 2026-09-19 — PR168 m1 점 보존 엔진 VM 배포
 
-## 현재 상태
+## 최종 결과
 
-사용자가 "브랜치 정리와 vm 배포도 완료하라"고 명시 지시했다. 브랜치 정리 완료, 정확한 병합 커밋6de51f1 이미지 빌드 완료·검증 중이다.
-이미지/native/클래스 검증 뒤12:01:17 KST에 PR168로 전환했다. 운영 원본 스모크는 진행 중이다.
+- 사용자 지시에 따라 PR168 로컬·원격 브랜치 정리 및 운영 VM 배포를 완료했다.
+- 배포 커밋 `6de51f1b1e4e7b8a25107627cf9beb3f37d016a9`, image `f14c2f83933c7b459ea133860ae75e0ab75d6e44d1c35986935648fb6ca87ae0`.
+- 2026-09-19 **12:01:17 KST** 전환. active·healthy, 외부 health200/무인증401, 이후 journal 오류0.
+- VM 이미지188개 중182통과·6진단skip, native11개 전부 실행.10클래스/내장 source가 로컬 검증본과 같다.
+- **실행 중인 운영 컨테이너의 Clair 모듈 스모크:187/191·타이30/43, m1 완전 일치**.
+  raw191/animation160·tempo69, 로컬 최종과 raw 바이트/평가객체 동일, animation은 generated_at만 다르다.
+- rollback-pr168-20260919→이전b28cc02d 보존. env/unit/기존 processing 데이터/사용자 로컬 메모 보존.
+- 임시 원본 PDF와 이미지 포함 OMR2개를 제거했다. 웹 업로드→callback→player E2E는 수행하지 않았으며 기존 저장 악보는 자동 갱신되지 않는다.
 
 ## 브랜치 정리
 
@@ -54,3 +60,24 @@
 
 롤백 명령: `podman tag localhost/clairkeys-omr:rollback-pr168-20260919 localhost/clairkeys-omr:current` 후
 `systemctl restart clairkeys-omr`, image/health/auth를 다시 확인한다. 기존 이미지/데이터는 보존했다.
+
+## 운영 원본 스모크·최종 확인
+
+- 전환 후 JVM0/기존 processing 목록 동일 및 running image=f14c2f83을 확인하고,
+  `/data/analysis/pr168-live-bE4plz`에 원본 PDF를 SSH로 임시 전달했다. 실행 중인 production container에서
+  `podman exec --workdir /app -e PYTHONPATH=/app clairkeys-omr-prod python3 <analysis>/run_case.py <PDF> <output>`를 사용했다.
+  실제 AudiverisProcessor+converter를 호출하며 앱 DB/콜백/사용자 악보를 쓰지 않는다.
+- 선택 XML: `output/meter-retry-4px1hj0o/retry.mxl`. 저장소191이벤트 전체 기준표로 평가:
+  **187/191, matched ties30/43, m1 exact=true**, tempo69, raw191·dots116·canonical160, 총65.217392초.
+  처리28.784초, 자식 최대RSS780,692KiB. 서비스 concurrency1/heap3GB/timeout900초 설정 유지.
+- 로컬 최종 clean-clair-1과 comparison: events.json 바이트 동일, evaluation.json 객체 전체 동일,
+  animation.json은 generated_at만 차이. raw SHA `b985a110545986e47f533dd8311e61d88d846949b406bd57a795f1b333d29c66`.
+  타이 개별 누락13/오검출1 목록과 m2–17 결과도 로컬 검증 그대로다. m3 둘잇단4/타이13건 전체는 여전히 후속 범위다.
+- finally 정리로 원본PDF1·이미지 포함OMR2개 제거, 해당 임시 경로에 PDF/OMR/래스터 이미지 잔여0을 직접 재확인했다.
+  MusicXML/JSON·텍스트 로그·정리 manifest만 남겼으며 로컬 `local-test-data/results/d069-deploy-2026-09-19/`에 회수했다.
+- 최종 postflight: systemdactive/containerhealthy, current=running=f14c2f83, revision6de51f1,
+  rollbacktag=이전b28cc02d, JVM0, processing1개 목록 보존, env/unit hash 동일, deploy checkout6de51f1 clean.
+  전환시점 이후 journal error/exception/traceback0. 외부 health200·무인증POST/process401 재확인.
+- 사용자 원문 history SHA36207439…를 보존하고 stage하지 않았다. 기존 로컬 기준선/VM 이전 이미지·기존 processing 자료를 삭제하지 않았다.
+- 한계: 이 스모크는 실행 중인 운영 이미지의 모듈 검증이며 웹 업로드→콜백→플레이어 E2E가 아니다.
+  롤백 태그와 실패 복구 경로는 준비했지만 실제 롤백 전환은 불필요하여 실행하지 않았다.
