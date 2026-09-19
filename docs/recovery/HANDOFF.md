@@ -26,7 +26,8 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 1. **[PR169](reviews/PR-169.md) 병합·브랜치정리·승인된VM배포완료.** 운영`9e4020a`,image850a4143,
    rollback-pr169-20260919→f14c2f83보존. [배포·운영스모크·롤백](validation/2026-09-19-d070-duplet-deployment.md).
 2. 운영Clair **191/191·타이31/43·누락12·오검출0** 확인. 로컬과raw/평가전체동일,canonical은생성시각외동일.
-   기존저장악보는자동갱신되지않으며재변환이필요하다.웹업로드→callback→player E2E는이번배포에서미실행.
+   사용자의17:17KST앱재변환160음도검증본과전필드같음을확인했다(job f4072a8b…).
+   처리완료/callback전달/저장JSON을확인했으며플레이어UI·청취E2E는미실행이다.
 3. 후속범위는나머지타이12개: m3 3·m9 4·m6/m10/m12/m13/m14 각1이다. D-065후속은별도낮은우선순위후보다.
    전체#134는IN_PROGRESS이며,m3둘잇단4개는이번배포에서해결했다.
 
@@ -36,6 +37,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   VM183통과/6진단skip(native12모두실행),normal/recovery각2,433JAR항목·source/fonts로컬동일.
   active·healthy,외부200/401,journal오류0,기존env/unit/data보존. 운영모듈Clair **191/191·타이31/43·오검출0**,
   raw191/canonical160/dots116/tempo69,로컬전필드동일(생성시각제외). 임시PDF/OMR3제거·잔여0.
+  사용자앱재변환(17:17KST)160음도전필드동일,tempo69·9/8·길이동일;제목·시각·tempoSource표시만다름.
   원격/로컬브랜치정리와사용자메모보존완료. [검증/한계](validation/2026-09-19-d070-duplet-deployment.md).
 
 - **D-070 m3 로컬 / 2026-09-19**: d070b(`39381f8f…`), head1debdbb. Clair187→**191/191** 최종3회동일,

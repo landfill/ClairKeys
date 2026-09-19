@@ -354,6 +354,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   TemporaryPDF/OMR3removed/no originals remain. Branches deleted,user note preserved. Overall#134 IN_PROGRESS;
   web upload/callback/player E2E and live rollback were not performed. [Evidence](../validation/2026-09-19-d070-duplet-deployment.md).
 
+- 2026-09-19: User re-converted Clair in the app (jobf4072a8b…,17:17:26KST). Completion and delivered
+  callback confirmed;stored160notes match final local validation in every field,tempo69/9/8/duration unchanged.
+  Only title metadata/generated_at/tempoSource(user vs score) differ. The three canonical m3 changes match
+  the verified duplet fix. New-job rawXML was cleaned by service,so191/191 and31/43 are not re-evaluated from
+  this animation;player UI/listening not tested. #134 remains IN_PROGRESS with remaining ties.
+  [Evidence](../validation/2026-09-19-d070-duplet-deployment.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

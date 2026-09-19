@@ -94,3 +94,23 @@
   기존로컬기준선이미지·VM이전이미지·다른프로젝트/볼륨·사용자데이터는삭제하지않았다.
 - 작업완료. 기존저장악보에반영하려면새로변환해야한다. 웹업로드/callback/player E2E는이번배포검증범위에없으며,
   운영모듈스모크와동일한검증이라고표현하지않는다. 전체#134는타이12누락등이남아IN_PROGRESS다.
+
+## 사용자 앱 재변환 결과 확인 (2026-09-19)
+
+- 사용자 "변환했다" 요청에따라배포이후로그에서Clair job
+  `f4072a8b-a232-4add-a353-f7824557929c`의완료및callback `Delivered completed job`를확인했다.
+- 저장된animation을읽기전용회수했다. generated_at `2026-09-19T08:17:26.913542`는converter의UTC생성값으로,
+  **17:17:26KST**,배포15:25:51이후다.현재운영image850a4143/revision9e4020a/healthy도재확인했다.
+- **160개음표의모든필드가로컬최종hardened-clair-1과동일**하다. 음높이/start/duration/hand/finger/voice/staff차이0.
+  tempo69·scoreTempo69·timingReferenceBpm69·9/8·전체65.217392초도같다.
+- 최상위차이는title/metadata.title(앱제목Clair de Lune),generated_at,tempoSource뿐이다.
+  앱은사용자지정템포를사용해tempoSource=user이고모듈검증은score지만숫자값과전체음표시간은같다.
+- PR168기준선과달라진canonical음은m3의index21/22/24세개뿐이며,앞선검증의둘잇단수정과정확히같다.
+  C5duration0.434783→0.652174초,타이로합친E5start9.565217→9.782609/duration0.869566→1.304348초,
+  마지막C5start10.434783→11.086957/duration0.434783→0.652174초.나머지157음은같다.
+- 회수본SHA256 `afcc1588286ae66abe9ed9a334ab345ebb8359d66e3a8ae430ad402fcea66b21`.
+  Git제외`local-test-data/results/d070-deploy-2026-09-19/live-app-animation.json`및`live-app-comparison.json`.
+- 앱재변환의MusicXML은서비스가정리하므로이번job을raw191이벤트/43타이로다시평가하지않았다.
+  그수치는위운영모듈스모크에서검증됐고,이번확인은동일한canonical결과가실제앱저장결과에도반영됐다는근거다.
+  업로드후처리완료/callback전달/저장JSON은확인했지만플레이어UI·청취E2E는직접수행하지않았다.
+  기존파일/DB/설정변경없이확인했으며전체#134의타이12누락후속범위는그대로다.
