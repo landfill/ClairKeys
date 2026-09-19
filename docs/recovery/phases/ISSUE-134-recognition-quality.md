@@ -212,6 +212,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Production PDF reconversion remains unverified; do not report local185/191 as a fresh production evaluation. IN_PROGRESS.
   [Deployment](../validation/2026-09-19-d068-shared-stem-chord-deployment.md).
 
+- 2026-09-19: m1 dot follow-up started on a fresh branch. Baseline185/191 and ties30/43 reproduced.
+  Original dot ink is disconnected from the tie, but the curve glyph includes portions of both dots.
+  Both dot inters exist and link at SYMBOLS; both disappear by LINKS. Fixture and deletion trace pending.
+  [Evidence](../validation/2026-09-19-issue-134-m1-tie-cut-dots.md). IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

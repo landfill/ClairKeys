@@ -22,6 +22,11 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
+- **m1 점 누락2 수정 진행 중**: `codex/issue-134-m1-tie-cut-dots`. 최신 기준선185/191·타이30/43 재현.
+  원본 점은 곡선과 분리되어 있지만 slur glyph가 점 잉크를 포함해 SYMBOLS 청소에서 잘린다.
+  두 점 후보는 SYMBOLS에서 생성·연결되고 LINKS에서 사라진다. fixture/삭제 순서/수정·회귀 검증이 다음이다.
+  [현재 조사 기록](validation/2026-09-19-issue-134-m1-tie-cut-dots.md). 병합·운영 변경은 미승인.
+
 1. **PR167 병합·브랜치 정리·VM 배포 완료.** 운영 image b28cc02d, revision983caf9, health200·무인증401.
    [배포·롤백 근거](validation/2026-09-19-d068-shared-stem-chord-deployment.md), [리뷰/병합](reviews/PR-167.md).
 2. **운영 앱 재변환은 미확인이다.** 필요하면 같은 PDF를 앱에서 재변환해 결과를 비교한다. 로컬 검증185/191·타이30/43을
