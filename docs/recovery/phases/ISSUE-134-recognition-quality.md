@@ -390,6 +390,14 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Remaining 9 ties all lack curves (A 3, m12 1, cross-system 5). Web E2E and live rollback not run. IN_PROGRESS.
   [Deployment](../validation/2026-09-19-d071-aligned-voice-tie-deployment.md).
 
+- 2026-09-19: User chose mechanism A. D-072 on `codex/issue-134-tie-staff-purge` (head `3143f2d`, pushed, no PR yet): when the staff-line
+  purge would empty a side of curve candidates, keep them and accept their curve only as a tie via the D-063 path, never onto a head
+  already tied on that side, and only if it bows at least 0.15 IL. The first candidate added three straight staff-line false ties in
+  two corpus scores; the bow guard removed them. Final d072b: native fixture fails on both d071 engines and passes; image 185 pass/
+  6 diagnostic skips, native 14 run; Clair 191/191 and ties 34 -> 37/43, unexpected 0, identical raw x3; corpus 10 identical, Debussy
+  gains one printed tie, truongca same failure. PR creation awaits user approval. IN_PROGRESS.
+  [Evidence](../validation/2026-09-19-issue-134-staff-line-purge-ties.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
