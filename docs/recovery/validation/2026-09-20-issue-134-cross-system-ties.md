@@ -3,7 +3,7 @@
 ## 범위와 현재 상태
 
 - 사용자 승인: m3 A4/C5, m6 E4, m9 C5/E5의 로컬 원인 추적·fixture·구현·Docker 검증·자체 리뷰·PR 생성·CI/리뷰 대응.
-- main 병합, 운영 VM 접근·배포, m12 교차 및 D-065 후속 제외. 목표 수치 이벤트191/191·타이42/43·오검출0은 달성했다. 전체 goal은 PR CI/실제 리뷰 완료 전까지 진행 중이다.
+- main 병합, 운영 VM 접근·배포, m12 교차 및 D-065 후속 제외. 목표 수치 이벤트191/191·타이42/43·오검출0은 달성했다. 전체 goal은 외부 Security Audit 통과 전까지 미완료다. 실제 리뷰와 나머지 CI는 완료됐다.
 - main `98e1eae`에서 `codex/issue-134-cross-system-ties` 생성. fetch 후 main 뒤처짐0.
 - 기존 사용자 history 메모 SHA256 `36207439c88183b72476b4c98aa6962ec9a5b4439f4837711699e5d177f8a947` 보존.
 - Docker29.4.0 실행 중, 실행 컨테이너0 확인. 기존 이미지 보존.
@@ -11,7 +11,7 @@
 
 ## 현재 결과 (최종 로컬 게이트 완료)
 
-- 작업 head `a8d6b28`. 최종 Java 변경은 `13431f0`에 있으며 이후 결정 문서만 갱신했다.
+- PR head `b8de0a8`(main 상태 기록 동기화 전 `a8d6b28`). 최종 Java 변경은 `13431f0`에 있으며 이후 결정 문서만 갱신했다.
 - 기준선 `d072b-patched`: `sha256:b429399a1cf9ea9cd702276fc742b4b90a95acea2aea278fcdcf12862fa47ce4`.
 - 전체 테스트/반복/corpus 실행 이미지 `d073c-patched`: `sha256:5071772acd9345b9e45c6c20a909021d34a8de3cc886fb5bf4b5c3a9c58f9f01`.
 - context공백 정리 후 정식 재빌드 `d073d-patched`: `sha256:197205ebb37d74c5bb63d65d82a922e5b8c2e6e95c17027b964da71fabb57c15`.
@@ -28,7 +28,7 @@
 | 타입/lint/Jest | 통과, Jest105suites1038tests. 최초 Docker cleanup 문자열 검사 실패는 수정 후 전체 재검증 |
 | 자체 리뷰 | 내부 경계/orphan분류·최종 음높이 재판정 거부·동일 쪽 중복·애매한 매칭·양쪽 설치·예상 밖 raw차이 점검 |
 
-- 남은 작업: non-draft PR, 최신 head CI/실제 리뷰 및 actionable 대응. npm 감사 endpoint 오류는 아래 별도 기록을 따른다.
+- 남은 작업: PR172의 Security Audit 실제 통과. Codex 실제 리뷰 지적0 및 나머지 CI 통과. npm 감사 endpoint 오류는 아래 별도 기록을 따른다.
 - 남은 한계: m12 교차1개, m3 C5 성부2→1의 canonical 병합, 페이지 간 새 반쪽 복원은 이번 범위 밖이다.
 
 ## 기준선 재현
@@ -166,3 +166,11 @@
   이 응답은 코드/lockfile 변경과 무관한 감사 서비스 유지보수를 직접 확인한다. 상태 페이지의 공지 종료는19:00UTC(9/20 04:00KST) 예정이다.
 - PR172 Security Audit job105936203747도 같은 quick400이다. 상태 커밋 da53a24도 같은 시점 보안감사 실패를 확인했다.
   모든 실패는 복구 후 검사 결과를 확인하기 전 성공으로 세지 않는다. 최신 리뷰/CI 상태는 PR172 기록과 GitHub를 따른다.
+
+## 외부 blocker 확인 — 현재 요청의 1차 goal turn
+
+- PR172 head b8de0a8의 실제 Codex 리뷰 완료·+1·threads0, hosted Jest1038·E2E2개 포함 비감사 CI 통과.
+- Security Audit만 유지보수 때문에 남았다. 실제 재실행 attempt2/job105937786498도 동일 quick400으로 실패했다.
+- 로컬 필수검증·자체리뷰·PR생성·actual review 대응은 모두 수행했다. 소스 수정으로 해결할 남은 finding은 없다.
+- 사용자 메모 SHA36207439… 동일, 작업 컨테이너0, 브랜치/검증 이미지 보존. 병합·운영 VM 접근·배포 없음.
+- 이후 goal turn은 동일 blocker의 지속 여부와 API복구/CI재실행만 확인한다. 이 기록은 완료 선언이 아니다.

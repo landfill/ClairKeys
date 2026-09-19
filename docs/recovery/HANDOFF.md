@@ -34,8 +34,9 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 4. **시스템 경계 타이5개 [PR172](reviews/PR-172.md) 생성 완료**, head `b8de0a8`.
    로컬: 이미지190통과/6보관진단skip(native19실행), Clair3회191/191·42/43·오검출0.
    최종 corpus10곡동일·모노노케 인쇄타이1개개선·동일SCALE실패1곡. [검증](validation/2026-09-20-issue-134-cross-system-ties.md).
-   **다음은 최신 head CI와 실제 Codex 리뷰 대응**이다. npm 감사 API는 최소 공개패키지 요청에도 maintenance503을 반환하며,
-   PR172와 상태 커밋들의 Security Audit가 실패했다. 복구 후 같은 검사 재실행이 필요하며 현재 goal은 미완료다.
+   **Codex 실제 리뷰 완료·지적0, 나머지 CI(E2E2개 포함) 모두 통과. 남은 것은 Security Audit 하나**다.
+   npm 감사 API가 최소 공개패키지 요청에도 maintenance503을 반환하고 PR의 감사 job은 같은 head에서2회 실패했다.
+   점검 종료 예정04:00KST 이후에도 실제 API복구와 동일job 통과를 확인해야 한다. 현재 goal은 미완료이며 로컬 재검증은 불필요하다.
    m3 C5 성부2→1 재생 병합과 m12 교차는 별도 후속이다. main 병합 및 운영 VM 접근·배포는 승인 범위 밖이다.
 
 

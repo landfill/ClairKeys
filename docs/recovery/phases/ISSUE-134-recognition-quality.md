@@ -437,6 +437,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   (execution code unchanged). Actual Codex review and CI are running. Security Audit fails on npm's maintenance503/quick400,
   reproduced with a one-package public payload; no check weakening. No merge or production access. Goal and phase remain in progress.
 
+- 2026-09-20: PR172 b8de0a8 actual Codex review completed with +1/zero findings/threads. All other CI, including both E2E
+  workflows, passes. Security Audit alone fails again on attempt2 due npm maintenance503/quick400; this was reproduced with
+  a one-package public payload. Local work is complete but the goal is not complete until the actual audit passes. No merge/deployment.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
