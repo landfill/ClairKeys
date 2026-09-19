@@ -3,7 +3,7 @@
 ## 범위와 현재 상태
 
 - 사용자 승인: m3 A4/C5, m6 E4, m9 C5/E5의 로컬 원인 추적·fixture·구현·Docker 검증·자체 리뷰·PR 생성·CI/리뷰 대응.
-- main 병합, 운영 VM 접근·배포, m12 교차 및 D-065 후속 제외. 목표 수치 이벤트191/191·타이42/43·오검출0은 달성했다. 전체 goal은 외부 Security Audit 통과 전까지 미완료다. 실제 리뷰와 나머지 CI는 완료됐다.
+- main 병합, 운영 VM 접근·배포, m12 교차 및 D-065 후속 제외. 목표 수치 이벤트191/191·타이42/43·오검출0은 달성했다. 요청한 goal 범위(구현·검증·PR·CI·실제 리뷰)는 완료됐다. main 병합·운영 배포는 제외한다.
 - main `98e1eae`에서 `codex/issue-134-cross-system-ties` 생성. fetch 후 main 뒤처짐0.
 - 기존 사용자 history 메모 SHA256 `36207439c88183b72476b4c98aa6962ec9a5b4439f4837711699e5d177f8a947` 보존.
 - Docker29.4.0 실행 중, 실행 컨테이너0 확인. 기존 이미지 보존.
@@ -28,7 +28,7 @@
 | 타입/lint/Jest | 통과, Jest105suites1038tests. 최초 Docker cleanup 문자열 검사 실패는 수정 후 전체 재검증 |
 | 자체 리뷰 | 내부 경계/orphan분류·최종 음높이 재판정 거부·동일 쪽 중복·애매한 매칭·양쪽 설치·예상 밖 raw차이 점검 |
 
-- 남은 작업: PR172의 Security Audit 실제 통과. Codex 실제 리뷰 지적0 및 나머지 CI 통과. npm 감사 endpoint 오류는 아래 별도 기록을 따른다.
+- PR172의 최신 head CI와 실제 Codex 리뷰 지적0까지 완료했다. npm 감사 오류도 동일검사 attempt3의 성공으로 해소했다. 아래에 실패와 복구 이력을 구별해 남긴다.
 - 남은 한계: m12 교차1개, m3 C5 성부2→1의 canonical 병합, 페이지 간 새 반쪽 복원은 이번 범위 밖이다.
 
 ## 기준선 재현
@@ -174,3 +174,13 @@
 - 로컬 필수검증·자체리뷰·PR생성·actual review 대응은 모두 수행했다. 소스 수정으로 해결할 남은 finding은 없다.
 - 사용자 메모 SHA36207439… 동일, 작업 컨테이너0, 브랜치/검증 이미지 보존. 병합·운영 VM 접근·배포 없음.
 - 이후 goal turn은 동일 blocker의 지속 여부와 API복구/CI재실행만 확인한다. 이 기록은 완료 선언이 아니다.
+
+## 최종 완료 (동일 goal turn에서 외부 검사 복구)
+
+- 최신 main 기록에서 감사 성공이 다시 관찰돼 PR172의 head b8de0a8을 확인하고 failed job을 재실행했다.
+- Security Audit attempt3/job105938938611 성공. 최종 `gh pr checks172`는 실행 대상 전부 통과했으며,
+  E2E2개·hosted Jest1038·타입/lint·실제 Codex Completed/+1/threads0를 별도로 확인했다.
+- PR은 non-draft·CLEAN/MERGEABLE, 코드/테스트가 바뀌지 않은 동일 head다. 미해결 actionable review 또는 실패 CI 없음.
+- 목표191/191·42/43·오검출0과 모든 요청된 검증·PR/리뷰 단계가 충족됐다. 첫 goal turn에서 해결됐으므로 외부 blocker는 남지 않는다.
+- 전체 #134 및 병합/배포는 별개다. 원본 m12 타이와 m3 C5의 converter 성부 병합 한계는 남으며 운영은 PR171 그대로다.
+- 사용자 변경은 보존했고, 일회성 작업 컨테이너는 모두 종료·제거됐다. 기존 기준선 및 최종 검증 이미지는 보존했다.

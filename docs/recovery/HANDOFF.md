@@ -31,16 +31,22 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
    플레이어 UI·청취 E2E는 미실행이다.
 3. 남은 누락 6개([재분류](validation/2026-09-19-issue-134-residual-ties.md)): m12 X자 교차 1(곡선 가운데가 오선에 닿아 쪼개짐),
    시스템 경계 5(반쪽 곡선 6개 미검출: m3 A4·C5, m6 E4, m9 C5·E5).
-4. **시스템 경계 타이5개 [PR172](reviews/PR-172.md) 생성 완료**, head `b8de0a8`.
-   로컬: 이미지190통과/6보관진단skip(native19실행), Clair3회191/191·42/43·오검출0.
-   최종 corpus10곡동일·모노노케 인쇄타이1개개선·동일SCALE실패1곡. [검증](validation/2026-09-20-issue-134-cross-system-ties.md).
-   **Codex 실제 리뷰 완료·지적0, 나머지 CI(E2E2개 포함) 모두 통과. 남은 것은 Security Audit 하나**다.
-   npm 감사 API가 최소 공개패키지 요청에도 maintenance503을 반환하고 PR의 감사 job은 같은 head에서2회 실패했다.
-   점검 종료 예정04:00KST 이후에도 실제 API복구와 동일job 통과를 확인해야 한다. 현재 goal은 미완료이며 로컬 재검증은 불필요하다.
-   m3 C5 성부2→1 재생 병합과 m12 교차는 별도 후속이다. main 병합 및 운영 VM 접근·배포는 승인 범위 밖이다.
+4. **시스템 경계 타이5개 [PR172](reviews/PR-172.md)의 구현·검증·CI·실제 리뷰 완료**, head `b8de0a8`.
+   로컬 Clair3회191/191·타이42/43·오검출0, 이미지190통과/6보관진단skip(native19실행), 타입/lint/Jest1038 통과.
+   최종 corpus10동일·모노노케 인쇄타이1개개선·동일SCALE실패1곡. Codex지적0·threads0, 최신 head CI 전부 통과.
+   npm 유지보수로 실패했던 Security Audit도 동일검사 attempt3에서 실제 성공했다. [검증](validation/2026-09-20-issue-134-cross-system-ties.md).
+   **다음은 PR172에 대한 사용자 명시적 병합 승인**이다. PR·브랜치의 live state는 GitHub와 리뷰 로그에서 확인한다.
+   이번 goal 범위는 완료됐으며 전체#134는 IN_PROGRESS다. m12 교차·m3 C5 성부2→1 재생 병합은 별도 후속이다.
+   main 병합 및 운영 VM 접근·배포는 수행하지 않았다. 운영 수치는 위 PR171 기준을 유지한다.
 
 
 ## Latest verified result
+
+- **D-073 / PR172 로컬 최종(2026-09-20)**: 코드13431f0, PR head b8de0a8. 검증 d073c와 최종재빌드d073d는
+  실행코드·테스트·의존성이 동일(context patch공백만 다름). native19실행·이미지190pass6진단skip,
+  Clair3회191/191·타이42/43·오검출0·raw동일. 12곡은10동일/인쇄타이1개개선/동일실패1.
+  최신 PR CI(보안감사·E2E2개 포함)와 Codex 실제 리뷰 지적0 확인. **미병합·미배포**.
+  [검증·한계](validation/2026-09-20-issue-134-cross-system-ties.md), [리뷰](reviews/PR-172.md).
 
 - **OMR 운영 / PR171(2026-09-19 23:57 KST)**: `867513c`, image `5af0b796…`, rollback `79cbc6ab…`.
   VM 191개 중 185통과/6진단skip(native14 모두 실행), 두 엔진 JAR 2433항목·/app·테스트 클래스가 로컬 d072b와 동일.

@@ -441,6 +441,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   workflows, passes. Security Audit alone fails again on attempt2 due npm maintenance503/quick400; this was reproduced with
   a one-package public payload. Local work is complete but the goal is not complete until the actual audit passes. No merge/deployment.
 
+- 2026-09-20: PR172's same-head Security Audit attempt3 passed after npm's maintenance response cleared. Every latest-head
+  required check (including both E2E workflows) passes; actual Codex review completed with +1 and zero findings/threads.
+  The requested implementation-through-review goal is complete at b8de0a8, CLEAN/MERGEABLE/non-draft. No merge or production
+  access/deployment was performed. Overall #134 remains IN_PROGRESS; m12 and cross-voice canonical merging remain separate.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
