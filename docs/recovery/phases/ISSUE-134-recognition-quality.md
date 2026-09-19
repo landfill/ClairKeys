@@ -256,6 +256,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   m1 implementation/PR goal complete. Merge/deployment remain unapproved; overall phase IN_PROGRESS.
   [Review](../reviews/PR-168.md), [validation](../validation/2026-09-19-issue-134-m1-tie-cut-dots.md).
 
+- 2026-09-19: User explicitly approved PR168 merge. Rechecked head2458daf required CI, completed
+  Codex review/zero threads and CLEAN/MERGEABLE; merged as6de51f1 and fast-forwarded local main.
+  Both branch tips are contained, but retained under WORKFLOW because the user history note remains
+  modified and hash-identical. Post-merge CI pending. No rollout approval; phase IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

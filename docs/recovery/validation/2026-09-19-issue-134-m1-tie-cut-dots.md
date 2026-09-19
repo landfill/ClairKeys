@@ -5,11 +5,11 @@
 **m1 목표2건 해결:185→187/191.** 최신d069b3회 동일, 타이30/43/개별 누락·오검출 목록 보존.
 이미지182통과·6진단skip(native11개 모두 실행), corpus11동일/1동일SCALE실패, 타입/lint/Jest1038/최신PR필수CI 통과.
 Codex 현재head2458daf 재리뷰 완료·새finding0. CodeRabbit skip은 통과로 세지 않는다.
-수정/PR goal 완료이며 phase는 IN_PROGRESS. 병합/운영 배포는 미승인·미수행이다. 아래는 모든 재현·실패·정리·재검증 이력이다.
+수정/PR goal 완료이며 phase는 IN_PROGRESS. PR168은 사용자 승인으로6de51f1에 병합됐다. 운영 배포는 미승인·미수행이다. 아래는 모든 재현·실패·정리·재검증 이력이다.
 
 ## 현재 상태
 
-로컬 필수 검증 완료, 코드/결정 head `2458daf` (엔진 구현 `df3f1af`). [PR168](../reviews/PR-168.md) non-draft, 최신 head 필수 CI/실제 Codex 재리뷰 완료·미해결 지적0. 병합 승인 대기. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
+로컬 필수 검증 완료, 코드/결정 head `2458daf` (엔진 구현 `df3f1af`). [PR168](../reviews/PR-168.md) non-draft, 최신 head 필수 CI/실제 Codex 재리뷰 완료·미해결 지적0. 사용자 승인으로6de51f1에 병합, 후속 CI 확인 중. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
 사용자 권한은 로컬 수정·Docker 검증·PR·리뷰 대응까지이며 병합/운영 변경은 제외한다.
 사용자 미커밋 `2026-09-13-handoff-history.md`는 보존한다.
 
@@ -212,3 +212,5 @@ satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb
 - 성과·한계·실패·skip·rollback·다음 승인 경계는 PR본문과 HANDOFF/review/본 기록에 회수했다.
   원본 PDF/이미지/OMR은 Git에 넣지 않았다. 사용자 history 변경은 보존했고 자신의 commit에는 포함하지 않았다.
 - 운영 VM은 접속/수정/배포하지 않았다. m3둘잇단4와 누락타이13건 전체는 후속 범위이며 phase DONE이 아니다.
+
+- 2026-09-19: 사용자 승인 후 PR168을6de51f1에 병합하고 main 반영을 검증했다. 사용자 메모 hash 동일, 두 branch tip 포함/고유0이나 미커밋 변경으로 보존. 병합 후 CI는 진행 중이며 운영 변경 없음. [병합 근거](../reviews/PR-168.md).
