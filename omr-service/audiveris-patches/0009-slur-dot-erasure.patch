@@ -1,0 +1,124 @@
+--- a/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsFilter.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsFilter.java
+@@ -52,6 +52,8 @@
+ import org.audiveris.omr.sig.inter.LyricItemInter;
+ import org.audiveris.omr.sig.inter.SentenceInter;
+ import org.audiveris.omr.sig.inter.StemInter;
++import org.audiveris.omr.sig.inter.SlurInter;
++import org.audiveris.omr.util.HorizontalSide;
+ import org.audiveris.omr.sig.inter.WordInter;
+ import org.audiveris.omr.ui.BoardsPane;
+ import org.audiveris.omr.util.ByteUtil;
+@@ -268,6 +270,9 @@
+          */
+         private List<Glyph> systemWeaks;
+ 
++        /** Immutable staff-free pixels, before any recognized symbol is erased. */
++        private final ByteProcessor original;
++
+         /**
+          * Creates a new <code>SymbolsEraser</code> object.
+          *
+@@ -280,6 +285,7 @@
+                         Sheet sheet)
+         {
+             super(buffer, g, sheet);
++            original = (ByteProcessor) buffer.duplicate();
+         }
+ 
+         //---------//
+@@ -470,6 +476,94 @@
+         //-------//
+         // visit //
+         //-------//
++        /**
++         * A curve glyph can include disconnected ink next to its endpoint. Do not
++         * let erasing that glyph cut a compact printed dot into weak fragments.
++         * This only protects existing pixels; ordinary symbol classification and
++         * augmentation linking still decide whether they actually form a dot.
++         */
++        @Override
++        public void visit (SlurInter slur)
++        {
++            final HeadInter head = slur.getHead(HorizontalSide.LEFT);
++            final Glyph glyph = slur.getGlyph();
++            if ((head == null) || (glyph == null)) {
++                super.visit(slur);
++                return;
++            }
++
++            final int il = sheet.getScale().getInterline();
++            final Rectangle hb = head.getBounds();
++            final Rectangle window = new Rectangle(
++                    hb.x + hb.width, (int) head.getCenter2D().getY() - il,
++                    (int) Math.ceil(1.5 * il), 2 * il + 1);
++            window.intersect(new Rectangle(0, 0, original.getWidth(), original.getHeight()),
++                    window, window);
++            if (window.isEmpty() || !window.intersects(glyph.getBounds())) {
++                super.visit(slur);
++                return;
++            }
++
++            final Area protectedInk = new Area();
++            final boolean[] seen = new boolean[window.width * window.height];
++            for (int y = window.y; y < window.y + window.height; y++) {
++                for (int x = window.x; x < window.x + window.width; x++) {
++                    final int index = (y - window.y) * window.width + x - window.x;
++                    if (seen[index] || original.get(x, y) != FOREGROUND) {
++                        continue;
++                    }
++                    final List<Point> pixels = new ArrayList<>();
++                    pixels.add(new Point(x, y));
++                    seen[index] = true;
++                    Rectangle box = new Rectangle(x, y, 1, 1);
++                    boolean boundary = false;
++                    for (int i = 0; i < pixels.size(); i++) {
++                        final Point p = pixels.get(i);
++                        box.add(new Rectangle(p.x, p.y, 1, 1));
++                        boundary |= p.x == window.x || p.y == window.y
++                                || p.x == window.x + window.width - 1
++                                || p.y == window.y + window.height - 1;
++                        for (int dy = -1; dy <= 1; dy++) {
++                            for (int dx = -1; dx <= 1; dx++) {
++                                final int nx = p.x + dx, ny = p.y + dy;
++                                if (!window.contains(nx, ny)) {
++                                    continue;
++                                }
++                                final int ni = (ny - window.y) * window.width + nx - window.x;
++                                if (!seen[ni] && original.get(nx, ny) == FOREGROUND) {
++                                    seen[ni] = true;
++                                    pixels.add(new Point(nx, ny));
++                                }
++                            }
++                        }
++                    }
++                    final double dx = box.getCenterX() - (hb.x + hb.width);
++                    final double dy = Math.abs(box.getCenterY() - head.getCenter2D().getY());
++                    if (boundary || box.width < 0.25 * il || box.height < 0.25 * il
++                            || box.width > 0.60 * il || box.height > 0.60 * il
++                            || box.width < (2.0 / 3) * box.height || box.width > 1.5 * box.height
++                            || pixels.size() < 0.60 * box.width * box.height
++                            || dx < 0.25 * il || dx > il || dy > 0.65 * il) {
++                        continue;
++                    }
++                    for (Point p : pixels) {
++                        protectedInk.add(new Area(new Rectangle(p.x, p.y, 1, 1)));
++                    }
++                }
++            }
++            final java.awt.Shape previousClip = g.getClip();
++            final Area clip = previousClip == null
++                    ? new Area(new Rectangle(0, 0, original.getWidth(), original.getHeight()))
++                    : new Area(previousClip);
++            clip.subtract(protectedInk);
++            try {
++                g.setClip(clip);
++                super.visit(slur);
++            } finally {
++                g.setClip(previousClip);
++            }
++        }
++
+         @Override
+         public void visit (HeadInter head)
+         {

@@ -2700,3 +2700,33 @@
 - Not-tested: 운영 VM 배포·재업로드, 테스트 corpus 밖의 판형·해상도
 - Directive: PR 병합 및 운영 배포는 별도 명시적 승인 후 수행한다. 출력 XML/JSON 사후 보정은 하지 않는다
 - Related: #134, D-067, validation/2026-09-19-issue-134-shared-stem-chord-split.md
+
+## D-069: 타이 glyph에 잘못 포함된 분리된 점 잉크를 SYMBOLS 청소에서 보존한다
+
+- Date: 2026-09-19
+- Status: Proposed; 로컬 검증·PR 심사 대상. 병합·배포 미승인
+- Context: 현재 기준선185/191에서 m1 C5/E5 점4분이4분으로 나온다. 원본 점은 타이와 분리되어 있지만
+  slur glyph가 점 일부를 포함한다. SYMBOLS 청소 뒤 C5는3×8 조각(grade0.204), E5는8×9 조합(0.793)으로
+  생성되어 각각 올바른 머리에 연결된다. LINKS reduceLinks가 C5를 weak(0.463)로 삭제하고, countDots가
+  남은 E5도 삭제한다. 기존 기록의 E5 조각 설명은 현재 그래프와 반대다.
+- Decision (검증할 후보):
+  1. SymbolsFilter.SymbolsCleaner의 slur 잉크 삭제만 제한한다. 삭제 전 staff-free 원본의 연결 성분 중
+     연결된 왼쪽 head의 오른쪽 점 위치에 있는 작고 조밀한 성분만 보호 후보로 삼는다.
+  2. 성분은8방향 연결로 완전히 고립되어야 한다. interline 대비 폭/높이0.25–0.60,
+     종횡비2/3–1.5, 검은 픽셀 점유율0.60 이상으로 제한한다. 탐색창 경계에 닿은 성분은 제외한다.
+     머리 오른쪽 끝에서 중심까지0.25–1.0 IL, 세로 중심 차이0.65 IL 이내만 허용한다.
+  3. 보호는 slur 삭제 그래픽의 clip에서 원본 검은 픽셀만 제외하는 방식이다. 픽셀을 추가하거나
+     지워진 다른 기호를 복원하지 않는다. slur graph/glyph/관계 자체도 변경하지 않는다.
+     후보는 이후 기존 glyph 분류와 dot-head 연결·등급·countDots 검사를 그대로 받는다.
+  4. 점·음표·타이의 사후 XML/JSON 보충은 하지 않는다. D-062/D-064 머리 선택과 D-068 화음 분리를 유지한다.
+  5. 기준선에서 실패하는 실제 청소 메서드 native fixture, 점 없는 곡선·인접 슬러·오선 조각·잡음·정상 점 보존,
+     Clair3회 전체 기준표와 타이 누락/오검출 목록,12곡 corpus 및 normal/recovery 동일성을 검증한다.
+- Rejected: countDots 올림 또는 weak 점 등급 하향 | 훼손된 입력을 그대로 두고 가짜 점/점 없는 화음까지 늘릴 수 있다
+- Rejected: slur glyph나 곡선 끝 변경 | 타이 연결/분류에 영향을 줄 수 있으며 현재 타이 인식30/43은 보존 대상이다
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Tested: native pixel fixture가 d068b 실제 SymbolsCleaner에서 printed dot pixel48,37 삭제로 실패; Clair185/191·타이30/43 재현; VIP 삭제 순서 확인
+- Not-tested: 후보 구현 및 corpus 회귀, 새로운 판형/해상도
+- Directive: compactness만으로 점 inter를 만들지 않는다. 기존 분류·관계 검증을 유지하고 타이 목록 차이를 개수와 별도로 검사한다
+- Related: #134, D-062, D-064, D-068, validation/2026-09-19-issue-134-m1-tie-cut-dots.md
