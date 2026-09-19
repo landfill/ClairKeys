@@ -2740,7 +2740,7 @@
 ## D-070: 두 음 빔 위 숫자 근거로 엔진 내부 둘잇단을 복원한다
 
 - Date: 2026-09-19
-- Status: Proposed; 실험 Clair191/191, 정식 이미지·corpus·PR 검증 중
+- Status: Proposed; 로컬 필수 검증 완료, PR 심사 대상. 병합·배포 미승인
 - Context: m3의 두 숫자2는 슬러와 연결돼 SYMBOLS에서 지워진다. 기본 엔진에는 둘잇단 shape와3/2배율도 없다.
   기존 classifier와 두꺼운 음악 글꼴만으로는 첫2와7이 모호했다. 원본의 민글자 숫자체도 동등하게 비교하면 구별된다.
 - Decision:
@@ -2764,10 +2764,15 @@
 - Scope-risk: moderate
 - Reversibility: clean
 - Tested: baseline187/191, native logical-shape fixture 양쪽실패, 원본/3단계그래프대조
-- Tested: 실험 exp6 Clair191/191·타이31/43·오검출0, 변경마디3뿐.2개글꼴204잉크사례+24박자제어 통과
-- Not-tested: 정식이미지전체/Clair반복/corpus/최신CI/리뷰; 최신추가guard는 정식빌드에서 검증 중
+- Tested: 최종d070b정식전체빌드·source/class무결성, 이미지183통과6진단skip/native12모두실행.
+  각엔진factor및204잉크+24박자+11geometry제어통과; 한쪽엔진누락시실패하는부정제어도확인.
+- Tested: 최종이미지Clair3회191/191·타이31/43·오검출0·raw해시동일. 의미상변경은m3의4이벤트/3canonical뿐이고52곡선보존.
+- Tested: corpus12fresh쌍은11동일성공/1동일3쪽SCALE실패. 재빌드40,919항목중3개test-harness만다르고실제런타임/74Python패키지동일.
+- Tested: 다른3글꼴279부정사례전부거부,그글꼴의2는13/27인식(나머지14거부). 타입/lint/Jest105suites1038tests통과.
+  전체diff직접자체리뷰와누락엔진테스트finding수정·검증완료.
+- Not-tested: 운영배포·실제롤백·corpus밖판형/글꼴. PR최신CI/실제리뷰는reviews기록에서확인한다.
 - Known limits: bracket·쉼표·혼합음가·복수빔·cross-staff 둘잇단은 처리하지 않는다. 현재 matcher는 IL8–31에서만 시도하며
   그 밖은 원래 결과를 유지한다. 숫자와 위치가 완전히 같은 중앙 운지2는 잉크만으로 보편적으로 구별하지 못한다.
   보표 밖의 빔 중앙이라는 문맥으로 제한하고 corpus에서 오검출을 확인한다. 모든 판형/글꼴 지원을 주장하지 않는다.
-- Directive: 설명되지 않은 다른 숫자/정상 빔 회귀가 있으면 채택하지 않는다. 다른 누락 타이 원인과 D-065 후속은 별도다
+- Directive: 설명되지 않은 다른 숫자/정상 빔 회귀가 있으면 채택하지 않는다. 다른 누락 타이 원인과 D-065 후속은 별도다. 롤백할때새logical shape의private OMR체크포인트를이전엔진에서재사용하지말고원본PDF에서다시인식한다
 - Related: #134, validation/2026-09-19-issue-134-m3-duplet.md
