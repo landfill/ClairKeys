@@ -292,6 +292,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 기준선 실패 fixture를 먼저 확보하고 normal/recovery 전체 빌드·네이티브 테스트, Clair 3회, 12곡 corpus를 비교한다.
 - 짧은 성부의 빔·시작 박과 긴 성부의 점·음가·붙임줄을 각각 검증한다. 판단은 기준표로 하고 운영 배포는 이 작업에 포함하지 않는다.
 
+### m1 점 누락2 (D-069)
+
+- 원본과 단계별 그래프로 타이 glyph의 점 잉크 포함 및 LINKS 삭제를 구별한다.
+- SYMBOLS 청소에서 실제 고립된 점 성분만 보존하며 기존 분류·관계/삭제 기준과 타이 그래프는 유지한다.
+- 기준선 실패 native fixture부터 normal/recovery 전체 빌드, Clair3회187/191 예상의 실제 평가,
+  타이 개별 목록과12곡 corpus, 정상/부정 사례 및 CI·리뷰까지 검증한다. m3 둘잇단/타이13건 전체는 별도다.
+
 ## Completion criteria
 
 - 같은 원본에서 9/8과 원본의 확인 가능한 음높이·시작 박·길이가 실제로 개선된다.

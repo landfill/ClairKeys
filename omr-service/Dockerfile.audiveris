@@ -17,6 +17,7 @@ ARG BEAMS_BUILDER_SHA256=fa9505b66f2bae9d03a49b69f2f26a27c4c40a4ac18e973123935fe
 ARG SIG_REDUCER_SHA256=6d1b2517d3d0fff6f37c337f6bb1fc02b4ab8ce1dd1dd0ecf3ab4d1e4b2ab244
 ARG ABSTRACT_CHORD_INTER_SHA256=c65453b636f624054c40675aaa877d17d0e7b1551fb4457702e91d33b0f7588c
 
+ARG SYMBOLS_FILTER_SHA256=700b1b72b78beb4b616c56428978b666c056c664488ae2cd097c641a415ba712
 ARG SYMBOLS_LINKER_SHA256=c03f44d394b3236a752494882f14adb66c4daee8a02d64b3cbd8d8c6d8caee91
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -110,6 +111,8 @@ COPY audiveris-patches/0005-second-interval-head-prune.patch /tmp/second-head.pa
 COPY audiveris-patches/0006-shared-stem-void-head.patch /tmp/shared-stem.patch
 COPY audiveris-patches/0007-beamed-chord-black-duration.patch /tmp/chord-duration.patch
 COPY audiveris-patches/0008-shared-stem-chord-split.patch /tmp/chord-split.patch
+COPY audiveris-patches/0009-slur-dot-erasure.patch /tmp/slur-dot-erasure.patch
+COPY tests/SlurDotErasureFixture.java /tmp/SlurDotErasureFixture.java
 COPY tests/SharedStemBeamGroupFixture.java /tmp/SharedStemBeamGroupFixture.java
 RUN mkdir -p \
       /tmp/jdk25 \
@@ -267,6 +270,17 @@ RUN mkdir -p \
       | grep -Fqx 'org/audiveris/omr/sheet/symbol/SymbolsLinker.class' \
     && /tmp/jdk25/bin/javac --release 25 -proc:none -cp '/opt/audiveris/lib/app/*' \
       -d /opt/clairkeys-test-classes /tmp/SharedStemBeamGroupFixture.java \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsFilter.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsFilter.java \
+    && echo "${SYMBOLS_FILTER_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsFilter.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsFilter.java \
+    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace --input=/tmp/slur-dot-erasure.patch \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' \
+      -cp '/opt/audiveris/lib/app/*' -d /tmp/filter-classes \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsFilter.java \
+    && /tmp/jdk25/bin/jar --update --file /opt/audiveris/lib/app/audiveris.jar \
+      -C /tmp/filter-classes org/audiveris/omr/sheet/symbol \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -cp '/opt/audiveris/lib/app/*' \
+      -d /opt/clairkeys-test-classes /tmp/SlurDotErasureFixture.java \
     && cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery \
     && /tmp/jdk25/bin/jar --update \
       --file /opt/clairkeys-audiveris-recovery/lib/app/audiveris.jar \
@@ -277,6 +291,7 @@ RUN mkdir -p \
     && /opt/audiveris/bin/Audiveris -version \
     && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
     && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes /tmp/reducer-classes /tmp/chord-classes \
+      /tmp/filter-classes /tmp/slur-dot-erasure.patch /tmp/SlurDotErasureFixture.java \
       /tmp/tie-classes /tmp/beam-classes /tmp/split-classes /tmp/chord-split.patch /tmp/SharedStemBeamGroupFixture.java /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
       /tmp/dot-link.patch /tmp/tie-link.patch /tmp/beam-anchor.patch
 
