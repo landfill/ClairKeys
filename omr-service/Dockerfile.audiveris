@@ -63,6 +63,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     desktop-file-utils \
     shared-mime-info \
     libgtk-3-0 \
+    fonts-dejavu-core \
     && mkdir -p /usr/share/applications /usr/share/desktop-directories \
     && curl -fsSL \
       "https://github.com/Audiveris/audiveris/releases/download/${AUDIVERIS_VERSION}/${AUDIVERIS_DEB}" \
@@ -112,6 +113,9 @@ COPY audiveris-patches/0006-shared-stem-void-head.patch /tmp/shared-stem.patch
 COPY audiveris-patches/0007-beamed-chord-black-duration.patch /tmp/chord-duration.patch
 COPY audiveris-patches/0008-shared-stem-chord-split.patch /tmp/chord-split.patch
 COPY audiveris-patches/0009-slur-dot-erasure.patch /tmp/slur-dot-erasure.patch
+COPY audiveris-patches/0010-beamed-duplet.patch /tmp/beamed-duplet.patch
+COPY audiveris-patches/DupletBuilder.java /tmp/DupletBuilder.java
+COPY tests/DupletFixture.java tests/DupletRecognitionFixture.java /tmp/
 COPY tests/SlurDotErasureFixture.java /tmp/SlurDotErasureFixture.java
 COPY tests/SharedStemBeamGroupFixture.java /tmp/SharedStemBeamGroupFixture.java
 RUN mkdir -p \
@@ -281,6 +285,51 @@ RUN mkdir -p \
       -C /tmp/filter-classes org/audiveris/omr/sheet/symbol \
     && /tmp/jdk25/bin/javac --release 25 -proc:none -cp '/opt/audiveris/lib/app/*' \
       -d /opt/clairkeys-test-classes /tmp/SlurDotErasureFixture.java \
+    && mkdir -p /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/glyph \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/glyph/Shape.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/glyph/Shape.java \
+    && echo "0ddcf3c45307905f1b1a30ae7b63b4e7bf107119b1b798584ba20539b1056f7f  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/glyph/Shape.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/glyph/Shape.java \
+    && mkdir -p /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/glyph \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/glyph/ShapeSet.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/glyph/ShapeSet.java \
+    && echo "07f7e6b9baf318c0897e54df7da3883eb9481fbdad69882e41d20fa80666cab8  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/glyph/ShapeSet.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/glyph/ShapeSet.java \
+    && mkdir -p /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sig/inter/TupletInter.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/TupletInter.java \
+    && echo "7adc8b88dba6f16904c072d7fd864848c4172e9e7560e8525c21de68031d6584  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/TupletInter.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/TupletInter.java \
+    && mkdir -p /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/relation \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sig/relation/ChordTupletRelation.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/relation/ChordTupletRelation.java \
+    && echo "f581cb9fa0b5f7e884b610d7143e662af29c3b1c2779b3eb1acc051696108b8f  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/relation/ChordTupletRelation.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/relation/ChordTupletRelation.java \
+    && mkdir -p /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/rhythm \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/rhythm/TupletsBuilder.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/rhythm/TupletsBuilder.java \
+    && echo "f32307513c237c56e682b4a1b9647604e7bb097689bf8e7b8427cd83e333ab45  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/rhythm/TupletsBuilder.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/rhythm/TupletsBuilder.java \
+    && mkdir -p /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/ui/symbol \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/ui/symbol/BravuraSymbols.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/ui/symbol/BravuraSymbols.java \
+    && echo "f5accfd5711386365f71089cd41009a763f2834ffdeeb7b41a56baf6cf8959bf  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/ui/symbol/BravuraSymbols.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/ui/symbol/BravuraSymbols.java \
+    && mkdir -p /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/ui/symbol \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/ui/symbol/LelandSymbols.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/ui/symbol/LelandSymbols.java \
+    && echo "552436e1d8ccb128a52a3616dbf4fcc3d62a3bcc3b8b9711216b989e40dff89b  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/ui/symbol/LelandSymbols.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/ui/symbol/LelandSymbols.java \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/rhythm/PageRhythm.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/rhythm/PageRhythm.java \
+    && echo "257ae1e4261fcfab65ece13c35ea0189f6a7b3db4a24fc946f745fa4b1afeb5a  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/rhythm/PageRhythm.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/rhythm/PageRhythm.java \
+    && cp /tmp/DupletBuilder.java /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/DupletBuilder.java \
+    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace --input=/tmp/beamed-duplet.patch \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' -cp '/opt/audiveris/lib/app/*' -d /tmp/duplet-classes \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/glyph/Shape.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/glyph/ShapeSet.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/TupletInter.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/relation/ChordTupletRelation.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/rhythm/TupletsBuilder.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/ui/symbol/BravuraSymbols.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/ui/symbol/LelandSymbols.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/rhythm/PageRhythm.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/DupletBuilder.java \
+    && /tmp/jdk25/bin/jar --update --file /opt/audiveris/lib/app/audiveris.jar -C /tmp/duplet-classes org/audiveris/omr \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -cp '/opt/audiveris/lib/app/*' -d /opt/clairkeys-test-classes /tmp/DupletFixture.java /tmp/DupletRecognitionFixture.java \
     && cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery \
     && /tmp/jdk25/bin/jar --update \
       --file /opt/clairkeys-audiveris-recovery/lib/app/audiveris.jar \
@@ -290,7 +339,8 @@ RUN mkdir -p \
       | grep -Fqx 'org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.class' \
     && /opt/audiveris/bin/Audiveris -version \
     && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
-    && rm -rf /tmp/jdk25 /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes /tmp/reducer-classes /tmp/chord-classes \
+    && rm -rf /tmp/jdk25 /tmp/duplet-classes /tmp/DupletBuilder.java /tmp/beamed-duplet.patch /tmp/DupletFixture.java /tmp/DupletRecognitionFixture.java \
+      /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes /tmp/reducer-classes /tmp/chord-classes \
       /tmp/filter-classes /tmp/slur-dot-erasure.patch /tmp/SlurDotErasureFixture.java \
       /tmp/tie-classes /tmp/beam-classes /tmp/split-classes /tmp/chord-split.patch /tmp/SharedStemBeamGroupFixture.java /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
       /tmp/dot-link.patch /tmp/tie-link.patch /tmp/beam-anchor.patch

@@ -2736,3 +2736,43 @@
 - Not-tested: corpus 밖 판형/해상도, 운영 배포/재변환. PR CI/리뷰는 reviews 기록에서 확인한다.
 - Directive: compactness만으로 점 inter를 만들지 않는다. 기존 분류·관계 검증을 유지하고 타이 목록 차이를 개수와 별도로 검사한다
 - Related: #134, D-062, D-064, D-068, validation/2026-09-19-issue-134-m1-tie-cut-dots.md
+
+## D-070: 두 음 빔 위 숫자 근거로 엔진 내부 둘잇단을 복원한다
+
+- Date: 2026-09-19
+- Status: Proposed; 로컬 필수 검증 완료, PR 심사 대상. 병합·배포 미승인
+- Context: m3의 두 숫자2는 슬러와 연결돼 SYMBOLS에서 지워진다. 기본 엔진에는 둘잇단 shape와3/2배율도 없다.
+  기존 classifier와 두꺼운 음악 글꼴만으로는 첫2와7이 모호했다. 원본의 민글자 숫자체도 동등하게 비교하면 구별된다.
+- Decision:
+  1. physical classifier label 순서를 바꾸지 않는 logical TUPLET_TWO를 추가한다. 기존 TupletInter,
+     ChordTupletRelation, TupletsBuilder로2개 기본음·3/2배율을 표현하며 exported XML/JSON은 수정하지 않는다.
+  2. PageRhythm에서 박자표를 배정한 직후, 리듬 계산 전에 검사한다. LINKS에는 박자표가 아직 배정되지 않는다.
+     분자6이상3의 배수·분모8, 한 보표의 같은 마디, 같은 기둥 방향, 점 없는8분 두 화음의 단일 빔만 대상이다.
+     이미 tuplet에 속한 화음과 작은 장식음은 제외한다. 숫자 영역은 빔 중앙·기둥 꼬리 쪽·오선 밖이다.
+  3. 원본 binary에서 Leland 음악 숫자와 명시적으로 설치한 DejaVu Sans Italic의0–9를 같은 조건으로 비교한다.
+     곡선 양옆1.2 IL의 검은 run 높이·두께가 맞으면 그 사이를 보간해 곡선 획만 점수에서 제외한다.
+     새 픽셀을 합성하지 않는다. 탐색창2×2 IL, template 폭0.7–1.2 IL·높이1.15–1.55 IL, 크기/위치1px 탐색이다.
+  4. 가시 template 잉크55% 이상을 요구한다. 정확한 픽셀 일치와1px 대칭 거리 일치를 반씩 반영하고,
+     창 안에서 설명하지 못한 잉크도 분모에 포함한다.2의 점수0.82 이상·다른 모든 숫자보다0.04 이상 높아야 한다.
+     기존 TupletsBuilder가 정확히 그 두 화음에 연결하는지 재검사한다. 슬러 glyph/타이 관계는 바꾸지 않는다.
+  5. normal/recovery에 동일 적용한다. 정상/부정 숫자·곡선·운지 위치·박자/화음 조건 fixture와 실제 전체 빌드,
+     native 전체, Clair3회, 타이 개별 목록,12곡 corpus,성능/복구,자체/PR리뷰로 최종 판단한다.
+- Rejected: 음가0.75를 XML/JSON에 보충 | 기호/리듬 원인을 숨기며 D-049/D-052에 어긋난다
+- Rejected: physical shape 중간 삽입·곡별 재학습 | 기존 모델 label 호환성을 훼손하거나 곡 전용 데이터에 의존한다
+- Rejected: 모든 두 음 빔을 둘잇단으로 간주·첫2와7의 점수차 임계값만 하향 | 정상 빔/숫자 오검출을 설명할 수 없다
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Tested: baseline187/191, native logical-shape fixture 양쪽실패, 원본/3단계그래프대조
+- Tested: 최종d070b정식전체빌드·source/class무결성, 이미지183통과6진단skip/native12모두실행.
+  각엔진factor및204잉크+24박자+11geometry제어통과; 한쪽엔진누락시실패하는부정제어도확인.
+- Tested: 최종이미지Clair3회191/191·타이31/43·오검출0·raw해시동일. 의미상변경은m3의4이벤트/3canonical뿐이고52곡선보존.
+- Tested: corpus12fresh쌍은11동일성공/1동일3쪽SCALE실패. 재빌드40,919항목중3개test-harness만다르고실제런타임/74Python패키지동일.
+- Tested: 다른3글꼴279부정사례전부거부,그글꼴의2는13/27인식(나머지14거부). 타입/lint/Jest105suites1038tests통과.
+  전체diff직접자체리뷰와누락엔진테스트finding수정·검증완료.
+- Not-tested: 운영배포·실제롤백·corpus밖판형/글꼴. PR최신CI/실제리뷰는reviews기록에서확인한다.
+- Known limits: bracket·쉼표·혼합음가·복수빔·cross-staff 둘잇단은 처리하지 않는다. 현재 matcher는 IL8–31에서만 시도하며
+  그 밖은 원래 결과를 유지한다. 숫자와 위치가 완전히 같은 중앙 운지2는 잉크만으로 보편적으로 구별하지 못한다.
+  보표 밖의 빔 중앙이라는 문맥으로 제한하고 corpus에서 오검출을 확인한다. 모든 판형/글꼴 지원을 주장하지 않는다.
+- Directive: 설명되지 않은 다른 숫자/정상 빔 회귀가 있으면 채택하지 않는다. 다른 누락 타이 원인과 D-065 후속은 별도다. 롤백할때새logical shape의private OMR체크포인트를이전엔진에서재사용하지말고원본PDF에서다시인식한다
+- Related: #134, validation/2026-09-19-issue-134-m3-duplet.md
