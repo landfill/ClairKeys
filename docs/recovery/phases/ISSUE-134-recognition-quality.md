@@ -202,6 +202,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   no new findings. Both threads resolved; the incorrect Lore report was rejected with actual commit API evidence. Implementation/PR goal
   complete; merge and production rollout remain unapproved. Overall phase stays IN_PROGRESS. [Review](../reviews/PR-167.md).
 
+- 2026-09-19: User explicitly approved PR167 merge, branch cleanup and VM rollout. PR167 merged as `983caf9` after live head/CI/review checks.
+  Both branch tips were ancestors of main and were deleted on the explicit cleanup instruction; the user's uncommitted history note is hash-identical.
+  Exact-merge VM image build is in progress. Production remains PR166 until the verified cutover. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
