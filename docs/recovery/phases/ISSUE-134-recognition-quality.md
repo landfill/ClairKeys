@@ -361,6 +361,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   this animation;player UI/listening not tested. #134 remains IN_PROGRESS with remaining ties.
   [Evidence](../validation/2026-09-19-d070-duplet-deployment.md).
 
+- 2026-09-19: Residual-tie reclassification from the saved d070b graph (no code change, no engine rerun).
+  New mechanism E (3: m9 E3/G3, m10 D5): curves link the right heads but LINKS `isSpaceClear` rejects the tie because
+  another voice's chord at the same abscissa as an end head invades the box (0.39/0.43 > 0.25). A purge 3 and m12 crossing 1
+  keep the 2026-09-14 traces. Cross-system 5: six halves undetected (staff-line-hugging, bracket-like, faint print), so the
+  surviving halves pair with slurs or other pitches. Fix direction awaits user choice. IN_PROGRESS.
+  [Evidence](../validation/2026-09-19-issue-134-residual-ties.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
