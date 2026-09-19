@@ -17,29 +17,32 @@ m9 빔 복원 [PR164](reviews/PR-164.md)(D-065, `bbcc09b`)는 2026-09-18 배포�
 기둥 공유 빈 머리 [PR166](reviews/PR-166.md)(D-067, `b15d0fd`)은 2026-09-19 병합·배포됐고 앱 재변환 결과가 로컬 검증과 전 필드 같다.
 공유 기둥 화음 분리 [PR167](reviews/PR-167.md)(D-068, `983caf9`)도 2026-09-19 배포했다. 이미지/native/클래스/health 검증은 완료했고,
 그시점의운영원본PDF재변환은수행하지않았다. 이후m1점PR168과m3둘잇단PR169(9e4020a)을병합·배포했고,
-이어 D-071 같은 시점 다른 성부 타이 [PR170](reviews/PR-170.md)(`122f5bc`)을 병합·배포했고,
-현재 운영 원본 기준 이벤트191/191·타이34/43을 확인했다. 곡선이 없는 타이 9개가 남아 있다.
+이어 D-071 [PR170](reviews/PR-170.md)(`122f5bc`)과 D-072 오선 purge 타이 [PR171](reviews/PR-171.md)(`867513c`)을 병합·배포했고,
+현재 운영 원본 기준 이벤트191/191·타이37/43을 확인했다. 남은 누락 타이는 6개다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **[PR170](reviews/PR-170.md) 병합·브랜치 정리·승인된 VM 배포 완료.** 운영 `122f5bc`, image `79cbc6ab…`,
-   `rollback-pr170-20260919`→`850a4143…`(PR169) 보존. [배포·운영 스모크·롤백](validation/2026-09-19-d071-aligned-voice-tie-deployment.md).
-2. 운영 Clair **191/191·타이34/43·누락9·오검출0**. raw events·평가 객체가 로컬 최종 검증과 같고 animation은 생성 시각만 다르다.
+1. **[PR171](reviews/PR-171.md) 병합·브랜치 정리·승인된 VM 배포 완료.** 운영 `867513c`, image `5af0b796…`,
+   `rollback-pr171-20260919`→`79cbc6ab…`(PR170) 보존. [배포·운영 스모크·롤백](validation/2026-09-19-d072-staff-line-purge-deployment.md).
+2. 운영 Clair **191/191·타이37/43·누락6·오검출0**. raw events·평가 객체가 로컬 최종 검증과 같고 animation은 생성 시각만 다르다.
    기존 저장 악보는 앱에서 다시 변환해야 반영된다. 웹 업로드/callback/player E2E는 미실행이다.
-3. 남은 누락 9개는 모두 곡선이 검출되지 않은 경우다([재분류](validation/2026-09-19-issue-134-residual-ties.md)):
-   기전 A 오선 접선 purge 3(m3 G4·m13 G3·m14 D3), m12 X자 교차 1, 시스템 경계 5(반쪽 곡선 6개 미검출).
-4. **기전 A 수정(D-072) [PR171](reviews/PR-171.md) 사용자 승인으로 `867513c` 병합·브랜치 정리 완료, 승인된 VM 배포 진행 중.**
-   운영은 전환 전까지 PR170 `79cbc6ab`.
-   1차 후보는 corpus에서 오선 구간 가짜 타이 3개를 만들어 휜 높이 조건을 추가했다. [검증](validation/2026-09-19-issue-134-staff-line-purge-ties.md).
-   남은 누락 6: m12 교차 1·시스템 경계 5. D-065 후속은 별도 낮은 우선순위다. 전체 #134는 IN_PROGRESS다.
+3. 남은 누락 6개([재분류](validation/2026-09-19-issue-134-residual-ties.md)): m12 X자 교차 1(곡선 가운데가 오선에 닿아 쪼개짐),
+   시스템 경계 5(반쪽 곡선 6개 미검출: m3 A4·C5, m6 E4, m9 C5·E5).
+4. **다음 수정 대상 선택은 사용자 결정.** 후보: 시스템 경계(사라진 반쪽의 삭제 단계 추적 선행) 또는 m12 교차 단독 사례.
+   D-065 후속은 별도 낮은 우선순위다. 전체 #134는 IN_PROGRESS다.
 
 ## Latest verified result
 
-- **D-072 로컬 / 2026-09-19**: d072b-patched, head `3143f2d`([PR171](reviews/PR-171.md)). 기준선 d071에서 실패하던 native fixture가 양쪽 엔진 통과.
+- **OMR 운영 / PR171(2026-09-19 23:57 KST)**: `867513c`, image `5af0b796…`, rollback `79cbc6ab…`.
+  VM 191개 중 185통과/6진단skip(native14 모두 실행), 두 엔진 JAR 2433항목·/app·테스트 클래스가 로컬 d072b와 동일.
+  active·healthy, 외부200/401, journal오류0, env/unit/data 보존. 운영 모듈 Clair **191/191·타이37/43·오검출0**,
+  raw/평가 로컬 동일, canonical154. 임시 PDF/OMR3 제거·잔여0. [검증/한계](validation/2026-09-19-d072-staff-line-purge-deployment.md).
+
+- **D-072 로컬 / 2026-09-19**: d072b-patched, head `3143f2d`([PR171](reviews/PR-171.md), `867513c`로 병합·배포). 기준선 d071에서 실패하던 native fixture가 양쪽 엔진 통과.
   Clair 타이34→**37/43**·이벤트191/191·오검출0 3회 동일, 목표 곡선3개만 추가. 이미지185통과·6진단skip/native14 실행,
-  corpus 10동일·달빛 인쇄 타이1 추가·1같은SCALE실패, 타입/lint/Jest1038. 병합·배포 미승인. [근거·한계](validation/2026-09-19-issue-134-staff-line-purge-ties.md).
+  corpus 10동일·달빛 인쇄 타이1 추가·1같은SCALE실패, 타입/lint/Jest1038. 위 PR171 운영 스모크에서 같은 결과를 확인했다. [근거·한계](validation/2026-09-19-issue-134-staff-line-purge-ties.md).
 
 - **OMR 운영 / PR170(2026-09-19 20:32 KST)**: `122f5bc`, image `79cbc6ab…`, rollback `850a4143…`.
   VM 190개 중 184통과/6진단skip(native13 모두 실행), 두 엔진 JAR 2433항목·/app·테스트 클래스가 로컬 d071과 동일.
@@ -153,6 +156,10 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   [17마디 기준 비교](validation/2026-09-13-issue-134-residual-timing.md).
 
 ## Known blockers / constraints
+
+- 2026-09-19: 사용자 명시적 승인으로 PR171 병합·원격→main→로컬 브랜치 정리·VM 배포를 완료했다.
+  사용자 history 메모 SHA `36207439…` 보존, 운영 `867513c`/`5af0b796`, `rollback-pr171-20260919` 보존.
+  공개 첨부본 동일성 확인 후 임시 운영 스모크 191/191·타이37/43, PDF/OMR 잔여0. [근거](validation/2026-09-19-d072-staff-line-purge-deployment.md).
 
 - 2026-09-19: 사용자 명시적 승인으로 PR170 병합·원격→main→로컬 브랜치 정리·VM 배포를 완료했다.
   사용자 history 메모 SHA `36207439…` 보존, 운영 `122f5bc`/`79cbc6ab`, `rollback-pr170-20260919` 보존.

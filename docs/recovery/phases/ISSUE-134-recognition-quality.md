@@ -407,6 +407,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   merged as `867513c` (code diff to head 0). Both branch tips contained with zero unique commits; deleted remote -> local, user note
   hash unchanged. VM rollout in progress; production stays PR170 `79cbc6ab` until verified cutover. IN_PROGRESS.
 
+- 2026-09-19: Authorized PR171 rollout complete at 23:57:36 KST, exact `867513c`/image `5af0b796…`, rollback `79cbc6ab…` retained.
+  VM 191 tests 185 pass/6 diagnostic skips, native 14 run; both engines' 2433 JAR entries, /app and test classes match local d072b.
+  Active/healthy, external 200/401, journal errors 0, env/unit/data preserved. Production module smoke on the public-attachment PDF:
+  191/191, ties 37/43, missing 6, unexpected 0; raw/evaluation equal local, animation equal except generated_at. Originals removed.
+  Remaining 6 ties: m12 crossing 1, cross-system 5. Web E2E and live rollback not run. IN_PROGRESS.
+  [Deployment](../validation/2026-09-19-d072-staff-line-purge-deployment.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
