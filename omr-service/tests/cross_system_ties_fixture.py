@@ -11,10 +11,11 @@ from pathlib import Path
 
 def write_pdf(jar_path: Path, output: Path, scenario: str = 'control') -> None:
     from PIL import Image, ImageDraw, ImageFont
-    if scenario not in ('control', 'staff_hugging', 'small_arrival'):
+    if scenario not in ('control', 'staff_hugging', 'small_arrival', 'unmatched_edge'):
         raise ValueError(scenario)
     hugging = scenario == 'staff_hugging'
     small = scenario == 'small_arrival'
+    unmatched = scenario == 'unmatched_edge'
     with zipfile.ZipFile(jar_path) as jar:
         font = ImageFont.truetype(BytesIO(jar.read('res/Bravura.otf')), 80)
     page = Image.new('L', (2480, 3508), 255)
@@ -46,14 +47,16 @@ def write_pdf(jar_path: Path, output: Path, scenario: str = 'control') -> None:
         for bar in (1240, 2260):
             draw.rectangle((bar-1, top, bar+1, top+80), fill=0)
         for idx, x in enumerate((410, 700, 990, 1400, 1760, 2150)):
-            if hugging and system == 0 and idx == 5:
+            if ((hugging and system == 0) or (unmatched and system == 1)) and idx == 5:
                 continue
             arrival = system == 1 and idx == 0
             if arrival:
                 x = 350
             departure = system == 0 and idx == (4 if hugging else 5)
             steps = ((2, 4) if hugging else (3, 5)) if departure or arrival else (4,)
-            half_note = hugging and system == 0 and idx == 3
+            if unmatched and system == 1 and idx == 4:
+                steps = (2, 4)
+            half_note = ((hugging and system == 0) or (unmatched and system == 1)) and idx == 3
             for step in steps:
                 glyph(x, top+10*step, 0xE0A3 if half_note else 0xE0A4)
             draw.rectangle((x+21, top+10*min(steps)-70, x+23, top+10*max(steps)), fill=0)
@@ -68,4 +71,6 @@ def write_pdf(jar_path: Path, output: Path, scenario: str = 'control') -> None:
             curve(305, 329 if small else 342, upper_y, upper_y, -7 if small else -8)
             curve(305, 342, lower_y, lower_y, 8)
             curve(300, 980, top-35, top+20, -35)
+            if unmatched:
+                curve(1790, 2255, top+44, top+44, 9)
     page.convert('1').save(output, resolution=300)

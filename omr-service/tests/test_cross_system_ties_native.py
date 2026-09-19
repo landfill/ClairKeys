@@ -3,6 +3,8 @@ import os
 import subprocess
 import tempfile
 import unittest
+import zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from cross_system_ties_fixture import write_pdf
@@ -36,6 +38,9 @@ class CrossSystemTiesNativeTests(unittest.TestCase):
     def test_staff_hugging_boundary_ties(self):
         self._check_score('staff_hugging')
 
+    def test_unmatched_page_edge_rescue_is_not_exported(self):
+        self._check_score('unmatched_edge')
+
     def test_small_arrival_boundary_tie(self):
         self._check_score('small_arrival')
 
@@ -51,12 +56,24 @@ class CrossSystemTiesNativeTests(unittest.TestCase):
                 work = Path(tmp)
                 pdf = work / 'boundary-ties.pdf'
                 write_pdf(_jar(exe), pdf, scenario)
-                run = subprocess.run([str(exe), '-batch', '-export', '-output', str(work), '--', str(pdf)],
+                run = subprocess.run([str(exe), '-batch', '-save', '-export', '-output', str(work), '--', str(pdf)],
                                      cwd=work, capture_output=True, text=True, timeout=300)
                 self.assertEqual(run.returncode, 0, run.stdout[-2000:])
                 root = _read_score(work)
                 measures = root.findall('part/measure')
                 self.assertEqual(len(measures), 4)
+                if scenario == 'unmatched_edge':
+                    self.assertEqual(sum(n.find('pitch') is not None
+                                         for n in root.findall('part/measure/note')), 14)
+                    (omr,) = work.glob('*.omr')
+                    with zipfile.ZipFile(omr) as archive:
+                        sheet = ET.fromstring(archive.read('sheet#1/sheet#1.xml'))
+                    for slur in sheet.iter('slur'):
+                        if slur.get('boundary-tie-only') == 'true':
+                            self.assertEqual(slur.get('tie'), 'true',
+                                             'an unmatched rescued half became an ordinary slur')
+                            self.assertTrue(slur.get('left-extension') or slur.get('right-extension'))
+                    continue
                 starts = [(n.findtext('pitch/step') + n.findtext('pitch/octave'),
                            sorted(t.get('type') for t in n.findall('tie')))
                           for n in measures[1].findall('note') if n.find('pitch') is not None][-2:]
