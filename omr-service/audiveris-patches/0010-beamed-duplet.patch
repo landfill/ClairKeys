@@ -1,0 +1,85 @@
+--- a/app/src/main/java/org/audiveris/omr/glyph/Shape.java
++++ b/app/src/main/java/org/audiveris/omr/glyph/Shape.java
+@@ -357,6 +357,8 @@
+      * =============================================================================================
+      */
+
++    TUPLET_TWO("2", DIGIT_2),
++
+     TEXT("Sequence of letters & spaces"),
+     CHARACTER("Any letter"),
+
+--- a/app/src/main/java/org/audiveris/omr/glyph/ShapeSet.java
++++ b/app/src/main/java/org/audiveris/omr/glyph/ShapeSet.java
+@@ -570,7 +570,7 @@
+     public static final EnumSet<Shape> Pedals = EnumSet.of(PEDAL_MARK, PEDAL_UP_MARK);
+
+     /** Tuplets. */
+-    public static final EnumSet<Shape> Tuplets = EnumSet.of(TUPLET_THREE, TUPLET_SIX);
++    public static final EnumSet<Shape> Tuplets = EnumSet.of(TUPLET_TWO, TUPLET_THREE, TUPLET_SIX);
+
+     /** Small Clefs. */
+     public static final EnumSet<Shape> SmallClefs = EnumSet.of(G_CLEF_SMALL, F_CLEF_SMALL);
+--- a/app/src/main/java/org/audiveris/omr/sheet/rhythm/PageRhythm.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/rhythm/PageRhythm.java
+@@ -243,6 +243,9 @@
+         if (populateTimeSignatures()) {
+             // Populate all stacks/measures in page with their FRATs
+             populateFRATs();
++            for (SystemInfo system : page.getSystems()) {
++                new org.audiveris.omr.sheet.symbol.DupletBuilder(system).build();
++            }
+
+             // For each range, adjust TS if needed, then process each measure, using StackRhythm 2nd pass
+             processRanges();
+--- a/app/src/main/java/org/audiveris/omr/sheet/rhythm/TupletsBuilder.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/rhythm/TupletsBuilder.java
+@@ -211,6 +211,7 @@
+     private static int expectedCount (Shape shape)
+     {
+         return switch (shape) {
++            case TUPLET_TWO -> 2;
+             case TUPLET_THREE -> 3;
+             case TUPLET_SIX -> 6;
+             default -> {
+--- a/app/src/main/java/org/audiveris/omr/sig/inter/TupletInter.java
++++ b/app/src/main/java/org/audiveris/omr/sig/inter/TupletInter.java
+@@ -344,6 +344,7 @@
+     private static DurationFactor getFactor (Shape shape)
+     {
+         return switch (shape) {
++            case TUPLET_TWO -> new DurationFactor(3, 2);
+             case TUPLET_THREE -> new DurationFactor(2, 3);
+             case TUPLET_SIX -> new DurationFactor(4, 6);
+
+--- a/app/src/main/java/org/audiveris/omr/sig/relation/ChordTupletRelation.java
++++ b/app/src/main/java/org/audiveris/omr/sig/relation/ChordTupletRelation.java
+@@ -100,7 +100,7 @@
+     private double getTupletCoeff (Shape shape)
+     {
+         return switch (shape) {
+-            case TUPLET_THREE -> constants.tupletThreeSupportCoeff.getValue();
++            case TUPLET_TWO, TUPLET_THREE -> constants.tupletThreeSupportCoeff.getValue();
+             case TUPLET_SIX -> constants.tupletSixSupportCoeff.getValue();
+             default -> throw new IllegalArgumentException("Illegal tuplet shape " + shape);
+         };
+--- a/app/src/main/java/org/audiveris/omr/ui/symbol/BravuraSymbols.java
++++ b/app/src/main/java/org/audiveris/omr/ui/symbol/BravuraSymbols.java
+@@ -233,6 +233,7 @@
+             case TREMOLO_1 -> ints(0xE220);
+             case TREMOLO_2 -> ints(0xE221);
+             case TREMOLO_3 -> ints(0xE222);
++            case TUPLET_TWO -> ints(0xE882);
+             case TUPLET_SIX -> ints(0xE886);
+             case TUPLET_THREE -> ints(0xE883);
+             case TURN -> ints(0xE567);
+--- a/app/src/main/java/org/audiveris/omr/ui/symbol/LelandSymbols.java
++++ b/app/src/main/java/org/audiveris/omr/ui/symbol/LelandSymbols.java
+@@ -225,6 +225,7 @@
+             case TREMOLO_1 -> ints(0xE220);
+             case TREMOLO_2 -> ints(0xE221);
+             case TREMOLO_3 -> ints(0xE222);
++            case TUPLET_TWO -> ints(0xE882);
+             case TUPLET_SIX -> ints(0xE886);
+             case TUPLET_THREE -> ints(0xE883);
+             case TURN -> ints(0xE567);

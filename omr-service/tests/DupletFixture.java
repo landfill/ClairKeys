@@ -20,7 +20,7 @@ public class DupletFixture {
         for (Shape shape : new Shape[]{Shape.TUPLET_THREE, Shape.TUPLET_SIX}) {
             DurationFactor old = new TupletInter(null, shape, 1.0).getDurationFactor();
             int denominator = shape == Shape.TUPLET_THREE ? 3 : 6;
-            if (old.num != denominator * 2 / 3 || old.den != denominator)
+            if (old.actualNum != denominator * 2 / 3 || old.actualDen != denominator)
                 throw new AssertionError("existing tuplet changed");
         }
         System.out.println("duplet factor cases OK");

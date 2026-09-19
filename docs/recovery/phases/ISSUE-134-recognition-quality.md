@@ -326,6 +326,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 기준선 실패 native fixture부터 normal/recovery 전체 빌드, Clair3회187/191 예상의 실제 평가,
   타이 개별 목록과12곡 corpus, 정상/부정 사례 및 CI·리뷰까지 검증한다. m3 둘잇단/타이13건 전체는 별도다.
 
+### m3 둘잇단4 (D-070)
+
+- 슬러에흡수된숫자2와미지원리듬을분리입증하고실패fixture부터작성한다.
+- 복합박자·두음단일빔·동일음가·숫자위치와원본잉크template판별을함께요구하며엔진내부tuplets경로만수정한다.
+- normal/recovery전체빌드·native정상/부정·Clair3회191/191목표의실측·타이개별목록·12곡corpus·성능/복구를검증한다.
+- 다른원인의누락타이전체와D-065후속은제외하며,최신head필수CI·실제리뷰까지확인한다. 병합/VM배포는별도승인이다.
+
 ## Completion criteria
 
 - 같은 원본에서 9/8과 원본의 확인 가능한 음높이·시작 박·길이가 실제로 개선된다.
