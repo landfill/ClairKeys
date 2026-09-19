@@ -2663,3 +2663,40 @@
 - Not-tested: 운영 VM 배포·재업로드. 빈 머리를 자기 화음으로 떼는 완전한 분리(남은 m5 duration 2·m7 duration 1)
 - Related: #134, D-049, D-052, D-066, validation/2026-09-18-issue-134-m5-empty-head-stage-trace.md,
   validation/2026-09-18-issue-134-shared-stem-duration-census.md, validation/2026-09-19-issue-134-shared-stem-void-head.md
+
+
+## D-068: 공유 기둥의 긴 음을 점 정리 전에 독립 화음으로 분리한다
+
+- Date: 2026-09-19
+- Status: Proposed; 로컬 실험·회귀 검증 후 PR 심사. 병합·운영 배포 미승인
+- Context: D-067 뒤 Clair m5의 점2분 F4, 점4분 F4와 m7 점4분 C4가 빔 달린 화음의 8분 음가를 받는다.
+  LINKS의 countDots는 머리들의 점 수를 평균내며 불일치한 점을 지우므로 그 전에 분리해야 한다.
+- Decision (검증할 후보):
+  1. SymbolsLinker 시작에서 표준 크기·단일 보표·빔 있는 복수 머리 화음만 검사한다. 연결된 빔 그룹의 모든 화음도 같은 보표에 있어야 한다.
+     그룹이 없거나 다른 보표가 포함되면 분리하지 않는다. mirror 머리는 제외한다.
+  2. 빈 머리와 검은 머리가 함께 있으면 빈 머리를 분리한다. 검은 머리는 점이 있고 기둥의 비정형 쪽으로 밀려 있으며,
+     반대쪽의 점 없는 검은 머리와 정확히 2도인 경우만 별도 긴 음 후보로 삼는다. 점의 차이만으로 보통 화음을 나누지 않는다.
+  3. 긴 음의 기존 머리·점·붙임줄과 head-stem 관계를 보존하고 독립 화음으로 옮긴다. 기둥은 공유하되 긴 화음에 저장되는
+     stem-beams-excluded 속성으로 beam/flag 상속을 막는다. 빔의 화음 조회에서도 이를 제외한다. SameTimeRelation으로 시작을 일치시킨다.
+     별도 논리 기둥 실험은 원래 기둥과 머리의 OVERLAP 배제 및 2도 이웃 소실에 따른 pruning으로 세 음 모두 삭제돼 폐기했다.
+  4. 한 화음에서 긴 머리가 정확히 하나인 경우만 처리한다. 정상 화음·mirror·작은 음표를 바꾸지 않고, XML/JSON 사후 보정은 하지 않는다.
+  5. 분리된 긴 화음은 타이 끝과 같은 기둥·SameTimeRelation을 공유하는 동시 음이다. SlurInter.isSpaceClear의 타이 사이 장애물
+     목록에서 이 명시적 분리 쌍만 제외한다. 이 처리 없이는 m4→m5 B4의 타이 경계 상자에 새 F4 화음이 들어가 타이가 슬러로 강등된다.
+     다른 기둥·다른 시점의 화음은 기존 장애물 검사에 남긴다. corpus와 부정 fixture로 검증한다.
+- Rejected: ChordSplitter 그대로 사용 | 공유 기둥의 빔이 모든 하위 화음에 적용되어 긴 음이 다시 짧아진다
+- Rejected: 빈 머리만 분리 | 목표 중 점4분 검은 머리 두 건을 해결하지 못한다
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Known limits:
+  - 한 화음에서 긴 머리 하나만 분리한다. 여러 긴 머리, mirror, small, cross-staff 및 빔 없는 사례는 그대로 둔다.
+  - 일반 점음표 화음의 다른 점이 인식되지 않으면 점을 가진 밀린2도가 별도 긴 성부처럼 보일 수 있다. 형태 조건으로 범위를 제한하지만
+    모든 해상도·판형의 모호성을 해소한 것으로 주장하지 않는다. 새로운 사례는 원본과 대조하고 판별 fixture를 먼저 추가한다.
+- Tested: 기준선 d067b-patched에서 점2분·점4분 각3조옮김×2엔진=12개 양성 단언 모두 음가 차이로 실패. 일반 점 없는2도 제어는 통과
+- Tested: 최종 이미지 전체186개 중180통과·6skip. native9개 모두 실제 실행, normal/recovery에서 분리 후 OMR저장·재로딩·재export 동등
+- Tested: Clair 182→185/191, 타이30/43·tempo69·canonical160 유지, 3회 raw 해시 동일(5b23e6fa…). 바뀐 마디5·7뿐, 쉼표·박자표·마디 길이 보존
+- Tested: 타입 검사·lint·Jest105 suites/1038 tests 통과. pinned 소스4개 checksum·정식 Dockerfile 빌드, 양쪽 jar 클래스 해시 동일
+- Tested: corpus12곡 기준선/패치 순차 재실행. 성공11곡 raw events 바이트 동일·애니메이션 생성시각 외 전 필드 동일; truongca는 양쪽 같은 3쪽 SCALE 실패
+- Not-tested: 운영 VM 배포·재업로드, 테스트 corpus 밖의 판형·해상도
+- Directive: PR 병합 및 운영 배포는 별도 명시적 승인 후 수행한다. 출력 XML/JSON 사후 보정은 하지 않는다
+- Related: #134, D-067, validation/2026-09-19-issue-134-shared-stem-chord-split.md

@@ -232,6 +232,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   없다. 브랜치 `bea1431`은 push·PR 전이며 배포도 없다. 운영은 PR163 `0e3dc61` 그대로다. 이 단계는 IN_PROGRESS.
   [기록](../validation/2026-09-17-issue-134-m9-beam-trim-thickness.md).
 
+### D-067 후속: 공유 기둥 화음 분리 (D-068)
+
+- m5 duration 2건·m7 duration 1건을 대상으로, 점 정리 전 머리 모양·점·기둥 방향의 근거로 긴 음을 독립 화음으로 분리한다.
+- 기준선 실패 fixture를 먼저 확보하고 normal/recovery 전체 빌드·네이티브 테스트, Clair 3회, 12곡 corpus를 비교한다.
+- 짧은 성부의 빔·시작 박과 긴 성부의 점·음가·붙임줄을 각각 검증한다. 판단은 기준표로 하고 운영 배포는 이 작업에 포함하지 않는다.
+
 ## Completion criteria
 
 - 같은 원본에서 9/8과 원본의 확인 가능한 음높이·시작 박·길이가 실제로 개선된다.

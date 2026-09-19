@@ -1,0 +1,222 @@
+--- a/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsLinker.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/symbol/SymbolsLinker.java
+@@ -21,6 +21,12 @@
+ // </editor-fold>
+ package org.audiveris.omr.sheet.symbol;
+
++import org.audiveris.omr.glyph.Shape;
++import org.audiveris.omr.sheet.Staff;
++import org.audiveris.omr.sig.inter.StemInter;
++import org.audiveris.omr.sig.relation.HeadStemRelation;
++import org.audiveris.omr.sig.relation.SameTimeRelation;
++import java.util.ArrayList;
+ import org.audiveris.omr.sheet.SystemInfo;
+ import org.audiveris.omr.sheet.rhythm.MeasureStack;
+ import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
+@@ -347,6 +353,81 @@
+         }
+     }
+
++    /** Separate independently engraved long notes before countDots discards their dots. */
++    private void splitSharedStemChords ()
++    {
++        for (Inter inter : new ArrayList<>(sig.inters(HeadChordInter.class))) {
++            final HeadChordInter chord = (HeadChordInter) inter;
++            final StemInter stem = chord.getStem();
++            if (chord instanceof SmallChordInter || stem == null
++                    || chord.getBeams().isEmpty() || chord.getMembers().size() < 2) {
++                continue;
++            }
++            final List<HeadInter> heads = new ArrayList<>();
++            boolean eligible = true;
++            for (Inter member : chord.getMembers()) {
++                HeadInter head = (HeadInter) member;
++                if (head.getMirror() != null || head.getStaff() != chord.getTopStaff()
++                        || (head.getShape() != Shape.NOTEHEAD_VOID
++                            && head.getShape() != Shape.NOTEHEAD_BLACK)) {
++                    eligible = false;
++                }
++                heads.add(head);
++            }
++            if (!eligible) {
++                continue;
++            }
++            // A chord can be single-staff while its shared beam group crosses staves.
++            final Staff staff = chord.getTopStaff();
++            final BeamGroupInter group = chord.getBeamGroup();
++            if (staff == null || group == null || group.getChords().stream().anyMatch(
++                    sibling -> sibling.getStaves().stream().anyMatch(s -> s != staff))) {
++                continue;
++            }
++            final List<HeadInter> longs = new ArrayList<>();
++            for (HeadInter head : heads) {
++                HeadStemRelation relation = (HeadStemRelation) sig.getRelation(head, stem, HeadStemRelation.class);
++                if (relation == null) {
++                    continue;
++                }
++                if (head.getShape() == Shape.NOTEHEAD_VOID
++                        && heads.stream().anyMatch(h -> h.getShape() == Shape.NOTEHEAD_BLACK)) {
++                    longs.add(head);
++                } else if (head.getShape() == Shape.NOTEHEAD_BLACK && head.getDotCount() == 1) {
++                    HorizontalSide nonCanonical = chord.getStemDir() < 0
++                            ? HorizontalSide.LEFT : HorizontalSide.RIGHT;
++                    if (relation.getHeadSide() != nonCanonical) {
++                        continue;
++                    }
++                    for (HeadInter other : heads) {
++                        HeadStemRelation otherRel = (HeadStemRelation) sig.getRelation(other, stem, HeadStemRelation.class);
++                        if (other.getShape() == Shape.NOTEHEAD_BLACK && other.getDotCount() == 0
++                                && otherRel != null && otherRel.getHeadSide() != nonCanonical
++                                && Math.abs(head.getIntegerPitch() - other.getIntegerPitch()) == 1) {
++                            longs.add(head);
++                            break;
++                        }
++                    }
++                }
++            }
++            if (longs.size() != 1 || longs.size() == heads.size()) {
++                continue;
++            }
++            for (HeadInter head : longs) {
++                HeadChordInter longChord = new HeadChordInter(chord.getGrade());
++                sig.addVertex(longChord);
++                longChord.setStem(stem);
++                longChord.setStaff(head.getStaff());
++                longChord.setStemBeamsExcluded(true);
++                chord.removeMember(head);
++                longChord.addMember(head);
++                chord.getMeasure().addInter(longChord);
++                sig.addEdge(chord, longChord, new SameTimeRelation());
++                logger.info("Shared stem: separated {} from {} into {}", head, chord, longChord);
++            }
++        }
++    }
++
+     //---------//
+     // process //
+     //---------//
+@@ -355,6 +436,7 @@
+      */
+     public void process ()
+     {
++        splitSharedStemChords();
+         linkDynamics();
+         linkTexts();
+         linkPedals();
+--- a/app/src/main/java/org/audiveris/omr/sig/inter/HeadChordInter.java
++++ b/app/src/main/java/org/audiveris/omr/sig/inter/HeadChordInter.java
+@@ -50,6 +50,7 @@
+ import java.util.Set;
+
+ import javax.xml.bind.annotation.XmlRootElement;
++import javax.xml.bind.annotation.XmlAttribute;
+
+ /**
+  * Class <code>HeadChordInter</code> is a AbstractChordInter composed of heads and possibly
+@@ -92,6 +93,27 @@
+         return Integer.compare(p1.x, p2.x);
+     };
+
++    /** This independent long voice shares the ink of a beamed stem, not its beams. */
++    @XmlAttribute(name = "stem-beams-excluded")
++    private boolean stemBeamsExcluded;
++
++    public boolean isStemBeamsExcluded ()
++    {
++        return stemBeamsExcluded;
++    }
++
++    public void setStemBeamsExcluded (boolean excluded)
++    {
++        stemBeamsExcluded = excluded;
++        invalidateCache();
++    }
++
++    @Override
++    public List<AbstractBeamInter> getBeams ()
++    {
++        return stemBeamsExcluded ? Collections.emptyList() : super.getBeams();
++    }
++
+     //~ Constructors -------------------------------------------------------------------------------
+
+     /**
+@@ -306,6 +328,9 @@
+     @Override
+     public int getFlagsNumber ()
+     {
++        if (stemBeamsExcluded) {
++            return 0;
++        }
+         int count = 0;
+
+         final StemInter stem = getStem();
+--- a/app/src/main/java/org/audiveris/omr/sig/inter/AbstractBeamInter.java
++++ b/app/src/main/java/org/audiveris/omr/sig/inter/AbstractBeamInter.java
+@@ -311,7 +311,11 @@
+
+         // Linked head-chords
+         for (StemInter stem : getStems()) {
+-            chords.addAll(stem.getChords());
++            for (HeadChordInter chord : stem.getChords()) {
++                if (!chord.isStemBeamsExcluded()) {
++                    chords.add(chord);
++                }
++            }
+         }
+
+         // Linked rest-chords
+@@ -402,7 +406,11 @@
+
+         // Linked head-chords
+         for (StemInter stem : getStems()) {
+-            headChords.addAll(stem.getChords());
++            for (HeadChordInter chord : stem.getChords()) {
++                if (!chord.isStemBeamsExcluded()) {
++                    headChords.add(chord);
++                }
++            }
+         }
+
+         final List<AbstractChordInter> chordList = new ArrayList<>(headChords);
+--- a/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java
++++ b/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java
+@@ -46,6 +46,7 @@
+ import org.audiveris.omr.sig.relation.Link;
+ import org.audiveris.omr.sig.relation.Relation;
+ import org.audiveris.omr.sig.relation.SlurHeadRelation;
++import org.audiveris.omr.sig.relation.SameTimeRelation;
+ import org.audiveris.omr.sig.ui.InterEditor;
+ import org.audiveris.omr.ui.Colors;
+ import org.audiveris.omr.ui.symbol.MusicFont;
+@@ -765,6 +766,11 @@
+         found.remove(leftChord);
+         found.remove(rightChord);
+
++        // Independently timed voices split from an endpoint are at the endpoint,
++        // not intervening chords. Keep all unrelated chords in the obstruction test.
++        found.removeIf(inter -> isSharedStemSibling(inter, leftChord)
++                || isSharedStemSibling(inter, rightChord));
++
+         // Exclude mirrors if any
+         if (leftHead.getMirror() != null) {
+             found.remove(leftHead.getMirror().getEnsemble());
+@@ -800,6 +806,18 @@
+         }
+
+         return true;
++    }
++
++    private boolean isSharedStemSibling (Inter inter, AbstractChordInter endpoint)
++    {
++        if (!(inter instanceof HeadChordInter other)
++                || !(endpoint instanceof HeadChordInter end) || endpoint.getStem() == null
++                || other.getStem() != endpoint.getStem()
++                || !(other.isStemBeamsExcluded() || end.isStemBeamsExcluded())) {
++            return false;
++        }
++        return sig.getRelation(other, endpoint, SameTimeRelation.class) != null
++                || sig.getRelation(endpoint, other, SameTimeRelation.class) != null;
+     }
+
+     //-------//
