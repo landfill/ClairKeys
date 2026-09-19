@@ -2,7 +2,7 @@
 
 ## 현재 상태
 
-로컬 필수 검증 완료, 코드/결정 head `56736f7` (엔진 구현 `df3f1af`). PR 생성·CI/리뷰 대기. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
+로컬 필수 검증 완료, 코드/결정 head `56736f7` (엔진 구현 `df3f1af`). [PR168](../reviews/PR-168.md) non-draft 생성, 현재 head CI/리뷰 대기. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
 사용자 권한은 로컬 수정·Docker 검증·PR·리뷰 대응까지이며 병합/운영 변경은 제외한다.
 사용자 미커밋 `2026-09-13-handoff-history.md`는 보존한다.
 
@@ -167,3 +167,5 @@ satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb
   `56736f7`은 결정 문서만 갱신하며 엔진/fixture/Docker source는 검증 이미지와 같다.
 - `ea3d005`, `821da4b`, `23bb01e`, `4159e88` 상태 기록의 check-runs는 각각6개 전부 성공했다.
 - 로컬 필수 검증 완료. 다음은 non-draft PR 및 현재 head CI/실제 자동 리뷰다. 아직 goal 완료나 phase DONE이 아니다.
+
+- PR168 생성/브랜치 push 완료. GitHub head56736f7 및 isDraft=false 확인. CI/리뷰 대기이며 병합·운영 변경 없음.

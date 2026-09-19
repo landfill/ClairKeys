@@ -233,6 +233,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   identical successes and1 identical page3 SCALE failure (99 exception-chain lines equal). Baseline negative
   controls48/48 pass. Next: non-draft PR and latest-head CI/automatic review. IN_PROGRESS.
 
+- 2026-09-19: [PR168](../reviews/PR-168.md) opened non-draft at56736f7 after local gates.
+  Current-head CI/automatic review pending; merge/deployment remain unapproved. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
