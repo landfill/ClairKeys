@@ -31,11 +31,12 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
    플레이어 UI·청취 E2E는 미실행이다.
 3. 남은 누락 6개([재분류](validation/2026-09-19-issue-134-residual-ties.md)): m12 X자 교차 1(곡선 가운데가 오선에 닿아 쪼개짐),
    시스템 경계 5(반쪽 곡선 6개 미검출: m3 A4·C5, m6 E4, m9 C5·E5).
-4. **시스템 경계 타이5개 로컬 구현·필수 검증 완료**, 작업 `a8d6b28`(코드`13431f0`).
-   d073c/d는 실행코드가 같고, 이미지190통과/6보관진단skip(native19실행), Clair3회191/191·42/43·오검출0이다.
-   최종 corpus는10곡동일·모노노케 인쇄타이1개개선·동일SCALE실패1곡이다. [상세 근거](validation/2026-09-20-issue-134-cross-system-ties.md).
-   **다음은 PR 생성·최신 CI/실제 리뷰 대응**이다. 상태 커밋600ae80/621b576 보안 감사는 npm bulk503/quick400 오류로 실패해 재확인 중이다.
-   m3 C5의 성부2→1 재생 병합과 m12 교차는 별도 후속이다. main 병합 및 운영 VM 접근·배포는 이번 승인 범위 밖이다.
+4. **시스템 경계 타이5개 [PR172](reviews/PR-172.md) 생성 완료**, head `b8de0a8`.
+   로컬: 이미지190통과/6보관진단skip(native19실행), Clair3회191/191·42/43·오검출0.
+   최종 corpus10곡동일·모노노케 인쇄타이1개개선·동일SCALE실패1곡. [검증](validation/2026-09-20-issue-134-cross-system-ties.md).
+   **다음은 최신 head CI와 실제 Codex 리뷰 대응**이다. npm 감사 API는 최소 공개패키지 요청에도 maintenance503을 반환하며,
+   PR172와 상태 커밋들의 Security Audit가 실패했다. 복구 후 같은 검사 재실행이 필요하며 현재 goal은 미완료다.
+   m3 C5 성부2→1 재생 병합과 m12 교차는 별도 후속이다. main 병합 및 운영 VM 접근·배포는 승인 범위 밖이다.
 
 
 ## Latest verified result

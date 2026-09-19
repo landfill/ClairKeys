@@ -156,3 +156,13 @@
   [npm 점검 공지](https://status.npmjs.org/incidents/6kdnyl79gkxs)는17:00–19:00UTC 같은 시간대의 website/publishing 점검이며,
   감사 서비스는 영향 대상으로 명시되지 않아 이번 감사503의 원인으로 단정하지 않는다.
 - 검사 기준을 낮추거나 결과를 강제로 성공 처리하지 않는다. 실패 job을 workflow 종료 후 재실행하고 실제 결과로 판단한다.
+
+## PR 생성과 감사 API 분리 재현
+
+- 최신 main 상태 기록을 작업 브랜치에 merge한 `b8de0a8`을 push하고 [PR172](../reviews/PR-172.md)를 non-draft로 생성했다.
+  `git diff --exit-code a8d6b28 HEAD -- omr-service src fixtures`는0/빈 diff였다. main으로 feature를 병합한 것이 아니다.
+- 최소요청 `POST https://registry.npmjs.org/-/npm/v1/security/advisories/bulk`, JSON `{"lodash":["4.17.21"]}`도
+  HTTP503·`{"error":"We are currently performing maintenance. For more info go to https://status.npmjs.org"}`를 반환했다.
+  이 응답은 코드/lockfile 변경과 무관한 감사 서비스 유지보수를 직접 확인한다. 상태 페이지의 공지 종료는19:00UTC(9/20 04:00KST) 예정이다.
+- PR172 Security Audit job105936203747도 같은 quick400이다. 상태 커밋 da53a24도 같은 시점 보안감사 실패를 확인했다.
+  모든 실패는 복구 후 검사 결과를 확인하기 전 성공으로 세지 않는다. 최신 리뷰/CI 상태는 PR172 기록과 GitHub를 따른다.

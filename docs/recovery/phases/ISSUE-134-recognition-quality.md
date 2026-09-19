@@ -433,6 +433,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Type/lint/Jest1038 pass, self-review bounds enforced. PR/CI/actual review remain; npm audit bulk503/quick400 is an external
   check failure under investigation, not a passing audit. m3 C5 canonical cross-voice limitation remains. IN_PROGRESS.
 
+- 2026-09-20: Non-draft [PR172](../reviews/PR-172.md) opened at `b8de0a8` after local gates and main evidence synchronization
+  (execution code unchanged). Actual Codex review and CI are running. Security Audit fails on npm's maintenance503/quick400,
+  reproduced with a one-package public payload; no check weakening. No merge or production access. Goal and phase remain in progress.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
