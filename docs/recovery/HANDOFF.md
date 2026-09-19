@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-09-19 KST
+Last updated: 2026-09-20 KST
 
 ## Current phase
 
@@ -31,8 +31,10 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
    플레이어 UI·청취 E2E는 미실행이다.
 3. 남은 누락 6개([재분류](validation/2026-09-19-issue-134-residual-ties.md)): m12 X자 교차 1(곡선 가운데가 오선에 닿아 쪼개짐),
    시스템 경계 5(반쪽 곡선 6개 미검출: m3 A4·C5, m6 E4, m9 C5·E5).
-4. **다음 수정 대상 선택은 사용자 결정.** 후보: 시스템 경계(사라진 반쪽의 삭제 단계 추적 선행) 또는 m12 교차 단독 사례.
-   D-065 후속은 별도 낮은 우선순위다. 전체 #134는 IN_PROGRESS다.
+4. **사용자가 시스템 경계 타이 5개 개선을 선택하고 로컬 구현·Docker 검증·자체 리뷰·PR/CI/리뷰 대응까지 승인했다.**
+   `codex/issue-134-cross-system-ties`에서 미검출 반쪽 6개의 단계별 원인을 추적 중이다.
+   새 d072b 기준선은 191/191·타이37/43·오검출0을 재현했다. [진행 근거](validation/2026-09-20-issue-134-cross-system-ties.md).
+   m12 교차·D-065 후속은 제외한다. main 병합 및 운영 VM 접근·배포는 이번 승인 범위 밖이다. 전체 #134는 IN_PROGRESS다.
 
 ## Latest verified result
 
