@@ -17,30 +17,32 @@ m9 빔 복원 [PR164](reviews/PR-164.md)(D-065, `bbcc09b`)는 2026-09-18 배포�
 기둥 공유 빈 머리 [PR166](reviews/PR-166.md)(D-067, `b15d0fd`)은 2026-09-19 병합·배포됐고 앱 재변환 결과가 로컬 검증과 전 필드 같다.
 공유 기둥 화음 분리 [PR167](reviews/PR-167.md)(D-068, `983caf9`)도 2026-09-19 배포했다. 이미지/native/클래스/health 검증은 완료했고,
 그시점의운영원본PDF재변환은수행하지않았다. 이후m1점PR168과m3둘잇단PR169(9e4020a)을병합·배포했고,
-현재운영원본기준이벤트191/191·타이31/43을확인했다. 나머지타이12개는남아있다.
+이어 D-071 같은 시점 다른 성부 타이 [PR170](reviews/PR-170.md)(`122f5bc`)을 병합·배포했고,
+현재 운영 원본 기준 이벤트191/191·타이34/43을 확인했다. 곡선이 없는 타이 9개가 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **[PR169](reviews/PR-169.md) 병합·브랜치정리·승인된VM배포완료.** 운영`9e4020a`,image850a4143,
-   rollback-pr169-20260919→f14c2f83보존. [배포·운영스모크·롤백](validation/2026-09-19-d070-duplet-deployment.md).
-2. 운영Clair **191/191·타이31/43·누락12·오검출0** 확인. 로컬과raw/평가전체동일,canonical은생성시각외동일.
-   사용자의17:17KST앱재변환160음도검증본과전필드같음을확인했다(job f4072a8b…).
-   처리완료/callback전달/저장JSON을확인했으며플레이어UI·청취E2E는미실행이다.
-3. 남은 타이12개를 2026-09-19 저장 그래프로 재분류했다([기록](validation/2026-09-19-issue-134-residual-ties.md), 코드 변경 없음).
-   **E. 같은 시점 다른 성부 화음의 판정 상자 침범 3**(m9 E3·G3, m10 D5: 곡선·머리 연결은 정상, `isSpaceClear` 침범0.39/0.43>0.25),
-   A. 오선 접선 purge 3(m3 G4·m13 G3·m14 D3), m12 X자 교차 1,
-   시스템 경계 5(반쪽 곡선6개 미검출 → 남은 반쪽이 다른 음·이음줄과 짝지어짐).
-4. **E 수정(D-071) [PR170](reviews/PR-170.md) 사용자 승인으로 `122f5bc` 병합·브랜치 정리 완료, 승인된 VM 배포 진행 중.** 운영은 전환 전까지 PR169 `850a4143`.
-   d071 이미지 Clair **191/191·타이34/43·오검출0**(3회 동일), corpus11곡 동일, native13개 실행. [검증](validation/2026-09-19-issue-134-aligned-voice-ties.md).
-   남은 누락9: 기전A3(m3 G4·m13 G3·m14 D3)·m12 교차1·시스템 경계5. D-065후속은 별도 낮은 우선순위다. 전체#134는IN_PROGRESS다.
+1. **[PR170](reviews/PR-170.md) 병합·브랜치 정리·승인된 VM 배포 완료.** 운영 `122f5bc`, image `79cbc6ab…`,
+   `rollback-pr170-20260919`→`850a4143…`(PR169) 보존. [배포·운영 스모크·롤백](validation/2026-09-19-d071-aligned-voice-tie-deployment.md).
+2. 운영 Clair **191/191·타이34/43·누락9·오검출0**. raw events·평가 객체가 로컬 최종 검증과 같고 animation은 생성 시각만 다르다.
+   기존 저장 악보는 앱에서 다시 변환해야 반영된다. 웹 업로드/callback/player E2E는 미실행이다.
+3. 남은 누락 9개는 모두 곡선이 검출되지 않은 경우다([재분류](validation/2026-09-19-issue-134-residual-ties.md)):
+   기전 A 오선 접선 purge 3(m3 G4·m13 G3·m14 D3), m12 X자 교차 1, 시스템 경계 5(반쪽 곡선 6개 미검출).
+4. **다음 수정 대상 선택은 사용자 결정.** 후보: A(2026-09-14 후보2, purge 예외) 또는 시스템 경계(삭제 단계 추적 선행).
+   D-065 후속은 별도 낮은 우선순위다. 전체 #134는 IN_PROGRESS다.
 
 ## Latest verified result
 
-- **D-071 로컬 / 2026-09-19**: d071-patched, head `8d7812f`([PR170](reviews/PR-170.md)). 기준선 d070b에서 실패하던 native fixture가 양쪽 엔진 통과.
+- **OMR 운영 / PR170(2026-09-19 20:32 KST)**: `122f5bc`, image `79cbc6ab…`, rollback `850a4143…`.
+  VM 190개 중 184통과/6진단skip(native13 모두 실행), 두 엔진 JAR 2433항목·/app·테스트 클래스가 로컬 d071과 동일.
+  active·healthy, 외부200/401, journal오류0, env/unit/data 보존. 운영 모듈 Clair **191/191·타이34/43·오검출0**,
+  raw/평가 로컬 동일, canonical157. 임시 PDF/OMR3 제거·잔여0. [검증/한계](validation/2026-09-19-d071-aligned-voice-tie-deployment.md).
+
+- **D-071 로컬 / 2026-09-19**: d071-patched, head `8d7812f`([PR170](reviews/PR-170.md), `122f5bc`로 병합·배포). 기준선 d070b에서 실패하던 native fixture가 양쪽 엔진 통과.
   Clair 타이31→**34/43**·이벤트191/191·오검출0 3회 동일, 목표 곡선3개의 tie 플래그만 변경. 이미지184통과·6진단skip/native13 실행,
-  corpus11동일/1같은SCALE실패, 타입/lint/Jest1038. 병합·배포 미승인. [근거·한계](validation/2026-09-19-issue-134-aligned-voice-ties.md).
+  corpus11동일/1같은SCALE실패, 타입/lint/Jest1038. 위 PR170 운영 스모크에서 같은 결과를 확인했다. [근거·한계](validation/2026-09-19-issue-134-aligned-voice-ties.md).
 
 - **OMR 운영 / PR169(2026-09-19 15:25 KST)**:9e4020a,image850a4143…,rollbackf14c2f83….
   VM183통과/6진단skip(native12모두실행),normal/recovery각2,433JAR항목·source/fonts로컬동일.
@@ -145,6 +147,10 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   [17마디 기준 비교](validation/2026-09-13-issue-134-residual-timing.md).
 
 ## Known blockers / constraints
+
+- 2026-09-19: 사용자 명시적 승인으로 PR170 병합·원격→main→로컬 브랜치 정리·VM 배포를 완료했다.
+  사용자 history 메모 SHA `36207439…` 보존, 운영 `122f5bc`/`79cbc6ab`, `rollback-pr170-20260919` 보존.
+  공개 첨부본 동일성 확인 후 임시 운영 스모크 191/191·타이34/43, PDF/OMR 잔여0. [근거](validation/2026-09-19-d071-aligned-voice-tie-deployment.md).
 
 - 2026-09-19: 사용자명시적승인으로PR169병합·원격→main→로컬브랜치정리·VM배포를완료했다.
   사용자history메모SHA36207439…보존,운영9e4020a/850a4143,rollback-pr169-20260919보존.

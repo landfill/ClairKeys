@@ -383,6 +383,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   merged as `122f5bc` (code diff to head 0). Both branch tips contained with zero unique commits; deleted remote -> local, user note
   hash unchanged. VM rollout in progress; production stays PR169 `850a4143` until verified cutover. IN_PROGRESS.
 
+- 2026-09-19: Authorized PR170 rollout complete at 20:32:15 KST, exact `122f5bc`/image `79cbc6ab…`, rollback `850a4143…` retained.
+  VM 190 tests 184 pass/6 diagnostic skips, native 13 run; both engines' 2433 JAR entries, /app and test classes match local d071.
+  Active/healthy, external 200/401, journal errors 0, env/unit/data preserved. Production module smoke on the public-attachment PDF:
+  191/191, ties 34/43, missing 9, unexpected 0; raw/evaluation equal local, animation equal except generated_at. Originals removed.
+  Remaining 9 ties all lack curves (A 3, m12 1, cross-system 5). Web E2E and live rollback not run. IN_PROGRESS.
+  [Deployment](../validation/2026-09-19-d071-aligned-voice-tie-deployment.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
