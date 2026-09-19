@@ -12,7 +12,7 @@
 @@ -268,6 +270,9 @@
           */
          private List<Glyph> systemWeaks;
- 
+
 +        /** Immutable staff-free pixels, before any recognized symbol is erased. */
 +        private final ByteProcessor original;
 +
@@ -25,7 +25,7 @@
              super(buffer, g, sheet);
 +            original = (ByteProcessor) buffer.duplicate();
          }
- 
+
          //---------//
 @@ -470,6 +476,94 @@
          //-------//
