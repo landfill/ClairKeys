@@ -398,6 +398,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   gains one printed tie, truongca same failure. PR creation awaits user approval. IN_PROGRESS.
   [Evidence](../validation/2026-09-19-issue-134-staff-line-purge-ties.md).
 
+- 2026-09-19: [PR171](../reviews/PR-171.md) opened non-draft on user approval at `3143f2d`. All required checks pass (hosted Jest 105
+  suites/1038 tests, both E2E jobs). Codex review completed with one P1 claiming Lore trailers missing on `f6758cf`; that commit exists
+  neither locally nor on GitHub and all four PR commits carry the trailers, so it was rejected with evidence and the thread resolved.
+  CLEAN/MERGEABLE. Merge and VM rollout await separate explicit approval. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
