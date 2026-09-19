@@ -1,0 +1,58 @@
+--- a/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java
++++ b/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java
+@@ -770,6 +770,11 @@
+         // not intervening chords. Keep all unrelated chords in the obstruction test.
+         found.removeIf(inter -> isSharedStemSibling(inter, leftChord)
+                 || isSharedStemSibling(inter, rightChord));
++
++        // Another voice's chord standing at an end head, stem the other way, sounds
++        // with that end rather than between the heads.
++        found.removeIf(inter -> isAlignedOtherVoice(inter, leftHead, leftChord)
++                || isAlignedOtherVoice(inter, rightHead, rightChord));
+
+         // Exclude mirrors if any
+         if (leftHead.getMirror() != null) {
+@@ -808,6 +813,32 @@
+         return true;
+     }
+
++    private boolean isAlignedOtherVoice (Inter inter,
++                                         HeadInter endHead,
++                                         AbstractChordInter endpoint)
++    {
++        if (!(inter instanceof HeadChordInter other) || !(endpoint instanceof HeadChordInter)
++                || other.getStaff() == null || other.getStaff() != endpoint.getStaff()
++                || other.getStemDir() * endpoint.getStemDir() != -1) {
++            return false;
++        }
++
++        final Rectangle end = endHead.getBounds();
++
++        for (Inter note : other.getNotes()) {
++            final Rectangle box = note.getBounds();
++            final int overlap = Math.min(end.x + end.width, box.x + box.width)
++                    - Math.max(end.x, box.x);
++
++            if (overlap >= constants.minAlignedVoiceOverlap.getValue()
++                    * Math.min(end.width, box.width)) {
++                return true;
++            }
++        }
++
++        return false;
++    }
++
+     private boolean isSharedStemSibling (Inter inter, AbstractChordInter endpoint)
+     {
+         if (!(inter instanceof HeadChordInter other)
+@@ -1152,6 +1183,10 @@
+         private final Constant.Ratio maxTieIntersection = new Constant.Ratio(
+                 0.25,
+                 "Maximum intersection for a chord invading a tie");
++
++        private final Constant.Ratio minAlignedVoiceOverlap = new Constant.Ratio(
++                0.5,
++                "Minimum horizontal overlap of an opposite-stem voice head with a tie end head");
+
+         private final Constant.Double maxPointingDy = new Constant.Double(
+                 "pixels",
