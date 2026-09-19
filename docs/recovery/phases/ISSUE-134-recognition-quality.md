@@ -236,6 +236,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-19: [PR168](../reviews/PR-168.md) opened non-draft at56736f7 after local gates.
   Current-head CI/automatic review pending; merge/deployment remain unapproved. IN_PROGRESS.
 
+- 2026-09-19: PR168 Codex review completed on56736f7 with no findings (+1 and0 threads verified).
+  CodeRabbit skip is not counted as review. Unit/type/lint/security checks pass; required E2E2 pending. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
