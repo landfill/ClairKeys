@@ -265,6 +265,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   application/engine/fixture code matches reviewed2458daf exactly. User changes and both branches
   preserved; no production rollout. Overall phase stays IN_PROGRESS.
 
+- 2026-09-19: User explicitly requested branch cleanup and VM rollout for PR168. Both contained
+  branch tips were deleted with the user note hash unchanged. Exact6de51f1 VM build underway; current
+  service still PR167 until verified cutover. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
