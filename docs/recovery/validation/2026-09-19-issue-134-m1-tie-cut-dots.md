@@ -2,7 +2,7 @@
 
 ## 현재 상태
 
-로컬 필수 검증 완료, 코드/결정 head `56736f7` (엔진 구현 `df3f1af`). [PR168](../reviews/PR-168.md) non-draft 생성, 현재 head CI/리뷰 대기. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
+로컬 필수 검증 완료, 코드/결정 head `2458daf` (엔진 구현 `df3f1af`). [PR168](../reviews/PR-168.md) non-draft 생성, 현재 head CI/리뷰 대기. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
 사용자 권한은 로컬 수정·Docker 검증·PR·리뷰 대응까지이며 병합/운영 변경은 제외한다.
 사용자 미커밋 `2026-09-13-handoff-history.md`는 보존한다.
 
@@ -169,3 +169,12 @@ satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb
 - 로컬 필수 검증 완료. 다음은 non-draft PR 및 현재 head CI/실제 자동 리뷰다. 아직 goal 완료나 phase DONE이 아니다.
 
 - PR168 생성/브랜치 push 완료. GitHub head56736f7 및 isDraft=false 확인. CI/리뷰 대기이며 병합·운영 변경 없음.
+
+## 공백 정리 후 재빌드
+
+- 최종 committed diff 검사에서 발견한 patch 문맥 공백2줄을2458daf로 정리했다. 소스 동작은 바꾸지 않았다.
+- `d069b-patched` 실제 Dockerfile 전체 빌드 성공. 기존d069와 새d069b의 두 엔진 디렉터리/모든 JAR entry,
+  test classes와 app/test Python·Java 소스40,909개 항목의 SHA가 전부 동일하다. 설치된 Python74패키지 이름·버전도 동일하다.
+  `runtime-before-clean.json`/`runtime-after-clean.json` 객체 전체 equality로 확인했다.
+- corpus24회 결과는 이 실행 코드/의존성 동등성으로 새 이미지에도 적용한다. 이미지 suite와 Clair3회는 추가 실행 중이다.
+  새 headCI와 Codex 재리뷰도 다시 확인한다. [리뷰 기록](../reviews/PR-168.md).
