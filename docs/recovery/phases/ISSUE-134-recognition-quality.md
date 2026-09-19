@@ -299,6 +299,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   JAR entries match between engines and all other entries/models match baseline. Image183pass/6diagnostic
   skips, native12all executed; type/lint/Jest1038pass. FinalClair3runs/corpus12pairs in progress. IN_PROGRESS.
 
+- 2026-09-19: Final d070 Clair3/3 scores191/191 and ties31/43, unexpected0, same raw hash.
+  Only four m3 normalized events and three canonical notes differ; divisions2→4 explains other raw integers.
+  All52 curves/glyphs/tie flags unchanged. Direct diff self-review recorded; corpus and PR gates pending. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
