@@ -3,11 +3,33 @@
 ## 범위와 현재 상태
 
 - 사용자 승인: m3 A4/C5, m6 E4, m9 C5/E5의 로컬 원인 추적·fixture·구현·Docker 검증·자체 리뷰·PR 생성·CI/리뷰 대응.
-- main 병합, 운영 VM 접근·배포, m12 교차 및 D-065 후속 제외. 목표는 이벤트191/191·타이42/43·오검출0이며 아직 미달성이다.
+- main 병합, 운영 VM 접근·배포, m12 교차 및 D-065 후속 제외. 목표 수치 이벤트191/191·타이42/43·오검출0은 달성했다. 전체 goal은 PR CI/실제 리뷰 완료 전까지 진행 중이다.
 - main `98e1eae`에서 `codex/issue-134-cross-system-ties` 생성. fetch 후 main 뒤처짐0.
 - 기존 사용자 history 메모 SHA256 `36207439c88183b72476b4c98aa6962ec9a5b4439f4837711699e5d177f8a947` 보존.
 - Docker29.4.0 실행 중, 실행 컨테이너0 확인. 기존 이미지 보존.
 - 로컬 산출물: Git 제외 `local-test-data/results/issue134-cross-system-2026-09-20/`.
+
+## 현재 결과 (최종 로컬 게이트 완료)
+
+- 작업 head `a8d6b28`. 최종 Java 변경은 `13431f0`에 있으며 이후 결정 문서만 갱신했다.
+- 기준선 `d072b-patched`: `sha256:b429399a1cf9ea9cd702276fc742b4b90a95acea2aea278fcdcf12862fa47ce4`.
+- 전체 테스트/반복/corpus 실행 이미지 `d073c-patched`: `sha256:5071772acd9345b9e45c6c20a909021d34a8de3cc886fb5bf4b5c3a9c58f9f01`.
+- context공백 정리 후 정식 재빌드 `d073d-patched`: `sha256:197205ebb37d74c5bb63d65d82a922e5b8c2e6e95c17027b964da71fabb57c15`.
+  아래 기록대로 c/d 실행 코드·의존성·테스트가 모두 동일하다. d를 별도로 전체 suite 실행했다고 주장하지 않는다.
+
+| 필수 로컬 검증 | 최종 결과 |
+|---|---|
+| 정식 Dockerfile 전체 빌드 | c/d 성공, pinned source/checksum/patch 적용 성공 |
+| 양쪽 엔진 무결성 | 각2433 JAR항목 중 네 수정 클래스 계열만 변경, normal/recovery의 새 코드 동일 |
+| 이미지 전체 suite | 196개 중190통과·6보관진단skip, native19개 모두 실행·통과 |
+| native 회귀 판별 | Part우선순위·line-head 경계 fixture 기준선양쪽실패→후보양쪽통과. 정상/작은호/미짝끝 대조군 유지 |
+| Clair 최종3회 | 전부191/191·42/43·오검출0, raw SHA8224a58a… 동일. 28.912/28.760/31.006초, 자식 maxRSS 최대1,041,220KiB |
+| 최종12곡 비교 | 10동일, 모노노케 인쇄타이1개 개선, truongca 동일3쪽SCALE실패126줄. 경계 제한 전후 결과도 동일 |
+| 타입/lint/Jest | 통과, Jest105suites1038tests. 최초 Docker cleanup 문자열 검사 실패는 수정 후 전체 재검증 |
+| 자체 리뷰 | 내부 경계/orphan분류·최종 음높이 재판정 거부·동일 쪽 중복·애매한 매칭·양쪽 설치·예상 밖 raw차이 점검 |
+
+- 남은 작업: non-draft PR, 최신 head CI/실제 리뷰 및 actionable 대응. npm 감사 endpoint 오류는 아래 별도 기록을 따른다.
+- 남은 한계: m12 교차1개, m3 C5 성부2→1의 canonical 병합, 페이지 간 새 반쪽 복원은 이번 범위 밖이다.
 
 ## 기준선 재현
 
@@ -18,7 +40,7 @@
 - 원본 기준표 평가: **191/191·타이37/43·누락6·오검출0**, canonical154·tempo69·9/8.
 - 누락 목록: m3 A4/C5, m6 E4, m9 C5/E5, m12 F3. baseline/evaluation.json·summary.json·events.json·중간 OMR 보존.
 
-## 다음 검증 / 한계
+## 착수 시점의 다음 검증 / 한계
 
 - 기존 로그 전용 진단 코드를 d072b SlursBuilder에 적용해 시스템 경계 영역의 seed/weed/prune 과정을 추적 중이다.
 - 아직 구현·새 fixture·corpus·전체 테스트·PR 없음. 기준선 단일 실행을 최종 반복 검증으로 세지 않는다.
@@ -120,3 +142,17 @@
   로그 원인: `npm audit --audit-level high --json`의 registry.npmjs.org `/security/audits/quick` 요청이 HTTP400 Bad Request로 종료됐다.
   취약점 판정 통과/실패 결과가 아니라 감사 endpoint 오류다. 검사 기준/의존성을 변경하지 않고 해당 job 재실행을 요청했다.
   재실행 결과 확인 전 이 커밋의 CI를 전체 성공으로 표시하지 않는다. 원본 로그는 `main-security-failure.log`에 보존했다.
+
+## 최종 corpus 및 외부 감사 오류의 상세
+
+- `run_guarded_gates.py` 완료: 기존 동일 이미지의 fresh baseline12개에 대해 최종 c 후보12개를 다시 실행했다.
+  11곡 raw/canonical 및1곡 실패는 경계 제한 전과도 동일(`guard-effect-comparison.json`).
+- `621b576` 상태 커밋의 Security Audit도 quick endpoint400으로 실패했다. 첫 `gh run rerun35457038996 --job105934061870`은
+  원래 workflow의 E2E가 진행 중인 상태에서 `job cannot be rerun`으로 거절됐다. 재실행이 실제 시작됐다고 세지 않는다.
+- 로컬 동일 `npm audit --audit-level high --json`도 실패했다. npm10.9.3 debug 로그는 먼저
+  `POST /-/npm/v1/security/advisories/bulk →503`, 이후 구형 quick fallback→400을 보여준다.
+  CI npm10.9.8 report는 quick400과 endpoint retirement notice를 담는다. package.json/lock 변경 없음.
+- 공식 [bulk API 문서](https://api-docs.npmjs.com/#tag/Audit)를 확인했다.
+  [npm 점검 공지](https://status.npmjs.org/incidents/6kdnyl79gkxs)는17:00–19:00UTC 같은 시간대의 website/publishing 점검이며,
+  감사 서비스는 영향 대상으로 명시되지 않아 이번 감사503의 원인으로 단정하지 않는다.
+- 검사 기준을 낮추거나 결과를 강제로 성공 처리하지 않는다. 실패 job을 workflow 종료 후 재실행하고 실제 결과로 판단한다.

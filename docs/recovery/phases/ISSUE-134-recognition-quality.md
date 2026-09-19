@@ -427,6 +427,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Type/lint/Jest1038 and13 pairing scenarios pass; scope and failures are recorded in
   [validation](../validation/2026-09-20-issue-134-cross-system-ties.md). Overall #134 stays IN_PROGRESS.
 
+- 2026-09-20: D-073 local gates complete at `a8d6b28` (code `13431f0`): d073c image190pass/6 retained-diagnostic skips,
+  all19 native tests run; guarded Clair3/3 scores191/191·42/43·unexpected0 with identical raw. Final corpus10 identical,
+  Mononoke gains one printed D♭5 tie, truongca same SCALE failure. Runtime-equivalent d073d rebuild verified across40955 entries.
+  Type/lint/Jest1038 pass, self-review bounds enforced. PR/CI/actual review remain; npm audit bulk503/quick400 is an external
+  check failure under investigation, not a passing audit. m3 C5 canonical cross-voice limitation remains. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
