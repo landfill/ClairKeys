@@ -283,6 +283,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   production env/unit/data and user note preserved. Web upload/callback/player E2E not run. IN_PROGRESS.
   [Deployment](../validation/2026-09-19-d069-m1-dot-deployment.md).
 
+- 2026-09-19: m3 duplet work starts from latest main ff88b8d on codex/issue-134-m3-duplet.
+  Fresh d069b baseline confirms187/191, ties30/43, raw191/canonical160/tempo69.
+  CURVES/SYMBOLS/LINKS traces show the printed2s absorbed by slur glyphs; the engine also lacks
+  a duplet shape/factor. Native regression cdb43d9 fails on both baseline engines before implementation.
+  Recognition experiments and all implementation/validation/PR gates remain. IN_PROGRESS.
+  [Evidence](../validation/2026-09-19-issue-134-m3-duplet.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
