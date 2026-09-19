@@ -196,6 +196,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-19: [PR167](../reviews/PR-167.md) opened non-draft at `63487c0` after local gates and self-review. Current-head CI and automatic
   review are pending; no merge or rollout approval. The overall recognition-quality phase remains IN_PROGRESS.
 
+- 2026-09-19: PR167 final head `cacce3a` fixes the cross-staff-group review finding, with a native graph regression failing before/passing after.
+  Latest image: 181 passed/6 skipped, all10 native tests run; Clair185/191 and ties30/43 over3 identical reference-evaluated runs;
+  latest corpus11 identical successes plus the same page3 SCALE failure. Required CI (both E2E workflows) passes and Codex rereview has
+  no new findings. Both threads resolved; the incorrect Lore report was rejected with actual commit API evidence. Implementation/PR goal
+  complete; merge and production rollout remain unapproved. Overall phase stays IN_PROGRESS. [Review](../reviews/PR-167.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

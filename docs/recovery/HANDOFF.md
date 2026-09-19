@@ -21,22 +21,21 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **D-068 [PR167](reviews/PR-167.md)의 CI·자동 리뷰를 확인한다.** non-draft로 생성했다. Codex의 cross-staff 그룹 제외 P1을 `cacce3a`로 수정·push했다. 새 head Codex 재리뷰는 새 지적 없이 완료됐고, CI·corpus 재확인 중이다.
-   새 이미지 Clair3회도 185/191·타이30/43·raw 바이트 동일, 전체 suite는181통과·6skip(native10개 모두 실행)이다.
-   Lore trailer 누락 지적은 실제 커밋 원문으로 반증해 REJECTED 처리했다.
-   로컬 검증은 Clair **185/191·타이30/43** 3회 동일, 전체 이미지180통과·6skip(native9개 모두 실행),
-   corpus 성공11곡 동일·1곡 양쪽 같은 SCALE 실패다. [검증·자체 리뷰](validation/2026-09-19-issue-134-shared-stem-chord-split.md).
-   actionable feedback에 대응한 뒤 대상 PR의 명시적 병합 승인을 요청한다. 운영은 PR166이며 배포는 미승인이다.
-2. **다음 범위 후보**: m1 점 누락2, m3 둘잇단4, 남은 타이13건. `d067b-patched` 재검증 타이는 **30/43**으로,
-   아래 타이29/43·누락14는 D-067 이전 수치다. D-068은 타이 누락/오검출 목록을 그대로 보존한다.
-3. **후속 후보(우선순위 낮음)**: 기전 E(m3 둘잇단)는 엔진 `Shape`에 `TUPLET_TWO`가 없어 범위가 가장 크다.
-   m1의 missing-dot 2건은 타이가 점을 자르는 별개 원인이다.
-   D-065 후속(두께로 거부한 후보를 `rawSystemBeams`에 남기지 않기)은 진짜 빔까지 살릴 가능성이 있으나
-   BEAMS 단계 범위가 커지고 corpus 12곡 재검증이 필요하다([근거](reviews/PR-164.md)).
-4. **남은 타이 14건**: 마디별로 m3 4 · m9 4 · m5·m6·m10·m12·m13·m14 각 1이다.
-   원인별로는 기전 A(오선 접선 purge) 3건, m12 X자 교차 1건, 시스템 경계 오연결 5, slur 오분류 1, 선행 리듬 연쇄 4.
+1. **[PR167](reviews/PR-167.md)(D-068)의 사용자 병합 승인을 기다린다.** 구현·자체 검증·자동 리뷰 대응 완료.
+   최신 head `cacce3a`의 필수 CI(E2E 두 workflow 포함) 모두 성공, Codex 재리뷰 새 지적0, 두 review thread 모두 resolved다.
+   승인 후 당시 head·CI·리뷰·병합 가능 상태를 다시 확인한다. 운영 OMR 배포는 별도 승인이 필요하다.
+2. **현재 운영은 PR166 그대로다.** D-068 로컬 결과는185/191·타이30/43이며 운영에 반영하지 않았다.
+   [최신 검증·실패 이력·한계](validation/2026-09-19-issue-134-shared-stem-chord-split.md).
+3. **후속 범위 후보**: m1 점 누락2(타이가 점을 자름), m3 둘잇단4(엔진 Shape에 TUPLET_TWO 없음), 남은 타이13건.
+   최신 기준표의 누락 타이는 m3 4·m9 4·m6/m10/m12/m13/m14 각1이다. 아래 과거29/43·누락14는 D-067 이전 기록이다.
+4. D-065 후속(두께로 거부한 후보를 rawSystemBeams에 남기지 않기)은 별도 BEAMS 범위와 corpus 재검증이 필요한 낮은 우선순위 후보다.
 
 ## Latest verified result
+
+- **D-068 로컬 최종 / PR167(2026-09-19)**: d068b-patched(`23843796…`), head cacce3a. Clair **185/191·타이30/43** 3회 동일,
+  m5 duration2·m7 duration1 해소. 이미지181통과·6skip(native10개 전부 실행), corpus 성공11곡 동일·1곡 같은 SCALE 실패.
+  hosted Jest105 suites/1038 tests·필수 CI 모두 통과. cross-staff P1 수정·재검증, Lore 지적은 원문으로 반증, 재리뷰 새 지적0.
+  **미병합·운영 OMR 미배포.** [검증](validation/2026-09-19-issue-134-shared-stem-chord-split.md), [리뷰/CI](reviews/PR-167.md).
 
 - **OMR 운영(2026-09-19, 최신)**: PR166 `b15d0fd` 배포 완료. image `721ccc10…`, 롤백 태그 `rollback-pr166-20260919`(`4c14123d…`).
   이미지 테스트 **184 OK / 6 skipped**, 네이티브 7개 skip 없이 ok. `SigReducer.class`(`3b84596b…`)·`AbstractChordInter.class`(`91081cfa…`)가
@@ -125,9 +124,11 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   사용자 지시("굳이 필요없다면 버릴것")로 원격 → 로컬 순서로 삭제했다.
   사용자의 미커밋 이력 메모(`validation/2026-09-13-handoff-history.md`)는 손대지 않고 그대로 둔다.
 
-- 로컬 Docker 이미지는 검증용이며 운영 이미지와 같다고 주장하지 않는다. 2026-09-19 사용자 지시로 정리해 ClairKeys 이미지는 넷만 남았다:
+- 로컬 Docker 이미지는 검증용이며 운영 이미지와 같다고 주장하지 않는다. 2026-09-19 초기 정리 뒤 남긴 기존 네 기준선은 모두 보존했다:
   **`d067b-patched`**(현재 운영 PR166과 클래스 해시가 같은 기준선), `d066b-patched`(PR165 기준선, `SigReducer.class` `da3b0721…`),
   `d065b-patched`(`BeamsBuilder.class` `8d15e1b2…`, PR164 기준선), `d064-patched`(PR163 기준선).
+  이번 작업에서 `d068-patched`(리뷰 전 재현용)·**`d068b-patched`**(PR167 최종 검증용)를 추가 보존해 현재6개다.
+  이번 중간 실험 d068-exp/d068-exp2/d068-exp3은 삭제했다.
   `d066-patched`·`d067-patched`·`d067-exp-chord`·`d065-patched`·`d065b-codex-verification`는 삭제했다. 과거 기준선이 다시 필요하면 해당
   커밋에서 Dockerfile로 재빌드한다(약 3분). 같은 지시로 다른 프로젝트(bluekiwi) 컨테이너 3개를 중지·삭제했고 `bluekiwi_pgdata` 볼륨은 남겼다.
   2026-09-18 Docker Desktop이 검증 도중 한 번 종료됐다. 컨테이너 메모리 제한을 6GB → 5GB로 낮췄고 이후 재발하지 않았다.

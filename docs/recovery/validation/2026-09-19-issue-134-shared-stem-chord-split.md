@@ -1,8 +1,19 @@
 # 2026-09-19 — #134 D-068 공유 기둥 화음 분리
 
+## 최종 결과 — PR167 승인 대기
+
+- 최종 code head: `cacce3a0c670ae439e07acca1f4b01287d1aa4f1`, [PR167](https://github.com/landfill/ClairKeys/pull/167) non-draft.
+- 최종 이미지: `clairkeys-omr:d068b-patched`, `sha256:2384379676ab70d075690b34b92cae10d90d996750c55552e465c24a3587f314`.
+- **Clair 182→185/191, 타이30/43 유지**, 최종 이미지3회 실제 선택 XML의 전체 기준표 평가 결과와 raw/animation(생성시각 제외)이 동일하다.
+  대상 m5 duration2·m7 duration1 해소. native10개 모두 실행, 이미지 **181통과·6skip**. 최신 head의 hosted Jest **105 suites/1038 tests 통과**.
+- 최신 이미지에서 corpus12곡 재실행: **성공11곡 raw 바이트·animation 생성시각 외 전 필드 동일**, truongca는 기준선과 같은3쪽 SCALE 실패.
+- 필수 CI 전부 성공(E2E 두 workflow 포함). Codex 재리뷰 새 finding0. 첫 리뷰 유효 P1은 FIXED, Lore 지적은 원문 근거로 REJECTED;
+  두 thread 모두 resolved. [최종 리뷰·CI 근거](../reviews/PR-167.md).
+- main 병합과 운영 OMR 배포는 수행하지 않았다. #134 phase는 IN_PROGRESS다. 아래는 초기 후보와 실패/수정 이력을 포함한 검증 근거다.
+
 ## 범위 / 현재 상태
 
-- 작업 브랜치: `codex/issue-134-shared-stem-chord-split`. 구현 후보 `1ee36a3`, patch context 공백 정리 `a9f2d35` 커밋. 검증 완료·결정 정리 `63487c0`. [PR167](../reviews/PR-167.md) non-draft 생성, CI·자동 리뷰 진행 중. 병합·배포 없음.
+- 작업 브랜치: `codex/issue-134-shared-stem-chord-split`. 구현 `1ee36a3` → patch 정리 `a9f2d35` → 결정 정리 `63487c0` → cross-staff 리뷰 수정 `cacce3a`. 최종 검증·리뷰 완료, 병합·배포 없음.
 - 목표: D-067 뒤 남은 m5 duration 2건·m7 duration 1건. 원본 XML/JSON의 사후 수정 없음.
 - 사용자 승인: 로컬 Docker 실행·빌드·검증, 커밋·push·non-draft PR와 리뷰 대응. 병합·운영 변경 미승인.
 - 사용자 변경 `validation/2026-09-13-handoff-history.md`는 보존한다.
@@ -167,3 +178,19 @@ satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb
 - 전체 이미지 suite 재실행 **187개 중181통과·6skip**, native10개 모두 실행(231.804초). 기존 skip6개의 이유는 동일하다.
 - [Codex 재리뷰](https://github.com/landfill/ClairKeys/pull/167#issuecomment-5737533847)는 `cacce3a`에서 완료, 새 finding0.
   corpus 재실행 및 current-head E2E는 남았다.
+
+## 수정 head 최종 재검증 / 종료 확인
+
+- `d068b-patched` Clair3회 선택 XML을 저장소 `fixtures/recognition/clair-de-lune-full-reference.json`으로 각각 다시 평가했다.
+  전체 evaluation 객체가 앞선185/191 결과와 같고, raw SHA `5b23e6fa…` 및 animation 전체(생성시각 제외)도 같다.
+  시간23.445 / 23.855 / 24.593초, 자식RSS1,031,164 / 1,047,660 / 1,006,556 KiB.
+- 모든12 corpus 입력을 최신 이미지에서 다시 실행했다. 기존 같은 세션의 새 d067b 기준선과 비교해 성공11곡의 raw SHA가 위 표와 전부 같고,
+  animation의 유일한 차이는 generated_at이다. truongca는 최신 이미지에서도 같은 SCALE exception chain을 재현했다.
+  최신 패치 성공곡 최대105.782초, 자식 최대RSS1,428,956 KiB. OMR 동시성1·컨테이너5GB·JVM heap3GB를 유지했다.
+- 최신 head hosted `Run Tests` 로그: 105 suites/1038 tests 모두 통과. 두 E2E workflow는 각각8m59s/8m47s로 성공했다.
+- [최종 대응 답변](https://github.com/landfill/ClairKeys/pull/167#discussion_r4051524561) 후 cross-staff finding을 FIXED/resolved 처리했다.
+  GraphQL로 두 thread의 isResolved=true를 확인했다. 새 actionable finding은 없다.
+- GitHub live state 재확인: head cacce3a, non-draft, mergeStateStatus CLEAN, mergeable MERGEABLE. 승인 없이 병합하지 않았다.
+- 이번 작업의 d068-exp/d068-exp2/d068-exp3 이미지를 삭제했다. 기존 d064/d065b/d066b/d067b 네 기준선은 모두 보존했고,
+  d068-patched(리뷰 전 재현용)와 d068b-patched(최신 검증용)를 추가로 보존한다. 임시 컨테이너는 모두 --rm으로 종료됐다.
+- 사용자 미커밋 history 메모만 작업 트리에 남았고 자신의 커밋에 포함하지 않았다. 운영 VM에 접속·변경·배포하지 않았다.
