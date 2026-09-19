@@ -308,6 +308,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   d070b full rebuild/runtime comparison and missing-engine control/full suite/repeats are pending, queued
   after corpus to keep one score-processing JVM. IN_PROGRESS.
 
+- 2026-09-19: Corpus12 fresh pairs complete:11 identical raw/canonical successes,1 same page3 SCALE
+  failure with identical99-line exception chain. d070b rebuilt;40,919 runtime entries differ only in3 harness
+  files, Python74packages/dpkg/engine JARs unchanged. Missing-recovery control fails as required and normal
+  dual-engine native passes; self-review fix verified. Held-out fonts279 negatives rejected,13/27 twos recognized
+  (14 abstentions, not counted as positives). Final repeated suite/Clair and PR gates remain. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
