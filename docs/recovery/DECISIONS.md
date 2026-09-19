@@ -2704,7 +2704,7 @@
 ## D-069: 타이 glyph에 잘못 포함된 분리된 점 잉크를 SYMBOLS 청소에서 보존한다
 
 - Date: 2026-09-19
-- Status: Proposed; 로컬 검증·PR 심사 대상. 병합·배포 미승인
+- Status: Proposed; 로컬 필수 검증 완료, PR 심사 대상. 병합·배포 미승인
 - Context: 현재 기준선185/191에서 m1 C5/E5 점4분이4분으로 나온다. 원본 점은 타이와 분리되어 있지만
   slur glyph가 점 일부를 포함한다. SYMBOLS 청소 뒤 C5는3×8 조각(grade0.204), E5는8×9 조합(0.793)으로
   생성되어 각각 올바른 머리에 연결된다. LINKS reduceLinks가 C5를 weak(0.463)로 삭제하고, countDots가
@@ -2726,7 +2726,13 @@
 - Confidence: medium
 - Scope-risk: moderate
 - Reversibility: clean
-- Tested: native pixel fixture가 d068b 실제 SymbolsCleaner에서 printed dot pixel48,37 삭제로 실패; Clair185/191·타이30/43 재현; VIP 삭제 순서 확인
-- Not-tested: 후보 구현 및 corpus 회귀, 새로운 판형/해상도
+- Tested: 기준선 normal/recovery에서 native 양성 fixture가 실제 점 픽셀 삭제로 실패. 패치9종×3크기×2엔진54사례 통과.
+- Tested: 정식 Dockerfile 이미지182통과·6진단skip, native11개 모두 실행; pinned source checksum 및 변경4클래스 양쪽 엔진 해시 동일.
+- Tested: 정식 이미지 Clair3회187/191·타이30/43. m1 C5/E5 duration/dots만 변경, 타이 누락13/오검출1 목록과52개 곡선 glyph/판정 보존.
+- Tested: 기존12곡을 기준선/후보 각각 새 실행. 성공11곡 raw 바이트/애니메이션 생성시각 외 동일;1곡 양쪽 동일3쪽 SCALE 실패.
+- Tested: 타입 검사/lint/Jest105 suites1038 tests 통과; 최종 diff 자체 리뷰. 상세 명령·실패·측정은 validation 기록을 따른다.
+- Known limits: 왼쪽 연결 머리 주변의 고립 성분만 대상이다. 실제로 곡선과 이어진 점 잉크, 작은 보표의 별도 scale 최적화는 처리하지 않는다.
+  점과 같은 모양의 고립 잡음은 여전히 모호하므로 기존 분류·관계 검사를 생략하지 않는다.
+- Not-tested: corpus 밖 판형/해상도, 운영 배포/재변환. PR CI/리뷰는 reviews 기록에서 확인한다.
 - Directive: compactness만으로 점 inter를 만들지 않는다. 기존 분류·관계 검증을 유지하고 타이 목록 차이를 개수와 별도로 검사한다
 - Related: #134, D-062, D-064, D-068, validation/2026-09-19-issue-134-m1-tie-cut-dots.md
