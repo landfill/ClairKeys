@@ -30,14 +30,14 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
    기존 저장 악보는 앱에서 다시 변환해야 반영된다. 웹 업로드/callback/player E2E는 미실행이다.
 3. 남은 누락 9개는 모두 곡선이 검출되지 않은 경우다([재분류](validation/2026-09-19-issue-134-residual-ties.md)):
    기전 A 오선 접선 purge 3(m3 G4·m13 G3·m14 D3), m12 X자 교차 1, 시스템 경계 5(반쪽 곡선 6개 미검출).
-4. **기전 A 수정(D-072) 로컬 검증 완료, PR 생성 승인 대기.** 브랜치 `codex/issue-134-tie-staff-purge`(`3143f2d`, push 완료, PR 없음).
+4. **기전 A 수정(D-072) [PR171](reviews/PR-171.md) 생성(head `3143f2d`), CI·리뷰 확인 중.** 병합·배포는 각각 별도 승인.
    d072b 이미지 Clair **191/191·타이37/43·오검출0**(3회 동일), corpus 10곡 동일·드뷔시 달빛에 인쇄된 타이 1개 추가, native14 실행.
    1차 후보는 corpus에서 오선 구간 가짜 타이 3개를 만들어 휜 높이 조건을 추가했다. [검증](validation/2026-09-19-issue-134-staff-line-purge-ties.md).
    남은 누락 6: m12 교차 1·시스템 경계 5. D-065 후속은 별도 낮은 우선순위다. 전체 #134는 IN_PROGRESS다.
 
 ## Latest verified result
 
-- **D-072 로컬 / 2026-09-19**: d072b-patched, head `3143f2d`(미PR). 기준선 d071에서 실패하던 native fixture가 양쪽 엔진 통과.
+- **D-072 로컬 / 2026-09-19**: d072b-patched, head `3143f2d`([PR171](reviews/PR-171.md)). 기준선 d071에서 실패하던 native fixture가 양쪽 엔진 통과.
   Clair 타이34→**37/43**·이벤트191/191·오검출0 3회 동일, 목표 곡선3개만 추가. 이미지185통과·6진단skip/native14 실행,
   corpus 10동일·달빛 인쇄 타이1 추가·1같은SCALE실패, 타입/lint/Jest1038. 병합·배포 미승인. [근거·한계](validation/2026-09-19-issue-134-staff-line-purge-ties.md).
 
