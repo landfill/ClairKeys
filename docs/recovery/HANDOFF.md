@@ -15,28 +15,34 @@ m9 빔 복원 [PR164](reviews/PR-164.md)(D-065, `bbcc09b`)는 2026-09-18 배포�
 로컬 검증 결과와 전 필드 같음을 확인했다. 2도 밀린 머리 보존 [PR165](reviews/PR-165.md)(D-066, `f5be5f9`)는
 같은 날 병합·배포됐고 사용자의 앱 재변환 결과가 로컬 검증 결과와 전 필드 같음을 확인했다.
 기둥 공유 빈 머리 [PR166](reviews/PR-166.md)(D-067, `b15d0fd`)은 2026-09-19 병합·배포됐고 앱 재변환 결과가 로컬 검증과 전 필드 같다.
-나머지 타이·리듬 오류는 남아 있다.
+공유 기둥 화음 분리 [PR167](reviews/PR-167.md)(D-068, `983caf9`)도 2026-09-19 배포했다. 이미지/native/클래스/health 검증은 완료했고,
+운영 원본 PDF 재변환은 아직 확인하지 않았다. 나머지 타이·리듬 오류는 남아 있다.
 최근 완료: UI 개편 #146 ([phase](phases/ISSUE-146-ui-renewal.md), [PR158](reviews/PR-158.md)).
 PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한다.
 
 ## Next action
 
-1. **PR167은 사용자 승인으로 `983caf9`에 병합됐고 VM 배포 진행 중이다.** 현재 head의 CI·리뷰·CLEAN을 재확인해 병합했다.
-   사용자 지시로 로컬·원격 tip(cacce3a)이 모두 main에 포함됨을 확인한 뒤 브랜치를 정리했다. 미커밋 history 메모는 해시 동일하게 보존했다.
-2. **운영은 아직 PR166이다.** PR167 정확한 병합 커밋으로 VM 이미지를 빌드하고 테스트·클래스 해시를 확인한 뒤 승인된 전환을 수행한다.
-   [배포 기록](validation/2026-09-19-d068-shared-stem-chord-deployment.md), [리뷰/병합](reviews/PR-167.md).
+1. **PR167 병합·브랜치 정리·VM 배포 완료.** 운영 image b28cc02d, revision983caf9, health200·무인증401.
+   [배포·롤백 근거](validation/2026-09-19-d068-shared-stem-chord-deployment.md), [리뷰/병합](reviews/PR-167.md).
+2. **운영 앱 재변환은 미확인이다.** 필요하면 같은 PDF를 앱에서 재변환해 결과를 비교한다. 로컬 검증185/191·타이30/43을
+   운영에서 직접 재평가한 것은 아니다. 기존 저장 악보는 자동 수정되지 않는다.
 3. **후속 범위 후보**: m1 점 누락2(타이가 점을 자름), m3 둘잇단4(엔진 Shape에 TUPLET_TWO 없음), 남은 타이13건.
    최신 기준표의 누락 타이는 m3 4·m9 4·m6/m10/m12/m13/m14 각1이다. 아래 과거29/43·누락14는 D-067 이전 기록이다.
 4. D-065 후속(두께로 거부한 후보를 rawSystemBeams에 남기지 않기)은 별도 BEAMS 범위와 corpus 재검증이 필요한 낮은 우선순위 후보다.
 
 ## Latest verified result
 
+- **OMR 운영 / PR167(2026-09-19 10:05 KST)**: `983caf9`, image `b28cc02d…`, rollback `rollback-pr167-20260919`→`721ccc10…`.
+  VM 이미지181통과·6skip(native10개 모두 실행), 네 패치 클래스가 normal/recovery 모두 로컬 d068b와 동일하다.
+  active·healthy, 외부 health200·무인증401, 전환 이후 오류 로그0, env/unit/기존 processing 데이터 보존.
+  **원본 PDF 운영 재변환은 아직 미확인.** [배포 검증](validation/2026-09-19-d068-shared-stem-chord-deployment.md).
+
 - **D-068 로컬 최종 / PR167(2026-09-19)**: d068b-patched(`23843796…`), head cacce3a. Clair **185/191·타이30/43** 3회 동일,
   m5 duration2·m7 duration1 해소. 이미지181통과·6skip(native10개 전부 실행), corpus 성공11곡 동일·1곡 같은 SCALE 실패.
   hosted Jest105 suites/1038 tests·필수 CI 모두 통과. cross-staff P1 수정·재검증, Lore 지적은 원문으로 반증, 재리뷰 새 지적0.
-  **미병합·운영 OMR 미배포.** [검증](validation/2026-09-19-issue-134-shared-stem-chord-split.md), [리뷰/CI](reviews/PR-167.md).
+  **이후983caf9로 병합·배포 완료.** [검증](validation/2026-09-19-issue-134-shared-stem-chord-split.md), [리뷰/CI](reviews/PR-167.md).
 
-- **OMR 운영(2026-09-19, 최신)**: PR166 `b15d0fd` 배포 완료. image `721ccc10…`, 롤백 태그 `rollback-pr166-20260919`(`4c14123d…`).
+- **직전 OMR 운영(2026-09-19)**: PR166 `b15d0fd` 배포 완료. image `721ccc10…`, 롤백 태그 `rollback-pr166-20260919`(`4c14123d…`).
   이미지 테스트 **184 OK / 6 skipped**, 네이티브 7개 skip 없이 ok. `SigReducer.class`(`3b84596b…`)·`AbstractChordInter.class`(`91081cfa…`)가
   normal·recovery 양쪽 모두 로컬 검증 빌드와 같다. health 200, 무인증 401. 사용자의 앱 재변환(00:53 KST) **160음이 로컬 검증과 전 필드 같다.**
   직전 운영 대비 변화는 m5 오른손뿐이다: 셋잇단이 사라지고 F4(복원)·A4·B4가 온전한 8분이 됐다.
@@ -104,8 +110,11 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Known blockers / constraints
 
+- 2026-09-19: 사용자 "그럼 병합. 브랜치 정리, vm 배포" 지시로 PR167을 병합·배포하고 작업 브랜치를 원격→로컬 순서로 삭제했다.
+  양쪽 tip cacce3a는 최신 main에 포함됨을 확인했다. 사용자 미커밋 history 메모는 전후 SHA 동일하게 보존했고 현재 main이다.
+
 - 2026-09-19: PR166 병합·배포 후 사용자 지시("브랜치 정리해")로 `codex/issue-134-shared-stem-durations`를 원격 → 로컬 순서로 삭제했다.
-  두 tip 모두 main에 포함됨을 확인했고 사용자 미커밋 변경은 손대지 않았다. 당시 작업 브랜치 정리를 완료했다. 현재 D-068 작업 브랜치는 Next action을 따른다.
+  두 tip 모두 main에 포함됨을 확인했고 사용자 미커밋 변경은 손대지 않았다. 당시 작업 브랜치 정리를 완료했다. D-068 작업 브랜치도 위 정리 기록을 따른다.
 - 2026-09-18: PR165 병합·배포 후 사용자 지시("브랜치 정리해")로 `codex/issue-134-second-interval-head`를 삭제했다.
   로컬·원격 tip 모두 `9645772`이고 main에 포함됨을 확인한 뒤 원격 → 로컬 순서로 지웠다.
   사용자 미커밋 변경(`validation/2026-09-13-handoff-history.md`)은 손대지 않았다.
@@ -124,7 +133,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   사용자의 미커밋 이력 메모(`validation/2026-09-13-handoff-history.md`)는 손대지 않고 그대로 둔다.
 
 - 로컬 Docker 이미지는 검증용이며 운영 이미지와 같다고 주장하지 않는다. 2026-09-19 초기 정리 뒤 남긴 기존 네 기준선은 모두 보존했다:
-  **`d067b-patched`**(현재 운영 PR166과 클래스 해시가 같은 기준선), `d066b-patched`(PR165 기준선, `SigReducer.class` `da3b0721…`),
+  **`d067b-patched`**(직전 운영 PR166과 클래스 해시가 같은 기준선), `d066b-patched`(PR165 기준선, `SigReducer.class` `da3b0721…`),
   `d065b-patched`(`BeamsBuilder.class` `8d15e1b2…`, PR164 기준선), `d064-patched`(PR163 기준선).
   이번 작업에서 `d068-patched`(리뷰 전 재현용)·**`d068b-patched`**(PR167 최종 검증용)를 추가 보존해 현재6개다.
   이번 중간 실험 d068-exp/d068-exp2/d068-exp3은 삭제했다.

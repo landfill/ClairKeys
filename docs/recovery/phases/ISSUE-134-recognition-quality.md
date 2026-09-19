@@ -206,6 +206,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Both branch tips were ancestors of main and were deleted on the explicit cleanup instruction; the user's uncommitted history note is hash-identical.
   Exact-merge VM image build is in progress. Production remains PR166 until the verified cutover. IN_PROGRESS.
 
+- 2026-09-19: Authorized PR167 VM rollout completed at10:05 KST: exact merge983caf9, imageb28cc02d… and rollback721ccc10….
+  Merge checks6/6 pass; VM image181 passed/6 skipped with all10 native tests running; all four patched classes match local d068b in both engines.
+  Service active/healthy, public health200 and unauthorized401, zero post-cutover journal errors. Env/unit and processing data preserved.
+  Production PDF reconversion remains unverified; do not report local185/191 as a fresh production evaluation. IN_PROGRESS.
+  [Deployment](../validation/2026-09-19-d068-shared-stem-chord-deployment.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
