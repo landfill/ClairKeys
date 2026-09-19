@@ -2,7 +2,7 @@
 
 ## 현재 상태
 
-사용자가 "브랜치 정리와 vm 배포도 완료하라"고 명시 지시했다. 브랜치 정리 완료, 정확한 병합 커밋6de51f1 이미지 빌드 중이다.
+사용자가 "브랜치 정리와 vm 배포도 완료하라"고 명시 지시했다. 브랜치 정리 완료, 정확한 병합 커밋6de51f1 이미지 빌드 완료·검증 중이다.
 운영 current/서비스는 아직 PR167 그대로이며 빌드/검증 전에는 전환하지 않는다.
 
 ## 브랜치 정리
@@ -24,3 +24,15 @@
 
 다음: 전체 이미지/native 테스트, normal/recovery 클래스/소스 검증, idle 재확인, rollback 태그 확보,
 전환·health/auth·운영 모듈 스모크와 임시 PDF/이미지 제거. 원본은 영구 보관하지 않는다.
+
+## 빌드 완료
+
+- 새 이미지 `f14c2f83933c7b459ea133860ae75e0ab75d6e44d1c35986935648fb6ca87ae0`, revision6de51f1.
+  Docker HEALTHCHECK 존재 확인. current/운영은 아직b28cc02d다.
+- 빌드 checksum15건 OK, patch 적용13줄, rejected hunk/fuzz0.
+  회수한 build 로그 SHA256 `cd0188c304237e7c7d69ee8181d61f6375f3b75c3f5d444268398c101240ecab`.
+- 이전983caf9 대비 requirements/deploy/src diff는 비어 있다. env mode600·production/secret/callback HTTPS/concurrency1을
+  값 노출 없이 확인했고 env/unit 해시·기존 processing 목록(1개)을 보존용으로 기록했다.
+- `podman run --rm --network none --memory=5g`와 fixtures/src read-only mounts로 전체 이미지 unittest 실행 중이다.
+  production env 파일을 테스트 컨테이너에 넘기지 않는다. 시작 전 JVM0을 확인했다.
+- 배포 전 외부 health200·무인증POST/process401. 다음은 테스트·클래스 확인 후 idle 재점검/전환이다.
