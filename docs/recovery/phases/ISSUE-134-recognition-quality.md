@@ -323,6 +323,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Current-head CI and actual Codex review are running. CodeRabbit skip is not counted as review.
   No merge or production approval; #134 remains IN_PROGRESS.
 
+- 2026-09-19: PR169 Codex actual review completed on1debdbb at05:44:53Z;bot+1,zero inline comments
+  and zero review threads verified. No actionable finding. Unit/type/lint/security checks pass; both required
+  E2E jobs remain in progress. Review skip is not counted. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
