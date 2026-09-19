@@ -221,6 +221,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Native positive fails on both baseline engines; candidate27 pixel cases pass. Experimental Clair187/191,
   tie lists unchanged30/43, only m1 improves. Full image/corpus/PR gates pending; IN_PROGRESS.
 
+- 2026-09-19: D-069 full Dockerfile image built; source/class integrity matches in both engines.
+  Image182 passed/6 diagnostic skips; all11 native tests ran. Types/lint/Jest1038 pass after correcting
+  host Python dependency selection. Three final Clair runs and12 corpus pairs are underway. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

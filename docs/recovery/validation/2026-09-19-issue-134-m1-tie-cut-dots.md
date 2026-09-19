@@ -59,3 +59,25 @@ Clair3회·타이 목록·12곡 corpus 비교, 시간·메모리, 타입/lint/�
   이전 검증의 CI requirements venv를 PATH에 연결해 전체 Jest 재실행 중이다. 이를 기존 테스트 실패로 분류하지 않는다.
 - 실제 Dockerfile.audiveris 전체 빌드 진행 중. 정식 이미지 suite·Clair3회·corpus12곡·자체 리뷰/PR은 남았다.
 - 초기 상태 기록 `ea3d005` push 직후 check-runs 조회: 초기 등록0, 후속 build/security/lint/tests 성공, E2E 진행 중.
+
+## 정식 이미지·전체 테스트
+
+- 실제 `docker build --platform linux/amd64 -f omr-service/Dockerfile.audiveris -t clairkeys-omr:d069-patched omr-service` 성공.
+  이미지 index digest `97d2af00708c8132bd8aac0de43d926e486dcf8d90d5b7c6c8b8beaf54cda0a4`,
+  amd64 manifest `ed95aa59d83805aa86918be15ccbf32360ae2057eac9280350aa9573622e6805`.
+  기준선 index는 기록과 같은23843796…이며 amd64 manifest는6e779f9b…다. inspect에는 플랫폼을 명시해야 한다.
+- pinned SymbolsFilter 원본 SHA `700b1b72b78beb4b616c56428978b666c056c664488ae2cd097c641a415ba712` 확인 후 patch 적용 성공.
+  로컬 조사 소스와 pinned 다운로드도 동일. 이미지의 Dockerfile/patch/Java·Python fixture 소스 해시는 작업 파일과 일치한다.
+- normal/recovery의 SymbolsFilter 및 내부 클래스4개 모두 해시 동일. SymbolsCleaner는
+  `1f1c023ed0ebf445c12d84d641ddfe6b02e2945701229526af29f4c9fee54ef9`.
+  기존 SymbolsLinker/HeadChordInter/AbstractBeamInter/SlurInter/AugmentationDotInter/SigReducer는 기준선과 바이트 동일.
+- 이미지 안 전체 unittest **188개 중182통과·6skip**,244.863초. 새 native는 양쪽 엔진의27사례를 실제 실행해 통과했고,
+  기존 native10개도 모두 실행·통과했다. skip6개는 보관된 local 진단 selected-result/SYMBOLS/후보/제어쌍이 이미지에 없기 때문이며
+  native 실행 skip은 없다. `--memory=5g`와 fixtures/src read-only mount, `ln -s /app /omr-service`,
+  `cd /app && python3 -m unittest discover -s tests -v` 사용.
+- CI 의존성 venv의 python3를 PATH에 둔 전체 Jest 재실행은 **105 suites/1038 tests 통과**,26.115초.
+  타입 검사와 lint도 통과. 첫 의존성 누락 실패를 숨기지 않는다.
+- RGB 원본2480×3508(`issue134-onsets-2026-09-15/page.png`)에서도 점/곡선의 흰 간격을 직접 확인했다.
+  binary에서만 분리된 것으로 착각한 것이 아니다.
+- 정식 이미지 Clair3회 및 새 baseline/patch corpus12곡 비교를 순차 실행 중이다. 첫 성공으로 종료하지 않는다.
+- `ea3d005` 상태 기록의 check-runs6개 모두 성공. `821da4b`는5개 성공/E2E 진행 중을 확인했다.
