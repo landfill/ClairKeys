@@ -319,6 +319,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   equality and all known limits recorded. Self-review finding fixed; next is non-draft PR/latest-head CI and
   actual review. No merge or deployment approval. Overall #134 stays IN_PROGRESS.
 
+- 2026-09-19: [PR169](../reviews/PR-169.md) opened non-draft at1debdbb after all local gates.
+  Current-head CI and actual Codex review are running. CodeRabbit skip is not counted as review.
+  No merge or production approval; #134 remains IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
