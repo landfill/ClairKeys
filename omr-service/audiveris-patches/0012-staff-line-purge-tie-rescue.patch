@@ -100,7 +100,7 @@
      /** All slur informations created. */
      private final List<SlurInfo> pageInfos = new ArrayList<>();
 
-@@ -753,9 +758,23 @@
+@@ -753,13 +758,63 @@
      @Override
      protected void pruneClump (Set<Inter> clump)
      {
@@ -109,7 +109,7 @@
 +        // Delegate final selection to ClumpPruner.
 +        // A curve built on a rescued staff-line end is accepted only as a tie.
 +        boolean staffLineTiesOnly = false;
-
++
 +        for (Inter inter : clump) {
 +            final SlurInfo info = ((SlurInter) inter).getInfo();
 +
@@ -121,12 +121,52 @@
 +            }
 +        }
 +
++        if (staffLineTiesOnly) {
++            // A straight run along a staff line between two same-pitched heads is no tie
++            clump.removeIf(inter -> bowHeight(((SlurInter) inter).getCurve()) < params.minRescuedTieBow);
+
++            if (clump.isEmpty()) {
++                return;
++            }
++        }
++
 +        SlurInter selected = clumpPruner.prune(clump, staffLineTiesOnly);
 +
          if (selected != null) {
              selected.getInfo().assign(); // Assign arcs
              pageSlurs.add(selected);
-@@ -849,6 +868,7 @@
++        }
++    }
++
++    //-----------//
++    // bowHeight //
++    //-----------//
++    /**
++     * Report the largest distance between a curve and its chord.
++     *
++     * @param curve the curve
++     * @return the bow height, in pixels
++     */
++    private static double bowHeight (CubicCurve2D curve)
++    {
++        final Line2D chord = new Line2D.Double(curve.getP1(), curve.getP2());
++        double height = 0;
++
++        for (int i = 1; i < 20; i++) {
++            final double t = i / 20.0;
++            final double u = 1 - t;
++            final double x = (u * u * u * curve.getX1()) + (3 * u * u * t * curve.getCtrlX1())
++                    + (3 * u * t * t * curve.getCtrlX2()) + (t * t * t * curve.getX2());
++            final double y = (u * u * u * curve.getY1()) + (3 * u * u * t * curve.getCtrlY1())
++                    + (3 * u * t * t * curve.getCtrlY2()) + (t * t * t * curve.getY2());
++            height = Math.max(height, chord.ptLineDist(x, y));
+         }
++
++        return height;
+     }
+
+     //-----------------------//
+@@ -849,6 +904,7 @@
      private void purgeStaffLines (List<SlurInter> inters)
      {
          List<SlurInter> toDelete = new ArrayList<>();
@@ -134,7 +174,7 @@
 
          for (SlurInter inter : inters) {
              SlurInfo slur = inter.getInfo();
-@@ -880,6 +900,7 @@
+@@ -880,6 +936,7 @@
                  }
 
                  toDelete.add(inter);
@@ -142,7 +182,7 @@
 
                  continue;
              }
-@@ -936,6 +957,24 @@
+@@ -936,6 +993,24 @@
          }
 
          if (!toDelete.isEmpty()) {
@@ -167,7 +207,7 @@
              inters.removeAll(toDelete);
          }
      }
-@@ -1039,6 +1078,12 @@
+@@ -1039,6 +1114,12 @@
      @Override
      protected void weed (Set<Curve> clump)
      {
@@ -180,3 +220,31 @@
          // Compute grades
          List<SlurInter> inters = new ArrayList<>();
 
+@@ -1130,6 +1211,10 @@
+                 0.5,
+                 "Length for checking staff line tangency");
+
++        private final Scale.Fraction minRescuedTieBow = new Scale.Fraction(
++                0.15,
++                "Minimum bow height of a tie kept despite ending along a staff line");
++
+         private final Scale.Fraction sideModelLength = new Scale.Fraction(
+                 6,
+                 "Length for side osculatory model");
+@@ -1207,6 +1292,8 @@
+
+         final int tangentLength;
+
++        final double minRescuedTieBow;
++
+         final int sideLength;
+
+         final int arcCheckLength;
+@@ -1260,6 +1347,7 @@
+         {
+             similarRadiusRatio = constants.similarRadiusRatio.getValue();
+             tangentLength = scale.toPixels(constants.tangentLength);
++            minRescuedTieBow = scale.toPixelsDouble(constants.minRescuedTieBow);
+             sideLength = scale.toPixels(constants.sideModelLength);
+             arcCheckLength = scale.toPixels(constants.arcCheckLength);
+             arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);
