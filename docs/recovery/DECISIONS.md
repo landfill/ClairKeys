@@ -2776,3 +2776,32 @@
   보표 밖의 빔 중앙이라는 문맥으로 제한하고 corpus에서 오검출을 확인한다. 모든 판형/글꼴 지원을 주장하지 않는다.
 - Directive: 설명되지 않은 다른 숫자/정상 빔 회귀가 있으면 채택하지 않는다. 다른 누락 타이 원인과 D-065 후속은 별도다. 롤백할때새logical shape의private OMR체크포인트를이전엔진에서재사용하지말고원본PDF에서다시인식한다
 - Related: #134, validation/2026-09-19-issue-134-m3-duplet.md
+
+## D-071: 타이 끝 머리와 같은 x에 선 반대 기둥의 다른 성부 화음은 사이 화음이 아니다
+
+- Date: 2026-09-19
+- Status: Proposed; 로컬 필수 검증 완료, PR 심사 대상. 병합·배포 미승인
+- Context: Clair 남은 타이12개 중 m9 E3·G3와 m10 D5는 곡선이 올바른 두 머리에 연결됐는데도 `tie=false`다.
+  `SlurInter.isSpaceClear`는 두 머리와 두 화음 기둥 끝을 감싸는 상자에 다른 화음이 높이0.25 넘게 들어오면 타이를 거부한다.
+  양끝 화음·mirror·D-068 분리 쌍만 제외하므로, 끝 머리와 같은 x에 반대 방향 기둥으로 선 다른 성부 화음(m9 C3, m10 A4)이
+  사이 화음으로 취급된다(침범0.39/0.43). [재분류](validation/2026-09-19-issue-134-residual-ties.md).
+- Decision (검증할 후보):
+  1. `isSpaceClear`의 장애물 목록에서, 끝 화음과 같은 보표에 있고 두 화음 모두 기둥이 있으며 기둥 방향이 반대이고,
+     머리 하나가 끝 머리와 가로로 두 머리 폭 중 작은 값의0.5 이상 겹치는 HeadChord만 제외한다.
+  2. 같은 x는 그 끝과 같은 시점이므로 두 머리 "사이"가 아니다. 가로로 벗어난 화음·같은 방향 기둥·기둥 없는 화음·다른 보표 화음은
+     기존 검사에 남긴다. 빔 그룹 금지와 침범 비율 한도0.25는 바꾸지 않는다.
+  3. CURVES의 ClumpPruner와 LINKS의 checkStaffTie가 같은 함수를 쓰므로 두 단계에 함께 적용된다(D-068 결정5와 같은 위치).
+  4. 곡선 검출·머리 연결·시스템 경계 짝짓기와 exported XML/JSON은 바꾸지 않는다.
+- Rejected: 침범 한도0.25 상향 | 진짜 사이 화음이 있는 곡선까지 타이로 바꿀 수 있다
+- Rejected: LINKS 판정만 변경 | 같은 규칙이 CURVES와 달라지면 D-068 예외와도 어긋난다. 영향은 corpus로 확인한다
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Tested: 기준선 d070b normal/recovery에서 새 native fixture가 m1 tie 없음으로 실패. 정식 d071 빌드 후 양쪽 통과
+- Tested: 정식 Dockerfile 빌드, 두 엔진 jar2433항목 중 SlurInter 계열11개만 변경·엔진 간 동일. 이미지190개 중184통과·6진단skip, native13개 모두 실행
+- Tested: Clair3회191/191·타이31→34/43·오검출0·raw 해시 동일. 바뀐 것은 목표 곡선3개의 tie 플래그와 raw6개 tie 필드, canonical3쌍 병합뿐이며 곡선52개 기하 동일
+- Tested: corpus12곡 새 쌍. 성공11곡 raw/애니메이션 내용 동일, truongca는 양쪽 같은 3쪽 SCALE 실패. 타입/lint/Jest105 suites1038 tests 통과
+- Not-tested: 운영 배포·재변환, corpus 밖 판형. Clair 밖에서 규칙이 결과를 바꾼 양성 사례는 없다
+- Known limits: 2도로 옆으로 밀린 머리처럼 가로로 겹치지 않는 동시 성부, 기둥 없는 온음표, cross-staff 화음은 처리하지 않는다.
+- Directive: 곡선이 없는 타이(기전 A·m12·시스템 경계 반쪽)는 이 결정의 범위가 아니다. 출력 사후 보정은 하지 않는다
+- Related: #134, D-063, D-068, validation/2026-09-19-issue-134-residual-ties.md

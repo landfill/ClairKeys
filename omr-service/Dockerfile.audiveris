@@ -114,6 +114,7 @@ COPY audiveris-patches/0007-beamed-chord-black-duration.patch /tmp/chord-duratio
 COPY audiveris-patches/0008-shared-stem-chord-split.patch /tmp/chord-split.patch
 COPY audiveris-patches/0009-slur-dot-erasure.patch /tmp/slur-dot-erasure.patch
 COPY audiveris-patches/0010-beamed-duplet.patch /tmp/beamed-duplet.patch
+COPY audiveris-patches/0011-aligned-voice-tie-space.patch /tmp/aligned-voice-tie.patch
 COPY audiveris-patches/DupletBuilder.java /tmp/DupletBuilder.java
 COPY tests/DupletFixture.java tests/DupletRecognitionFixture.java /tmp/
 COPY tests/SlurDotErasureFixture.java /tmp/SlurDotErasureFixture.java
@@ -330,6 +331,10 @@ RUN mkdir -p \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/symbol/DupletBuilder.java \
     && /tmp/jdk25/bin/jar --update --file /opt/audiveris/lib/app/audiveris.jar -C /tmp/duplet-classes org/audiveris/omr \
     && /tmp/jdk25/bin/javac --release 25 -proc:none -cp '/opt/audiveris/lib/app/*' -d /opt/clairkeys-test-classes /tmp/DupletFixture.java /tmp/DupletRecognitionFixture.java \
+    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace --input=/tmp/aligned-voice-tie.patch \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' -cp '/opt/audiveris/lib/app/*' -d /tmp/tie-voice-classes \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java \
+    && /tmp/jdk25/bin/jar --update --file /opt/audiveris/lib/app/audiveris.jar -C /tmp/tie-voice-classes org/audiveris/omr/sig/inter \
     && cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery \
     && /tmp/jdk25/bin/jar --update \
       --file /opt/clairkeys-audiveris-recovery/lib/app/audiveris.jar \
@@ -340,6 +345,7 @@ RUN mkdir -p \
     && /opt/audiveris/bin/Audiveris -version \
     && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
     && rm -rf /tmp/jdk25 /tmp/duplet-classes /tmp/DupletBuilder.java /tmp/beamed-duplet.patch /tmp/DupletFixture.java /tmp/DupletRecognitionFixture.java \
+      /tmp/tie-voice-classes /tmp/aligned-voice-tie.patch \
       /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes /tmp/reducer-classes /tmp/chord-classes \
       /tmp/filter-classes /tmp/slur-dot-erasure.patch /tmp/SlurDotErasureFixture.java \
       /tmp/tie-classes /tmp/beam-classes /tmp/split-classes /tmp/chord-split.patch /tmp/SharedStemBeamGroupFixture.java /tmp/openjdk25.tar.gz /tmp/ledger-recovery.patch \
