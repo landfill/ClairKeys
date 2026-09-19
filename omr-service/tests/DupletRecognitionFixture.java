@@ -92,7 +92,7 @@ public class DupletRecognitionFixture {
         matcher=builder.getMethod("match",ByteProcessor.class,Rectangle.class,int.class);
         Method compound=builder.getMethod("compound",int.class,int.class);
         for(int numerator:new int[]{2,3,4,5,6,7,9,12}) for(int denominator:new int[]{4,8,16}) {
-            boolean expected=denominator==8 && numerator>=6 && numerator%3==0;
+            boolean expected=java.util.Set.of("6/8","9/8","12/8").contains(numerator+"/"+denominator);
             if(!compound.invoke(null,numerator,denominator).equals(expected)) throw new AssertionError("meter");
         }
         for(boolean useSans:new boolean[]{false,true}) {

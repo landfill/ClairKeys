@@ -12,12 +12,12 @@ class DupletNativeTests(unittest.TestCase):
             os.getenv("AUDIVERIS_RECOVERY_EXECUTABLE", "/opt/clairkeys-audiveris-recovery/bin/Audiveris"),
         )
         classes = Path(os.getenv("DUPLET_FIXTURE_CLASSES", "/opt/clairkeys-test-classes"))
-        ran = False
+        if not any(Path(engine).is_file() for engine in engines):
+            self.skipTest("no native Audiveris installation")
+        for engine in engines:
+            self.assertTrue(Path(engine).is_file(), f"both native engines are required: {engine}")
         for configured in engines:
             executable = Path(configured)
-            if not executable.is_file():
-                continue
-            ran = True
             for fixture, marker in (("DupletFixture", "duplet factor cases OK"),
                                     ("DupletRecognitionFixture", "duplet recognition cases OK")):
                 with self.subTest(engine=configured, fixture=fixture):
@@ -31,5 +31,3 @@ class DupletNativeTests(unittest.TestCase):
                         capture_output=True, text=True, timeout=120)
                     self.assertEqual(result.returncode, 0, result.stdout[-4000:] + result.stderr[-4000:])
                     self.assertIn(marker, result.stdout)
-        if not ran:
-            self.skipTest("no native Audiveris installation")
