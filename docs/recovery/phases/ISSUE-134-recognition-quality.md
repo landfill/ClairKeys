@@ -243,6 +243,9 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Head2458daf removes them; rebuilt d069b runtime40,909 files/JAR entries and74 package versions are
   identical. New image suite/Clair repeats and latest-head CI/Codex rereview underway. IN_PROGRESS.
 
+- 2026-09-19: Codex rereview explicitly completed on2458daf with no findings; GraphQL threads0.
+  Clean-image suite/repeats and current-head E2E remain in progress. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

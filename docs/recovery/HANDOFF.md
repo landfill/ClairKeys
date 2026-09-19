@@ -28,7 +28,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   baseline 실패 native fixture/후보27사례 통과. 정식 이미지182통과·6skip(native11개 모두 실행),
   타입/lint/Jest1038통과. 정식 Clair3회187/191·타이 개별 목록 보존 확인.
   12곡 비교는11곡 동일/1곡 동일 SCALE 실패로 완료. [PR168](reviews/PR-168.md) non-draft 생성(head2458daf). 최종 diff의 patch 문맥 공백2줄을 정리했고 재빌드 런타임40,909항목 동일.
-  새 이미지 suite/Clair3회·최신 head CI/재리뷰 진행 중이다. 이전 head Codex 지적0, CodeRabbit skip은 미계상.
+  최신 head Codex 재리뷰 완료·지적0. 새 이미지 suite/Clair3회와 필수 E2E 확인이 남았다. CodeRabbit skip은 미계상.
   [현재 조사 기록](validation/2026-09-19-issue-134-m1-tie-cut-dots.md). 병합·운영 변경은 미승인.
 
 1. **PR167 병합·브랜치 정리·VM 배포 완료.** 운영 image b28cc02d, revision983caf9, health200·무인증401.
