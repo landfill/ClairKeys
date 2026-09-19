@@ -22,24 +22,21 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-- **m1 점 누락2 수정 진행 중**: `codex/issue-134-m1-tie-cut-dots`. 최신 기준선185/191·타이30/43 재현.
-  원본 점은 곡선과 분리되어 있지만 slur glyph가 점 잉크를 포함해 SYMBOLS 청소에서 잘린다.
-  LINKS weak 삭제→countDots 삭제를 확정했다. 초기 구현df3f1af 실험은187/191·타이30/43으로 m1만 개선.
-  baseline 실패 native fixture/후보27사례 통과. 정식 이미지182통과·6skip(native11개 모두 실행),
-  타입/lint/Jest1038통과. 정식 Clair3회187/191·타이 개별 목록 보존 확인.
-  12곡 비교는11곡 동일/1곡 동일 SCALE 실패로 완료. [PR168](reviews/PR-168.md) non-draft 생성(head2458daf). 최종 diff의 patch 문맥 공백2줄을 정리했고 재빌드 런타임40,909항목 동일.
-  최신 head Codex 재리뷰 완료·지적0. 최신d069b suite182통과·6skip/native11실행, 추가Clair3회187/191·타이30/43 확인. 필수 E2E2개만 남았다. CodeRabbit skip은 미계상.
-  [현재 조사 기록](validation/2026-09-19-issue-134-m1-tie-cut-dots.md). 병합·운영 변경은 미승인.
-
-1. **PR167 병합·브랜치 정리·VM 배포 완료.** 운영 image b28cc02d, revision983caf9, health200·무인증401.
-   [배포·롤백 근거](validation/2026-09-19-d068-shared-stem-chord-deployment.md), [리뷰/병합](reviews/PR-167.md).
-2. **운영 앱 재변환은 미확인이다.** 필요하면 같은 PDF를 앱에서 재변환해 결과를 비교한다. 로컬 검증185/191·타이30/43을
-   운영에서 직접 재평가한 것은 아니다. 기존 저장 악보는 자동 수정되지 않는다.
-3. **후속 범위 후보**: m1 점 누락2(타이가 점을 자름), m3 둘잇단4(엔진 Shape에 TUPLET_TWO 없음), 남은 타이13건.
-   최신 기준표의 누락 타이는 m3 4·m9 4·m6/m10/m12/m13/m14 각1이다. 아래 과거29/43·누락14는 D-067 이전 기록이다.
-4. D-065 후속(두께로 거부한 후보를 rawSystemBeams에 남기지 않기)은 별도 BEAMS 범위와 corpus 재검증이 필요한 낮은 우선순위 후보다.
+1. **[PR168](reviews/PR-168.md)의 명시적 병합 승인 대기.** m1 점 누락2 수정(D-069)의 구현·로컬 필수 검증·자체 리뷰·현재 head CI/실제 Codex 재리뷰를 완료했다.
+   head `2458daf`, non-draft, 미해결 actionable finding0. 병합/운영 배포는 하지 않았다. PR live state는 GitHub와 리뷰 기록에서 다시 확인한다.
+2. **운영은 PR167 `983caf9` 그대로다.** m1 개선187/191은 로컬 결과이며 운영 재변환 결과가 아니다. 운영 변경은 별도 승인 대상이다.
+3. 후속 범위는 **m3 둘잇단4와 누락 타이13건 전체**다. m1 목표2건은 PR168 범위에서 해결했다.
+   타이 누락은 m3 4·m9 4·m6/m10/m12/m13/m14 각1이며 현재 로컬 기준 오검출1도 남는다.
+4. D-065 후속(거부한 beam 후보를 rawSystemBeams에 남기지 않기)은 별도 범위/검증이 필요한 낮은 우선순위 후보다.
 
 ## Latest verified result
+
+- **D-069 / PR168 로컬 최종(2026-09-19)**: d069b-patched(`ba44da31…`), head2458daf.
+  Clair **185→187/191**, 최종 이미지3회 동일; m1 C5/E5 점·길이만 변경. 타이30/43 및 누락13/오검출1 개별 목록 보존.
+  이미지182통과·6진단skip, native11개 모두 실행. corpus11곡 동일/1곡 동일3쪽 SCALE 실패; 공백 정리 재빌드의 런타임40,909항목 동일.
+  타입/lint/Jest1038·최신 head 필수 CI(E2E2개 포함) 통과. Codex 실제 재리뷰 완료·지적0; CodeRabbit skip은 리뷰 통과로 미계상.
+  **m1 수정/PR goal 완료, #134 phase는 IN_PROGRESS.** 병합/운영 배포 미승인·미수행.
+  [검증·한계·자체 리뷰](validation/2026-09-19-issue-134-m1-tie-cut-dots.md), [최신 CI/리뷰](reviews/PR-168.md).
 
 - **OMR 운영 / PR167(2026-09-19 10:05 KST)**: `983caf9`, image `b28cc02d…`, rollback `rollback-pr167-20260919`→`721ccc10…`.
   VM 이미지181통과·6skip(native10개 모두 실행), 네 패치 클래스가 normal/recovery 모두 로컬 d068b와 동일하다.

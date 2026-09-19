@@ -250,6 +250,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Three additional Clair runs score187/191 and ties30/43 with identical raw output and preserved tie lists.
   Codex rereview done; current-head E2E2 remains. IN_PROGRESS.
 
+- 2026-09-19: PR168 current head2458daf passes every required check, including both E2E workflows
+  (8m27s/8m18s), and completed Codex rereview has no findings/threads. Final image182 pass6 diagnostic
+  skips, all11 native run, Clair187/191 x3 with ties30/43, corpus11 identical successes plus1 same failure.
+  m1 implementation/PR goal complete. Merge/deployment remain unapproved; overall phase IN_PROGRESS.
+  [Review](../reviews/PR-168.md), [validation](../validation/2026-09-19-issue-134-m1-tie-cut-dots.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
