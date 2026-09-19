@@ -14,6 +14,7 @@ ARG AUGMENTATION_DOT_INTER_SHA256=4741eeafed3105f42e908dcb810eea65d7e41400a305f1
 ARG SLUR_LINKER_SHA256=d9f92f97b42aad8c3763bdae7db35b272b394b2154014c03b665baaf12fbe797
 ARG CLUMP_PRUNER_SHA256=0b77cf4e453559b34cfccd9b5f00666f4718ff3d3993f9948e1c58a901dc0d12
 ARG SLURS_BUILDER_SHA256=651e4576dceae7cb2a4b8a97b632e2a17eba37e409ab625225894893b4d334b3
+ARG PART_SHA256=a57e2bb280a6d8e56316e8fe79ee3bf11be69f883f4c8c694d9b2a421cd35aff
 ARG BEAMS_BUILDER_SHA256=fa9505b66f2bae9d03a49b69f2f26a27c4c40a4ac18e973123935fe99a84c483
 ARG SIG_REDUCER_SHA256=6d1b2517d3d0fff6f37c337f6bb1fc02b4ab8ce1dd1dd0ecf3ab4d1e4b2ab244
 ARG ABSTRACT_CHORD_INTER_SHA256=c65453b636f624054c40675aaa877d17d0e7b1551fb4457702e91d33b0f7588c
@@ -117,6 +118,8 @@ COPY audiveris-patches/0009-slur-dot-erasure.patch /tmp/slur-dot-erasure.patch
 COPY audiveris-patches/0010-beamed-duplet.patch /tmp/beamed-duplet.patch
 COPY audiveris-patches/0011-aligned-voice-tie-space.patch /tmp/aligned-voice-tie.patch
 COPY audiveris-patches/0012-staff-line-purge-tie-rescue.patch /tmp/staff-line-purge.patch
+COPY audiveris-patches/0013-cross-system-ties.patch /tmp/cross-system-ties.patch
+COPY tests/CrossSystemTieFixture.java /tmp/CrossSystemTieFixture.java
 COPY audiveris-patches/DupletBuilder.java /tmp/DupletBuilder.java
 COPY tests/DupletFixture.java tests/DupletRecognitionFixture.java /tmp/
 COPY tests/SlurDotErasureFixture.java /tmp/SlurDotErasureFixture.java
@@ -345,6 +348,18 @@ RUN mkdir -p \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/SlursBuilder.java \
       /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java \
     && /tmp/jdk25/bin/jar --update --file /opt/audiveris/lib/app/audiveris.jar -C /tmp/staff-line-purge-classes org/audiveris/omr/sheet/curve \
+    && curl -fsSL "https://raw.githubusercontent.com/Audiveris/audiveris/${AUDIVERIS_SOURCE_COMMIT}/app/src/main/java/org/audiveris/omr/sheet/Part.java" -o /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/Part.java \
+    && echo "${PART_SHA256}  /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/Part.java" | sha256sum -c - \
+    && sed -i 's/\r$//' /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/Part.java \
+    && patch --directory=/tmp/audiveris-source -p1 --ignore-whitespace --input=/tmp/cross-system-ties.patch \
+    && mkdir -p /tmp/cross-system-classes \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -sourcepath '' -cp '/opt/audiveris/lib/app/*' -d /tmp/cross-system-classes \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/Part.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sig/inter/SlurInter.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java \
+      /tmp/audiveris-source/app/src/main/java/org/audiveris/omr/sheet/curve/SlursBuilder.java \
+    && /tmp/jdk25/bin/jar --update --file /opt/audiveris/lib/app/audiveris.jar -C /tmp/cross-system-classes org/audiveris/omr \
+    && /tmp/jdk25/bin/javac --release 25 -proc:none -cp '/opt/audiveris/lib/app/*' -d /opt/clairkeys-test-classes /tmp/CrossSystemTieFixture.java \
     && cp -a /opt/audiveris /opt/clairkeys-audiveris-recovery \
     && /tmp/jdk25/bin/jar --update \
       --file /opt/clairkeys-audiveris-recovery/lib/app/audiveris.jar \
@@ -354,7 +369,7 @@ RUN mkdir -p \
       | grep -Fqx 'org/audiveris/omr/sheet/ledger/LedgersPostAnalysis.class' \
     && /opt/audiveris/bin/Audiveris -version \
     && /opt/clairkeys-audiveris-recovery/bin/Audiveris -version \
-    && rm -rf /tmp/jdk25 /tmp/duplet-classes /tmp/DupletBuilder.java /tmp/beamed-duplet.patch /tmp/DupletFixture.java /tmp/DupletRecognitionFixture.java \
+    && rm -rf /tmp/jdk25 /tmp/cross-system-classes /tmp/cross-system-ties.patch /tmp/CrossSystemTieFixture.java /tmp/duplet-classes /tmp/DupletBuilder.java /tmp/beamed-duplet.patch /tmp/DupletFixture.java /tmp/DupletRecognitionFixture.java \
       /tmp/tie-voice-classes /tmp/aligned-voice-tie.patch /tmp/staff-line-purge-classes /tmp/staff-line-purge.patch \
       /tmp/audiveris-source /tmp/ledger-classes /tmp/dot-classes /tmp/reducer-classes /tmp/chord-classes \
       /tmp/filter-classes /tmp/slur-dot-erasure.patch /tmp/SlurDotErasureFixture.java \
