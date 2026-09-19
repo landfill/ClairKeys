@@ -109,3 +109,14 @@
 - 1차 corpus12쌍 완료:10곡 raw/canonical 동일, 모노노케 인쇄타이1개 추가, truongca는 양쪽 같은3쪽 SCALE 실패.
   후자는 `No regularly spaced lines found`를 포함한 exception/SCALE126줄이 경로 정규화 후 동일하다(`failure-comparison.txt`).
 - 소스 변경 후 최종 whole-image·반복·corpus·PR/CI/실제 리뷰가 아직 남아 있다. 사용자 미커밋 메모 SHA는 최초와 동일하다.
+
+## 최종 image/Clair 통과 및 상태 커밋 CI 실패
+
+- d073c 전체 unittest **196개 중190통과·6skip**,456.874초. 기존 보관 진단 데이터가 이미지에 없는6개만 skip이고,
+  native19개는 모두 실제 실행·통과했다. 새 경계 관련5개와 기존14개를 포함한다(`image-tests-final.log`).
+- 경계 제한 후 `guarded-clair-1/2/3`도 전부191/191·42/43·누락m12 F3 하나·오검출0이다.
+  raw SHA8224a58a…는 제한 전3회 및 실험과 동일하다. 최종12곡 후보 재실행 진행 중.
+- 상태 기록 커밋 `600ae80`의 [Security Audit](https://github.com/landfill/ClairKeys/actions/runs/35457038996/job/105934061870)이 실패했다.
+  로그 원인: `npm audit --audit-level high --json`의 registry.npmjs.org `/security/audits/quick` 요청이 HTTP400 Bad Request로 종료됐다.
+  취약점 판정 통과/실패 결과가 아니라 감사 endpoint 오류다. 검사 기준/의존성을 변경하지 않고 해당 job 재실행을 요청했다.
+  재실행 결과 확인 전 이 커밋의 CI를 전체 성공으로 표시하지 않는다. 원본 로그는 `main-security-failure.log`에 보존했다.

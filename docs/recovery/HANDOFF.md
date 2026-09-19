@@ -35,7 +35,8 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
    `codex/issue-134-cross-system-ties`에서 미검출 반쪽 6개의 단계별 원인을 추적 중이다.
    새 d072b 기준선은 191/191·타이37/43·오검출0을 재현했다. 정식 d073b 후보는3회 모두42/43·191/191·오검출0이다.
    1차 corpus는10곡동일·인쇄타이1개개선·동일실패1곡이다. 자체리뷰 경계 제한을 추가해 최종 검증을 재실행 중이다.
-   현재 작업 `13431f0`, PR 게이트는 아직 남았다. m3 C5의 성부2→1 재생 병합은 별도 후속이다. [진행 근거](validation/2026-09-20-issue-134-cross-system-ties.md).
+   현재 작업 `13431f0`: 이미지190통과/6진단skip(native19실행), 경계 제한 후Clair3회42/43유지.
+   최종 corpus와 PR 게이트가 남았다. 상태 커밋600ae80의 npm audit HTTP400 오류는 동일 job 재실행으로 확인 중이다. m3 C5의 성부2→1 재생 병합은 별도 후속이다. [진행 근거](validation/2026-09-20-issue-134-cross-system-ties.md).
    m12 교차·D-065 후속은 제외한다. main 병합 및 운영 VM 접근·배포는 이번 승인 범위 밖이다. 전체 #134는 IN_PROGRESS다.
 
 ## Latest verified result
