@@ -9,7 +9,7 @@ Codex 현재head2458daf 재리뷰 완료·새finding0. CodeRabbit skip은 통과
 
 ## 현재 상태
 
-로컬 필수 검증 완료, 코드/결정 head `2458daf` (엔진 구현 `df3f1af`). [PR168](../reviews/PR-168.md) non-draft, 최신 head 필수 CI/실제 Codex 재리뷰 완료·미해결 지적0. 사용자 승인으로6de51f1에 병합, 후속 CI 확인 중. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
+로컬 필수 검증 완료, 코드/결정 head `2458daf` (엔진 구현 `df3f1af`). [PR168](../reviews/PR-168.md) non-draft, 최신 head 필수 CI/실제 Codex 재리뷰 완료·미해결 지적0. 사용자 승인으로6de51f1에 병합, 후속 CI6/6 성공 확인. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
 사용자 권한은 로컬 수정·Docker 검증·PR·리뷰 대응까지이며 병합/운영 변경은 제외한다.
 사용자 미커밋 `2026-09-13-handoff-history.md`는 보존한다.
 
@@ -214,3 +214,5 @@ satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb
 - 운영 VM은 접속/수정/배포하지 않았다. m3둘잇단4와 누락타이13건 전체는 후속 범위이며 phase DONE이 아니다.
 
 - 2026-09-19: 사용자 승인 후 PR168을6de51f1에 병합하고 main 반영을 검증했다. 사용자 메모 hash 동일, 두 branch tip 포함/고유0이나 미커밋 변경으로 보존. 병합 후 CI는 진행 중이며 운영 변경 없음. [병합 근거](../reviews/PR-168.md).
+
+- 병합 후 최종 확인:6de51f1 check-runs6개 전부success(E2E/빌드 포함). 승인 head와 병합 커밋의 코드·fixture 차이0. 사용자 미커밋 변경은 보존하고 운영 배포는 하지 않았다.

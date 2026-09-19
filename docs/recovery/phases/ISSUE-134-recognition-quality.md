@@ -261,6 +261,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Both branch tips are contained, but retained under WORKFLOW because the user history note remains
   modified and hash-identical. Post-merge CI pending. No rollout approval; phase IN_PROGRESS.
 
+- 2026-09-19: PR168 merge6de51f1 post-merge checks6/6 passed, including E2E/build. Merged
+  application/engine/fixture code matches reviewed2458daf exactly. User changes and both branches
+  preserved; no production rollout. Overall phase stays IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
