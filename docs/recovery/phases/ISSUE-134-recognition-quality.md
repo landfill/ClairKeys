@@ -295,6 +295,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   unexpected0; onlym3 evaluation changes. Both engines pass204 ink+24 meter controls. Final Dockerfile
   build, added geometry guards, full suite/repeats/corpus/PR gates remain. IN_PROGRESS.
 
+- 2026-09-19: D-070 full Dockerfile imagefecb4f29 built from1f4816c. Source matches;24 changed
+  JAR entries match between engines and all other entries/models match baseline. Image183pass/6diagnostic
+  skips, native12all executed; type/lint/Jest1038pass. FinalClair3runs/corpus12pairs in progress. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
