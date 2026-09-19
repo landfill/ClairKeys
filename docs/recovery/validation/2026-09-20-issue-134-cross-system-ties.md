@@ -88,3 +88,24 @@
   `110.113636초/2.727273초`와 `112.840909초/2.045455초`가 `110.113636초/4.772728초` 하나로 합쳐졌다.
   나머지1051음·전체길이·metadata는 동일(생성시각 제외). 인쇄 근거가 있는 개선이며 유해한 회귀로 분류하지 않는다.
 - 새 fixture 정리 커밋 이후 최종 baseline/candidate native 실행은 corpus 완료 뒤 순차 실행하도록 대기 중이다.
+
+## 자체 리뷰 보강과 최종 게이트
+
+- 커밋 `9836d28`은 양성 fixture에 섞였던 곡선 교차를 제거했다. 위 D5 타이를 없애는 방식이 아니라 phrase의 끝을 경계 화음
+  앞에 두어 **B4/D5 두 타이 모두**를 기대한다. 정상·작은 시작 호·음표수·박자·비경계 오검출도 확인한다.
+- 최종 b-image fixture 비교: 실제 Part 짝짓기 및 staff-hugging 양성은 기준선 normal/recovery 모두 실패, 후보 모두 통과.
+  일반 곡선과 작은 시작 호 합성은 양쪽 기준선/후보 모두 통과하므로 대조군이다. 작은 호의 새 폭 경로는 Clair m10 실제 입력으로 입증했다.
+  이 구분을 하지 않고 모든 새 fixture가 기준선에서 실패했다고 주장하지 않는다.
+- source review: `canBeOrphan`의 거리/마디 조건만으로는 `Page.connectOrphanSlurs`가 사용하는 마디 절반 조건 및
+  내부 시스템 범위에 들어간다고 보장되지 않는다. 첫/마지막 시스템 바깥에서 새 rescue가 일반 slur로 남을 가능성을 검토했다.
+  새 미짝 끝 fixture의 두 변형은 보강 전에도 양쪽 통과했으므로 **관찰된 유출/회귀는 아니다**.
+- 그래도 새 반쪽의 matched-tie-only 계약을 코드 구조로 보장하도록 `13431f0`에서 내부 페이지 경계와 기존 orphan predicate를
+  모두 요구했다. 위치가 안 맞으면 arcs assign 전에 제거한다. 새 반쪽의 페이지 간 복원은 범위 밖이며 기존 반쪽 매칭은 유지한다.
+- 정식 `d073c-patched` 빌드 성공, 전체 suite 실행 중 새 native5개 모두 두 엔진에서 통과했다.
+  이후 Clair3회와 같은 기준선에 대한12곡 후보 재실행이 순차 진행 중이다. 기존 결과로 최종 게이트를 대체하지 않는다.
+- 패치의 공백뿐인 context 줄 정리 후 정식 `d073d-patched` 재빌드 성공.
+  c/d의 런타임·전체앱·테스트 **40,955파일/JAR항목**과 Python패키지 비교에서 차이는 `/app/audiveris-patches/0013-cross-system-ties.patch`
+  하나뿐이다. 엔진/의존성/앱 실행코드/테스트 클래스 및 소스는 모두 동일하다. 이 파일의 차이는 적용 결과가 같은 context 공백뿐이다.
+- 1차 corpus12쌍 완료:10곡 raw/canonical 동일, 모노노케 인쇄타이1개 추가, truongca는 양쪽 같은3쪽 SCALE 실패.
+  후자는 `No regularly spaced lines found`를 포함한 exception/SCALE126줄이 경로 정규화 후 동일하다(`failure-comparison.txt`).
+- 소스 변경 후 최종 whole-image·반복·corpus·PR/CI/실제 리뷰가 아직 남아 있다. 사용자 미커밋 메모 SHA는 최초와 동일하다.
