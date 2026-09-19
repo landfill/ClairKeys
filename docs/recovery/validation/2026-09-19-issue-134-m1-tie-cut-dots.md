@@ -2,7 +2,7 @@
 
 ## 현재 상태
 
-조사 중, 구현·PR 없음. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
+초기 구현 `df3f1af`, 전체 검증 중·PR 없음. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
 사용자 권한은 로컬 수정·Docker 검증·PR·리뷰 대응까지이며 병합/운영 변경은 제외한다.
 사용자 미커밋 `2026-09-13-handoff-history.md`는 보존한다.
 
@@ -40,3 +40,22 @@ stages, stage 로그, 원본 확대. 원본 PDF/이미지/OMR은 Git에 넣지 �
 기준선 실패 fixture, 삭제 로그 확정, 결정·구현, 정상/부정 사례, 전체 이미지/native 테스트,
 Clair3회·타이 목록·12곡 corpus 비교, 시간·메모리, 타입/lint/테스트, 자체 리뷰와 PR CI/자동 리뷰 모두 남았다.
 첫 조사 결과를 구현 완료로 보지 않는다. #134 phase는 IN_PROGRESS다.
+
+## 삭제 순서와 초기 후보
+
+- SYMBOLS 체크포인트를 복사해 `-step LINKS -constant org.audiveris.omr.sig.InterIndex.vipInters=4505,4506,3794,1301,1349`로 재개했다.
+  countDots1 → SIGraph deleted weak C5 dot4506(0.204/0.463) → E5 dot4505 제거 → countDots0 순서다.
+- D-069와 phase 계획을 작업 브랜치에서 먼저 기록했다. SymbolsCleaner의 slur 삭제 clip만 제한하는 초기 구현 `df3f1af`.
+  성분은 원래 staff-free 이미지에서8방향 연결·고립/크기/점유율/종횡비/머리 상대위치를 검사한다.
+  slur 객체·glyph·관계는 바꾸지 않고 출력에 점을 보충하지 않는다.
+- `SlurDotErasureFixture`는 실제 private SymbolsCleaner를 호출한다. baseline normal/recovery 모두
+  `AssertionError: dot IL16 pixel39,30 expected0 got255`로 실패했다. 초기 fixture 구성에서 setGlyph가
+  부정확한 직선 fixture의 curve 계산을 시도해 NPE가 났고, 테스트 곡선의 getGlyph를 재정의해 실제 eraser 입력으로 수정했다.
+  수정 후보는 dot/normal/no-dot/connected/staff/noise/elongated/unlinked/far9종×IL16/20/24 모두 통과했다.
+- 실험 클래스만 두 jar에 넣은 새 컨테이너의 Clair 결과는 **187/191, 타이30/43**.
+  전체 evaluation에서 바뀐 마디는1뿐; missing/unexpected tie 목록은 모두 동일. raw191, canonical160, dots114→116,
+  tempo69, 총 길이65.217392 유지. 처리23.321초·자식RSS1,030,852KiB.
+- 타입 검사와 lint 통과. 첫 Jest는1037통과/1실패: 호스트 Python에 fastapi가 없어 callback test import 실패.
+  이전 검증의 CI requirements venv를 PATH에 연결해 전체 Jest 재실행 중이다. 이를 기존 테스트 실패로 분류하지 않는다.
+- 실제 Dockerfile.audiveris 전체 빌드 진행 중. 정식 이미지 suite·Clair3회·corpus12곡·자체 리뷰/PR은 남았다.
+- 초기 상태 기록 `ea3d005` push 직후 check-runs 조회: 초기 등록0, 후속 build/security/lint/tests 성공, E2E 진행 중.

@@ -217,6 +217,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Both dot inters exist and link at SYMBOLS; both disappear by LINKS. Fixture and deletion trace pending.
   [Evidence](../validation/2026-09-19-issue-134-m1-tie-cut-dots.md). IN_PROGRESS.
 
+- 2026-09-19: D-069 initial candidate df3f1af protects isolated dot ink only during slur erasure.
+  Native positive fails on both baseline engines; candidate27 pixel cases pass. Experimental Clair187/191,
+  tie lists unchanged30/43, only m1 improves. Full image/corpus/PR gates pending; IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
