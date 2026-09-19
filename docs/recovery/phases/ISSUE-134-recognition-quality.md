@@ -403,6 +403,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   neither locally nor on GitHub and all four PR commits carry the trailers, so it was rejected with evidence and the thread resolved.
   CLEAN/MERGEABLE. Merge and VM rollout await separate explicit approval. IN_PROGRESS.
 
+- 2026-09-19: User explicitly approved PR171 merge, branch cleanup and VM deployment. Rechecked head `3143f2d` CI/review/CLEAN and
+  merged as `867513c` (code diff to head 0). Both branch tips contained with zero unique commits; deleted remote -> local, user note
+  hash unchanged. VM rollout in progress; production stays PR170 `79cbc6ab` until verified cutover. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
