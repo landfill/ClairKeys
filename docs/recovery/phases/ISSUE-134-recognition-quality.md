@@ -314,6 +314,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   dual-engine native passes; self-review fix verified. Held-out fonts279 negatives rejected,13/27 twos recognized
   (14 abstentions, not counted as positives). Final repeated suite/Clair and PR gates remain. IN_PROGRESS.
 
+- 2026-09-19: Local D-070 gates complete at1debdbb. Final d070b repeats183pass6diagnostic skips/native12run,
+  Clair191/191 x3 ties31/43 unexpected0 with identical raw output and52 curves preserved. Full corpus/runtime
+  equality and all known limits recorded. Self-review finding fixed; next is non-draft PR/latest-head CI and
+  actual review. No merge or deployment approval. Overall #134 stays IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
