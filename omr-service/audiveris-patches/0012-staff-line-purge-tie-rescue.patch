@@ -1,0 +1,250 @@
+--- a/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/curve/ClumpPruner.java
+@@ -30,6 +30,7 @@
+ import org.audiveris.omr.sig.inter.Inter;
+ import org.audiveris.omr.sig.inter.Inters;
+ import org.audiveris.omr.sig.inter.SlurInter;
++import org.audiveris.omr.sig.relation.Relation;
+ import org.audiveris.omr.sig.relation.SlurHeadRelation;
+ import org.audiveris.omr.util.HorizontalSide;
+ import static org.audiveris.omr.util.HorizontalSide.LEFT;
+@@ -137,6 +138,20 @@
+      */
+     public SlurInter prune (Set<Inter> clump)
+     {
++        return prune(clump, false);
++    }
++
++    /**
++     * Process a clump of slur candidates, possibly accepting only a tie on a staff line.
++     *
++     * @param clump             a bunch of competing slurs
++     * @param staffLineTiesOnly true to skip the standard look-up and accept only a tie whose
++     *                          end(s) lie on a staff line
++     * @return the best slur, if any
++     */
++    public SlurInter prune (Set<Inter> clump,
++                            boolean staffLineTiesOnly)
++    {
+         // Compute lookup areas for each slur in clump
+         // If we cannot compute areas for a slur, we simply discard the slur
+         Map<Inter, Map<HorizontalSide, Area>> areas = new LinkedHashMap<>();
+@@ -168,7 +183,7 @@
+             final ClumpLinker linker = new ClumpLinker(system, clump, bounds, sysChords);
+
+             // Select the slur with best chord links, if any
+-            SlurEntry selected = linker.selectSlur(areas);
++            SlurEntry selected = staffLineTiesOnly ? null : linker.selectSlur(areas);
+
+             // Only when the standard look-up finds nothing, retry as a tie whose end(s) merged
+             // into a staff line. Any clump selected by the standard look-up is left unchanged.
+@@ -219,6 +234,10 @@
+                     continue; // Widened links are accepted for ties only
+                 }
+
++                if (staffLineTiesOnly && hasTieOnSameSide(selected)) {
++                    continue; // A head holds at most one tie on each side
++                }
++
+                 // Put everything into sig
+                 linker.doLink(selected);
+
+@@ -227,6 +246,29 @@
+         }
+
+         return null; // No acceptable candidate found
++    }
++
++    /**
++     * Report whether a head of the entry already holds a tie on the side it would get.
++     *
++     * @param entry the selected entry, linked on both sides
++     * @return true if a tie already starts or stops there
++     */
++    private boolean hasTieOnSameSide (SlurEntry entry)
++    {
++        for (HorizontalSide side : HorizontalSide.values()) {
++            final Inter head = entry.links.get(side).partner;
++            final SIGraph headSig = head.getSig();
++
++            for (Relation rel : headSig.getRelations(head, SlurHeadRelation.class)) {
++                if ((((SlurHeadRelation) rel).getSide() == side) && ((SlurInter) headSig
++                        .getEdgeSource(rel)).isTie()) {
++                    return true;
++                }
++            }
++        }
++
++        return false;
+     }
+
+     /**
+--- a/app/src/main/java/org/audiveris/omr/sheet/curve/SlursBuilder.java
++++ b/app/src/main/java/org/audiveris/omr/sheet/curve/SlursBuilder.java
+@@ -65,6 +65,8 @@
+ import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.Collections;
++import java.util.HashMap;
++import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.LinkedHashMap;
+ import java.util.LinkedHashSet;
+@@ -100,6 +102,9 @@
+     /** Companion for slur-heads connections. */
+     private final ClumpPruner clumpPruner;
+
++    /** Per side, the far ends of candidates kept only because the staff-line purge emptied their side. */
++    private final Map<Boolean, Set<Point>> staffLineRescues = new HashMap<>();
++
+     /** All slur informations created. */
+     private final List<SlurInfo> pageInfos = new ArrayList<>();
+
+@@ -753,13 +758,63 @@
+     @Override
+     protected void pruneClump (Set<Inter> clump)
+     {
+-        // Delegate final selection to ClumpPruner
+-        SlurInter selected = clumpPruner.prune(clump);
++        // Delegate final selection to ClumpPruner.
++        // A curve built on a rescued staff-line end is accepted only as a tie.
++        boolean staffLineTiesOnly = false;
++
++        for (Inter inter : clump) {
++            final SlurInfo info = ((SlurInter) inter).getInfo();
++
++            if (staffLineRescues.get(false).contains(info.getEnd(false)) || staffLineRescues.get(
++                    true).contains(info.getEnd(true))) {
++                staffLineTiesOnly = true;
++
++                break;
++            }
++        }
++
++        if (staffLineTiesOnly) {
++            // A straight run along a staff line between two same-pitched heads is no tie
++            clump.removeIf(inter -> bowHeight(((SlurInter) inter).getCurve()) < params.minRescuedTieBow);
+
++            if (clump.isEmpty()) {
++                return;
++            }
++        }
++
++        SlurInter selected = clumpPruner.prune(clump, staffLineTiesOnly);
++
+         if (selected != null) {
+             selected.getInfo().assign(); // Assign arcs
+             pageSlurs.add(selected);
++        }
++    }
++
++    //-----------//
++    // bowHeight //
++    //-----------//
++    /**
++     * Report the largest distance between a curve and its chord.
++     *
++     * @param curve the curve
++     * @return the bow height, in pixels
++     */
++    private static double bowHeight (CubicCurve2D curve)
++    {
++        final Line2D chord = new Line2D.Double(curve.getP1(), curve.getP2());
++        double height = 0;
++
++        for (int i = 1; i < 20; i++) {
++            final double t = i / 20.0;
++            final double u = 1 - t;
++            final double x = (u * u * u * curve.getX1()) + (3 * u * u * t * curve.getCtrlX1())
++                    + (3 * u * t * t * curve.getCtrlX2()) + (t * t * t * curve.getX2());
++            final double y = (u * u * u * curve.getY1()) + (3 * u * u * t * curve.getCtrlY1())
++                    + (3 * u * t * t * curve.getCtrlY2()) + (t * t * t * curve.getY2());
++            height = Math.max(height, chord.ptLineDist(x, y));
+         }
++
++        return height;
+     }
+
+     //-----------------------//
+@@ -849,6 +904,7 @@
+     private void purgeStaffLines (List<SlurInter> inters)
+     {
+         List<SlurInter> toDelete = new ArrayList<>();
++        List<SlurInter> staffArcEnds = new ArrayList<>();
+
+         for (SlurInter inter : inters) {
+             SlurInfo slur = inter.getInfo();
+@@ -880,6 +936,7 @@
+                 }
+
+                 toDelete.add(inter);
++                staffArcEnds.add(inter);
+
+                 continue;
+             }
+@@ -936,6 +993,24 @@
+         }
+
+         if (!toDelete.isEmpty()) {
++            // A flat tie inside a staff can end along a staff line with no shorter candidate left.
++            // Rather than emptying the side, keep the incidence-purged candidates; their curve may
++            // then be accepted only as a tie (see pruneClump).
++            final List<SlurInter> rescued = new ArrayList<>(toDelete);
++            rescued.removeAll(staffArcEnds);
++
++            if ((toDelete.size() == inters.size()) && !rescued.isEmpty()) {
++                toDelete.removeAll(rescued);
++
++                for (SlurInter inter : rescued) {
++                    staffLineRescues.get(reverse).add(inter.getInfo().getEnd(reverse));
++
++                    if (debugArc) {
++                        logger.info("{} kept as possible staff-line tie", inter.getInfo());
++                    }
++                }
++            }
++
+             inters.removeAll(toDelete);
+         }
+     }
+@@ -1039,6 +1114,12 @@
+     @Override
+     protected void weed (Set<Curve> clump)
+     {
++        if (!reverse) {
++            // First side of a new curve
++            staffLineRescues.put(false, new HashSet<>());
++            staffLineRescues.put(true, new HashSet<>());
++        }
++
+         // Compute grades
+         List<SlurInter> inters = new ArrayList<>();
+
+@@ -1130,6 +1211,10 @@
+                 0.5,
+                 "Length for checking staff line tangency");
+
++        private final Scale.Fraction minRescuedTieBow = new Scale.Fraction(
++                0.15,
++                "Minimum bow height of a tie kept despite ending along a staff line");
++
+         private final Scale.Fraction sideModelLength = new Scale.Fraction(
+                 6,
+                 "Length for side osculatory model");
+@@ -1207,6 +1292,8 @@
+
+         final int tangentLength;
+
++        final double minRescuedTieBow;
++
+         final int sideLength;
+
+         final int arcCheckLength;
+@@ -1260,6 +1347,7 @@
+         {
+             similarRadiusRatio = constants.similarRadiusRatio.getValue();
+             tangentLength = scale.toPixels(constants.tangentLength);
++            minRescuedTieBow = scale.toPixelsDouble(constants.minRescuedTieBow);
+             sideLength = scale.toPixels(constants.sideModelLength);
+             arcCheckLength = scale.toPixels(constants.arcCheckLength);
+             arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);
