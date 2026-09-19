@@ -303,6 +303,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Only four m3 normalized events and three canonical notes differ; divisions2→4 explains other raw integers.
   All52 curves/glyphs/tie flags unchanged. Direct diff self-review recorded; corpus and PR gates pending. IN_PROGRESS.
 
+- 2026-09-19: Self-review found the new native harness could pass with only one installed engine.
+  e9e43af requires both whenever either exists and uses literal meter controls; engine code is unchanged.
+  d070b full rebuild/runtime comparison and missing-engine control/full suite/repeats are pending, queued
+  after corpus to keep one score-processing JVM. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
