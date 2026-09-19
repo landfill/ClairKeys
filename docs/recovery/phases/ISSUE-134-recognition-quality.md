@@ -290,6 +290,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Recognition experiments and all implementation/validation/PR gates remain. IN_PROGRESS.
   [Evidence](../validation/2026-09-19-issue-134-m3-duplet.md).
 
+- 2026-09-19: D-070 candidate1f4816c uses original-ink digit competition on eligible two-chord beams
+  after meter assignment, then native tuplet links/factor. Experimental Clair191/191, ties31/43 and
+  unexpected0; onlym3 evaluation changes. Both engines pass204 ink+24 meter controls. Final Dockerfile
+  build, added geometry guards, full suite/repeats/corpus/PR gates remain. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
