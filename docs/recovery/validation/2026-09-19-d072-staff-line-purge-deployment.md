@@ -56,3 +56,18 @@
   env/unit 해시 동일, checkout clean, 전환 이후 journal 오류 0. 외부 health 200·무인증 401 재확인.
 - 기존 로컬 기준선 이미지·VM 이전 이미지·사용자 데이터는 삭제하지 않았다. 기존 저장 악보에 반영하려면 새로 변환해야 한다.
 - 드뷔시 달빛 등 corpus 곡의 운영 재변환은 하지 않았다. 전체 #134는 m12 교차 1·시스템 경계 5가 남아 IN_PROGRESS다.
+
+## 사용자 앱 재변환 결과 확인 (2026-09-20)
+
+- 사용자 "새로 다시 업로드 했다" 알림에 따라 전환(2026-09-19 23:57:36 KST) 이후 production container 로그를 확인했다. 세 작업이 차례로
+  처리됐다: `e72b9baf…`(Love Affair, 431음), `046de50c…`(Deborah's Theme, 330음), `a530c820…`(Clair de Lune, 154음).
+  세 작업 모두 `Successfully completed job`과 `Delivered completed job`이 기록됐다.
+- Clair 작업은 박자 재시도 결과 `meter-retry-km_9w8f2/retry.mxl`을 사용했다. 처리 폴더는 서비스가 이미 정리했으므로, VM 안에서
+  부작용 없는 `GET /result/a530c820…`을 호출해 animation만 읽기 전용으로 회수했다(비밀값은 env 파일에서 읽어 헤더로만 사용, 출력 없음).
+- generated_at `2026-09-19T15:19:52.096360`(converter UTC) = **2026-09-20 00:19:52 KST**, 전환 이후다.
+- **154개 음표의 모든 필드가 로컬 최종 d072b 검증(`issue134-staff-purge-2026-09-19/clair-1`)과 같다.** tempo/scoreTempo/timingReferenceBpm 69,
+  9/8, 전체 65.217392초도 같다. 최상위 차이는 title/metadata(앱 제목 "Clair de Lune"), generated_at, tempoSource(앱 user, 검증 score)뿐이다.
+- PR170 검증본 대비 canonical 변화는 m3 G4·m13 G3·m14 D3 타이 병합 3음(각 3.913044초)뿐이며, 운영 스모크의 변화와 정확히 같다.
+- 회수본 SHA256 `eff05c35…`. Git 제외 `local-test-data/results/d072-deploy-2026-09-19/live-app-animation.json`·`live-app-comparison.json`.
+- 앱 재변환의 MusicXML은 서비스가 정리하므로 이 작업을 raw 191이벤트/43타이로 다시 평가하지 않았다. 그 수치는 운영 모듈 스모크에서 검증됐다.
+  Love Affair·Deborah 결과 내용은 이번 비교 대상이 아니며, 플레이어 UI·청취 E2E는 수행하지 않았다.

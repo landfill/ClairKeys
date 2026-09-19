@@ -414,6 +414,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Remaining 6 ties: m12 crossing 1, cross-system 5. Web E2E and live rollback not run. IN_PROGRESS.
   [Deployment](../validation/2026-09-19-d072-staff-line-purge-deployment.md).
 
+- 2026-09-20: User re-converted Clair after the PR171 rollout (job `a530c820…`, generated 00:19:52 KST, after the 23:57 cutover), along with
+  Love Affair and Deborah's Theme; all three completed and their callbacks were delivered. Clair's 154 notes, read back through the
+  service's side-effect-free result endpoint, match the final local d072b run in every field; tempo 69, 9/8 and duration are equal,
+  only title, generated_at and tempoSource differ. Player UI/listening not tested. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
