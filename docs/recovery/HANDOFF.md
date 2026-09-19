@@ -32,10 +32,15 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
    **E. 같은 시점 다른 성부 화음의 판정 상자 침범 3**(m9 E3·G3, m10 D5: 곡선·머리 연결은 정상, `isSpaceClear` 침범0.39/0.43>0.25),
    A. 오선 접선 purge 3(m3 G4·m13 G3·m14 D3), m12 X자 교차 1,
    시스템 경계 5(반쪽 곡선6개 미검출 → 남은 반쪽이 다른 음·이음줄과 짝지어짐).
-4. **다음: 수정 대상 선택은 사용자 결정.** 후보는 E(판정 규칙만, 3건)·A(purge, 3건)·시스템 경계(삭제 단계 추적 선행)다.
-   D-065후속은별도낮은우선순위후보다. 전체#134는IN_PROGRESS다.
+4. **E 수정(D-071) 로컬 검증 완료, PR 생성 승인 대기.** 브랜치 `codex/issue-134-tie-aligned-voice`(`8d7812f`, push 완료, PR 없음).
+   d071 이미지 Clair **191/191·타이34/43·오검출0**(3회 동일), corpus11곡 동일, native13개 실행. [검증](validation/2026-09-19-issue-134-aligned-voice-ties.md).
+   남은 누락9: 기전A3(m3 G4·m13 G3·m14 D3)·m12 교차1·시스템 경계5. D-065후속은 별도 낮은 우선순위다. 전체#134는IN_PROGRESS다.
 
 ## Latest verified result
+
+- **D-071 로컬 / 2026-09-19**: d071-patched, head `8d7812f`(미PR). 기준선 d070b에서 실패하던 native fixture가 양쪽 엔진 통과.
+  Clair 타이31→**34/43**·이벤트191/191·오검출0 3회 동일, 목표 곡선3개의 tie 플래그만 변경. 이미지184통과·6진단skip/native13 실행,
+  corpus11동일/1같은SCALE실패, 타입/lint/Jest1038. 병합·배포 미승인. [근거·한계](validation/2026-09-19-issue-134-aligned-voice-ties.md).
 
 - **OMR 운영 / PR169(2026-09-19 15:25 KST)**:9e4020a,image850a4143…,rollbackf14c2f83….
   VM183통과/6진단skip(native12모두실행),normal/recovery각2,433JAR항목·source/fonts로컬동일.

@@ -368,6 +368,13 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   surviving halves pair with slurs or other pitches. Fix direction awaits user choice. IN_PROGRESS.
   [Evidence](../validation/2026-09-19-issue-134-residual-ties.md).
 
+- 2026-09-19: User chose mechanism E first. D-071 on `codex/issue-134-tie-aligned-voice` (head `8d7812f`, pushed, no PR yet):
+  `isSpaceClear` no longer counts another voice's chord at an end head's abscissa with the opposite stem direction. New native
+  fixture fails on both d070b engines and passes on d071. Full d071 image: 184 pass/6 diagnostic skips, all 13 native run; Clair
+  191/191 and ties 31 -> 34/43, unexpected 0, identical raw over 3 runs; only the three target curves change their tie flag.
+  Corpus 11 identical successes plus the same truongca SCALE failure; tsc/lint/Jest 1038 pass. PR creation awaits user approval;
+  merge and rollout are separate. IN_PROGRESS. [Evidence](../validation/2026-09-19-issue-134-aligned-voice-ties.md).
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
