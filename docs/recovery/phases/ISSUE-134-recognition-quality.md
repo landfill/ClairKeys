@@ -272,6 +272,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-19: VM imagef14c2f83 for exact merge6de51f1 built with15 checksums OK and13 patch applications.
   Full image suite running; old service remains healthy atb28cc02d. Production env/unit preserved. IN_PROGRESS.
 
+- 2026-09-19: VM image182 pass/6 diagnostic skips, all11 native executed;10 classes and sources
+  match local verification. Cutover to6de51f1/f14c2f83 at12:01:17 KST, rollbackb28cc02d retained,
+  active/healthy and external200/401. Temporary original-score module smoke underway. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

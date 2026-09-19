@@ -3,7 +3,7 @@
 ## 현재 상태
 
 사용자가 "브랜치 정리와 vm 배포도 완료하라"고 명시 지시했다. 브랜치 정리 완료, 정확한 병합 커밋6de51f1 이미지 빌드 완료·검증 중이다.
-운영 current/서비스는 아직 PR167 그대로이며 빌드/검증 전에는 전환하지 않는다.
+이미지/native/클래스 검증 뒤12:01:17 KST에 PR168로 전환했다. 운영 원본 스모크는 진행 중이다.
 
 ## 브랜치 정리
 
@@ -36,3 +36,21 @@
 - `podman run --rm --network none --memory=5g`와 fixtures/src read-only mounts로 전체 이미지 unittest 실행 중이다.
   production env 파일을 테스트 컨테이너에 넘기지 않는다. 시작 전 JVM0을 확인했다.
 - 배포 전 외부 health200·무인증POST/process401. 다음은 테스트·클래스 확인 후 idle 재점검/전환이다.
+
+## 이미지 검증·전환 완료
+
+- VM 이미지 전체 **188개 중182통과·6skip**,272.687초. native11개 전부 실행·통과했다.
+  skip6개는 과거 로컬 진단 자료 부재이며 핵심 native skip은 없다.
+- normal/recovery의 SymbolsFilter 및 내부3클래스, 기존 SymbolsLinker/HeadChordInter/AbstractBeamInter/SlurInter/
+  AugmentationDotInter/SigReducer 총10클래스가 로컬d069b와 모두 동일하다. SymbolsCleaner SHA1f1c023e… 유지.
+  내장 Dockerfile/0009 patch/Java·Python fixture 소스도 검증한 local image와 SHA 일치한다.
+- image-tests 로그 SHA `ae1b16ea8341c8164b94f20d8d655ba71b985158ddc210637be731b775edc3ca`.
+- 전환 직전 JVM0, processing 기존1개 목록 동일, env/unit 해시 동일, clean checkout6de51f1,
+  current/운영=b28cc02d, 대상=f14c2f83, merge checks6/6 성공을 재확인했다.
+- **2026-09-19 12:01:17 KST**: rollback-pr168-20260919에 이전b28cc02d를 보존하고 current를f14c2f83으로 전환,
+  `systemctl restart clairkeys-omr` exit0. 실패 시 이전 이미지로 복구하는 경로를 준비했으나 실행하지 않았다.
+- 전환 후 active·healthy, running image=current=f14c2f83, revision6de51f1, JVM0, processing1개 및 env/unit 보존.
+  외부 health200·무인증POST/process401 확인. 운영 컨테이너 모듈에서 Clair 임시 변환/전체 기준표 평가를 진행 중이다.
+
+롤백 명령: `podman tag localhost/clairkeys-omr:rollback-pr168-20260919 localhost/clairkeys-omr:current` 후
+`systemctl restart clairkeys-omr`, image/health/auth를 다시 확인한다. 기존 이미지/데이터는 보존했다.
