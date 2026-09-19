@@ -45,3 +45,31 @@
   아직 corpus·최종 검증 미실행이며 채택/완료 결과가 아니다. 반쪽 복원 후보를 추가 실험 중이다.
 - 작업 브랜치에 D-073 계획과 fixture를 커밋했다. 런타임 변경은 아직 Git에 없고 Git 제외 후보 소스에만 있다.
 - 시작 상태 커밋 f628b5b: 타입/테스트를 포함한5개 체크 성공, E2E 진행 중(마지막 조회 시점).
+
+## 정식 후보와 반복 검증 (진행 중)
+
+- 작업 브랜치 구현 커밋 `b3acfd0`. 정식 `d073b-patched` 빌드 성공; 런타임 코드가 같은 후보를 평가했다.
+  이후 fixture 소스는 보강 중이며 최종 이미지 전체 suite는 아직 실행하지 않았다.
+- 세 변경: 서로 유일한 같은 음/보표/휨 쌍을 일반 slur보다 먼저 매칭; 오선에 붙은 반쪽은 matched-tie 전용 표시로 제한;
+  header4 IL 이내의 작은 시작 호에 최소 폭0.5 IL(일반0.7 IL)과 해당 폭 점수 적용. 상대 없는 새 후보는 버린다.
+- 자체 점검: 작은 호 폭 점수를0으로 고정한 첫 후보는 기하평균 grade도0이 되어 여전히 거부됐다. 새 최소 폭에 맞춰 점수를 계산해 해결했다.
+  후보의 최종 clef/accidental 해석이 달라져도 일반 slur로 남지 않도록 표시를 OMR에 저장하고 실패한 두 반쪽을 제거한다.
+- `docker build --platform linux/amd64 -f omr-service/Dockerfile.audiveris -t clairkeys-omr:d073b-patched omr-service` 성공.
+  각 엔진 JAR2433항목 중 기준선 대비19개(Part/SlurInter/ClumpPruner/SlursBuilder 계열)만 변경. 새19개는 양쪽 동일하다.
+  엔진 간 기존 ledger recovery3개 차이는 유지된다. `jar-baseline.json`/`jar-d073b.json` 보존.
+- `run_recognition_gates.py`: 악보 처리 JVM 하나씩, 컨테이너5GB/JVM3GB, 원본 timeout900초로 Clair3회 후 corpus쌍을 순차 실행.
+  **final-clair-1/2/3 전부191/191·타이42/43·누락m12 F3 하나·오검출0**.
+  raw SHA256 `8224a58a9824f9a9692d6004f456d4cd64a88adc0209b4198f23559da36a17ae` 동일.
+- 기준선과 raw 차이는 목표5타이의 start/stop10필드뿐이다. 다만 canonical154→150이다.
+  **m3 C5는 성부2→1이라 converter의 같은 성부 병합 계약에서 이어지지 않는다.** MusicXML 양쪽 타이는 맞지만 이 한 음의
+  재생 병합까지 해결했다고 주장하지 않는다. converter 수정은 이번 인식 목표 밖의 후속 후보다.
+- 타입(`npx tsc --noEmit`)·lint(`npm run lint`) 통과. 첫 Jest는 Docker cleanup의 문자열 계약
+  `rm -rf /tmp/jdk25` 순서를 바꿔1실패/1037통과였다. 삭제 순서만 복원한 뒤 전체 **105suites/1038tests 통과**(27.048초).
+  PATH에는 기존 CI venv를 사용했다. 이 실패를 기존 실패로 분류하지 않았다.
+- native pairing13시나리오: 두 엔진 최종 통과. 초기 mock은 SlurInter(boolean,grade)가 above 필드를 채우지 않는 점을 놓쳐
+  "opposite bow reserved"가 실패했다. mock의 isAbove를 실제 시험 방향으로 정의한 뒤 음자리표/옥타브·보표·기하·모호성·
+  새 후보 일반slur 금지·최종 음높이 불일치 제거와 기존slur 보존을 검증했다.
+- 합성 raster fixture는 계속 보강 중이다. 최초 긴 space-head 호는 오선 접점 사이에서 쪼개져 머리에서3.5 IL 넘게 떨어졌다.
+  이 별도 기전을 해결했다고 하지 않고 기존 D-072와 같은 line-head 배치로 바꿔 B4 경계 타이를 검증한다.
+  위 D5는 타이를 그리지 않는 대조군이다. 작은 시작 호는 위치·크기를 진단 중이며 아직 최종 통과 주장 없음.
+- corpus는 진행 중: 첫 Always With Me의 raw/canonical이 동일. 전체12쌍·모든 차이 조사·native최종·전체이미지·PR/CI/리뷰가 남았다.

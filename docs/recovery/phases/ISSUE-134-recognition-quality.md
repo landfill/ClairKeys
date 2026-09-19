@@ -419,6 +419,14 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   service's side-effect-free result endpoint, match the final local d072b run in every field; tempo 69, 9/8 and duration are equal,
   only title, generated_at and tempoSource differ. Player UI/listening not tested. IN_PROGRESS.
 
+- 2026-09-20: User selected cross-system ties and authorized local implementation through non-draft PR, CI and review response.
+  Branch `codex/issue-134-cross-system-ties` at `b3acfd0` adds D-073. Diagnostics correct three supposed missing halves to
+  discarded orphans. Final d073b native engine code scores191/191 and ties42/43 with zero false positives over3 identical runs;
+  only m12 F3 remains. Whole-image/generated fixtures and12-score corpus are still in progress; no PR, merge or production access.
+  m3 C5's raw tie is correct but voice2→1 prevents canonical merging under the existing converter contract (154→150 notes).
+  Type/lint/Jest1038 and13 pairing scenarios pass; scope and failures are recorded in
+  [validation](../validation/2026-09-20-issue-134-cross-system-ties.md). Overall #134 stays IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
