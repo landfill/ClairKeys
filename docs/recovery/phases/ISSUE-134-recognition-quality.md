@@ -229,6 +229,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Only m1 C5/E5 duration and dots change; other fields/measures and individual tie lists are preserved.
   Corpus pairs running; no PR yet. [Evidence](../validation/2026-09-19-issue-134-m1-tie-cut-dots.md). IN_PROGRESS.
 
+- 2026-09-19: D-069 local gates complete, head56736f7. Twelve freshly paired corpus runs yield11
+  identical successes and1 identical page3 SCALE failure (99 exception-chain lines equal). Baseline negative
+  controls48/48 pass. Next: non-draft PR and latest-head CI/automatic review. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가

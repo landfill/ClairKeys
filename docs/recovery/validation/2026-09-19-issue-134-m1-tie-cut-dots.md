@@ -2,7 +2,7 @@
 
 ## 현재 상태
 
-초기 구현 `df3f1af`, 전체 검증 중·PR 없음. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
+로컬 필수 검증 완료, 코드/결정 head `56736f7` (엔진 구현 `df3f1af`). PR 생성·CI/리뷰 대기. 작업 브랜치 `codex/issue-134-m1-tie-cut-dots`.
 사용자 권한은 로컬 수정·Docker 검증·PR·리뷰 대응까지이며 병합/운영 변경은 제외한다.
 사용자 미커밋 `2026-09-13-handoff-history.md`는 보존한다.
 
@@ -116,3 +116,54 @@ Clair3회·타이 목록·12곡 corpus 비교, 시간·메모리, 타입/lint/�
 - 한계: 왼쪽 연결 head 주변의 고립 성분만 처리하며 실제로 점과 곡선이 연결된 잉크는 대상이 아니다.
   현재 corpus 밖의 판형/해상도, 작은 보표의 독립 scale 최적화는 미검증이다.
 - 이 패스에서 확인한 미해결 구현 finding은 없다. corpus 및 PR CI·자동 리뷰 완료 전 goal 완료로 보지 않는다.
+
+## 12곡 corpus 최종 비교
+
+- 동일12개 입력을 각각 새로 baseline d068b → patch d069 순서로 실행했다. 총24회, OMR은 항상 순차 실행했다.
+  비ASCII 원본 이름은 내용이 같은 ASCII score-NN.pdf로 복사했다. `run_corpus.py`의 manifest는 앞선 D-068의12곡과 같다.
+- **성공11곡 raw events.json 바이트 동일·animation generated_at 외 전체 객체 동일**. 새 차이/관찰된 비결정성 없음.
+- 실패1곡 truongca는 양쪽exit1.3쪽 SCALE의 `No regularly spaced lines found`,
+  `ScaleBuilder$HistoKeeper.retrieveInterlinePeaks(ScaleBuilder.java:746)`가 같고, Caused by 및 Java stack99줄을
+  기계적으로 비교해 전부 동일했다. 해당 곡은 통과가 아니며 이후 단계 품질을 검증할 수 없다.
+- 명령: `docker run --rm --platform linux/amd64 --memory=5g -v <이번 산출물>:/work --entrypoint sh <image>`에서
+  `cd /app && PYTHONPATH=/app python3 /work/run_case.py /work/inputs/score-NN.pdf /work/corpus/score-NN/<baseline|patched>`.
+
+| 입력 | 기준선 초 | 패치 초 | raw/animation |
+|---|---:|---:|---|
+| Always_With_Me_2pages_300dpi.pdf | 38.952 | 38.098 | 동일/생성시각 외 동일 |
+| Deborahs_Theme_Luciano_Lombardi_2pages_300dpi.pdf | 68.859 | 61.655 | 동일/생성시각 외 동일 |
+| Love_Affair_Piano_Solo.pdf | 115.162 | 114.779 | 동일/생성시각 외 동일 |
+| Merry_Go_Round_of_Life_2pages_300dpi.pdf | 28.043 | 30.897 | 동일/생성시각 외 동일 |
+| My_Neighbor_Totoro_2pages_300dpi.pdf | 39.279 | 40.483 | 동일/생성시각 외 동일 |
+| Premiere_Gymnopedie_300dpi.pdf | 22.461 | 22.187 | 동일/생성시각 외 동일 |
+| Princess_Mononoke_Ashitaka_and_San_print_300dpi.pdf | 61.14 | 58.349 | 동일/생성시각 외 동일 |
+| Toy Story- You’ve Got a friend in me - easy ver.pdf | 31.815 | 36.166 | 동일/생성시각 외 동일 |
+| bach-wtk1-prelude1.pdf | 38.779 | 37.039 | 동일/생성시각 외 동일 |
+| piano_piano-solo-love-affair-ennio-morricone-truongca.com.pdf | exit1 | exit1 | 동일3쪽 SCALE 실패 |
+| satie-gymnopedie-1.pdf | 28.992 | 29.782 | 동일/생성시각 외 동일 |
+| 드비시달빛.pdf | 41.958 | 40.117 | 동일/생성시각 외 동일 |
+
+성공곡 양쪽 공통 raw SHA256:
+
+```text
+Always_With_Me_2pages_300dpi.pdf: a06b622c3a9ac4a25b0a4c5fe8b8d91ed4e558452dd8366583103b6e8dc2cea3
+Deborahs_Theme_Luciano_Lombardi_2pages_300dpi.pdf: d8b378e331fb5565d5a5fc69fdb780fceb65fe4f7a32c5ef01f1851b3f72cd5f
+Love_Affair_Piano_Solo.pdf: 58025f4b37aa919e819914c0901c6fd1eaa4fcbfcd8684a5b23b40bf88899215
+Merry_Go_Round_of_Life_2pages_300dpi.pdf: b3ecd778191ad375c05e5a14756ecf7bedbe92478a8986c2c9473ac8a962a612
+My_Neighbor_Totoro_2pages_300dpi.pdf: 7755c5cdcf3b0b157e4069af77f28146eb78f82c2529960c47d64db459dae2f7
+Premiere_Gymnopedie_300dpi.pdf: 1e885cc5497aa261645bf18fb4026af0e2b924be794b062fb41fe87f854ecd86
+Princess_Mononoke_Ashitaka_and_San_print_300dpi.pdf: 4494ae6758201e3b4065ffd851b197d3f554419958991804a31e57657b94340d
+Toy Story- You’ve Got a friend in me - easy ver.pdf: 9979440c2c9f4e1e7dcb3d08a0fa350faa9a887d4ff2c1cfe11f5323cfc92ea3
+bach-wtk1-prelude1.pdf: 0bcb86c4d1ce867c75ed6a654fb1785b04df63a2c8a4d3a366610cd21d4936fa
+satie-gymnopedie-1.pdf: 8801dc343cf6a9d1a11e8ea8d45eff02df09c84f004787a0698c6ecb4bd1e6eb
+드비시달빛.pdf: ac2f87f479b411dff240acb7d7fe5adb2e64029a7fa1fda7e6fdd681ec8794ff
+```
+- 패치 성공곡 최대114.779초, 자식 최대RSS1,438,188KiB. 제한 이내이며 성능 개선 benchmark로 해석하지 않는다.
+- baseline 부정/보존8종×3크기×2엔진48사례도 native fixture에서 추가 실행해 모두 통과했다.
+  패치는 양성 포함54사례를 정식 이미지 전체 suite에서 통과했다. 양성 baseline은 두 엔진 모두 실패한 앞선 기록을 따른다.
+- Clair3회 저장 그래프의52개 곡선도 기준선과 비교: curve 좌표/tie flag/shape 및 slur glyph bounds/run pixels 모두 동일.
+  최종 m1 점은 E5(834,645,8,9) grade0.798/ctx0.930, C5(834,665,8,8) grade0.780/ctx0.922다.
+- 최종 diff 추가 검토에서 새 회귀·가짜 점·타이 손상·중복/누락·normal/recovery 불일치는 관찰되지 않았다.
+  `56736f7`은 결정 문서만 갱신하며 엔진/fixture/Docker source는 검증 이미지와 같다.
+- `ea3d005`, `821da4b`, `23bb01e`, `4159e88` 상태 기록의 check-runs는 각각6개 전부 성공했다.
+- 로컬 필수 검증 완료. 다음은 non-draft PR 및 현재 head CI/실제 자동 리뷰다. 아직 goal 완료나 phase DONE이 아니다.
