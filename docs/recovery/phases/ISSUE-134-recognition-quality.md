@@ -375,6 +375,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   Corpus 11 identical successes plus the same truongca SCALE failure; tsc/lint/Jest 1038 pass. PR creation awaits user approval;
   merge and rollout are separate. IN_PROGRESS. [Evidence](../validation/2026-09-19-issue-134-aligned-voice-ties.md).
 
+- 2026-09-19: [PR170](../reviews/PR-170.md) opened non-draft on user approval at `8d7812f`. All required checks pass (hosted Jest 105
+  suites/1038 tests, both E2E jobs); Codex review completed with +1 and zero inline comments/threads; CodeRabbit skip not counted.
+  CLEAN/MERGEABLE. Merge and VM rollout await separate explicit approval. IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
