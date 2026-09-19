@@ -334,6 +334,12 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   remain and overall#134 is IN_PROGRESS. Await explicit PR169 merge approval;no VM change/deployment.
   [Review and CI](../reviews/PR-169.md),[validation](../validation/2026-09-19-issue-134-m3-duplet.md).
 
+- 2026-09-19: User explicitly approved PR169 merge, branch cleanup and VM deployment. Rechecked
+  head1debdbb required CI/completed actual review/zero threads/CLEAN; merged as9e4020a. Both branch tips
+  are contained withzero unique commits,deleted remote→main→local under the explicit cleanup instruction;
+  userhistory hash unchanged. Exact-merge VM build underway,oldPR168 healthy/idle,post-merge CI pending.
+  [Deployment](../validation/2026-09-19-d070-duplet-deployment.md). Overall#134 stays IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
