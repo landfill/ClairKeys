@@ -22,19 +22,17 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **#134 m3 둘잇단 로컬 구현·검증·자체리뷰 완료**, head `1debdbb`, D-070.
-   최종d070b Clair3회 **191/191·타이31/43·누락12·오검출0**; 의미상변경은m3뿐이다.
-2. 정식전체빌드/소스·클래스무결성/이미지183통과6진단skip(native12실행)/타입·lint·Jest1038,
-   corpus11동일성공/1동일SCALE실패,추가279부정사례거부까지확인했다.
-   [PR169](reviews/PR-169.md)을non-draft로생성했다. 최신head1debdbb 실제Codex리뷰완료·지적0,필수E2E2개진행중이며
-   CodeRabbit skip은리뷰통과로세지않는다. [검증·자체리뷰](validation/2026-09-19-issue-134-m3-duplet.md).
-3. 전체#134는IN_PROGRESS. 나머지타이12개와D-065후속은별도이며 main병합·운영VM변경/배포는미승인이다.
+1. **[PR169](reviews/PR-169.md) 사용자 병합 승인 대기.** m3둘잇단4개구현·검증·자체리뷰·PR게이트를완료했다.
+   최신head`1debdbb`필수CI(E2E2개포함)전부성공,실제Codex리뷰완료·미해결finding0,non-draft/CLEAN/MERGEABLE.
+2. 승인받으면현재headCI·리뷰·병합가능상태를다시확인한다. **아직병합/운영배포하지않았고운영배포는별도승인이필요하다.**
+3. 전체#134는IN_PROGRESS다. 현재로컬 **191/191·타이31/43·누락12·오검출0**이며,
+   나머지타이12개와D-065후속은별도다. [원인·검증·한계·자체리뷰](validation/2026-09-19-issue-134-m3-duplet.md).
 
 ## Latest verified result
 
 - **D-070 m3 로컬 / 2026-09-19**: d070b(`39381f8f…`), head1debdbb. Clair187→**191/191** 최종3회동일,
   타이일치30→31/43·오검출1→0(기존타이onset정렬),누락12개남음. 정식이미지183pass6진단skip/native12모두실행.
-  corpus11동일성공/1같은SCALE실패;타입/lint/Jest1038통과. 자체리뷰수정검증완료,[PR169](reviews/PR-169.md)의Codex리뷰완료·지적0,필수E2E2개진행중이다.
+  corpus11동일성공/1같은SCALE실패;타입/lint/Jest1038통과. 자체리뷰수정검증완료,[PR169](reviews/PR-169.md)최신필수CI모두성공·Codex리뷰완료·지적0. 병합승인대기다.
   운영은아래PR168기준선그대로다. [근거·한계](validation/2026-09-19-issue-134-m3-duplet.md).
 
 - **OMR 운영 / PR168(2026-09-19 12:01 KST)**:6de51f1, imagef14c2f83…, rollbackb28cc02d….
