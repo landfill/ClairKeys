@@ -446,6 +446,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   The requested implementation-through-review goal is complete at b8de0a8, CLEAN/MERGEABLE/non-draft. No merge or production
   access/deployment was performed. Overall #134 remains IN_PROGRESS; m12 and cross-voice canonical merging remain separate.
 
+- 2026-09-20: User explicitly approved PR172 merge. Rechecked b8de0a8 CI/actual review/zero threads/CLEAN and merged as
+  ab844baa304786d84c2b8227052011469b638ee5. Local main fast-forwarded; approved execution-code diff0. Both branch tips are
+  contained with zero unique commits, but retained under WORKFLOW because the unchanged user history note remains modified.
+  Post-merge CI is running. No production access/deployment approval; overall #134 remains IN_PROGRESS.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
