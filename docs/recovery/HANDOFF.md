@@ -23,6 +23,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 1. **[PR167](reviews/PR-167.md)(D-068)의 사용자 병합 승인을 기다린다.** 구현·자체 검증·자동 리뷰 대응 완료.
    최신 head `cacce3a`의 필수 CI(E2E 두 workflow 포함) 모두 성공, Codex 재리뷰 새 지적0, 두 review thread 모두 resolved다.
+   CodeRabbit 실제 리뷰도 평가했다: 새 동작 결함 없음, SHA ARG 통일은 비차단 선택적 개선(미적용). 존재 검사·docstring 경고 판단은 리뷰 기록에 있다.
    승인 후 당시 head·CI·리뷰·병합 가능 상태를 다시 확인한다. 운영 OMR 배포는 별도 승인이 필요하다.
 2. **현재 운영은 PR166 그대로다.** D-068 로컬 결과는185/191·타이30/43이며 운영에 반영하지 않았다.
    [최신 검증·실패 이력·한계](validation/2026-09-19-issue-134-shared-stem-chord-split.md).
