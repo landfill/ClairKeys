@@ -1,7 +1,7 @@
 # Issue125 검증 및 인계
 
 Date: 2026-09-20
-Status: IN_PROGRESS; 구현 완료/PR/CI/리뷰 통과 주장 아님
+Status: 최종 구현·검증·PR CI/리뷰 대응 완료. 사용자 병합 승인 대기; 아래 초기 기록은 당시 상태다.
 
 ## 시작과 실행 환경
 
@@ -129,3 +129,16 @@ OMR 구현/실제 매핑·Docker 빌드/실행·신규 업로드/저장 browser�
   전체Jest112suites1080tests PASS(23.174s),typecheck/lint/buildPASS. 실제Vercel대형응답배포시험은수행하지않았다(운영미접근).
 - ed0a645 commit/push,댓글답변/threadresolved/@codexreview재요청. 이전Docker211개검증의Python서비스/엔진코드는변경없다.
 - 현재headCI·리뷰완료전goal완료아님.
+
+## 최종 결과 / 2026-09-20
+
+- PR173 review-ready, head ed0a64577d3d00dcf6f845538af1ece35cbc5226. 필수CI두E2E포함전부통과, 전체표시check16SUCCESS.
+- 같은head Codexactualreview Completed03:58:33Z/추가지적0, P1/P2모두재현→수정→재검증→답변→resolved. CodeRabbit skip미계상.
+- [최종CI/리뷰/병합가능상태](2026-09-20-issue-125-evidence/final-gates.json), [리뷰상세](../reviews/PR-173.md).
+- Docker205pass6보관진단skip/native19실행, Jest1080/type/lint/build, six-project browser12pass6비해당skip, 실제신규업로드/저장/표시·권한·삭제확인.
+- 남은한계: 완성JSON4MiB상한, 외부Supabase/OAuth는로컬대체환경으로검증, 운영VM/배포미실행.
+  sol luna단일ID는로컬목록에서확인되지않아미사용/임의대체없음; 주에이전트와실제gemini-3.8-flash-high구현·독립검증사용.
+- 검증용Docker컨테이너3개는정지(기존이미지/볼륨/데이터삭제없음), local서버종료, 두Gemini작업terminal종료.
+  원래checkout은main으로돌려최신인계를바로읽을수있게했고, PR작업branch는로컬·원격모두보존했다. 상태기록용checkout은detached로보존했다.
+- 시작시사용자변경4개만잔여: validation/2026-09-13-handoff-history.md,.bkit/,.gemini/,.pdca-status.json. 커밋에섞지않음.
+- 구현완료와이슈최종종료를구분한다. #125OPEN, PR미병합, 운영미배포. 사용자대상PR병합승인만남은goal종료조건을충족했다.

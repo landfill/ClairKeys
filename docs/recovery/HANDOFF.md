@@ -4,21 +4,28 @@ Last updated: 2026-09-20 KST
 
 ## Current phase
 
-**#125 PC 선택형 악보 패널 — IN_PROGRESS.** 최신 이슈/2026-09-20 사용자 확정 범위로 시작했다.
-계획/D-074 및 코드 커밋 `bd23b19` (`codex/issue-125-score-panel`). 실제 Docker 업로드/저장/표시·앱 전체 검증 통과. [PR173](reviews/PR-173.md) 최신 head `ed0a645`: Codex P1·응답크기P2와Firefox CI실패를재현·수정했다. 최신headCI/재리뷰대기. 병합·배포하지 않았다.
-이전 #134는 사용자 성과·한계 수용으로 DONE; #126/#127/#130/#149는 NOT_PLANNED 종료를 유지한다.
+**#125 PC 선택형 악보 패널 — 구현·검증 완료, 사용자 병합 승인 대기.**
+2026-09-20 [PR173](reviews/PR-173.md)의 `ed0a645`에서 필수 CI·실제 Codex 재리뷰까지 완료했다.
+P1(영구 오류 처리)·P2(응답 크기) 및 Firefox CI 실패를 재현·수정했다. phase DONE/이슈 최종 종료는 선언하지 않는다.
+계획은 [PR branch phase](https://github.com/landfill/ClairKeys/blob/codex/issue-125-score-panel/docs/recovery/phases/ISSUE-125-score-panel.md)에 있다.
+PR의 현재 상태는 리뷰 로그와 GitHub live state를 확인한다. #134와 종료된 #126/#127/#130/#149는 재개하지 않았다.
 
 ## Next action
 
-1. Docker 최종211개 중205pass6보관진단skip/native19실행통과. 수정후Jest1077/type/lint/build통과.
-2. 로컬 신규 PDF 업로드→저장→표시·권한/삭제·PC/모바일 회귀는 통과; 필요 보강 후 PR 준비.
-3. PR173 `ed0a645` Codex재리뷰완료·추가지적0/P1·P2해결. 현재head E2E CI2개만남았다. 완료확인후goal완료/병합승인대기를보고한다.
-4. 병합 승인만 남으면 goal 완료 보고; 병합·운영 배포·이슈 종료는 이번 승인 범위 밖이다.
+1. 사용자가 PR173의 병합을 명시적으로 승인하면 당시 head의 CI·리뷰·mergeability를 다시 확인하고 병합한다.
+2. 운영 배포는 별도 승인 대상이다. 적용 시 private artifact DB migration을 앱보다 먼저 실행해야 하며 `db push`만으로 RLS는 적용되지 않는다.
+3. 병합·배포·이슈 종료를 이미 수행한 것으로 취급하지 않는다. 현재 #125는 OPEN이다.
 
-[진행·검증 근거](validation/2026-09-20-issue-125-score-panel.md),
-[초기 독립 리뷰](validation/2026-09-20-issue-125-independent-review.md).
+[전체 검증·제약](validation/2026-09-20-issue-125-score-panel.md),
+[최종 gate 증거](validation/2026-09-20-issue-125-evidence/final-gates.json), [PR 리뷰](reviews/PR-173.md).
+원래 checkout은 main, 작업 branch는 로컬·원격 보존. 사용자 미커밋4개는 제외·보존했다.
 
 ## Latest verified result
+
+- **#125 / PR173 / 2026-09-20**: head `ed0a645`, 필수CI두E2E포함통과·Codex현재head재리뷰완료·추가지적0.
+  Docker205pass6보관진단skip/native19실행, Jest1080·type/lint/build, 브라우저12pass6기기비해당skip.
+  실제PDF업로드→Docker변환→비공개DB저장→악보/운지/마디강조·scroll, 재생/권한/삭제검증.
+  완성JSON4MiB한도. 외부Supabase/OAuth는로컬대체검증이며운영미접근. [근거](validation/2026-09-20-issue-125-score-panel.md).
 
 - **PR172 운영 / 2026-09-20 09:39 KST**: ab844ba, image d915599b…, rollback5af0b796….
   VM190통과·6보관진단skip(native19 전부 실행), 양쪽 엔진·앱·테스트 클래스 로컬d073d와 동일.

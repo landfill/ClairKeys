@@ -1,0 +1,121 @@
+{
+  "verifiedAt": "2026-09-20T04:04:25Z",
+  "pr": 173,
+  "head": "ed0a64577d3d00dcf6f845538af1ece35cbc5226",
+  "draft": false,
+  "merged": false,
+  "issue125": "OPEN",
+  "mergeable": true,
+  "mergeState": "clean",
+  "checks": [
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789214/job/106018183850",
+      "name": "All Checks Complete",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789214/job/106018183782",
+      "name": "PR Summary",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/runs/106017471212",
+      "name": "CodeQL",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789067/job/106017418881",
+      "name": "E2E Tests",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789214/job/106017314538",
+      "name": "Unit Tests",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789214/job/106017314555",
+      "name": "E2E Tests",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789214/job/106017314542",
+      "name": "Security Scan",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789214/job/106017314563",
+      "name": "Build Check",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://vercel.com/github",
+      "name": "Vercel Preview Comments",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789214/job/106017232310",
+      "name": "Detect changes",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789067/job/106017231629",
+      "name": "Security Audit",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789067/job/106017231763",
+      "name": "Run Tests",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789067/job/106017231734",
+      "name": "Lint",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/landfill/ClairKeys/actions/runs/35487789214/job/106017232196",
+      "name": "Lint and Type Check",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "",
+      "name": "CodeRabbit",
+      "state": "SUCCESS"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://vercel.com/landfills-projects/clairkeys/2kbERuTeAv99dt6cWszdmamwE1yu",
+      "name": "Vercel",
+      "state": "SUCCESS"
+    }
+  ],
+  "actualReview": {
+    "provider": "chatgpt-codex-connector",
+    "head": "ed0a64577d3d00dcf6f845538af1ece35cbc5226",
+    "status": "Completed",
+    "completedAt": "2026-09-20T03:58:33.551922Z",
+    "newFindings": 0,
+    "resolvedFindings": [
+      4055940158,
+      4056013348
+    ],
+    "summaryUrl": "https://github.com/landfill/ClairKeys/pull/173#issuecomment-5747298031"
+  },
+  "reviewExcluded": "CodeRabbit reported skipped; not counted as an executed review"
+}
