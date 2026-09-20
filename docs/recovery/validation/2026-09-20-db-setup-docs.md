@@ -27,3 +27,10 @@ Head: `5f3f3faf73bb3fae48476d68ae3b5642956403eb`
 - MusicXML은 별도 DB RLS/owner API로 보호되며 위 애니메이션 JSON 문제와 구분한다.
 - 실제 신규 hosted Supabase·OAuth·Storage E2E는 미실행. 문서 전용 변경이므로 전체 앱 테스트는 로컬에서 재실행하지 않았다.
 - 운영 DB/VM/버킷 변경 및 이슈 종료는 수행하지 않았다. 상태 main push의 기존 Vercel 자동배포는 별개다.
+
+## 리뷰 수정 재검증
+
+`886448f`: 기존 DB에 provenance가 없는 조건에서 index부터 실행하면 세 번째 문장에서
+`column "provenance" does not exist` 실패함을 격리 DB로 재현했다.
+새 corrected DB에서 선행 SQL→index→artifact 순서로 7개 적용/이력 기록을 재실행해 성공했다.
+문서 로컬 링크10개 존재 확인. 테스트용 컨테이너와 그 볼륨만 종료 시 제거한다.
