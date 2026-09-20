@@ -26,3 +26,14 @@ Status: IN_PROGRESS; VM 배포·정리는 사용자 명시적 요청으로 승�
 
 실행파일/로그는Git제외 local-test-data/results/issue125-vm-deploy-2026-09-20 및VM /tmp/pr173-*.
 남은 단계: 전체tests/무결성, idle재확인·rollback태그·전환,외부health/auth,운영업로드와UI,설정/데이터보존확인.
+
+## 게이트 통과 및 전환
+
+- 전체211개 중205pass6보관진단skip(500.799s),native19개 전부실행통과.
+- 새VM이미지82개추적파일과현재Git소스모두같음. 이전운영과normal/recovery JAR2433개씩·compiledtestclasses전부같음.
+  앱차이는app.py/converter.py/score_artifact.py와관련테스트3개뿐이다.
+- exactmerge CI6/6 및무결성marker확인. 진행JVM/최근진행job/미완료callback없음과기존data/env/unit보존을다시확인후전환.
+- 실행이미지afa17972…,revision70eb25e,systemdactive/containerhealthy. rollback-pr173-20260920→직전d915599b…보존.
+- 외부health200/무인증process401. 운영env/unit해시불변,기존processing1파일보존.
+- [전환·게이트증거](2026-09-20-issue-125-vm-evidence.json).
+- 로그인된운영앱에서검증용비공개악보1개업로드를시작했다. 기존악보는변경/삭제하지않는다. 신규악보는완료후사용자확인용으로남긴다.

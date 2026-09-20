@@ -7,7 +7,7 @@ Last updated: 2026-09-20 KST
 **#125 PC 선택형 악보 패널 — 구현·검증·PR173 병합 및 승인된 DB·웹 배포 완료.**
 사용자 승인으로 `70eb25e`에 병합하고 새 테이블·RLS·cascade를 운영DB에 선적용했다. Vercel Production 배포와 HTTP/Chromium smoke를 확인했다.
 병합 후6checks도 모두 통과했다. [구현 phase](phases/ISSUE-125-score-panel.md), [병합·배포 근거](reviews/PR-173.md).
-**사용자 요청으로 운영 OMR VM 배포를 진행 중이다.** 새 이미지 빌드 완료, 전환 전 테스트/무결성 검증 중이다. [VM 배포 기록](validation/2026-09-20-issue-125-vm-deployment.md).
+**사용자 요청으로 운영 OMR VM 배포를 진행 중이다.** 새 이미지 테스트·무결성 통과 후 afa17972로 전환했다(active/healthy, 외부200/401). 실제 운영 업로드·패널 검증 중이다. [VM 배포 기록](validation/2026-09-20-issue-125-vm-deployment.md).
 
 ## Next action
 

@@ -1,0 +1,44 @@
+{
+  "cutover": {
+    "revision": "70eb25e6a50a9b89acaf673b590d57f572200123",
+    "image": "afa179723bc21f2a2b06d8f53251eb8bfc22a8372bb4dec4a875711fe4549d6f",
+    "priorImage": "d915599b7ca80fa35a9a0888680f21401bb959f0193b63b37a3702914864764a",
+    "rollbackTag": "localhost/clairkeys-omr:rollback-pr173-20260920",
+    "cutoverEpoch": 1789891060.7470102,
+    "systemd": "active",
+    "health": "healthy",
+    "jvmsAfter": [],
+    "processingEntriesAfter": 1,
+    "envUnchanged": true,
+    "unitUnchanged": true
+  },
+  "integrity": {
+    "enginesIdenticalToPreviousProduction": true,
+    "jarEntries": {
+      "/opt/audiveris": 2433,
+      "/opt/clairkeys-audiveris-recovery": 2433
+    },
+    "compiledTestClassesIdentical": true,
+    "trackedOmrFiles": 82,
+    "missingTrackedFiles": [],
+    "changedTrackedFiles": [],
+    "changedAppFilesVsPrevious": [
+      "app.py",
+      "omr/converter.py",
+      "omr/score_artifact.py",
+      "tests/test_score_artifact.py",
+      "tests/test_score_mapping_independent.py",
+      "tests/test_service_contract.py"
+    ]
+  },
+  "tests": {
+    "total": 211,
+    "passed": 205,
+    "skipped": 6,
+    "nativeExecuted": 19,
+    "seconds": 500.799
+  },
+  "externalHealth": 200,
+  "unauthorizedProcess": 401,
+  "liveUpload": "in progress"
+}
