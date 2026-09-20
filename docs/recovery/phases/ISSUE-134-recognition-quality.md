@@ -1,6 +1,6 @@
 # ISSUE-134 — PDF에서 MusicXML을 만드는 인식 단계 개선
 
-Status: `IN_PROGRESS`
+Status: `DONE` — 사용자 현재 성과·알려진 한계 수용으로 마감; 모든 타이/재생 결함 해소 주장이 아님
 Depends on: #134 same-input VM reproduction, D-048 diagnostics
 
 ## Progress
@@ -458,6 +458,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
 - 2026-09-20: User explicitly requested branch cleanup and VM deployment. Both contained b8de0a8 tips were deleted with
   the user note hash unchanged. VM preflight passes; exact ab844ba image build is running while PR171 stays active.
   GitHub issue134 and six related open issues were synchronized with actual progress after the user identified stale issue status.
+
+- 2026-09-20: User accepted the current result and explicitly requested closure of issues126/127/130/134/149. Issue134 is
+  CLOSED/COMPLETED with m12 and cross-voice playback retained as accepted limitations, not required followups. The other four
+  are CLOSED/NOT_PLANNED for their unimplemented extensions. Approved PR172 rollout reached active/healthy d915599b with
+  VM190pass/6diagnostic skips/native19 executed; production smoke is finishing separately. No unchecked item was marked implemented.
 
 ## Objective
 

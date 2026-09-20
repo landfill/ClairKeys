@@ -1,6 +1,6 @@
 # ISSUE-130 — v2의 손 소모와 화음 도달 한계
 
-Status: `BLOCKED`
+Status: `DONE` — 사용자 현재 상태 마감; 추가 모델 작업은 NOT_PLANNED이며 구현 완료 주장이 아님
 Depends on: ISSUE-126 2순위 (`phrase-dp-v2`가 이 단계의 수정 대상이다)
 
 Progress (2026-09-05): **1단계 완료.** PR [#131](https://github.com/landfill/ClairKeys/pull/131)이 merge
@@ -24,6 +24,10 @@ commit `72627e9`로 병합되고 post-merge 체크가 전부 통과했다. CodeR
 61→64). 원인은 기전이 아니라 **목표 지표**였다 — `repositionsInMonotoneRuns`는 3마디 왼손에서 결함 운지를
 정석 운지보다 좋게 매긴다. 지표를 채택 전에 검증하는 하네스를 만들고, 검증을 통과한 지표 세 개로
 교체했다(D-044). 새 기준선은 낭비 손 이동 **43/167**, 같은 손가락 도약 **13/167**.
+
+Progress (2026-09-20): 사용자 지시로 GitHub #130을 NOT_PLANNED로 마감했다. 이미 구현된 화음 도달 제약은 유지하며,
+추가 기준 운지 확보와 아르페지오 최적화를 재개 대기 조건으로 두지 않는다. 아래 원래 목표/검증 기록은 이력이고,
+미달성 항목을 달성했다고 표시하지 않는다.
 
 ## Objective
 

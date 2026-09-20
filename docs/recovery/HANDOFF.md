@@ -6,7 +6,7 @@ Last updated: 2026-09-20 KST
 
 문서 규약 최적화는 PR160 `d7bfbc8`로 병합됐다. [검토·병합 기록](reviews/PR-160.md).
 
-**[#134 인식 품질 개선](phases/ISSUE-134-recognition-quality.md) — IN_PROGRESS.**
+**[#134 인식 품질 개선](phases/ISSUE-134-recognition-quality.md) — DONE(사용자 현재 성과·한계 수용).**
 시작 템포 수정은 운영 반영됐다. 줄 위 3도 점 누락 수정 [PR161](reviews/PR-161.md)(D-062, `34f9e7e`)은
 2026-09-14 배포돼 운영 스모크에서 Clair 153/191을 확인했다. 타이 기전 B 수정 [PR162](reviews/PR-162.md)(D-063, `0a22d2f`)는
 2026-09-15 배포돼 운영 스모크에서 타이 29/43을 확인했다. 다른 화음 사이 점 수정 [PR163](reviews/PR-163.md)(D-064, `0e3dc61`)은
@@ -24,19 +24,13 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 
 ## Next action
 
-1. **[PR171](reviews/PR-171.md) 병합·브랜치 정리·승인된 VM 배포 완료.** 운영 `867513c`, image `5af0b796…`,
-   `rollback-pr171-20260919`→`79cbc6ab…`(PR170) 보존. [배포·운영 스모크·롤백](validation/2026-09-19-d072-staff-line-purge-deployment.md).
-2. 운영 Clair **191/191·타이37/43·누락6·오검출0**. raw events·평가 객체가 로컬 최종 검증과 같고 animation은 생성 시각만 다르다.
-   사용자의 앱 재변환(2026-09-20 00:19 KST, job `a530c820…`) 154음이 검증본과 전 필드 같고 처리 완료·callback 전달을 확인했다.
-   플레이어 UI·청취 E2E는 미실행이다.
-3. 남은 누락 6개([재분류](validation/2026-09-19-issue-134-residual-ties.md)): m12 X자 교차 1(곡선 가운데가 오선에 닿아 쪼개짐),
-   시스템 경계 5(반쪽 곡선 6개 미검출: m3 A4·C5, m6 E4, m9 C5·E5).
-4. **시스템 경계 타이5개 [PR172](reviews/PR-172.md)를 사용자 승인으로 `ab844ba`에 병합했다**(2026-09-20).
-   승인 head b8de0a8의 CI·실제 리뷰·CLEAN 상태를 재확인했고, main의 실행코드는 승인본과 같다.
-   로컬 검증은191/191·타이42/43·오검출0이다. 병합 후 CI6개 모두 통과했고, **사용자 승인으로 운영 배포를 진행 중**이다.
-   운영은 PR171(타이37/43) 그대로다. 사용자 명시적 정리 지시로 포함된 두 tip의 원격·로컬 브랜치를 삭제했고 미커밋 메모는 보존했다.
-   [배포 진행·이슈 동기화](validation/2026-09-20-d073-cross-system-tie-deployment.md). m12 교차·m3 C5 성부2→1 재생 병합은 별도 후속이며 전체#134는 IN_PROGRESS다.
-
+1. 사용자 지시로 #126/#127/#130/#134/#149를 현재 상태에서 마감했다. #134는성과수용COMPLETED,
+   나머지4개는미구현추가범위를NOT_PLANNED로종료했다. m12 타이1개·m3 C5 성부간재생병합은알려진한계로수용했고,
+   자동후속이슈나재개대기조건으로넘기지않았다. 열린이슈는#121/#125다.
+2. 이미승인된 **PR172 VM배포는마무리검증중**이다. exactab844ba/image d915599b…로전환해active/healthy·외부200/401확인.
+   VM190통과/6진단skip(native19모두실행), rollback-pr172-20260920→5af0b796…보존. 운영원본스모크를확인한뒤기록을완결한다.
+   [배포/이슈마감/이미지정리](validation/2026-09-20-d073-cross-system-tie-deployment.md).
+3. PR172작업브랜치는두tipmain포함확인후사용자명시적정리지시로삭제했다. 미커밋history메모는보존했다.
 
 ## Latest verified result
 
@@ -232,7 +226,7 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
 | 작업 | 재개 조건·근거 |
 |---|---|
 | OMR page/scale | [OMR-Q2](phases/OMR-Q2-page-scale.md): 400dpi 한 입력 개선만 입증. 정상 악보·fallback 검증 전 전역 정책 도입 금지 |
-| 운지 #130 | [phase](phases/ISSUE-130-fingering-corpus-and-reach.md): 사람의 기준 운지 근거를 기다림 |
+| 운지 #130 | [phase](phases/ISSUE-130-fingering-corpus-and-reach.md): 사용자 현재 상태 수용으로 종료; 추가 모델 작업 NOT_PLANNED |
 | 영속 OMR 큐 | [P1-B](phases/P1-B-durable-omr.md), [로드맵](ROADMAP.md): NOT_STARTED |
 | UI #146 완료 한계 | [PR158](reviews/PR-158.md): 실기기 터치·가로 화면·브라우저 zoom·스크린리더·대비 계측·실제 로그인 미검증 |
 | 전체 계획·결정 | [ROADMAP](ROADMAP.md), [DECISIONS](DECISIONS.md) |
