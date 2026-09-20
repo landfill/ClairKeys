@@ -455,6 +455,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   The approved merge is verified on main. Both contained branches and the unchanged user note remain preserved; no VM rollout.
   Overall #134 stays IN_PROGRESS with m12 crossing and the cross-voice canonical limitation.
 
+- 2026-09-20: User explicitly requested branch cleanup and VM deployment. Both contained b8de0a8 tips were deleted with
+  the user note hash unchanged. VM preflight passes; exact ab844ba image build is running while PR171 stays active.
+  GitHub issue134 and six related open issues were synchronized with actual progress after the user identified stale issue status.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
