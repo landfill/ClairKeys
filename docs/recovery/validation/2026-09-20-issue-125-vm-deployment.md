@@ -1,6 +1,6 @@
 # PR173 OMR VM 배포 및 브랜치 정리 — 2026-09-20
 
-Status: IN_PROGRESS; VM 배포·정리는 사용자 명시적 요청으로 승인됨. 이슈 종료는 미수행.
+Status: DONE — 사용자 승인된 브랜치 정리·VM 배포·운영 검증 완료. 이슈 종료는 미수행.
 
 ## 브랜치 정리
 
@@ -37,3 +37,25 @@ Status: IN_PROGRESS; VM 배포·정리는 사용자 명시적 요청으로 승�
 - 외부health200/무인증process401. 운영env/unit해시불변,기존processing1파일보존.
 - [전환·게이트증거](2026-09-20-issue-125-vm-evidence.json).
 - 로그인된운영앱에서검증용비공개악보1개업로드를시작했다. 기존악보는변경/삭제하지않는다. 신규악보는완료후사용자확인용으로남긴다.
+
+## 운영 end-to-end 최종 결과
+
+- 사용자 로그인 세션의 실제운영업로드폼으로공개원본동일SHA34d06c77… PDF를비공개검증악보로등록했다. 신규sheet86,jobc93807dd-8dd5-4ab4-801e-f1cf3e30caa4.
+  원래버튼ref클릭후요청이시작되지않음을확인하고native form.requestSubmit으로정상폼처리기를실행했다. 중복업로드는하지않았다.
+- callback delivery_status=delivered,processingcompleted100%. /status에artifact/animation본문이없고 /result에newartifact가있음을실제HTTP로확인.
+- 운영저장artifact102763bytes,17마디/191mapping/150canonical. 모든mappingindex유효·canonical150전부cover.
+  XML SHA2172d61013421fbfd1a6b8f51840f4bf87f65c3f7d16e43acdac54942aef9cbe가VM결과와DB조회에서같음.
+- notes전필드/tempo69/timeSignature9/8/duration이기존검증baselineguarded-clair-2와동일. 인식·재생을고친것으로표현하지않는다.
+- owner scoreGET200/private,no-store, isPublicfalse/hasScoretrue. anonymous sheet403/score401.
+- 실제PC첫토글OFF→ON/SVG1/양손운지·마디강조표시,새로고침ON유지,End탐색measure16/scrollTop971,Home복귀.
+  음량0에서재생시계진행→47초/measure11일시정지;토글OFF/ON에도47초유지. 실제3단화면을시각확인했다. 청취검증은하지않았다.
+- 브라우저토글원래null/음량0.5/세션종료상태로복원했다. [검증악보](https://clairkeys.vercel.app/sheet/86)는사용자확인용으로남겼으며기존악보삭제·수정없음.
+- 원본job디렉터리는완전히삭제됨. 기존processing1파일/env/unit해시불변,checkoutclean,JVM0,active/healthy,journalerror0. 외부health200/무인증process401 재확인.
+- local/remote작업branch모두없음,main만남음. 사용자파일manifest5개정리후에도동일. 이슈125OPEN유지.
+- [VM전체테스트로그](2026-09-20-issue-125-evidence/vm-image-tests.log), [전환/운영/브라우저증거](2026-09-20-issue-125-vm-evidence.json).
+  실제스크린샷과fullresult는사용자정보보호를위해Git제외local-test-data에만보존하며repo에는metrics/hash만기록했다.
+
+## 롤백
+
+`podman tag localhost/clairkeys-omr:rollback-pr173-20260920 localhost/clairkeys-omr:current` 후 `systemctl restart clairkeys-omr` 및 image/health/auth확인.
+직전d915599b…이미지와기존env/unit을보존했다. 실제롤백전환은수행하지않았다.

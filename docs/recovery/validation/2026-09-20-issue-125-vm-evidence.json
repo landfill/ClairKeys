@@ -40,5 +40,72 @@
   },
   "externalHealth": 200,
   "unauthorizedProcess": 401,
-  "liveUpload": "in progress"
+  "liveUpload": {
+    "jobId": "c93807dd-8dd5-4ab4-801e-f1cf3e30caa4",
+    "deliveryStatus": "delivered",
+    "canonicalNotes": 150,
+    "mappings": 191,
+    "measures": 17,
+    "tempo": 69.0,
+    "timeSignature": "9/8",
+    "xmlSha256": "2172d61013421fbfd1a6b8f51840f4bf87f65c3f7d16e43acdac54942aef9cbe",
+    "originalJobDirectoryRemoved": true,
+    "statusLeaksArtifact": false,
+    "statusLeaksAnimation": false
+  },
+  "storedArtifact": {
+    "artifactBytes": 102763,
+    "cacheControl": "private, no-store",
+    "canonicalCovered": 150,
+    "canonicalNotes": 150,
+    "hasScore": true,
+    "isPublic": false,
+    "mappingIndicesValid": true,
+    "mappings": 191,
+    "measures": 17,
+    "scoreHttp": 200,
+    "sheetId": 86,
+    "tempo": 69,
+    "timeSignature": "9/8",
+    "xmlSha256": "2172d61013421fbfd1a6b8f51840f4bf87f65c3f7d16e43acdac54942aef9cbe"
+  },
+  "postflight": {
+    "revision": "70eb25e6a50a9b89acaf673b590d57f572200123",
+    "image": "afa179723bc21f2a2b06d8f53251eb8bfc22a8372bb4dec4a875711fe4549d6f",
+    "rollback": "localhost/clairkeys-omr:rollback-pr173-20260920",
+    "systemd": "active",
+    "health": "healthy",
+    "jvms": 0,
+    "processingEntries": 1,
+    "envUnchanged": true,
+    "unitUnchanged": true,
+    "preservedDataFiles": 1,
+    "journalErrorLines": 0,
+    "webUpload": "delivered",
+    "checkoutClean": true
+  },
+  "baselineComparison": {
+    "notes": true,
+    "tempo": true,
+    "timeSignature": true,
+    "duration": true
+  },
+  "browser": {
+    "sheetUrl": "https://clairkeys.vercel.app/sheet/86",
+    "firstTogglePressed": false,
+    "renderedSvg": 1,
+    "refreshRetainedOn": true,
+    "seekEndMeasure": 16,
+    "seekEndScrollTop": 971,
+    "playPauseTimeSecondsRounded": 47,
+    "playPauseMeasureIndex": 11,
+    "toggleOffOnPreservedTime": true,
+    "volumeDuringPlayback": 0,
+    "audibleListeningPerformed": false,
+    "originalPreferenceRestored": true,
+    "volumeRestored": 0.5,
+    "anonymousSheetStatus": 403,
+    "anonymousScoreStatus": 401,
+    "privateScreenshotSha256": "1757b2d50e75770a4f35f1ecfdbf6dd24a2d309675e55b3a92f377c75698f977"
+  }
 }

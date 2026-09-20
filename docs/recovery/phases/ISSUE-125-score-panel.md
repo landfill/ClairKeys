@@ -1,6 +1,6 @@
 # ISSUE-125 — PC 선택형 악보 패널
 
-Status: `DONE` — 구현·검증 후 PR173 병합; 운영 OMR 활성화·이슈 종료는 별도 승인 범위
+Status: `DONE` — PR173 병합 및 승인된 DB·웹·OMR VM 배포/운영 업로드 검증 완료; 이슈 종료는 별도 지시
 Depends on: 기존 canonical playback; #126/#127 재개 불필요
 
 ## Objective
@@ -42,3 +42,5 @@ Gemini 3.8 Flash: OMR XML/위치 매핑·서비스 응답 및 Python 회귀 테�
 - 2026-09-20: ed0a645의최종CI/실제리뷰를확인하고사용자승인으로PR173을70eb25e에병합했다.
 - 2026-09-20: 추가승인된private artifact DBmigration/RLS/cascade를선적용하고Vercel웹Production배포·HTTP/Chromium스모크를확인했다. 기존행수불변.
 - 2026-09-20: 병합commit후6checks모두success. 운영OMR VM은승인범위밖으로미배포이며현재새MusicXML전달은비활성이다. #125는OPEN을유지한다.
+
+- 2026-09-20: 사용자 추가 지시로 branch정리·VM배포 완료. afa17972/70eb25e, VM205pass6diagnostic skip/native19실행, 실제운영업로드→delivered→private XML→PC패널확인. 신규검증악보86은보존하고 #125는OPEN유지.

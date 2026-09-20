@@ -4,23 +4,27 @@ Last updated: 2026-09-20 KST
 
 ## Current phase
 
-**#125 PC 선택형 악보 패널 — 구현·검증·PR173 병합 및 승인된 DB·웹 배포 완료.**
-사용자 승인으로 `70eb25e`에 병합하고 새 테이블·RLS·cascade를 운영DB에 선적용했다. Vercel Production 배포와 HTTP/Chromium smoke를 확인했다.
-병합 후6checks도 모두 통과했다. [구현 phase](phases/ISSUE-125-score-panel.md), [병합·배포 근거](reviews/PR-173.md).
-**사용자 요청으로 운영 OMR VM 배포를 진행 중이다.** 새 이미지 테스트·무결성 통과 후 afa17972로 전환했다(active/healthy, 외부200/401). 실제 운영 업로드·패널 검증 중이다. [VM 배포 기록](validation/2026-09-20-issue-125-vm-deployment.md).
+**#125 PC 선택형 악보 패널 — 구현·병합·운영 DB/웹/OMR VM 배포 및 운영 검증 완료.**
+사용자 추가 지시로 VM을 `70eb25e`/`afa17972`에 배포했다. 실제 로그인 업로드→콜백 delivered→비공개 MusicXML 저장→악보/운지/마디강조·자동스크롤까지 확인했다.
+[구현 phase](phases/ISSUE-125-score-panel.md), [VM 배포·검증](validation/2026-09-20-issue-125-vm-deployment.md), [병합·리뷰](reviews/PR-173.md).
 
 ## Next action
 
-1. 운영 OMR VM 배포는 사용자가 새로 승인했다. 새 이미지 테스트·무결성→idle확인/rollback보존/전환→실제 업로드·패널 검증을 마친다.
-2. #125는 OPEN을 유지했다. 이슈 종료도 별도 사용자 지시를 따른다.
+1. 요청한 브랜치 정리·VM 배포는 완료됐다. 검증용 비공개 [악보86](https://clairkeys.vercel.app/sheet/86)을 사용자 확인용으로 남겼다.
+2. #125는 OPEN을 유지했다. 이슈 종료는 별도 사용자 지시를 따른다.
 3. 기존 index migration `20260901060000`은 운영 미적용 상태를 그대로 두었다. 후속 후보이며 자동 착수하지 않는다.
-4. 사용자 명시적 정리 지시로 병합 포함을 확인한 두 작업branch와 임시worktree를 정리했다. 사용자파일5개 해시는 모두 보존됐다.
+4. main에 포함된 두 작업branch와 임시worktree를 정리했다. 사용자 메모/설정파일5개 해시는 보존됐으며 현재main이다.
 
 [전체 검증·제약](validation/2026-09-20-issue-125-score-panel.md),
 [최종 gate 증거](validation/2026-09-20-issue-125-evidence/final-gates.json), [PR 리뷰](reviews/PR-173.md).
-원래 checkout은 main, 작업 branch는 로컬·원격 보존. 사용자 미커밋4개는 제외·보존했다.
+원래 checkout은 main, 작업branch는 정리 완료. 사용자 미커밋4경로는 제외·보존했다.
 
 ## Latest verified result
+
+- **PR173 VM / 2026-09-20**: 70eb25e/imageafa17972,rollbackd915599b 보존. VM205pass6진단skip/native19실행, 추적82파일/엔진양쪽2433항목 검증.
+  실제운영비공개업로드sheet86/callbackdelivered, XML17마디·191mapping·150canonical/102763bytes, VM=DB XMLhash동일.
+  기존baseline notes/tempo/meter/duration동일. PC3단/운지/마디강조/scroll/refresh/pause/toggle검증.
+  active/healthy/외부200·401/journalerror0, 원본job디렉터리삭제·기존data/env/unit보존. [근거](validation/2026-09-20-issue-125-vm-evidence.json).
 
 - **PR173 승인 배포 / 2026-09-20**: merge70eb25e, Vercel Production6550222453성공, production DB checksum/RLS/PK/cascade·기존행수불변.
   home/publicList/sheetMetadata/sheetPage200, score401/private-no-store, Chromium기존재생/pageErrors0. 병합후6checks성공.

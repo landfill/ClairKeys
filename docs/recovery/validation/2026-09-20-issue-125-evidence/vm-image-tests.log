@@ -1,0 +1,376 @@
+test_each_engine_ties_past_an_aligned_voice_but_not_an_intervening_chord (test_aligned_voice_ties_native.AlignedVoiceTiesNativeTests) ... ok
+test_cancelled_conversion_kills_process_before_releasing_slot (test_audiveris_runtime.AudiverisProcessorTests) ... INFO:omr.audiveris:Starting Audiveris processing for /tmp/tmp1cymmkf5/input.pdf
+INFO:omr.audiveris:Running Audiveris command: /tmp/tmp1cymmkf5/Audiveris -batch -export -output /tmp/tmp1cymmkf5/output -- /tmp/tmp1cymmkf5/input.pdf
+ok
+test_concurrent_conversions_are_serialized_to_one_jvm (test_audiveris_runtime.AudiverisProcessorTests) ... ok
+test_existing_positional_constructor_contract_is_preserved (test_audiveris_runtime.AudiverisProcessorTests) ... ok
+test_multiple_mxl_outputs_fail_instead_of_returning_partial_score (test_audiveris_runtime.AudiverisProcessorTests) ... INFO:omr.audiveris:Starting Audiveris processing for /tmp/tmp6x48d7b_/input.pdf
+INFO:omr.audiveris:Running Audiveris command: /tmp/tmp6x48d7b_/Audiveris -batch -export -output /tmp/tmp6x48d7b_/output -- /tmp/tmp6x48d7b_/input.pdf
+ERROR:omr.audiveris:Error in Audiveris processing: Audiveris generated multiple MusicXML files; multi-output scores are not yet supported
+ok
+test_native_launcher_receives_output_folder_and_returns_mxl (test_audiveris_runtime.AudiverisProcessorTests) ... INFO:omr.audiveris:Starting Audiveris processing for /tmp/tmp731eoqoc/input.pdf
+INFO:omr.audiveris:Running Audiveris command: /tmp/tmp731eoqoc/Audiveris -batch -export -output /tmp/tmp731eoqoc/output -- /tmp/tmp731eoqoc/input.pdf
+INFO:omr.audiveris:Successfully generated MusicXML: /tmp/tmp731eoqoc/output/input.mxl
+WARNING:omr.audiveris:Whole-note retry unavailable (ParseError); retaining first result
+ok
+test_timed_out_conversion_kills_process_and_releases_slot (test_audiveris_runtime.AudiverisProcessorTests) ... INFO:omr.audiveris:Starting Audiveris processing for /tmp/tmp36hkd93f/input.pdf
+INFO:omr.audiveris:Running Audiveris command: /tmp/tmp36hkd93f/Audiveris -batch -export -output /tmp/tmp36hkd93f/output -- /tmp/tmp36hkd93f/input.pdf
+ERROR:omr.audiveris:Error in Audiveris processing: Audiveris timed out after 0.00979176 seconds
+INFO:omr.audiveris:Starting Audiveris processing for /tmp/tmp36hkd93f/input.pdf
+INFO:omr.audiveris:Running Audiveris command: /tmp/tmp36hkd93f/Audiveris -batch -export -output /tmp/tmp36hkd93f/retry-output -- /tmp/tmp36hkd93f/input.pdf
+INFO:omr.audiveris:Successfully generated MusicXML: /tmp/tmp36hkd93f/retry-output/input.mxl
+WARNING:omr.audiveris:Whole-note retry unavailable (ParseError); retaining first result
+ok
+test_timed_out_installation_validation_kills_process (test_audiveris_runtime.AudiverisProcessorTests) ... ERROR:omr.audiveris:Error validating Audiveris installation: Audiveris timed out after 0.01 seconds
+ok
+test_app_uses_only_the_native_audiveris_processor (test_audiveris_runtime.DeploymentStaticContractTests) ... ok
+test_build_proves_the_launcher_starts_not_merely_that_it_exists (test_audiveris_runtime.DeploymentStaticContractTests)
+`test -x` passed on an image whose launcher could not run at all. ... ok
+test_bundled_launcher_caps_the_audiveris_heap (test_audiveris_runtime.DeploymentStaticContractTests) ... ok
+test_container_builds_an_isolated_region_recovery_engine (test_audiveris_runtime.DeploymentStaticContractTests) ... ok
+test_container_installs_the_verified_release_and_ocr_language_data (test_audiveris_runtime.DeploymentStaticContractTests) ... ok
+test_container_replaces_english_data_with_checksum_pinned_legacy_model (test_audiveris_runtime.DeploymentStaticContractTests) ... ok
+test_container_supplies_the_needs_the_deb_does_not_declare (test_audiveris_runtime.DeploymentStaticContractTests)
+The 5.11.0 .deb fails to install and then fails to run without these. ... ok
+test_every_engine_keeps_a_shared_stem_void_head_on_the_beat (test_audiveris_runtime.DeploymentStaticContractTests)
+A lower voice's void head on a beamed stem must survive and not slow the beat. ... ok
+test_every_engine_keeps_the_displaced_head_of_a_second (test_audiveris_runtime.DeploymentStaticContractTests)
+A second's displaced head must not be pruned before its side is judged. ... ok
+test_every_engine_links_a_line_third_dot_to_the_head_below_it (test_audiveris_runtime.DeploymentStaticContractTests)
+Dot order must not decide which line head keeps its augmentation dot. ... ok
+test_every_engine_pulls_a_beam_end_back_to_its_stem (test_audiveris_runtime.DeploymentStaticContractTests)
+A beam must not keep an end that runs past the stem it belongs to. ... ok
+test_every_engine_retries_staff_line_tie_ends_only_as_ties (test_audiveris_runtime.DeploymentStaticContractTests)
+A flat tie merged into a staff line must still reach its heads. ... ok
+test_repository_exposes_only_the_applied_vm_deployment_contract (test_audiveris_runtime.DeploymentStaticContractTests) ... ok
+test_ambiguous_or_different_destinations_are_rejected (test_callback_delivery.CallbackOriginPolicyTests) ... ok
+test_exact_https_origin_and_effective_port_are_accepted (test_callback_delivery.CallbackOriginPolicyTests) ... ok
+test_explicit_zero_or_malformed_ports_are_rejected (test_callback_delivery.CallbackOriginPolicyTests) ... ok
+test_http_is_allowed_only_in_explicit_development (test_callback_delivery.CallbackOriginPolicyTests) ... ok
+test_http_requires_the_exact_development_marker (test_callback_delivery.CallbackOriginPolicyTests) ... ok
+test_missing_or_invalid_configuration_fails_closed (test_callback_delivery.CallbackOriginPolicyTests) ... ok
+test_missing_or_invalid_origin_configuration_makes_no_request (test_callback_delivery.CompletionDeliveryRuntimeTests) ... ERROR:app:Completion callback destination rejected for job job-safe-test: callback origin configuration is missing or malformed; the result remains available through GET /result/job-safe-test
+ERROR:app:Completion callback destination rejected for job job-safe-test: callback origin configuration is malformed; the result remains available through GET /result/job-safe-test
+ok
+test_nonexact_development_marker_never_constructs_transport (test_callback_delivery.CompletionDeliveryRuntimeTests) ... ERROR:app:Completion callback destination rejected for job job-safe-test: completion callbacks require HTTPS; the result remains available through GET /result/job-safe-test
+ERROR:app:Completion callback destination rejected for job job-safe-test: completion callbacks require HTTPS; the result remains available through GET /result/job-safe-test
+ERROR:app:Completion callback destination rejected for job job-safe-test: completion callbacks require HTTPS; the result remains available through GET /result/job-safe-test
+ok
+test_real_httpx_transport_never_logs_url_query_or_response (test_callback_delivery.CompletionDeliveryRuntimeTests) ... ok
+test_redirect_is_not_followed_to_an_unvalidated_destination (test_callback_delivery.CompletionDeliveryRuntimeTests) ... ERROR:app:Completion callback for job job-safe-test returned 302
+ERROR:app:Completion callback for job job-safe-test returned 302
+ERROR:app:Giving up completion delivery for job job-safe-test after 2 attempts; the result remains available through GET /result/job-safe-test
+ok
+test_rejected_url_makes_no_request_and_preserves_completed_result (test_callback_delivery.CompletionDeliveryRuntimeTests) ... ok
+test_transport_exception_is_redacted_and_retried (test_callback_delivery.CompletionDeliveryRuntimeTests) ... ok
+test_valid_delivery_keeps_timeout_status_and_disables_redirects (test_callback_delivery.CompletionDeliveryRuntimeTests) ... INFO:app:Delivered completed job job-safe-test
+ok
+test_each_engine_gives_the_dot_to_the_lower_voice_whichever_chord_comes_first (test_cross_chord_dots_native.CrossChordDotsNativeTests) ... ok
+test_pairing_prefers_same_note_over_phrase_slur (test_cross_system_ties_native.CrossSystemTiesNativeTests) ... ok
+test_small_arrival_boundary_tie (test_cross_system_ties_native.CrossSystemTiesNativeTests) ... ok
+test_staff_hugging_boundary_ties (test_cross_system_ties_native.CrossSystemTiesNativeTests) ... ok
+test_standard_boundary_ties_control (test_cross_system_ties_native.CrossSystemTiesNativeTests) ... ok
+test_unmatched_page_edge_rescue_is_not_exported (test_cross_system_ties_native.CrossSystemTiesNativeTests) ... ok
+test_each_engine_keeps_the_beam_whose_ends_run_past_their_stems (test_curve_along_beam_native.CurveAlongBeamNativeTests) ... ok
+test_cidfile_has_exactly_one_owner (test_deployment_unit.DeploymentUnitTests)
+`--rm` must not compete with ExecStopPost for the same cidfile. ... ok
+test_cidfile_is_removed_before_podman_run (test_deployment_unit.DeploymentUnitTests)
+A cidfile surviving an unclean shutdown must not fail the next start. ... ok
+test_duplet_factors_and_digit_discrimination_in_both_engines (test_duplet_native.DupletNativeTests) ... ok
+test_absent_mode_uses_major_name_but_explicit_unsupported_mode_is_omitted (test_key_signature.KeySignatureExtractionTest) ... ok
+test_first_key_declaration_remains_the_bounded_source (test_key_signature.KeySignatureExtractionTest) ... ok
+test_invalid_key_does_not_abort_conversion_or_emit_null (test_key_signature.KeySignatureExtractionTest) ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpnazh39tw/invalid.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Untitled', 'composer': 'Unknown'}
+INFO:omr.converter:Extracted 1 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpnazh39tw/invalid.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Untitled', 'composer': 'Unknown'}
+INFO:omr.converter:Extracted 1 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_maps_all_traditional_major_and_minor_fifths (test_key_signature.KeySignatureExtractionTest) ... ok
+test_missing_invalid_and_out_of_range_fifths_are_omitted (test_key_signature.KeySignatureExtractionTest) ... ok
+test_numeric_lexemes_are_ascii_and_bounded_before_integer_conversion (test_key_signature.KeySignatureExtractionTest) ... ok
+test_each_engine_keeps_both_dots_whichever_dot_is_processed_first (test_line_third_dots_native.LineThirdDotsNativeTests) ... ok
+test_accepts_only_improved_nine_eight_with_pitch_and_structure_preserved (test_meter_retry.MeterRetryTests) ... ok
+test_actual_automatic_pair_passes_guards_but_not_full_reference (test_meter_retry.MeterRetryTests) ... ok
+test_changes_of_meter_and_multiple_parts_are_ineligible (test_meter_retry.MeterRetryTests) ... ok
+test_one_weak_or_disagreeing_staff_abstains_without_output (test_meter_retry.MeterRetryTests) ... ok
+test_only_two_selected_numerators_and_pairs_change_in_copy (test_meter_retry.MeterRetryTests) ... ok
+test_only_widespread_overflow_in_uniform_six_eight_is_eligible (test_meter_retry.MeterRetryTests) ... ok
+test_pitch_multiplicity_and_staff_changes_are_not_hidden (test_meter_retry.MeterRetryTests) ... ok
+test_retry_cannot_drop_or_change_source_tempo (test_meter_retry.MeterRetryTests) ... ok
+test_same_tempo_mark_cannot_move_away_from_score_start (test_meter_retry.MeterRetryTests) ... ok
+test_unsupported_graphs_abstain_before_classification (test_meter_retry.MeterRetryTests) ... ok
+test_wrong_version_or_multiple_pages_abstains (test_meter_retry.MeterRetryTests) ... ok
+test_ambiguous_graph_or_classifier_failure_preserves_result (test_meter_retry_runtime.MeterRetryRuntimeTests) ... WARNING:omr.audiveris:Meter retry unavailable (ValueError); retaining first result
+ok
+test_cancelled_retry_kills_process_and_propagates_cancellation (test_meter_retry_runtime.MeterRetryRuntimeTests) ... INFO:omr.audiveris:Retrying internal meter interpretation using two-staff image evidence: [{'staff': '1', 'nine': 0.72, 'margin': 0.1}, {'staff': '2', 'nine': 0.73, 'margin': 0.1}]
+ok
+test_exhausted_budget_does_not_start_retry (test_meter_retry_runtime.MeterRetryRuntimeTests) ... ok
+test_failed_or_ambiguous_or_lost_pitch_candidate_falls_back (test_meter_retry_runtime.MeterRetryRuntimeTests) ... INFO:omr.audiveris:Retrying internal meter interpretation using two-staff image evidence: [{'staff': '1', 'nine': 0.72, 'margin': 0.1}, {'staff': '2', 'nine': 0.73, 'margin': 0.1}]
+WARNING:omr.audiveris:Meter retry exited 1; retaining first recognition result
+INFO:omr.audiveris:Retrying internal meter interpretation using two-staff image evidence: [{'staff': '1', 'nine': 0.72, 'margin': 0.1}, {'staff': '2', 'nine': 0.73, 'margin': 0.1}]
+INFO:omr.audiveris:Retrying internal meter interpretation using two-staff image evidence: [{'staff': '1', 'nine': 0.72, 'margin': 0.1}, {'staff': '2', 'nine': 0.73, 'margin': 0.1}]
+WARNING:omr.audiveris:Meter retry failed structure/pitch/rhythm guards; retaining first result
+ok
+test_normal_score_is_not_reclassified_or_restarted (test_meter_retry_runtime.MeterRetryRuntimeTests) ... ok
+test_retry_receives_remaining_budget_not_a_fresh_timeout (test_meter_retry_runtime.MeterRetryRuntimeTests) ... INFO:omr.audiveris:Retrying internal meter interpretation using two-staff image evidence: [{'staff': '1', 'nine': 0.72, 'margin': 0.1}, {'staff': '2', 'nine': 0.73, 'margin': 0.1}]
+INFO:omr.audiveris:Selected image-supported 9/8 reinterpretation; remaining recognition errors may persist
+ok
+test_success_returns_separate_candidate_and_preserves_original (test_meter_retry_runtime.MeterRetryRuntimeTests) ... INFO:omr.audiveris:Retrying internal meter interpretation using two-staff image evidence: [{'staff': '1', 'nine': 0.72, 'margin': 0.1}, {'staff': '2', 'nine': 0.73, 'margin': 0.1}]
+INFO:omr.audiveris:Selected image-supported 9/8 reinterpretation; remaining recognition errors may persist
+ok
+test_timed_out_retry_is_killed_and_original_result_survives (test_meter_retry_runtime.MeterRetryRuntimeTests) ... INFO:omr.audiveris:Retrying internal meter interpretation using two-staff image evidence: [{'staff': '1', 'nine': 0.72, 'margin': 0.1}, {'staff': '2', 'nine': 0.73, 'margin': 0.1}]
+WARNING:omr.audiveris:Meter retry unavailable (RuntimeError); retaining first result
+ok
+test_a_false_triplet_is_not_mistaken_for_a_lost_dot (test_recognition_evaluation.MismatchCategoryTests) ... ok
+test_a_shifted_note_that_also_lost_its_dot_is_not_called_a_pitch_error (test_recognition_evaluation.MismatchCategoryTests) ... ok
+test_measures_without_a_tie_contract_do_not_judge_ties (test_recognition_evaluation.MismatchCategoryTests) ... ok
+test_missing_and_misplaced_dots_are_named_as_duration_errors (test_recognition_evaluation.MismatchCategoryTests) ... ok
+test_onset_pitch_and_unpaired_events_are_kept_apart (test_recognition_evaluation.MismatchCategoryTests) ... ok
+test_opening_tempo_contract_uses_the_converter_interpretation (test_recognition_evaluation.MismatchCategoryTests) ... ok
+test_tie_contract_reports_missing_and_invented_tie_starts (test_recognition_evaluation.MismatchCategoryTests) ... ok
+test_opening_largo_mark_is_read_as_the_opening_tempo (test_recognition_evaluation.ProductionRecognitionBaselineTests) ... ok
+test_reference_covers_every_bar_with_full_length_staves (test_recognition_evaluation.ProductionRecognitionBaselineTests) ... ok
+test_remaining_defects_are_rhythm_and_ties_not_pitch (test_recognition_evaluation.ProductionRecognitionBaselineTests) ... ok
+test_actual_candidate_remains_rejected_despite_correct_meter_and_bar_length (test_recognition_evaluation.RecognitionEvaluationTests) ... ok
+test_chords_backup_and_forward_preserve_staff_and_onset (test_recognition_evaluation.RecognitionEvaluationTests) ... ok
+test_duplicate_notes_cannot_inflate_matches (test_recognition_evaluation.RecognitionEvaluationTests) ... ok
+test_missing_dot_is_mismatch_even_with_correct_pitch_and_meter (test_recognition_evaluation.RecognitionEvaluationTests) ... ok
+test_missing_reference_measure_fails_closed (test_recognition_evaluation.RecognitionEvaluationTests) ... ok
+test_rest_and_fractional_divisions_contribute_to_measure_length (test_recognition_evaluation.RecognitionEvaluationTests) ... ok
+test_tied_events_are_not_merged_by_evaluator (test_recognition_evaluation.RecognitionEvaluationTests) ... ok
+test_wrong_meter_cannot_pass_on_events_alone (test_recognition_evaluation.RecognitionEvaluationTests) ... ok
+test_changing_tempi_and_user_tempo_override (test_score_artifact.ScoreArtifactUnitTests)
+Piecewise tempo changes in score vs user override. ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpk4zjpo9x.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Test Score', 'composer': 'Test Composer'}
+INFO:omr.converter:Extracted 2 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpk4zjpo9x.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Test Score', 'composer': 'Test Composer'}
+INFO:omr.converter:Extracted 2 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_mxl_archive_parsing_and_no_doctype (test_score_artifact.ScoreArtifactUnitTests)
+Compressed .mxl archive is parsed, no DOCTYPE in serialized XML, size <= 10MiB. ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpfp1_cry0.mxl
+INFO:omr.converter:Extracted metadata: {'title': 'Test Score', 'composer': 'Test Composer'}
+INFO:omr.converter:Extracted 1 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_ties_mapping_tied_continuations_to_same_note_index (test_score_artifact.ScoreArtifactUnitTests)
+Tied notes across measures map continuation notes to the same canonical noteIndex. ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpdo0fqiuh.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Test Score', 'composer': 'Test Composer'}
+INFO:omr.converter:Extracted 1 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_two_piano_staves_grand_staff (test_score_artifact.ScoreArtifactUnitTests)
+Two piano staves (grand staff) with separate voices and staves. ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpp3264cug.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Test Score', 'composer': 'Test Composer'}
+INFO:omr.converter:Extracted 2 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_voices_chords_rests_tuplets (test_score_artifact.ScoreArtifactUnitTests)
+Voices, chords, rests, and tuplets are correctly mapped and timed. ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpx7ttul3q.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Test Score', 'composer': 'Test Composer'}
+INFO:omr.converter:Extracted 6 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_process_pdf_background_no_pdf_retention_and_stores_artifact (test_score_artifact.ServiceResultEndpointContractTests)
+Background PDF processing cleans up temporary files and stores score_artifact. ... INFO:app:Saved PDF for job test-job-bg-cleanup: /tmp/tmp65ivq2kc/test-job-bg-cleanup/input.pdf
+INFO:app:Generated MusicXML for job test-job-bg-cleanup: /tmp/tmpbeir0v4x.musicxml
+INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpbeir0v4x.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Test Score', 'composer': 'Test Composer'}
+INFO:omr.converter:Extracted 1 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+INFO:app:Converted to ClairKeys format for job test-job-bg-cleanup
+INFO:app:Successfully completed job test-job-bg-cleanup
+ERROR:app:Completion callback destination rejected for job test-job-bg-cleanup: callback origin configuration is missing or malformed; the result remains available through GET /result/test-job-bg-cleanup
+ok
+test_result_endpoint_legacy_job_backward_compatibility (test_score_artifact.ServiceResultEndpointContractTests)
+Legacy jobs without score_artifact keep current response support without error. ... ok
+test_result_endpoint_requires_auth (test_score_artifact.ServiceResultEndpointContractTests)
+GET /result/{job_id} without valid token returns 401. ... ok
+test_result_endpoint_returns_score_artifact_when_present (test_score_artifact.ServiceResultEndpointContractTests)
+GET /result/{job_id} includes score_artifact for completed jobs. ... ok
+test_status_endpoint_never_leaks_score_artifact (test_score_artifact.ServiceResultEndpointContractTests)
+GET /status/{job_id} must NEVER return score_artifact or animation_data. ... ok
+test_changing_tempo_across_measures_with_cross_measure_tie (test_score_mapping_independent.IndependentScoreMappingTests)
+Tempo changes across measures (120 BPM in m1, 60 BPM in m2) accurately scale tied duration and measure bounds. ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpanoiz0hu.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Independent Mapping Test', 'composer': 'Unknown'}
+INFO:omr.converter:Extracted 1 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_edge_cases_and_negative_validation (test_score_mapping_independent.IndependentScoreMappingTests)
+Negative cases and edge cases: all-rest score, non-partwise root, DOCTYPE stripping, and 0-based index guarantee. ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpwexh9ll7.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Independent Mapping Test', 'composer': 'Unknown'}
+INFO:omr.converter:Extracted 0 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpfgittmu6.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Independent Mapping Test', 'composer': 'Unknown'}
+INFO:omr.converter:Extracted 2 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_exact_mapping_voices_chords_rests_tuplets (test_score_mapping_independent.IndependentScoreMappingTests)
+Verify exact index, pitch, onset, duration, voice, and staff for chords, rests, and tuplets. ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmpm5nw768e.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Independent Mapping Test', 'composer': 'Unknown'}
+INFO:omr.converter:Extracted 6 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_multi_measure_multi_voice_tied_continuations (test_score_mapping_independent.IndependentScoreMappingTests)
+A tied note across 3 measures in Voice 1 maps all 3 XML notes to canonical noteIndex 0, while Voice 2 proceeds independently. ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmp3gnd8gdr.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Independent Mapping Test', 'composer': 'Unknown'}
+INFO:omr.converter:Extracted 2 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_simultaneous_same_pitch_different_voices_and_staves (test_score_mapping_independent.IndependentScoreMappingTests)
+Simultaneous unison notes (same pitch, same onset) in Staff 1 and Staff 2 remain distinct in mapping. ... INFO:omr.converter:Converting MusicXML to ClairKeys format and artifact: /tmp/tmp3ak5zfwr.musicxml
+INFO:omr.converter:Extracted metadata: {'title': 'Independent Mapping Test', 'composer': 'Unknown'}
+INFO:omr.converter:Extracted 2 notes
+INFO:omr.converter:Successfully converted to ClairKeys format with artifact
+ok
+test_each_engine_keeps_the_displaced_head_of_a_second (test_second_interval_heads_native.SecondIntervalHeadsNativeTests) ... ok
+test_delivery_is_not_inside_the_block_that_can_fail_the_job (test_service_contract.CompletionDeliveryTests) ... ok
+test_delivery_runs_only_when_the_conversion_succeeded (test_service_contract.CompletionDeliveryTests)
+A failed conversion has nothing to announce. ... ok
+test_the_callback_client_outlives_the_route_it_calls (test_service_contract.CompletionDeliveryTests)
+The producer's timeout must exceed the consumer's own budget. ... ok
+test_the_failure_handler_marks_the_job_failed (test_service_contract.CompletionDeliveryTests)
+Guards the premise of the test below. ... ok
+test_all_supported_beat_units_convert_to_quarter_bpm (test_service_contract.ConverterTempoUnitTests) ... ok
+test_fractional_quarter_bpm_is_preserved (test_service_contract.ConverterTempoUnitTests) ... ok
+test_multiple_augmentation_dots_are_geometric_not_repeated_1_5 (test_service_contract.ConverterTempoUnitTests) ... ok
+test_sound_tempo_stays_quarter_bpm_and_precedes_metronome (test_service_contract.ConverterTempoUnitTests) ... ok
+test_a_missing_row_is_retried (test_service_contract.DeliveryRetryPolicyTests)
+404 is the upload race, not a permanent answer. ... ok
+test_a_permanent_rejection_is_not_retried (test_service_contract.DeliveryRetryPolicyTests)
+400 and 401 do not become true because we asked twelve more times. ... ok
+test_app_uses_the_shared_policy_rather_than_its_own (test_service_contract.DeliveryRetryPolicyTests)
+A second copy of the rule in `app.py` is how the two drift apart. ... ok
+test_backoff_grows_then_settles_at_the_ceiling (test_service_contract.DeliveryRetryPolicyTests) ... ok
+test_transient_server_faults_are_retried (test_service_contract.DeliveryRetryPolicyTests) ... ok
+test_app_reads_no_supabase_credentials (test_service_contract.NoStorageCredentialsTests) ... ok
+test_completed_job_carries_no_storage_url (test_service_contract.NoStorageCredentialsTests)
+The old completion payload advertised `animation_data_url`. ... ok
+test_storage_module_is_gone (test_service_contract.NoStorageCredentialsTests) ... ok
+test_callback_is_forwarded_through_the_background_task (test_service_contract.ProcessEndpointContractTests)
+Completion delivery must not depend on a mounted browser poller. ... ok
+test_invalid_tempo_is_rejected_as_bad_request (test_service_contract.ProcessEndpointContractTests)
+Bad numeric text and values outside 20..400 must both be HTTP 400. ... ok
+test_metadata_fields_are_declared_as_form_fields (test_service_contract.ProcessEndpointContractTests)
+Without `Form(...)` FastAPI binds these as query parameters. ... ok
+test_sheet_music_id_is_accepted (test_service_contract.ProcessEndpointContractTests)
+`route.ts` sends `sheet_music_id`; app.py never declared it. ... ok
+test_tempo_is_a_typed_form_field (test_service_contract.ProcessEndpointContractTests)
+Tempo must not silently fall through to the query string. ... ok
+test_tempo_is_forwarded_through_the_background_task (test_service_contract.ProcessEndpointContractTests)
+A bound form value is useless unless it reaches the converter. ... ok
+test_result_endpoint_exists (test_service_contract.ResultEndpointTests) ... ok
+test_status_endpoint_does_not_carry_the_payload (test_service_contract.ResultEndpointTests)
+`/status` is polled in a loop; the payload must not ride along. ... ok
+test_guarded_endpoints_depend_on_the_secret (test_service_contract.SharedSecretRoutingTests) ... ok
+test_health_is_reachable_without_the_secret (test_service_contract.SharedSecretRoutingTests)
+nginx and any uptime check need one unauthenticated endpoint. ... ok
+test_development_may_run_without_a_secret (test_service_contract.SharedSecretVerificationTests) ... ok
+test_matching_secret_is_accepted (test_service_contract.SharedSecretVerificationTests) ... ok
+test_missing_header_is_rejected (test_service_contract.SharedSecretVerificationTests) ... ok
+test_unset_secret_refuses_every_request_in_production (test_service_contract.SharedSecretVerificationTests)
+Fails closed: a forgotten secret yields a service nobody can drive. ... ok
+test_wrong_secret_is_rejected_with_401 (test_service_contract.SharedSecretVerificationTests) ... ok
+test_cross_staff_beam_groups_are_not_split (test_shared_stem_durations_native.SharedStemDurationsNativeTests) ... ok
+test_each_engine_separates_a_dotted_shifted_second (test_shared_stem_durations_native.SharedStemDurationsNativeTests) ... ok
+test_each_engine_separates_the_dotted_half_from_the_beamed_voice (test_shared_stem_durations_native.SharedStemDurationsNativeTests) ... ok
+test_undotted_seconds_keep_their_shared_eighth_chord (test_shared_stem_durations_native.SharedStemDurationsNativeTests) ... ok
+test_no_engine_turns_the_slur_into_a_beam (test_slur_across_stems_native.SlurAcrossStemsNativeTests) ... ok
+test_both_engines_preserve_only_isolated_dot_ink (test_slur_dot_erasure_native.SlurDotErasureNativeTests) ... ok
+test_each_engine_ties_both_heads_when_tie_ends_hug_their_staff_line (test_staff_line_hugging_ties_native.StaffLineHuggingTiesNativeTests) ... ok
+test_each_engine_ties_both_heads_of_a_chord_along_staff_lines (test_staff_line_ties_native.StaffLineTiesNativeTests) ... ok
+test_blank_glyph_never_requests_fonts_or_proposes_a_digit (test_time_numeral.TimeNumeralTests) ... ok
+test_invalid_dimensions_and_runs_fail_closed (test_time_numeral.TimeNumeralTests) ... ok
+test_orientation_evidence_does_not_treat_rotated_six_as_nine (test_time_numeral.TimeNumeralTests) ... ok
+test_translated_bit_masks_equal_set_translation_without_wrap (test_time_numeral.TimeNumeralTests) ... ok
+test_baseline_failure_contract (test_wedge_reference.WedgeReferenceTests) ... ok
+test_existing_measure_reference_is_source_linked_and_complete (test_wedge_reference.WedgeReferenceTests) ... ok
+test_metadata_regression (test_wedge_reference.WedgeReferenceTests) ... ok
+test_negative_mutation_duration (test_wedge_reference.WedgeReferenceTests) ... ok
+test_negative_mutation_extra_note (test_wedge_reference.WedgeReferenceTests) ... ok
+test_negative_mutation_onset (test_wedge_reference.WedgeReferenceTests) ... ok
+test_negative_mutation_pitch (test_wedge_reference.WedgeReferenceTests) ... ok
+test_negative_mutation_staff (test_wedge_reference.WedgeReferenceTests) ... ok
+test_positive_control_contract (test_wedge_reference.WedgeReferenceTests) ... ok
+test_rest_event_contract_reports_matching_actual_rest (test_wedge_reference.WedgeReferenceTests) ... ok
+test_rest_event_contract_reports_missing_actual_rest (test_wedge_reference.WedgeReferenceTests) ... ok
+test_rest_event_contract_reports_unexpected_actual_rest (test_wedge_reference.WedgeReferenceTests) ... ok
+test_bogus_glyph_absent_source_ink_and_unrelated_graph_change_are_rejected (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_candidate_requires_native_source_backed_ledger_and_false_dot_removal (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_direction_cursor_may_only_follow_the_same_native_chord (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_duplicate_graph_ids_fail_closed (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_ledger_profile_uses_engine_pixel_quantization_without_fuzzy_tolerance (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_missing_measure_without_null_time_wedge_abstains (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_multiple_export_gaps_abstain_even_with_one_wedge (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_non_four_four_export_gap_abstains (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_ordered_note_metadata_cannot_move_between_repeated_notes (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_out_of_scope_direction_change_is_rejected (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_prepare_freezes_only_engine_rest_in_target_stack (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_recovery_region_is_graph_derived_and_post_boundary_is_exact (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_recovery_region_missing_or_non_finite_numbers_fail_closed (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_retained_native_love_triggers_and_controls_abstain (test_wedge_retry.WedgeRetryContractTests) ... skipped 'retained native selected-result pairs are not present'
+test_retained_native_symbols_select_both_source_defect_rests (test_wedge_retry.WedgeRetryContractTests) ... skipped 'retained native SYMBOLS lineage is not present'
+test_retained_post_boundary_native_candidate_is_accepted (test_wedge_retry.WedgeRetryContractTests) ... skipped 'retained final post-boundary native candidate is not present'
+test_slur_number_regeneration_is_allowed_but_endpoint_change_is_not (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_target_musicxml_must_match_native_graph_pitch_staff_onset_and_duration (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_tie_pair_endpoints_survive_corrected_onset_and_voice (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_trigger_requires_one_missing_measure_and_null_time_wedge (test_wedge_retry.WedgeRetryContractTests) ... ok
+test_cancellation_kills_candidate_and_propagates (test_wedge_retry_runtime.WedgeRetryRuntimeTests) ... INFO:omr.audiveris:Running isolated wedge candidate for missing measure 2
+ok
+test_complete_export_and_multiple_gap_controls_never_spawn (test_wedge_retry_runtime.WedgeRetryRuntimeTests) ... ok
+test_exhausted_budget_does_not_spawn (test_wedge_retry_runtime.WedgeRetryRuntimeTests) ... ok
+test_expiration_during_acceptance_keeps_selected_result (test_wedge_retry_runtime.WedgeRetryRuntimeTests) ... INFO:omr.audiveris:Running isolated wedge candidate for missing measure 2
+ok
+test_page_stage_cancellation_kills_candidate_and_propagates (test_wedge_retry_runtime.WedgeRetryRuntimeTests) ... INFO:omr.audiveris:Running isolated wedge candidate for missing measure 2
+ok
+test_rejected_native_candidate_preserves_selected_result (test_wedge_retry_runtime.WedgeRetryRuntimeTests) ... INFO:omr.audiveris:Running isolated wedge candidate for missing measure 2
+WARNING:omr.audiveris:Wedge retry failed source/event/direction/slur guards; retaining selected result
+ok
+test_success_runs_scoped_symbols_then_stock_page (test_wedge_retry_runtime.WedgeRetryRuntimeTests) ... INFO:omr.audiveris:Running isolated wedge candidate for missing measure 2
+INFO:omr.audiveris:Selected native source-backed wedge recovery
+ok
+test_timeout_kills_candidate_and_preserves_selected_result (test_wedge_retry_runtime.WedgeRetryRuntimeTests) ... INFO:omr.audiveris:Running isolated wedge candidate for missing measure 2
+WARNING:omr.audiveris:Wedge retry unavailable (RuntimeError); retaining selected result
+ok
+test_actual_retained_love_pair_is_accepted (test_whole_note_retry.WholeNoteRetryTests) ... skipped 'retained local Love diagnostics are not present'
+test_actual_satie_and_always_controls_abstain (test_whole_note_retry.WholeNoteRetryTests) ... skipped 'retained local control diagnostics are not present'
+test_blank_or_malformed_glyph_run_tables_are_rejected (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_candidate_must_preserve_events_measures_and_metadata (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_existing_voice_cannot_change_even_with_identical_pitch_and_tie_markers (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_first_measure_must_declare_the_guarded_meter (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_graph_wholes_must_have_unique_image_glyphs_and_match_additions (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_love_shape_is_eligible_and_exact_additions_are_accepted (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_new_tie_pair_must_share_the_converter_voice_identity (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_new_ties_must_be_one_contiguous_pair_touching_an_added_whole (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_non_four_four_scores_abstain_without_opening_graph (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_only_whole_onset_zero_duration_four_additions_are_allowed (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_rational_lexemes_are_bounded_before_fraction_construction (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_structural_staff_metadata_cannot_disappear (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_tempo_cannot_move_within_a_preserved_measure (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_tempo_sound_and_direction_offsets_must_be_preserved (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_unsupported_or_malformed_graphs_abstain (test_whole_note_retry.WholeNoteRetryTests) ... ok
+test_actual_satie_and_always_return_the_identical_path (test_whole_note_retry_runtime.WholeNoteRetryRuntimeTests) ... skipped 'retained local control diagnostics are not present'
+test_cancelled_retry_is_killed_and_propagates (test_whole_note_retry_runtime.WholeNoteRetryRuntimeTests) ... INFO:omr.audiveris:Retrying guarded whole-note recognition with the Leland music template
+ok
+test_exhausted_budget_does_not_start_retry (test_whole_note_retry_runtime.WholeNoteRetryRuntimeTests) ... ok
+test_rejected_candidate_preserves_original_result (test_whole_note_retry_runtime.WholeNoteRetryRuntimeTests) ... INFO:omr.audiveris:Retrying guarded whole-note recognition with the Leland music template
+WARNING:omr.audiveris:Whole-note retry failed event/metadata/graph guards; retaining first result
+ok
+test_success_uses_only_leland_constant_original_pdf_and_separate_directory (test_whole_note_retry_runtime.WholeNoteRetryRuntimeTests) ... INFO:omr.audiveris:Retrying guarded whole-note recognition with the Leland music template
+INFO:omr.audiveris:Selected graph-backed whole-note recovery; other recognition defects may persist
+ok
+test_three_four_and_six_eight_never_spawn_retry (test_whole_note_retry_runtime.WholeNoteRetryRuntimeTests) ... ok
+test_timed_out_retry_is_killed_and_original_survives (test_whole_note_retry_runtime.WholeNoteRetryRuntimeTests) ... INFO:omr.audiveris:Retrying guarded whole-note recognition with the Leland music template
+WARNING:omr.audiveris:Whole-note retry unavailable (RuntimeError); retaining first result
+ok
+
+----------------------------------------------------------------------
+Ran 211 tests in 500.799s
+
+OK (skipped=6)
