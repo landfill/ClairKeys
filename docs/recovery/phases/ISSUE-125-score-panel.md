@@ -1,6 +1,6 @@
 # ISSUE-125 — PC 선택형 악보 패널
 
-Status: `IN_PROGRESS`
+Status: `DONE` — 구현·검증 후 PR173 병합; 운영 OMR 활성화·이슈 종료는 별도 승인 범위
 Depends on: 기존 canonical playback; #126/#127 재개 불필요
 
 ## Objective
@@ -36,3 +36,9 @@ PC에서 아이콘으로 켜는 양손 악보·앱 운지·현재 마디 전체 
 주 에이전트: 설계·통합·저장/권한·UI·Docker/브라우저·PR/리뷰 및 기록.
 Gemini 3.8 Flash: OMR XML/위치 매핑·서비스 응답 및 Python 회귀 테스트.
 독립 검증 담당: 구현 파일 수정 없이 권한/삭제/동기화/운지/화면 회귀 검증(모델 확인 후 배정).
+
+## Progress
+
+- 2026-09-20: ed0a645의최종CI/실제리뷰를확인하고사용자승인으로PR173을70eb25e에병합했다.
+- 2026-09-20: 추가승인된private artifact DBmigration/RLS/cascade를선적용하고Vercel웹Production배포·HTTP/Chromium스모크를확인했다. 기존행수불변.
+- 2026-09-20: 병합commit후6checks모두success. 운영OMR VM은승인범위밖으로미배포이며현재새MusicXML전달은비활성이다. #125는OPEN을유지한다.

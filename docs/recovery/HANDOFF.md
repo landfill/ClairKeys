@@ -4,23 +4,27 @@ Last updated: 2026-09-20 KST
 
 ## Current phase
 
-**#125 PC 선택형 악보 패널 — PR173 병합·운영 DB 마이그레이션 완료, 웹 자동 배포 검증 완료.**
-사용자가 병합에 이어 운영DB마이그레이션·웹자동배포를 승인했다. PR173은 `70eb25e`로 병합됐고 local main 반영을 확인했다.
-새 테이블·RLS·PK/FK cascade와 migration checksum을 운영DB에서 검증했으며 기존 사용자/악보 행 수는 불변이다.
-[계획](phases/ISSUE-125-score-panel.md), [병합·스키마 근거](reviews/PR-173.md).
+**#125 PC 선택형 악보 패널 — 구현·검증·PR173 병합 및 승인된 DB·웹 배포 완료.**
+사용자 승인으로 `70eb25e`에 병합하고 새 테이블·RLS·cascade를 운영DB에 선적용했다. Vercel Production 배포와 HTTP/Chromium smoke를 확인했다.
+병합 후6checks도 모두 통과했다. [구현 phase](phases/ISSUE-125-score-panel.md), [병합·배포 근거](reviews/PR-173.md).
+**운영 OMR VM은 미배포이며 새 MusicXML 전달은 아직 비활성이다.** 구현 완료와 운영 기능 활성화·이슈 종료를 구분한다.
 
 ## Next action
 
-1. `70eb25e`의 Vercel Production 배포·HTTP/Chromium smoke는 통과했다. 병합 후 마지막 E2E 체크 결과를 확인한다.
-2. OMR VM 배포·이슈 종료는 이번 승인에서 제외됐다. 현재 운영 OMR은 이전 버전이므로 신규 MusicXML 산출물 전달 활성화는 아직 안 됐다.
-3. 이전 인덱스 migration `20260901060000`은 운영에서 미적용인 기존 상태를 보존했다. 이번 승인 대상 새 private artifact migration만 적용했다.
-4. 사용자 미커밋 변경 때문에 작업 branch는 로컬·원격 보존한다. 두 tip의 고유commit은0이다.
+1. 운영 OMR VM 배포는 이번 승인 범위에서 제외됐다. 새 변환 MusicXML을 운영에서 제공하려면 별도 배포 승인이 필요하다.
+2. #125는 OPEN을 유지했다. 이슈 종료도 별도 사용자 지시를 따른다.
+3. 기존 index migration `20260901060000`은 운영 미적용 상태를 그대로 두었다. 후속 후보이며 자동 착수하지 않는다.
+4. 사용자 미커밋 변경 때문에 작업 branch는 로컬·원격 보존했다. 두 tip의 main 대비 고유commit은0이다.
 
 [전체 검증·제약](validation/2026-09-20-issue-125-score-panel.md),
 [최종 gate 증거](validation/2026-09-20-issue-125-evidence/final-gates.json), [PR 리뷰](reviews/PR-173.md).
 원래 checkout은 main, 작업 branch는 로컬·원격 보존. 사용자 미커밋4개는 제외·보존했다.
 
 ## Latest verified result
+
+- **PR173 승인 배포 / 2026-09-20**: merge70eb25e, Vercel Production6550222453성공, production DB checksum/RLS/PK/cascade·기존행수불변.
+  home/publicList/sheetMetadata/sheetPage200, score401/private-no-store, Chromium기존재생/pageErrors0. 병합후6checks성공.
+  [스키마](validation/2026-09-20-issue-125-production-schema.json), [웹·CI](validation/2026-09-20-issue-125-production-web.json).
 
 - **#125 / PR173 / 2026-09-20**: head `ed0a645`, 필수CI두E2E포함통과·Codex현재head재리뷰완료·추가지적0.
   Docker205pass6보관진단skip/native19실행, Jest1080·type/lint/build, 브라우저12pass6기기비해당skip.

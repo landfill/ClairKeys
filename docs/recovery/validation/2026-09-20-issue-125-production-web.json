@@ -23,5 +23,44 @@
     "pageErrors": 0
   },
   "omrVmDeployed": false,
-  "issueClosed": false
+  "issueClosed": false,
+  "postMergeChecks": [
+    {
+      "conclusion": "success",
+      "details_url": "https://github.com/landfill/ClairKeys/actions/runs/35496417136/job/106040333019",
+      "name": "E2E Tests",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "details_url": "https://github.com/landfill/ClairKeys/actions/runs/35496417137/job/106040273031",
+      "name": "Post-merge build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "details_url": "https://github.com/landfill/ClairKeys/actions/runs/35496417136/job/106040093737",
+      "name": "Lint",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "details_url": "https://github.com/landfill/ClairKeys/actions/runs/35496417137/job/106040093718",
+      "name": "Post-merge tests",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "details_url": "https://github.com/landfill/ClairKeys/actions/runs/35496417136/job/106040093701",
+      "name": "Run Tests",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "details_url": "https://github.com/landfill/ClairKeys/actions/runs/35496417136/job/106040093627",
+      "name": "Security Audit",
+      "status": "completed"
+    }
+  ],
+  "reviewedRuntimeEqualsMerge": true
 }
