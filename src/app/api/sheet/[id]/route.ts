@@ -28,6 +28,7 @@ export async function GET(
     const sheetMusic = await prisma.sheetMusic.findUnique({
       where: { id: sheetId },
       include: {
+        scoreArtifact: { select: { sheetMusicId: true } },
         user: {
           select: {
             id: true,
@@ -77,6 +78,7 @@ export async function GET(
         createdAt: sheetMusic.createdAt,
         updatedAt: sheetMusic.updatedAt,
         animationDataUrl: sheetMusic.animationDataUrl,
+        hasScore: isOwner && Boolean(sheetMusic.scoreArtifact),
         owner: isOwner ? sheetMusic.user : null
       }
     })

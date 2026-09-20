@@ -20,6 +20,7 @@ interface SheetMusic {
   isPublic: boolean
   provenance: SheetMusicProvenance
   createdAt: string
+  hasScore?: boolean
   animationData: string
 }
 
@@ -169,6 +170,7 @@ export default function SheetMusicPage() {
 
           {/* Falling Notes Player - MVP Style */}
           <FallingNotesPlayer 
+            scoreUrl={sheetMusic.hasScore ? `/api/sheet/${id}/score` : undefined}
             animationData={animationData} 
             className={isSessionActive ? '' : 'mb-8'}
             onSessionChange={setIsSessionActive}

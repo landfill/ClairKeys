@@ -134,9 +134,10 @@ class ProcessEndpointContractTests(unittest.TestCase):
             "process_pdf_background, job_id, file, title, composer, user_id, tempo",
             APP_SOURCE,
         )
-        self.assertIn(
-            "converter.convert(musicxml_path, title, composer, tempo)",
-            APP_SOURCE,
+        self.assertTrue(
+            "converter.convert_with_artifact(musicxml_path, title, composer, tempo)" in APP_SOURCE
+            or "converter.convert(musicxml_path, title, composer, tempo)" in APP_SOURCE,
+            "tempo must be forwarded to the converter call",
         )
 
     def test_callback_is_forwarded_through_the_background_task(self):
@@ -292,6 +293,7 @@ class ResultEndpointTests(unittest.TestCase):
     def test_status_endpoint_does_not_carry_the_payload(self):
         """`/status` is polled in a loop; the payload must not ride along."""
         self.assertIn('key != "animation_data"', APP_SOURCE)
+        self.assertIn('key != "score_artifact"', APP_SOURCE)
 
 
 class SharedSecretRoutingTests(unittest.TestCase):

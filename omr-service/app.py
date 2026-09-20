@@ -199,7 +199,11 @@ async def get_processing_status(
         raise HTTPException(status_code=404, detail="Job not found")
 
     job = processing_jobs[job_id]
-    return {key: value for key, value in job.items() if key != "animation_data"}
+    return {
+        key: value
+        for key, value in job.items()
+        if key != "animation_data" and key != "score_artifact"
+    }
 
 
 @app.get("/result/{job_id}")
@@ -207,7 +211,7 @@ async def get_processing_result(
     job_id: str,
     _: None = Depends(require_shared_secret),
 ):
-    """Return the converted animation data for a completed job.
+    """Return the converted animation data and score artifact for a completed job.
 
     This is the D-011 handoff. The caller stores what it receives; the service
     never writes it anywhere, so there is no path here that can report success
@@ -232,13 +236,17 @@ async def get_processing_result(
             detail="Job completed but its animation data is no longer held",
         )
 
-    return {
+    result = {
         "job_id": job_id,
         "animation_data": animation_data,
         "title": job["result"]["title"],
         "composer": job["result"]["composer"],
         "processed_at": job["result"]["processed_at"],
     }
+    if "score_artifact" in job and job["score_artifact"] is not None:
+        result["score_artifact"] = job["score_artifact"]
+
+    return result
 
 async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
     """Deliver completion until the Next.js side has persisted the result.
@@ -342,7 +350,8 @@ async def process_pdf_background(
         processing_jobs[job_id]["message"] = "Saving uploaded file"
         
         # Create temporary directories using mounted volume
-        temp_dir = Path(f"/data/processing/{job_id}")
+        base_dir = Path(os.getenv("OMR_PROCESSING_DIR", "/data/processing"))
+        temp_dir = base_dir / job_id
         temp_dir.mkdir(parents=True, exist_ok=True)
         
         # Save uploaded file
@@ -360,11 +369,11 @@ async def process_pdf_background(
         musicxml_path = await audiveris_processor.process_pdf(pdf_path, temp_dir)
         logger.info(f"Generated MusicXML for job {job_id}: {musicxml_path}")
         
-        # Step 2: MusicXML to ClairKeys JSON
+        # Step 2: MusicXML to ClairKeys JSON and score artifact
         processing_jobs[job_id]["progress"] = 60
         processing_jobs[job_id]["message"] = "Converting to ClairKeys format"
         
-        clairkeys_data = await converter.convert(musicxml_path, title, composer, tempo)
+        clairkeys_data, score_artifact = await converter.convert_with_artifact(musicxml_path, title, composer, tempo)
         logger.info(f"Converted to ClairKeys format for job {job_id}")
         
         # Step 3: Hold the result for the caller to collect (D-011)
@@ -376,6 +385,7 @@ async def process_pdf_background(
         # caller collects the payload from `GET /result/{job_id}` and stores it
         # with the key it already holds.
         processing_jobs[job_id]["animation_data"] = clairkeys_data
+        processing_jobs[job_id]["score_artifact"] = score_artifact
 
         processing_jobs[job_id]["status"] = ProcessingStatus.COMPLETED
         processing_jobs[job_id]["progress"] = 100
@@ -399,7 +409,8 @@ async def process_pdf_background(
         processing_jobs[job_id]["error"] = str(e)
         
         # Cleanup on error
-        temp_dir = Path(f"/data/processing/{job_id}")
+        base_dir = Path(os.getenv("OMR_PROCESSING_DIR", "/data/processing"))
+        temp_dir = base_dir / job_id
         if temp_dir.exists():
             import shutil
             shutil.rmtree(temp_dir, ignore_errors=True)

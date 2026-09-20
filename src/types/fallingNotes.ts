@@ -199,6 +199,8 @@ export interface SimplePianoKeyboardProps {
   layout: KeyLayout;
   /** Currently pressed/highlighted keys */
   activeKeys?: Set<number>;
+  /** Active computed player fingers, supplied with the optional score panel. */
+  activeFingers?: Map<number, string>;
   /** Additional CSS classes */
   className?: string;
 }
