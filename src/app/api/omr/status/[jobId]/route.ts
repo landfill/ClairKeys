@@ -197,12 +197,21 @@ export async function GET(
           updateData.processingStatus = 'completed'
         } catch (error) {
           if (error instanceof OmrFinalizationError) {
-            if (error.code === 'ANIMATION_STORAGE_FAILED') {
+            if (error.code === 'ANIMATION_STORAGE_FAILED' || error.code === 'INVALID_SCORE_ARTIFACT') {
               // A later service callback can retry this idempotent write and
               // return the row to completed when storage recovers.
               await prisma.sheetMusic.update({
                 where: { id: sheetMusic.id },
                 data: { processingStatus: 'failed', updatedAt: new Date() }
+              })
+            }
+            if (error.code === 'INVALID_SCORE_ARTIFACT') {
+              // The OMR result is immutable. A successful terminal poll lets
+              // the UI settle; a 4xx/5xx would be treated as transient forever.
+              return NextResponse.json({
+                success: true, jobId, sheetMusicId: sheetMusic.id,
+                status: 'failed', progress: 0,
+                error: error.message, code: error.code,
               })
             }
             return NextResponse.json(

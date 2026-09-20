@@ -59,7 +59,7 @@ export async function fetchAndStoreOmrResult(
   if (resultPayload.score_artifact !== undefined) {
     const artifact: unknown = resultPayload.score_artifact
     if (!isScoreArtifact(artifact) || Buffer.byteLength(JSON.stringify(artifact), 'utf8') > MAX_SCORE_ARTIFACT_BYTES) {
-      throw new OmrFinalizationError('악보 표시 데이터가 올바르지 않습니다.', 'INVALID_SCORE_ARTIFACT', 502)
+      throw new OmrFinalizationError('악보 표시 데이터가 올바르지 않습니다.', 'INVALID_SCORE_ARTIFACT', 422)
     }
     try {
       // Nested upsert is FK-bound to the owner/job row. A deleted sheet cannot
