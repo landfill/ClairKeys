@@ -142,3 +142,12 @@ OMR 구현/실제 매핑·Docker 빌드/실행·신규 업로드/저장 browser�
   원래checkout은main으로돌려최신인계를바로읽을수있게했고, PR작업branch는로컬·원격모두보존했다. 상태기록용checkout은detached로보존했다.
 - 시작시사용자변경4개만잔여: validation/2026-09-13-handoff-history.md,.bkit/,.gemini/,.pdca-status.json. 커밋에섞지않음.
 - 구현완료와이슈최종종료를구분한다. #125OPEN, PR미병합, 운영미배포. 사용자대상PR병합승인만남은goal종료조건을충족했다.
+
+## 승인 후 배포 연결 정정 / 2026-09-20
+
+PR173 병합 승인 수령 후 git fetch/status 및 현재head CI/리뷰/mergeability를 재확인했다.
+GitHub deployments API에서 main738d663의 Production deployment6548883366/status success를 확인했다.
+main push가 웹 Production 배포를 자동 실행하므로, 운영 DB migration을 확인/적용하지 않고 merge하면 새 관계 조회가 실패할 수 있다.
+운영 DB 변경과 웹 자동 배포는 최초 승인 범위 밖이어서 추가 승인을 요청하고 merge를 보류했다. 실제 운영 DB에는 접근하지 않았다.
+이전 종료 보고의 "병합 승인만 남음"은 이 선행 조건을 누락했다. merge 승인 자체는 다시 요청하지 않는다.
+기존 상태 기록 main push의 자동 웹 배포와 수동 OMR VM 배포를 구분하며, #125 새 기능은 아직 main에 병합·운영 적용되지 않았다.
