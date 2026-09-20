@@ -9,7 +9,7 @@
   직전운영 image5af0b7967e8e7d6e3f2fe3d02fc92ce5cebef4dc6513bc5bacb9b2b3a07b87c4.
 - env/unit 내용은 출력하지 않고 hash만 확인(7c903556…/bbc2f714…). 기존processing1파일74577bytes,
   manifest4f04c969…를 보존 기준으로 저장했다. 운영 unit/env는 수정하지 않는다.
-- 배포checkout을 exact merge에 detached 이동하고 Podman Docker형식 revision label 빌드 진행 중.
+- 배포checkout을 exact merge에 detached 이동하고 Podman Docker형식 revision label 빌드 완료(image d915599b…).
   검증 전에는 current tag/서비스를 바꾸지 않는다.
 - 근거(Git제외): `local-test-data/results/d073-deploy-2026-09-20/`; 원격 `/tmp/pr172-*`.
 
@@ -21,3 +21,19 @@
 - 열린 #121/#125/#126/#127/#130/#149의 본문도 실제 코드/phase와 대조해 현재 완료범위·미착수·보류 조건을 갱신했다.
   #146은이미CLOSED이며 악보패널을 제외한 UI개편이다. #125를 완료로 닫지 않았다.
 - 배포 완료 후 #134의 운영 수치/체크박스와 배포 결과 댓글을 갱신한다. 수동 배포 검증을 #121 지속관측 또는 #149 전체개발환경 완료로 세지 않는다.
+
+## VM 빌드·무결성 및 이미지 정리
+
+- 새 VM image `d915599b7ca80fa35a9a0888680f21401bb959f0193b63b37a3702914864764a`, revision ab844ba, HEALTHCHECK 포함.
+- 로컬d073d와 VM: normal/recovery 각각 JAR2433항목 모두 동일, 앱79파일 동일(로컬.DS_Store 제외), 테스트 클래스17파일 동일.
+  실제 병합CI6/6 및 무결성 비교가 통과한 후에만 `/tmp/pr172-*-pass` marker를 저장했다.
+- 운영secret env 없이 `podman run --rm --network none --memory=5g` 전체 unittest 실행 중. current/서비스는 아직PR171이다.
+- 공개첨부를 인증 없이 다운로드해 SHA25634d06c77398470ea6f9bf15d9cd5724a0db94c904eb81107c5ca29d2f1be5478,
+  630267bytes로 로컬 원본과 같음을 확인했다. 승인된 운영 스모크에만 임시 사용하고 원본/이미지 포함OMR은 정리한다.
+- 사용자 "필요없는 도커이미지는 정리하라"에 따라 컨테이너 참조0 확인 후 로컬 중간 이미지7개를 삭제했다:
+  d068-patched, d069-patched, d070-patched, d072-patched, d073-patched, d073b-patched, d073c-patched.
+- 최종d073d·직전d072b 및 기존보존기준선(d064,d065b,d066b,d067b,d068b,d069b,d070b,d071)은 남겼다.
+  bluekiwi/Postgres 이미지와 기존volume도 보존했다. VM 운영·rollback 이미지는 삭제하지 않았다.
+- `docker builder prune --force`의 dangling cache 회수량12.97GB. `docker system df`상 images40.75→26.32GB,
+  cache27.75→14.78GB(남은reclaimable0). 공유레이어가 있어 두 감소량을 더해 회수량으로 주장하지 않는다.
+- 열린7이슈의 본문날짜/OPEN/원문보존을 API로 재검증했다. #126/#130/#134 제목도 현재 남은 문맥전달/기준운지/타이 문제로 갱신했다.

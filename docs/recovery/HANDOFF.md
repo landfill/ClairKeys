@@ -206,17 +206,14 @@ PR·브랜치의 현재 상태는 GitHub와 해당 리뷰 로그에서 확인한
   사용자 지시("굳이 필요없다면 버릴것")로 원격 → 로컬 순서로 삭제했다.
   사용자의 미커밋 이력 메모(`validation/2026-09-13-handoff-history.md`)는 손대지 않고 그대로 둔다.
 
-- 로컬 Docker 이미지는 검증용이며 운영 이미지와 같다고 주장하지 않는다. 2026-09-19 초기 정리 뒤 남긴 기존 네 기준선은 모두 보존했다:
-  **`d067b-patched`**(직전 운영 PR166과 클래스 해시가 같은 기준선), `d066b-patched`(PR165 기준선, `SigReducer.class` `da3b0721…`),
-  `d065b-patched`(`BeamsBuilder.class` `8d15e1b2…`, PR164 기준선), `d064-patched`(PR163 기준선).
-  이번 작업에서 `d068-patched`(리뷰 전 재현용)·**`d068b-patched`**(PR167 최종 검증용)를 추가 보존해 당시6개였으며, PR168 검증의 d069-patched/d069b-patched도 보존했다.
-  이번 중간 실험 d068-exp/d068-exp2/d068-exp3은 삭제했다.
-  `d066-patched`·`d067-patched`·`d067-exp-chord`·`d065-patched`·`d065b-codex-verification`는 삭제했다. 과거 기준선이 다시 필요하면 해당
-  커밋에서 Dockerfile로 재빌드한다(약 3분). 같은 지시로 다른 프로젝트(bluekiwi) 컨테이너 3개를 중지·삭제했고 `bluekiwi_pgdata` 볼륨은 남겼다.
-  2026-09-18 Docker Desktop이 검증 도중 한 번 종료됐다. 컨테이너 메모리 제한을 6GB → 5GB로 낮췄고 이후 재발하지 않았다.
-  컨테이너 안 JVM은 비ASCII 파일 이름(`’`, 한글)을 읽지 못하므로 직접 Audiveris를 돌릴 땐 ASCII 이름으로 복사한다(운영 서비스는 `input.pdf`로 복사해 무관).
+- 로컬 Docker 이미지는 검증용이다. 2026-09-20 사용자 정리 지시로 중간이미지7개와 dangling build cache12.97GB를 정리했다.
+  보존: `d064-patched`, `d065b-patched`, `d066b-patched`, `d067b-patched`, `d068b-patched`, `d069b-patched`,
+  `d070b-patched`, `d071-patched`, 직전기준선`d072b-patched`, 최종`d073d-patched`. 다른프로젝트이미지/볼륨 및 VM롤백이미지는 보존했다.
+  [정리 목록·실측](validation/2026-09-20-d073-cross-system-tie-deployment.md). `d073c`검증 근거는 보존했고 d073d실행코드와 동일하다.
+  컨테이너5GB/JVM3GB/악보처리JVM1개로 검증한다. JVM의 비ASCII 파일명 문제는 ASCII 사본으로 처리한다.
   그래프 덤프 도구는 Git 제외 `local-test-data/results/issue134-onsets-2026-09-15/dump_region.py`다.
-  운영 수치는 PR162까지는 운영 스모크 기록(`pr162-live-pkmvlC`), PR163은 사용자의 앱 재변환 애니메이션 회수본을 근거로 한다.
+- 2026-09-20 사용자 GitHub 이슈 최신화 요청을 반영했다. #134를 포함한 열린7개 이슈의 본문을 실제 코드/phase로 동기화했고,
+  #126/#130/#134 제목도 잔여 범위에 맞췄다. #146완료와 #125미착수를 구분했다. 이번배포완료도 #134에 반영한다.
 - #134 판단은 원본 기준표 평가(phase 완료 조건)로 한다. 2026-09-15 사용자는 악보를 읽지 않으며 청취로 이상한 곳을
   구분하기 어렵다고 알렸다. 청취를 완료 조건이나 대기 항목으로 두지 않는다. 앱 재변환은 선택 확인이다.
   PR159 배포 검증은 운영 모듈 스모크이며 웹 업로드→콜백→플레이어 E2E가 아니다.
