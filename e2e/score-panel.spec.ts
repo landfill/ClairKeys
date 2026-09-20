@@ -34,6 +34,15 @@ test('desktop toggle, persistence, full-measure highlight and scrolling follow e
   test.skip(info.project.name.startsWith('Mobile'), 'PC-only feature')
   await page.setViewportSize({ width: 1440, height: 1000 })
   await prepare(page)
+  await info.attach('desktop-input-capabilities', {
+    contentType: 'application/json',
+    body: JSON.stringify(await page.evaluate(() => ({
+      width: innerWidth,
+      fine: matchMedia('(pointer: fine)').matches,
+      coarse: matchMedia('(pointer: coarse)').matches,
+      none: matchMedia('(pointer: none)').matches,
+    }))),
+  })
   const toggle = page.getByRole('button', { name: '악보 보기', exact: true })
   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
   await expect(page.getByTestId('score-panel')).toHaveCount(0)

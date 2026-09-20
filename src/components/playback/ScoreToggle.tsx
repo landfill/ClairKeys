@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 
 export const SCORE_PREFERENCE_KEY = 'clairkeys.score.visible'
-export const SCORE_DESKTOP_QUERY = '(min-width: 1024px) and (pointer: fine)'
+// A wide keyboard-only PC may report no pointer; coarse touch devices stay excluded.
+export const SCORE_DESKTOP_QUERY = '(min-width: 1024px) and (pointer: fine), (min-width: 1024px) and (pointer: none)'
 
 export default function ScoreToggle({ available, onChange }: { available: boolean; onChange: (enabled: boolean) => void }) {
   const [desktop, setDesktop] = useState(false)

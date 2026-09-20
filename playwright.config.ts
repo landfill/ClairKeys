@@ -41,6 +41,17 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
 
+    // Keep keyboard-only PC coverage even on hosts where Firefox reports a mouse.
+    // Firefox headless Linux also reports pointer:none (Mozilla bug 2037020).
+    {
+      name: 'Firefox keyboard',
+      testMatch: 'score-panel.spec.ts',
+      use: {
+        ...devices['Desktop Firefox'],
+        launchOptions: { firefoxUserPrefs: { 'ui.primaryPointerCapabilities': 0 } },
+      },
+    },
+
     /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',

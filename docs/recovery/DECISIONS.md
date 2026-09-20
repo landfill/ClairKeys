@@ -2924,3 +2924,7 @@
   실제 생성 MXL17마디/2보표를 Next15/React19에서 SVG로 렌더링했다. DOMParser Document로 load하여
   plain 문자열의 XML 선언 의존을 피한다. OSMD MeasureList의 문서순서0-based 인덱스와 모든 보표 경계를 합쳐 강조한다.
   현재 playhead를 그대로 쓰며 저장 템포 수정은 기존 uniform scaling과 같은 비율로 매핑한다.
+- PC eligibility refinement (2026-09-20, CI repro before change): 1024px 이상에서 pointer fine 또는 none을 허용한다.
+  pointer coarse 모바일/태블릿은 계속 제외한다. 포인터가 없다고 보고하는 키보드 PC도 악보 옵션을 사용할 수 있어야 한다.
+  Firefox Linux headless의 fine=false 보고(Mozilla2037020)를 실제 Firefox preference0으로 재현했다.
+  테스트를 생략하거나 마우스가 있다고 강제하지 않고, pointer:none 전용 Firefox 프로젝트로 이 경계를 회귀 검증한다.

@@ -6,7 +6,7 @@ Depends on: 기존 canonical playback; #126/#127 재개 불필요
 ## Objective
 
 PC에서 아이콘으로 켜는 양손 악보·앱 운지·현재 마디 전체 강조와 자동 스크롤을 제공한다.
-최초 OFF, 같은 브라우저 선택 유지, 접근성 이름/pressed 상태. 모바일과 MusicXML 없는 기존 악보에는 옵션이 없다.
+최초 OFF, 같은 브라우저 선택 유지, 접근성 이름/pressed 상태. 넓은 PC는 fine/none 입력을 허용하고 coarse 모바일은 제외한다. 모바일과 MusicXML 없는 기존 악보에는 옵션이 없다.
 
 ## Work stages
 
