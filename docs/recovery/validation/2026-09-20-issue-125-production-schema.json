@@ -1,0 +1,28 @@
+{
+  "security": [
+    {
+      "rls": true
+    }
+  ],
+  "constraints": [
+    {
+      "contype": "f",
+      "definition": "FOREIGN KEY (\"sheetMusicId\") REFERENCES \"SheetMusic\"(id) ON UPDATE CASCADE ON DELETE CASCADE"
+    },
+    {
+      "contype": "p",
+      "definition": "PRIMARY KEY (\"sheetMusicId\")"
+    }
+  ],
+  "migration": [
+    {
+      "migration_name": "20260920030000_add_private_score_artifact",
+      "finished_at": "2026-09-20T07:14:49.234Z",
+      "checksum": "c70e8742d7fe97bf6190f3b02c49c53c7fcc39c0068a38d8fd15259baee86df6"
+    }
+  ],
+  "checksumMatches": true,
+  "existingRowCountsUnchanged": true,
+  "artifactRows": 0,
+  "policies": 0
+}

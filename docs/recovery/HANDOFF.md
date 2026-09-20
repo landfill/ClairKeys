@@ -4,20 +4,17 @@ Last updated: 2026-09-20 KST
 
 ## Current phase
 
-**#125 PC 선택형 악보 패널 — 구현·검증 및 병합 승인 확인, 배포 선행 조건 때문에 병합 보류.**
-2026-09-20 [PR173](reviews/PR-173.md)의 `ed0a645`에서 필수 CI·실제 Codex 재리뷰까지 완료했다.
-P1(영구 오류 처리)·P2(응답 크기) 및 Firefox CI 실패를 재현·수정했다. phase DONE/이슈 최종 종료는 선언하지 않는다.
-계획은 [PR branch phase](https://github.com/landfill/ClairKeys/blob/codex/issue-125-score-panel/docs/recovery/phases/ISSUE-125-score-panel.md)에 있다.
-PR의 현재 상태는 리뷰 로그와 GitHub live state를 확인한다. #134와 종료된 #126/#127/#130/#149는 재개하지 않았다.
+**#125 PC 선택형 악보 패널 — PR173 병합·운영 DB 마이그레이션 완료, 웹 자동 배포 검증 중.**
+사용자가 병합에 이어 운영DB마이그레이션·웹자동배포를 승인했다. PR173은 `70eb25e`로 병합됐고 local main 반영을 확인했다.
+새 테이블·RLS·PK/FK cascade와 migration checksum을 운영DB에서 검증했으며 기존 사용자/악보 행 수는 불변이다.
+[계획](phases/ISSUE-125-score-panel.md), [병합·스키마 근거](reviews/PR-173.md).
 
 ## Next action
 
-1. **PR173 병합 승인은 이미 받았다.** 현재head ed0a645의 CI·실제리뷰·CLEAN 상태도 재확인했다.
-2. main push는 Vercel Production 자동 배포를 실행한다(실제 deployment6548883366/success 확인).
-   새 SheetScoreArtifact 테이블·RLS가 먼저 필요하므로 운영 DB 확인/마이그레이션과 웹 자동 배포의 추가 승인을 요청한 상태다.
-   추가 승인 전에는 병합하지 않는다. 이미 받은 병합 승인을 반복 요청하지 않는다.
-3. 추가 승인 후 DB 선행 조건을 확인·적용하고 최신head gates를 다시 확인해 병합한다.
-   OMR VM 배포와 이슈 종료는 별도 승인 대상이다. 현재 #125는 OPEN, PR173은 미병합이다.
+1. `70eb25e`의 Vercel Production 자동 배포와 병합 후 체크를 확인하고 웹 smoke를 수행한다.
+2. OMR VM 배포·이슈 종료는 이번 승인에서 제외됐다. 현재 운영 OMR은 이전 버전이므로 신규 MusicXML 산출물 전달 활성화는 아직 안 됐다.
+3. 이전 인덱스 migration `20260901060000`은 운영에서 미적용인 기존 상태를 보존했다. 이번 승인 대상 새 private artifact migration만 적용했다.
+4. 사용자 미커밋 변경 때문에 작업 branch는 로컬·원격 보존한다. 두 tip의 고유commit은0이다.
 
 [전체 검증·제약](validation/2026-09-20-issue-125-score-panel.md),
 [최종 gate 증거](validation/2026-09-20-issue-125-evidence/final-gates.json), [PR 리뷰](reviews/PR-173.md).
