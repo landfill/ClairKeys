@@ -1,0 +1,140 @@
+E2E Tests	Run E2E tests	﻿2026-09-20T03:32:11.0006627Z ##[group]Run npm run test:e2e
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0007025Z ^[[36;1mnpm run test:e2e^[[0m
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0051269Z shell: /usr/bin/bash -e {0}
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0051705Z env:
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0052498Z   DATABASE_URL: ***localhost:5432/clairkeys_test
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0052877Z   NEXTAUTH_SECRET: test-secret
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0053212Z   NEXTAUTH_URL: http://localhost:3000
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0053523Z ##[endgroup]
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0935801Z 
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0936388Z > clairkeys@0.1.0 test:e2e
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0936829Z > playwright test
+E2E Tests	Run E2E tests	2026-09-20T03:32:11.0937012Z 
+E2E Tests	Run E2E tests	2026-09-20T03:32:29.0481096Z 
+E2E Tests	Run E2E tests	2026-09-20T03:32:29.0481854Z Running 250 tests using 1 worker
+E2E Tests	Run E2E tests	2026-09-20T03:33:19.4994943Z ······································°·········································
+E2E Tests	Run E2E tests	2026-09-20T03:36:30.7142929Z [WebServer] NextAuth Error: CLIENT_FETCH_ERROR {
+E2E Tests	Run E2E tests	2026-09-20T03:36:30.7161763Z [WebServer]   error: ^[[32m'[object Object]'^[[39m,
+E2E Tests	Run E2E tests	2026-09-20T03:36:30.7163401Z [WebServer]   url: ^[[32m'/api/auth/session'^[[39m,
+E2E Tests	Run E2E tests	2026-09-20T03:36:30.7164305Z [WebServer]   message: ^[[32m'Load failed'^[[39m,
+E2E Tests	Run E2E tests	2026-09-20T03:36:30.7165101Z [WebServer]   client: ^[[32m'true'^[[39m
+E2E Tests	Run E2E tests	2026-09-20T03:36:30.7165620Z [WebServer] }
+E2E Tests	Run E2E tests	2026-09-20T03:36:36.1009357Z ·°°°°°°××F°·················································°···················
+E2E Tests	Run E2E tests	2026-09-20T03:36:58.2612129Z [WebServer] NextAuth Error: CLIENT_FETCH_ERROR {
+E2E Tests	Run E2E tests	2026-09-20T03:36:58.2614068Z [WebServer]   error: ^[[32m'[object Object]'^[[39m,
+E2E Tests	Run E2E tests	2026-09-20T03:36:58.2615100Z [WebServer]   url: ^[[32m'/api/auth/session'^[[39m,
+E2E Tests	Run E2E tests	2026-09-20T03:36:58.2615963Z [WebServer]   message: ^[[32m'Failed to fetch'^[[39m,
+E2E Tests	Run E2E tests	2026-09-20T03:36:58.2616694Z [WebServer]   client: ^[[32m'true'^[[39m
+E2E Tests	Run E2E tests	2026-09-20T03:36:58.2617142Z [WebServer] }
+E2E Tests	Run E2E tests	2026-09-20T03:38:22.8429173Z ·····························°·················································°
+E2E Tests	Run E2E tests	2026-09-20T03:38:28.0122468Z [WebServer] NextAuth Error: CLIENT_FETCH_ERROR {
+E2E Tests	Run E2E tests	2026-09-20T03:38:28.0130750Z [WebServer]   error: ^[[32m'[object Object]'^[[39m,
+E2E Tests	Run E2E tests	2026-09-20T03:38:28.0139000Z [WebServer]   url: ^[[32m'/api/auth/session'^[[39m,
+E2E Tests	Run E2E tests	2026-09-20T03:38:28.0139816Z [WebServer]   message: ^[[32m'Load failed'^[[39m,
+E2E Tests	Run E2E tests	2026-09-20T03:38:28.0140466Z [WebServer]   client: ^[[32m'true'^[[39m
+E2E Tests	Run E2E tests	2026-09-20T03:38:28.0140953Z [WebServer] }
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9610450Z ············
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9615867Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9626659Z   1) [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9627704Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9628387Z     Error: ^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveAttribute^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9628840Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9629092Z     Locator: getByRole('button', { name: '악보 보기', exact: true })
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9629453Z     Expected: ^[[32m"false"^[[39m
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9629674Z     Timeout: 5000ms
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9629878Z     Error: element(s) not found
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9630054Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9630131Z     Call log:
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9630444Z     ^[[2m  - Expect "toHaveAttribute" with timeout 5000ms^[[22m
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9630880Z     ^[[2m  - waiting for getByRole('button', { name: '악보 보기', exact: true })^[[22m
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9631117Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9631122Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9631229Z       36 |   await prepare(page)
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9631808Z       37 |   const toggle = page.getByRole('button', { name: '악보 보기', exact: true })
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9632226Z     > 38 |   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9632540Z          |                        ^
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9632873Z       39 |   await expect(page.getByTestId('score-panel')).toHaveCount(0)
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9633180Z       40 |   await toggle.click()
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9633521Z       41 |   await expect(page.getByTestId('score-panel').locator('svg')).toHaveCount(1)
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9634002Z         at /home/runner/work/ClairKeys/ClairKeys/e2e/score-panel.spec.ts:38:24
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9634571Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9635115Z     Error Context: test-results/score-panel-desktop-toggle-61b23-olling-follow-existing-seek-firefox/error-context.md
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9635479Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9635795Z     Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9636040Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9636392Z     Error: ^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveAttribute^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9636690Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9636898Z     Locator: getByRole('button', { name: '악보 보기', exact: true })
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9637214Z     Expected: ^[[32m"false"^[[39m
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9637424Z     Timeout: 5000ms
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9637619Z     Error: element(s) not found
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9637741Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9637808Z     Call log:
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9638089Z     ^[[2m  - Expect "toHaveAttribute" with timeout 5000ms^[[22m
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9638518Z     ^[[2m  - waiting for getByRole('button', { name: '악보 보기', exact: true })^[[22m
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9638745Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9638750Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9638846Z       36 |   await prepare(page)
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9639226Z       37 |   const toggle = page.getByRole('button', { name: '악보 보기', exact: true })
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9639619Z     > 38 |   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9639912Z          |                        ^
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9640216Z       39 |   await expect(page.getByTestId('score-panel')).toHaveCount(0)
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9640514Z       40 |   await toggle.click()
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9640848Z       41 |   await expect(page.getByTestId('score-panel').locator('svg')).toHaveCount(1)
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9641285Z         at /home/runner/work/ClairKeys/ClairKeys/e2e/score-panel.spec.ts:38:24
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9641769Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9642155Z     Error Context: test-results/score-panel-desktop-toggle-61b23-olling-follow-existing-seek-firefox-retry1/error-context.md
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9642572Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9642905Z     attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9643477Z     test-results/score-panel-desktop-toggle-61b23-olling-follow-existing-seek-firefox-retry1/trace.zip
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9643881Z     Usage:
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9643974Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9644360Z         npx playwright show-trace test-results/score-panel-desktop-toggle-61b23-olling-follow-existing-seek-firefox-retry1/trace.zip
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9644761Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9645035Z     ────────────────────────────────────────────────────────────────────────────────────────────────
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9645258Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9645532Z     Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9645746Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9646090Z     Error: ^[[2mexpect(^[[22m^[[31mlocator^[[39m^[[2m).^[[22mtoHaveAttribute^[[2m(^[[22m^[[32mexpected^[[39m^[[2m)^[[22m failed
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9646531Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9646730Z     Locator: getByRole('button', { name: '악보 보기', exact: true })
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9647046Z     Expected: ^[[32m"false"^[[39m
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9647250Z     Timeout: 5000ms
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9647438Z     Error: element(s) not found
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9647559Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9647630Z     Call log:
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9647903Z     ^[[2m  - Expect "toHaveAttribute" with timeout 5000ms^[[22m
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9648314Z     ^[[2m  - waiting for getByRole('button', { name: '악보 보기', exact: true })^[[22m
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9648537Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9648542Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9648639Z       36 |   await prepare(page)
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9649005Z       37 |   const toggle = page.getByRole('button', { name: '악보 보기', exact: true })
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9649399Z     > 38 |   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9649692Z          |                        ^
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9649988Z       39 |   await expect(page.getByTestId('score-panel')).toHaveCount(0)
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9650400Z       40 |   await toggle.click()
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9650735Z       41 |   await expect(page.getByTestId('score-panel').locator('svg')).toHaveCount(1)
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9651169Z         at /home/runner/work/ClairKeys/ClairKeys/e2e/score-panel.spec.ts:38:24
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9651538Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9652000Z     Error Context: test-results/score-panel-desktop-toggle-61b23-olling-follow-existing-seek-firefox-retry2/error-context.md
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9652393Z 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9652469Z   1 failed
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9652993Z     [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek 
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9653427Z   11 skipped
+E2E Tests	Run E2E tests	2026-09-20T03:38:29.9653594Z   238 passed (6.3m)
+E2E Tests	Run E2E tests	2026-09-20T03:38:30.1178774Z ##[error]Process completed with exit code 1.
+All Checks Complete	Check all results	﻿2026-09-20T03:38:38.3223960Z ##[group]Run if [[ "success" == "failure" || 
+All Checks Complete	Check all results	2026-09-20T03:38:38.3224881Z ^[[36;1mif [[ "success" == "failure" || ^[[0m
+All Checks Complete	Check all results	2026-09-20T03:38:38.3225652Z ^[[36;1m      "success" == "failure" || ^[[0m
+All Checks Complete	Check all results	2026-09-20T03:38:38.3226432Z ^[[36;1m      "failure" == "failure" || ^[[0m
+All Checks Complete	Check all results	2026-09-20T03:38:38.3227092Z ^[[36;1m      "success" == "failure" || ^[[0m
+All Checks Complete	Check all results	2026-09-20T03:38:38.3227839Z ^[[36;1m      "success" == "failure" ]]; then^[[0m
+All Checks Complete	Check all results	2026-09-20T03:38:38.3228553Z ^[[36;1m  echo "❌ One or more checks failed"^[[0m
+All Checks Complete	Check all results	2026-09-20T03:38:38.3229226Z ^[[36;1m  exit 1^[[0m
+All Checks Complete	Check all results	2026-09-20T03:38:38.3230194Z ^[[36;1melse^[[0m
+All Checks Complete	Check all results	2026-09-20T03:38:38.3230874Z ^[[36;1m  echo "✅ All checks passed or skipped"^[[0m
+All Checks Complete	Check all results	2026-09-20T03:38:38.3231570Z ^[[36;1mfi^[[0m
+All Checks Complete	Check all results	2026-09-20T03:38:38.4092672Z shell: /usr/bin/bash -e {0}
+All Checks Complete	Check all results	2026-09-20T03:38:38.4094033Z ##[endgroup]
+All Checks Complete	Check all results	2026-09-20T03:38:38.4523083Z ❌ One or more checks failed
+All Checks Complete	Check all results	2026-09-20T03:38:38.4547736Z ##[error]Process completed with exit code 1.

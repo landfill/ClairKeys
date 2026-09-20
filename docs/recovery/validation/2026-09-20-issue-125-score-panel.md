@@ -107,3 +107,15 @@ OMR 구현/실제 매핑·Docker 빌드/실행·신규 업로드/저장 browser�
 ## 재리뷰 완료 checkpoint
 
 946f975 Codex actual re-review Completed2026-09-20T03:35:47Z, 추가findings0, 이전P1resolved. 현재head의필수E2E2개실행중이며 나머지CI통과. 아직 goal완료아님.
+
+## Firefox CI failure 재현·수정8b13c14
+
+- 946f975 E2E2개가 같은 desktop Firefox 토글미노출로 실패. [실제CI로그](2026-09-20-issue-125-evidence/ci-firefox-failure.log).
+- CI trace는기존재생UI정상/악보토글없음. 실제Firefox에서 ui.primaryPointerCapabilities=0: finefalse/nonetrue/queryfalse,6:fine true.
+  preference0으로 같은E2E1실패를 재현: [before](2026-09-20-issue-125-evidence/firefox-pointer-before.log).
+- D-074/phase에 입력기준기록후,넓은화면fine또는none허용/coarse모바일미제공 유지. 실제 pointer0 Firefox프로젝트를회귀게이트에추가.
+- 수정후 six-project score-panel12pass/기기비해당6skip(13.4s): [after](2026-09-20-issue-125-evidence/browser-pointer-after.log).
+  전체Jest112suites1077tests PASS(23.835s),typecheck/lint/productionbuild PASS. 서비스/Python/DB코드는불변.
+- 8b13c14 commit/push, @codex review 재요청. 최신head CI·리뷰완료전에는goal완료아님.
+- Local cleanup: 완료된 두 agy worker terminal을settlement/release후닫았다. 검증용OMR/DB컨테이너는stop하고 이미지/볼륨은보존했다.
+  Firefox재검증을위해local Next서버만다시실행중. 기존사용자파일/컨테이너/볼륨삭제없음.

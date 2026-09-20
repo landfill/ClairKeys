@@ -1,0 +1,37 @@
+
+Running 1 test using 1 worker
+
+(node:65378) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:65378) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek (5.7s)
+
+
+  1) [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: getByRole('button', { name: '악보 보기', exact: true })
+    Expected: "false"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 5000ms
+      - waiting for getByRole('button', { name: '악보 보기', exact: true })
+
+
+      36 |   await prepare(page)
+      37 |   const toggle = page.getByRole('button', { name: '악보 보기', exact: true })
+    > 38 |   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+         |                        ^
+      39 |   await expect(page.getByTestId('score-panel')).toHaveCount(0)
+      40 |   await toggle.click()
+      41 |   await expect(page.getByTestId('score-panel').locator('svg')).toHaveCount(1)
+        at /Users/h0977/dev/ClairKeys/e2e/score-panel.spec.ts:38:24
+
+    Error Context: test-results/score-panel-desktop-toggle-61b23-olling-follow-existing-seek-firefox/error-context.md
+
+  1 failed
+    [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek 

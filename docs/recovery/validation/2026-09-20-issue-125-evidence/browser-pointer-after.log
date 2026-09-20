@@ -1,0 +1,71 @@
+
+Running 18 tests using 1 worker
+
+(node:69319) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:69319) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/18] [chromium] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek
+[2/18] [chromium] › e2e/score-panel.spec.ts:69:5 › mobile keeps two rows even with a saved desktop preference
+[3/18] [chromium] › e2e/score-panel.spec.ts:78:5 › legacy sheets offer playback without the score option
+(node:69400) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:69400) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[4/18] [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek
+[5/18] [firefox] › e2e/score-panel.spec.ts:69:5 › mobile keeps two rows even with a saved desktop preference
+[6/18] [firefox] › e2e/score-panel.spec.ts:78:5 › legacy sheets offer playback without the score option
+(node:69458) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:69458) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[7/18] [webkit] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek
+[8/18] [webkit] › e2e/score-panel.spec.ts:69:5 › mobile keeps two rows even with a saved desktop preference
+[9/18] [webkit] › e2e/score-panel.spec.ts:78:5 › legacy sheets offer playback without the score option
+(node:69549) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:69549) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[10/18] [Firefox keyboard] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek
+[11/18] [Firefox keyboard] › e2e/score-panel.spec.ts:69:5 › mobile keeps two rows even with a saved desktop preference
+[12/18] [Firefox keyboard] › e2e/score-panel.spec.ts:78:5 › legacy sheets offer playback without the score option
+(node:69605) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:69605) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[13/18] [Mobile Chrome] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek
+[14/18] [Mobile Chrome] › e2e/score-panel.spec.ts:69:5 › mobile keeps two rows even with a saved desktop preference
+[15/18] [Mobile Chrome] › e2e/score-panel.spec.ts:78:5 › legacy sheets offer playback without the score option
+(node:69625) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:69625) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[16/18] [Mobile Safari] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek
+[17/18] [Mobile Safari] › e2e/score-panel.spec.ts:69:5 › mobile keeps two rows even with a saved desktop preference
+[18/18] [Mobile Safari] › e2e/score-panel.spec.ts:78:5 › legacy sheets offer playback without the score option
+  6 skipped
+  12 passed (13.4s)
