@@ -103,6 +103,19 @@ Seed는 필수가 아니다. 기존 사용자 데이터에 `npm run seed`나 데
 ## 기존 DB 업데이트
 
 먼저 백업·복구 가능 여부, 실제 테이블/인덱스와 `_prisma_migrations`를 확인한다.
+이전 가이드의 `db push` 또는 수동 SQL로 만들어져 **스키마는 있으나 이력이 없는 경우**도 구분한다.
+각 migration에 대해 다음 세 경우를 판정한다.
+
+- 이력과 실제 스키마가 모두 완성: SQL 재실행과 resolve를 건너뛴다.
+- 이력만 없고 해당 migration의 효과가 모두 존재: 컬럼/enum/기본값/제약/인덱스뿐 아니라
+  SQL 전용 RLS도 확인하고 `npx prisma migrate resolve --applied <이름>`으로 baseline을 기록한다.
+  뒤 migration이 바꾼 제약은 최종 정의와 대조한다. `migrate diff`만으로 RLS까지 확인했다고 간주하지 않는다.
+- 스키마와 이력 모두 없음: 아래 순서로 SQL 실행 후 resolve한다.
+
+일부 객체만 존재하거나 실패 이력/스키마 불일치가 있으면 중단하고 개별 복구한다.
+완전 적용을 입증하기 전에는 `--applied`로 숨기지 않는다.
+이 분류는 선행 migration뿐 아니라 concurrent index와 이후 artifact에도 동일하게 적용한다.
+
 일반 마이그레이션은 검토한 후 `npx prisma migrate deploy`를 사용한다.
 단, 위 concurrent index migration이 미적용이면 다음 순서로 별도 변경을 수행한다.
 

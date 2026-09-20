@@ -17,14 +17,17 @@ Storage 대시보드에서 `animation-data` 버킷을 만든다.
 MIME 타입은 `application/json`, 파일 크기 한도는 10 MiB다.
 
 **현재 구현의 제약:** `fileStorageService`는 public URL을 저장하고,
-`/api/files/animation`은 공개 악보에 이 URL을 그대로 반환한다.
+현재 `src/app/sheet/[id]/page.tsx` 플레이어는 `/api/sheet/[id]` 응답의
+`animationDataUrl`을 받아 Storage URL을 **직접 fetch**한다.
+별도 `/api/files/animation` 라우트도 공개 악보에 public URL을 반환하지만 현재 플레이어 경로는 아니다.
 기존 초기화 스크립트도 버킷을 **Public**으로 만든다. 따라서 현재 공개 악보 재생 경로를
 그대로 재현하려면 public 버킷이 필요하지만, 이 경우 비공개 악보의 JSON도 URL을 알면
 Storage에서 직접 접근할 수 있다. 앱의 권한 검사만으로 이 노출을 막지 못한다.
 MusicXML은 별도 DB RLS로 보호되므로 이 제약과 구분한다.
 
 새로운 운영 구성을 비공개 JSON까지 보호하는 환경으로 공개하려면, 먼저 private 버킷에서
-공개/비공개 악보 모두 권한에 맞는 signed URL 또는 서버 응답을 사용하도록 코드를 수정하고
+공개/비공개 악보 모두 권한에 맞는 signed URL 또는 서버 응답을 사용하도록
+`/api/sheet/[id]`의 URL 제공과 플레이어의 직접 fetch 경로를 함께 수정하고
 검증해야 한다. **문서만으로 이 문제가 해결됐다고 간주하지 않는다.** private 버킷으로
 설정하면 현재 공개 악보의 직접 URL 경로가 동작하지 않을 수 있다.
 
@@ -37,7 +40,9 @@ MusicXML은 별도 DB RLS로 보호되므로 이 제약과 구분한다.
 2. OMR이 MusicXML과 canonical animation JSON을 생성한다.
 3. 앱은 애니메이션 JSON을 `animation-data`에 저장하고 DB에 경로를 기록한다.
 4. MusicXML과 위치 매핑은 DB `SheetScoreArtifact`에 비공개 저장한다.
-5. 애니메이션은 `/api/files/animation`, MusicXML은 소유자 전용 `/api/sheet/[id]/score`로 조회한다.
+5. 플레이어는 `/api/sheet/[id]`의 `animationDataUrl`로 Storage JSON을 직접 fetch한다.
+   MusicXML은 소유자 전용 `/api/sheet/[id]/score`로 조회한다.
+   `/api/files/animation`만 수정해서는 현재 플레이어의 직접 URL 접근이 바뀌지 않는다.
 6. 원본 PDF는 처리용 임시 파일이며 영구 보관하지 않는다.
 
 신규 구성에 공개 PDF용 `sheet-music-files` 버킷은 필요하지 않다.
