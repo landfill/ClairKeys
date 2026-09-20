@@ -5,14 +5,14 @@ Last updated: 2026-09-20 KST
 ## Current phase
 
 **#125 PC 선택형 악보 패널 — IN_PROGRESS.** 최신 이슈/2026-09-20 사용자 확정 범위로 시작했다.
-계획/D-074 및 코드 커밋 `bd23b19` (`codex/issue-125-score-panel`). 실제 Docker 업로드/저장/표시·앱 전체 검증 통과. 통합 head `cdc7cc1` 원격 push 완료; 아직 PR·병합·배포하지 않았다.
+계획/D-074 및 코드 커밋 `bd23b19` (`codex/issue-125-score-panel`). 실제 Docker 업로드/저장/표시·앱 전체 검증 통과. 통합 head `cdc7cc1`의 [PR173](reviews/PR-173.md)을 non-draft로 생성했다. 병합·배포하지 않았다.
 이전 #134는 사용자 성과·한계 수용으로 DONE; #126/#127/#130/#149는 NOT_PLANNED 종료를 유지한다.
 
 ## Next action
 
-1. Docker 전체 첫 실행은 fixture/source mount 누락으로 실패했다. 환경 수정 후 최종 이미지 전체 재실행 중; 결과를 확인한다.
+1. Docker fixture/source 경로 누락을 모두 보정하고 실패 모듈 재검증 통과. 최종 전체211개 재실행 완료 결과를 확인한다.
 2. 로컬 신규 PDF 업로드→저장→표시·권한/삭제·PC/모바일 회귀는 통과; 필요 보강 후 PR 준비.
-3. 전체 Jest/typecheck/lint/build, 독립 검증 finding 대응, non-draft PR·최신 head CI·실제 리뷰 대응.
+3. PR173 최신 head CI·실제 리뷰를 확인하고 actionable feedback을 수정·재검증한다. skip을 리뷰 통과로 세지 않는다.
 4. 병합 승인만 남으면 goal 완료 보고; 병합·운영 배포·이슈 종료는 이번 승인 범위 밖이다.
 
 [진행·검증 근거](validation/2026-09-20-issue-125-score-panel.md),

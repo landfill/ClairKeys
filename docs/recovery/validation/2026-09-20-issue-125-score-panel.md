@@ -83,3 +83,11 @@ OMR 구현/실제 매핑·Docker 빌드/실행·신규 업로드/저장 browser�
 - 수정된 실행: docker run --platform linux/amd64 --memory5g --cpus2 -v "$PWD/fixtures:/fixtures:ro"
   -v "$PWD/src:/src:ro" ... clairkeys-omr:issue125-final, 이후 PYTHONPATH=/app python3 -m unittest discover -s /app/tests -v.
   실제 재실행에서는 src 전체 mount 대신 필요한 단일 tracked route를 docker cp하고 SHA를 대조했다.
+
+## PR173 생성 checkpoint
+
+- non-draft PR173 생성, head cdc7cc17c51508951a2fa142f8405ebb89fae320. CI/actual review pending.
+- 두번째 Docker211개:204pass6진단skip1error. 남은 실패는 /omr-service/audiveris-patches/0001-region-scoped-ledger-recovery.patch 경로였다.
+  /omr-service→/app 링크로 이미지에 원래 들어있는 패치파일을 연결. 해당 test_wedge_retry.py20개:17pass3진단skip (0.157s).
+  네이티브19개 모두 실행/통과 확인; 경로를 완전히 보정한 최종전체 실행도 시작했다.
+- [PR 리뷰 기록](../reviews/PR-173.md)에 CI/리뷰 대응을 추적한다. 아직 goal 완료 아님.
