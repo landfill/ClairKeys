@@ -2928,3 +2928,7 @@
   pointer coarse 모바일/태블릿은 계속 제외한다. 포인터가 없다고 보고하는 키보드 PC도 악보 옵션을 사용할 수 있어야 한다.
   Firefox Linux headless의 fine=false 보고(Mozilla2037020)를 실제 Firefox preference0으로 재현했다.
   테스트를 생략하거나 마우스가 있다고 강제하지 않고, pointer:none 전용 Firefox 프로젝트로 이 경계를 회귀 검증한다.
+- Payload boundary refinement (2026-09-20, PR173 P2): 완성 artifact의 JSON UTF-8 바이트를4MiB로 제한한다.
+  Vercel Function의4.5MB 응답한도(https://vercel.com/docs/functions/limitations)보다 여유를 두고 JSON escaping/매핑도 계산한다.
+  수집 시 한도를 넘으면 기존 영구실패422 경로로 끝내며 저장하지 않는다. 조회 시에도 보관행 크기를 검사하고 과대응답 대신413을 반환한다.
+  OMR의10MiB XML 파싱상한은 별도 상위방어이며, 앱의 제공가능크기를 뜻하지 않는다.

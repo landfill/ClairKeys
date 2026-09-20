@@ -15,7 +15,9 @@ export interface ScoreArtifact {
   notes: Array<{ xmlId: string; noteIndex: number }>
 }
 
-export const MAX_SCORE_ARTIFACT_BYTES = 10 * 1024 * 1024
+// Complete UTF-8 JSON, including escaping and anchors, must fit the 4.5 MB
+// hosted function response limit. Keep headroom rather than budgeting XML alone.
+export const MAX_SCORE_ARTIFACT_BYTES = 4 * 1024 * 1024
 
 export function isScoreArtifact(value: unknown): value is ScoreArtifact {
   if (!value || typeof value !== 'object') return false

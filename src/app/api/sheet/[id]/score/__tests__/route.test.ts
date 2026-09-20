@@ -32,6 +32,13 @@ describe('private score endpoint', () => {
     expect((await get(id)).status).toBe(400)
     expect(find).not.toHaveBeenCalled()
   })
+  it('refuses an oversized retained row before returning its payload through the function', async () => {
+    find.mockResolvedValue({ data: { version: 1, musicxml: 'x'.repeat(5 * 1024 * 1024) } })
+    const response = await get()
+    expect(response.status).toBe(413)
+    expect(await response.json()).toEqual({ error: 'Score exceeds the display size limit' })
+    expect(response.headers.get('Cache-Control')).toBe('private, no-store')
+  })
   it('does not expose database errors', async () => {
     find.mockRejectedValue(new Error('private database detail'))
     const result = await get()

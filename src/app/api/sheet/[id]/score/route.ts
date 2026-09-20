@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth/config'
 import { prisma } from '@/lib/prisma'
+import { MAX_SCORE_ARTIFACT_BYTES } from '@/types/scoreArtifact'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const headers = { 'Cache-Control': 'private, no-store' }
@@ -17,6 +18,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       select: { data: true },
     })
     if (!artifact) return NextResponse.json({ error: 'Score not found' }, { status: 404, headers })
+    if (Buffer.byteLength(JSON.stringify(artifact.data), 'utf8') > MAX_SCORE_ARTIFACT_BYTES) {
+      return NextResponse.json({ error: 'Score exceeds the display size limit' }, { status: 413, headers })
+    }
     return NextResponse.json(artifact.data, { headers })
   } catch {
     return NextResponse.json({ error: 'Could not load score' }, { status: 500, headers })
