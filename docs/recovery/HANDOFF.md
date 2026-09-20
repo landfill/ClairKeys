@@ -4,20 +4,17 @@ Last updated: 2026-09-20 KST
 
 ## Current phase
 
-**#125 PC 선택형 악보 패널 — 구현·병합·운영 DB/웹/OMR VM 배포 및 운영 검증 완료.**
-사용자 추가 지시로 VM을 `70eb25e`/`afa17972`에 배포했다. 실제 로그인 업로드→콜백 delivered→비공개 MusicXML 저장→악보/운지/마디강조·자동스크롤까지 확인했다.
-[구현 phase](phases/ISSUE-125-score-panel.md), [VM 배포·검증](validation/2026-09-20-issue-125-vm-deployment.md), [병합·리뷰](reviews/PR-173.md).
+**신규 DB 구성 문서 현행화 — PR174 검증/리뷰 중.**
+빈 DB에서 원본 migration7개와 MusicXML RLS를 재현하는 문서를 작성했다.
+[PR174](https://github.com/landfill/ClairKeys/pull/174), [검증](validation/2026-09-20-db-setup-docs.md), [리뷰](reviews/PR-174.md).
 
 ## Next action
 
-1. 요청한 브랜치 정리·VM 배포는 완료됐다. 검증용 비공개 [악보86](https://clairkeys.vercel.app/sheet/86)을 사용자 확인용으로 남겼다.
-2. #125는 OPEN을 유지했다. 이슈 종료는 별도 사용자 지시를 따른다.
-3. 기존 index migration `20260901060000`은 운영 미적용 상태를 그대로 두었다. 후속 후보이며 자동 착수하지 않는다.
-4. main에 포함된 두 작업branch와 임시worktree를 정리했다. 사용자 메모/설정파일5개 해시는 보존됐으며 현재main이다.
-
-[전체 검증·제약](validation/2026-09-20-issue-125-score-panel.md),
-[최종 gate 증거](validation/2026-09-20-issue-125-evidence/final-gates.json), [PR 리뷰](reviews/PR-173.md).
-원래 checkout은 main, 작업branch는 정리 완료. 사용자 미커밋4경로는 제외·보존했다.
+1. PR174 최신 head CI와 실제 리뷰를 확인하고 지적에 대응한다. 병합은 별도 승인 후 수행한다.
+2. Storage의 public animation URL 의존성은 현행 코드 제약으로 명시했다. 비공개 JSON 보호는 후속 코드 수정·검증이 필요하다.
+3. #125 구현/병합/DB·웹·VM 배포는 완료, 이슈는 OPEN 유지. [배포 근거](validation/2026-09-20-issue-125-vm-deployment.md).
+4. 운영 index migration20260901060000은 미적용 유지. 이번 문서는 운영 변경을 수행하지 않는다.
+5. 사용자 미커밋 history 및 설정 파일은 보존한다.
 
 ## Latest verified result
 
