@@ -91,3 +91,15 @@ OMR 구현/실제 매핑·Docker 빌드/실행·신규 업로드/저장 browser�
   /omr-service→/app 링크로 이미지에 원래 들어있는 패치파일을 연결. 해당 test_wedge_retry.py20개:17pass3진단skip (0.157s).
   네이티브19개 모두 실행/통과 확인; 경로를 완전히 보정한 최종전체 실행도 시작했다.
 - [PR 리뷰 기록](../reviews/PR-173.md)에 CI/리뷰 대응을 추적한다. 아직 goal 완료 아님.
+
+## Docker 최종 성공 / 실제 리뷰 P1 수정946f975
+
+- 경로를 보정한 최종 Docker 전체211개 중205 PASS/6보관진단skip,432.367s. Native19전부 실행통과; 신규 artifact10/독립mapping5 모두 실행.
+  [실행 로그](2026-09-20-issue-125-evidence/docker-tests.log). 현재 TS callback source로 갱신한 test_service_contract31개 추가PASS.
+- Chromium/Firefox/WebKit/MobileChrome/MobileSafari10 PASS/기기 비해당5skip: [로그](2026-09-20-issue-125-evidence/browser-tests.log).
+- 실제 Codex 리뷰 cdc7cc1: P1 영구적인 malformed/oversized artifact가 processing에 남음. ACCEPTED→FIXED.
+  새4사례 모두 [수정전 실패](2026-09-20-issue-125-evidence/review-p1-before.log) → 수정후 focused23 PASS.
+  invalid artifact는 callback422로 producer 재시도중단/DBfailed, poll200 statusfailed로 프론트 종료. transient storage재시도는 유지.
+- 946f975848e2cf658a8783cd02f2b688e6a78843 Lore commit/push, GitHub답변 및 threadresolved, @codex review 재요청.
+- 수정후 전체Jest112suites1077tests PASS(37.064s), npx tsc --noEmit PASS, npm run lint PASS, npm run build PASS.
+- 현재 head CI/재리뷰를 확인하기 전 goal 완료가 아니다.

@@ -1,0 +1,83 @@
+
+> clairkeys@0.1.0 test
+> jest --runInBand --runTestsByPath src/lib/omr/__tests__/invalidScoreCompletion.test.ts
+
+FAIL src/lib/omr/__tests__/invalidScoreCompletion.test.ts
+  ✕ callback terminally fails malformed artifacts and stops producer retries (7 ms)
+  ✕ callback terminally fails oversized envelope artifacts and stops producer retries (73 ms)
+  ✕ poll settles the UI instead of retrying malformed artifacts forever (2 ms)
+  ✕ poll settles the UI instead of retrying oversized envelope artifacts forever (66 ms)
+
+  ● callback terminally fails malformed artifacts and stops producer retries
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 422
+    Received: 502
+
+      44 |     method: 'POST', headers: { 'X-ClairKeys-Token': 'local-test-secret' }, body: JSON.stringify({ job_id: jobId }),
+      45 |   }))
+    > 46 |   expect(response.status).toBe(422)
+         |                           ^
+      47 |   expect(await response.json()).toMatchObject({ code: 'INVALID_SCORE_ARTIFACT' })
+      48 |   expect(update).toHaveBeenCalledWith({ where: { id: 125 }, data: { processingStatus: 'failed', updatedAt: expect.any(Date) } })
+      49 | })
+
+      at toBe (src/lib/omr/__tests__/invalidScoreCompletion.test.ts:46:27)
+
+  ● callback terminally fails oversized envelope artifacts and stops producer retries
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 422
+    Received: 502
+
+      44 |     method: 'POST', headers: { 'X-ClairKeys-Token': 'local-test-secret' }, body: JSON.stringify({ job_id: jobId }),
+      45 |   }))
+    > 46 |   expect(response.status).toBe(422)
+         |                           ^
+      47 |   expect(await response.json()).toMatchObject({ code: 'INVALID_SCORE_ARTIFACT' })
+      48 |   expect(update).toHaveBeenCalledWith({ where: { id: 125 }, data: { processingStatus: 'failed', updatedAt: expect.any(Date) } })
+      49 | })
+
+      at toBe (src/lib/omr/__tests__/invalidScoreCompletion.test.ts:46:27)
+
+  ● poll settles the UI instead of retrying malformed artifacts forever
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 502
+
+      52 |     .mockResolvedValueOnce(new Response(JSON.stringify({ animation_data: { notes: [] }, score_artifact: artifact })))
+      53 |   const response = await GET(new NextRequest(`http://localhost/api/omr/status/${jobId}`), { params: Promise.resolve({ jobId }) })
+    > 54 |   expect(response.status).toBe(200)
+         |                           ^
+      55 |   expect(await response.json()).toMatchObject({ success: true, status: 'failed', code: 'INVALID_SCORE_ARTIFACT', sheetMusicId: 125 })
+      56 |   expect(update).toHaveBeenCalledWith({ where: { id: 125 }, data: { processingStatus: 'failed', updatedAt: expect.any(Date) } })
+      57 | })
+
+      at toBe (src/lib/omr/__tests__/invalidScoreCompletion.test.ts:54:27)
+
+  ● poll settles the UI instead of retrying oversized envelope artifacts forever
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 502
+
+      52 |     .mockResolvedValueOnce(new Response(JSON.stringify({ animation_data: { notes: [] }, score_artifact: artifact })))
+      53 |   const response = await GET(new NextRequest(`http://localhost/api/omr/status/${jobId}`), { params: Promise.resolve({ jobId }) })
+    > 54 |   expect(response.status).toBe(200)
+         |                           ^
+      55 |   expect(await response.json()).toMatchObject({ success: true, status: 'failed', code: 'INVALID_SCORE_ARTIFACT', sheetMusicId: 125 })
+      56 |   expect(update).toHaveBeenCalledWith({ where: { id: 125 }, data: { processingStatus: 'failed', updatedAt: expect.any(Date) } })
+      57 | })
+
+      at toBe (src/lib/omr/__tests__/invalidScoreCompletion.test.ts:54:27)
+
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 4 total
+Snapshots:   0 total
+Time:        0.468 s
+Ran all test suites within paths "src/lib/omr/__tests__/invalidScoreCompletion.test.ts".
