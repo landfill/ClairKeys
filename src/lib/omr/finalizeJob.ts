@@ -1,3 +1,6 @@
+import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
+import { isScoreArtifact, MAX_SCORE_ARTIFACT_BYTES } from '@/types/scoreArtifact'
 import { FileStorageService } from '@/services/fileStorageService'
 import { getOmrServiceUrl, omrAuthHeaders } from '@/lib/omr/serviceUrl'
 
@@ -53,6 +56,23 @@ export async function fetchAndStoreOmrResult(
   }
 
   const resultPayload = await resultResponse.json()
+  if (resultPayload.score_artifact !== undefined) {
+    const artifact: unknown = resultPayload.score_artifact
+    if (!isScoreArtifact(artifact) || Buffer.byteLength(JSON.stringify(artifact), 'utf8') > MAX_SCORE_ARTIFACT_BYTES) {
+      throw new OmrFinalizationError('악보 표시 데이터가 올바르지 않습니다.', 'INVALID_SCORE_ARTIFACT', 422)
+    }
+    try {
+      // Nested upsert is FK-bound to the owner/job row. A deleted sheet cannot
+      // recreate an orphan artifact, including during concurrent callbacks.
+      const data = artifact as unknown as Prisma.InputJsonValue
+      await prisma.sheetMusic.update({
+        where: { omrJobId: jobId, userId },
+        data: { scoreArtifact: { upsert: { create: { data }, update: { data } } } },
+      })
+    } catch {
+      throw new OmrFinalizationError('악보 표시 데이터를 저장하지 못했습니다.', 'SCORE_STORAGE_FAILED', 502)
+    }
+  }
   const stored = await FileStorageService.getInstance().uploadOmrAnimationData(
     jobId,
     userId,

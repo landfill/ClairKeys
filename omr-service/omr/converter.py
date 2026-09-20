@@ -3,17 +3,18 @@ MusicXML to ClairKeys Converter
 Converts MusicXML files to ClairKeys animation data format
 """
 
+from datetime import datetime, timezone
 import json
 import logging
 import math
-import re
 from pathlib import Path, PurePosixPath
-from typing import Dict, List, Optional, Any
+import re
+from typing import Any, Dict, List, Optional, Tuple
 import xml.etree.ElementTree as ET
-from datetime import datetime
 import zipfile
 
 from omr.musicxml_timing import QuarterClock, ScoreTimeline, scan_score
+from omr.score_artifact import build_score_artifact
 
 logger = logging.getLogger(__name__)
 
@@ -61,15 +62,15 @@ class MusicXMLToClairKeysConverter:
             note_name = f"{note_names[note_index]}{octave}"
             self.midi_to_note[midi_num] = note_name
     
-    async def convert(
+    async def convert_with_artifact(
         self,
         musicxml_path: Path,
         title: Optional[str] = None,
         composer: Optional[str] = None,
         tempo: Optional[float] = None,
-    ) -> Dict[str, Any]:
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         """
-        Convert MusicXML file to ClairKeys animation data format
+        Convert MusicXML file to ClairKeys animation data format and score artifact.
         
         Args:
             musicxml_path: Path to MusicXML file
@@ -78,10 +79,10 @@ class MusicXMLToClairKeysConverter:
             tempo: Optional user-supplied quarter-note BPM
             
         Returns:
-            ClairKeys animation data as dictionary
+            Tuple of (animation_data, score_artifact)
         """
         try:
-            logger.info(f"Converting MusicXML to ClairKeys format: {musicxml_path}")
+            logger.info(f"Converting MusicXML to ClairKeys format and artifact: {musicxml_path}")
             
             # Audiveris exports compressed MusicXML (.mxl). Resolve its declared
             # root document without extracting the archive; plain MusicXML remains
@@ -113,19 +114,21 @@ class MusicXMLToClairKeysConverter:
             if not math.isfinite(timing_reference_bpm) or timing_reference_bpm <= 0:
                 raise ValueError("Tempo must be greater than zero")
             
-            # Extract notes and timing information
-            notes = self._extract_notes(
+            use_score_tempo_changes = tempo is None
+            clock = QuarterClock(
+                timing_reference_bpm,
+                timeline.tempos if use_score_tempo_changes else {},
+            )
+            notes, note_mappings, clock = self._extract_notes_and_mappings(
                 root,
                 timing_reference_bpm,
-                use_score_tempo_changes=tempo is None,
+                use_score_tempo_changes=use_score_tempo_changes,
                 timeline=timeline,
+                clock=clock,
             )
             logger.info(f"Extracted {len(notes)} notes")
             
             # Build ClairKeys animation data structure.
-            # Emit the canonical contract shape explicitly (version + top-level
-            # title/composer) rather than relying on the TS validator's tolerance
-            # for the old metadata-nested layout. See P0-A / D-009.
             animation_data = {
                 "version": "1.1",
                 "title": metadata.get("title", "Untitled"),
@@ -138,18 +141,41 @@ class MusicXMLToClairKeysConverter:
                 "timingReferenceBpm": timing_reference_bpm,
                 "scoreTempo": score_tempo,
                 "timeSignature": self._extract_time_signature(root),
-                "generated_at": datetime.utcnow().isoformat()
+                "generated_at": datetime.now(timezone.utc).isoformat(),
             }
             key_signature = self._extract_key_signature(root)
             if key_signature is not None:
                 animation_data["keySignature"] = key_signature
             
-            logger.info(f"Successfully converted to ClairKeys format")
-            return animation_data
+            score_artifact = build_score_artifact(
+                root=root,
+                timeline=timeline,
+                clock=clock,
+                notes=notes,
+                note_mappings=note_mappings,
+                timing_reference_bpm=timing_reference_bpm,
+                tempo_source=tempo_source,
+            )
+
+            logger.info("Successfully converted to ClairKeys format with artifact")
+            return animation_data, score_artifact
             
         except Exception as e:
             logger.error(f"Error converting MusicXML: {str(e)}")
             raise
+
+    async def convert(
+        self,
+        musicxml_path: Path,
+        title: Optional[str] = None,
+        composer: Optional[str] = None,
+        tempo: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        """Convert MusicXML file to ClairKeys animation data format (legacy/standard)."""
+        animation_data, _ = await self.convert_with_artifact(
+            musicxml_path, title, composer, tempo
+        )
+        return animation_data
 
     def _parse_musicxml(self, musicxml_path: Path) -> ET.ElementTree:
         """Parse plain MusicXML or the root document declared by an MXL container."""
@@ -208,24 +234,31 @@ class MusicXMLToClairKeysConverter:
         
         return metadata
     
-    def _extract_notes(
+    def _extract_notes_and_mappings(
         self,
         root: ET.Element,
         initial_tempo: float,
         use_score_tempo_changes: bool = True,
         timeline: Optional[ScoreTimeline] = None,
-    ) -> List[Dict[str, Any]]:
+        clock: Optional[QuarterClock] = None,
+    ) -> Tuple[List[Dict[str, Any]], List[Tuple[str, Dict[str, Any]]], QuarterClock]:
         """Interpret musical positions first, then integrate a shared tempo map."""
         timeline = timeline or scan_score(root, self._find_tempo)
-        clock = QuarterClock(initial_tempo, timeline.tempos if use_score_tempo_changes else {})
+        clock = clock or QuarterClock(initial_tempo, timeline.tempos if use_score_tempo_changes else {})
         notes: List[Dict[str, Any]] = []
+        note_mappings: List[Tuple[str, Dict[str, Any]]] = []
         for part_idx, measures in enumerate(timeline.parts):
             open_ties: Dict[Any, Dict[str, Any]] = {}
             for measure_idx, measure in enumerate(measures):
+                note_seq = 0
                 for elem, onset, duration in measure.notes:
                     parsed = None if elem.find('rest') is not None else self._parse_pitch(elem)
                     if parsed is None:
                         continue
+                    note_seq += 1
+                    xml_id = f"p{part_idx + 1}-m{measure_idx + 1}-n{note_seq}"
+                    elem.set("id", xml_id)
+
                     midi_num, voice, staff = parsed
                     start_quarter = timeline.starts[part_idx][measure_idx] + onset
                     dur_sec = clock.duration(start_quarter, start_quarter + duration)
@@ -234,6 +267,7 @@ class MusicXMLToClairKeysConverter:
                     if tie_stop and key in open_ties:
                         started = open_ties[key]
                         started['duration'] = round(started['duration'] + dur_sec, 6)
+                        note_mappings.append((xml_id, started))
                         if not tie_start:
                             del open_ties[key]
                     else:
@@ -249,9 +283,22 @@ class MusicXMLToClairKeysConverter:
                         if staff is not None:
                             note["staff"] = staff
                         notes.append(note)
+                        note_mappings.append((xml_id, note))
                         if tie_start:
                             open_ties[key] = note
         notes.sort(key=lambda n: (n['start'], n['midi']))
+        return notes, note_mappings, clock
+
+    def _extract_notes(
+        self,
+        root: ET.Element,
+        initial_tempo: float,
+        use_score_tempo_changes: bool = True,
+        timeline: Optional[ScoreTimeline] = None,
+    ) -> List[Dict[str, Any]]:
+        notes, _, _ = self._extract_notes_and_mappings(
+            root, initial_tempo, use_score_tempo_changes, timeline
+        )
         return notes
 
     def _parse_pitch(self, note_elem: ET.Element) -> Optional[tuple]:

@@ -79,6 +79,7 @@ model SheetMusic {
   provenance       SheetMusicProvenance @default(unknown)
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
+  scoreArtifact    SheetScoreArtifact?
   practiceSessions PracticeSession[]
   category         Category?         @relation(fields: [categoryId], references: [id])
   user             User              @relation(fields: [userId], references: [id])
@@ -161,4 +162,11 @@ enum ProcessingStage {
   OMR
   VALIDATION
   GENERATION
+}
+
+// Private notation is never included in ordinary sheet queries.
+model SheetScoreArtifact {
+  sheetMusicId Int @id
+  data Json
+  sheetMusic SheetMusic @relation(fields: [sheetMusicId], references: [id], onDelete: Cascade)
 }

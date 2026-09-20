@@ -2890,3 +2890,45 @@
   시스템 시작의 작은 호 예외는0.5–0.7 IL 및 header4 IL 범위이며 다른 크기/배치를 모두 해결했다고 주장하지 않는다.
 - Directive: 목표42/43을 실측하기 전 완료로 표시하지 않는다. main 병합 및 운영 VM 접근·배포는 승인 범위 밖이다
 - Related: #134, D-063, D-072, validation/2026-09-20-issue-134-cross-system-ties.md
+
+## D-074: 선택형 PC 악보는 MusicXML과 기존 재생 타임라인을 연결한다
+
+- Date: 2026-09-20
+- Status: Accepted direction; 구현/검증 진행 전
+- Context: #125 최신 본문과 사용자 확정 요구사항은 PC 선택형 3단 화면이다.
+- Supersedes: D-021/D-022/D-023의 2단 배분은 악보 OFF/모바일에서 유지한다. PC ON에서만 악보 높이를 추가한다.
+  D-040 Consequence의 전체 표기 canonical JSON 확장 방향은 이 기능에 적용하지 않는다.
+- Decision:
+  1. 신규 변환 XML을 작은 위치 매핑과 함께 비공개 보관한다. XML만 표기 원본으로 쓰며 전체 표기를 JSON에 복제하지 않는다.
+  2. OMR은 기존 scan_score/QuarterClock과 tie 병합의 음표 식별을 사용해 마디 시간·원본 XML 음표와 canonical 인덱스를 연결한다.
+     앱이 결과를 수집·저장하며 OMR에 저장소 자격증명을 주지 않는다. PDF 임시 정리는 유지한다.
+  3. XML에는 렌더링 식별자를 붙일 수 있지만 인식한 음높이/리듬/타이를 보정하지 않는다.
+     렌더링 시 플레이어가 실제 사용한 계산 운지를 동일 음표에 반영하며 원본 운지만 출력하는 것으로 대체하지 않는다.
+  4. 소유자 인증 조회와 악보 삭제 경로에 보관물을 통합한다. 기존 XML 없는 악보는 재생 유지·토글 미제공·새 업로드로 이용한다.
+  5. PC 초기 OFF, 로컬 브라우저 선택 유지, 아이콘 accessible name/pressed. 현재 playhead로 마디 전체를 반투명 강조·자동 스크롤한다.
+     기존 낙하140px/s·재생/탐색/속도 동작을 보존한다. 악보 클릭·편집은 구현/향후 계획에서 제외한다.
+  6. 렌더러는 실제 MusicXML·라이선스·Next/React 호환 확인 후 선정하고 근거를 기록한다.
+- Rejected: 초 단위 MIDI로 표기 재추정 | 쉼표·다성부·타이 등 원본 표기를 잃는다
+- Rejected: #126/#127 재개와 전체 표기 JSON 확장 | 확정 범위의 선행 조건이 아니다
+- Confidence: medium
+- Scope-risk: broad
+- Reversibility: clean
+- Directive: 사용자 미커밋 변경 보존. 운영 접근/배포·병합·이슈 종료는 별도 승인 전 수행하지 않는다.
+- Not-tested: 구현과 Docker/브라우저 검증은 아직 수행 전
+- Related: #125, D-040, phases/ISSUE-125-score-panel.md
+- Storage refinement (before implementation): XML+mapping은 `SheetScoreArtifact` 별도 PostgreSQL 행에 JSON으로 보관한다.
+  `sheetMusicId` PK/FK와 ON DELETE CASCADE로 악보 삭제 시 같은 트랜잭션에서 제거하며 외부 객체 고아를 만들지 않는다.
+  관계는 기본 SheetMusic 조회에 포함되지 않고 인증된 소유자 전용 API로만 반환한다. 별도 공개 버킷/서명 URL은 만들지 않는다.
+  신규 결과 수집에서 artifact 저장 실패 시 완료 처리하지 않아 callback/poll이 재시도한다. 크기/구조 상한을 검사한다.
+- Renderer selection: OpenSheetMusicDisplay2.1.3 exact (BSD-3-Clause; notice in public/licenses/opensheetmusicdisplay.txt).
+  실제 생성 MXL17마디/2보표를 Next15/React19에서 SVG로 렌더링했다. DOMParser Document로 load하여
+  plain 문자열의 XML 선언 의존을 피한다. OSMD MeasureList의 문서순서0-based 인덱스와 모든 보표 경계를 합쳐 강조한다.
+  현재 playhead를 그대로 쓰며 저장 템포 수정은 기존 uniform scaling과 같은 비율로 매핑한다.
+- PC eligibility refinement (2026-09-20, CI repro before change): 1024px 이상에서 pointer fine 또는 none을 허용한다.
+  pointer coarse 모바일/태블릿은 계속 제외한다. 포인터가 없다고 보고하는 키보드 PC도 악보 옵션을 사용할 수 있어야 한다.
+  Firefox Linux headless의 fine=false 보고(Mozilla2037020)를 실제 Firefox preference0으로 재현했다.
+  테스트를 생략하거나 마우스가 있다고 강제하지 않고, pointer:none 전용 Firefox 프로젝트로 이 경계를 회귀 검증한다.
+- Payload boundary refinement (2026-09-20, PR173 P2): 완성 artifact의 JSON UTF-8 바이트를4MiB로 제한한다.
+  Vercel Function의4.5MB 응답한도(https://vercel.com/docs/functions/limitations)보다 여유를 두고 JSON escaping/매핑도 계산한다.
+  수집 시 한도를 넘으면 기존 영구실패422 경로로 끝내며 저장하지 않는다. 조회 시에도 보관행 크기를 검사하고 과대응답 대신413을 반환한다.
+  OMR의10MiB XML 파싱상한은 별도 상위방어이며, 앱의 제공가능크기를 뜻하지 않는다.

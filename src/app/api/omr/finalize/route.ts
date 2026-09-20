@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     if (error instanceof OmrFinalizationError) {
-      if (error.code === 'ANIMATION_STORAGE_FAILED') {
+      if (error.code === 'ANIMATION_STORAGE_FAILED' || error.code === 'INVALID_SCORE_ARTIFACT') {
         await prisma.sheetMusic.update({
           where: { id: sheetMusic.id },
           data: { processingStatus: 'failed', updatedAt: new Date() },

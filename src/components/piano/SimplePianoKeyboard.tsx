@@ -15,7 +15,8 @@ import {
  */
 export default function SimplePianoKeyboard({ 
   layout, 
-  activeKeys = new Set(), 
+  activeKeys = new Set(),
+  activeFingers,
   className = '' 
 }: SimplePianoKeyboardProps) {
   const { byMidi, totalWidth } = layout;
@@ -60,6 +61,10 @@ export default function SimplePianoKeyboard({
                 : `0 ${decorationScale(pos.w, false)}px ${3 * decorationScale(pos.w, false)}px rgba(0,0,0,0.1)`
             }}
           >
+            {activeKeys.has(midi) && activeFingers?.has(midi) && <span
+              aria-label={`${midi}번 건반 운지 ${activeFingers.get(midi)}`}
+              className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 rounded bg-blue-600 px-1 text-xs font-bold text-white"
+            >{activeFingers.get(midi)}</span>}
             {midi % 12 === 0 && (
               <span
                 aria-label={`C${Math.floor(midi / 12) - 1} octave marker`}
@@ -95,7 +100,12 @@ export default function SimplePianoKeyboard({
                 : `inset 0 ${-3 * decorationScale(pos.w, true)}px 0 rgba(255,255,255,0.08), 0 ${decorationScale(pos.w, true)}px ${3 * decorationScale(pos.w, true)}px rgba(0,0,0,0.3)`,
               border: `${Math.max(0.5, decorationScale(pos.w, true))}px solid #0b0b0b`
             }}
-          />
+          >
+            {activeKeys.has(midi) && activeFingers?.has(midi) && <span
+              aria-label={`${midi}번 건반 운지 ${activeFingers.get(midi)}`}
+              className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 rounded bg-blue-600 px-1 text-xs font-bold text-white"
+            >{activeFingers.get(midi)}</span>}
+          </div>
         )
       )}
     </div>

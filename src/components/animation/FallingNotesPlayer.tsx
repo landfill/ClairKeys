@@ -12,6 +12,8 @@ import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { CompactPlaybackBar, PlaybackControls, TempoDisplay } from '@/components/playback'
 import { getActiveNotes } from '@/utils/visualUtils'
+import ScoreToggle from '@/components/playback/ScoreToggle'
+import ScorePanel from '@/components/playback/ScorePanel'
 import ScoreTimingNotice from '@/components/playback/ScoreTimingNotice'
 
 /**
@@ -43,9 +45,11 @@ export default function FallingNotesPlayer({
   animationData,
   className = '',
   onSessionChange,
+  scoreUrl,
 }: {
   animationData: CanonicalAnimationData
   className?: string
+  scoreUrl?: string
   /**
    * Reports the practice session, not the sounding score. A pause keeps this
    * true: the page chrome must not come back underneath a reader who only
@@ -53,6 +57,7 @@ export default function FallingNotesPlayer({
    */
   onSessionChange?: (isSessionActive: boolean) => void
 }) {
+  const [showScore, setShowScore] = useState(false)
   // Convert canonical animation data to falling notes format
   const notes = useMemo(() => canonicalToFallingNotes(animationData), [animationData])
   const hasReleaseGuidance = useMemo(() => notes.some(note => note.keyRelease !== undefined), [notes])
@@ -187,6 +192,17 @@ export default function FallingNotesPlayer({
     return new Set(getActiveNotes(notes, currentTime).map(note => note.midi))
   }, [notes, currentTime])
   
+  const activeFingers = useMemo(() => {
+    const fingers = new Map<number, string>()
+    if (showScore) for (const note of getActiveNotes(notes, currentTime)) {
+      if (!note.finger) continue
+      const previous = fingers.get(note.midi)
+      const finger = String(note.finger)
+      fingers.set(note.midi, previous && previous !== finger ? `${previous}/${finger}` : finger)
+    }
+    return fingers
+  }, [notes, currentTime, showScore])
+
   // Playback control handlers
   const handleModeChange = (mode: 'listen' | 'follow' | 'practice') => {
     // For now, we only support listen mode in falling notes player
@@ -326,6 +342,9 @@ export default function FallingNotesPlayer({
           '샘플을 불러오지 못해 합성음으로 재생합니다.'}
       </div>
 
+      <ScoreToggle available={Boolean(scoreUrl)} onChange={setShowScore} />
+      {showScore && scoreUrl && <ScorePanel url={scoreUrl} notes={notes} currentTime={currentTime}
+        timingReferenceBpm={animationData.timingReferenceBpm} />}
       {/* Main Visualization Area */}
       {/* Two elements with one job each. The wrapper is measured and owns the
           available height; the box takes the height the plan returns. Sizing the
@@ -388,6 +407,7 @@ export default function FallingNotesPlayer({
           <SimplePianoKeyboard
             layout={layout}
             activeKeys={activeKeys}
+            activeFingers={showScore ? activeFingers : undefined}
           />
         </div>
       </div>
