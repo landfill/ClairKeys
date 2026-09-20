@@ -12,7 +12,7 @@ Last updated: 2026-09-20 KST
 
 1. Docker 최종211개 중205pass6보관진단skip/native19실행통과. 수정후Jest1077/type/lint/build통과.
 2. 로컬 신규 PDF 업로드→저장→표시·권한/삭제·PC/모바일 회귀는 통과; 필요 보강 후 PR 준비.
-3. PR173 `946f975`의 CI·Codex 재리뷰를 확인하고 새 actionable feedback이 있으면 반복한다. skip을 리뷰 통과로 세지 않는다.
+3. PR173 `946f975` Codex 재리뷰 완료·추가지적0/P1해결. 남은 E2E CI2개 완료를 확인한 뒤 병합승인대기로 goal보고한다.
 4. 병합 승인만 남으면 goal 완료 보고; 병합·운영 배포·이슈 종료는 이번 승인 범위 밖이다.
 
 [진행·검증 근거](validation/2026-09-20-issue-125-score-panel.md),
