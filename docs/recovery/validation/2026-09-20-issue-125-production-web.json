@@ -1,0 +1,27 @@
+{
+  "mergeCommit": "70eb25e6a50a9b89acaf673b590d57f572200123",
+  "deploymentId": 6550222453,
+  "environment": "Production",
+  "deploymentStatus": "success",
+  "deploymentUrl": "https://clairkeys-1pgs3j5ye-landfills-projects.vercel.app",
+  "http": {
+    "origin": "https://clairkeys.vercel.app",
+    "home": 200,
+    "publicList": 200,
+    "publicRowFound": true,
+    "sheetMetadata": 200,
+    "hasScoreField": true,
+    "anonymousHasScore": false,
+    "sheetPage": 200,
+    "anonymousScore": 401,
+    "scoreCacheControl": "private, no-store"
+  },
+  "browser": {
+    "browser": "Chromium",
+    "legacyPlaybackVisible": true,
+    "scoreToggleCount": 0,
+    "pageErrors": 0
+  },
+  "omrVmDeployed": false,
+  "issueClosed": false
+}
