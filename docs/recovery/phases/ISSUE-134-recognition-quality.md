@@ -464,6 +464,11 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   are CLOSED/NOT_PLANNED for their unimplemented extensions. Approved PR172 rollout reached active/healthy d915599b with
   VM190pass/6diagnostic skips/native19 executed; production smoke is finishing separately. No unchecked item was marked implemented.
 
+- 2026-09-20: Approved PR172 rollout completed at09:39KST (ab844ba/image d915599b, rollback5af0b796). VM196 tests190pass6
+  retained-diagnostic skips/native19 run; live original-score module smoke191/191·42/43·unexpected0 equals local results.
+  Env/unit/data preserved; healthy/external200/401/journal0; temporary PDF/OMR3 removed. GitHub closure remains in force with
+  m12 and cross-voice merging accepted as limitations, not pending perfection work. Deployment and issue records are synchronized.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
