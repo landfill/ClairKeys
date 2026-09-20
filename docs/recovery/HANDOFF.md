@@ -7,14 +7,14 @@ Last updated: 2026-09-20 KST
 **#125 PC 선택형 악보 패널 — 구현·검증·PR173 병합 및 승인된 DB·웹 배포 완료.**
 사용자 승인으로 `70eb25e`에 병합하고 새 테이블·RLS·cascade를 운영DB에 선적용했다. Vercel Production 배포와 HTTP/Chromium smoke를 확인했다.
 병합 후6checks도 모두 통과했다. [구현 phase](phases/ISSUE-125-score-panel.md), [병합·배포 근거](reviews/PR-173.md).
-**운영 OMR VM은 미배포이며 새 MusicXML 전달은 아직 비활성이다.** 구현 완료와 운영 기능 활성화·이슈 종료를 구분한다.
+**사용자 요청으로 운영 OMR VM 배포를 진행 중이다.** 새 이미지 빌드 완료, 전환 전 테스트/무결성 검증 중이다. [VM 배포 기록](validation/2026-09-20-issue-125-vm-deployment.md).
 
 ## Next action
 
-1. 운영 OMR VM 배포는 이번 승인 범위에서 제외됐다. 새 변환 MusicXML을 운영에서 제공하려면 별도 배포 승인이 필요하다.
+1. 운영 OMR VM 배포는 사용자가 새로 승인했다. 새 이미지 테스트·무결성→idle확인/rollback보존/전환→실제 업로드·패널 검증을 마친다.
 2. #125는 OPEN을 유지했다. 이슈 종료도 별도 사용자 지시를 따른다.
 3. 기존 index migration `20260901060000`은 운영 미적용 상태를 그대로 두었다. 후속 후보이며 자동 착수하지 않는다.
-4. 사용자 미커밋 변경 때문에 작업 branch는 로컬·원격 보존했다. 두 tip의 main 대비 고유commit은0이다.
+4. 사용자 명시적 정리 지시로 병합 포함을 확인한 두 작업branch와 임시worktree를 정리했다. 사용자파일5개 해시는 모두 보존됐다.
 
 [전체 검증·제약](validation/2026-09-20-issue-125-score-panel.md),
 [최종 gate 증거](validation/2026-09-20-issue-125-evidence/final-gates.json), [PR 리뷰](reviews/PR-173.md).
