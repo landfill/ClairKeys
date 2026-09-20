@@ -5,14 +5,14 @@ Last updated: 2026-09-20 KST
 ## Current phase
 
 **#125 PC 선택형 악보 패널 — IN_PROGRESS.** 최신 이슈/2026-09-20 사용자 확정 범위로 시작했다.
-계획/D-074 및 코드 커밋 `bd23b19` (`codex/issue-125-score-panel`). 실제 Docker 업로드/저장/표시·앱 전체 검증 통과. [PR173](reviews/PR-173.md) 최신 head `8b13c14`: Codex P1은수정·재리뷰완료했고, Firefox CI실패를재현·수정하여최신headCI/재리뷰를요청했다. 병합·배포하지 않았다.
+계획/D-074 및 코드 커밋 `bd23b19` (`codex/issue-125-score-panel`). 실제 Docker 업로드/저장/표시·앱 전체 검증 통과. [PR173](reviews/PR-173.md) 최신 head `ed0a645`: Codex P1·응답크기P2와Firefox CI실패를재현·수정했다. 최신headCI/재리뷰대기. 병합·배포하지 않았다.
 이전 #134는 사용자 성과·한계 수용으로 DONE; #126/#127/#130/#149는 NOT_PLANNED 종료를 유지한다.
 
 ## Next action
 
 1. Docker 최종211개 중205pass6보관진단skip/native19실행통과. 수정후Jest1077/type/lint/build통과.
 2. 로컬 신규 PDF 업로드→저장→표시·권한/삭제·PC/모바일 회귀는 통과; 필요 보강 후 PR 준비.
-3. PR173 `8b13c14`의CI·Codex재리뷰를확인한다. 직전head E2E실패는pointer:none PC분류수정으로로컬재검증했고 새CI는대기다.
+3. PR173 `ed0a645`의CI·Codex재리뷰를확인한다. 현재Jest1080/type/lint/build통과,완성XML artifact4MiB한도. 미해결새지적/실패가있으면반복한다.
 4. 병합 승인만 남으면 goal 완료 보고; 병합·운영 배포·이슈 종료는 이번 승인 범위 밖이다.
 
 [진행·검증 근거](validation/2026-09-20-issue-125-score-panel.md),

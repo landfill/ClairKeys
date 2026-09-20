@@ -119,3 +119,13 @@ OMR 구현/실제 매핑·Docker 빌드/실행·신규 업로드/저장 browser�
 - 8b13c14 commit/push, @codex review 재요청. 최신head CI·리뷰완료전에는goal완료아님.
 - Local cleanup: 완료된 두 agy worker terminal을settlement/release후닫았다. 검증용OMR/DB컨테이너는stop하고 이미지/볼륨은보존했다.
   Firefox재검증을위해local Next서버만다시실행중. 기존사용자파일/컨테이너/볼륨삭제없음.
+
+## Hosted response limit P2 / ed0a645
+
+- 실제리뷰P2채택: https://github.com/landfill/ClairKeys/pull/173#discussion_r4056013348 .
+- Vercel공식 https://vercel.com/docs/functions/limitations 의4.5MBrequest/response한도를확인.
+  D-074/phase먼저기록,완성artifact JSON UTF-8상한4MiB로수정(JSONescaping/매핑포함). 수집실패는영구422/DBfailed경로,GET보관행초과는413.
+- 새3case [수정전실패](2026-09-20-issue-125-evidence/review-p2-before.log),수정후focused19PASS.
+  전체Jest112suites1080tests PASS(23.174s),typecheck/lint/buildPASS. 실제Vercel대형응답배포시험은수행하지않았다(운영미접근).
+- ed0a645 commit/push,댓글답변/threadresolved/@codexreview재요청. 이전Docker211개검증의Python서비스/엔진코드는변경없다.
+- 현재headCI·리뷰완료전goal완료아님.

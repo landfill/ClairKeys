@@ -8,7 +8,7 @@ Running 1 test using 1 worker
   ✘  1 [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek (5.7s)
 
 
-  1) [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek 
+  1) [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek
 
     Error: expect(locator).toHaveAttribute(expected) failed
 
@@ -34,4 +34,4 @@ Running 1 test using 1 worker
     Error Context: test-results/score-panel-desktop-toggle-61b23-olling-follow-existing-seek-firefox/error-context.md
 
   1 failed
-    [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek 
+    [firefox] › e2e/score-panel.spec.ts:33:5 › desktop toggle, persistence, full-measure highlight and scrolling follow existing seek

@@ -1,0 +1,64 @@
+
+> clairkeys@0.1.0 test
+> jest --runInBand --runTestsByPath src/lib/omr/__tests__/scorePersistence.test.ts src/app/api/sheet/[id]/score/__tests__/route.test.ts
+
+FAIL src/app/api/sheet/[id]/score/__tests__/route.test.ts
+  ● private score endpoint › refuses an oversized retained row before returning its payload through the function
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 413
+    Received: 200
+
+      36 |     find.mockResolvedValue({ data: { version: 1, musicxml: 'x'.repeat(5 * 1024 * 1024) } })
+      37 |     const response = await get()
+    > 38 |     expect(response.status).toBe(413)
+         |                             ^
+      39 |     expect(await response.json()).toEqual({ error: 'Score exceeds the display size limit' })
+      40 |     expect(response.headers.get('Cache-Control')).toBe('private, no-store')
+      41 |   })
+
+      at Object.toBe (src/app/api/sheet/[id]/score/__tests__/route.test.ts:38:29)
+
+FAIL src/lib/omr/__tests__/scorePersistence.test.ts
+  ● OMR private artifact persistence › rejects artifacts exceeding the hosted response budget including JSON escaping
+
+    expect(received).rejects.toMatchObject()
+
+    Received promise resolved instead of rejected
+    Resolved to value: "http://storage/animation.json"
+
+      40 |       animation_data: {}, score_artifact: { ...artifact, musicxml },
+      41 |     }) })
+    > 42 |     await expect(fetchAndStoreOmrResult('job', 'owner')).rejects.toMatchObject({ code: 'INVALID_SCORE_ARTIFACT', status: 422 })
+         |           ^
+      43 |     expect(update).not.toHaveBeenCalled()
+      44 |   })
+      45 |   it('keeps legacy converters compatible', async () => {
+
+      at expect (node_modules/expect/build/index.js:2116:15)
+      at expect (src/lib/omr/__tests__/scorePersistence.test.ts:42:11)
+
+  ● OMR private artifact persistence › rejects artifacts exceeding the hosted response budget including JSON escaping
+
+    expect(received).rejects.toMatchObject()
+
+    Received promise resolved instead of rejected
+    Resolved to value: "http://storage/animation.json"
+
+      40 |       animation_data: {}, score_artifact: { ...artifact, musicxml },
+      41 |     }) })
+    > 42 |     await expect(fetchAndStoreOmrResult('job', 'owner')).rejects.toMatchObject({ code: 'INVALID_SCORE_ARTIFACT', status: 422 })
+         |           ^
+      43 |     expect(update).not.toHaveBeenCalled()
+      44 |   })
+      45 |   it('keeps legacy converters compatible', async () => {
+
+      at expect (node_modules/expect/build/index.js:2116:15)
+      at expect (src/lib/omr/__tests__/scorePersistence.test.ts:42:11)
+
+Test Suites: 2 failed, 2 total
+Tests:       3 failed, 12 passed, 15 total
+Snapshots:   0 total
+Time:        0.266 s, estimated 1 s
+Ran all test suites within paths "src/lib/omr/__tests__/scorePersistence.test.ts", "src/app/api/sheet/[id]/score/__tests__/route.test.ts".
