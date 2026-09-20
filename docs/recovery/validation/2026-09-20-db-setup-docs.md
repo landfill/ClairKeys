@@ -34,3 +34,9 @@ Head: `5f3f3faf73bb3fae48476d68ae3b5642956403eb`
 `column "provenance" does not exist` 실패함을 격리 DB로 재현했다.
 새 corrected DB에서 선행 SQL→index→artifact 순서로 7개 적용/이력 기록을 재실행해 성공했다.
 문서 로컬 링크10개 존재 확인. 테스트용 컨테이너와 그 볼륨만 종료 시 제거한다.
+
+## 최종 CI/리뷰
+
+Head66054e382b7f78d9ced9789ee65b72d218886146의 필수4checks 성공.
+[실행](https://github.com/landfill/ClairKeys/actions/runs/35500961521),
+[실제 리뷰/수정 기록](../reviews/PR-174.md). 테스트 컨테이너/임시볼륨 제거 완료.
