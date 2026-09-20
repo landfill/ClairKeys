@@ -451,6 +451,10 @@ Depends on: #134 same-input VM reproduction, D-048 diagnostics
   contained with zero unique commits, but retained under WORKFLOW because the unchanged user history note remains modified.
   Post-merge CI is running. No production access/deployment approval; overall #134 remains IN_PROGRESS.
 
+- 2026-09-20: PR172 merge ab844ba post-merge checks6/6 passed, including E2E/build, Security Audit and unit/lint checks.
+  The approved merge is verified on main. Both contained branches and the unchanged user note remain preserved; no VM rollout.
+  Overall #134 stays IN_PROGRESS with m12 crossing and the cross-voice canonical limitation.
+
 ## Objective
 
 경고 추가를 완료로 삼지 않고, 동일 PDF를 새로 업로드했을 때 잘못된 박자 기호·누락 음표·음가가
