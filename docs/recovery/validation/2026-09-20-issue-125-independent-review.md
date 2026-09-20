@@ -138,12 +138,79 @@
 
 ---
 
-## 6. 결론
+## 6. 1차 검토 결론
 
 Issue #125의 PC 선택형 악보 패널 구현은 D-074 결정사항 및 사용자 확정 요구사항(PC 전용, 초기 OFF, localStorage 선택 유지, 앱 계산 운지 일치, 140px/s 속도 유지, 비공개 보관 및 Cascade 삭제)을 충실히 반영하고 있다. PostgREST RLS 및 XXE 방어 등 보안 요구사항도 적절히 충족되었다.
 
 위에서 도출된 Finding 1(빈 마디 Bounding Box 가드)과 Finding 2(0-based `measureIndex` 계약 전제)는 Primary agent 및 OMR agent의 구현 마무리 시 반영할 것을 권장하며, 전체적인 아키텍처와 검증 테스트 결과는 양호하다.
 
-## Primary qualification
+---
 
-이 보고서의 RLS/cascade/경쟁 조건 주장은 코드 검토 근거이며 독립 담당이 실제 DB/브라우저에서 실행한 결과가 아니다. 주 에이전트가 별도 실제 검증을 수행한다. 테스트 통과를 모든 화면/음성 회귀 부재로 확대 해석하지 않는다. Finding1/2는 통합 시 확인·대응하며 최종 통과는 아직 아니다.
+## 7. OMR 구현 후속 최종 독립 감사 (Final Independent Audit - Post-OMR Implementation)
+
+- **감사 일시**: 2026-09-20
+- **감사 대상**: `omr-service/omr/score_artifact.py`, `omr-service/omr/converter.py`, `omr-service/tests/test_score_mapping_independent.py`
+- **검증 환경**: `/tmp/clairkeys-issue125-venv/bin/python` (`PYTHONPATH=omr-service`)
+
+OMR 에이전트에 의해 `score_artifact.py` 및 `converter.py`의 `convert_with_artifact` 구현이 완료됨에 따라, 백엔드 변환 매핑 및 프론트엔드 연동에 대한 최종 심층 독립 감사를 수행했다.
+
+### 1) OMR 매핑 로직 상세 검토 결과
+
+1. **최종 정렬(Final Sort) 및 인덱스 참조 보존**:
+   - `converter.py`에서 각 음표는 `notes.append(note)` 및 `note_mappings.append((xml_id, note))`로 파이썬 딕셔너리 인스턴스 참조(`id(note)`)를 보관한다.
+   - 이후 `notes.sort(key=lambda n: (n['start'], n['midi']))`로 정렬 순서가 재배치되더라도 객체의 `id(note)`는 보존된다.
+   - `score_artifact.py`에서 `note_to_index = {id(n): idx for idx, n in enumerate(notes)}`를 통해 정렬 후의 최종 인덱스(`idx`)로 매핑하므로, XML 노드 ID와 최종 canonical noteIndex 간의 1:1 관계가 왜곡 없이 정확히 매핑된다.
+2. **동일 시점·동일 피치·서로 다른 성부/보표 (Unison Collision)**:
+   - Staff 1(오른손)과 Staff 2(왼손)에서 같은 시점에 동일한 MIDI 피치(예: C4, midi 60)를 연주할 때, 2개의 독립된 딕셔너리 인스턴스가 생성되어 Timsort의 안정 정렬(Stable Sort)을 거친다.
+   - `note_mappings`의 `(xml_id, note)`가 각각의 고유한 인스턴스를 가리키므로, Staff 1의 XML note는 Staff 1 canonical note(Hand 'R')에, Staff 2의 XML note는 Staff 2 canonical note(Hand 'L')에 정확하게 분리 매핑된다 (`test_simultaneous_same_pitch_different_voices_and_staves` 검증).
+3. **다중 마디·다성부 타이 지속음 (Tied Continuations)**:
+   - 3마디에 걸쳐 이어지는 타이 음표(start -> continue -> stop)의 경우, `open_ties[(midi, voice)]`에 의해 첫 음표의 딕셔너리에 지속시간(`duration`)이 합산된다.
+   - 3개의 개별 XML 노드(`p1-m1-n1`, `p1-m2-n1`, `p1-m3-n1`)가 모두 동일한 첫 번째 canonical note(`noteIndex: 0`)를 참조하도록 매핑되며, 동시 진행하는 다른 voice의 독립 음표는 영향을 받지 않고 자신의 고유 인덱스를 유지한다 (`test_multi_measure_multi_voice_tied_continuations` 검증).
+4. **쉼표(Rests) 및 잇단음표(Tuplets) 정확성**:
+   - 쉼표는 `notes`와 `artifact['notes']`에서 완전히 배제되며 XML id 속성이 부여되지 않는다.
+   - 잇단음표는 `divisions` 분수 계산(`Fraction`)으로 1/3박자(`0.166667s`) 단위까지 오차 없이 계산된다.
+   - 기존 `test_score_artifact.py`의 `test_voices_chords_rests_tuplets`가 `assertIsNotNone`만 확인하던 취약점을 보완하여, 신규 독립 테스트에서 모든 음표의 exact index, pitch, onset, duration, voice, staff, hand를 정밀 검증했다.
+5. **구간별 템포 변화 (Piecewise Changing Tempi)**:
+   - 마디별 템포 변경(예: 1마디 120 BPM, 2마디 60 BPM) 시 `QuarterClock` 적분을 통해 마디별 초 단위 시간(m1: 0~2.0s, m2: 2.0~6.0s) 및 마디를 가로지르는 타이 음표의 합산 지속시간(6.0s)이 정확하게 산출된다.
+
+### 2) 프론트엔드 연동 및 인덱스 불변성 (Index Invariance)
+
+- **`canonicalToFallingNotes` 인덱스 일치**:
+  - 프론트엔드 `FallingNotesPlayer`의 `canonicalToFallingNotes`는 `notes.map` -> `addKeyReleaseGuidance(addFingeringToNotes(notes))` 형태로 동작하며 배열 요소의 순서나 길이를 일체 변경하지 않는다.
+  - 따라서 백엔드 `animation_data.notes`의 순서와 프론트엔드 플레이어의 `notes` 배열 순서가 100% 동일하게 보존되며, `ScorePanel`의 `notes[mapping.noteIndex]?.finger`를 통한 앱 계산 운지 주입이 완벽하게 성립한다.
+- **Finding 1 및 Finding 2 해결 확인**:
+  - 코디네이터가 `ScorePanel.tsx`에 `if (!bounds.length) return null` 및 `[left, top, right, bottom].every(Number.isFinite)` 가드를 추가하여 빈 마디 예외 처리를 완료했다.
+  - `score_artifact.py`에서 `measureIndex`가 0-based 순차 정수(`enumerate(part)`)로 생성되어, OSMD의 0-based `MeasureList` 문서 순서와 정확하게 일치한다.
+
+### 3) 신규 독립 감사 테스트 결과
+
+- **신규 테스트 파일**: `omr-service/tests/test_score_mapping_independent.py`
+- **테스트 실행 명령**:
+  ```sh
+  PYTHONPATH=omr-service /tmp/clairkeys-issue125-venv/bin/python -m unittest -v omr-service/tests/test_score_mapping_independent.py
+  ```
+- **실행 결과 (5개 테스트 전원 PASS, 0.037s)**:
+  - `test_exact_mapping_voices_chords_rests_tuplets` ... ok
+  - `test_simultaneous_same_pitch_different_voices_and_staves` ... ok
+  - `test_multi_measure_multi_voice_tied_continuations` ... ok
+  - `test_changing_tempo_across_measures_with_cross_measure_tie` ... ok
+  - `test_edge_cases_and_negative_validation` ... ok
+- **OMR 전체 점수 아티팩트 테스트**:
+  ```sh
+  PYTHONPATH=omr-service /tmp/clairkeys-issue125-venv/bin/python -m unittest discover -s omr-service/tests -p "test_score*.py"
+  ```
+  - 15개 테스트 모두 PASS (0.504s).
+- **프론트엔드 점수 검증 테스트**:
+  ```sh
+  npm test -- src/utils/__tests__/scoreIndependent.test.ts src/utils/__tests__/scoreDisplay.test.ts
+  ```
+  - 2개 스위트, 18개 테스트 모두 PASS (0.785s).
+
+### 4) 최종 판정
+
+OMR 서비스의 `ScoreArtifact` 생성 및 변환 매핑은 정렬 안정성, 동일 시점 유니즌 분리, 다중 마디 타이 단일화, 쉼표 제외 및 잇단음표 시간 정확성, 구간별 템포 적분 전 영역에서 결함 없이 정확하게 동작함을 최종 검증하였다. 프론트엔드 수신 및 OSMD 렌더링 계약과의 정합성도 완벽히 확보되었다.
+
+
+## Primary qualification / disposition
+
+RLS/cascade/경쟁 조건은 독립 담당의 코드 검토 근거이며 직접 DB/브라우저 실행 근거는 주 검증 기록을 따른다. 테스트된 사례를 모든 입력에서 완벽함으로 확대하지 않는다. Finding1 빈 bounds는 null 처리·유한수 검사, Finding2는0-based 문서순서 타입 주석과 Python 독립 fixture로 대응했다. Primary가 신규 Python/Jest bridge33개를 직접 재실행해 통과를 확인했다. PR CI와 실제 PR 리뷰는 아직 대기다.

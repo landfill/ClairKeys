@@ -47,3 +47,25 @@ Status: IN_PROGRESS; 구현 완료/PR/CI/리뷰 통과 주장 아님
 
 OMR 구현/실제 매핑·Docker 빌드/실행·신규 업로드/저장 browser·전체 자동검증·리뷰 findings·PR/CI/실제 리뷰.
 병합·운영 접근/배포·이슈 종료 미수행.
+
+## 구현 커밋 bd23b19 / 최종 로컬 앱 검증
+
+- 명시적32파일 stage·cached diff/check·Lore 검토 후 bd23b19 생성. 사용자 파일 제외 확인.
+- 최종 PATH=/tmp/clairkeys-issue125-venv/bin:$PATH npm test -- --runInBand:111suites1073tests PASS (36.351s).
+  새 Python artifact/독립 mapping5개를 Jest CI bridge에 포함. 직접 focused33 PASS.
+- npx tsc --noEmit PASS; npm run lint PASS; npm run build PASS. build 자체는 types/lint skip이므로 별도 명령으로 검증했다.
+- npm start의 빌드된 앱 localhost3100: PC+MobileChrome4 PASS, 기기 비해당2skip. 신규 e2e/score-panel.spec.ts.
+- 실제 업로드: local-test-data/scores/Clair_de_Lune_easy_300dpi.pdf → browser form → Docker OMR → local Next → DB/private XML.
+  sheet3/job ba227caf-da3b-49b6-875f-77e6bedaebf4; canonical150, mapping191,17measures,XML88362bytes.
+  Storage animation JSON은 로컬 Supabase protocol stand-in이며 외부 Supabase 검증 아님. XML은 실제 PostgreSQL에 저장.
+- Docker build --platform linux/amd64 -f omr-service/Dockerfile.audiveris -t clairkeys-omr:issue125-score-panel omr-service PASS.
+  컨테이너 clairkeys-issue125-omr(memory5GiB,cpu2,JAVA_TOOL_OPTIONS=-Xmx3g,기존 concurrency1), host58000.
+  app47e2ae68…/converter e8f05bc5…/artifact aa601288… 확인. converter 이후 공백만 정리했고 최종 이미지 재빌드 예정.
+- 실제 변환 후 /data/processing 파일0. health200. 원본PDF는 Git/DB에 보관하지 않았다.
+- pause/resume,Home/End seek,1.5x,toggle off 시 동일 playhead,refresh ON 유지,console pageErrors0.
+  PC1440x1000 production: score top112 bottom452; playback box top550.5 bottom909.5.
+- 자연 곡 끝은 기존 handleStop에 따라 time0/첫 마디로 돌아옴. 처음 검증 스크립트가 마지막 마디 유지를 기대해 실패했으나
+  기존 hook 계약을 확인하고 기대를 수정, 재실행 PASS. 제품 동작은 변경하지 않음.
+- 실제 API owner200/anonymous401/other-user404; 공개설정 후 anonymous sheet hasScore=false/score401.
+  테스트용 복제 악보를 DELETE API로 제거한 뒤 artifact count0. 실제 RLS 테스트역할 SELECT0, owner SELECT1, cascade후0.
+- OMR worker 및 final 독립 worker 모두 settled. 네이티브 Docker 전체 테스트는 아직 실행 중이며 완료로 세지 않는다.

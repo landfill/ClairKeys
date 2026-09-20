@@ -5,13 +5,13 @@ Last updated: 2026-09-20 KST
 ## Current phase
 
 **#125 PC 선택형 악보 패널 — IN_PROGRESS.** 최신 이슈/2026-09-20 사용자 확정 범위로 시작했다.
-계획/D-074 및 코드는 `codex/issue-125-score-panel`에 작성 중이며 아직 PR·병합·배포하지 않았다.
+계획/D-074 및 코드 커밋 `bd23b19` (`codex/issue-125-score-panel`). 실제 Docker 업로드/저장/표시·앱 전체 검증 통과. 아직 PR·병합·배포하지 않았다.
 이전 #134는 사용자 성과·한계 수용으로 DONE; #126/#127/#130/#149는 NOT_PLANNED 종료를 유지한다.
 
 ## Next action
 
-1. OMR MusicXML/재생 매핑 구현 통합과 focused 회귀 검증.
-2. 실제 Docker OMR 빌드·실행 및 로컬 전용 DB/인증에서 신규 PDF 업로드→저장→표시 브라우저 검증.
+1. 실행 중인 native Docker 전체 suite 완료 확인, 최종 이미지 코드/테스트 일치 검증.
+2. 로컬 신규 PDF 업로드→저장→표시·권한/삭제·PC/모바일 회귀는 통과; 필요 보강 후 PR 준비.
 3. 전체 Jest/typecheck/lint/build, 독립 검증 finding 대응, non-draft PR·최신 head CI·실제 리뷰 대응.
 4. 병합 승인만 남으면 goal 완료 보고; 병합·운영 배포·이슈 종료는 이번 승인 범위 밖이다.
 
