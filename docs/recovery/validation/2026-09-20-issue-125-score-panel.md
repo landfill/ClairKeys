@@ -69,3 +69,17 @@ OMR 구현/실제 매핑·Docker 빌드/실행·신규 업로드/저장 browser�
 - 실제 API owner200/anonymous401/other-user404; 공개설정 후 anonymous sheet hasScore=false/score401.
   테스트용 복제 악보를 DELETE API로 제거한 뒤 artifact count0. 실제 RLS 테스트역할 SELECT0, owner SELECT1, cascade후0.
 - OMR worker 및 final 독립 worker 모두 settled. 네이티브 Docker 전체 테스트는 아직 실행 중이며 완료로 세지 않는다.
+
+## 통합/push checkpoint cdc7cc1
+
+- bd23b19 뒤 main 상태 기록만 Lore merge해 cdc7cc17c51508951a2fa142f8405ebb89fae320. origin/codex/issue-125-score-panel push 완료.
+- Chromium/Firefox/WebKit/MobileChrome/MobileSafari의 새 score-panel Playwright10 PASS/기기 비해당5skip (16.8s).
+- 실제 변환 canonical150음은 기존 guarded-clair-2 기준 notes 전 필드·tempo·duration 동일(9/8).
+- 첫 Docker 전체 실행 실패:202개 errors47/skip3. /fixtures 누락46건 및 /src/app/api/omr/finalize/route.ts 누락1건.
+  성공으로 세지 않는다. 당시 native는 실행 통과했으나 환경을 고쳐 전체 재실행 중이다.
+- 최종 clairkeys-omr:issue125-final 재빌드; 새 컨테이너에 fixtures를 /fixtures:ro, callback route 파일을 /src/...에 제공.
+  app47e2ae68…/converter bfaecc0d…/artifact aa601288… 및 callback route26e8a400… SHA가 checkout과 일치.
+  이전 이미지 converter와 AST도 동일(공백만 정리); 신규 독립5개 포함 최종211개 목표로 실행 중.
+- 수정된 실행: docker run --platform linux/amd64 --memory5g --cpus2 -v "$PWD/fixtures:/fixtures:ro"
+  -v "$PWD/src:/src:ro" ... clairkeys-omr:issue125-final, 이후 PYTHONPATH=/app python3 -m unittest discover -s /app/tests -v.
+  실제 재실행에서는 src 전체 mount 대신 필요한 단일 tracked route를 docker cp하고 SHA를 대조했다.
