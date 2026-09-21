@@ -4,14 +4,14 @@ Last updated: 2026-09-21 KST
 
 ## Current phase
 
-PR174는 56f15fb로 병합됐으나 마지막 확인의 새 리뷰 2건을 읽기 전 병합한 절차 오류가 있었다. psql 연결 주소·npx 누락을 [PR176](reviews/PR-176.md) c1e20a9에서 수정했다. CI·리뷰 확인 및 해당 PR 병합 승인이 남았다. [기록](reviews/PR-174.md).
+PR174는 56f15fb로 병합됐으나 마지막 확인의 새 리뷰 2건을 읽기 전 병합한 절차 오류가 있었다. psql 연결 주소·npx 누락을 [PR176](reviews/PR-176.md) c1e20a9에서 수정했다. 최신 CI/E2E·리뷰 검토가 완료됐고 해당 PR 병합 승인이 남았다. [기록](reviews/PR-174.md).
 
 **#125 완료·종료(2026-09-21) — PR175 병합·운영 배포·비로그인 스모크 후 사용자 승인으로 이슈 종료.** 공개 악보의 악보 패널은 로그인 여부와 무관하게 노출된다(D-075).
 [PR175](https://github.com/landfill/ClairKeys/pull/175), [운영 근거](validation/2026-09-21-issue-125-public-score-production.json), [리뷰](reviews/PR-175.md).
 
 ## Next action
 
-- PR176 최신 CI·리뷰 확인 후 해당 PR 병합 승인을 받는다.
+- PR176 c1e20a9는 CI/E2E·리뷰 검토 완료. 해당 PR의 명시적 병합 승인 후 최신 head 상태를 다시 확인한다.
 - [87·88·89 악보 높이 실측](validation/2026-09-21-score-panel-height.md): 실제1440×900에서87·89는 높이 부족,88은 충분. 높이 유지 조건이 전체에 성립하지 않으며 UI 변경은 하지 않았다.
 
 1. PR174는 병합됐으며 새 리뷰 지적 2건은 PR176에서 수정됐다. [리뷰](reviews/PR-174.md).
