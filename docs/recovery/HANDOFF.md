@@ -4,13 +4,13 @@ Last updated: 2026-09-21 KST
 
 ## Current phase
 
-**#125 후속 — 공개 악보 악보 패널 접근 수정, PR175 CI·리뷰 진행 중.**
+**#125 후속 — 공개 악보 악보 패널 접근 수정, PR175 CI·리뷰 통과, 병합 승인 대기.**
 비로그인·비소유자에게 공개 악보의 악보 패널이 보이지 않던 문제를 D-075(Amends D-074)로 수정했다.
 [PR175](https://github.com/landfill/ClairKeys/pull/175), [검증](validation/2026-09-21-issue-125-public-score-access.md), [리뷰](reviews/PR-175.md).
 
 ## Next action
 
-1. PR175 현재 head의 CI와 실제 리뷰를 확인하고 대응한다. 병합과 Vercel 배포는 사용자 승인 후 수행하고, 이어서 운영 비로그인 스모크를 실시한다.
+1. PR175 head 8e412fd는 CI 전부 pass, Codex 리뷰 finding 0. 병합과 Vercel 배포는 사용자 승인 후 수행하고, 이어서 운영 비로그인 스모크를 실시한다.
 2. PR174(DB 구성 문서) head66054e3는 CI·리뷰 통과 상태로 병합 승인 대기 중이다. [리뷰](reviews/PR-174.md).
 3. Storage의 public animation URL 의존성은 현행 코드 제약이다. 비공개 JSON 보호는 후속 코드 수정이 필요하다.
 4. #125는 OPEN을 유지한다. 운영 index migration20260901060000은 미적용 상태다.
