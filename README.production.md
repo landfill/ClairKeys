@@ -23,18 +23,16 @@ cp .env.example .env.local
 - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
 
 ### 2. Database Setup
-```bash
-# Generate and push schema
-npx prisma generate
-npx prisma db push
-
-# Optional: Seed database
-npm run db:seed
-```
+Follow [Database setup and upgrades](DATABASE_SETUP.md) for a new database, including
+all migration SQL, migration history, private MusicXML RLS, and verification.
+Do this before deploying the web application. Do not use `prisma db push` for production setup.
+Configure [animation storage and its current access limitation](SUPABASE_STORAGE_SETUP.md) separately.
 
 ### 3. Build Verification
 ```bash
-# Test production build locally
+# Validate types and lint separately before building
+npx tsc --noEmit
+npm run lint
 npm run build
 npm run start
 
@@ -165,8 +163,8 @@ npm run build
 
 **Database Connection:**
 ```bash
-# Test database connection
-npx prisma db push
+# Inspect migration history using a direct/session database connection
+npx prisma migrate status
 ```
 
 **Performance Issues:**

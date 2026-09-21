@@ -69,6 +69,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 ### Deployment Notes
 
 #### Database Migrations
-- 운영의 기존 migration 적용은 `npx prisma migrate deploy`를 사용한다. `npm run db:migrate`는 `prisma migrate dev`이며 개발용이다.
-- `npm run db:push` for development rapid prototyping
-- Seed data available via `npm run seed`
+- 신규 구성·기존 DB 업데이트·최종 MusicXML SQL·RLS 확인은 [DATABASE_SETUP](../../DATABASE_SETUP.md)을 따른다.
+- concurrent index migration은 `psql -f` 별도 적용 및 이력 기록이 필요하다. 단순 `migrate deploy`로 모든 환경이 구성된다고 가정하지 않는다.
+- `npm run db:migrate`는 개발용 `prisma migrate dev`다. `db:push`는 운영 설치용이 아니다.
+- Seed는 선택이며 기존 데이터가 있는 DB에 초기화 목적으로 실행하지 않는다.

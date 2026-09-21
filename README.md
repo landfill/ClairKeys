@@ -92,13 +92,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
 SUPABASE_SERVICE_ROLE_KEY="..."
 ```
 
-데이터베이스와 스토리지를 준비한 뒤 개발 서버를 띄운다.
+[DB 신규 구성](DATABASE_SETUP.md)과 [Storage 설정](SUPABASE_STORAGE_SETUP.md)을 완료한 뒤 개발 서버를 띄운다.
 
 ```bash
 npm run db:generate    # Prisma 클라이언트 생성
-npm run db:push        # 스키마 반영
-npm run init-storage   # Supabase Storage 버킷(animation-data) 생성
-npm run seed           # (선택) 샘플 데이터
 
 npm run dev            # http://localhost:3000
 ```
