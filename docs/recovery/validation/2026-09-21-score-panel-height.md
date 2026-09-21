@@ -54,3 +54,10 @@ Aside 실제 Chromium 화면 1440×900 CSS px/DPR2, 기본 배율에서 SVG의 �
 코드 근거: ScorePanel은 동일 OSMD 옵션으로 전체 score를 렌더링하고 운지를 above에 배치한다. annotateScoreFingering은 앱 운지를 음표에 추가한다.
 설치된 OSMD EngravingRules/MusicSheetCalculator에는 staff distance, skyline/bottomline, fingering, slur 충돌 배치 규칙이 있다. 음역·화음 운지·슬러/강약/페달 등 입력 내용에 따른 배치 차이와 화면 폭에 따른 줄바꿈이 높이를 달라지게 한다. 각 기호의 개별 기여도와 MusicXML 원본 배치 속성 영향까지 분리한 실험은 하지 않았다.
 현재 패널은 동일 clamp 높이이고 렌더링된 시스템 전체 높이에 맞추는 과정이 없다. UI 수정 없이 원인 설명만 수행했다.
+
+## 후속 이슈 등록 상태
+
+2026-09-21 사용자 "이 내용은 깃허브 이슈로 상세하게 등록하라" 요청으로 [#177](https://github.com/landfill/ClairKeys/issues/177)을 등록했다.
+제목: [Playback] 건반 좌우 크기를 유지한 세로 공간 재배분으로 PC 악보 잘림 개선.
+합의한 건반 세로만 조정/낙하 노트 보존 조건, 위 실측·원인, 구현 검토 지점, 신규 곡/화면 예외와 완료 기준이 본문에 포함됐다. 130–140px는 검증 후보이며 확정 규격으로 기록하지 않았다.
+`gh issue view 177 --json number,title,body,state,url`로 OPEN 및 제출 본문과의 일치를 확인했다. 현재 구현 미착수, 애플리케이션 변경 없음.
