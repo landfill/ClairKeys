@@ -7,14 +7,18 @@ import { MAX_SCORE_ARTIFACT_BYTES } from '@/types/scoreArtifact'
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const headers = { 'Cache-Control': 'private, no-store' }
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers })
     const { id } = await params
     if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id))) {
       return NextResponse.json({ error: 'Invalid sheet ID' }, { status: 400, headers })
     }
+    // Same permission as playback (D-075): public sheets for everyone, private ones for
+    // their owner. Private and missing sheets share one 404 so existence is not revealed.
+    const userId = (await getServerSession(authOptions))?.user?.id
     const artifact = await prisma.sheetScoreArtifact.findFirst({
-      where: { sheetMusicId: Number(id), sheetMusic: { userId: session.user.id } },
+      where: {
+        sheetMusicId: Number(id),
+        sheetMusic: { OR: [{ isPublic: true }, ...(userId ? [{ userId }] : [])] },
+      },
       select: { data: true },
     })
     if (!artifact) return NextResponse.json({ error: 'Score not found' }, { status: 404, headers })

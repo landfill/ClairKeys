@@ -2932,3 +2932,25 @@
   Vercel Function의4.5MB 응답한도(https://vercel.com/docs/functions/limitations)보다 여유를 두고 JSON escaping/매핑도 계산한다.
   수집 시 한도를 넘으면 기존 영구실패422 경로로 끝내며 저장하지 않는다. 조회 시에도 보관행 크기를 검사하고 과대응답 대신413을 반환한다.
   OMR의10MiB XML 파싱상한은 별도 상위방어이며, 앱의 제공가능크기를 뜻하지 않는다.
+
+## D-075: 보관 악보 조회 권한은 로그인이 아니라 악보 재생 권한을 따른다
+
+- Date: 2026-09-21
+- Status: Accepted
+- Amends: D-074 (Storage refinement의 "인증된 소유자 전용 API로만 반환")
+- Context: #125 배포 후 사용자가 로그인하지 않은 채 공개 악보를 재생하면 PC 상단 악보 패널과 토글이 보이지 않았다.
+  `/api/sheet/[id]`가 `hasScore`를 소유자에게만 true로 반환하고, `/api/sheet/[id]/score`가 세션을 요구하며 소유자 행만 조회했기 때문이다.
+  로그인한 비소유자도 같은 결과였다. 사용자는 2026-09-21에 이 동작이 의도와 다르다고 정정했다.
+- Decision:
+  1. MusicXML artifact의 조회 권한은 악보 재생 권한과 같다(`isOwner || isPublic`). 로그인을 요구하지 않는다.
+  2. 권한과 존재는 artifact 조회 한 번으로 판정한다. 비공개 악보의 비소유자 요청과 미존재는 같은 404로 응답해 존재 여부를 드러내지 않는다.
+  3. `/api/sheet/[id]`의 `hasScore`는 재생 권한을 통과한 요청에 대해 artifact 존재만 반영한다.
+  4. 유지: 별도 `SheetScoreArtifact` 행, 기본 SheetMusic 응답에 XML 미포함, 공개 버킷/서명 URL 미생성, RLS 무정책(anon/authenticated 직접 접근 거부),
+     4MiB/413, ON DELETE CASCADE, `Cache-Control: private, no-store`(공개→비공개 전환 뒤 공유 캐시에 XML이 남지 않게 한다).
+- Rejected: 로그인한 사용자에게만 공개 악보의 악보를 노출 | 사용자 요구는 로그인 여부와 무관한 공개 상태 기준이다
+- Rejected: 공개 악보 score 응답을 CDN 캐시 가능하게 전환 | 공개 해제 직후 노출이 남는다. 성능 요구가 확인되지 않았다
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: `/api/sheet/[id]`의 403/404 열거 문제(D-035 이월)는 이 결정 범위 밖이다. 스키마·RLS·OMR 변경 없음.
+- Related: #125, D-074, D-035, phases/ISSUE-125-score-panel.md

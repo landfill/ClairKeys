@@ -1,25 +1,29 @@
 # Current Handoff
 
-Last updated: 2026-09-20 KST
+Last updated: 2026-09-21 KST
 
 ## Current phase
 
-**#125 PC 선택형 악보 패널 — 구현·병합·운영 DB/웹/OMR VM 배포 및 운영 검증 완료.**
-사용자 추가 지시로 VM을 `70eb25e`/`afa17972`에 배포했다. 실제 로그인 업로드→콜백 delivered→비공개 MusicXML 저장→악보/운지/마디강조·자동스크롤까지 확인했다.
-[구현 phase](phases/ISSUE-125-score-panel.md), [VM 배포·검증](validation/2026-09-20-issue-125-vm-deployment.md), [병합·리뷰](reviews/PR-173.md).
+최신 사용자 요청: PR174 병합 가능성 검토 완료. head `66054e3`는 CI·기존 리뷰 통과이나 최신 main PR175와 MusicXML 공개 권한 설명이 불일치하여 P2 수정 필요. [검토 기록](reviews/PR-174.md). 실제 PR 상태는 GitHub live state를 확인한다.
+
+**#125 완료·종료(2026-09-21) — PR175 병합·운영 배포·비로그인 스모크 후 사용자 승인으로 이슈 종료.** 공개 악보의 악보 패널은 로그인 여부와 무관하게 노출된다(D-075).
+[PR175](https://github.com/landfill/ClairKeys/pull/175), [운영 근거](validation/2026-09-21-issue-125-public-score-production.json), [리뷰](reviews/PR-175.md).
 
 ## Next action
 
-1. 요청한 브랜치 정리·VM 배포는 완료됐다. 검증용 비공개 [악보86](https://clairkeys.vercel.app/sheet/86)을 사용자 확인용으로 남겼다.
-2. #125는 OPEN을 유지했다. 이슈 종료는 별도 사용자 지시를 따른다.
-3. 기존 index migration `20260901060000`은 운영 미적용 상태를 그대로 두었다. 후속 후보이며 자동 착수하지 않는다.
-4. main에 포함된 두 작업branch와 임시worktree를 정리했다. 사용자 메모/설정파일5개 해시는 보존됐으며 현재main이다.
+- PR174의 소유자 전용/XML 비공개 설명을 D-075의 공개 악보 접근 정책에 맞춘 뒤 새 head CI·리뷰를 확인한다. 병합은 사용자 명시적 승인 후 진행한다.
 
-[전체 검증·제약](validation/2026-09-20-issue-125-score-panel.md),
-[최종 gate 증거](validation/2026-09-20-issue-125-evidence/final-gates.json), [PR 리뷰](reviews/PR-173.md).
-원래 checkout은 main, 작업branch는 정리 완료. 사용자 미커밋4경로는 제외·보존했다.
+1. PR174(DB 구성 문서) head66054e3는 기존 CI·리뷰 통과했으나 2026-09-21 최신 main 대비 권한 설명 P2가 발견됐다. [리뷰](reviews/PR-174.md).
+2. 운영에 비공개 악보가 없어 비공개 차단은 로컬 실제 DB로만 검증했다. 비공개 악보가 생기면 운영에서 404를 확인한다.
+3. Storage의 public animation URL 의존성은 현행 코드 제약이다. 비공개 JSON 보호는 후속 코드 수정이 필요하다.
+4. #125는 2026-09-21에 사용자 승인으로 CLOSED(completed) 처리했다. 운영 index migration20260901060000은 미적용 상태다.
+5. 사용자 미커밋 history와 설정 파일은 보존한다.
 
 ## Latest verified result
+
+- **PR175 운영 / 2026-09-21**: merge c5ebaa5, Vercel Production 6562329171 success, post-merge 6 checks success.
+  비로그인 공개 악보 87/88/89: meta hasScore=true, score 200(private,no-store), Chromium PC 토글 초기 OFF→보표 SVG·1마디 강조, pageErrors0.
+  모바일 토글0. OMR VM 배포 불필요로 제외. [근거](validation/2026-09-21-issue-125-public-score-production.json).
 
 - **PR173 VM / 2026-09-20**: 70eb25e/imageafa17972,rollbackd915599b 보존. VM205pass6진단skip/native19실행, 추적82파일/엔진양쪽2433항목 검증.
   실제운영비공개업로드sheet86/callbackdelivered, XML17마디·191mapping·150canonical/102763bytes, VM=DB XMLhash동일.
