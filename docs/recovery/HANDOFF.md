@@ -13,6 +13,7 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 
 - PR176 승인 병합·브랜치 정리 완료. 병합 전 최신 CI/E2E·리뷰 검토 성공; 병합 후 체크 결과는51daf9a의GitHub live checks에서 확인한다.
 - [#177 PC 악보 높이 개선](https://github.com/landfill/ClairKeys/issues/177)을 사용자 요청으로 상세 등록했다. 건반 좌우 유지·세로만 조정 및 노트 애니메이션 보존 조건, [실측](validation/2026-09-21-score-panel-height.md)과 완료 기준을 포함한다. 이슈OPEN/본문 일치 확인; 구현·UI 변경은 미착수.
+- [#178 Vercel Functions Storage 축소](https://github.com/landfill/ClairKeys/issues/178)을 사용자 진단과 저장소 실측으로 등록했다. Production 41함수·대부분10.1MB·배포당약400MB·누적20GB를 기준선으로, API Route30개 중 인증27개와 auth→Prisma 전파, 중복 Next config, 미사용 대형 의존성 후보를 기록했다. 최우선은 config 단일화와 전후 산출물 계측이며 구현·배포 변경은 미착수.
 
 1. PR174/176 모두 병합됐고 잔여 리뷰 지적은 해소됐다. [리뷰](reviews/PR-174.md).
 2. 운영에 비공개 악보가 없어 비공개 차단은 로컬 실제 DB로만 검증했다. 비공개 악보가 생기면 운영에서 404를 확인한다.
