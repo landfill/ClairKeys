@@ -1,6 +1,6 @@
 # Supabase Storage 설정
 
-2026-09-20 기준. DB 테이블 구성은 [DATABASE_SETUP](DATABASE_SETUP.md)을 먼저 따른다.
+2026-09-21 기준. DB 테이블 구성은 [DATABASE_SETUP](DATABASE_SETUP.md)을 먼저 따른다.
 
 ## 새 프로젝트
 
@@ -23,7 +23,8 @@ MIME 타입은 `application/json`, 파일 크기 한도는 10 MiB다.
 기존 초기화 스크립트도 버킷을 **Public**으로 만든다. 따라서 현재 공개 악보 재생 경로를
 그대로 재현하려면 public 버킷이 필요하지만, 이 경우 비공개 악보의 JSON도 URL을 알면
 Storage에서 직접 접근할 수 있다. 앱의 권한 검사만으로 이 노출을 막지 못한다.
-MusicXML은 별도 DB RLS로 보호되므로 이 제약과 구분한다.
+MusicXML은 별도 DB RLS로 직접 접근을 차단하고 서버 API에서 공개 여부·소유권을 검사하므로
+이 제약과 구분한다. 공개 악보의 MusicXML은 비로그인 사용자에게도 제공한다(D-075).
 
 새로운 운영 구성을 비공개 JSON까지 보호하는 환경으로 공개하려면, 먼저 private 버킷에서
 공개/비공개 악보 모두 권한에 맞는 signed URL 또는 서버 응답을 사용하도록
@@ -41,7 +42,7 @@ MusicXML은 별도 DB RLS로 보호되므로 이 제약과 구분한다.
 3. 앱은 애니메이션 JSON을 `animation-data`에 저장하고 DB에 경로를 기록한다.
 4. MusicXML과 위치 매핑은 DB `SheetScoreArtifact`에 비공개 저장한다.
 5. 플레이어는 `/api/sheet/[id]`의 `animationDataUrl`로 Storage JSON을 직접 fetch한다.
-   MusicXML은 소유자 전용 `/api/sheet/[id]/score`로 조회한다.
+   MusicXML은 `/api/sheet/[id]/score`로 조회한다. 공개 악보는 누구나, 비공개 악보는 소유자만 조회한다.
    `/api/files/animation`만 수정해서는 현재 플레이어의 직접 URL 접근이 바뀌지 않는다.
 6. 원본 PDF는 처리용 임시 파일이며 영구 보관하지 않는다.
 
@@ -54,6 +55,7 @@ MusicXML은 별도 DB RLS로 보호되므로 이 제약과 구분한다.
 앱과 OMR 환경을 연결한 뒤 실제 로그인으로 PDF를 업로드한다.
 비공개 악보의 변환 완료·재생·PC 악보 토글을 확인하고 다른 사용자와 비로그인 상태에서
 비공개 데이터 접근이 거절되는지 확인한다. 앱 API와 Storage 직접 URL을 각각 확인한다.
+공개 악보의 MusicXML은 비로그인 조회가 성공하고, 비공개 악보는 비소유자·비로그인 조회가 404인지 확인한다.
 위 public 버킷 제약이 남아 있다면 비공개 JSON 보호 검증을 통과로 기록하지 않는다.
 기존 악보는 MusicXML 없이도 재생되고 토글은 제공되지 않는다.
 

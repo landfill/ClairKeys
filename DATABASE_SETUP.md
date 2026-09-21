@@ -1,6 +1,6 @@
 # 데이터베이스 신규 구성과 업데이트
 
-2026-09-20 기준. 저장소 루트에서 실행한다. 최종 스키마의 기준은
+2026-09-21 기준. 저장소 루트에서 실행한다. 최종 스키마의 기준은
 [Prisma 모델](prisma/schema.prisma)과 [버전별 SQL](prisma/migrations/)이다.
 SQL을 별도로 복사해 관리하지 않고, 아래 절차로 모든 원본 SQL을 순서대로 적용한다.
 
@@ -70,8 +70,10 @@ ALTER TABLE "SheetScoreArtifact" ENABLE ROW LEVEL SECURITY;
 - `data`는 신규 변환의 MusicXML과 재생 위치 매핑이다. 완성 JSON UTF-8 한도는 4 MiB다.
 - 앱 서버의 DB 소유자 연결로 저장·조회하며, RLS 정책은 만들지 않는다.
   Supabase `anon`/`authenticated` 직접 조회는 허용하지 않는다.
-- 소유자 전용 `/api/sheet/[id]/score`에서 조회하고 `private, no-store`로 응답한다.
-  악보를 공개해도 MusicXML은 공개하지 않는다. 악보 삭제 시 FK cascade로 함께 삭제된다.
+- `/api/sheet/[id]/score`는 공개 악보의 MusicXML을 비로그인 사용자에게도 제공하고,
+  비공개 악보는 소유자에게만 제공한다(D-075). 비공개 악보의 비소유자·비로그인 요청은 404다.
+  DB 직접 접근은 위 RLS로 차단하고, 서버 API가 악보 공개 여부와 소유권을 검사한다.
+  응답은 `private, no-store`이며 악보 삭제 시 FK cascade로 함께 삭제된다.
 - 기존 악보에 XML을 소급 생성하지 않는다. 기존 재생은 유지되고 새 업로드부터 패널을 제공한다.
 - 원본 PDF는 영구 보관하지 않는다. 애니메이션 JSON은 Storage(현재 공개 URL 제약은 Storage 가이드 참조),
   MusicXML은 이 DB 테이블에 저장한다.
@@ -147,6 +149,7 @@ Seed는 필수가 아니다. 기존 사용자 데이터에 `npm run seed`나 데
    Vercel main 연동은 main push만으로 Production 배포를 시작할 수 있다.
 4. [OMR VM 가이드](omr-service/deploy/README.md)에 따라 같은 버전의 OMR을 배포한다.
 5. 실제 로그인으로 새 PDF 업로드→변환→저장→PC 악보 표시를 확인한다.
-   다른 사용자/비로그인 XML 접근 거부, 기존 악보 재생, 모바일 기존 화면도 확인한다.
+   공개 악보 XML의 비로그인 조회 성공과 비공개 악보 XML의 다른 사용자/비로그인 조회 404,
+   기존 악보 재생, 모바일 기존 화면도 확인한다.
 
 DB 준비만으로 OMR 큐가 영속화되거나 악보 변환 서비스가 실행되는 것은 아니다.
