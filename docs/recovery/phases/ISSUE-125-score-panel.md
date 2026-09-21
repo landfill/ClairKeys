@@ -45,3 +45,4 @@ Gemini 3.8 Flash: OMR XML/위치 매핑·서비스 응답 및 Python 회귀 테�
 - 2026-09-20: 병합commit후6checks모두success. 운영OMR VM은승인범위밖으로미배포이며현재새MusicXML전달은비활성이다. #125는OPEN을유지한다.
 
 - 2026-09-20: 사용자 추가 지시로 branch정리·VM배포 완료. afa17972/70eb25e, VM205pass6diagnostic skip/native19실행, 실제운영업로드→delivered→private XML→PC패널확인. 신규검증악보86은보존하고 #125는OPEN유지.
+- 2026-09-21: 사용자 정정으로 D-075(공개 악보 악보 패널은 로그인 무관)를 PR175로 병합(c5ebaa5)하고 Vercel 배포·운영 비로그인 스모크를 완료했다. VM 변경 없음, #125 OPEN 유지.

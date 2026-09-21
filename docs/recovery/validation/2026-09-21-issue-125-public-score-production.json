@@ -1,0 +1,92 @@
+{
+  "mergeCommit": "c5ebaa5561829736fa34e7c53853520fe5b21780",
+  "prHead": "8e412fd50ba8aceb0cabd9dcd8277bbb45ad065c",
+  "mergedAt": "2026-09-21T05:34:22Z",
+  "deploymentId": 6562329171,
+  "environment": "Production",
+  "deploymentStatus": "success",
+  "deploymentUrl": "https://clairkeys-6tixsctuk-landfills-projects.vercel.app",
+  "http": {
+    "origin": "https://clairkeys.vercel.app",
+    "session": "none",
+    "publicSheets": {
+      "87": {
+        "sheetMetadata": 200,
+        "hasScore": true,
+        "score": 200,
+        "bytes": 264414,
+        "cacheControl": "private, no-store"
+      },
+      "88": {
+        "sheetMetadata": 200,
+        "hasScore": true,
+        "score": 200,
+        "bytes": 170611,
+        "cacheControl": "private, no-store"
+      },
+      "89": {
+        "sheetMetadata": 200,
+        "hasScore": true,
+        "score": 200,
+        "bytes": 102762,
+        "cacheControl": "private, no-store"
+      }
+    },
+    "idScan": "ids 1-200: only 87/88/89 exist (all public); others 404",
+    "missingSheetScore": {
+      "1": 404,
+      "86": 404
+    }
+  },
+  "browser": {
+    "87": {
+      "sessionCookies": 0,
+      "loginButtonVisible": true,
+      "toggleInitiallyPressed": "false",
+      "scoreStatus": 200,
+      "svgCount": 1,
+      "highlightMeasure": "0",
+      "pageErrors": 0
+    },
+    "88": {
+      "sessionCookies": 0,
+      "loginButtonVisible": true,
+      "toggleInitiallyPressed": "false",
+      "scoreStatus": 200,
+      "svgCount": 1,
+      "highlightMeasure": "0",
+      "pageErrors": 0
+    },
+    "89": {
+      "sessionCookies": 0,
+      "loginButtonVisible": true,
+      "toggleInitiallyPressed": "false",
+      "scoreStatus": 200,
+      "svgCount": 1,
+      "highlightMeasure": "0",
+      "pageErrors": 0
+    },
+    "browser": "Chromium 1440x1000, no route mocks",
+    "mobile89": {
+      "playbackVisible": true,
+      "scoreToggleCount": 0
+    }
+  },
+  "supersedes": "2026-09-20-issue-125-production-web.json anonymousHasScore=false/anonymousScore=401 expectation (D-075)",
+  "postMergeChecks": {
+    "E2E Tests": "success",
+    "Post-merge build": "success",
+    "Security Audit": "success",
+    "Lint": "success",
+    "Run Tests": "success",
+    "Post-merge tests": "success"
+  },
+  "omrVmDeployed": false,
+  "omrVmReason": "No omr-service, prisma or RLS change in PR175",
+  "limitations": [
+    "Production has no private sheet, so private-sheet denial was verified locally (real next start + Postgres 15) only",
+    "Signed-in production smoke not performed (no test credentials)"
+  ],
+  "branchCleanup": "local/remote tip 8e412fd contained in main; remote deleted, local main c5ebaa5, local branch deleted",
+  "issueClosed": false
+}
