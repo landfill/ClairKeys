@@ -1,6 +1,6 @@
 # DOC-DB — 신규 DB 구성 문서 현행화
 
-Status: `IN_REVIEW` — PR174 병합 후 남은 명령 지적은 PR176에서 수정·검증 완료, 후속 PR 병합 승인 대기
+Status: `DONE` — PR174 및 후속 PR176 승인 병합, 명령 지적 수정/main 반영 및 브랜치 정리 완료
 
 ## Objective
 
@@ -25,3 +25,5 @@ Status: `IN_REVIEW` — PR174 병합 후 남은 명령 지적은 PR176에서 수
 
 - 2026-09-21: PR174를56f15fb로 병합, post-merge6checks 성공. D-075 권한 문서 수정/score API13tests 통과.
 - 2026-09-21: 병합 시 놓친 신규 리뷰의 psql URL/npx 누락은 PR176 c1e20a9로 수정. 최신 CI/E2E·실제 리뷰 검토 완료. [PR174 기록](../reviews/PR-174.md), [PR176 기록](../reviews/PR-176.md).
+
+- 2026-09-21: 사용자 승인으로 PR176을51daf9a에 병합, main 반영/두 브랜치 정리/사용자 파일5개 해시 보존 확인.
