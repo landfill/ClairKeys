@@ -78,7 +78,8 @@ export async function GET(
         createdAt: sheetMusic.createdAt,
         updatedAt: sheetMusic.updatedAt,
         animationDataUrl: sheetMusic.animationDataUrl,
-        hasScore: isOwner && Boolean(sheetMusic.scoreArtifact),
+        // Anyone allowed to play the sheet may view its notation (D-075).
+        hasScore: Boolean(sheetMusic.scoreArtifact),
         owner: isOwner ? sheetMusic.user : null
       }
     })
