@@ -1,6 +1,6 @@
 # ISSUE-125 — PC 선택형 악보 패널
 
-Status: `DONE` — PR173 병합 및 승인된 DB·웹·OMR VM 배포/운영 업로드 검증 완료; 이슈 종료는 별도 지시
+Status: `DONE` — PR173·PR175 병합, DB·웹·OMR VM 배포와 운영 검증 완료. #125는 2026-09-21에 종료
 Depends on: 기존 canonical playback; #126/#127 재개 불필요
 
 ## Objective
@@ -46,3 +46,4 @@ Gemini 3.8 Flash: OMR XML/위치 매핑·서비스 응답 및 Python 회귀 테�
 
 - 2026-09-20: 사용자 추가 지시로 branch정리·VM배포 완료. afa17972/70eb25e, VM205pass6diagnostic skip/native19실행, 실제운영업로드→delivered→private XML→PC패널확인. 신규검증악보86은보존하고 #125는OPEN유지.
 - 2026-09-21: 사용자 정정으로 D-075(공개 악보 악보 패널은 로그인 무관)를 PR175로 병합(c5ebaa5)하고 Vercel 배포·운영 비로그인 스모크를 완료했다. VM 변경 없음, #125 OPEN 유지.
+- 2026-09-21: 사용자 승인으로 #125의 완료 조건 9개를 근거 링크와 함께 체크하고 completed로 종료했다.
