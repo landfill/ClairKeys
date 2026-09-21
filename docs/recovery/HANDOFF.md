@@ -4,16 +4,16 @@ Last updated: 2026-09-21 KST
 
 ## Current phase
 
-최신 사용자 요청: PR174 병합 가능성 검토 완료. 최신 main PR175와 불일치하던 MusicXML 공개 권한 설명을 `c5e6f6a`에서 수정했고 score API 13테스트가 통과했다. 사용자가 수정 후 PR174 병합을 승인했다. [검토 기록](reviews/PR-174.md). 실제 PR 상태는 GitHub live state를 확인한다.
+PR174는 56f15fb로 병합됐으나 마지막 확인의 새 리뷰 2건을 읽기 전 병합한 절차 오류가 있었다. psql 연결 주소·npx 누락은 후속 PR로 수정한다. [기록](reviews/PR-174.md).
 
 **#125 완료·종료(2026-09-21) — PR175 병합·운영 배포·비로그인 스모크 후 사용자 승인으로 이슈 종료.** 공개 악보의 악보 패널은 로그인 여부와 무관하게 노출된다(D-075).
 [PR175](https://github.com/landfill/ClairKeys/pull/175), [운영 근거](validation/2026-09-21-issue-125-public-score-production.json), [리뷰](reviews/PR-175.md).
 
 ## Next action
 
-- 사용자 승인된 PR174는 수정 head `c5e6f6a`의 CI·리뷰·병합 가능 상태 확인 후 병합한다.
+- PR174 후속 문서 수정으로 신규 리뷰 2건을 해소하고 해당 PR의 병합 승인을 받는다.
 
-1. PR174(DB 구성 문서)의 권한 설명 P2를 c5e6f6a에서 수정·검증했다. [리뷰](reviews/PR-174.md).
+1. PR174는 병합됐으며 새 리뷰 지적 2건의 후속 수정이 남았다. [리뷰](reviews/PR-174.md).
 2. 운영에 비공개 악보가 없어 비공개 차단은 로컬 실제 DB로만 검증했다. 비공개 악보가 생기면 운영에서 404를 확인한다.
 3. Storage의 public animation URL 의존성은 현행 코드 제약이다. 비공개 JSON 보호는 후속 코드 수정이 필요하다.
 4. #125는 2026-09-21에 사용자 승인으로 CLOSED(completed) 처리했다. 운영 index migration20260901060000은 미적용 상태다.
