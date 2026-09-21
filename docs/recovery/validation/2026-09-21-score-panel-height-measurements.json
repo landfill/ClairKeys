@@ -1,0 +1,716 @@
+{
+  "date": "2026-09-21",
+  "method": "Read-only rendered DOM SVG staffline-pair union bounds; no score XML or source PDF stored. CSS pixels. Production public pages, playback entered then paused.",
+  "aside_actual_browser": [
+    {
+      "url": "https://clairkeys.vercel.app/sheet/87",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 2
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1376,
+        "height": 306,
+        "top": 112,
+        "right": 1408,
+        "bottom": 418,
+        "left": 32
+      },
+      "clientHeight": 289,
+      "clientWidth": 1359,
+      "scrollTop": 458.5,
+      "scrollWidth": 1374,
+      "systems": [
+        {
+          "row": 1,
+          "top": -296.6963195800781,
+          "bottom": -15.534393310546875,
+          "height": 281.16192626953125
+        },
+        {
+          "row": 2,
+          "top": 42.303680419921875,
+          "bottom": 392.465576171875,
+          "height": 350.1618957519531
+        },
+        {
+          "row": 3,
+          "top": 450.1551513671875,
+          "bottom": 787.465576171875,
+          "height": 337.3104248046875
+        },
+        {
+          "row": 4,
+          "top": 845.9229736328125,
+          "bottom": 1153.465576171875,
+          "height": 307.5426025390625
+        },
+        {
+          "row": 5,
+          "top": 1212,
+          "bottom": 1560.465576171875,
+          "height": 348.465576171875
+        },
+        {
+          "row": 6,
+          "top": 1622,
+          "bottom": 1981.465576171875,
+          "height": 359.465576171875
+        }
+      ],
+      "label": "87-1440x900-playing"
+    },
+    {
+      "url": "https://clairkeys.vercel.app/sheet/88",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 2
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1376,
+        "height": 306,
+        "top": 112,
+        "right": 1408,
+        "bottom": 418,
+        "left": 32
+      },
+      "clientHeight": 289,
+      "clientWidth": 1359,
+      "scrollTop": 0,
+      "scrollWidth": 1374,
+      "systems": [
+        {
+          "row": 1,
+          "top": 164.8157958984375,
+          "bottom": 378.5,
+          "height": 213.6842041015625
+        },
+        {
+          "row": 2,
+          "top": 397.70623779296875,
+          "bottom": 667.5,
+          "height": 269.79376220703125
+        },
+        {
+          "row": 3,
+          "top": 689.8314819335938,
+          "bottom": 939.5,
+          "height": 249.66851806640625
+        },
+        {
+          "row": 4,
+          "top": 982.5750122070312,
+          "bottom": 1235.7509765625,
+          "height": 253.17596435546875
+        },
+        {
+          "row": 5,
+          "top": 1265.031494140625,
+          "bottom": 1535.5,
+          "height": 270.468505859375
+        },
+        {
+          "row": 6,
+          "top": 1535.5,
+          "bottom": 1768.5,
+          "height": 233
+        }
+      ],
+      "label": "88-1440x900-playing"
+    },
+    {
+      "url": "https://clairkeys.vercel.app/sheet/89",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 2
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1376,
+        "height": 306,
+        "top": 112,
+        "right": 1408,
+        "bottom": 418,
+        "left": 32
+      },
+      "clientHeight": 289,
+      "clientWidth": 1359,
+      "scrollTop": 398.5,
+      "scrollWidth": 1374,
+      "systems": [
+        {
+          "row": 1,
+          "top": -232.83619689941406,
+          "bottom": 33,
+          "height": 265.83619689941406
+        },
+        {
+          "row": 2,
+          "top": 74.0953369140625,
+          "bottom": 387.7431640625,
+          "height": 313.6478271484375
+        },
+        {
+          "row": 3,
+          "top": 410,
+          "bottom": 658.2509765625,
+          "height": 248.2509765625
+        }
+      ],
+      "label": "89-1440x900-playing"
+    }
+  ],
+  "headless_chromium_viewports": [
+    {
+      "url": "https://clairkeys.vercel.app/sheet/87",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1376,
+        "height": 306,
+        "top": 112,
+        "right": 1408,
+        "bottom": 418,
+        "left": 32
+      },
+      "clientHeight": 304,
+      "clientWidth": 1374,
+      "scrollWidth": 1374,
+      "scrollTop": 65,
+      "systems": [
+        {
+          "row": 1,
+          "top": 97,
+          "bottom": 381.9656066894531,
+          "height": 284.9656066894531
+        },
+        {
+          "row": 2,
+          "top": 440.3036804199219,
+          "bottom": 789.965576171875,
+          "height": 349.6618957519531
+        },
+        {
+          "row": 3,
+          "top": 847.2511596679688,
+          "bottom": 1184.965576171875,
+          "height": 337.71441650390625
+        },
+        {
+          "row": 4,
+          "top": 1243.9093017578125,
+          "bottom": 1549.965576171875,
+          "height": 306.0562744140625
+        },
+        {
+          "row": 5,
+          "top": 1609,
+          "bottom": 1956.965576171875,
+          "height": 347.965576171875
+        },
+        {
+          "row": 6,
+          "top": 2018.5,
+          "bottom": 2377.965576171875,
+          "height": 359.465576171875
+        }
+      ],
+      "playback": {
+        "x": 32,
+        "y": 483.5,
+        "width": 1376,
+        "height": 359,
+        "top": 483.5,
+        "right": 1408,
+        "bottom": 842.5,
+        "left": 32
+      }
+    },
+    {
+      "url": "https://clairkeys.vercel.app/sheet/87",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1302,
+        "height": 261.109375,
+        "top": 112,
+        "right": 1334,
+        "bottom": 373.109375,
+        "left": 32
+      },
+      "clientHeight": 259,
+      "clientWidth": 1300,
+      "scrollWidth": 1300,
+      "scrollTop": 65,
+      "systems": [
+        {
+          "row": 1,
+          "top": 97,
+          "bottom": 385.9656066894531,
+          "height": 288.9656066894531
+        },
+        {
+          "row": 2,
+          "top": 444.6095275878906,
+          "bottom": 791.965576171875,
+          "height": 347.3560485839844
+        },
+        {
+          "row": 3,
+          "top": 850.1331176757812,
+          "bottom": 1196.653076171875,
+          "height": 346.51995849609375
+        },
+        {
+          "row": 4,
+          "top": 1255.251708984375,
+          "bottom": 1563.965576171875,
+          "height": 308.7138671875
+        },
+        {
+          "row": 5,
+          "top": 1614,
+          "bottom": 1958.965576171875,
+          "height": 344.965576171875
+        },
+        {
+          "row": 6,
+          "top": 2006.5,
+          "bottom": 2303.965576171875,
+          "height": 297.465576171875
+        },
+        {
+          "row": 7,
+          "top": 2319.910888671875,
+          "bottom": 2611.965576171875,
+          "height": 292.0546875
+        }
+      ],
+      "playback": {
+        "x": 32,
+        "y": 403.546875,
+        "width": 1302,
+        "height": 342,
+        "top": 403.546875,
+        "right": 1334,
+        "bottom": 745.546875,
+        "left": 32
+      }
+    },
+    {
+      "url": "https://clairkeys.vercel.app/sheet/87",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1856,
+        "height": 360,
+        "top": 112,
+        "right": 1888,
+        "bottom": 472,
+        "left": 32
+      },
+      "clientHeight": 358,
+      "clientWidth": 1854,
+      "scrollWidth": 1854,
+      "scrollTop": 0,
+      "systems": [
+        {
+          "row": 1,
+          "top": 162.9229736328125,
+          "bottom": 491.96551513671875,
+          "height": 329.04254150390625
+        },
+        {
+          "row": 2,
+          "top": 550.3035888671875,
+          "bottom": 919.9653930664062,
+          "height": 369.66180419921875
+        },
+        {
+          "row": 3,
+          "top": 978.4027099609375,
+          "bottom": 1304.96533203125,
+          "height": 326.5626220703125
+        },
+        {
+          "row": 4,
+          "top": 1364.77685546875,
+          "bottom": 1724.340576171875,
+          "height": 359.563720703125
+        }
+      ],
+      "playback": {
+        "x": 32,
+        "y": 537,
+        "width": 1856,
+        "height": 486,
+        "top": 537,
+        "right": 1888,
+        "bottom": 1023,
+        "left": 32
+      }
+    },
+    {
+      "url": "https://clairkeys.vercel.app/sheet/88",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1376,
+        "height": 306,
+        "top": 112,
+        "right": 1408,
+        "bottom": 418,
+        "left": 32
+      },
+      "clientHeight": 304,
+      "clientWidth": 1374,
+      "scrollWidth": 1374,
+      "scrollTop": 0,
+      "systems": [
+        {
+          "row": 1,
+          "top": 164.8157958984375,
+          "bottom": 378.5,
+          "height": 213.6842041015625
+        },
+        {
+          "row": 2,
+          "top": 398.4067077636719,
+          "bottom": 660.5,
+          "height": 262.0932922363281
+        },
+        {
+          "row": 3,
+          "top": 709.6815795898438,
+          "bottom": 960.5,
+          "height": 250.81842041015625
+        },
+        {
+          "row": 4,
+          "top": 1003.140380859375,
+          "bottom": 1237.5,
+          "height": 234.359619140625
+        },
+        {
+          "row": 5,
+          "top": 1277.5350341796875,
+          "bottom": 1541.5,
+          "height": 263.9649658203125
+        },
+        {
+          "row": 6,
+          "top": 1575.8077392578125,
+          "bottom": 1716.5,
+          "height": 140.6922607421875
+        }
+      ],
+      "playback": {
+        "x": 32,
+        "y": 483.5,
+        "width": 1376,
+        "height": 359,
+        "top": 483.5,
+        "right": 1408,
+        "bottom": 842.5,
+        "left": 32
+      }
+    },
+    {
+      "url": "https://clairkeys.vercel.app/sheet/88",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1302,
+        "height": 261.109375,
+        "top": 112,
+        "right": 1334,
+        "bottom": 373.109375,
+        "left": 32
+      },
+      "clientHeight": 259,
+      "clientWidth": 1300,
+      "scrollWidth": 1300,
+      "scrollTop": 0,
+      "systems": [
+        {
+          "row": 1,
+          "top": 164.8157958984375,
+          "bottom": 378.5,
+          "height": 213.6842041015625
+        },
+        {
+          "row": 2,
+          "top": 397.4805908203125,
+          "bottom": 667.5,
+          "height": 270.0194091796875
+        },
+        {
+          "row": 3,
+          "top": 690.3628540039062,
+          "bottom": 934.5,
+          "height": 244.13714599609375
+        },
+        {
+          "row": 4,
+          "top": 978.0750122070312,
+          "bottom": 1230.7509765625,
+          "height": 252.67596435546875
+        },
+        {
+          "row": 5,
+          "top": 1259.168701171875,
+          "bottom": 1529.5,
+          "height": 270.331298828125
+        },
+        {
+          "row": 6,
+          "top": 1530,
+          "bottom": 1762.5,
+          "height": 232.5
+        }
+      ],
+      "playback": {
+        "x": 32,
+        "y": 403.546875,
+        "width": 1302,
+        "height": 342,
+        "top": 403.546875,
+        "right": 1334,
+        "bottom": 745.546875,
+        "left": 32
+      }
+    },
+    {
+      "url": "https://clairkeys.vercel.app/sheet/88",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1856,
+        "height": 360,
+        "top": 112,
+        "right": 1888,
+        "bottom": 472,
+        "left": 32
+      },
+      "clientHeight": 358,
+      "clientWidth": 1854,
+      "scrollWidth": 1854,
+      "scrollTop": 0,
+      "systems": [
+        {
+          "row": 1,
+          "top": 162.96974182128906,
+          "bottom": 427.5,
+          "height": 264.53025817871094
+        },
+        {
+          "row": 2,
+          "top": 444.44427490234375,
+          "bottom": 687.5,
+          "height": 243.05572509765625
+        },
+        {
+          "row": 3,
+          "top": 708.349853515625,
+          "bottom": 958.6658935546875,
+          "height": 250.3160400390625
+        },
+        {
+          "row": 4,
+          "top": 994.7354125976562,
+          "bottom": 1263.5,
+          "height": 268.76458740234375
+        }
+      ],
+      "playback": {
+        "x": 32,
+        "y": 537,
+        "width": 1856,
+        "height": 486,
+        "top": 537,
+        "right": 1888,
+        "bottom": 1023,
+        "left": 32
+      }
+    },
+    {
+      "url": "https://clairkeys.vercel.app/sheet/89",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1376,
+        "height": 306,
+        "top": 112,
+        "right": 1408,
+        "bottom": 418,
+        "left": 32
+      },
+      "clientHeight": 304,
+      "clientWidth": 1374,
+      "scrollWidth": 1374,
+      "scrollTop": 86,
+      "systems": [
+        {
+          "row": 1,
+          "top": 78.81578826904297,
+          "bottom": 345.5,
+          "height": 266.68421173095703
+        },
+        {
+          "row": 2,
+          "top": 382.1778259277344,
+          "bottom": 677.2542114257812,
+          "height": 295.0763854980469
+        },
+        {
+          "row": 3,
+          "top": 700,
+          "bottom": 947.7509765625,
+          "height": 247.7509765625
+        }
+      ],
+      "playback": {
+        "x": 32,
+        "y": 483.5,
+        "width": 1376,
+        "height": 359,
+        "top": 483.5,
+        "right": 1408,
+        "bottom": 842.5,
+        "left": 32
+      }
+    },
+    {
+      "url": "https://clairkeys.vercel.app/sheet/89",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1302,
+        "height": 261.109375,
+        "top": 112,
+        "right": 1334,
+        "bottom": 373.109375,
+        "left": 32
+      },
+      "clientHeight": 259,
+      "clientWidth": 1300,
+      "scrollWidth": 1300,
+      "scrollTop": 86,
+      "systems": [
+        {
+          "row": 1,
+          "top": 78.81578826904297,
+          "bottom": 344.5,
+          "height": 265.68421173095703
+        },
+        {
+          "row": 2,
+          "top": 384.90301513671875,
+          "bottom": 688.1998901367188,
+          "height": 303.296875
+        },
+        {
+          "row": 3,
+          "top": 711,
+          "bottom": 958.7509765625,
+          "height": 247.7509765625
+        }
+      ],
+      "playback": {
+        "x": 32,
+        "y": 403.546875,
+        "width": 1302,
+        "height": 342,
+        "top": 403.546875,
+        "right": 1334,
+        "bottom": 745.546875,
+        "left": 32
+      }
+    },
+    {
+      "url": "https://clairkeys.vercel.app/sheet/89",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "panel": {
+        "x": 32,
+        "y": 112,
+        "width": 1856,
+        "height": 360,
+        "top": 112,
+        "right": 1888,
+        "bottom": 472,
+        "left": 32
+      },
+      "clientHeight": 358,
+      "clientWidth": 1854,
+      "scrollWidth": 1854,
+      "scrollTop": 0,
+      "systems": [
+        {
+          "row": 1,
+          "top": 164.8157958984375,
+          "bottom": 459.5,
+          "height": 294.6842041015625
+        },
+        {
+          "row": 2,
+          "top": 492.7412109375,
+          "bottom": 762.7509765625,
+          "height": 270.009765625
+        }
+      ],
+      "playback": {
+        "x": 32,
+        "y": 537,
+        "width": 1856,
+        "height": 486,
+        "top": 537,
+        "right": 1888,
+        "bottom": 1023,
+        "left": 32
+      }
+    }
+  ]
+}

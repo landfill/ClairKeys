@@ -4,16 +4,17 @@ Last updated: 2026-09-21 KST
 
 ## Current phase
 
-PR174는 56f15fb로 병합됐으나 마지막 확인의 새 리뷰 2건을 읽기 전 병합한 절차 오류가 있었다. psql 연결 주소·npx 누락은 후속 PR로 수정한다. [기록](reviews/PR-174.md).
+PR174는 56f15fb로 병합됐으나 마지막 확인의 새 리뷰 2건을 읽기 전 병합한 절차 오류가 있었다. psql 연결 주소·npx 누락을 [PR176](reviews/PR-176.md) c1e20a9에서 수정했다. CI·리뷰 확인 및 해당 PR 병합 승인이 남았다. [기록](reviews/PR-174.md).
 
 **#125 완료·종료(2026-09-21) — PR175 병합·운영 배포·비로그인 스모크 후 사용자 승인으로 이슈 종료.** 공개 악보의 악보 패널은 로그인 여부와 무관하게 노출된다(D-075).
 [PR175](https://github.com/landfill/ClairKeys/pull/175), [운영 근거](validation/2026-09-21-issue-125-public-score-production.json), [리뷰](reviews/PR-175.md).
 
 ## Next action
 
-- PR174 후속 문서 수정으로 신규 리뷰 2건을 해소하고 해당 PR의 병합 승인을 받는다.
+- PR176 최신 CI·리뷰 확인 후 해당 PR 병합 승인을 받는다.
+- [87·88·89 악보 높이 실측](validation/2026-09-21-score-panel-height.md): 실제1440×900에서87·89는 높이 부족,88은 충분. 높이 유지 조건이 전체에 성립하지 않으며 UI 변경은 하지 않았다.
 
-1. PR174는 병합됐으며 새 리뷰 지적 2건의 후속 수정이 남았다. [리뷰](reviews/PR-174.md).
+1. PR174는 병합됐으며 새 리뷰 지적 2건은 PR176에서 수정됐다. [리뷰](reviews/PR-174.md).
 2. 운영에 비공개 악보가 없어 비공개 차단은 로컬 실제 DB로만 검증했다. 비공개 악보가 생기면 운영에서 404를 확인한다.
 3. Storage의 public animation URL 의존성은 현행 코드 제약이다. 비공개 JSON 보호는 후속 코드 수정이 필요하다.
 4. #125는 2026-09-21에 사용자 승인으로 CLOSED(completed) 처리했다. 운영 index migration20260901060000은 미적용 상태다.
