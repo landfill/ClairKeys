@@ -17,12 +17,12 @@ const artifact = {
   measures: Array.from({ length: count }, (_, i) => ({ partIndex: 0, measureIndex: i, start: i * 4, end: (i + 1) * 4, startQuarter: i * 4, endQuarter: (i + 1) * 4 })),
   notes: animation.notes.map((_, i) => ({ xmlId: `n${i}`, noteIndex: i })),
 }
-async function prepare(page: import('@playwright/test').Page, hasScore = true) {
+async function prepare(page: import('@playwright/test').Page, hasScore = true, isPublic = false) {
   await page.addInitScript(() => {
     if ('serviceWorker' in navigator) navigator.serviceWorker.register = async () => { throw new Error('Disabled for isolated fixture') }
   })
   await page.route('**/api/sheet/125', route => route.fulfill({ json: { sheetMusic: {
-    id: 125, title: animation.title, composer: animation.composer, hasScore, isPublic: false, provenance: 'omr',
+    id: 125, title: animation.title, composer: animation.composer, hasScore, isPublic, provenance: 'omr',
     createdAt: '2026-09-20', animationDataUrl: '/score-panel-animation.json',
   } } }))
   await page.route('**/score-panel-animation.json', route => route.fulfill({ json: animation }))
@@ -79,4 +79,15 @@ test('legacy sheets offer playback without the score option', async ({ page }) =
   await prepare(page, false)
   await expect(page.getByTestId('playback-box')).toBeVisible()
   await expect(page.getByRole('button', { name: '악보 보기', exact: true })).toHaveCount(0)
+})
+
+test('anonymous visitors get the score panel on a public sheet (D-075)', async ({ page }, info) => {
+  test.skip(info.project.name.startsWith('Mobile'), 'PC-only feature')
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.route('**/api/auth/session', route => route.fulfill({ json: {} }))
+  await prepare(page, true, true)
+  const toggle = page.getByRole('button', { name: '악보 보기', exact: true })
+  await toggle.click()
+  await expect(page.getByTestId('score-panel').locator('svg')).toHaveCount(1)
+  await expect(page.getByTestId('score-measure-highlight')).toHaveAttribute('data-measure-index', '0')
 })

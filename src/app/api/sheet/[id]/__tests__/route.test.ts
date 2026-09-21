@@ -144,6 +144,39 @@ describe('/api/sheet/[id]', () => {
       expect(data.error).toBe('Access denied')
     })
 
+    describe('hasScore follows playback permission, not sign-in (D-075)', () => {
+      const sheet = (isPublic: boolean, scoreArtifact: { sheetMusicId: number } | null) => ({
+        id: 1, title: 'Score', composer: 'C', userId: 'owner-1', isPublic, provenance: 'omr',
+        animationDataUrl: 'https://storage.example/a.json', createdAt: new Date(), updatedAt: new Date(),
+        scoreArtifact, user: { id: 'owner-1', name: 'O', email: 'o@example.com' }, category: null
+      })
+      const read = async () => (await (await GET(
+        new NextRequest('http://localhost:3000/api/sheet/1'), { params: Promise.resolve({ id: '1' }) }
+      )).json()).sheetMusic
+
+      it.each([
+        ['an anonymous visitor', null],
+        ['a signed-in non-owner', { user: { id: 'visitor' } }],
+        ['its owner', { user: { id: 'owner-1' } }],
+      ])('offers a public sheet score to %s', async (_label, value) => {
+        mockGetServerSession.mockResolvedValue(value as any)
+        ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(sheet(true, { sheetMusicId: 1 }))
+        expect((await read()).hasScore).toBe(true)
+      })
+
+      it('offers a private sheet score to its owner', async () => {
+        mockGetServerSession.mockResolvedValue({ user: { id: 'owner-1' } } as any)
+        ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(sheet(false, { sheetMusicId: 1 }))
+        expect((await read()).hasScore).toBe(true)
+      })
+
+      it('offers no score when the sheet has no retained notation', async () => {
+        mockGetServerSession.mockResolvedValue(null)
+        ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue(sheet(true, null))
+        expect((await read()).hasScore).toBe(false)
+      })
+    })
+
     it('should return 404 for non-existent sheet music', async () => {
       const mockSession = {
         user: { id: 'user1', email: 'test@example.com' }
