@@ -1,20 +1,20 @@
 # Current Handoff
 
-Last updated: 2026-09-20 KST
+Last updated: 2026-09-21 KST
 
 ## Current phase
 
-**신규 DB 구성 문서 현행화 — PR174 검증·리뷰 완료, 병합 승인 대기.**
-빈 DB에서 원본 migration7개와 MusicXML RLS를 재현하는 문서를 작성했다.
-[PR174](https://github.com/landfill/ClairKeys/pull/174), [검증](validation/2026-09-20-db-setup-docs.md), [리뷰](reviews/PR-174.md).
+**#125 후속 — 공개 악보 악보 패널 접근 수정, PR175 CI·리뷰 진행 중.**
+비로그인·비소유자에게 공개 악보의 악보 패널이 보이지 않던 문제를 D-075(Amends D-074)로 수정했다.
+[PR175](https://github.com/landfill/ClairKeys/pull/175), [검증](validation/2026-09-21-issue-125-public-score-access.md), [리뷰](reviews/PR-175.md).
 
 ## Next action
 
-1. PR174 head66054e3 필수 CI·실제 Codex 재리뷰 통과, 리뷰3건 수정/해결 완료. 병합은 별도 승인 후 수행한다.
-2. Storage의 public animation URL 의존성은 현행 코드 제약으로 명시했다. 비공개 JSON 보호는 후속 코드 수정·검증이 필요하다.
-3. #125 구현/병합/DB·웹·VM 배포는 완료, 이슈는 OPEN 유지. [배포 근거](validation/2026-09-20-issue-125-vm-deployment.md).
-4. 운영 index migration20260901060000은 미적용 유지. 이번 문서는 운영 변경을 수행하지 않는다.
-5. 사용자 미커밋 history 및 설정 파일은 보존한다.
+1. PR175 현재 head의 CI와 실제 리뷰를 확인하고 대응한다. 병합과 Vercel 배포는 사용자 승인 후 수행하고, 이어서 운영 비로그인 스모크를 실시한다.
+2. PR174(DB 구성 문서) head66054e3는 CI·리뷰 통과 상태로 병합 승인 대기 중이다. [리뷰](reviews/PR-174.md).
+3. Storage의 public animation URL 의존성은 현행 코드 제약이다. 비공개 JSON 보호는 후속 코드 수정이 필요하다.
+4. #125는 OPEN을 유지한다. 운영 index migration20260901060000은 미적용 상태다.
+5. 사용자 미커밋 history와 설정 파일은 보존한다.
 
 ## Latest verified result
 
