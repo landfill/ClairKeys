@@ -123,13 +123,14 @@ Seed는 필수가 아니다. 기존 사용자 데이터에 `npm run seed`나 데
 
 1. 이력과 실제 스키마를 대조해 **그보다 앞선 미적용 migration을 먼저** 이름 순서대로
    적용한다. 위 최초 구성 목록의 `001_init`부터 `20260829020000`까지가 선행 구간이다.
-   각 미적용 SQL을 `psql -X -v ON_ERROR_STOP=1 -f <해당 migration.sql>`로 실행하고
+   각 미적용 SQL을 `psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f <해당 migration.sql>`로 실행하고
    결과를 확인한 뒤 `npx prisma migrate resolve --applied <해당 이름>`으로 기록한다.
    이미 적용한 SQL은 건너뛴다. 특히 `20260829012000`의 `provenance` 컬럼이 없으면
    세 번째 concurrent index가 실패하므로 인덱스 단계로 넘어가지 않는다.
-2. 선행 migration이 모두 완료된 후 concurrent index SQL만 `psql -f`로 실행한다.
+2. 선행 migration이 모두 완료된 후 같은 연결 주소로 concurrent index SQL만 실행한다:
+   `psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f prisma/migrations/20260901060000_add_sheet_lookup_indexes/migration.sql`.
    세 인덱스의 정의와 `pg_index.indisvalid`를 확인한 뒤
-   `prisma migrate resolve --applied 20260901060000_add_sheet_lookup_indexes`로 기록한다.
+   `npx prisma migrate resolve --applied 20260901060000_add_sheet_lookup_indexes`로 기록한다.
 3. 이력을 다시 확인하고 `npx prisma migrate deploy`로 이후 미적용 migration을 적용한다.
    `migrate deploy`에는 선행 구간까지만 지정하는 옵션이 없으므로 1단계를 대신할 수 없다.
 
