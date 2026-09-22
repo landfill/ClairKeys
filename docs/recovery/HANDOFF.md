@@ -5,13 +5,15 @@ Last updated: 2026-09-22 KST
 ## Current phase
 
 **공통 재생 모드 UI 명확화 — REVIEW_READY, 병합 승인 대기.** [PR184](https://github.com/landfill/ClairKeys/pull/184)
-non-draft head `a329dcd`. 사용자는 모드 UI가 특정 악보 문제가 아니라 실제 기능
+non-draft head `be68745` (`a329dcd` 구현 + PR183 병합 main 반영). 사용자는 모드 UI가 특정 악보 문제가 아니라 실제 기능
 차이가 없다는 점을 정정했다. 공유 `PlaybackControls`에서 미작동 모드 선택과
 중복 일시정지 상태를 제거하고 실제 transport·속도·음량을 보존했다. 변경 전
 Jest1fail, 변경 후 full Jest1101/5브라우저 E2E5pass/type/lint/build 통과.
 [검증](validation/2026-09-22-playback-mode-clarity.md), [리뷰](reviews/PR-184.md).
 Preview `/sheet/92` PC·390×844 모바일에서 UI 제거와 실제 transport·속도·음량을 확인했다.
-Build/lint/type/unit/security/Vercel 및 두 E2E CI 모두 PASS. Codex의 Lore trailer
+기존 head의 build/lint/type/unit/security/Vercel 및 두 E2E CI 모두 PASS. PR183 후
+main을 합친 새 head에서 type/lint/Jest26pass와 5브라우저 E2E20pass·비해당10skip.
+새 head의 hosted CI·재리뷰를 다시 확인 중이다. Codex의 Lore trailer
 누락 지적은 실제 commit 메시지와 대조해 근거로 반박하고 스레드를 해결했다. 사용자 승인 전 병합 금지.
 
 **#177 PC 악보 세로 공간 — DONE, 병합 후 검사 중.** [PR183](https://github.com/landfill/ClairKeys/pull/183)

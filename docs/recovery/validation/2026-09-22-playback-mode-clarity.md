@@ -48,3 +48,15 @@ PR184 Vercel 공개 preview `/sheet/92`에서 데스크톱 기본 viewport와 39
 
 실제 운영 배포는 승인 전 하지 않는다. 물리 MIDI 건반 입력·실기기 스크린리더
 출력은 이 UI 제거의 기능 검증으로 주장하지 않는다.
+
+## PR183 병합 후 결합 검증
+
+사용자 병합 승인에 따라 PR183을 먼저 `4803bba`에 병합했다. 겹치는
+`FallingNotesPlayer.tsx`가 있는 PR184에 새 main을 merge한 `be68745`에서
+`npx tsc --noEmit` PASS, `npm run lint` 경고0,
+`npx jest src/utils/__tests__/playbackGeometry.test.ts src/components/playback/__tests__/PlaybackControls.test.tsx --runInBand --silent`
+26/26 PASS. `NEXTAUTH_SECRET=local-e2e-test-secret NEXTAUTH_URL=http://localhost:3000
+npx playwright test e2e/score-height-responsive.spec.ts e2e/playback-mode-clarity.spec.ts
+--project=chromium --project=firefox --project=webkit --project='Mobile Chrome'
+--project='Mobile Safari' --reporter=line`은 **20 PASS, PC 전용 10 SKIP**.
+새 head의 hosted CI·재리뷰가 끝나기 전에는 병합하지 않는다.
