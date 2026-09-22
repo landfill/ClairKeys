@@ -6,6 +6,7 @@ import {
   PIANO_KEY_ASPECT,
   PX_PER_SEC,
   planPlaybackGeometry,
+  planScoreAwareGeometry,
 } from '../playbackGeometry'
 
 const lookAheadOf = (fallingHeight: number) => fallingHeight / PX_PER_SEC
@@ -161,5 +162,50 @@ describe('planPlaybackGeometry', () => {
 
       expect(plan.boxHeight).toBeLessThanOrEqual(availableHeight)
     }
+  })
+})
+
+describe('PC score-aware vertical budget (#177)', () => {
+  it('uses spare margin for a tall two-staff system without changing notes or keys', () => {
+    const base = planPlaybackGeometry({ availableHeight: 474, keyWidth: 26.35 })
+    const plan = planScoreAwareGeometry({
+      baselineAvailableHeight: 474, baseScoreHeight: 306,
+      requiredScoreHeight: 410, keyWidth: 26.35,
+    })
+
+    expect(plan.scoreHeight).toBe(410)
+    expect(plan.fallingHeight).toBe(base.fallingHeight)
+    expect(plan.keyboardHeight).toBe(base.keyboardHeight)
+    expect(plan.boxHeight + plan.scoreHeight).toBeLessThanOrEqual(474 + 306)
+    expect(plan.contentFits).toBe(true)
+  })
+
+  it('shortens only key length after spare margin runs out and keeps the runway', () => {
+    const base = planPlaybackGeometry({ availableHeight: 355, keyWidth: 24.3 })
+    const plan = planScoreAwareGeometry({
+      baselineAvailableHeight: 355, baseScoreHeight: 245,
+      requiredScoreHeight: 390, keyWidth: 24.3,
+    })
+
+    expect(plan.scoreHeight).toBeGreaterThan(245)
+    expect(plan.scoreHeight).toBeLessThan(390)
+    expect(plan.keyboardHeight).toBeGreaterThanOrEqual(MIN_KEYBOARD_HEIGHT)
+    expect(plan.keyboardHeight).toBeLessThan(base.keyboardHeight)
+    expect(plan.fallingHeight).toBe(base.fallingHeight)
+    expect(plan.boxHeight + plan.scoreHeight).toBeLessThanOrEqual(355 + 245)
+    expect(plan.contentFits).toBe(false)
+  })
+
+  it('leaves an already sufficient score and its existing animation geometry alone', () => {
+    const base = planPlaybackGeometry({ availableHeight: 474, keyWidth: 26.35 })
+    const plan = planScoreAwareGeometry({
+      baselineAvailableHeight: 474, baseScoreHeight: 306,
+      requiredScoreHeight: 288, keyWidth: 26.35,
+    })
+    expect(plan).toMatchObject({
+      scoreHeight: 306, keyboardHeight: base.keyboardHeight,
+      fallingHeight: base.fallingHeight, boxHeight: base.boxHeight,
+      contentFits: true,
+    })
   })
 })
