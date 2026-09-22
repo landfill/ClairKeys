@@ -4,7 +4,7 @@ Last updated: 2026-09-22 KST
 
 ## Current phase
 
-**공통 재생 모드 UI 명확화 — IN_REVIEW.** [PR184](https://github.com/landfill/ClairKeys/pull/184)
+**공통 재생 모드 UI 명확화 — REVIEW_READY, 병합 승인 대기.** [PR184](https://github.com/landfill/ClairKeys/pull/184)
 non-draft head `a329dcd`. 사용자는 모드 UI가 특정 악보 문제가 아니라 실제 기능
 차이가 없다는 점을 정정했다. 공유 `PlaybackControls`에서 미작동 모드 선택과
 중복 일시정지 상태를 제거하고 실제 transport·속도·음량을 보존했다. 변경 전
@@ -12,9 +12,9 @@ Jest1fail, 변경 후 full Jest1101/5브라우저 E2E5pass/type/lint/build 통�
 [검증](validation/2026-09-22-playback-mode-clarity.md), [리뷰](reviews/PR-184.md).
 Preview `/sheet/92` PC·390×844 모바일에서 UI 제거와 실제 transport·속도·음량을 확인했다.
 Build/lint/type/unit/security/Vercel 및 두 E2E CI 모두 PASS. Codex의 Lore trailer
-누락 지적은 실제 commit 메시지와 대조해 근거로 반박 댓글을 남겼다. 사용자 승인 전 병합 금지.
+누락 지적은 실제 commit 메시지와 대조해 근거로 반박하고 스레드를 해결했다. 사용자 승인 전 병합 금지.
 
-**#177 PC 악보 세로 공간 — IN_REVIEW.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
+**#177 PC 악보 세로 공간 — REVIEW_READY, 병합 승인 대기.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
 non-draft head `f9d2456`. 역사적 87/88/89 URL은 현재 404이며, 동일 제목 새
 90/91/92의 운영 기준선을 재측정했다. 실제 양손 줄 높이와 재생 viewport 예산으로
 악보·건반 길이를 배분하고 낙하 높이·건반 x/폭은 보존한다. 로컬 Jest1104,
@@ -29,7 +29,8 @@ Home→20→25초 scrollTop이46.5→342.5→342.5px로 유지됨을 확인했�
 시간 초과됐다. 기존 session-transition 검사와 동일하게 그 경우만 skip하도록 테스트를
 고쳐 로컬 3브라우저 15/15 통과 후 `f006d2b`의 두 hosted E2E도 통과했다. 이어
 Codex P2가 짧은 PC 화면의 box cap 누락을 지적해 90px 재현1fail→수정20pass,
-type/lint 통과 후 `f9d2456`를 push했다. 최신 head CI·재리뷰 진행 중.
+type/lint 통과 후 `f9d2456`를 push했다. 최신 head의 두 hosted E2E를 포함한
+모든 CI PASS, Codex 재리뷰 새 지적0·해결 안 된 스레드0, PR non-draft/MERGEABLE.
 [검증](validation/2026-09-22-issue-177-score-height.md), [리뷰](reviews/PR-183.md).
 미작동 모드 선택 제거는 별도 PR184로 추적한다. 사용자 승인 전 PR183 병합 금지.
 
