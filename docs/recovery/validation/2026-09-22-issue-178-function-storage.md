@@ -120,3 +120,15 @@ Prisma 엔진이 없는 페이지 Lambda(`sheet/[id]` 등)도 raw 11~12MB인 것
   대신 PrismaClient 생성부 3곳(`src/lib/prisma.ts`, `src/lib/db.ts`, `src/lib/db/index.ts`)과 scripts·seed 9곳이 adapter를 써야 한다.
   DB 연결도 Supabase pooler(6543, `pgbouncer=true`)에서 `pg` 드라이버로 바뀐다. DB 접근 전반의 회귀 검증이 필요해서 이번 범위에서는 구현하지 않았다.
 - 원래 계획의 PR ③(auth → Prisma 전파 축소)은 조건을 충족하지 못했다. API route 56개가 이미 Lambda 하나를 공유하므로 auth 경로를 줄여도 저장량은 변하지 않는다.
+
+## 추가 — #179·#180 병합 후 (2026-09-22)
+
+| 배포 | 대상 | 고유 Lambda | 합계(zip) | 최대 |
+|---|---|---|---|---|
+| `dpl_87ndcf6gqjYoZMLFwsWUHL5iFTrN` | Production `8115f35` (#179 병합) | 6 | 24.73MB | 10.11MB |
+| `dpl_Cnefb123idX8xYfu4pPFqM62uPLp` | Production `f133d26` (#180 병합) | 6 | 24.73MB | 10.11MB |
+| `dpl_5RDpTxKs4vviaaW9Skxcr1LSJvy5` | Preview #181 rebase `2abfffa` | 6 | 24.72MB | 10.11MB |
+
+#181 Preview 로그에서 ignore 스크립트가 Vercel에서 실행되는 것을 확인했다(판단 불가 경로 → 빌드).
+Vercel clone 안에서의 `git fetch` 가능 여부는 미확인이다. fetch가 항상 실패한다고 가정하고 depth 10으로 재생하면(main first-parent 2026-08-23~`3453981`) push 635건 중 빌드 109건이다(생략 526건, 83%).
+fetch가 되면 88건(86%)이다. 어느 쪽이든 코드 변경이 생략되는 경우는 없다.

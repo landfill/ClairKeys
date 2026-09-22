@@ -30,3 +30,4 @@ Depends on: P1-A, P1-B
 ## Progress
 
 - 2026-09-22: Work stage 4(Next config 통합)를 #178 범위에서 [PR179](../reviews/PR-179.md)로 제출했다(IN_REVIEW, D-076). 나머지 단계는 미착수.
+- 2026-09-22: PR179가 사용자 승인으로 `8115f35`에 병합됐다. Work stage 4 완료(config 파일1개, 회귀 테스트 추가). phase 전체는 나머지 단계가 남아 IN_PROGRESS.
