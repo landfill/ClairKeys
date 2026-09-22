@@ -1,6 +1,6 @@
 # P2-A — Architecture Cleanup
 
-Status: `NOT_STARTED`
+Status: `IN_PROGRESS`
 Depends on: P1-A, P1-B
 
 ## Objective
@@ -26,3 +26,7 @@ Depends on: P1-A, P1-B
 - 중복 경로가 제거되고 새 추상화는 추가되지 않는다.
 - 보호된 테스트의 동작이 유지된다.
 - 타입, lint, unit, integration, build가 통과한다.
+
+## Progress
+
+- 2026-09-22: Work stage 4(Next config 통합)를 #178 범위에서 [PR179](../reviews/PR-179.md)로 제출했다(IN_REVIEW, D-076). 나머지 단계는 미착수.
