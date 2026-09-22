@@ -2979,3 +2979,27 @@
 - Reversibility: clean
 - Directive: 옮기지 않은 설정 중 필요한 것이 생기면 항목별 독립 변경으로 도입하고 해당 동작을 검증한다.
 - Related: #178, phases/P2-A-architecture-cleanup.md (Work stage 4)
+
+## D-077: 배포 산출물을 바꿀 수 없는 커밋은 Vercel 배포를 만들지 않는다
+
+- Date: 2026-09-22
+- Status: Accepted
+- Context: #178. Functions Storage는 배포마다 저장되는 함수 번들 크기 × 보존 중인 배포 수로 쌓인다
+  (https://vercel.com/docs/deployment-storage/optimize). Vercel Git 연동은 main의 모든 push를 Production 배포로 만든다.
+  AGENTS.md가 상태 기록을 main에 직접 커밋하게 하므로, 2026-08-23~09-22 main first-parent push 634건 대부분이
+  `docs/`만 바꾸면서도 매번 고유 Lambda 6개(Production 실측 zip 합계 약 24.7MB)를 새로 저장했다.
+  반면 한 배포 안에서는 route 83개가 Lambda 6개를 공유하므로, "41함수 × 10.1MB = 배포당 400MB"라는 이슈 초기 추정은 route별 표시를 합산한 값이다.
+- Decision:
+  1. `vercel.json` `ignoreCommand`로 `scripts/vercel-ignore-build.sh`를 실행한다. 이 브랜치의 마지막 성공 배포
+     (`VERCEL_GIT_PREVIOUS_SHA`) 이후 바뀐 파일이 `docs/`, `.github/`, 루트 `AGENTS.md`·`CLAUDE.md`·`README.md`뿐이면 배포를 생략한다.
+  2. 비교 기준은 `HEAD^`가 아니라 마지막 성공 배포다. 코드 커밋 뒤에 문서 커밋이 쌓여도 코드 변경을 놓치지 않는다.
+  3. 판단할 수 없으면 빌드한다: 이전 배포 SHA가 없거나, 얕은 clone에 없고 fetch도 실패하거나, git 명령이 실패한 경우.
+  4. 같은 규칙을 main 30일 이력에 재생하면 push 634건 중 88건만 빌드된다(86% 감소).
+- Rejected: 전역 `*.md` 제외 | 앱이 읽는 markdown이 생기면 조용히 누락된다. 알려진 비런타임 경로만 제외한다
+- Rejected: `HEAD^`와 비교 | 코드 커밋 직후 문서 커밋이 오면 코드 배포가 생략될 수 있다
+- Rejected: 상태 기록을 main 직접 커밋에서 다른 브랜치로 옮김 | 저장소 규약 변경이며 이 설정만으로 저장 비용 문제가 해소된다
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 런타임이 읽는 파일을 `docs/`나 제외 목록 경로에 두지 않는다. 제외 경로를 넓힐 때는 `src/ci/__tests__/vercelIgnoreBuild.test.ts`에 사례를 추가한다.
+- Related: #178, D-076
