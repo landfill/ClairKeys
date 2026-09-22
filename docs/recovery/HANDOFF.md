@@ -4,6 +4,12 @@ Last updated: 2026-09-22 KST
 
 ## Current phase
 
+**UI-2026 화면 일관성·내 악보 삭제 흐름 — IN_REVIEW.** [PR182](https://github.com/landfill/ClairKeys/pull/182)는
+2026-09-22 `0320374`에서 non-draft로 열렸다. 기존 DS-1 토큰을 기준으로 모달·목록
+표현을 맞추고, 삭제 대상 식별·명시적 확인·진행/실패 상태를 개선했다. API/DB/파일
+처리는 변경하지 않았다. [검증·화면](validation/2026-09-22-ui-site-consistency-delete.md),
+[리뷰 로그](reviews/PR-182.md). 사용자 승인 전 병합하지 않는다.
+
 **#178 완료·종료(2026-09-22) — PR179·180·181 병합, 운영 확인 후 사용자 승인으로 이슈 CLOSED(completed).** 원인 실측: 배포 1회는 route83개가 고유 Lambda6개(24.73MB zip)를 공유하며, 누적의 주원인은 main 문서 전용 push가 매번 Production 배포가 되는 것이었다.
 병합 커밋: PR179 `8115f35`(D-076), PR180 `f133d26`, PR181 `eee9166`(D-077). 세 Production 배포 모두 24.73MB로 번들 변화 없음(기대값).
 운영 확인: `eee9166`은 빌드(설정 변경), 문서 전용 `f4f25e8`은 Ignored Build Step으로 CANCELED됐다. 문서 전용 push는 더 이상 저장량을 늘리지 않는다.
@@ -15,6 +21,8 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 [PR175](https://github.com/landfill/ClairKeys/pull/175), [운영 근거](validation/2026-09-21-issue-125-public-score-production.json), [리뷰](reviews/PR-175.md).
 
 ## Next action
+
+- PR182의 최신 head CI·리뷰(본문·인라인·스레드)를 확인하고 actionable feedback을 수정·검증한다. 필수 CI와 리뷰가 정리돼도 병합은 대상 PR에 대한 명시적 승인 전까지 보류한다.
 
 - PR176 승인 병합·브랜치 정리 완료. 병합 전 최신 CI/E2E·리뷰 검토 성공; 병합 후 체크 결과는51daf9a의GitHub live checks에서 확인한다.
 - [#177 PC 악보 높이 개선](https://github.com/landfill/ClairKeys/issues/177)을 사용자 요청으로 상세 등록했다. 건반 좌우 유지·세로만 조정 및 노트 애니메이션 보존 조건, [실측](validation/2026-09-21-score-panel-height.md)과 완료 기준을 포함한다. 이슈OPEN/본문 일치 확인; 구현·UI 변경은 미착수.
