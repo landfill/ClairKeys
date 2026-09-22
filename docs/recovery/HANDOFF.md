@@ -4,6 +4,14 @@ Last updated: 2026-09-22 KST
 
 ## Current phase
 
+**#177 PC 악보 세로 공간 — IN_REVIEW.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
+non-draft head `7fe0759`. 역사적 87/88/89 URL은 현재 404이며, 동일 제목 새
+90/91/92의 운영 기준선을 재측정했다. 실제 양손 줄 높이와 재생 viewport 예산으로
+악보·건반 길이를 배분하고 낙하 높이·건반 x/폭은 보존한다. 로컬 Jest1104,
+브라우저28pass17비해당skip/type/lint/build 통과. Preview 실제 곡·CI·리뷰 확인 중.
+[검증](validation/2026-09-22-issue-177-score-height.md), [리뷰](reviews/PR-183.md).
+미작동 모드 선택 제거는 별도 목적/PR로 이어간다. 사용자 승인 전 PR183 병합 금지.
+
 **UI-2026 화면 일관성·내 악보 삭제 흐름 — DONE.**
 [PR182](https://github.com/landfill/ClairKeys/pull/182)는 사용자 명시적 병합 승인으로
 2026-09-22 `b7191d0`에 병합됐다. 기존 DS-1 토큰을 기준으로 모달·목록
@@ -32,6 +40,8 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 [PR175](https://github.com/landfill/ClairKeys/pull/175), [운영 근거](validation/2026-09-21-issue-125-public-score-production.json), [리뷰](reviews/PR-175.md).
 
 ## Next action
+
+- PR183 preview의 현재 90/91/92에서 악보·건반·낙하 영역을 운영 기준과 같은 뷰포트로 재측정하고, 최신 head CI/리뷰를 처리한다. 이어 현재 `/sheet/[id]`의 미작동 모드 설정 제거를 별도 브랜치·PR로 진행한다. 어느 PR도 사용자 승인 전 병합하지 않는다.
 
 - PR182 병합·운영 배포·후속 CI·브랜치 정리 완료. 이후 작업은 별도 요청 범위로 진행한다.
 
