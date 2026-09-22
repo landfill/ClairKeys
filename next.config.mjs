@@ -1,3 +1,6 @@
+// The only Next config. Next resolves `next.config.js`, then `.mjs`, then `.ts`
+// and stops at the first hit, so a second file would be silently ignored;
+// `src/ci/__tests__/nextConfig.test.ts` fails if one is added (issue #178, D-076).
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -24,12 +27,6 @@ const nextConfig = {
   // every session pays 30 revalidation round trips before the first note can
   // sound. The files are content-stable — a different sample set would be a
   // different build — so `immutable` is accurate rather than merely convenient.
-  //
-  // This lives in `next.config.mjs` rather than `next.config.ts` because Next
-  // resolves `next.config.js`, then `.mjs`, then `.ts` and stops at the first
-  // hit (`next/dist/shared/lib/constants.js`), so the `.ts` file in this
-  // repository is never loaded. That duplicate config is a separate defect and
-  // is deliberately not fixed here.
   async headers() {
     return [
       {

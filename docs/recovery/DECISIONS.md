@@ -2954,3 +2954,28 @@
 - Reversibility: clean
 - Directive: `/api/sheet/[id]`의 403/404 열거 문제(D-035 이월)는 이 결정 범위 밖이다. 스키마·RLS·OMR 변경 없음.
 - Related: #125, D-074, D-035, phases/ISSUE-125-score-panel.md
+
+## D-076: Next config는 실제로 적용되던 `next.config.mjs` 하나로 둔다
+
+- Date: 2026-09-22
+- Status: Accepted
+- Context: #178. `next.config.mjs`와 `next.config.ts`가 함께 있었고, Next는 `.mjs`를 먼저 찾으므로 `.ts`는 한 번도 로드되지 않았다.
+  `.ts`에만 있던 설정(서버 external, webpack, 이미지·헤더·compiler 최적화)이 Functions Storage를 줄일 것이라는 가설이 있었다.
+- Measurement: `vercel build --prod` 산출물을 `scripts/measure-function-size.mjs`로 쟀다. `.ts`의 서버 번들 설정
+  (`serverExternalPackages: ['tone','standardized-audio-context','@prisma/client']`, 서버 webpack `@napi-rs/canvas` externals)을
+  `.mjs`에 넣어도 고유 Lambda 6개 총량이 97.19MB raw / 약 34.72MB deflated로 바이트 단위까지 같았다.
+  `@prisma/client`는 Next 15 기본 server-external 목록에 이미 있고, `@napi-rs/canvas`는 운영 코드가 import하지 않아 trace되지 않는다.
+- Decision:
+  1. `next.config.ts`를 삭제하고 `next.config.mjs`의 기존 동작을 그대로 유지한다.
+  2. `.ts`에만 있던 설정은 옮기지 않는다. 서버 번들 설정은 계측상 효과가 0이다.
+     나머지는 이번 이슈의 목적(용량)과 무관하게 보안·런타임 동작을 바꾼다: `X-Frame-Options: SAMEORIGIN`(`vercel.json`의 `DENY`보다 약함),
+     `dangerouslyAllowSVG`/이미지 CSP, image formats·sizes·TTL, `compiler.removeConsole`, `/home` redirect(`vercel.json`과 중복),
+     `/src/types` rewrite, 클라이언트 splitChunks·audio alias·fallback, API 캐시 헤더. 한 번도 적용된 적이 없으므로 현재 운영 동작은 바뀌지 않는다.
+  3. config 파일이 다시 둘이 되면 `src/ci/__tests__/nextConfig.test.ts`가 실패하게 한다.
+- Rejected: `.ts` 설정을 통째로 `.mjs`로 옮김 | 용량 효과가 없고 적용된 적 없는 보안 헤더·캐시·이미지 동작을 한꺼번에 운영에 켠다
+- Rejected: `.mjs`를 `.ts`로 전환 | 효과 없이 변경 범위만 커진다
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 옮기지 않은 설정 중 필요한 것이 생기면 항목별 독립 변경으로 도입하고 해당 동작을 검증한다.
+- Related: #178, phases/P2-A-architecture-cleanup.md (Work stage 4)
