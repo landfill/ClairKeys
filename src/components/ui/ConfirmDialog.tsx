@@ -41,7 +41,14 @@ export default function ConfirmDialog({
     cancelRef.current?.focus()
     return () => {
       document.body.style.overflow = oldOverflow
-      const target = returnFocus ?? previousFocus.current
+      const original = returnFocus && returnFocus.isConnected ? returnFocus : previousFocus.current
+      // A successful deletion may remove the card and its trigger before this
+      // cleanup runs. Keep keyboard users at the page's stable heading then.
+      const fallback = document.querySelector<HTMLElement>('main h1')
+      const target = original?.isConnected && original !== document.body
+        ? original
+        : fallback
+      if (target === fallback && fallback && !fallback.hasAttribute('tabindex')) fallback.tabIndex = -1
       target?.focus()
     }
   }, [isOpen, returnFocusRef])

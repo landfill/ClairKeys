@@ -89,3 +89,22 @@ test('keeps keyboard focus inside the dialog while DELETE is pending', async ({ 
   finish()
   await expect(dialog.getByRole('alert')).toContainText('삭제하지 못했습니다')
 })
+
+test('moves focus to the library heading when a successful deletion removes its trigger', async ({ page }) => {
+  await fixture(page)
+  let deleteCalls = 0
+  await page.route('**/api/sheet/27', route => {
+    if (route.request().method() !== 'DELETE') return route.continue()
+    deleteCalls++
+    return route.fulfill({ status: 200, contentType: 'application/json', body: '{"success":true,"message":"deleted"}' })
+  })
+  await page.goto('/library')
+  await page.getByRole('button', { name: `${sample.title} 삭제` }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByRole('checkbox', { name: '영구 삭제를 이해했습니다' }).check()
+  await dialog.getByRole('button', { name: '악보 영구 삭제' }).click()
+  await expect(dialog).not.toBeVisible()
+  await expect(page.getByRole('heading', { name: '악보가 없습니다' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: '내 악보' })).toBeFocused()
+  expect(deleteCalls).toBe(1)
+})
