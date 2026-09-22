@@ -72,9 +72,18 @@ when it cannot fit. It does not claim simultaneous full-line visibility in a
 physically insufficient 720px viewport. New preview deployment, full CI and
 re-review are pending. No user data was mutated.
 
+`f5c4eba` preview의 92에서 슬라이더를 Home→5초씩 이동시키자 scrollTop은
+46.5→46.5→46.5→46.5→342.5(20초, row2 진입)→383.5px(25초, 같은 row2)였다.
+행 전체311.9px은 표시285px보다 크므로 마지막 강조 마디를 따라 41px 추가 이동하면
+윗기호가 다시 잘린다. `12e5607`은 초과 줄에 처음 들어갈 때 상단을 맞추고 같은 줄
+안에서는 추가 자동 이동을 막아 사용자가 조절한 스크롤을 유지한다. 새 E2E는
+수동 스크롤 뒤 같은 줄의 끝/처음 탐색에서도 위치를 보존하는지 검사한다.
+Chromium/Firefox/WebKit/Mobile Chrome/Mobile Safari **28 pass, 17 PC-only skip**,
+lint/type pass. 최신 preview 재확인은 아직 남았다.
+
 ## 남은 확인
 
-- Latest PR preview에서 92의 oversized row entry after `f5c4eba`를 재측정한다.
+- Latest PR preview에서 92의 oversized row 20→25s after `12e5607`를 재측정한다.
   과거87/88/89는 삭제되어 재실측 불가.
 - 가로 overflow는 #91에서 15px을 관찰했다. SVG/컨테이너 폭 경로를 확인했으며
   스크롤바를 숨겨 기호를 가리는 패치는 하지 않았다. 패널 높이 예산은 이 손실을
