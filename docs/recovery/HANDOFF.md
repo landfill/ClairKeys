@@ -13,10 +13,11 @@ Last updated: 2026-09-22 KST
 모두 성공, Codex 재리뷰 완료·신규 지적 0, 미해결 리뷰 스레드 0이다. Vercel
 Production 배포6586549256 성공; 운영 PC·모바일 삭제창·취소 확인. 실제 삭제 미실행.
 병합 커밋 `b7191d0`의 후속 E2E 포함 6개 검사 모두 성공했다.
-원격·로컬 브랜치 tip은 main에 포함되지만 사용자 미추적 파일 `.bkit/`, `.gemini/`,
-`.pdca-status.json`이 있어 AGENTS의 정리 조건에 따라 둘 다 보존한다.
+사용자의 별도 브랜치 정리 지시로 tip 포함을 재확인한 뒤 원격→로컬 브랜치를 삭제했다.
+기존 사용자 미추적 파일 `.bkit/`, `.gemini/`, `.pdca-status.json`은 보존했고,
+정리 직후 잠시 보인 `.pdca-status.json.swp`도 건드리지 않았다. 현재 local/remote는 main만 있다.
 [검증·화면](validation/2026-09-22-ui-site-consistency-delete.md),
-[리뷰 로그](reviews/PR-182.md). 사용자 승인 전 병합하지 않는다.
+[리뷰 로그](reviews/PR-182.md).
 
 **#178 완료·종료(2026-09-22) — PR179·180·181 병합, 운영 확인 후 사용자 승인으로 이슈 CLOSED(completed).** 원인 실측: 배포 1회는 route83개가 고유 Lambda6개(24.73MB zip)를 공유하며, 누적의 주원인은 main 문서 전용 push가 매번 Production 배포가 되는 것이었다.
 병합 커밋: PR179 `8115f35`(D-076), PR180 `f133d26`, PR181 `eee9166`(D-077). 세 Production 배포 모두 24.73MB로 번들 변화 없음(기대값).
@@ -30,7 +31,7 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 
 ## Next action
 
-- PR182 브랜치 삭제는 기존 사용자 미추적 파일 세 항목 때문에 보류한다. 파일을 보존한 채 이 조건을 예외로 처리하라는 명시적 지시가 있으면 tip 포함 여부를 다시 확인한 뒤 원격→로컬 순서로 정리한다. 이후 별도 요청 범위로 진행한다.
+- PR182 병합·운영 배포·후속 CI·브랜치 정리 완료. 이후 작업은 별도 요청 범위로 진행한다.
 
 - PR176 승인 병합·브랜치 정리 완료. 병합 전 최신 CI/E2E·리뷰 검토 성공; 병합 후 체크 결과는51daf9a의GitHub live checks에서 확인한다.
 - [#177 PC 악보 높이 개선](https://github.com/landfill/ClairKeys/issues/177)을 사용자 요청으로 상세 등록했다. 건반 좌우 유지·세로만 조정 및 노트 애니메이션 보존 조건, [실측](validation/2026-09-21-score-panel-height.md)과 완료 기준을 포함한다. 이슈OPEN/본문 일치 확인; 구현·UI 변경은 미착수.

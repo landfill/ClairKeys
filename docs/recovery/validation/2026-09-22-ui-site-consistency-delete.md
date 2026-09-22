@@ -83,6 +83,15 @@ completed`다. 운영 `/library`를 로그인된 읽기 전용 브라우저에�
 Lint, Run Tests, Security Audit **6/6 success**. 운영 DB/스토리지의 실제 삭제
 성공은 이 읽기 전용 검증의 범위가 아니다.
 
+## 브랜치 정리 (2026-09-22)
+
+사용자가 보존 조건을 보고 다시 "작업 브랜치는 정리해"라고 명시했다. 최신 origin을
+fetch한 뒤 로컬·원격 `codex/ui-site-consistency-delete` tip `d27a4c6`과 최신
+`main` 대비 고유 커밋 0/0을 확인했다. 원격 ref 삭제와 `ls-remote` 부재 확인 후
+로컬 main에서 `git branch -d`로 삭제했다. local/remote main만 남고 기존 사용자
+미추적 `.bkit/`, `.gemini/`, `.pdca-status.json`은 git status에 그대로 보인다.
+정리 직후 잠시 나타난 `.pdca-status.json.swp`도 건드리지 않았다.
+
 ## 데이터·동작 경계
 
 `src/app/api/sheet/[id]/route.ts`, Prisma 모델, 서비스 요청 메서드는 변경하지 않았다. 서버는 파일 정리에 실패해도 DB 삭제를 계속할 수 있으므로 UI에서 파일 완전 제거를 보장하지 않는다. 실제 운영 악보 삭제·실기기 터치·실제 스크린리더 출력·운영 배포 후 브라우저 검증은 이 PR 이전에 수행하지 않았다. 테스트의 로그인 쿠키와 목록은 모의 데이터로, 실제 로그인/DB 성공을 증명하지 않는다.
