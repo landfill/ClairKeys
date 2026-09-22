@@ -14,7 +14,7 @@ const artifact = { version: 1, musicxml, timingReferenceBpm: 60,
   measures: Array.from({ length: measures }, (_, i) => ({ partIndex: 0, measureIndex: i, start: i * 4, end: (i + 1) * 4, startQuarter: i * 4, endQuarter: (i + 1) * 4 })),
   notes: notes.map((_, i) => ({ xmlId: `n${i}`, noteIndex: i })) }
 
-async function prepare(page: Page, tall = true) {
+async function prepare(page: Page, browserName: string, tall = true) {
   const animationFixture = tall ? animation : { ...animation, notes: notes.map(note => ({
     ...note, midi: note.staff === 2 ? 48 : 64,
   })) }
@@ -32,6 +32,17 @@ async function prepare(page: Page, tall = true) {
   await page.route('**/api/sheet/177/score', route => route.fulfill({ json: scoreFixture }))
   await page.goto('/sheet/177')
   await page.getByRole('button', { name: '재생', exact: true }).click()
+  // A playback session starts only after AudioContext starts. The Linux CI
+  // Firefox runner has no audio output; its setup screen cannot test session
+  // geometry. Other browsers must still enter a real session.
+  const started = await page.getByTestId('compact-playback-bar')
+    .waitFor({ state: 'visible', timeout: 15000 })
+    .then(() => true, () => false)
+  if (!started) {
+    expect(browserName, 'playback must start outside a silent Firefox runner').toBe('firefox')
+    await expect(page.getByTestId('compact-playback-bar')).toHaveCount(0)
+    test.skip(true, 'headless Firefox has no audio output; score session did not start')
+  }
   await page.getByTestId('playback-box').waitFor()
   await page.getByRole('button', { name: '일시정지', exact: true }).click()
 }
@@ -69,10 +80,10 @@ async function dimensions(page: Page) {
   })
 }
 
-test('a tall score reclaims PC margin/key length without shortening the note runway', async ({ page }, info) => {
+test('a tall score reclaims PC margin/key length without shortening the note runway', async ({ page, browserName }, info) => {
   test.skip(info.project.name.startsWith('Mobile'), 'PC-only score panel')
   await page.setViewportSize({ width: 1440, height: 900 })
-  await prepare(page)
+  await prepare(page, browserName)
   const baseline = await dimensions(page)
   await page.getByRole('button', { name: '악보 보기', exact: true }).click()
   const panel = page.getByTestId('score-panel')
@@ -91,10 +102,10 @@ test('a tall score reclaims PC margin/key length without shortening the note run
   await page.screenshot({ path: info.outputPath('score-height-1440.png') })
 })
 
-test('a short PC viewport keeps the runway and allows scrolling for an over-budget system', async ({ page }, info) => {
+test('a short PC viewport keeps the runway and allows scrolling for an over-budget system', async ({ page, browserName }, info) => {
   test.skip(info.project.name.startsWith('Mobile'), 'PC-only score panel')
   await page.setViewportSize({ width: 1280, height: 720 })
-  await prepare(page)
+  await prepare(page, browserName)
   const baseline = await dimensions(page)
   await page.getByRole('button', { name: '악보 보기', exact: true }).click()
   const panel = page.getByTestId('score-panel')
@@ -120,10 +131,10 @@ test('a short PC viewport keeps the runway and allows scrolling for an over-budg
 })
 
 for (const size of [{ width: 1366, height: 768 }, { width: 1920, height: 1080 }]) {
-  test(`keeps the PC geometry and content inside ${size.width}×${size.height}`, async ({ page }, info) => {
+  test(`keeps the PC geometry and content inside ${size.width}×${size.height}`, async ({ page, browserName }, info) => {
     test.skip(info.project.name.startsWith('Mobile'), 'PC-only score panel')
     await page.setViewportSize(size)
-    await prepare(page)
+    await prepare(page, browserName)
     const baseline = await dimensions(page)
     await page.getByRole('button', { name: '악보 보기', exact: true }).click()
     await expect(page.getByTestId('score-panel').locator('g.staffline')).toHaveCount(2)
@@ -136,10 +147,10 @@ for (const size of [{ width: 1366, height: 768 }, { width: 1920, height: 1080 }]
   })
 }
 
-test('does not enlarge an already sufficient two-staff score', async ({ page }, info) => {
+test('does not enlarge an already sufficient two-staff score', async ({ page, browserName }, info) => {
   test.skip(info.project.name.startsWith('Mobile'), 'PC-only score panel')
   await page.setViewportSize({ width: 1440, height: 900 })
-  await prepare(page, false)
+  await prepare(page, browserName, false)
   const baseline = await dimensions(page)
   await page.getByRole('button', { name: '악보 보기', exact: true }).click()
   await expect(page.getByTestId('score-panel').locator('g.staffline')).toHaveCount(2)
