@@ -16,12 +16,14 @@ interface ConfirmDialogProps {
   children?: React.ReactNode
   confirmDisabled?: boolean
   busy?: boolean
+  returnFocusRef?: React.RefObject<HTMLElement | null>
 }
 
 export default function ConfirmDialog({
   isOpen, onClose, onConfirm, title = '확인', message = '이 작업을 수행하시겠습니까?',
   confirmText = '확인', cancelText = '취소', type = 'info', children,
   confirmDisabled = false, busy = false,
+  returnFocusRef,
 }: ConfirmDialogProps) {
   const titleId = useId()
   const contentId = useId()
@@ -33,14 +35,16 @@ export default function ConfirmDialog({
   useEffect(() => {
     if (!isOpen) return
     previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const returnFocus = returnFocusRef?.current
     const oldOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     cancelRef.current?.focus()
     return () => {
       document.body.style.overflow = oldOverflow
-      previousFocus.current?.focus()
+      const target = returnFocus ?? previousFocus.current
+      target?.focus()
     }
-  }, [isOpen])
+  }, [isOpen, returnFocusRef])
 
   // A pending request disables every control. Chromium otherwise moves focus to
   // body when the active confirm button becomes disabled, allowing Tab behind
@@ -122,9 +126,10 @@ interface DeleteConfirmDialogProps {
   itemName?: string
   itemType?: string
   itemDetail?: string
+  returnFocusRef?: React.RefObject<HTMLElement | null>
 }
 
-export function DeleteConfirmDialog({ isOpen, onClose, onConfirm, itemName = '', itemType = '항목', itemDetail }: DeleteConfirmDialogProps) {
+export function DeleteConfirmDialog({ isOpen, onClose, onConfirm, itemName = '', itemType = '항목', itemDetail, returnFocusRef }: DeleteConfirmDialogProps) {
   const [acknowledged, setAcknowledged] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -152,7 +157,7 @@ export function DeleteConfirmDialog({ isOpen, onClose, onConfirm, itemName = '',
   return (
     <ConfirmDialog isOpen={isOpen} onClose={onClose} onConfirm={confirm}
       title={`${itemType} 영구 삭제`} confirmText={`${itemType} 영구 삭제`} type="danger"
-      confirmDisabled={!acknowledged} busy={busy}>
+      confirmDisabled={!acknowledged} busy={busy} returnFocusRef={returnFocusRef}>
       <div className="space-y-4">
         <div className="rounded-lg border border-rule bg-surface-muted p-4">
           <p className="text-xs font-semibold text-ink-muted">삭제할 {itemType}</p>

@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
 import { encode } from 'next-auth/jwt'
 
+test.use({ serviceWorkers: 'block' })
+
 const sample = {
   id: 27,
   title: '긴 제목의 악보 — Clair de Lune 연습용 편곡',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import Link from 'next/link'
 import { SheetMusicWithCategory } from '@/types/sheet-music'
 import { Category } from '@/types/category'
@@ -32,6 +32,7 @@ export function SheetMusicCard({
 }: SheetMusicCardProps) {
   const [showMoveMenu, setShowMoveMenu] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const deleteTriggerRef = useRef<HTMLButtonElement>(null)
   // 제목은 유일하지 않다. 눈으로 보는 사람이 같은 제목의 카드를 저작자·분류·날짜로 구별하듯,
   // 각 동작은 그 정보를 설명으로 가리킨다 (PR158 리뷰).
   const metaId = useId()
@@ -194,6 +195,7 @@ export function SheetMusicCard({
 
               {onDelete && (
                 <Button
+                  ref={deleteTriggerRef}
                   onClick={() => setShowDeleteDialog(true)}
                   variant="outline"
                   size="sm"
@@ -229,6 +231,7 @@ export function SheetMusicCard({
           itemName={sheetMusic.title}
           itemType="악보"
           itemDetail={deleteDetail}
+          returnFocusRef={deleteTriggerRef}
         />
       )}
     </Card>
