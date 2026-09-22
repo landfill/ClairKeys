@@ -123,11 +123,11 @@ export default function ScorePanel({ url, notes, currentTime, timingReferenceBpm
       if (system.top < container.scrollTop || system.bottom > container.scrollTop + container.clientHeight) {
         container.scrollTop = Math.max(0, system.top - 4)
       }
-    } else if (system && enteringSystem) {
-      // If the complete line cannot fit, show its upper fingering/slurs first.
-      // The rest remains reachable by manual scroll; later measures on the
-      // same line do not undo that scroll unless their highlight leaves view.
-      container.scrollTop = Math.max(0, system.top - 4)
+    } else if (system) {
+      // If the line exceeds the cap, align its upper notation when entering.
+      // Following later measures within that same line would hide the slurs
+      // again; let the reader scroll manually and preserve that position.
+      if (enteringSystem) container.scrollTop = Math.max(0, system.top - 4)
     } else if (box.top < container.scrollTop || box.top + box.height > container.scrollTop + container.clientHeight) {
       // A system beyond the viewport cap remains scrollable. Keep the current
       // measure available without falsely claiming the entire line can fit.

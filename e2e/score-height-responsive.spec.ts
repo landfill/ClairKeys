@@ -109,8 +109,14 @@ test('a short PC viewport keeps the runway and allows scrolling for an over-budg
   expect(after.documentWidth).toBeLessThanOrEqual(1280)
   expect(await panel.evaluate(element => element.scrollHeight)).toBeGreaterThan(after.clientHeight)
   await panel.hover()
-  await page.mouse.wheel(0, 150)
-  await expect.poll(() => panel.evaluate(element => element.scrollTop)).toBeGreaterThan(0)
+  await page.mouse.wheel(0, 500)
+  await expect.poll(() => panel.evaluate(element => element.scrollTop)).toBeGreaterThan(80)
+  const readerPosition = await panel.evaluate(element => element.scrollTop)
+  const seek = page.getByRole('slider', { name: '재생 위치' })
+  await seek.press('End')
+  await expect(page.getByTestId('score-measure-highlight')).toHaveAttribute('data-measure-index', '7')
+  await seek.press('Home')
+  expect(await panel.evaluate(element => element.scrollTop)).toBeCloseTo(readerPosition, 0)
 })
 
 for (const size of [{ width: 1366, height: 768 }, { width: 1920, height: 1080 }]) {
