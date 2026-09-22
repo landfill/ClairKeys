@@ -9,13 +9,11 @@ interface PlaybackControlsProps {
   currentTime: number
   duration: number
   playbackSpeed: number
-  playbackMode: 'listen' | 'follow' | 'practice'
   onPlay: () => void
   onPause?: () => void
   onStop: () => void
   onSeek: (time: number) => void
   onSpeedChange: (speed: number) => void
-  onModeChange: (mode: 'listen' | 'follow' | 'practice') => void
   loopStart?: number | null
   loopEnd?: number | null
   onLoopStart?: () => void
@@ -30,13 +28,11 @@ export default function PlaybackControls({
   currentTime,
   duration,
   playbackSpeed,
-  playbackMode,
   onPlay,
   onPause,
   onStop,
   onSeek,
   onSpeedChange,
-  onModeChange,
   loopStart = null,
   loopEnd = null,
   onLoopStart,
@@ -45,13 +41,11 @@ export default function PlaybackControls({
   className = ''
 }: PlaybackControlsProps) {
   /**
-   * 고정 문자열 id를 쓰면 한 문서에 두 인스턴스가 있을 때 id가 겹치고, 두 번째 `<label>`이 첫 번째
-   * `<select>`를 가리킨다. `AnimationPlayer`와 `AdvancedPlaybackControls`가 각각 이 컴포넌트를
-   * 렌더하므로 실제로 가능한 조합이다.
+   * 고정 문자열 id를 쓰면 한 문서에 두 인스턴스가 있을 때 두 번째 레이블이
+   * 첫 번째 속도 선택을 가리킨다.
    */
   const instanceId = useId()
   const speedSelectId = `${instanceId}-speed`
-  const modeSelectId = `${instanceId}-mode`
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60)
@@ -214,60 +208,7 @@ export default function PlaybackControls({
         </p>
       )}
 
-      {/* Secondary settings stay out of the first-action path. */}
-      <details className="overflow-hidden rounded-2xl border border-rule bg-surface">
-        <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-medium text-ink hover:bg-surface-muted [&::-webkit-details-marker]:hidden">
-          <span>전체 설정</span>
-          <span aria-hidden="true" className="text-lg leading-none text-ink-muted">⌄</span>
-        </summary>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule px-4 py-4">
-        <div className="flex items-center gap-3">
-          <label htmlFor={modeSelectId} className="text-sm text-ink-muted font-medium">
-            모드:
-          </label>
-          <div className="relative">
-            <select
-              id={modeSelectId}
-              value={playbackMode}
-              onChange={(e) => onModeChange(e.target.value as 'listen' | 'follow' | 'practice')}
-              className="h-10 min-w-[148px] appearance-none rounded-full border border-rule-strong bg-surface pl-4 pr-9 text-sm text-ink shadow-sm transition-colors hover:bg-surface-muted"
-              disabled={!isReady}
-            >
-              <option value="listen">🎵 듣기</option>
-              <option value="follow">🎹 따라하기</option>
-              <option value="practice">📚 연습 가이드</option>
-            </select>
-            <svg aria-hidden="true" viewBox="0 0 20 20" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 fill-current text-ink-muted">
-              <path d="m5.5 7.5 4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-            </svg>
-          </div>
-        </div>
 
-        <div className="text-sm text-ink-muted">
-          {!isReady ? (
-            <span className="text-state-progress">
-              <span>⏳ </span>로딩 중...
-            </span>
-          ) : isPlaying ? (
-            <span className="text-state-ready">
-              <span>▶️ </span>재생 중
-            </span>
-          ) : (
-            <span className="text-ink-muted">
-              <span>⏸️ </span>일시정지
-            </span>
-          )}
-        </div>
-        </div>
-
-        {playbackMode === 'follow' && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>따라하기 모드:</strong> 피아노 건반을 눌러 연주를 따라해보세요.
-            </p>
-          </div>
-        )}
-      </details>
     </div>
   )
 }

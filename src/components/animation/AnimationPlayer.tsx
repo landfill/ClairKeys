@@ -345,12 +345,10 @@ export default function AnimationPlayer({
             currentTime={currentTime}
             duration={animationData.duration}
             playbackSpeed={playbackSpeed}
-            playbackMode={playbackMode}
             onPlay={handlePlay}
             onStop={handleStop}
             onSeek={handleSeek}
             onSpeedChange={handleSpeedChange}
-            onModeChange={handleModeChange}
             loopStart={loopStart}
             loopEnd={loopEnd}
             onLoopStart={applyLoopStart}

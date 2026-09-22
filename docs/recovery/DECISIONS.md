@@ -3022,3 +3022,26 @@
 - Scope-risk: moderate
 - Reversibility: clean
 - Related: phases/UI-2026-site-consistency-delete.md, ISSUE-146 stage 4 관찰
+
+## D-079: 실제 악보 페이지에는 지원하지 않는 재생 모드를 노출하지 않는다
+
+- Date: 2026-09-22
+- Status: Accepted for UI-2026 playback-mode branch; merge pending
+- Context: 사용자가 `/sheet/92`의 듣기·따라하기·연습 가이드 차이를 찾지 못했다.
+  `FallingNotesPlayer`는 `playbackMode="listen"`으로 고정하고 mode handler가
+  로그만 남긴다. 현재 `전체 설정`의 나머지는 상단 transport와 의미가 겹치는
+  일시정지 상태 문구다. `AnimationPlayer`·`AdvancedPlaybackControls`에는
+  별도 mode handler가 있지만 현재 제품 라우트에서 mount하는 사용처가 없다.
+- Decision: 모드 UI가 특정 악보에서만 잘못된 것이 아니라 실사용 재생 기능을
+  구분하지 못한다는 사용자 정정을 반영한다. 공통 `PlaybackControls`에서
+  selector와 중복 상태만 담긴 `전체 설정`을 제거한다. 상단 재생/일시정지·속도·
+  음량은 보존한다. 레거시 엔진 코드와 키보드 shortcut은 범위 밖에 둔다.
+- Scope: 공유 `PlaybackControls`와 `FallingNotesPlayer`의 미구현 연결만 수정.
+  데이터/오디오/엔진 모드는 변경하지 않는다.
+- Rejected: 보이는 세 모드를 이름만 바꾸거나 설명문만 추가 | 선택해도 동작하지 않는다.
+- Rejected: 현재 페이지에 레거시 `follow`/`practice` 엔진을 즉시 연결 | 입력
+  장치와 단계 진행/정확도 계약이 정해지지 않았고 #177과 다른 기능 작업이다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Related: phases/UI-2026-playback-mode-clarity.md, D-019, #177의 별도 UI 주석

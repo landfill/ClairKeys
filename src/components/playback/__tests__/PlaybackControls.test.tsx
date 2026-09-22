@@ -8,13 +8,11 @@ const renderControlsProps = {
   currentTime: 10,
   duration: 60,
   playbackSpeed: 1,
-  playbackMode: 'listen' as const,
   onPlay: jest.fn(),
   onPause: jest.fn(),
   onStop: jest.fn(),
   onSeek: jest.fn(),
   onSpeedChange: jest.fn(),
-  onModeChange: jest.fn(),
 }
 
 function renderControls(overrides: Partial<React.ComponentProps<typeof PlaybackControls>> = {}) {
@@ -107,11 +105,13 @@ describe('PlaybackControls', () => {
     expect(primaryControls).not.toHaveClass('whitespace-nowrap')
   })
 
-  it('presents speed and secondary settings as matching rounded controls', () => {
+  it('keeps speed rounded without an inactive secondary settings region', () => {
     renderControls()
 
     expect(screen.getByLabelText('속도:')).toHaveClass('rounded-full')
-    expect(screen.getByText('전체 설정').closest('details')).toHaveClass('rounded-2xl')
+    expect(screen.queryByText('전체 설정')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('모드:')).not.toBeInTheDocument()
+    expect(screen.queryByText('⏸️ 일시정지')).not.toBeInTheDocument()
   })
 
   it('shows the meaning of every playback action next to its icon', () => {
