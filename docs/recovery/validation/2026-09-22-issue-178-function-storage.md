@@ -132,3 +132,12 @@ Prisma 엔진이 없는 페이지 Lambda(`sheet/[id]` 등)도 raw 11~12MB인 것
 #181 Preview 로그에서 ignore 스크립트가 Vercel에서 실행되는 것을 확인했다(판단 불가 경로 → 빌드).
 Vercel clone 안에서의 `git fetch` 가능 여부는 미확인이다. fetch가 항상 실패한다고 가정하고 depth 10으로 재생하면(main first-parent 2026-08-23~`3453981`) push 635건 중 빌드 109건이다(생략 526건, 83%).
 fetch가 되면 88건(86%)이다. 어느 쪽이든 코드 변경이 생략되는 경우는 없다.
+
+## 추가 — #181 병합 후 운영 확인 (2026-09-22)
+
+| 커밋 | 변경 | Vercel 배포 | 결과 | 스크립트 로그 |
+|---|---|---|---|---|
+| `eee9166` (#181 병합) | `vercel.json`·스크립트·테스트 | `dpl_GMWZdiNPsaYH1dZLvu9H4WLD6wp9` | READY, 24.73MB | `Deployable files changed since 1d7564e…; building.` |
+| `f4f25e8` (상태 기록) | `docs/`만 | `dpl_85tc3GHP2ajGkMLiWddPsB4KTC7F` | **CANCELED** | `Only docs and CI files changed since eee9166…; skipping deployment.` |
+
+문서 전용 push가 운영에서 생략되는 것을 확인했다. 배포 1회 크기는 24.73MB로 그대로이고, 저장량 증가는 코드 변경이 있는 push에서만 생긴다.
