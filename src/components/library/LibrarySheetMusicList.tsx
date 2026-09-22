@@ -122,7 +122,7 @@ export function LibrarySheetMusicList({
       await deleteSheetMusic(sheetMusicId)
     } catch (error) {
       console.error('Failed to delete sheet music:', error)
-      setErrorMessage('악보를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.')
+      throw error
     }
   }
 
@@ -275,33 +275,35 @@ export function LibrarySheetMusicList({
       </div>
 
       {editingSheet && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-sheet-title">
-          <form onSubmit={saveTitle} className="w-full max-w-md rounded-lg bg-surface p-6 shadow-xl">
-            <h2 id="edit-sheet-title" className="text-lg font-semibold text-ink">악보 정보 수정</h2>
-            <label className="mt-4 block text-sm font-medium text-ink" htmlFor="sheet-title">제목</label>
-            <input
-              id="sheet-title"
-              value={title}
-              onChange={(event) => {
-                setTitle(event.target.value)
-                setTitleError(null)
-              }}
-              className="mt-1 w-full rounded-md border border-rule-strong bg-surface px-3 py-2 text-ink"
-              autoFocus
-              required
-              aria-describedby={titleError ? 'sheet-title-error' : undefined}
-            />
-            {titleError && <p id="sheet-title-error" role="alert" className="mt-2 text-sm text-state-error">{titleError}</p>}
-            {editingSheet.availability === 'ready' && <div className="mt-4">
-              <TempoInput value={tempo} unit={tempoUnit} onChange={setTempo} onUnitChange={setTempoUnit}
-                editing disabled={saving} error={tempoError} />
-            </div>}
-            <div className="mt-6 flex justify-end gap-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="edit-sheet-title">
+          <form onSubmit={saveTitle} className="max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto rounded-lg border border-rule bg-surface shadow-xl sm:max-h-[calc(100dvh-3rem)]">
+            <div className="p-5 sm:p-6">
+              <h2 id="edit-sheet-title" className="text-lg font-semibold text-ink">악보 정보 수정</h2>
+              <label className="mt-4 block text-sm font-medium text-ink" htmlFor="sheet-title">제목</label>
+              <input
+                id="sheet-title"
+                value={title}
+                onChange={(event) => {
+                  setTitle(event.target.value)
+                  setTitleError(null)
+                }}
+                className="mt-1 w-full rounded-md border border-rule-strong bg-surface px-3 py-2 text-ink"
+                autoFocus
+                required
+                aria-describedby={titleError ? 'sheet-title-error' : undefined}
+              />
+              {titleError && <p id="sheet-title-error" role="alert" className="mt-2 text-sm text-state-error">{titleError}</p>}
+              {editingSheet.availability === 'ready' && <div className="mt-4">
+                <TempoInput value={tempo} unit={tempoUnit} onChange={setTempo} onUnitChange={setTempoUnit}
+                  editing disabled={saving} error={tempoError} />
+              </div>}
+            </div>
+            <div className="flex flex-col-reverse gap-2 border-t border-rule bg-surface-muted p-4 sm:flex-row sm:justify-end sm:px-6">
               <Button type="button" variant="outline" disabled={saving} onClick={() => {
                 setTitleError(null)
                 setEditingSheet(null)
-              }}>취소</Button>
-              <Button type="submit" disabled={saving}>{saving ? '저장 중…' : '저장'}</Button>
+              }} className="min-h-11 w-full sm:w-auto">취소</Button>
+              <Button type="submit" disabled={saving} className="min-h-11 w-full sm:w-auto">{saving ? '저장 중…' : '저장'}</Button>
             </div>
           </form>
         </div>

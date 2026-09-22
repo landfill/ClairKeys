@@ -3003,3 +3003,22 @@
 - Reversibility: clean
 - Directive: 런타임이 읽는 파일을 `docs/`나 제외 목록 경로에 두지 않는다. 제외 경로를 넓힐 때는 `src/ci/__tests__/vercelIgnoreBuild.test.ts`에 사례를 추가한다.
 - Related: #178, D-076
+
+## D-078: 내 악보의 영구 삭제는 대상을 확인하고 완료 결과에 따라 창을 닫는다
+
+- Date: 2026-09-22
+- Status: Accepted for UI-2026 branch; merge pending
+- Context: 운영 `/library`의 확인창은 제목만 표시해 같은 제목의 악보를 구분하기 어렵고,
+  확인 직후 닫혀 실패를 같은 맥락에서 알리지 못한다. 경고는 파일 저장소의 완전 제거를
+  단정하지만 `/api/sheet/[id]`는 파일 삭제 실패를 기록하고 DB 삭제를 계속한다.
+- Decision: 제목·저작자·분류·업로드 시각을 대상 정보로 표시한다. 영구 삭제와 연결된
+  연습 데이터의 손실을 설명하고, 별도 확인 선택 전에는 삭제 버튼을 비활성화한다.
+  요청 중 중복 실행과 닫기를 막고, 실패는 창 안에서 표시해 재시도할 수 있게 한다.
+  서버 성공 뒤에만 창을 닫는다. 파일 완전 제거라는 단정은 없앤다.
+- Scope: 공통 확인창 표현과 포커스 처리, 악보 카드 및 그 호출부의 비동기 결과 전달.
+  API·DB·파일 삭제 순서·조회/검색/정렬/재생은 변경하지 않는다.
+- Rejected: 제목 전체 다시 입력 | 긴 악보 제목에서 모바일 입력 부담이 크다.
+- Confidence: high
+- Scope-risk: moderate
+- Reversibility: clean
+- Related: phases/UI-2026-site-consistency-delete.md, ISSUE-146 stage 4 관찰

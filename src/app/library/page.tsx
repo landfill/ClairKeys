@@ -6,6 +6,7 @@ import { MainLayout, PageHeader, Container } from '@/components/layout'
 import AuthGuard from '@/components/auth/AuthGuard'
 import { LibrarySheetMusicList } from '@/components/library/LibrarySheetMusicList'
 import { Button } from '@/components/ui'
+import { FolderIcon, LibraryIcon } from '@/components/ui/icons'
 
 export default function LibraryPage() {
   const router = useRouter()
@@ -22,8 +23,8 @@ export default function LibraryPage() {
   }
 
   const tabs = [
-    { id: 'all' as const, label: '전체 악보', icon: '📚' },
-    { id: 'categories' as const, label: '카테고리별', icon: '📁' }
+    { id: 'all' as const, label: '전체 악보', icon: LibraryIcon },
+    { id: 'categories' as const, label: '카테고리별', icon: FolderIcon }
   ]
 
   return (
@@ -50,7 +51,7 @@ export default function LibraryPage() {
                 size="sm"
                 className="flex-1"
               >
-                <span>{tab.icon}</span>
+                <tab.icon size={17} aria-hidden="true" />
                 <span>{tab.label}</span>
               </Button>
             ))}

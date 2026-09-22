@@ -9,6 +9,7 @@ import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import { DeleteConfirmDialog } from '@/components/ui/ConfirmDialog'
 import type { SheetMusicAvailability } from '@/lib/sheetMusicAvailability'
+import { FolderIcon, GlobeIcon, LockIcon } from '@/components/ui/icons'
 
 export interface SheetMusicCardProps {
   sheetMusic: SheetMusicWithCategory
@@ -16,7 +17,7 @@ export interface SheetMusicCardProps {
   categories?: Category[]
   onMove?: (sheetMusicId: number, newCategoryId: number | null) => void
   onEdit?: (sheetMusic: SheetMusicWithCategory) => void
-  onDelete?: (sheetMusicId: number) => void
+  onDelete?: (sheetMusicId: number) => Promise<void> | void
   availability?: SheetMusicAvailability
 }
 
@@ -69,6 +70,7 @@ export function SheetMusicCard({
     second: '2-digit',
   })
   const describedBy = `${metaId}-composer ${metaId}-badges ${metaId}-date ${metaId}-uploaded`
+  const deleteDetail = [sheetMusic.composer, sheetMusic.category?.name || '미분류', uploadedAt].filter(Boolean).join(' · ')
 
   return (
     <Card padding="none" className="group min-w-0 hover:shadow-md transition-shadow duration-200 h-full flex flex-col">
@@ -84,10 +86,10 @@ export function SheetMusicCard({
         {/* Category and visibility info */}
         <div id={`${metaId}-badges`} className="flex flex-wrap items-center gap-1.5 text-xs flex-shrink-0">
           <Badge className="truncate">
-            📁 {sheetMusic.category?.name || '미분류'}
+            <FolderIcon size={14} aria-hidden="true" /> {sheetMusic.category?.name || '미분류'}
           </Badge>
           <Badge>
-            {sheetMusic.isPublic ? '🌍 공개' : '🔒 비공개'}
+            {sheetMusic.isPublic ? <><GlobeIcon size={14} aria-hidden="true" /> 공개</> : <><LockIcon size={14} aria-hidden="true" /> 비공개</>}
           </Badge>
           {availabilityDetails && (
             <Badge tone={availabilityDetails.tone}>
@@ -169,7 +171,7 @@ export function SheetMusicCard({
                           onClick={() => handleMove(null)}
                           className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-muted flex items-center gap-2"
                         >
-                          📁 미분류
+                          <FolderIcon size={16} aria-hidden="true" /> 미분류
                         </button>
                         {categories.map((category) => (
                           <button
@@ -178,7 +180,7 @@ export function SheetMusicCard({
                             className="w-full text-left px-3 py-2 text-sm text-ink hover:bg-surface-muted flex items-center gap-2"
                             disabled={sheetMusic.categoryId === category.id}
                           >
-                            📁 {category.name}
+                            <FolderIcon size={16} aria-hidden="true" /> {category.name}
                             {sheetMusic.categoryId === category.id && (
                               <span className="text-xs text-ink-muted">(현재)</span>
                             )}
@@ -220,12 +222,13 @@ export function SheetMusicCard({
         <DeleteConfirmDialog
           isOpen={showDeleteDialog}
           onClose={() => setShowDeleteDialog(false)}
-          onConfirm={() => {
-            onDelete(sheetMusic.id)
+          onConfirm={async () => {
+            await onDelete(sheetMusic.id)
             setShowDeleteDialog(false)
           }}
           itemName={sheetMusic.title}
           itemType="악보"
+          itemDetail={deleteDetail}
         />
       )}
     </Card>

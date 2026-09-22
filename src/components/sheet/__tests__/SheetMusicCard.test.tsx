@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { SheetMusicCard } from '../SheetMusicCard'
 
 describe('SheetMusicCard', () => {
@@ -20,7 +20,7 @@ describe('SheetMusicCard', () => {
   it('keeps public visibility neutral and reserves the green badge for readiness', () => {
     render(<SheetMusicCard sheetMusic={sheetMusic} availability="ready" />)
 
-    expect(screen.getByText('🌍 공개')).toHaveClass('bg-surface-muted', 'text-ink')
+    expect(screen.getByText('공개')).toHaveClass('bg-surface-muted', 'text-ink')
     expect(screen.getByText('연습 가능')).toHaveClass('bg-state-ready', 'text-on-accent')
   })
 
@@ -128,5 +128,54 @@ describe('SheetMusicCard', () => {
 
     expect(screen.getByRole('link', { name: `${sheetMusic.title} 연습 시작` })).toHaveClass('w-full')
     expect(screen.getByRole('button', { name: `${sheetMusic.title} 제목 수정` }).parentElement).toHaveClass('grid', 'grid-cols-3')
+  })
+
+  it('requires an explicit acknowledgement and identifies the exact sheet before deletion', async () => {
+    const onDelete = jest.fn().mockResolvedValue(undefined)
+    render(<SheetMusicCard sheetMusic={sheetMusic} onDelete={onDelete} />)
+
+    fireEvent.click(screen.getByRole('button', { name: `${sheetMusic.title} 삭제` }))
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveTextContent(sheetMusic.title)
+    expect(dialog).toHaveTextContent(sheetMusic.composer)
+    expect(dialog).toHaveTextContent('애니메이션')
+    expect(dialog).toHaveTextContent('되돌릴 수 없습니다')
+    const confirm = screen.getByRole('button', { name: '악보 영구 삭제' })
+    expect(confirm).toBeDisabled()
+    fireEvent.click(screen.getByRole('checkbox', { name: /영구 삭제를 이해했습니다/ }))
+    fireEvent.click(confirm)
+    await waitFor(() => expect(onDelete).toHaveBeenCalledTimes(1))
+    expect(onDelete).toHaveBeenCalledWith(27)
+  })
+
+  it('keeps the dialog open with an error when deletion fails, then allows retry', async () => {
+    const onDelete = jest.fn().mockRejectedValueOnce(new Error('network')).mockResolvedValueOnce(undefined)
+    render(<SheetMusicCard sheetMusic={sheetMusic} onDelete={onDelete} />)
+    fireEvent.click(screen.getByRole('button', { name: `${sheetMusic.title} 삭제` }))
+    fireEvent.click(screen.getByRole('checkbox', { name: /영구 삭제를 이해했습니다/ }))
+    fireEvent.click(screen.getByRole('button', { name: '악보 영구 삭제' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('삭제하지 못했습니다')
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '악보 영구 삭제' }))
+    await waitFor(() => expect(onDelete).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
+  it('blocks repeated deletion and dismissal while the request is pending', async () => {
+    let finish!: () => void
+    const onDelete = jest.fn().mockImplementation(() => new Promise<void>(resolve => { finish = resolve }))
+    render(<SheetMusicCard sheetMusic={sheetMusic} onDelete={onDelete} />)
+    const trigger = screen.getByRole('button', { name: `${sheetMusic.title} 삭제` })
+    fireEvent.click(trigger)
+    expect(screen.getByRole('button', { name: '취소' })).toHaveFocus()
+    fireEvent.click(screen.getByRole('checkbox', { name: /영구 삭제를 이해했습니다/ }))
+    fireEvent.click(screen.getByRole('button', { name: '악보 영구 삭제' }))
+    expect(screen.getByRole('button', { name: '처리 중…' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '취소' })).toBeDisabled()
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(onDelete).toHaveBeenCalledTimes(1)
+    finish()
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 })
