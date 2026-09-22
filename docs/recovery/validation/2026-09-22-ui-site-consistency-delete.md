@@ -91,6 +91,9 @@ fetch한 뒤 로컬·원격 `codex/ui-site-consistency-delete` tip `d27a4c6`과 
 로컬 main에서 `git branch -d`로 삭제했다. local/remote main만 남고 기존 사용자
 미추적 `.bkit/`, `.gemini/`, `.pdca-status.json`은 git status에 그대로 보인다.
 정리 직후 잠시 나타난 `.pdca-status.json.swp`도 건드리지 않았다.
+이후 사용자가 `.bkit/`과 `.pdca-status.json`을 직접 강제 삭제했다고 알렸다.
+2026-09-22 재확인에서 두 경로는 없고 `git status --short`에는 `.gemini/`만
+미추적 상태로 남는다. 에이전트는 이 경로들을 삭제하지 않았다.
 
 ## 데이터·동작 경계
 

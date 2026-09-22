@@ -15,7 +15,9 @@ Production 배포6586549256 성공; 운영 PC·모바일 삭제창·취소 확�
 병합 커밋 `b7191d0`의 후속 E2E 포함 6개 검사 모두 성공했다.
 사용자의 별도 브랜치 정리 지시로 tip 포함을 재확인한 뒤 원격→로컬 브랜치를 삭제했다.
 기존 사용자 미추적 파일 `.bkit/`, `.gemini/`, `.pdca-status.json`은 보존했고,
-정리 직후 잠시 보인 `.pdca-status.json.swp`도 건드리지 않았다. 현재 local/remote는 main만 있다.
+정리 직후 잠시 보인 `.pdca-status.json.swp`도 건드리지 않았다. 이후 사용자가
+`.bkit/`과 `.pdca-status.json`을 강제 삭제했다고 알렸고 경로 부재를 확인했다.
+현재 미추적 항목은 `.gemini/`뿐이며 local/remote는 main만 있다.
 [검증·화면](validation/2026-09-22-ui-site-consistency-delete.md),
 [리뷰 로그](reviews/PR-182.md).
 
