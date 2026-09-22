@@ -4,7 +4,7 @@ Last updated: 2026-09-22 KST
 
 ## Current phase
 
-**#178 Functions Storage — PR179·180·181 모두 사용자 승인으로 병합·정리 완료(2026-09-22).** 원인 실측: 배포 1회는 route83개가 고유 Lambda6개(24.73MB zip)를 공유하며, 누적의 주원인은 main 문서 전용 push가 매번 Production 배포가 되는 것이었다.
+**#178 완료·종료(2026-09-22) — PR179·180·181 병합, 운영 확인 후 사용자 승인으로 이슈 CLOSED(completed).** 원인 실측: 배포 1회는 route83개가 고유 Lambda6개(24.73MB zip)를 공유하며, 누적의 주원인은 main 문서 전용 push가 매번 Production 배포가 되는 것이었다.
 병합 커밋: PR179 `8115f35`(D-076), PR180 `f133d26`, PR181 `eee9166`(D-077). 세 Production 배포 모두 24.73MB로 번들 변화 없음(기대값).
 운영 확인: `eee9166`은 빌드(설정 변경), 문서 전용 `f4f25e8`은 Ignored Build Step으로 CANCELED됐다. 문서 전용 push는 더 이상 저장량을 늘리지 않는다.
 [계측·검증](validation/2026-09-22-issue-178-function-storage.md), 리뷰 [179](reviews/PR-179.md)·[180](reviews/PR-180.md)·[181](reviews/PR-181.md).
@@ -18,10 +18,9 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 
 - PR176 승인 병합·브랜치 정리 완료. 병합 전 최신 CI/E2E·리뷰 검토 성공; 병합 후 체크 결과는51daf9a의GitHub live checks에서 확인한다.
 - [#177 PC 악보 높이 개선](https://github.com/landfill/ClairKeys/issues/177)을 사용자 요청으로 상세 등록했다. 건반 좌우 유지·세로만 조정 및 노트 애니메이션 보존 조건, [실측](validation/2026-09-21-score-panel-height.md)과 완료 기준을 포함한다. 이슈OPEN/본문 일치 확인; 구현·UI 변경은 미착수.
-- #178: 코드 PR 병합과 운영 확인이 끝났다([PR181 로그](reviews/PR-181.md)). 이슈 종료만 사용자 판단으로 남았다.
-  이슈 종료는 사용자 판단: 완료 조건 중 "배포당 400MB 대비 감소"는 기준선 자체가 route 합산 오류였고, 배포 1회 크기는 24.73MB로 변하지 않았다. 감소는 배포 횟수(83~86%)에서 난다.
+- #178은 2026-09-22에 사용자 승인으로 CLOSED(completed)됐다([종료 코멘트](https://github.com/landfill/ClairKeys/issues/178#issuecomment-5771698980)). 브랜치·worktree 정리 완료, 로컬·원격 모두 main만 남음.
+  OMR VM 배포는 불필요하다(8f1b4e8 이후 변경에 `omr-service/`·인식 스크립트 없음).
   이미 누적된 저장량 정리(배포 보존 정책·삭제)는 사용자가 직접 한다. 후속 후보: Prisma `engineType="client"`+adapter-pg로 네이티브 엔진 제거(DB 접근 전반 회귀 검증 필요, 미착수).
-  #178은 사용자 확인 전까지 OPEN이다.
 
 1. PR174/176 모두 병합됐고 잔여 리뷰 지적은 해소됐다. [리뷰](reviews/PR-174.md).
 2. 운영에 비공개 악보가 없어 비공개 차단은 로컬 실제 DB로만 검증했다. 비공개 악보가 생기면 운영에서 404를 확인한다.
