@@ -25,6 +25,7 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
   const titleId = useId()
   const contentId = useId()
+  const dialogRef = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
   const previousFocus = useRef<HTMLElement | null>(null)
@@ -41,6 +42,13 @@ export default function ConfirmDialog({
     }
   }, [isOpen])
 
+  // A pending request disables every control. Chromium otherwise moves focus to
+  // body when the active confirm button becomes disabled, allowing Tab behind
+  // the still-open modal.
+  useEffect(() => {
+    if (isOpen && busy) dialogRef.current?.focus()
+  }, [isOpen, busy])
+
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'Escape') {
       event.preventDefault()
@@ -50,10 +58,18 @@ export default function ConfirmDialog({
     const controls = Array.from(modalRef.current.querySelectorAll<HTMLElement>(
       'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]'
     ))
-    if (!controls.length) return
+    if (!controls.length) {
+      event.preventDefault()
+      dialogRef.current?.focus()
+      return
+    }
     const first = controls[0]
     const last = controls[controls.length - 1]
-    if (event.shiftKey && document.activeElement === first) {
+    if (document.activeElement === dialogRef.current) {
+      event.preventDefault()
+      const target = event.shiftKey ? last : first
+      target.focus()
+    } else if (event.shiftKey && document.activeElement === first) {
       event.preventDefault()
       last.focus()
     } else if (!event.shiftKey && document.activeElement === last) {
@@ -65,7 +81,7 @@ export default function ConfirmDialog({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-ink/60 p-3 sm:items-center sm:p-6"
+    <div ref={dialogRef} tabIndex={-1} className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-ink/60 p-3 sm:items-center sm:p-6"
       role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={contentId}
       onKeyDown={handleKeyDown}
       onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}>

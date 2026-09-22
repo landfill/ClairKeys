@@ -63,3 +63,27 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 720 
     await expect(dialog).toBeVisible()
   })
 }
+
+test('keeps keyboard focus inside the dialog while DELETE is pending', async ({ page }) => {
+  await fixture(page)
+  let finish!: () => void
+  const pending = new Promise<void>(resolve => { finish = resolve })
+  await page.route('**/api/sheet/27', async route => {
+    if (route.request().method() !== 'DELETE') return route.continue()
+    await pending
+    await route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"temporary"}' })
+  })
+  await page.goto('/library')
+  await page.getByRole('button', { name: `${sample.title} 삭제` }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByRole('checkbox', { name: '영구 삭제를 이해했습니다' }).check()
+  await dialog.getByRole('button', { name: '악보 영구 삭제' }).click()
+  await expect(dialog.getByRole('button', { name: '처리 중…' })).toBeDisabled()
+  await expect.poll(() => page.evaluate(() => document.activeElement?.closest('[role="dialog"]') !== null)).toBe(true)
+  await page.keyboard.press('Tab')
+  await expect.poll(() => page.evaluate(() => document.activeElement?.closest('[role="dialog"]') !== null)).toBe(true)
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeVisible()
+  finish()
+  await expect(dialog.getByRole('alert')).toContainText('삭제하지 못했습니다')
+})
