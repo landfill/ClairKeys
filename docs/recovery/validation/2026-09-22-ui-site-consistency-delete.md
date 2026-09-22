@@ -46,6 +46,16 @@ Chromium 포커스가 `body`로 이동해 Tab으로 모달 뒤에 접근할 수 
 실패 후 오류 표시를 포함한다. `SheetMusicCard`/`ConfirmDialog` Jest 21/21, 린트·타입
 검사도 통과했다. 최신 hosted CI·재리뷰는 별도로 확인한다.
 
+초기/직전 head의 전체 E2E에서 WebKit 계열 삭제 테스트가 실패했다. 로컬 WebKit
+재현은 취소 뒤 호출 버튼 포커스가 돌아오지 않는 것을 보여줬다. WebKit은 마우스로
+클릭한 버튼을 항상 포커스하지 않으므로 `document.activeElement`에 의존할 수 없었다.
+또 호스팅 로그에서 모의 요청 계수 0인데 실패 안내가 나왔고, 로컬 재현의 서버 로그는
+DELETE가 Prisma까지 도달했음을 보여줬다. `7f27beb`은 카드 버튼 ref를 복귀 대상으로
+넘기고 Playwright fixture에서 서비스 워커를 차단해 모의 요청 우회를 막는다. 수정 후
+`e2e/library-delete-dialog.spec.ts` 전체 Chromium/Firefox/WebKit/Mobile Chrome/Mobile
+Safari **15/15 PASS**. `npm run lint` 경고 0, `npx tsc --noEmit`, focused Jest 21/21 PASS.
+실제 운영 DELETE는 실행하지 않았다. 최신 hosted full E2E는 재실행 중이다.
+
 ## 데이터·동작 경계
 
 `src/app/api/sheet/[id]/route.ts`, Prisma 모델, 서비스 요청 메서드는 변경하지 않았다. 서버는 파일 정리에 실패해도 DB 삭제를 계속할 수 있으므로 UI에서 파일 완전 제거를 보장하지 않는다. 실제 운영 악보 삭제·실기기 터치·실제 스크린리더 출력·운영 배포 후 브라우저 검증은 이 PR 이전에 수행하지 않았다. 테스트의 로그인 쿠키와 목록은 모의 데이터로, 실제 로그인/DB 성공을 증명하지 않는다.
