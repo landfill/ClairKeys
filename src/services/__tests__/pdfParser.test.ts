@@ -1,21 +1,5 @@
 import { PDFParserService, PianoAnimationData } from '../pdfParser'
 
-// Mock PDF.js
-jest.mock('pdfjs-dist/legacy/build/pdf.mjs', () => ({
-  GlobalWorkerOptions: {
-    workerSrc: ''
-  },
-  getDocument: jest.fn().mockImplementation(() => ({
-    promise: Promise.resolve({
-      numPages: 1,
-      getPage: jest.fn().mockImplementation(() => Promise.resolve({
-        getViewport: jest.fn().mockReturnValue({ width: 800, height: 600 }),
-        render: jest.fn().mockReturnValue({ promise: Promise.resolve() })
-      }))
-    })
-  }))
-}))
-
 // Mock Jimp - Create a mock that prevents infinite loops in staff detection
 const mockJimpImage = {
   greyscale: jest.fn().mockReturnThis(),
