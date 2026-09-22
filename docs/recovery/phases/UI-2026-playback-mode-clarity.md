@@ -1,6 +1,6 @@
 # UI-2026 — 공통 재생 컨트롤의 불필요한 모드 설정 제거
 
-Status: `IN_PROGRESS`
+Status: `DONE` — PR #184 merged `8bcfce8` on 2026-09-22; post-merge checks in progress.
 Base: 2026-09-22 main; #177의 PC score-height 브랜치와 분리.
 
 ## Objective

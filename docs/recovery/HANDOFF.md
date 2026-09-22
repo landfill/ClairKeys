@@ -4,7 +4,7 @@ Last updated: 2026-09-22 KST
 
 ## Current phase
 
-**공통 재생 모드 UI 명확화 — REVIEW_READY, 병합 승인 대기.** [PR184](https://github.com/landfill/ClairKeys/pull/184)
+**공통 재생 모드 UI 명확화 — DONE, 병합 후 검사 중.** [PR184](https://github.com/landfill/ClairKeys/pull/184)
 non-draft head `be68745` (`a329dcd` 구현 + PR183 병합 main 반영). 사용자는 모드 UI가 특정 악보 문제가 아니라 실제 기능
 차이가 없다는 점을 정정했다. 공유 `PlaybackControls`에서 미작동 모드 선택과
 중복 일시정지 상태를 제거하고 실제 transport·속도·음량을 보존했다. 변경 전
@@ -13,10 +13,11 @@ Jest1fail, 변경 후 full Jest1101/5브라우저 E2E5pass/type/lint/build 통�
 Preview `/sheet/92` PC·390×844 모바일에서 UI 제거와 실제 transport·속도·음량을 확인했다.
 기존 head의 build/lint/type/unit/security/Vercel 및 두 E2E CI 모두 PASS. PR183 후
 main을 합친 새 head에서 type/lint/Jest26pass와 5브라우저 E2E20pass·비해당10skip.
-새 head의 hosted CI·재리뷰를 다시 확인 중이다. Codex의 Lore trailer
-누락 지적은 실제 commit 메시지와 대조해 근거로 반박하고 스레드를 해결했다. 사용자 승인 전 병합 금지.
+새 head의 두 hosted E2E를 포함한 모든 CI PASS, Codex 재리뷰 추가 지적0·미해결
+스레드0. 사용자 승인으로 2026-09-22 `8bcfce8`에 병합하고 로컬 main도 fast-forward했다.
+Codex의 Lore trailer 누락 지적은 실제 commit 메시지로 반박·해결했다. 병합 후 검사 진행 중.
 
-**#177 PC 악보 세로 공간 — DONE, 병합 후 검사 중.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
+**#177 PC 악보 세로 공간 — DONE, 병합 후 검사 완료.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
 non-draft head `f9d2456`. 역사적 87/88/89 URL은 현재 404이며, 동일 제목 새
 90/91/92의 운영 기준선을 재측정했다. 실제 양손 줄 높이와 재생 viewport 예산으로
 악보·건반 길이를 배분하고 낙하 높이·건반 x/폭은 보존한다. 로컬 Jest1104,
@@ -35,7 +36,7 @@ type/lint 통과 후 `f9d2456`를 push했다. 최신 head의 두 hosted E2E를 �
 모든 CI PASS, Codex 재리뷰 새 지적0·해결 안 된 스레드0, PR non-draft/MERGEABLE.
 [검증](validation/2026-09-22-issue-177-score-height.md), [리뷰](reviews/PR-183.md).
 사용자 명시적 승인에 따라 2026-09-22 `4803bba`에 병합했고 로컬 main도 fast-forward했다.
-병합 커밋의 사후 검사는 진행 중이다. 미작동 모드 선택 제거는 별도 PR184로 추적한다.
+병합 커밋의 E2E 포함 사후 검사 6개 모두 PASS. 미작동 모드 선택 제거는 별도 PR184로 병합했다.
 
 **UI-2026 화면 일관성·내 악보 삭제 흐름 — DONE.**
 [PR182](https://github.com/landfill/ClairKeys/pull/182)는 사용자 명시적 병합 승인으로
@@ -66,7 +67,7 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 
 ## Next action
 
-- 사용자 두 PR 병합 승인. PR183을 먼저 `4803bba`에 병합했다. 현재 PR184의 새 main 기준 병합 가능 상태·결합 검증을 확인한 뒤 두 번째로 병합한다. 각 병합 커밋의 사후 검사와 브랜치 tip 포함을 확인하고 안전한 범위에서 정리한다.
+- 사용자 승인 순서로 PR183 `4803bba` → PR184 `8bcfce8` 병합 완료. PR183 사후 검사6개 PASS. PR184 사후 검사를 확인한 뒤 두 원격·로컬 tip의 main 포함을 검증해 브랜치 참조를 정리한다. 사용자 추가 승인에 따라 `.gemini/`는 그대로 둔다.
 
 - PR182 병합·운영 배포·후속 CI·브랜치 정리 완료. 이후 작업은 별도 요청 범위로 진행한다.
 
