@@ -55,10 +55,27 @@ Branch/head at creation: `codex/issue-177-score-height` / `7fe0759`
   1920×1080, 충분한 악보, 초과 스크롤, 건반 x/폭·운지/음이름 글자 크기,
   낙하 높이, 토글/탐색/모바일/legacy score 없는 곡을 포함.
 
+## Initial PR preview on current sheets (head `7fe0759`)
+
+Public preview URL `https://clairkeys-git-codex-issue-177-score-height-landfills-projects.vercel.app`.
+Actual 90/91/92 loaded without copying their MusicXML or PDF into the repo.
+All were played then paused, and seek was used near the reported trouble spots.
+
+| Sheet/viewport | Production before | Preview initial | Result |
+|---|---|---|---|
+| 90 /1280×720 | score outer244.8/client243px, key153px, falling176px; max system368.6px | outer301.8/client285px, key120px, falling176px; same max system | More score space, same runway; line remains beyond cap and scrollable. Box bottom719.9px. |
+| 91 /1440×900 | outer306/client289px, key166px, falling191px; max270.5px | exact same 306/289, 166/191 and max270.5 | Adequate condition unchanged. Existing 15px horizontal scrollbar remains. |
+| 92 /1280×720 | outer244.8/client243px, key153px, falling176px; max311.9px | outer301.8/client285px, key120px, falling176px | More score space, still 26.9px over budget; scrolling required. At25s scrollTop388.5px exceeded row2 top347px by41.5px and clipped upper signs. |
+
+`f5c4eba` addresses the 92 scroll entry by aligning the complete system's top
+when it cannot fit. It does not claim simultaneous full-line visibility in a
+physically insufficient 720px viewport. New preview deployment, full CI and
+re-review are pending. No user data was mutated.
+
 ## 남은 확인
 
-- PR preview에서 운영의 새 90/91/92를 변경 후 같은 viewport로 측정하고,
-  충분한91이 커지지 않는지 확인한다. 과거87/88/89는 삭제되어 재실측 불가.
+- Latest PR preview에서 92의 oversized row entry after `f5c4eba`를 재측정한다.
+  과거87/88/89는 삭제되어 재실측 불가.
 - 가로 overflow는 #91에서 15px을 관찰했다. SVG/컨테이너 폭 경로를 확인했으며
   스크롤바를 숨겨 기호를 가리는 패치는 하지 않았다. 패널 높이 예산은 이 손실을
   포함한다. 이 경로 자체의 제거는 검증된 독립 수정이 필요하다.
