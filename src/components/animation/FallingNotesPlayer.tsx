@@ -247,11 +247,6 @@ export default function FallingNotesPlayer({
   }, [notes, currentTime, showScore])
 
   // Playback control handlers
-  const handleModeChange = (mode: 'listen' | 'follow' | 'practice') => {
-    // For now, we only support listen mode in falling notes player
-    console.log('Mode change not yet implemented:', mode)
-  }
-
   return (
     <div
       ref={rootRef}
@@ -328,13 +323,11 @@ export default function FallingNotesPlayer({
               currentTime={currentTime}
               duration={totalLength}
               playbackSpeed={tempoScale}
-              playbackMode="listen"
               onPlay={handlePlay}
               onPause={pause}
               onStop={stop}
               onSeek={seek}
               onSpeedChange={setTempoScale}
-              onModeChange={handleModeChange}
               loopStart={loopStart}
               loopEnd={loopEnd}
               onLoopStart={markLoopStart}

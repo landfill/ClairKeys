@@ -10,12 +10,10 @@ interface AdvancedPlaybackControlsProps {
   currentTime: number
   duration: number
   playbackSpeed: number
-  playbackMode: 'listen' | 'follow' | 'practice'
   onPlay: () => void
   onStop: () => void
   onSeek: (time: number) => void
   onSpeedChange: (speed: number) => void
-  onModeChange: (mode: 'listen' | 'follow' | 'practice') => void
   // Advanced features
   onLoop?: (enabled: boolean) => void
   onRewind?: () => void
@@ -32,12 +30,10 @@ export default function AdvancedPlaybackControls({
   currentTime,
   duration,
   playbackSpeed,
-  playbackMode,
   onPlay,
   onStop,
   onSeek,
   onSpeedChange,
-  onModeChange,
   onLoop,
   onRewind,
   onFastForward,
@@ -81,12 +77,10 @@ export default function AdvancedPlaybackControls({
         currentTime={currentTime}
         duration={duration}
         playbackSpeed={playbackSpeed}
-        playbackMode={playbackMode}
         onPlay={onPlay}
         onStop={onStop}
         onSeek={onSeek}
         onSpeedChange={onSpeedChange}
-        onModeChange={onModeChange}
       />
 
       {/* 고급 컨트롤 토글 */}
