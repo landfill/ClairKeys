@@ -70,6 +70,16 @@ Vercel preview 및 `All Checks Complete` 성공을 GitHub live state로 확인�
 non-draft OPEN·mergeable `MERGEABLE`로 확인했다. 이 검증은 병합 승인이 아니며
 실제 운영 DELETE/실기기 검증을 대신하지 않는다.
 
+## 승인 병합·운영 확인 (2026-09-22)
+
+사용자 "머지승인" 후 PR182는 `b7191d032eaf000c523745bfb751e0a8a2b2b094`로 병합됐다.
+`origin/main`과 로컬 `main`이 같은 SHA이며 PR head `d27a4c6`이 포함된다. Production
+deployment6586549256은 이 SHA에 대해 `success`이고 Vercel 상태도 `Deployment has
+completed`다. 운영 `/library`를 로그인된 읽기 전용 브라우저에서 확인했다: 데스크톱과
+390px 모바일 모두 악보 3장 목록, 선형 아이콘, 대상·영구 삭제 안내·확인 체크박스,
+기본 취소 포커스가 보였다. 취소 후 원래 삭제 버튼으로 포커스가 돌아왔고 목록 3장은
+유지됐다. 실제 삭제는 수행하지 않았다. 병합 커밋의 E2E 후속 검사는 진행 중이다.
+
 ## 데이터·동작 경계
 
 `src/app/api/sheet/[id]/route.ts`, Prisma 모델, 서비스 요청 메서드는 변경하지 않았다. 서버는 파일 정리에 실패해도 DB 삭제를 계속할 수 있으므로 UI에서 파일 완전 제거를 보장하지 않는다. 실제 운영 악보 삭제·실기기 터치·실제 스크린리더 출력·운영 배포 후 브라우저 검증은 이 PR 이전에 수행하지 않았다. 테스트의 로그인 쿠키와 목록은 모의 데이터로, 실제 로그인/DB 성공을 증명하지 않는다.

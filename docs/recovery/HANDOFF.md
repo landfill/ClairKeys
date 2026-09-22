@@ -4,12 +4,16 @@ Last updated: 2026-09-22 KST
 
 ## Current phase
 
-**UI-2026 화면 일관성·내 악보 삭제 흐름 — IN_REVIEW.** [PR182](https://github.com/landfill/ClairKeys/pull/182)는
-2026-09-22 non-draft로 열렸고 현재 head `d27a4c6`이다. 기존 DS-1 토큰을 기준으로 모달·목록
+**UI-2026 화면 일관성·내 악보 삭제 흐름 — 병합·Production 배포 완료, post-merge E2E 진행 중.**
+[PR182](https://github.com/landfill/ClairKeys/pull/182)는 사용자 명시적 병합 승인으로
+2026-09-22 `b7191d0`에 병합됐다. 기존 DS-1 토큰을 기준으로 모달·목록
 표현을 맞추고, 삭제 대상 식별·명시적 확인·진행/실패 상태를 개선했다. API/DB/파일
 처리는 변경하지 않았다. Codex/CodeRabbit 포커스 지적, WebKit CI 실패, 삭제 성공 후
-포커스 지적을 재현→수정→브라우저 검증 후 푸시했다. 최종 head의 필수 CI(전체 E2E 2개 포함)
-모두 성공, Codex 재리뷰 완료·신규 지적 0, 미해결 리뷰 스레드 0이다.
+포커스 지적을 재현→수정→브라우저 검증 후 푸시했다. PR head 필수 CI(전체 E2E 2개 포함)
+모두 성공, Codex 재리뷰 완료·신규 지적 0, 미해결 리뷰 스레드 0이다. Vercel
+Production 배포6586549256 성공; 운영 PC·모바일 삭제창·취소 확인. 실제 삭제 미실행.
+원격·로컬 브랜치 tip은 main에 포함되지만 사용자 미추적 파일 `.bkit/`, `.gemini/`,
+`.pdca-status.json`이 있어 AGENTS의 정리 조건에 따라 둘 다 보존한다.
 [검증·화면](validation/2026-09-22-ui-site-consistency-delete.md),
 [리뷰 로그](reviews/PR-182.md). 사용자 승인 전 병합하지 않는다.
 
@@ -25,7 +29,7 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 
 ## Next action
 
-- PR182 `d27a4c6`는 review-ready이며 최신 필수 CI·리뷰가 정리됐다. **사용자의 PR182 명시적 병합 승인을 기다린다.** 승인 후에도 그 시점의 head CI·리뷰·mergeability를 다시 확인한다.
+- PR182 병합 커밋 `b7191d0`의 post-merge E2E가 끝나면 결과를 기록한다. 브랜치 삭제는 기존 사용자 미추적 파일 세 항목 때문에 보류한다. 파일을 보존한 채 이 조건을 예외로 처리하라는 명시적 지시가 있으면 tip 포함 여부를 다시 확인한 뒤 원격→로컬 순서로 정리한다.
 
 - PR176 승인 병합·브랜치 정리 완료. 병합 전 최신 CI/E2E·리뷰 검토 성공; 병합 후 체크 결과는51daf9a의GitHub live checks에서 확인한다.
 - [#177 PC 악보 높이 개선](https://github.com/landfill/ClairKeys/issues/177)을 사용자 요청으로 상세 등록했다. 건반 좌우 유지·세로만 조정 및 노트 애니메이션 보존 조건, [실측](validation/2026-09-21-score-panel-height.md)과 완료 기준을 포함한다. 이슈OPEN/본문 일치 확인; 구현·UI 변경은 미착수.
