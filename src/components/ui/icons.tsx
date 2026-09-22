@@ -58,6 +58,14 @@ export function LibraryIcon(props: IconProps) {
   )
 }
 
+export function FolderIcon(props: IconProps) {
+  return <Icon {...props}><path d="M3.5 6h6l2 2h9v10a2 2 0 01-2 2h-13a2 2 0 01-2-2z" /></Icon>
+}
+
+export function GlobeIcon(props: IconProps) {
+  return <Icon {...props}><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18" /></Icon>
+}
+
 /** 새 악보. 트레이 위로 올라가는 화살표. */
 export function UploadIcon(props: IconProps) {
   return (

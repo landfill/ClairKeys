@@ -1,11 +1,8 @@
 'use client'
 
-/**
- * Confirm Dialog Component
- * 사용자 액션 확인을 위한 모달 다이얼로그
- */
-
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import Button from './Button'
+import { AlertIcon } from './icons'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -17,245 +14,170 @@ interface ConfirmDialogProps {
   cancelText?: string
   type?: 'danger' | 'warning' | 'info'
   children?: React.ReactNode
+  confirmDisabled?: boolean
+  busy?: boolean
+  returnFocusRef?: React.RefObject<HTMLElement | null>
 }
 
 export default function ConfirmDialog({
-  isOpen,
-  onClose,
-  onConfirm,
-  title = '확인',
-  message = '이 작업을 수행하시겠습니까?',
-  confirmText = '확인',
-  cancelText = '취소',
-  type = 'info',
-  children
+  isOpen, onClose, onConfirm, title = '확인', message = '이 작업을 수행하시겠습니까?',
+  confirmText = '확인', cancelText = '취소', type = 'info', children,
+  confirmDisabled = false, busy = false,
+  returnFocusRef,
 }: ConfirmDialogProps) {
+  const titleId = useId()
+  const contentId = useId()
+  const dialogRef = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
-  const cancelButtonRef = useRef<HTMLButtonElement>(null)
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  const previousFocus = useRef<HTMLElement | null>(null)
 
-  // ESC 키로 모달 닫기
   useEffect(() => {
-    const handleEscKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
-        onClose()
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscKey)
-      // 첫 번째 버튼(취소)에 포커스
-      cancelButtonRef.current?.focus()
-      // 배경 스크롤 방지
-      document.body.style.overflow = 'hidden'
-    }
-
+    if (!isOpen) return
+    previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const returnFocus = returnFocusRef?.current
+    const oldOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    cancelRef.current?.focus()
     return () => {
-      document.removeEventListener('keydown', handleEscKey)
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = oldOverflow
+      const original = returnFocus && returnFocus.isConnected ? returnFocus : previousFocus.current
+      // A successful deletion may remove the card and its trigger before this
+      // cleanup runs. Keep keyboard users at the page's stable heading then.
+      const fallback = document.querySelector<HTMLElement>('main h1')
+      const target = original?.isConnected && original !== document.body
+        ? original
+        : fallback
+      if (target === fallback && fallback && !fallback.hasAttribute('tabindex')) fallback.tabIndex = -1
+      target?.focus()
     }
-  }, [isOpen, onClose])
+  }, [isOpen, returnFocusRef])
 
-  // 클릭 외부 영역으로 모달 닫기
-  const handleBackdropClick = (event: React.MouseEvent) => {
-    if (event.target === event.currentTarget) {
-      onClose()
-    }
-  }
+  // A pending request disables every control. Chromium otherwise moves focus to
+  // body when the active confirm button becomes disabled, allowing Tab behind
+  // the still-open modal.
+  useEffect(() => {
+    if (isOpen && busy) dialogRef.current?.focus()
+  }, [isOpen, busy])
 
-  // Enter 키로 확인
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' && event.target === cancelButtonRef.current) {
+    if (event.key === 'Escape') {
       event.preventDefault()
-      onClose()
+      if (!busy) onClose()
+    }
+    if (event.key !== 'Tab' || !modalRef.current) return
+    const controls = Array.from(modalRef.current.querySelectorAll<HTMLElement>(
+      'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href]'
+    ))
+    if (!controls.length) {
+      event.preventDefault()
+      dialogRef.current?.focus()
+      return
+    }
+    const first = controls[0]
+    const last = controls[controls.length - 1]
+    if (document.activeElement === dialogRef.current) {
+      event.preventDefault()
+      const target = event.shiftKey ? last : first
+      target.focus()
+    } else if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
     }
   }
 
   if (!isOpen) return null
 
-  const getTypeStyles = () => {
-    switch (type) {
-      case 'danger':
-        return {
-          icon: '⚠️',
-          iconBg: 'bg-red-100',
-          iconColor: 'text-red-600',
-          confirmBg: 'bg-red-500 hover:bg-red-600 focus:ring-red-500',
-          titleColor: 'text-red-900'
-        }
-      case 'warning':
-        return {
-          icon: '⚠️',
-          iconBg: 'bg-orange-100',
-          iconColor: 'text-orange-600',
-          confirmBg: 'bg-orange-500 hover:bg-orange-600 focus:ring-orange-500',
-          titleColor: 'text-orange-900'
-        }
-      case 'info':
-      default:
-        return {
-          icon: 'ℹ️',
-          iconBg: 'bg-blue-100',
-          iconColor: 'text-blue-600',
-          confirmBg: 'bg-blue-500 hover:bg-blue-600 focus:ring-blue-500',
-          titleColor: 'text-blue-900'
-        }
-    }
-  }
-
-  const styles = getTypeStyles()
-
   return (
-    <div 
-      className="fixed inset-0 z-50 overflow-y-auto"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-    >
-      {/* 배경 오버레이 */}
-      <div 
-        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-        onClick={handleBackdropClick}
-      />
-      
-      {/* 모달 컨테이너 */}
-      <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div 
-          ref={modalRef}
-          className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
-        >
-          {/* 모달 헤더 */}
-          <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-            <div className="sm:flex sm:items-start">
-              {/* 아이콘 */}
-              <div className={`mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${styles.iconBg} sm:mx-0 sm:h-10 sm:w-10`}>
-                <span className="text-lg" role="img" aria-hidden="true">
-                  {styles.icon}
-                </span>
-              </div>
-              
-              {/* 콘텐츠 */}
-              <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                <h3 
-                  className={`text-base font-semibold leading-6 ${styles.titleColor}`}
-                  id="modal-title"
-                >
-                  {title}
-                </h3>
-                <div className="mt-2">
-                  {children ? (
-                    children
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      {message}
-                    </p>
-                  )}
-                </div>
+    <div ref={dialogRef} tabIndex={-1} className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-ink/60 p-3 sm:items-center sm:p-6"
+      role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={contentId}
+      onKeyDown={handleKeyDown}
+      onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}>
+      <div ref={modalRef} className="max-h-[calc(100dvh-1.5rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-rule bg-surface shadow-xl sm:max-h-[calc(100dvh-3rem)]">
+        <div className="p-5 sm:p-6">
+          <div className="flex items-start gap-3">
+            <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${type === 'danger' ? 'bg-state-error/10 text-state-error' : type === 'warning' ? 'bg-state-progress/10 text-state-progress' : 'bg-accent/10 text-accent'}`} aria-hidden="true">
+              <AlertIcon size={21} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 id={titleId} className="text-lg font-semibold text-ink">{title}</h2>
+              <div id={contentId} className="mt-2 text-sm leading-6 text-ink-muted break-words">
+                {children ?? <p>{message}</p>}
               </div>
             </div>
           </div>
-          
-          {/* 모달 푸터 - 버튼들 */}
-          <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-            {/* 확인 버튼 */}
-            <button
-              type="button"
-              onClick={onConfirm}
-              className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm ${styles.confirmBg} focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto`}
-            >
-              {confirmText}
-            </button>
-            
-            {/* 취소 버튼 */}
-            <button
-              ref={cancelButtonRef}
-              type="button"
-              onClick={onClose}
-              onKeyDown={handleKeyDown}
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:w-auto"
-            >
-              {cancelText}
-            </button>
-          </div>
+        </div>
+        <div className="flex flex-col-reverse gap-2 border-t border-rule bg-surface-muted p-4 sm:flex-row sm:justify-end sm:px-6">
+          <Button ref={cancelRef} type="button" variant="outline" className="min-h-11 w-full sm:w-auto" disabled={busy} onClick={onClose}>{cancelText}</Button>
+          <Button type="button" variant={type === 'danger' ? 'danger' : 'primary'} className="min-h-11 w-full sm:w-auto" disabled={confirmDisabled || busy} loading={busy} onClick={onConfirm}>{busy ? '처리 중…' : confirmText}</Button>
         </div>
       </div>
     </div>
   )
 }
 
-// 사용하기 쉬운 훅
+// Legacy call sites still use the browser confirmation contract.
 export function useConfirmDialog() {
-  const confirm = (options: {
-    title?: string
-    message?: string
-    confirmText?: string
-    cancelText?: string
-    type?: 'danger' | 'warning' | 'info'
-  }): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const dialog = document.createElement('div')
-      document.body.appendChild(dialog)
-      
-      const cleanup = () => {
-        document.body.removeChild(dialog)
-      }
-      
-      // React를 사용하지 않고 간단한 confirm 창 생성
-      const result = window.confirm(options.message || '이 작업을 수행하시겠습니까?')
-      resolve(result)
-      cleanup()
-    })
-  }
-  
+  const confirm = (options: { message?: string }): Promise<boolean> =>
+    Promise.resolve(window.confirm(options.message || '이 작업을 수행하시겠습니까?'))
   return { confirm }
 }
 
-// 특화된 삭제 확인 컴포넌트
 interface DeleteConfirmDialogProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: () => void
+  onConfirm: () => Promise<void> | void
   itemName?: string
   itemType?: string
+  itemDetail?: string
+  returnFocusRef?: React.RefObject<HTMLElement | null>
 }
 
-export function DeleteConfirmDialog({
-  isOpen,
-  onClose,
-  onConfirm,
-  itemName = '',
-  itemType = '항목'
-}: DeleteConfirmDialogProps) {
+export function DeleteConfirmDialog({ isOpen, onClose, onConfirm, itemName = '', itemType = '항목', itemDetail, returnFocusRef }: DeleteConfirmDialogProps) {
+  const [acknowledged, setAcknowledged] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isOpen) {
+      setAcknowledged(false)
+      setError(null)
+    }
+  }, [isOpen])
+
+  const confirm = async () => {
+    if (!acknowledged || busy) return
+    setBusy(true)
+    setError(null)
+    try {
+      await onConfirm()
+    } catch {
+      setError(`${itemType}를 삭제하지 못했습니다. 연결을 확인하고 다시 시도해 주세요.`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
-    <ConfirmDialog
-      isOpen={isOpen}
-      onClose={onClose}
-      onConfirm={onConfirm}
-      title="삭제 확인"
-      confirmText="삭제"
-      cancelText="취소"
-      type="danger"
-    >
-      <div className="space-y-3">
-        <p className="text-sm text-gray-600">
-          <strong>{itemName}</strong> {itemType}을(를) 삭제하시겠습니까?
-        </p>
-        <div className="bg-red-50 border border-red-200 rounded-md p-3">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <span className="text-red-400 text-sm">⚠️</span>
-            </div>
-            <div className="ml-2">
-              <p className="text-sm text-red-700 font-medium">
-                주의: 이 작업은 되돌릴 수 없습니다
-              </p>
-              <ul className="mt-1 text-xs text-red-600 list-disc list-inside space-y-1">
-                <li>연관된 모든 데이터가 함께 삭제됩니다</li>
-                <li>연습 기록 및 통계가 사라집니다</li>
-                <li>파일 저장소에서도 완전히 제거됩니다</li>
-              </ul>
-            </div>
-          </div>
+    <ConfirmDialog isOpen={isOpen} onClose={onClose} onConfirm={confirm}
+      title={`${itemType} 영구 삭제`} confirmText={`${itemType} 영구 삭제`} type="danger"
+      confirmDisabled={!acknowledged} busy={busy} returnFocusRef={returnFocusRef}>
+      <div className="space-y-4">
+        <div className="rounded-lg border border-rule bg-surface-muted p-4">
+          <p className="text-xs font-semibold text-ink-muted">삭제할 {itemType}</p>
+          <p className="mt-1 break-all text-base font-semibold text-ink">{itemName || itemType}</p>
+          {itemDetail && <p className="mt-1 break-words text-sm text-ink-muted">{itemDetail}</p>}
         </div>
+        <p className="font-medium text-state-error">이 {itemType}는 영구 삭제되며 되돌릴 수 없습니다.</p>
+        {itemType === '악보' && <p>악보와 연결된 연습 기록을 더 이상 사용할 수 없습니다.</p>}
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-rule-strong bg-surface px-3 py-2 text-ink">
+          <input type="checkbox" checked={acknowledged} disabled={busy} onChange={(event) => setAcknowledged(event.target.checked)} className="size-5 accent-state-error" />
+          <span>영구 삭제를 이해했습니다</span>
+        </label>
+        {error && <p role="alert" className="rounded-lg border border-state-error/30 bg-state-error/5 px-3 py-2 text-state-error">{error}</p>}
       </div>
     </ConfirmDialog>
   )

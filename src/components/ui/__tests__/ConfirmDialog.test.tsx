@@ -80,7 +80,7 @@ describe('ConfirmDialog Component', () => {
       />
     )
 
-    fireEvent.keyDown(document, { key: 'Escape' })
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
     await waitFor(() => {
       expect(mockOnClose).toHaveBeenCalledTimes(1)
     })
@@ -95,9 +95,9 @@ describe('ConfirmDialog Component', () => {
       />
     )
 
-    const backdrop = document.querySelector('.bg-gray-500')
+    const backdrop = screen.getByRole('dialog')
     if (backdrop) {
-      fireEvent.click(backdrop)
+      fireEvent.mouseDown(backdrop)
       expect(mockOnClose).toHaveBeenCalledTimes(1)
     }
   })
@@ -114,10 +114,10 @@ describe('ConfirmDialog Component', () => {
     )
 
     const confirmButton = screen.getByText('확인')
-    expect(confirmButton).toHaveClass('bg-red-500')
+    expect(confirmButton).toHaveClass('bg-state-error')
     
     const title = screen.getByText('Danger Dialog')
-    expect(title).toHaveClass('text-red-900')
+    expect(title).toHaveClass('text-ink')
   })
 
   test('applies correct styles for warning type', () => {
@@ -132,10 +132,10 @@ describe('ConfirmDialog Component', () => {
     )
 
     const confirmButton = screen.getByText('확인')
-    expect(confirmButton).toHaveClass('bg-orange-500')
+    expect(confirmButton).toHaveClass('bg-accent')
     
     const title = screen.getByText('Warning Dialog')
-    expect(title).toHaveClass('text-orange-900')
+    expect(title).toHaveClass('text-ink')
   })
 
   test('renders custom children instead of message', () => {
@@ -186,11 +186,10 @@ describe('DeleteConfirmDialog Component', () => {
       />
     )
 
-    expect(screen.getByText('삭제 확인')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '테스트 영구 삭제' })).toBeInTheDocument()
     expect(screen.getByText('Test Item')).toBeInTheDocument()
-    expect(screen.getByText(/테스트을\(를\) 삭제하시겠습니까/)).toBeInTheDocument()
-    expect(screen.getByText('주의: 이 작업은 되돌릴 수 없습니다')).toBeInTheDocument()
-    expect(screen.getByText('삭제')).toBeInTheDocument()
+    expect(screen.getByText(/되돌릴 수 없습니다/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '테스트 영구 삭제' })).toBeDisabled()
     expect(screen.getByText('취소')).toBeInTheDocument()
   })
 
@@ -205,9 +204,8 @@ describe('DeleteConfirmDialog Component', () => {
       />
     )
 
-    expect(screen.getByText('연관된 모든 데이터가 함께 삭제됩니다')).toBeInTheDocument()
-    expect(screen.getByText('연습 기록 및 통계가 사라집니다')).toBeInTheDocument()
-    expect(screen.getByText('파일 저장소에서도 완전히 제거됩니다')).toBeInTheDocument()
+    expect(screen.getByText('악보와 연결된 연습 기록을 더 이상 사용할 수 없습니다.')).toBeInTheDocument()
+    expect(screen.queryByText('파일 저장소에서도 완전히 제거됩니다')).not.toBeInTheDocument()
   })
 
   test('uses default values when itemName and itemType are not provided', () => {
@@ -219,6 +217,6 @@ describe('DeleteConfirmDialog Component', () => {
       />
     )
 
-    expect(screen.getByText('항목을(를) 삭제하시겠습니까?')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '항목 영구 삭제' })).toBeInTheDocument()
   })
 })

@@ -156,13 +156,15 @@ export function CategorySheetMusicList({
   const handleDeleteSheetMusic = async (sheetMusicId: number) => {
     try {
       await deleteSheetMusic(sheetMusicId)
-      // Refresh the list after deletion
-      await fetchUserSheetMusic({
-        categoryId: selectedCategoryId || undefined
-      })
     } catch (error) {
       console.error('Failed to delete sheet music:', error)
-      alert('악보 삭제 중 오류가 발생했습니다.')
+      throw error
+    }
+    // Deletion has succeeded; a later refresh failure must not invite a second DELETE.
+    try {
+      await fetchUserSheetMusic({ categoryId: selectedCategoryId || undefined })
+    } catch (error) {
+      console.error('Failed to refresh sheet music after deletion:', error)
     }
   }
 
