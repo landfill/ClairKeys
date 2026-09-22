@@ -1,6 +1,6 @@
 # ISSUE-177 — PC 악보와 건반의 세로 공간 배분
 
-Status: `IN_PROGRESS`
+Status: `DONE` — PR #183 merged `4803bba` on 2026-09-22; post-merge checks in progress.
 Issue: https://github.com/landfill/ClairKeys/issues/177
 Base: 2026-09-22 main; 기존 재생·OMR 계약 유지.
 
