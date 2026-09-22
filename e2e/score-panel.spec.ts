@@ -56,6 +56,16 @@ test('desktop toggle, persistence, full-measure highlight and scrolling follow e
   await seek.press('End')
   await expect(highlight).toHaveAttribute('data-measure-index', '15')
   expect(await page.getByTestId('score-panel').evaluate(e => e.scrollTop)).toBeGreaterThan(0)
+  // A complete two-staff system, including fingering and slurs over adjacent
+  // measures, stays visible whenever its rendered height fits the panel.
+  await expect.poll(() => page.getByTestId('score-panel').evaluate(element => {
+    const rows = [...element.querySelectorAll('g.staffline')]
+    const first = rows.at(-2)?.getBoundingClientRect(), second = rows.at(-1)?.getBoundingClientRect()
+    const viewport = element.getBoundingClientRect()
+    if (!first || !second) return false
+    const top = Math.min(first.top, second.top), bottom = Math.max(first.bottom, second.bottom)
+    return bottom - top > element.clientHeight || (top >= viewport.top - 2 && bottom <= viewport.bottom + 2)
+  })).toBe(true)
   await seek.press('Home')
   await expect(highlight).toHaveAttribute('data-measure-index', '0')
   await page.reload()

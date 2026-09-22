@@ -110,3 +110,45 @@ export function planPlaybackGeometry({
     boxHeight: Math.min(available, fallingHeight + keyboardHeight + BOX_BORDER),
   }
 }
+
+export type ScoreAwareGeometry = PlaybackGeometry & {
+  scoreHeight: number
+  /** False means one or more complete two-staff systems need the score's own scroll. */
+  contentFits: boolean
+}
+
+/**
+ * Spend only the height the desktop playback view actually owns. Preserve the
+ * original falling-note runway pixel for pixel; spare margin buys score height
+ * first, then white/black keys can become shorter down to their existing floor.
+ * The caller measures the whole two-staff system, not the active measure.
+ */
+export function planScoreAwareGeometry({
+  baselineAvailableHeight,
+  baseScoreHeight,
+  requiredScoreHeight,
+  keyWidth,
+}: {
+  baselineAvailableHeight: number
+  baseScoreHeight: number
+  requiredScoreHeight: number
+  keyWidth: number
+}): ScoreAwareGeometry {
+  const base = planPlaybackGeometry({ availableHeight: baselineAvailableHeight, keyWidth })
+  const spare = Math.max(0, Math.floor(baselineAvailableHeight - base.boxHeight))
+  const keyReserve = Math.max(0, base.keyboardHeight - MIN_KEYBOARD_HEIGHT)
+  const requested = Math.max(0, Math.ceil(requiredScoreHeight - baseScoreHeight))
+  const growth = Math.min(requested, spare + keyReserve)
+  const keyboardHeight = base.keyboardHeight - Math.max(0, growth - spare)
+  const scoreHeight = baseScoreHeight + growth
+  return {
+    scoreHeight,
+    keyboardHeight,
+    fallingHeight: base.fallingHeight,
+    // In an exceptionally short viewport even the 120px keyboard floor cannot
+    // fit. Keep the base planner's box cap instead of rebuilding a 122px box
+    // outside the height its wrapper actually owns.
+    boxHeight: Math.min(Math.max(0, baselineAvailableHeight), base.fallingHeight + keyboardHeight + BOX_BORDER),
+    contentFits: requiredScoreHeight <= scoreHeight,
+  }
+}

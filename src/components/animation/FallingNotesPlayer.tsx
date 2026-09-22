@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import { buildResponsiveKeyLayout } from '@/utils/pianoLayout'
-import { BOX_BORDER, PX_PER_SEC, planPlaybackGeometry } from '@/utils/playbackGeometry'
+import { BOX_BORDER, PX_PER_SEC, planPlaybackGeometry, planScoreAwareGeometry } from '@/utils/playbackGeometry'
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
@@ -92,6 +92,11 @@ export default function FallingNotesPlayer({
   const visualizationRef = useRef<HTMLDivElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const [visualizationSize, setVisualizationSize] = useState({ width: 0, height: 0 })
+  const [requiredScoreHeight, setRequiredScoreHeight] = useState(0)
+  const [scoreBudget, setScoreBudget] = useState<{ baseScoreHeight: number; total: number } | null>(null)
+  const measureScore = useCallback((required: number) => {
+    setRequiredScoreHeight(previous => previous === required ? previous : required)
+  }, [])
 
   // Fullscreen is requested on the player root so the rotated box, not just the
   // visualization, owns the screen.
@@ -129,6 +134,35 @@ export default function FallingNotesPlayer({
     return () => observer.disconnect()
   }, [])
 
+  // The score and visualization share one fixed desktop session height. Their
+  // measured sum is invariant as score height changes, unlike the visualization
+  // height alone. Re-measure on viewport/control changes without feeding the
+  // panel's own new height back into the allocation.
+  useLayoutEffect(() => {
+    if (!isSessionActive || !showScore || !scoreUrl || orientation.rotate) {
+      setScoreBudget(null)
+      return
+    }
+    const root = rootRef.current
+    const panel = root?.querySelector<HTMLElement>('[data-testid="score-panel"]')
+    const visualization = visualizationRef.current
+    if (!root || !panel || !visualization) return
+    const measure = () => {
+      const baseScoreHeight = Math.min(360, Math.max(240, window.innerHeight * 0.34))
+      const total = panel.getBoundingClientRect().height + visualization.getBoundingClientRect().height
+      setScoreBudget(previous => previous && Math.abs(previous.total - total) < 0.5 &&
+        Math.abs(previous.baseScoreHeight - baseScoreHeight) < 0.5
+        ? previous : { baseScoreHeight, total })
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(root)
+    observer.observe(panel)
+    observer.observe(visualization)
+    window.addEventListener('resize', measure)
+    return () => { observer.disconnect(); window.removeEventListener('resize', measure) }
+  }, [isSessionActive, showScore, scoreUrl, orientation.rotate])
+
   // This runs only when a score is loaded or the containing box is resized;
   // playback time deliberately cannot remap a falling note's horizontal x.
   // The measured element wraps the box, so its content width is the box's own
@@ -140,12 +174,21 @@ export default function FallingNotesPlayer({
 
   // The wrapper owns the available height and the box takes the height this
   // returns, which is what keeps the cap from feeding back into its own input.
-  const { fallingHeight, keyboardHeight, boxHeight } = planPlaybackGeometry({
+  const ordinaryGeometry = planPlaybackGeometry({
     availableHeight: visualizationSize.height > 0
       ? visualizationSize.height
       : standardVisualizationHeight,
     keyWidth: layout.keyWidth,
   })
+  const scoreGeometry = scoreBudget && isSessionActive && showScore && scoreUrl
+    ? planScoreAwareGeometry({
+        baselineAvailableHeight: Math.max(0, scoreBudget.total - scoreBudget.baseScoreHeight),
+        baseScoreHeight: scoreBudget.baseScoreHeight,
+        requiredScoreHeight: requiredScoreHeight || scoreBudget.baseScoreHeight,
+        keyWidth: layout.keyWidth,
+      })
+    : null
+  const { fallingHeight, keyboardHeight, boxHeight } = scoreGeometry ?? ordinaryGeometry
 
   // The session, not `isPlaying`, owns the screen. A pause leaves the reader
   // inside the practice run, so turning the phone back upright and rebuilding
@@ -220,7 +263,7 @@ export default function FallingNotesPlayer({
         isSessionActive && !orientation.rotate ? 'min-h-[100dvh]' : '',
         className,
       ].filter(Boolean).join(' ')}
-      style={orientation.rotate ? rotatedRootStyle : undefined}
+      style={orientation.rotate ? rotatedRootStyle : scoreGeometry ? { height: '100dvh' } : undefined}
     >
       {!isSessionActive && <ScoreTimingNotice metadata={animationData.metadata} />}
       <TempoDisplay
@@ -344,7 +387,9 @@ export default function FallingNotesPlayer({
 
       <ScoreToggle available={Boolean(scoreUrl)} onChange={setShowScore} />
       {showScore && scoreUrl && <ScorePanel url={scoreUrl} notes={notes} currentTime={currentTime}
-        timingReferenceBpm={animationData.timingReferenceBpm} />}
+        timingReferenceBpm={animationData.timingReferenceBpm}
+        height={scoreGeometry?.scoreHeight} contentFits={scoreGeometry?.contentFits}
+        onRequiredHeight={measureScore} />}
       {/* Main Visualization Area */}
       {/* Two elements with one job each. The wrapper is measured and owns the
           available height; the box takes the height the plan returns. Sizing the
