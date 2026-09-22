@@ -63,6 +63,13 @@ Safari **15/15 PASS**. `npm run lint` 경고 0, `npx tsc --noEmit`, focused Jest
 Chromium/Firefox/WebKit/Mobile Chrome/Mobile Safari 삭제 스위트 **20/20 PASS**,
 린트 경고 0·타입 검사 PASS. 리뷰 스레드 해결. 최신 hosted 전체 CI·재리뷰는 진행 중이다.
 
+최종 PR head `d27a4c6`의 hosted CI는 전체 성공했다. PR Checks와 Tests의 E2E 두
+작업 모두 성공, Build/Unit/Run Tests/Lint/Type/Security Scan/Security Audit/CodeQL,
+Vercel preview 및 `All Checks Complete` 성공을 GitHub live state로 확인했다. Codex
+같은 head 재리뷰는 완료됐고 새 인라인 지적은 없으며 미해결 스레드는 0이다. PR은
+non-draft OPEN·mergeable `MERGEABLE`로 확인했다. 이 검증은 병합 승인이 아니며
+실제 운영 DELETE/실기기 검증을 대신하지 않는다.
+
 ## 데이터·동작 경계
 
 `src/app/api/sheet/[id]/route.ts`, Prisma 모델, 서비스 요청 메서드는 변경하지 않았다. 서버는 파일 정리에 실패해도 DB 삭제를 계속할 수 있으므로 UI에서 파일 완전 제거를 보장하지 않는다. 실제 운영 악보 삭제·실기기 터치·실제 스크린리더 출력·운영 배포 후 브라우저 검증은 이 PR 이전에 수행하지 않았다. 테스트의 로그인 쿠키와 목록은 모의 데이터로, 실제 로그인/DB 성공을 증명하지 않는다.

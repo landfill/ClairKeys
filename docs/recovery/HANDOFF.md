@@ -8,7 +8,8 @@ Last updated: 2026-09-22 KST
 2026-09-22 non-draft로 열렸고 현재 head `d27a4c6`이다. 기존 DS-1 토큰을 기준으로 모달·목록
 표현을 맞추고, 삭제 대상 식별·명시적 확인·진행/실패 상태를 개선했다. API/DB/파일
 처리는 변경하지 않았다. Codex/CodeRabbit 포커스 지적, WebKit CI 실패, 삭제 성공 후
-포커스 지적을 재현→수정→브라우저 검증 후 푸시했다. 새 head CI·재리뷰는 진행 중이다.
+포커스 지적을 재현→수정→브라우저 검증 후 푸시했다. 최종 head의 필수 CI(전체 E2E 2개 포함)
+모두 성공, Codex 재리뷰 완료·신규 지적 0, 미해결 리뷰 스레드 0이다.
 [검증·화면](validation/2026-09-22-ui-site-consistency-delete.md),
 [리뷰 로그](reviews/PR-182.md). 사용자 승인 전 병합하지 않는다.
 
@@ -24,7 +25,7 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 
 ## Next action
 
-- PR182 `d27a4c6`의 최신 CI·리뷰(본문·인라인·스레드)를 확인하고 새 actionable feedback을 수정·검증한다. 필수 CI와 리뷰가 정리돼도 병합은 대상 PR에 대한 명시적 승인 전까지 보류한다.
+- PR182 `d27a4c6`는 review-ready이며 최신 필수 CI·리뷰가 정리됐다. **사용자의 PR182 명시적 병합 승인을 기다린다.** 승인 후에도 그 시점의 head CI·리뷰·mergeability를 다시 확인한다.
 
 - PR176 승인 병합·브랜치 정리 완료. 병합 전 최신 CI/E2E·리뷰 검토 성공; 병합 후 체크 결과는51daf9a의GitHub live checks에서 확인한다.
 - [#177 PC 악보 높이 개선](https://github.com/landfill/ClairKeys/issues/177)을 사용자 요청으로 상세 등록했다. 건반 좌우 유지·세로만 조정 및 노트 애니메이션 보존 조건, [실측](validation/2026-09-21-score-panel-height.md)과 완료 기준을 포함한다. 이슈OPEN/본문 일치 확인; 구현·UI 변경은 미착수.
