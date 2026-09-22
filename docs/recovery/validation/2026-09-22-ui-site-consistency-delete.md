@@ -56,6 +56,13 @@ DELETE가 Prisma까지 도달했음을 보여줬다. `7f27beb`은 카드 버튼 
 Safari **15/15 PASS**. `npm run lint` 경고 0, `npx tsc --noEmit`, focused Jest 21/21 PASS.
 실제 운영 DELETE는 실행하지 않았다. 최신 hosted full E2E는 재실행 중이다.
 
+다음 Codex 리뷰 P2 `4069555026`은 성공 응답 후 카드 제거가 호출 버튼도 제거하므로
+초점이 `body`로 떨어지는 문제였다. 모의 성공 DELETE E2E를 추가했고, 마지막 카드 삭제 뒤
+`내 악보` 제목의 `toBeFocused()`가 수정 전 실패했다. `d27a4c6`은 원래 버튼이 DOM에
+남으면 거기로, 사라지면 안정적인 페이지 `<h1>`으로 포커스를 보낸다. 수정 후
+Chromium/Firefox/WebKit/Mobile Chrome/Mobile Safari 삭제 스위트 **20/20 PASS**,
+린트 경고 0·타입 검사 PASS. 리뷰 스레드 해결. 최신 hosted 전체 CI·재리뷰는 진행 중이다.
+
 ## 데이터·동작 경계
 
 `src/app/api/sheet/[id]/route.ts`, Prisma 모델, 서비스 요청 메서드는 변경하지 않았다. 서버는 파일 정리에 실패해도 DB 삭제를 계속할 수 있으므로 UI에서 파일 완전 제거를 보장하지 않는다. 실제 운영 악보 삭제·실기기 터치·실제 스크린리더 출력·운영 배포 후 브라우저 검증은 이 PR 이전에 수행하지 않았다. 테스트의 로그인 쿠키와 목록은 모의 데이터로, 실제 로그인/DB 성공을 증명하지 않는다.
