@@ -145,7 +145,10 @@ export function planScoreAwareGeometry({
     scoreHeight,
     keyboardHeight,
     fallingHeight: base.fallingHeight,
-    boxHeight: base.fallingHeight + keyboardHeight + BOX_BORDER,
+    // In an exceptionally short viewport even the 120px keyboard floor cannot
+    // fit. Keep the base planner's box cap instead of rebuilding a 122px box
+    // outside the height its wrapper actually owns.
+    boxHeight: Math.min(Math.max(0, baselineAvailableHeight), base.fallingHeight + keyboardHeight + BOX_BORDER),
     contentFits: requiredScoreHeight <= scoreHeight,
   }
 }

@@ -166,6 +166,21 @@ describe('planPlaybackGeometry', () => {
 })
 
 describe('PC score-aware vertical budget (#177)', () => {
+  it('retains the base box cap when the viewport cannot hold even a keyboard', () => {
+    const base = planPlaybackGeometry({ availableHeight: 90, keyWidth: 24 })
+    const plan = planScoreAwareGeometry({
+      baselineAvailableHeight: 90, baseScoreHeight: 240,
+      requiredScoreHeight: 400, keyWidth: 24,
+    })
+
+    expect(plan.boxHeight).toBe(base.boxHeight)
+    expect(plan.boxHeight).toBeLessThanOrEqual(90)
+    expect(plan.scoreHeight).toBe(240)
+    expect(plan.fallingHeight).toBe(base.fallingHeight)
+    expect(plan.keyboardHeight).toBe(base.keyboardHeight)
+    expect(plan.contentFits).toBe(false)
+  })
+
   it('uses spare margin for a tall two-staff system without changing notes or keys', () => {
     const base = planPlaybackGeometry({ availableHeight: 474, keyWidth: 26.35 })
     const plan = planScoreAwareGeometry({
