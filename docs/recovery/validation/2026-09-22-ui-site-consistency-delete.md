@@ -36,6 +36,16 @@ Phase: [UI-2026](../phases/UI-2026-site-consistency-delete.md)
 - `npx playwright test e2e/library-states-responsive.spec.ts e2e/upload-form-grouping.spec.ts e2e/explore-cards-responsive.spec.ts --project=chromium --project='Mobile Chrome' --reporter=line` (위와 같은 테스트 인증 변수): 68 PASS. 320/390/844/1280/1440 및 CSS 200% 사례 포함. 로컬 DB 부재로 서버 로그는 발생했으나 모의 응답에 대한 테스트 판정은 모두 통과했다.
 - 수정 후 390/1280 스크린샷을 열어 확인했다. 모달 제목, 정보 카드, 확인 선택, 버튼이 모두 보이며 잘림/가로 넘침이 없다.
 
+## PR182 review round (2026-09-22)
+
+Codex inline P2 `4069413627`: 요청 중 확인 버튼을 비롯한 모든 컨트롤이 비활성화되면
+Chromium 포커스가 `body`로 이동해 Tab으로 모달 뒤에 접근할 수 있었다. 새 E2E가 수정 전
+`document.activeElement.closest('[role="dialog"]') === false`로 실패했다. `d9fdf71`에서
+진행 중 대화상자 루트로 포커스를 옮기고 컨트롤이 없을 때 Tab을 가둔다. 수정 후
+`e2e/library-delete-dialog.spec.ts` Chromium/Mobile Chrome **6/6 PASS**; 진행 중 Tab/Escape,
+실패 후 오류 표시를 포함한다. `SheetMusicCard`/`ConfirmDialog` Jest 21/21, 린트·타입
+검사도 통과했다. 최신 hosted CI·재리뷰는 별도로 확인한다.
+
 ## 데이터·동작 경계
 
 `src/app/api/sheet/[id]/route.ts`, Prisma 모델, 서비스 요청 메서드는 변경하지 않았다. 서버는 파일 정리에 실패해도 DB 삭제를 계속할 수 있으므로 UI에서 파일 완전 제거를 보장하지 않는다. 실제 운영 악보 삭제·실기기 터치·실제 스크린리더 출력·운영 배포 후 브라우저 검증은 이 PR 이전에 수행하지 않았다. 테스트의 로그인 쿠키와 목록은 모의 데이터로, 실제 로그인/DB 성공을 증명하지 않는다.
