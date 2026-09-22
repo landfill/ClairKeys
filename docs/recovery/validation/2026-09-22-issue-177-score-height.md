@@ -90,6 +90,8 @@ Home→5초씩 탐색했다. scrollTop은 **46.5→46.5→46.5→46.5→342.5(20
 
 ## 남은 확인
 
+- Head `12e5607` hosted E2E two jobs failed: Linux Firefox cannot start AudioContext output; Pause remains disabled, and the new geometry E2E waited 30s to click it. Existing session-transition E2E contains the same Firefox-only skip. Test-only head `f006d2b` waits for a real session and skips silent Firefox while asserting startup in other browsers. Local Chromium/Firefox/WebKit score suite **15/15 pass** (`NEXTAUTH_SECRET=local-e2e-test-secret NEXTAUTH_URL=http://localhost:3000 npx playwright test e2e/score-height-responsive.spec.ts --project=firefox --project=chromium --project=webkit --reporter=line`). Hosted rerun pending. One separate WebKit focus assertion failed in a prior hosted run, pending latest run classification.
+
 - 과거87/88/89는 삭제되어 재실측 불가. 최신 head CI/재리뷰 및 로그인 상태 전체 곡 자동 스크롤은 확인이 남았다.
 - 가로 overflow는 #91에서 15px을 관찰했다. SVG/컨테이너 폭 경로를 확인했으며
   스크롤바를 숨겨 기호를 가리는 패치는 하지 않았다. 패널 높이 예산은 이 손실을

@@ -44,6 +44,8 @@ live status, 키보드 단축키와 엔진 코드는 보존한다.
 
 ## 남은 한계
 
+PR184 Vercel 공개 preview `/sheet/92`에서 데스크톱 기본 viewport와 390×844 모바일을 실제 확인했다. 공통 설정·mode 선택·중복 pause 문구는 없고 상단 Play/Pause/Stop, 속도 및 음량이 보인다. 게스트 상태는 짧은 미리보기이므로 로그인한 전체 곡 재생을 검증한 것으로 보지 않는다. PR head의 build/lint/type/unit/security/Vercel은 PASS, 두 E2E workflow는 마지막 조회 시 진행 중이다. Codex의 Lore trailer 누락 지적은 실제 commit `a329dcd`의 필수 `Confidence`/`Scope-risk` trailer와 본문에 반하므로 근거 댓글로 회신했다.
+
 실제 운영 배포는 승인 전 하지 않는다. Preview에서 공개 악보 92와 브라우저
 확인, PR head CI·리뷰 피드백이 남았다. 물리 MIDI 건반 입력·실기기 스크린리더
 출력은 이 UI 제거의 기능 검증으로 주장하지 않는다.

@@ -10,10 +10,12 @@ non-draft head `a329dcd`. 사용자는 모드 UI가 특정 악보 문제가 아�
 중복 일시정지 상태를 제거하고 실제 transport·속도·음량을 보존했다. 변경 전
 Jest1fail, 변경 후 full Jest1101/5브라우저 E2E5pass/type/lint/build 통과.
 [검증](validation/2026-09-22-playback-mode-clarity.md), [리뷰](reviews/PR-184.md).
-Preview 실화면·CI·리뷰 확인 중. 사용자 승인 전 병합 금지.
+Preview `/sheet/92` PC·390×844 모바일에서 UI 제거와 실제 transport·속도·음량을 확인했다.
+Build/lint/type/unit/security/Vercel PASS, 두 E2E CI 진행 중. Codex의 Lore trailer
+누락 지적은 실제 commit 메시지와 대조해 근거로 반박 댓글을 남겼다. 사용자 승인 전 병합 금지.
 
 **#177 PC 악보 세로 공간 — IN_REVIEW.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
-non-draft head `12e5607`. 역사적 87/88/89 URL은 현재 404이며, 동일 제목 새
+non-draft head `f006d2b`. 역사적 87/88/89 URL은 현재 404이며, 동일 제목 새
 90/91/92의 운영 기준선을 재측정했다. 실제 양손 줄 높이와 재생 viewport 예산으로
 악보·건반 길이를 배분하고 낙하 높이·건반 x/폭은 보존한다. 로컬 Jest1104,
 브라우저28pass17비해당skip/type/lint/build 통과. 첫 preview의 90/91/92 실측으로
@@ -22,7 +24,10 @@ non-draft head `12e5607`. 역사적 87/88/89 URL은 현재 404이며, 동일 제
 41px을 다시 내려가는 회귀가 드러나, 같은 초과 줄 안에서는 수동 스크롤을 보존하는
 추가 수정·5브라우저 E2E 검증을 마쳤다. 최신 preview에서도 92의
 Home→20→25초 scrollTop이46.5→342.5→342.5px로 유지됨을 확인했다.
-같은 줄의 아랫부분은 720px viewport 예산 초과라 수동 스크롤이 필요하다. CI·재리뷰 진행 중.
+같은 줄의 아랫부분은 720px viewport 예산 초과라 수동 스크롤이 필요하다. 이전 head의
+두 E2E CI에서 Linux Firefox 무음 실행 환경 때문에 pause가 비활성화되어 새 테스트가
+시간 초과됐다. 기존 session-transition 검사와 동일하게 그 경우만 skip하도록 테스트를
+고쳐 로컬 3브라우저 15/15 통과 후 `f006d2b`를 push했다. 최신 CI·재리뷰 진행 중.
 [검증](validation/2026-09-22-issue-177-score-height.md), [리뷰](reviews/PR-183.md).
 미작동 모드 선택 제거는 별도 PR184로 추적한다. 사용자 승인 전 PR183 병합 금지.
 
