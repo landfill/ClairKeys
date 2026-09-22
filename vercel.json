@@ -97,6 +97,7 @@
   ],
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
+  "ignoreCommand": "sh scripts/vercel-ignore-build.sh",
   "outputDirectory": ".next",
   "devCommand": "npm run dev",
   "framework": "nextjs",
