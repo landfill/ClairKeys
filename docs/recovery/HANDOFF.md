@@ -15,7 +15,7 @@ Build/lint/type/unit/security/Vercel 및 두 E2E CI 모두 PASS. Codex의 Lore t
 누락 지적은 실제 commit 메시지와 대조해 근거로 반박 댓글을 남겼다. 사용자 승인 전 병합 금지.
 
 **#177 PC 악보 세로 공간 — IN_REVIEW.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
-non-draft head `f006d2b`. 역사적 87/88/89 URL은 현재 404이며, 동일 제목 새
+non-draft head `f9d2456`. 역사적 87/88/89 URL은 현재 404이며, 동일 제목 새
 90/91/92의 운영 기준선을 재측정했다. 실제 양손 줄 높이와 재생 viewport 예산으로
 악보·건반 길이를 배분하고 낙하 높이·건반 x/폭은 보존한다. 로컬 Jest1104,
 브라우저28pass17비해당skip/type/lint/build 통과. 첫 preview의 90/91/92 실측으로
@@ -27,7 +27,9 @@ Home→20→25초 scrollTop이46.5→342.5→342.5px로 유지됨을 확인했�
 같은 줄의 아랫부분은 720px viewport 예산 초과라 수동 스크롤이 필요하다. 이전 head의
 두 E2E CI에서 Linux Firefox 무음 실행 환경 때문에 pause가 비활성화되어 새 테스트가
 시간 초과됐다. 기존 session-transition 검사와 동일하게 그 경우만 skip하도록 테스트를
-고쳐 로컬 3브라우저 15/15 통과 후 `f006d2b`를 push했다. 최신 CI·재리뷰 진행 중.
+고쳐 로컬 3브라우저 15/15 통과 후 `f006d2b`의 두 hosted E2E도 통과했다. 이어
+Codex P2가 짧은 PC 화면의 box cap 누락을 지적해 90px 재현1fail→수정20pass,
+type/lint 통과 후 `f9d2456`를 push했다. 최신 head CI·재리뷰 진행 중.
 [검증](validation/2026-09-22-issue-177-score-height.md), [리뷰](reviews/PR-183.md).
 미작동 모드 선택 제거는 별도 PR184로 추적한다. 사용자 승인 전 PR183 병합 금지.
 

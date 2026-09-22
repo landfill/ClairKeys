@@ -90,6 +90,8 @@ Home→5초씩 탐색했다. scrollTop은 **46.5→46.5→46.5→46.5→342.5(20
 
 ## 남은 확인
 
+- `f006d2b`의 두 hosted E2E workflow는 모두 PASS. Codex P2가 매우 짧은 PC viewport에서 `planScoreAwareGeometry`가 기존 box cap을 넘어설 수 있다고 지적했다. `baselineAvailableHeight:90` fixture는 변경 전 `boxHeight:122` 대 base90으로 **1 fail/19 pass**; `f9d2456`에서 box를 예산으로 cap한 뒤 **20/20 pass**, `npx tsc --noEmit` PASS, `npm run lint` 경고0. 건반 최소120px/낙하 영역은 그대로이며 base가 이미 허용한 압축 화면 clipping 이상을 만들지 않는다. 최신 head CI와 재리뷰 대기.
+
 - Head `12e5607` hosted E2E two jobs failed: Linux Firefox cannot start AudioContext output; Pause remains disabled, and the new geometry E2E waited 30s to click it. Existing session-transition E2E contains the same Firefox-only skip. Test-only head `f006d2b` waits for a real session and skips silent Firefox while asserting startup in other browsers. Local Chromium/Firefox/WebKit score suite **15/15 pass** (`NEXTAUTH_SECRET=local-e2e-test-secret NEXTAUTH_URL=http://localhost:3000 npx playwright test e2e/score-height-responsive.spec.ts --project=firefox --project=chromium --project=webkit --reporter=line`). Hosted rerun pending. One separate WebKit focus assertion failed in a prior hosted run, pending latest run classification.
 
 - 과거87/88/89는 삭제되어 재실측 불가. 최신 head CI/재리뷰 및 로그인 상태 전체 곡 자동 스크롤은 확인이 남았다.
