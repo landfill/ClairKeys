@@ -4,10 +4,9 @@ Last updated: 2026-09-22 KST
 
 ## Current phase
 
-**#178 Functions Storage — PR179·180 병합·정리 완료, PR181 병합 승인 대기(2026-09-22).** 원인 실측: 배포 1회는 route83개가 고유 Lambda6개(24.73MB zip)를 공유하므로 "배포당400MB"는 과대 추정이다.
-누적의 주원인은 main 문서 전용 push가 매번 Production 배포가 되는 것이다(30일634push, 규칙 재생 시 빌드88, fetch 불가 최악 가정 시109). 최대 Lambda raw의61%는 Prisma 네이티브 엔진이다.
-PR179(D-076)는 `8115f35`, PR180은 `f133d26`에 병합됐고, 두 Production 배포 모두 24.73MB로 동일하다. 브랜치 정리를 마쳤고 사용자 파일은 보존했다.
-PR181(D-077)은 rebase head `2abfffa`에서 CI 성공·CLEAN이고 Codex 새 지적은 없다. Preview 로그에서 ignore 스크립트가 Vercel에서 실행되는 것을 확인했다.
+**#178 Functions Storage — PR179·180·181 모두 사용자 승인으로 병합·정리 완료(2026-09-22).** 원인 실측: 배포 1회는 route83개가 고유 Lambda6개(24.73MB zip)를 공유하며, 누적의 주원인은 main 문서 전용 push가 매번 Production 배포가 되는 것이었다.
+병합 커밋: PR179 `8115f35`(D-076), PR180 `f133d26`, PR181 `eee9166`(D-077). 세 Production 배포 모두 24.73MB로 번들 변화 없음(기대값).
+`eee9166` 배포 로그에서 ignore 스크립트가 직전 배포 SHA와 diff하여 빌드를 결정했다. 문서 전용 push의 생략 여부는 리뷰 로그의 운영 확인 절에 기록한다.
 [계측·검증](validation/2026-09-22-issue-178-function-storage.md), 리뷰 [179](reviews/PR-179.md)·[180](reviews/PR-180.md)·[181](reviews/PR-181.md).
 
 DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로 수정하고 사용자 승인으로 `51daf9a`에 병합했다. 관련 원격·로컬 두 브랜치 정리 완료, 현재main/사용자 파일5개 해시 보존. [리뷰·병합·정리](reviews/PR-176.md).
@@ -19,10 +18,10 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 
 - PR176 승인 병합·브랜치 정리 완료. 병합 전 최신 CI/E2E·리뷰 검토 성공; 병합 후 체크 결과는51daf9a의GitHub live checks에서 확인한다.
 - [#177 PC 악보 높이 개선](https://github.com/landfill/ClairKeys/issues/177)을 사용자 요청으로 상세 등록했다. 건반 좌우 유지·세로만 조정 및 노트 애니메이션 보존 조건, [실측](validation/2026-09-21-score-panel-height.md)과 완료 기준을 포함한다. 이슈OPEN/본문 일치 확인; 구현·UI 변경은 미착수.
-- #178: PR181에 대한 사용자의 명시적 병합 승인을 기다린다(head `2abfffa`; 승인 후 head·CI·리뷰·mergeability 재확인).
-  병합 후 확인: ① 첫 문서 전용 main push가 Vercel "Ignored Build Step"으로 취소되는지 ② Production 고유 Lambda 합계 24.73MB 유지(번들 변화 없음이 기대값).
+- #178: 코드 PR은 모두 병합됐다. 남은 확인은 문서 전용 main push가 Vercel에서 생략되는지다([PR181 로그](reviews/PR-181.md)).
+  이슈 종료는 사용자 판단: 완료 조건 중 "배포당 400MB 대비 감소"는 기준선 자체가 route 합산 오류였고, 배포 1회 크기는 24.73MB로 변하지 않았다. 감소는 배포 횟수(83~86%)에서 난다.
   이미 누적된 저장량 정리(배포 보존 정책·삭제)는 사용자가 직접 한다. 후속 후보: Prisma `engineType="client"`+adapter-pg로 네이티브 엔진 제거(DB 접근 전반 회귀 검증 필요, 미착수).
-  #178은 병합·배포 확인 전까지 OPEN으로 두며, PR은 `Refs #178`만 쓴다.
+  #178은 사용자 확인 전까지 OPEN이다.
 
 1. PR174/176 모두 병합됐고 잔여 리뷰 지적은 해소됐다. [리뷰](reviews/PR-174.md).
 2. 운영에 비공개 악보가 없어 비공개 차단은 로컬 실제 DB로만 검증했다. 비공개 악보가 생기면 운영에서 404를 확인한다.
