@@ -4,6 +4,14 @@ Last updated: 2026-09-22 KST
 
 ## Current phase
 
+**공통 재생 모드 UI 명확화 — IN_REVIEW.** [PR184](https://github.com/landfill/ClairKeys/pull/184)
+non-draft head `a329dcd`. 사용자는 모드 UI가 특정 악보 문제가 아니라 실제 기능
+차이가 없다는 점을 정정했다. 공유 `PlaybackControls`에서 미작동 모드 선택과
+중복 일시정지 상태를 제거하고 실제 transport·속도·음량을 보존했다. 변경 전
+Jest1fail, 변경 후 full Jest1101/5브라우저 E2E5pass/type/lint/build 통과.
+[검증](validation/2026-09-22-playback-mode-clarity.md), [리뷰](reviews/PR-184.md).
+Preview 실화면·CI·리뷰 확인 중. 사용자 승인 전 병합 금지.
+
 **#177 PC 악보 세로 공간 — IN_REVIEW.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
 non-draft head `12e5607`. 역사적 87/88/89 URL은 현재 404이며, 동일 제목 새
 90/91/92의 운영 기준선을 재측정했다. 실제 양손 줄 높이와 재생 viewport 예산으로
@@ -16,7 +24,7 @@ non-draft head `12e5607`. 역사적 87/88/89 URL은 현재 404이며, 동일 제
 Home→20→25초 scrollTop이46.5→342.5→342.5px로 유지됨을 확인했다.
 같은 줄의 아랫부분은 720px viewport 예산 초과라 수동 스크롤이 필요하다. CI·재리뷰 진행 중.
 [검증](validation/2026-09-22-issue-177-score-height.md), [리뷰](reviews/PR-183.md).
-미작동 모드 선택 제거는 별도 목적/PR로 이어간다. 사용자 승인 전 PR183 병합 금지.
+미작동 모드 선택 제거는 별도 PR184로 추적한다. 사용자 승인 전 PR183 병합 금지.
 
 **UI-2026 화면 일관성·내 악보 삭제 흐름 — DONE.**
 [PR182](https://github.com/landfill/ClairKeys/pull/182)는 사용자 명시적 병합 승인으로
@@ -47,7 +55,7 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 
 ## Next action
 
-- PR183 `12e5607` 최신 CI/리뷰를 처리한다. 별도 브랜치에서 현재 `/sheet/[id]`의 미작동 모드 설정을 제거하고 PR을 만든다. 어느 PR도 사용자 승인 전 병합하지 않는다.
+- PR184 preview의 `/sheet/92`에서 공통 모드/중복 상태 제거와 실제 transport·속도·음량을 확인하고 CI·리뷰를 처리한다. PR183의 최신 CI·리뷰도 계속 확인한다. 두 PR 모두 명시적 승인 전 병합하지 않는다.
 
 - PR182 병합·운영 배포·후속 CI·브랜치 정리 완료. 이후 작업은 별도 요청 범위로 진행한다.
 
