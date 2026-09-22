@@ -19,8 +19,10 @@ export default function ScorePanel({ url, notes, currentTime, timingReferenceBpm
   const [systems, setSystems] = useState<SystemBox[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
   const renderRef = useRef<HTMLDivElement>(null)
+  const lastSystemRef = useRef<string | null>(null)
   useEffect(() => {
     const controller = new AbortController()
+    lastSystemRef.current = null
     setArtifact(null); setError(false)
     fetch(url, { signal: controller.signal, cache: 'no-store' })
       .then(async response => {
@@ -110,13 +112,22 @@ export default function ScorePanel({ url, notes, currentTime, timingReferenceBpm
     const container = scrollRef.current
     if (!container || !box) return
     const center = box.top + box.height / 2
-    const system = systems.find(row => center >= row.top - 16 && center <= row.bottom + 16)
+    const systemIndex = systems.findIndex(row => center >= row.top - 16 && center <= row.bottom + 16)
+    const system = systems[systemIndex]
+    const systemKey = system ? `${systemIndex}:${Math.round(system.top)}:${Math.round(system.height)}` : null
+    const enteringSystem = systemKey !== lastSystemRef.current
+    lastSystemRef.current = systemKey
     if (system && system.height + 8 <= container.clientHeight) {
       // When the whole line fits, align its top instead of the highlighted
       // measure: fingering and slurs over neighbouring measures stay visible.
       if (system.top < container.scrollTop || system.bottom > container.scrollTop + container.clientHeight) {
         container.scrollTop = Math.max(0, system.top - 4)
       }
+    } else if (system && enteringSystem) {
+      // If the complete line cannot fit, show its upper fingering/slurs first.
+      // The rest remains reachable by manual scroll; later measures on the
+      // same line do not undo that scroll unless their highlight leaves view.
+      container.scrollTop = Math.max(0, system.top - 4)
     } else if (box.top < container.scrollTop || box.top + box.height > container.scrollTop + container.clientHeight) {
       // A system beyond the viewport cap remains scrollable. Keep the current
       // measure available without falsely claiming the entire line can fit.
