@@ -11,7 +11,7 @@ non-draft head `a329dcd`. 사용자는 모드 UI가 특정 악보 문제가 아�
 Jest1fail, 변경 후 full Jest1101/5브라우저 E2E5pass/type/lint/build 통과.
 [검증](validation/2026-09-22-playback-mode-clarity.md), [리뷰](reviews/PR-184.md).
 Preview `/sheet/92` PC·390×844 모바일에서 UI 제거와 실제 transport·속도·음량을 확인했다.
-Build/lint/type/unit/security/Vercel PASS, 두 E2E CI 진행 중. Codex의 Lore trailer
+Build/lint/type/unit/security/Vercel 및 두 E2E CI 모두 PASS. Codex의 Lore trailer
 누락 지적은 실제 commit 메시지와 대조해 근거로 반박 댓글을 남겼다. 사용자 승인 전 병합 금지.
 
 **#177 PC 악보 세로 공간 — IN_REVIEW.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
