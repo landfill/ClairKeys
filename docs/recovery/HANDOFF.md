@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-09-22 KST
+Last updated: 2026-09-24 KST
 
 ## Current phase
 
@@ -17,7 +17,7 @@ main을 합친 새 head에서 type/lint/Jest26pass와 5브라우저 E2E20pass·�
 스레드0. 사용자 승인으로 2026-09-22 `8bcfce8`에 병합하고 로컬 main도 fast-forward했다.
 Codex의 Lore trailer 누락 지적은 실제 commit 메시지로 반박·해결했다. 병합 후 검사 진행 중.
 
-**#177 PC 악보 세로 공간 — DONE, 병합 후 검사 완료.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
+**#177 PC 악보 세로 공간 — DONE, 이슈 종료.** [PR183](https://github.com/landfill/ClairKeys/pull/183)
 non-draft head `f9d2456`. 역사적 87/88/89 URL은 현재 404이며, 동일 제목 새
 90/91/92의 운영 기준선을 재측정했다. 실제 양손 줄 높이와 재생 viewport 예산으로
 악보·건반 길이를 배분하고 낙하 높이·건반 x/폭은 보존한다. 로컬 Jest1104,
@@ -37,6 +37,7 @@ type/lint 통과 후 `f9d2456`를 push했다. 최신 head의 두 hosted E2E를 �
 [검증](validation/2026-09-22-issue-177-score-height.md), [리뷰](reviews/PR-183.md).
 사용자 명시적 승인에 따라 2026-09-22 `4803bba`에 병합했고 로컬 main도 fast-forward했다.
 병합 커밋의 E2E 포함 사후 검사 6개 모두 PASS. 미작동 모드 선택 제거는 별도 PR184로 병합했다.
+2026-09-24 #177을 `CLOSED(completed)`로 종료하고 병합·검증 근거 및 87/88/89 URL의 404 한계를 [종료 코멘트](https://github.com/landfill/ClairKeys/issues/177#issuecomment-5797692474)에 남겼다.
 
 **UI-2026 화면 일관성·내 악보 삭제 흐름 — DONE.**
 [PR182](https://github.com/landfill/ClairKeys/pull/182)는 사용자 명시적 병합 승인으로
@@ -72,7 +73,7 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 - PR182 병합·운영 배포·후속 CI·브랜치 정리 완료. 이후 작업은 별도 요청 범위로 진행한다.
 
 - PR176 승인 병합·브랜치 정리 완료. 병합 전 최신 CI/E2E·리뷰 검토 성공; 병합 후 체크 결과는51daf9a의GitHub live checks에서 확인한다.
-- [#177 PC 악보 높이 개선](https://github.com/landfill/ClairKeys/issues/177)을 사용자 요청으로 상세 등록했다. 건반 좌우 유지·세로만 조정 및 노트 애니메이션 보존 조건, [실측](validation/2026-09-21-score-panel-height.md)과 완료 기준을 포함한다. 이슈OPEN/본문 일치 확인; 구현·UI 변경은 미착수.
+- [#177 PC 악보 높이 개선](https://github.com/landfill/ClairKeys/issues/177)은 PR183 병합·사후 검사 완료 후 2026-09-24 `CLOSED(completed)`로 종료했다. [검증](validation/2026-09-22-issue-177-score-height.md)과 [리뷰](reviews/PR-183.md)에 적용 범위와 높이 예산 초과 시 스크롤 한계를 기록했다.
 - #178은 2026-09-22에 사용자 승인으로 CLOSED(completed)됐다([종료 코멘트](https://github.com/landfill/ClairKeys/issues/178#issuecomment-5771698980)). 브랜치·worktree 정리 완료, 로컬·원격 모두 main만 남음.
   OMR VM 배포는 불필요하다(8f1b4e8 이후 변경에 `omr-service/`·인식 스크립트 없음).
   이미 누적된 저장량 정리(배포 보존 정책·삭제)는 사용자가 직접 한다. 후속 후보: Prisma `engineType="client"`+adapter-pg로 네이티브 엔진 제거(DB 접근 전반 회귀 검증 필요, 미착수).
