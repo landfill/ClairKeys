@@ -66,6 +66,13 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 **#125 완료·종료(2026-09-21) — PR175 병합·운영 배포·비로그인 스모크 후 사용자 승인으로 이슈 종료.** 공개 악보의 악보 패널은 로그인 여부와 무관하게 노출된다(D-075).
 [PR175](https://github.com/landfill/ClairKeys/pull/175), [운영 근거](validation/2026-09-21-issue-125-public-score-production.json), [리뷰](reviews/PR-175.md).
 
+**로컬 Docker 컨테이너 정리(2026-09-24).** 종료 상태·자동 재시작 없음으로 확인된
+#125 검증용 `clairkeys-issue125-final`, `clairkeys-issue125-omr`,
+`clairkeys-issue125-db` 3개 컨테이너를 `docker rm`으로 삭제했다. 이후
+`docker ps -a`는 비었고, DB 데이터 볼륨
+`aa17603f09e8bd9dcd9d11400f31a523742e1726a6b36fa4b9037123be99a471`은
+`docker volume inspect`로 보존을 확인했다. 이미지와 다른 Docker 리소스는 정리 범위에 넣지 않았다.
+
 ## Next action
 
 - 사용자 승인 순서로 PR183 `4803bba` → PR184 `8bcfce8` 병합 완료. PR183 사후 검사6개 PASS. 두 작업 브랜치의 로컬·원격 tip이 최신 main 대비 고유0을 확인하고 원격→로컬 순서로 참조를 삭제했다. 이후 사용자가 `.gemini/`를 직접 삭제했고 부재를 확인했다. 현재 로컬·원격 모두 main만 있다. PR184 사후 검사 결과를 확인한다.
