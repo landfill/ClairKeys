@@ -3046,6 +3046,52 @@
 - Reversibility: clean
 - Related: phases/UI-2026-playback-mode-clarity.md, D-019, #177의 별도 UI 주석
 
+## D-080: 근거 없는 순위 이름과 개발용 음량 표기를 사용자 화면에서 걷어낸다
+
+- Date: 2026-09-27
+- Status: Accepted for UI-2026 review-design branch; merge pending
+- Context: 2026-09-27 운영 점검에서 탐색의 `추천 악보`·`인기 악보`가 최신순 목록을 잘라 쓴 것이라
+  공개 악보 3곡이 세 칸에 반복되는 것을 확인했다. 재생 수·추천 신호는 저장되지 않는다.
+  재생 준비 화면의 음량은 `음량 (master gain)`·`0.50`으로 보인다. 이 표기는 D-016이
+  `DEFAULT_MASTER_GAIN`을 귀로 정하기 위해 남긴 튜닝용이었다. 그 값은 이후 0.5로 확정됐고,
+  제품 사용자는 음량을 튜닝하지 않는다.
+- Decision:
+  1. 탐색은 데이터가 뒷받침하는 순서 하나(`최근 공개된 악보`, 최신순, 12개)만 보여준다. 한 악보는
+     한 번만 보이고, 모든 카드는 같은 링크·`연습 시작 →` 행동을 가진다. 추천·인기는 실제 신호
+     (예: 연습 기록)가 생긴 뒤 별도 결정으로 다시 도입한다.
+  2. 음량 슬라이더의 값·범위·기본값은 master gain 그대로 두고, 표시와 접근성 이름만 `음량`과
+     범위 대비 백분율로 바꾼다. 공유 게인 체인과 D-016 헤드룸 계산은 바꾸지 않는다.
+  3. 로그인 화면은 origin이 정확히 같은 절대 URL `callbackUrl`에서 경로만 꺼내 기존 경로 판정을 다시
+     통과시킨다(`toSafeReturnPathFrom`). next-auth 미들웨어가 넘기는 값이 이 형태라 로그인 후 복귀와
+     경로별 안내가 모두 `/`로 떨어지던 문제를 함께 고친다. 다른 origin·scheme·userinfo는 계속 거절한다.
+- Rejected: 추천·인기 칸을 유지하고 악보 수가 적을 때만 숨김 | 악보가 늘어도 같은 목록을 다른
+  이름으로 반복하는 문제는 그대로 남는다.
+- Rejected: 음량 표기를 dB로 바꿈 | 튜닝 목적이 끝났고 일반 사용자에게 dB는 또 다른 개발용 단위다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 순위·추천처럼 보이는 섹션 이름은 그 순서를 만든 실제 데이터가 있을 때만 쓴다.
+- Related: phases/UI-2026-review-design.md, D-016
+
+## D-081: 재생 단축키는 페이지가 가진 키만 쓰고 포커스된 컨트롤의 키를 빼앗지 않는다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT playback-shortcuts branch; merge pending
+- Context: `/sheet/[id]`에는 단축키가 없었다. 레거시 `useKeyboardShortcuts`는 input/textarea만 제외해,
+  포커스된 버튼 위 Space를 한 번 더 실행하고 슬라이더·select 위 방향키로 재생 위치도 함께 옮긴다.
+- Decision: 새 `usePlaybackShortcuts`는 Space(재생/일시정지)와 ←/→(5초)만 다룬다. 대상이 이미 그 키에
+  의미를 가진 요소(버튼·링크·입력·select·contenteditable·slider 등 ARIA 위젯)이거나, 다른 핸들러가
+  `preventDefault`했거나, 수정키(Shift 포함)가 눌렸거나, Space 자동 반복이면 아무것도 하지 않는다. 샘플 로딩으로
+  컨트롤이 비활성화된 동안에는 재생·이동 모두 하지 않는다. 처리한 키는
+  `preventDefault`로 페이지 스크롤을 막는다. 재생은 재생 버튼과 같은 경로(`handlePlay`)를 탄다.
+- Rejected: 레거시 `useKeyboardShortcuts` 재사용 | 포커스 규칙이 틀려 이중 실행이 생기고, 레거시 플레이어의
+  동작을 함께 바꾸게 된다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 페이지 단축키를 추가할 때 `resolvePlaybackShortcut`의 소유 요소 목록을 먼저 갱신한다.
+- Related: phases/FEAT-playback-shortcuts.md, D-079
+
 ## D-082: 한 손 연습은 다른 손을 숨기지 않고 흐리게 남기며, 소리는 기본으로 유지한다
 
 - Date: 2026-09-27
@@ -3066,3 +3112,17 @@
 - Directive: `audibleNotesFor`는 아무것도 끄지 않을 때 원래 배열을 그대로 돌려줘야 한다. 새 배열을 만들면
   재생 중 오디오가 매 렌더마다 재시작된다.
 - Related: phases/FEAT-hand-practice.md, D-019
+
+## D-084: 이어서 연습할 위치는 서버가 아니라 이 브라우저에만 기억한다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT practice-resume branch; merge pending
+- Context: 마지막 위치를 기억하는 기능은 로그인하지 않은 공개 악보 방문자에게도 필요하다. 서버 저장은 로그인·
+  API·DB 쓰기와 삭제 정합성(현재 `PracticeSession` FK는 `RESTRICT`)을 함께 요구한다.
+- Decision: 악보별 `clairkeys.resume.<id>` 키에 위치만 저장한다. 저장소가 막혀 있거나 값이 손상되면 기능만
+  빠지고 페이지는 정상 동작한다. 연습 기록(서버)은 별도 결정·PR로 다룬다.
+- Rejected: `PracticeSession`에 위치를 저장 | 비로그인 방문자를 제외하고, 삭제 정합성 수정 없이 쓰면 악보 삭제가 실패한다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Related: phases/FEAT-practice-resume.md

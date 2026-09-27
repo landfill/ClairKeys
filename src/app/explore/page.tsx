@@ -52,7 +52,6 @@ export default function ExplorePage() {
             <div>
               <PublicSheetMusicBrowser 
                 onSheetMusicClick={handleSheetMusicClick}
-                showSections={['featured', 'popular', 'recent']}
                 className="w-full"
               />
             </div>

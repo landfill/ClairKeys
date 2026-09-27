@@ -150,7 +150,7 @@ for (const viewport of viewports) {
       page.getByRole('slider', { name: '재생 위치' }),
       transport(page, '구간 시작 A 설정'),
       page.getByLabel('재생 속도'),
-      page.getByLabel('음량 (master gain)'),
+      page.getByLabel('음량'),
       transport(page, '정지'),
     ]) {
       await expect(control).toBeAttached()
@@ -176,7 +176,7 @@ for (const viewport of viewports) {
       if (viewport.width < 640) {
         await expect(page.getByLabel('재생 속도')).toBeFocused()
         await page.keyboard.press('Tab')
-        await expect(page.getByLabel('음량 (master gain)')).toBeFocused()
+        await expect(page.getByLabel('음량')).toBeFocused()
         await page.keyboard.press('Tab')
       }
       await expect(seek).toBeFocused()
@@ -191,7 +191,7 @@ for (const viewport of viewports) {
       await seek.press('Home')
       await expect(seek).toHaveAttribute('aria-valuenow', '0')
       if (viewport.width === 390) {
-        for (const label of ['재생 속도', '음량 (master gain)']) {
+        for (const label of ['재생 속도', '음량']) {
           const control = page.getByLabel(label)
           await control.evaluate(element => element.setAttribute('data-focus-probe', 'retained'))
           await control.focus()

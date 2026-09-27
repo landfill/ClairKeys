@@ -40,53 +40,53 @@ describe('PublicSheetMusicBrowser', () => {
     mockFetchOk()
   })
 
-  it('keeps the three existing sections and their data order', async () => {
+  it('lists each public sheet once under an honest heading instead of repeating the feed', async () => {
     render(<PublicSheetMusicBrowser />)
 
-    await waitFor(() => expect(screen.getByRole('heading', { name: '추천 악보' })).toBeInTheDocument())
-    expect(screen.getByRole('heading', { name: '인기 악보' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: '최신 악보' })).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByRole('heading', { name: '최근 공개된 악보' })).toBeInTheDocument())
 
-    // Section sizes and ordering are the preserved contract: 3 / 4 / 8 from the same feed.
-    // Assert the hrefs rather than rendered text, so ordering stays verifiable independently
-    // of presentation details such as the screen-reader-only rank prefix.
-    const hrefsIn = (heading: string) =>
-      Array.from(sectionFor(heading).querySelectorAll('a[href]')).map((n) => n.getAttribute('href'))
+    // "추천"/"인기" were slices of the same newest-first feed, so three sheets were shown
+    // three times under names that claimed a ranking nobody computed (D-080).
+    expect(screen.queryByRole('heading', { name: '추천 악보' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: '인기 악보' })).not.toBeInTheDocument()
 
-    expect(hrefsIn('추천 악보')).toEqual(['/sheet/1', '/sheet/2', '/sheet/3'])
-    expect(hrefsIn('인기 악보')).toEqual(['/sheet/1', '/sheet/2', '/sheet/3', '/sheet/4'])
-    expect(hrefsIn('최신 악보')).toEqual(['/sheet/1', '/sheet/2', '/sheet/3', '/sheet/4'])
+    const hrefs = Array.from(sectionFor('최근 공개된 악보').querySelectorAll('a[href]'))
+      .map((n) => n.getAttribute('href'))
+    expect(hrefs).toEqual(['/sheet/1', '/sheet/2', '/sheet/3', '/sheet/4'])
+    expect(new Set(hrefs).size).toBe(hrefs.length)
+  })
 
-    // Every section still renders each sheet's own title.
-    for (const heading of ['추천 악보', '인기 악보', '최신 악보']) {
-      expect(within(sectionFor(heading)).getByText(sheets[1].title)).toBeInTheDocument()
+  it('offers the same practice action on every card', async () => {
+    render(<PublicSheetMusicBrowser />)
+    await waitFor(() => expect(screen.getByRole('heading', { name: '최근 공개된 악보' })).toBeInTheDocument())
+
+    for (const link of screen.getAllByRole('link')) {
+      expect(within(link).getByText('연습 시작 →')).toBeInTheDocument()
     }
   })
 
   it('never renders a preview surface for sheets that have no preview image', async () => {
     render(<PublicSheetMusicBrowser />)
-    await waitFor(() => expect(screen.getByRole('heading', { name: '추천 악보' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: '최근 공개된 악보' })).toBeInTheDocument())
 
     // The audit rejected the large empty placeholder that claimed a preview existed.
     expect(screen.queryByText('악보 미리보기')).not.toBeInTheDocument()
     expect(screen.queryByText('SHEET MUSIC')).not.toBeInTheDocument()
   })
 
-  it('presents composer, category and uploader for every card in every section', async () => {
+  it('presents composer, category and uploader on the cards', async () => {
     render(<PublicSheetMusicBrowser />)
-    await waitFor(() => expect(screen.getByRole('heading', { name: '추천 악보' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: '최근 공개된 악보' })).toBeInTheDocument())
 
-    for (const heading of ['추천 악보', '인기 악보', '최신 악보']) {
-      const section = sectionFor(heading)
-      expect(within(section).getAllByText('드뷔시').length).toBeGreaterThan(0)
-      expect(within(section).getAllByText('클래식').length).toBeGreaterThan(0)
-      expect(within(section).getAllByText('업로더1').length).toBeGreaterThan(0)
-    }
+    const section = sectionFor('최근 공개된 악보')
+    expect(within(section).getAllByText('드뷔시').length).toBeGreaterThan(0)
+    expect(within(section).getAllByText('클래식').length).toBeGreaterThan(0)
+    expect(within(section).getAllByText('업로더1').length).toBeGreaterThan(0)
   })
 
   it('exposes no control that does nothing when activated', async () => {
     render(<PublicSheetMusicBrowser />)
-    await waitFor(() => expect(screen.getByRole('heading', { name: '추천 악보' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: '최근 공개된 악보' })).toBeInTheDocument())
 
     // "전체 보기" had no handler and no destination; an inert control fails the action hierarchy.
     expect(screen.queryByRole('button', { name: '전체 보기' })).not.toBeInTheDocument()
@@ -94,7 +94,7 @@ describe('PublicSheetMusicBrowser', () => {
 
   it('uses design tokens instead of hardcoded palette classes', async () => {
     const { container } = render(<PublicSheetMusicBrowser />)
-    await waitFor(() => expect(screen.getByRole('heading', { name: '추천 악보' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: '최근 공개된 악보' })).toBeInTheDocument())
 
     const forbidden = /(^|\s)(bg-white|text-gray-\d{3}|border-gray-\d{3}|text-blue-\d{3}|border-blue-\d{3}|from-blue-\d{2,3}|to-indigo-\d{2,3}|from-green-\d{2,3}|to-blue-\d{2,3}|bg-yellow-\d{3}|bg-gray-\d{3}|bg-amber-\d{3}|bg-blue-\d{3})(\s|$)/
     const offenders = Array.from(container.querySelectorAll<HTMLElement>('[class]'))
@@ -106,7 +106,7 @@ describe('PublicSheetMusicBrowser', () => {
 
   it('gives every card an accessible link to its sheet rather than a bare click handler', async () => {
     render(<PublicSheetMusicBrowser />)
-    await waitFor(() => expect(screen.getByRole('heading', { name: '추천 악보' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: '최근 공개된 악보' })).toBeInTheDocument())
 
     const links = screen.getAllByRole('link', { name: /월광 소나타/ })
     expect(links.length).toBeGreaterThan(0)
@@ -117,7 +117,7 @@ describe('PublicSheetMusicBrowser', () => {
 
   it('never suppresses the repository-wide keyboard focus ring', async () => {
     const { container } = render(<PublicSheetMusicBrowser />)
-    await waitFor(() => expect(screen.getByRole('heading', { name: '추천 악보' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: '최근 공개된 악보' })).toBeInTheDocument())
 
     // globals.css states outright that `outline: none` must not appear anywhere: the
     // playback slider already lost its focus indicator that way once.
@@ -131,7 +131,7 @@ describe('PublicSheetMusicBrowser', () => {
   it('leaves a modified click to the browser so a card can open in a new tab', async () => {
     const onSheetMusicClick = jest.fn()
     render(<PublicSheetMusicBrowser onSheetMusicClick={onSheetMusicClick} />)
-    await waitFor(() => expect(screen.getByRole('heading', { name: '추천 악보' })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: '최근 공개된 악보' })).toBeInTheDocument())
 
     const card = screen.getAllByRole('link', { name: /월광 소나타/ })[0]
 
