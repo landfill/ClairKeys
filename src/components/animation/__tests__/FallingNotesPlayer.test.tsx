@@ -175,6 +175,46 @@ describe('FallingNotesPlayer', () => {
   // the keyboard out as a column. A separate `height: 100%` wrapper reads as
   // `auto` the moment its parent is sized by flex instead of a pixel height,
   // which collapses the falling area to 0 and lifts the keyboard to the top.
+  describe('keyboard shortcuts', () => {
+    it('plays from the setup screen with space and seeks five seconds with the arrows', async () => {
+      setIdle()
+      mockPlayerState.seek.mockClear()
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      await act(async () => { fireEvent.keyDown(document.body, { key: ' ' }) })
+      expect(mockPlayerState.play).toHaveBeenCalledTimes(1)
+      expect(mockOrientation.enter).toHaveBeenCalled()
+
+      fireEvent.keyDown(document.body, { key: 'ArrowRight' })
+      fireEvent.keyDown(document.body, { key: 'ArrowLeft' })
+      expect(mockPlayerState.seek.mock.calls).toEqual([[3], [0]])
+    })
+
+    it('pauses a sounding session with space', () => {
+      mockPlayerState.pause.mockClear()
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      fireEvent.keyDown(document.body, { key: ' ' })
+      expect(mockPlayerState.pause).toHaveBeenCalledTimes(1)
+      expect(mockPlayerState.play).not.toHaveBeenCalled()
+    })
+
+    it('does not start while the samples are still loading, as the play button does not', () => {
+      setIdle()
+      mockPlayerState.sampleStatus = 'loading'
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      fireEvent.keyDown(document.body, { key: ' ' })
+      expect(mockPlayerState.play).not.toHaveBeenCalled()
+    })
+
+    it('tells keyboard users the shortcuts on the setup screen', () => {
+      setIdle()
+      render(<FallingNotesPlayer animationData={animationData} />)
+      expect(screen.getByRole('note', { name: '키보드 단축키' })).toHaveTextContent('Space 재생·일시정지')
+    })
+  })
+
   describe('playback geometry', () => {
     const readColumn = () => {
       const fallingArea = screen.getByTestId('visual-playhead').parentElement!

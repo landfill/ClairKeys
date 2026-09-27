@@ -3045,3 +3045,21 @@
 - Scope-risk: narrow
 - Reversibility: clean
 - Related: phases/UI-2026-playback-mode-clarity.md, D-019, #177의 별도 UI 주석
+
+## D-081: 재생 단축키는 페이지가 가진 키만 쓰고 포커스된 컨트롤의 키를 빼앗지 않는다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT playback-shortcuts branch; merge pending
+- Context: `/sheet/[id]`에는 단축키가 없었다. 레거시 `useKeyboardShortcuts`는 input/textarea만 제외해,
+  포커스된 버튼 위 Space를 한 번 더 실행하고 슬라이더·select 위 방향키로 재생 위치도 함께 옮긴다.
+- Decision: 새 `usePlaybackShortcuts`는 Space(재생/일시정지)와 ←/→(5초)만 다룬다. 대상이 이미 그 키에
+  의미를 가진 요소(버튼·링크·입력·select·contenteditable·slider 등 ARIA 위젯)이거나, 다른 핸들러가
+  `preventDefault`했거나, 수정키가 눌렸거나, Space 자동 반복이면 아무것도 하지 않는다. 처리한 키는
+  `preventDefault`로 페이지 스크롤을 막는다. 재생은 재생 버튼과 같은 경로(`handlePlay`)를 탄다.
+- Rejected: 레거시 `useKeyboardShortcuts` 재사용 | 포커스 규칙이 틀려 이중 실행이 생기고, 레거시 플레이어의
+  동작을 함께 바꾸게 된다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 페이지 단축키를 추가할 때 `resolvePlaybackShortcut`의 소유 요소 목록을 먼저 갱신한다.
+- Related: phases/FEAT-playback-shortcuts.md, D-079

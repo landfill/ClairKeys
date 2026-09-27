@@ -7,6 +7,7 @@ import { BOX_BORDER, PX_PER_SEC, planPlaybackGeometry, planScoreAwareGeometry } 
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
+import { SEEK_STEP_SEC, usePlaybackShortcuts } from '@/hooks/usePlaybackShortcuts'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
@@ -15,6 +16,8 @@ import { getActiveNotes } from '@/utils/visualUtils'
 import ScoreToggle from '@/components/playback/ScoreToggle'
 import ScorePanel from '@/components/playback/ScorePanel'
 import ScoreTimingNotice from '@/components/playback/ScoreTimingNotice'
+
+const SEEK_STEP_LABEL = `${SEEK_STEP_SEC}초 이동`
 
 /**
  * Standing in for a rotation the device will not perform. The box is laid out
@@ -228,6 +231,21 @@ export default function FallingNotesPlayer({
     if (!started && !isSessionActive) orientation.exit()
   }, [isSessionActive, orientation, play])
 
+  // Space and the arrows act on the page, never on a focused control (see
+  // resolvePlaybackShortcut). A start waits for the samples exactly as the play
+  // button does, and it goes through handlePlay so the orientation request is
+  // made from this key press's user activation.
+  const isReady = sampleStatus !== 'loading'
+  usePlaybackShortcuts({
+    onToggle: () => {
+      if (isPlaying) pause()
+      else if (isReady) void handlePlay()
+    },
+    onSeekBy: seconds => {
+      void seek(Math.min(totalLength, Math.max(0, currentTime + seconds)))
+    },
+  })
+
   // Derive key activation synchronously from the exact playhead passed to the
   // falling-note visualization. An effect would leave the keyboard one render
   // behind whenever the AudioContext clock advances.
@@ -378,6 +396,15 @@ export default function FallingNotesPlayer({
           '샘플을 불러오지 못해 합성음으로 재생합니다.'}
       </div>
 
+      {/* Keyboard users only: a touch screen has no space bar to press. */}
+      {!isSessionActive && (
+        <p role="note" aria-label="키보드 단축키" className="mb-2 hidden text-xs text-ink-muted pointer-fine:block">
+          <kbd className="rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">Space</kbd> 재생·일시정지
+          <span aria-hidden="true"> · </span>
+          <kbd className="rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">←</kbd>
+          <kbd className="ml-1 rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">→</kbd> {SEEK_STEP_LABEL}
+        </p>
+      )}
       <ScoreToggle available={Boolean(scoreUrl)} onChange={setShowScore} />
       {showScore && scoreUrl && <ScorePanel url={scoreUrl} notes={notes} currentTime={currentTime}
         timingReferenceBpm={animationData.timingReferenceBpm}
