@@ -86,15 +86,24 @@ export default function CompactPlaybackBar({
   const subscribeToLayout = useCallback((onChange: () => void) => {
     if (typeof window.matchMedia !== 'function') return () => {}
     const query = window.matchMedia(NARROW_DESKTOP_QUERY)
-    const handleChange = () => {
-      // Capture focus before React moves the control to its new reading order.
-      restoreSeekFocus.current = document.activeElement === seekRef.current
-      onChange()
-    }
-    query.addEventListener('change', handleChange)
-    return () => query.removeEventListener('change', handleChange)
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
   }, [])
-  const narrowDesktop = useSyncExternalStore(subscribeToLayout, isNarrowDesktop, serverSnapshot)
+  // The layout is re-read on every render, so a render caused elsewhere (a
+  // resize observer upstream) can move the seek control before the media
+  // query's change event runs. Capture focus where the new value is first
+  // read: during render, before React moves the control in the DOM.
+  const lastLayout = useRef<boolean | null>(null)
+  const readLayout = useCallback(() => {
+    const next = isNarrowDesktop()
+    if (lastLayout.current !== null && next !== lastLayout.current &&
+      document.activeElement === seekRef.current) {
+      restoreSeekFocus.current = true
+    }
+    lastLayout.current = next
+    return next
+  }, [])
+  const narrowDesktop = useSyncExternalStore(subscribeToLayout, readLayout, serverSnapshot)
   useLayoutEffect(() => {
     if (restoreSeekFocus.current) seekRef.current?.focus({ preventScroll: true })
     restoreSeekFocus.current = false
