@@ -50,7 +50,10 @@ test.describe('Public application smoke checks', () => {
     await page.getByText('공개 연습곡').first().click()
     await expect(page).toHaveURL(/\/sheet\/1$/)
     await expect(page.getByText(/검증된 작곡가/).first()).toBeInViewport()
-    await expect(page.getByText('미리보기')).toBeVisible()
+    // Guests play the whole piece; the card tells them what signing in adds
+    // (D-085) instead of claiming a preview limit no code enforces.
+    await expect(page.getByRole('button', { name: '로그인하고 기록 남기기' })).toBeVisible()
+    await expect(page.getByText('짧은 미리보기')).toHaveCount(0)
     const playButton = page.getByTestId('playback-play')
     await expect(playButton).toBeInViewport()
     await expect(playButton).toBeEnabled()
