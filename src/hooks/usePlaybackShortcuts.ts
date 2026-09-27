@@ -14,6 +14,7 @@ interface ShortcutKey {
   ctrlKey?: boolean
   metaKey?: boolean
   altKey?: boolean
+  shiftKey?: boolean
 }
 
 /** Elements that already give space a meaning: activating, typing, or choosing. */
@@ -32,7 +33,9 @@ const ownedBy = (target: EventTarget | null, selector: string) =>
  * nudge a focused slider and jump the playhead.
  */
 export function resolvePlaybackShortcut(event: ShortcutKey): PlaybackShortcut | null {
-  if (event.ctrlKey || event.metaKey || event.altKey) return null
+  // Shift+Space scrolls up and Shift+arrows extend a selection; every
+  // modified key stays the browser's.
+  if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return null
 
   if (event.key === ' ' || event.key === 'Spacebar') {
     // Holding space would otherwise flip play and pause on every auto-repeat.

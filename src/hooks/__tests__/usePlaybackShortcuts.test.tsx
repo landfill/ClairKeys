@@ -33,8 +33,9 @@ describe('resolvePlaybackShortcut', () => {
   })
 
   it('leaves modified keys and repeated space to the browser', () => {
-    for (const modifier of ['ctrlKey', 'metaKey', 'altKey'] as const) {
+    for (const modifier of ['ctrlKey', 'metaKey', 'altKey', 'shiftKey'] as const) {
       expect(resolvePlaybackShortcut({ key: ' ', target: body(), [modifier]: true })).toBeNull()
+      expect(resolvePlaybackShortcut({ key: 'ArrowRight', target: body(), [modifier]: true })).toBeNull()
     }
     expect(resolvePlaybackShortcut({ key: ' ', target: body(), repeat: true })).toBeNull()
   })

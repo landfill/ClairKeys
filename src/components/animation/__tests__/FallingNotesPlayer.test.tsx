@@ -199,13 +199,17 @@ describe('FallingNotesPlayer', () => {
       expect(mockPlayerState.play).not.toHaveBeenCalled()
     })
 
-    it('does not start while the samples are still loading, as the play button does not', () => {
+    it('does not start or seek while the samples are still loading, as the controls do not', () => {
       setIdle()
       mockPlayerState.sampleStatus = 'loading'
+      mockPlayerState.seek.mockClear()
       render(<FallingNotesPlayer animationData={animationData} />)
 
       fireEvent.keyDown(document.body, { key: ' ' })
+      // A seek here would stop the pending start and it would never sound.
+      fireEvent.keyDown(document.body, { key: 'ArrowRight' })
       expect(mockPlayerState.play).not.toHaveBeenCalled()
+      expect(mockPlayerState.seek).not.toHaveBeenCalled()
     })
 
     it('tells keyboard users the shortcuts on the setup screen', () => {

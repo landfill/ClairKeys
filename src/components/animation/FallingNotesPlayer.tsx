@@ -242,6 +242,9 @@ export default function FallingNotesPlayer({
       else if (isReady) void handlePlay()
     },
     onSeekBy: seconds => {
+      // While a start waits for samples every control is disabled; a seek
+      // now would cancel that start and it would never sound.
+      if (!isReady) return
       void seek(Math.min(totalLength, Math.max(0, currentTime + seconds)))
     },
   })
