@@ -60,6 +60,31 @@ export function toSafeReturnPath(
   return DEFAULT_RETURN_PATH
 }
 
+/**
+ * `toSafeReturnPath`와 같지만, 이 사이트 origin의 **절대 URL**도 그 경로로 받아들인다.
+ *
+ * next-auth `withAuth` 미들웨어는 보호 경로에서 로그인 화면으로 보낼 때 `callbackUrl`에 요청의
+ * 절대 URL을 넣는다. 경로만 받으면 그 값이 `/`가 되어 로그인 후 홈으로 돌아간다. origin이 정확히
+ * 같을 때만 경로를 꺼내고, 꺼낸 경로도 `toSafeReturnPath`의 판정을 다시 통과해야 한다.
+ */
+export function toSafeReturnPathFrom(
+  candidate: string | null | undefined,
+  origin: string,
+  fallback: string = DEFAULT_RETURN_PATH
+): string {
+  if (typeof candidate === 'string' && !candidate.startsWith('/')) {
+    try {
+      const url = new URL(candidate)
+      if (url.origin === new URL(origin).origin && !url.username && !url.password) {
+        return toSafeReturnPath(`${url.pathname}${url.search}${url.hash}`, fallback)
+      }
+    } catch {
+      // 파싱할 수 없는 값은 아래의 경로 판정이 거절한다.
+    }
+  }
+  return toSafeReturnPath(candidate, fallback)
+}
+
 /** 브라우저에서 현재 위치를 복귀 경로로 만든다. 서버 렌더 중에는 `/`다. */
 export function currentReturnPath(): string {
   if (typeof window === 'undefined') return DEFAULT_RETURN_PATH

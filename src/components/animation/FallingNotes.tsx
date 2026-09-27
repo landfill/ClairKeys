@@ -18,7 +18,8 @@ export default function FallingNotes({
   nowSec,
   pxPerSec,
   height,
-  layout
+  layout,
+  dimHand = null
 }: FallingNotesProps) {
   // Convert notes to visual representations, memoized for performance
   const visualNotes = useMemo(() => {
@@ -31,22 +32,27 @@ export default function FallingNotes({
       style={{ top: 0, height }}
     >
       {visualNotes.map((visualNote, index) => {
-        const showFingerBadge = shouldShowFingerBadge(visualNote);
+        // The other hand stays visible as context but must not compete with
+        // the hand being practised, so it is faded and carries no fingering.
+        const dimmed = dimHand !== null && visualNote.hand === dimHand && visualNote.handSource !== 'inferred';
+        const showFingerBadge = !dimmed && shouldShowFingerBadge(visualNote);
         const badgePosition = showFingerBadge ? getFingerBadgePosition(visualNote) : null;
         
         return (
           <div
             key={index}
             data-sustaining={visualNote.sustaining || undefined}
+            data-hand={visualNote.hand}
+            data-dimmed={dimmed || undefined}
             className="absolute"
             style={{
               transform: `translate(${visualNote.x}px, ${visualNote.y}px)`,
               width: visualNote.w,
               height: visualNote.h,
               background: visualNote.color,
-              opacity: visualNote.sustaining ? 0.25 : 1,
+              opacity: dimmed ? (visualNote.sustaining ? 0.12 : 0.3) : visualNote.sustaining ? 0.25 : 1,
               border: visualNote.sustaining ? `1px dashed ${visualNote.color}` : undefined,
-              boxShadow: visualNote.sustaining ? undefined : '0 1px 8px rgba(0,0,0,0.45)',
+              boxShadow: visualNote.sustaining || dimmed ? undefined : '0 1px 8px rgba(0,0,0,0.45)',
               borderRadius: 6,
               zIndex: visualNote.z
             }}

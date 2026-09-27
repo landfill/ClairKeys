@@ -5,12 +5,35 @@ import type { FallingNote } from '@/types/fallingNotes'
 import { useFallingNotesAudio, DEFAULT_MASTER_GAIN } from './useFallingNotesAudio'
 import { calculateSongLength, shouldAutoStop } from '@/utils/visualUtils'
 import { createLoopSection } from '@/utils/loopSection'
+import type { MetronomeClick } from '@/utils/beatGrid'
+
+export interface FallingNotesPlayerOptions {
+  /**
+   * The notes the audio schedules. Timing, length and the visual playhead
+   * always follow `notes`; one-hand practice can silence the other hand here
+   * without moving the end of the piece.
+   */
+  audibleNotes?: FallingNote[]
+  /** Metronome clicks for the whole piece, or none. Scheduled on every start. */
+  clicks?: MetronomeClick[]
+  /**
+   * One bar of clicks ending at the resume point, asked for on each play. The
+   * clock starts at its first click; notes before the resume point stay silent
+   * and the picture holds at the resume point until the count-in is over.
+   */
+  countIn?: (resumeAt: number) => MetronomeClick[]
+}
+
+const NO_CLICKS: MetronomeClick[] = []
 
 /**
  * Main hook for falling notes player with audio-visual synchronization
  * Based on MVP implementation for precise timing
  */
-export function useFallingNotesPlayer(notes: FallingNote[]) {
+export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNotesPlayerOptions = {}) {
+  const audibleNotes = options.audibleNotes ?? notes
+  const clicks = options.clicks ?? NO_CLICKS
+  const countInFor = options.countIn
   // Playback state. `isPlaying` is whether a score is sounding right now;
   // `isSessionActive` is whether the reader is inside a practice run at all.
   // They diverge on a pause, and the screen needs the second one: a pause is a
@@ -26,6 +49,20 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
   const [loopStart, setLoopStart] = useState<number | null>(null)
   const [loopEnd, setLoopEnd] = useState<number | null>(null)
 
+  const latestAudible = useRef(audibleNotes)
+  latestAudible.current = audibleNotes
+  const latestClicks = useRef(clicks)
+  latestClicks.current = clicks
+
+  // Count-in in progress: the resume point the picture holds at, and the
+  // count-in beats so the UI can count down. Null outside a count-in.
+  const countInRef = useRef<{ until: number; beats: number[] } | null>(null)
+  const [countInLeft, setCountInLeft] = useState<number | null>(null)
+  const clearCountIn = useCallback(() => {
+    countInRef.current = null
+    setCountInLeft(null)
+  }, [])
+
   // Audio management
   const {
     startAudio,
@@ -38,6 +75,14 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     reset,
   } = useFallingNotesAudio()
   
+  // The song position the reader is at. During a count-in the clock runs
+  // before the resume point, but the reader is still at the resume point.
+  const playheadNow = useCallback(() => {
+    const raw = getCurrentTime()
+    const countIn = countInRef.current
+    return countIn && raw < countIn.until ? countIn.until : raw
+  }, [getCurrentTime])
+
   // Animation refs
   const rafRef = useRef<number | null>(null)
 
@@ -55,18 +100,42 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     if (isPlaying) return false
 
     updateTempoScale(tempoScale)
+    const resumeAt = getCurrentTime()
+    const countIn = countInFor?.(resumeAt) ?? []
+    // The count-in is the only beat before the resume point; the metronome
+    // takes over from there, so no beat of the count-in sounds twice.
+    const withCountIn = (grid: MetronomeClick[]) =>
+      [...countIn, ...grid.filter(click => click.time >= resumeAt)]
     const started = await startAudio(
-      notes,
-      getCurrentTime(),
+      audibleNotes,
+      countIn.length ? countIn[0].time : resumeAt,
       tempoScale,
-      mute
+      mute,
+      countIn.length ? { clicks: withCountIn(clicks), notesFrom: resumeAt } : { clicks }
     )
     if (started) {
+      if (countIn.length) {
+        countInRef.current = { until: resumeAt, beats: countIn.map(click => click.time) }
+        setCountInLeft(countIn.length)
+      }
       setIsPlaying(true)
       setIsSessionActive(true)
+      // The start may have waited seconds for samples. A hand choice made or a
+      // score beat grid that arrived in that window has not reached the audio
+      // yet; apply both now, keeping any count-in that is still running.
+      const latestNotes = latestAudible.current
+      const latestGrid = latestClicks.current
+      if (latestNotes !== audibleNotes || latestGrid !== clicks) {
+        const at = getCurrentTime()
+        stopAudio()
+        const again = countIn.length && at < resumeAt
+          ? await startAudio(latestNotes, at, tempoScale, mute, { clicks: withCountIn(latestGrid), notesFrom: resumeAt })
+          : await startAudio(latestNotes, Math.max(at, resumeAt), tempoScale, mute, { clicks: latestGrid })
+        if (!again) setIsPlaying(false)
+      }
     }
     return started
-  }, [isPlaying, tempoScale, mute, notes, getCurrentTime, startAudio, updateTempoScale])
+  }, [isPlaying, tempoScale, mute, audibleNotes, clicks, countInFor, getCurrentTime, startAudio, stopAudio, updateTempoScale])
 
   /**
    * Pause playback
@@ -74,39 +143,43 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
   const handlePause = useCallback(() => {
     if (!isPlaying) return
 
-    // Get precise current time from audio context
-    const currentAudioTime = getCurrentTime()
+    // Get precise current time from audio context. A pause inside the
+    // count-in returns to the resume point; the next play counts in again.
+    const currentAudioTime = playheadNow()
+    clearCountIn()
     setIsPlaying(false)
     stopAudio()
     setOffsetTime(currentAudioTime)
     setCurrentTime(currentAudioTime)
-  }, [isPlaying, getCurrentTime, setOffsetTime, stopAudio])
+  }, [isPlaying, playheadNow, clearCountIn, setOffsetTime, stopAudio])
 
   /**
    * Stop playback
    */
   const handleStop = useCallback(() => {
+    clearCountIn()
     setIsPlaying(false)
     setIsSessionActive(false)
     reset()
     setCurrentTime(0)
-  }, [reset])
+  }, [reset, clearCountIn])
 
   /**
    * Seek to specific time
    */
   const handleSeek = useCallback(async (newTime: number) => {
     const clampedTime = Math.max(0, Math.min(newTime, totalLength))
+    clearCountIn()
     if (!isPlaying) stopAudio()
     setOffsetTime(clampedTime)
     setCurrentTime(clampedTime)
 
     // If currently playing, restart audio from new position
     if (isPlaying) {
-      const started = await startAudio(notes, clampedTime, tempoScale, mute)
+      const started = await startAudio(audibleNotes, clampedTime, tempoScale, mute, { clicks })
       if (!started) setIsPlaying(false)
     }
-  }, [totalLength, isPlaying, notes, tempoScale, mute, setOffsetTime, startAudio, stopAudio])
+  }, [totalLength, isPlaying, audibleNotes, clicks, tempoScale, mute, clearCountIn, setOffsetTime, startAudio, stopAudio])
 
   /**
    * Change tempo with re-synchronization
@@ -115,8 +188,10 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     const wasPlaying = isPlaying
 
     if (wasPlaying) {
-      // Get current precise time before stopping
-      const currentAudioTime = getCurrentTime()
+      // Get current precise time before stopping. A speed change ends a
+      // count-in; playing resumes at once from the resume point.
+      const currentAudioTime = playheadNow()
+      clearCountIn()
       stopAudio()
 
       // Update tempo scale
@@ -125,14 +200,14 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
 
       // Restart with new tempo
       setOffsetTime(currentAudioTime)
-      const started = await startAudio(notes, currentAudioTime, newTempoScale, mute)
+      const started = await startAudio(audibleNotes, currentAudioTime, newTempoScale, mute, { clicks })
       if (!started) setIsPlaying(false)
     } else {
       stopAudio()
       setTempoScale(newTempoScale)
       updateTempoScale(newTempoScale)
     }
-  }, [isPlaying, mute, notes, getCurrentTime, setOffsetTime, startAudio, stopAudio, updateTempoScale])
+  }, [isPlaying, mute, audibleNotes, clicks, playheadNow, clearCountIn, setOffsetTime, startAudio, stopAudio, updateTempoScale])
 
   /**
    * Toggle mute
@@ -142,14 +217,37 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
 
     // If currently playing, restart audio with new mute setting
     if (isPlaying) {
-      const currentAudioTime = getCurrentTime()
+      const currentAudioTime = playheadNow()
+      clearCountIn()
       stopAudio()
-      const started = await startAudio(notes, currentAudioTime, tempoScale, newMute)
+      const started = await startAudio(audibleNotes, currentAudioTime, tempoScale, newMute, { clicks })
       if (!started) setIsPlaying(false)
     } else {
       stopAudio()
     }
-  }, [isPlaying, tempoScale, notes, getCurrentTime, startAudio, stopAudio])
+  }, [isPlaying, tempoScale, audibleNotes, clicks, playheadNow, clearCountIn, startAudio, stopAudio])
+
+  // A new audible set (one-hand practice) or click grid (metronome on/off, a
+  // score grid arriving) while sounding reschedules from the playhead, as a
+  // mute change does. Only the two identities are watched: the player keeps
+  // them stable when nothing changed, and the other inputs are read through a
+  // ref so a playback frame or a tempo change can never trigger this restart.
+  const scheduleRestart = useRef({ isPlaying, tempoScale, mute, playheadNow, clearCountIn, startAudio, stopAudio })
+  scheduleRestart.current = { isPlaying, tempoScale, mute, playheadNow, clearCountIn, startAudio, stopAudio }
+  const previousSchedule = useRef({ audibleNotes, clicks })
+  useEffect(() => {
+    const previous = previousSchedule.current
+    if (previous.audibleNotes === audibleNotes && previous.clicks === clicks) return
+    previousSchedule.current = { audibleNotes, clicks }
+    const current = scheduleRestart.current
+    if (!current.isPlaying) return
+    const at = current.playheadNow()
+    current.clearCountIn()
+    current.stopAudio()
+    void current.startAudio(audibleNotes, at, current.tempoScale, current.mute, { clicks }).then(started => {
+      if (!started) setIsPlaying(false)
+    })
+  }, [audibleNotes, clicks])
 
   /**
    * Change look ahead time
@@ -202,6 +300,22 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
       // Audio, falling notes, and active keys all consume this one score-time
       // value derived from the AudioContext playback anchor.
       const currentAudioTime = getCurrentTime()
+
+      // During a count-in the clock runs before the resume point. Hold the
+      // picture there and count down; the music has not started yet.
+      const countIn = countInRef.current
+      if (countIn) {
+        if (currentAudioTime < countIn.until) {
+          const sounded = countIn.beats.filter(time => time <= currentAudioTime).length
+          setCountInLeft(Math.min(countIn.beats.length, countIn.beats.length - sounded + 1))
+          setCurrentTime(countIn.until)
+          rafRef.current = requestAnimationFrame(animationLoop)
+          return
+        }
+        countInRef.current = null
+        setCountInLeft(null)
+      }
+
       setCurrentTime(currentAudioTime)
 
       if (loopSection && currentAudioTime >= loopSection.end) {
@@ -248,6 +362,8 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     loopEnd,
     sampleStatus,
     totalLength,
+    /** Beats left in the count-in (counting down to 1), or null. */
+    countInLeft,
 
     // Actions
     play: handlePlay,

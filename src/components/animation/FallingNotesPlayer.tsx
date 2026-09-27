@@ -8,14 +8,44 @@ import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
 import { usePracticeReport, type PracticeRun } from '@/hooks/usePracticeReport'
+import { usePracticeResume } from '@/hooks/usePracticeResume'
+import { SEEK_STEP_SEC, usePlaybackShortcuts } from '@/hooks/usePlaybackShortcuts'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { CompactPlaybackBar, PlaybackControls, TempoDisplay } from '@/components/playback'
 import { getActiveNotes } from '@/utils/visualUtils'
+import { annotationNotesFor, audibleNotesFor, hasBothHands, isPracticedNote, otherHand, type PracticeHand } from '@/utils/handPractice'
 import ScoreToggle from '@/components/playback/ScoreToggle'
 import ScorePanel from '@/components/playback/ScorePanel'
 import ScoreTimingNotice from '@/components/playback/ScoreTimingNotice'
+import type { ScoreArtifact } from '@/types/scoreArtifact'
+import { loadScoreArtifact } from '@/utils/scoreArtifactCache'
+import {
+  beatUnitQuarters,
+  beatsFromScoreArtifact,
+  beatsPerBar,
+  constantBeats,
+  countInClicks,
+  metronomeSource,
+} from '@/utils/beatGrid'
+import { HAND_COLORS } from '@/types/fallingNotes'
+import { formatVolumePercent } from '@/utils/volumeDisplay'
+
+const SEEK_STEP_LABEL = `${SEEK_STEP_SEC}초 이동`
+
+/** A remembered on/off preference; storage may be unavailable, which only forgets it. */
+function useStoredToggle(key: string): [boolean, (next: boolean) => void] {
+  const [value, setValue] = useState(false)
+  useEffect(() => {
+    try { setValue(localStorage.getItem(key) === 'true') } catch { /* storage disabled */ }
+  }, [key])
+  const update = useCallback((next: boolean) => {
+    setValue(next)
+    try { localStorage.setItem(key, String(next)) } catch { /* keep this session usable */ }
+  }, [key])
+  return [value, update]
+}
 
 /**
  * Standing in for a rotation the device will not perform. The box is laid out
@@ -24,6 +54,12 @@ import ScoreTimingNotice from '@/components/playback/ScoreTimingNotice'
  * required rather than vh/vw — iOS measures vh against the toolbar-less height,
  * which would push the keyboard off screen.
  */
+/** m:ss for a song position. */
+function formatClock(seconds: number): string {
+  const whole = Math.max(0, Math.floor(seconds))
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`
+}
+
 const rotatedRootStyle: React.CSSProperties = {
   position: 'fixed',
   top: 0,
@@ -48,12 +84,15 @@ export default function FallingNotesPlayer({
   onSessionChange,
   scoreUrl,
   onPracticeRun,
+  resumeKey,
 }: {
   animationData: CanonicalAnimationData
   className?: string
   scoreUrl?: string
   /** Receives each finished practice run; omitted, nothing is measured for anyone. */
   onPracticeRun?: (run: PracticeRun, context: { leavingPage: boolean }) => void
+  /** Browser storage key for this piece's last position; omitted, nothing is remembered. */
+  resumeKey?: string
   /**
    * Reports the practice session, not the sounding score. A pause keeps this
    * true: the page chrome must not come back underneath a reader who only
@@ -65,6 +104,54 @@ export default function FallingNotesPlayer({
   // Convert canonical animation data to falling notes format
   const notes = useMemo(() => canonicalToFallingNotes(animationData), [animationData])
   const hasReleaseGuidance = useMemo(() => notes.some(note => note.keyRelease !== undefined), [notes])
+  // One-hand practice. The other hand stays on screen as faded context and,
+  // unless the reader silences it, keeps sounding as the accompaniment.
+  const offersHandChoice = useMemo(() => hasBothHands(notes), [notes])
+  const [practiceHand, setPracticeHand] = useState<PracticeHand>('both')
+  const [otherHandAudible, setOtherHandAudible] = useState(true)
+  const activePractice: PracticeHand = offersHandChoice ? practiceHand : 'both'
+  const audibleNotes = useMemo(
+    () => audibleNotesFor(notes, activePractice, otherHandAudible),
+    [notes, activePractice, otherHandAudible]
+  )
+  const annotationNotes = useMemo(() => annotationNotesFor(notes, activePractice), [notes, activePractice])
+
+  // Metronome and count-in. The score's measure map is the trustworthy beat
+  // grid; it is downloaded only once one of them is switched on.
+  const [metronomeOn, setMetronomeOn] = useStoredToggle('clairkeys.metronome')
+  const [countInOn, setCountInOn] = useStoredToggle('clairkeys.countIn')
+  const [scoreBeats, setScoreBeats] = useState<{ url: string; artifact: ScoreArtifact | null } | null>(null)
+  const wantsBeats = metronomeOn || countInOn
+  useEffect(() => {
+    if (!wantsBeats || !scoreUrl) return
+    let current = true
+    loadScoreArtifact(scoreUrl)
+      .then(artifact => { if (current) setScoreBeats({ url: scoreUrl, artifact }) })
+      .catch(() => { if (current) setScoreBeats({ url: scoreUrl, artifact: null }) })
+    return () => { current = false }
+  }, [wantsBeats, scoreUrl])
+  const loadedScore = scoreBeats && scoreBeats.url === scoreUrl ? scoreBeats : null
+  const scoreArtifact = loadedScore?.artifact ?? null
+  // With a score still to come, wait for it rather than click on a grid that
+  // may be replaced by a different one a moment later.
+  const awaitingScore = Boolean(scoreUrl) && wantsBeats && loadedScore === null
+  const beatSource = metronomeSource(animationData.tempoSource, scoreArtifact !== null)
+  const beatGrid = useMemo(() => {
+    if (scoreArtifact) {
+      return beatsFromScoreArtifact(scoreArtifact, animationData.timingReferenceBpm, animationData.timeSignature)
+    }
+    if (awaitingScore || beatSource !== 'constant') return []
+    return constantBeats(animationData.duration, animationData.timingReferenceBpm, animationData.timeSignature)
+  }, [scoreArtifact, awaitingScore, beatSource, animationData.duration, animationData.timingReferenceBpm, animationData.timeSignature])
+  // Offered when a trustworthy grid exists or may still arrive with the score.
+  const metronomeAvailable = beatSource !== null || (Boolean(scoreUrl) && loadedScore?.artifact !== null)
+  const metronomeClicks = metronomeOn && metronomeAvailable ? beatGrid : undefined
+  const countIn = useMemo(() => {
+    if (!countInOn) return undefined
+    const perBar = beatsPerBar(animationData.timeSignature)
+    const referenceBeat = (60 / animationData.timingReferenceBpm) * beatUnitQuarters(animationData.timeSignature)
+    return (resumeAt: number) => countInClicks(beatGrid, resumeAt, perBar, referenceBeat)
+  }, [countInOn, beatGrid, animationData.timeSignature, animationData.timingReferenceBpm])
   
   // Use falling notes player hook for audio-visual synchronization
   const {
@@ -84,10 +171,11 @@ export default function FallingNotesPlayer({
     setVolume,
     loopStart,
     loopEnd,
+    countInLeft,
     markLoopStart,
     markLoopEnd,
     clearLoop,
-  } = useFallingNotesPlayer(notes)
+  } = useFallingNotesPlayer(notes, { audibleNotes, clicks: metronomeClicks, countIn })
 
   // Constants
   const pxPerSec = PX_PER_SEC
@@ -234,23 +322,56 @@ export default function FallingNotesPlayer({
 
   usePracticeReport({ isPlaying, isSessionActive, currentTime, totalLength, onReport: onPracticeRun })
 
+  const resume = usePracticeResume(resumeKey, { currentTime, isPlaying, isSessionActive, totalLength })
+  const handleResume = useCallback(async () => {
+    const saved = resume.offer
+    if (!saved) return
+    resume.accept()
+    // Fullscreen needs this click's user activation, which an await can
+    // outlive; ask first, exactly as handlePlay does, then seek and start.
+    orientation.enter()
+    await seek(saved.time)
+    const started = await play()
+    if (!started && !isSessionActive) orientation.exit()
+  }, [resume, seek, play, orientation, isSessionActive])
+
+  // Space and the arrows act on the page, never on a focused control (see
+  // resolvePlaybackShortcut). A start waits for the samples exactly as the play
+  // button does, and it goes through handlePlay so the orientation request is
+  // made from this key press's user activation.
+  const isReady = sampleStatus !== 'loading'
+  usePlaybackShortcuts({
+    onToggle: () => {
+      if (isPlaying) pause()
+      else if (isReady) void handlePlay()
+    },
+    onSeekBy: seconds => {
+      // While a start waits for samples every control is disabled; a seek
+      // now would cancel that start and it would never sound.
+      if (!isReady) return
+      void seek(Math.min(totalLength, Math.max(0, currentTime + seconds)))
+    },
+  })
+
   // Derive key activation synchronously from the exact playhead passed to the
   // falling-note visualization. An effect would leave the keyboard one render
   // behind whenever the AudioContext clock advances.
   const activeKeys = useMemo(() => {
-    return new Set(getActiveNotes(notes, currentTime).map(note => note.midi))
-  }, [notes, currentTime])
+    return new Set(getActiveNotes(notes, currentTime)
+      .filter(note => isPracticedNote(note, activePractice))
+      .map(note => note.midi))
+  }, [notes, currentTime, activePractice])
   
   const activeFingers = useMemo(() => {
     const fingers = new Map<number, string>()
     if (showScore) for (const note of getActiveNotes(notes, currentTime)) {
-      if (!note.finger) continue
+      if (!note.finger || !isPracticedNote(note, activePractice)) continue
       const previous = fingers.get(note.midi)
       const finger = String(note.finger)
       fingers.set(note.midi, previous && previous !== finger ? `${previous}/${finger}` : finger)
     }
     return fingers
-  }, [notes, currentTime, showScore])
+  }, [notes, currentTime, showScore, activePractice])
 
   // Playback control handlers
   return (
@@ -314,12 +435,47 @@ export default function FallingNotesPlayer({
         </div>
       ) : (
         <>
+          {resume.offer && (
+            <section
+              aria-label="이어서 연습"
+              className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rule bg-surface px-4 py-3"
+            >
+              <p className="text-sm text-ink">
+                지난번 <span className="font-semibold tabular-nums">{formatClock(resume.offer.time)}</span>에서 멈췄습니다.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { void handleResume() }}
+                  disabled={sampleStatus === 'loading'}
+                  className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-on-accent hover:bg-accent-hover disabled:opacity-50"
+                >
+                  {formatClock(resume.offer.time)}부터 이어서 연습
+                </button>
+                <button
+                  type="button"
+                  onClick={resume.dismiss}
+                  className="rounded-full px-4 py-1.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
+                >
+                  처음부터
+                </button>
+              </div>
+            </section>
+          )}
+
           {/* Usage Instructions */}
-          <div className="mb-4">
-            <p className="text-xs text-ink-muted">
-              1. 노트의 아랫변이 히트라인(건반 상단)에 닿을 때 건반을 누르세요. 2. 속도를 고르세요. 3. 어려운 곳은 A와 B로 반복하세요.
-            </p>
-          </div>
+          <ol aria-label="연습 방법" className="mb-4 grid gap-2 text-sm text-ink-muted sm:grid-cols-3">
+            {[
+              '노트의 아랫변이 건반 위 선에 닿을 때 누르세요.',
+              '처음에는 속도를 늦춰 따라가세요.',
+              '어려운 곳은 A와 B로 구간을 정해 반복하세요.',
+            ].map((step, index) => (
+              <li key={step} className="flex gap-2 rounded-lg border border-rule bg-surface px-3 py-2">
+                <span aria-hidden="true" className="font-semibold text-accent">{index + 1}</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
 
           {/* Playback Controls */}
           <div className="mb-4">
@@ -342,9 +498,67 @@ export default function FallingNotesPlayer({
             />
           </div>
 
-          {/* Master volume — a tuning control. The numeric readout is the master
-              gain value; whatever setting sounds right here is the number to lock in
-              as DEFAULT_MASTER_GAIN in useFallingNotesAudio. */}
+          {offersHandChoice && (
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <div role="group" aria-label="연습할 손" className="inline-flex rounded-full bg-surface-muted p-1">
+                {([['both', '양손'], ['L', '왼손'], ['R', '오른손']] as const).map(([hand, label]) => (
+                  <button
+                    key={hand}
+                    type="button"
+                    aria-pressed={practiceHand === hand}
+                    onClick={() => setPracticeHand(hand)}
+                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                      practiceHand === hand ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {practiceHand !== 'both' && (
+                <label className="flex items-center gap-2 text-sm text-ink-muted">
+                  <input
+                    type="checkbox"
+                    checked={otherHandAudible}
+                    onChange={event => setOtherHandAudible(event.target.checked)}
+                    className="h-4 w-4 accent-accent"
+                  />
+                  다른 손 소리 듣기
+                </label>
+              )}
+            </div>
+          )}
+
+          <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-muted">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={metronomeOn && metronomeAvailable}
+                disabled={!metronomeAvailable}
+                onChange={event => setMetronomeOn(event.target.checked)}
+                className="h-4 w-4 accent-accent"
+              />
+              메트로놈
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={countInOn}
+                onChange={event => setCountInOn(event.target.checked)}
+                className="h-4 w-4 accent-accent"
+              />
+              시작 전 준비 박자
+            </label>
+            {!metronomeAvailable && (
+              <p className="w-full text-xs">
+                이 악보는 마디별 박자 정보가 없어 메트로놈을 켤 수 없습니다. 악보의 빠르기가 곡 중간에 바뀔 수 있어
+                클릭이 노트와 어긋날 수 있기 때문입니다.
+              </p>
+            )}
+          </div>
+
+          {/* The raw gain readout was a tuning aid for DEFAULT_MASTER_GAIN; that value is
+              settled, so readers see a share of the range instead (D-080). */}
           <div className="mb-4 flex items-center gap-3">
             <label htmlFor="master-volume" className="text-xs text-ink-muted whitespace-nowrap">
               음량
@@ -357,11 +571,11 @@ export default function FallingNotesPlayer({
               step={0.01}
               value={volume}
               onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className="flex-1 max-w-xs"
-              aria-label="음량 (master gain)"
+              className="flex-1 max-w-xs accent-accent"
+              aria-valuetext={formatVolumePercent(volume, MAX_MASTER_GAIN)}
             />
-            <span className="text-xs font-mono text-ink-muted tabular-nums w-10 text-right">
-              {volume.toFixed(2)}
+            <span className="text-xs text-ink-muted tabular-nums w-10 text-right">
+              {formatVolumePercent(volume, MAX_MASTER_GAIN)}
             </span>
           </div>
         </>
@@ -384,8 +598,32 @@ export default function FallingNotesPlayer({
           '샘플을 불러오지 못해 합성음으로 재생합니다.'}
       </div>
 
+      {/* Hidden only on touch screens, which have no space bar to press. A
+          keyboard-only PC reports `pointer: none`, as ScoreToggle also allows. */}
+      {!isSessionActive && (
+        <p role="note" aria-label="키보드 단축키" className="mb-2 text-xs text-ink-muted pointer-coarse:hidden">
+          <kbd className="rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">Space</kbd> 재생·일시정지
+          <span aria-hidden="true"> · </span>
+          <kbd className="rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">←</kbd>
+          <kbd className="ml-1 rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">→</kbd> {SEEK_STEP_LABEL}
+        </p>
+      )}
+      {/* Setup only: during a session this height belongs to the notes, and the
+          session layout budget (#177) must not change. */}
+      {!isSessionActive && (
+        <ul aria-label="노트 색상" className="mb-2 flex flex-wrap items-center gap-3 text-xs text-ink-muted">
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="h-3 w-3 rounded-sm" style={{ background: HAND_COLORS.L }} />
+            왼손
+          </li>
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="h-3 w-3 rounded-sm" style={{ background: HAND_COLORS.R }} />
+            오른손
+          </li>
+        </ul>
+      )}
       <ScoreToggle available={Boolean(scoreUrl)} onChange={setShowScore} />
-      {showScore && scoreUrl && <ScorePanel url={scoreUrl} notes={notes} currentTime={currentTime}
+      {showScore && scoreUrl && <ScorePanel url={scoreUrl} notes={annotationNotes} currentTime={currentTime}
         timingReferenceBpm={animationData.timingReferenceBpm}
         height={scoreGeometry?.scoreHeight} contentFits={scoreGeometry?.contentFits}
         onRequiredHeight={measureScore} />}
@@ -427,7 +665,19 @@ export default function FallingNotesPlayer({
             pxPerSec={pxPerSec}
             height={fallingHeight}
             layout={layout}
+            dimHand={otherHand(activePractice)}
           />
+
+          {countInLeft !== null && (
+            <div
+              data-testid="count-in"
+              role="status"
+              aria-live="assertive"
+              className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center text-7xl font-bold text-white/90"
+            >
+              {countInLeft}
+            </div>
+          )}
 
           {/* Hit Line */}
           <div
