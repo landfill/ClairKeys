@@ -12,7 +12,7 @@ import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { CompactPlaybackBar, PlaybackControls, TempoDisplay } from '@/components/playback'
 import { getActiveNotes } from '@/utils/visualUtils'
-import { audibleNotesFor, hasBothHands, isPracticedNote, otherHand, type PracticeHand } from '@/utils/handPractice'
+import { annotationNotesFor, audibleNotesFor, hasBothHands, isPracticedNote, otherHand, type PracticeHand } from '@/utils/handPractice'
 import ScoreToggle from '@/components/playback/ScoreToggle'
 import ScorePanel from '@/components/playback/ScorePanel'
 import ScoreTimingNotice from '@/components/playback/ScoreTimingNotice'
@@ -72,6 +72,7 @@ export default function FallingNotesPlayer({
     () => audibleNotesFor(notes, activePractice, otherHandAudible),
     [notes, activePractice, otherHandAudible]
   )
+  const annotationNotes = useMemo(() => annotationNotesFor(notes, activePractice), [notes, activePractice])
   
   // Use falling notes player hook for audio-visual synchronization
   const {
@@ -423,7 +424,7 @@ export default function FallingNotesPlayer({
       </div>
 
       <ScoreToggle available={Boolean(scoreUrl)} onChange={setShowScore} />
-      {showScore && scoreUrl && <ScorePanel url={scoreUrl} notes={notes} currentTime={currentTime}
+      {showScore && scoreUrl && <ScorePanel url={scoreUrl} notes={annotationNotes} currentTime={currentTime}
         timingReferenceBpm={animationData.timingReferenceBpm}
         height={scoreGeometry?.scoreHeight} contentFits={scoreGeometry?.contentFits}
         onRequiredHeight={measureScore} />}

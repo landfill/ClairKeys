@@ -54,4 +54,18 @@ describe('FallingNotes hand practice', () => {
     expect(screen.getByText('2')).toBeInTheDocument()
     expect(screen.queryByText('4')).not.toBeInTheDocument()
   })
+
+  it('never fades a note whose hand was only guessed', () => {
+    const { container } = render(
+      <FallingNotes
+        notes={[{ midi: 62, start: 1, duration: 0.5, hand: 'L', handSource: 'inferred' }]}
+        nowSec={0}
+        pxPerSec={100}
+        height={200}
+        layout={twoKeys}
+        dimHand="L"
+      />
+    )
+    expect(container.querySelector('[data-dimmed]')).toBeNull()
+  })
 })

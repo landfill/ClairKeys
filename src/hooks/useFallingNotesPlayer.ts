@@ -36,6 +36,9 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
   const [loopStart, setLoopStart] = useState<number | null>(null)
   const [loopEnd, setLoopEnd] = useState<number | null>(null)
 
+  const latestAudible = useRef(audibleNotes)
+  latestAudible.current = audibleNotes
+
   // Audio management
   const {
     startAudio,
@@ -74,9 +77,17 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
     if (started) {
       setIsPlaying(true)
       setIsSessionActive(true)
+      // The start may have waited seconds for samples. A hand choice made in
+      // that window has not reached the audio yet; apply it now.
+      const latest = latestAudible.current
+      if (latest !== audibleNotes) {
+        const at = getCurrentTime()
+        stopAudio()
+        if (!(await startAudio(latest, at, tempoScale, mute))) setIsPlaying(false)
+      }
     }
     return started
-  }, [isPlaying, tempoScale, mute, audibleNotes, getCurrentTime, startAudio, updateTempoScale])
+  }, [isPlaying, tempoScale, mute, audibleNotes, getCurrentTime, startAudio, stopAudio, updateTempoScale])
 
   /**
    * Pause playback

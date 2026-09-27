@@ -235,4 +235,23 @@ describe('useFallingNotesPlayer audible notes', () => {
     await act(async () => { hook.rerender({ audible: rightOnly }) })
     expect(mockAudio.startAudio).not.toHaveBeenCalled()
   })
+
+  it('starts with the latest audible set when it changed while samples were loading', async () => {
+    let finish: (started: boolean) => void = () => {}
+    mockAudio.startAudio.mockImplementationOnce((_notes: FallingNote[], offset: number) => {
+      mockClock = offset
+      return new Promise<boolean>(resolve => { finish = resolve })
+    })
+    const hook = renderHook(({ audible }) => useFallingNotesPlayer(both, { audibleNotes: audible }), {
+      initialProps: { audible: both },
+    })
+    let playing: Promise<boolean> = Promise.resolve(false)
+    act(() => { playing = hook.result.current.play() })
+    await act(async () => { hook.rerender({ audible: rightOnly }) })
+    await act(async () => { finish(true); await playing })
+
+    const last = mockAudio.startAudio.mock.calls.at(-1)!
+    expect(last[0]).toBe(rightOnly)
+    expect(hook.result.current.isPlaying).toBe(true)
+  })
 })

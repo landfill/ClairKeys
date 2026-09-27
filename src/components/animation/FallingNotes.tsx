@@ -34,7 +34,7 @@ export default function FallingNotes({
       {visualNotes.map((visualNote, index) => {
         // The other hand stays visible as context but must not compete with
         // the hand being practised, so it is faded and carries no fingering.
-        const dimmed = dimHand !== null && visualNote.hand === dimHand;
+        const dimmed = dimHand !== null && visualNote.hand === dimHand && visualNote.handSource !== 'inferred';
         const showFingerBadge = !dimmed && shouldShowFingerBadge(visualNote);
         const badgePosition = showFingerBadge ? getFingerBadgePosition(visualNote) : null;
         

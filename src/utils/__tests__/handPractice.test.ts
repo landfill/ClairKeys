@@ -1,4 +1,4 @@
-import { audibleNotesFor, hasBothHands, isPracticedNote, otherHand } from '../handPractice'
+import { annotationNotesFor, audibleNotesFor, hasBothHands, isPracticedNote, otherHand } from '../handPractice'
 import type { FallingNote } from '@/types/fallingNotes'
 
 const right: FallingNote = { midi: 72, start: 0, duration: 1, hand: 'R' }
@@ -35,5 +35,22 @@ describe('hand practice selection', () => {
   it('drops only the other hand when its sound is switched off', () => {
     expect(audibleNotesFor(notes, 'R', false)).toEqual([right, unassigned])
     expect(audibleNotesFor(notes, 'L', false)).toEqual([left, unassigned])
+  })
+
+  it('treats a hand the converter only guessed as unassigned', () => {
+    const guessed: FallingNote = { midi: 50, start: 2, duration: 1, hand: 'L', handSource: 'inferred' }
+    expect(isPracticedNote(guessed, 'R')).toBe(true)
+    expect(audibleNotesFor([right, guessed], 'R', false)).toEqual([right, guessed])
+    // Guesses alone never make a score "two-handed".
+    expect(hasBothHands([right, guessed])).toBe(false)
+  })
+
+  it('strips fingering of the other hand for the score, keeping every note and its index', () => {
+    const fingered = [{ ...right, finger: 2 as const }, { ...left, finger: 4 as const }, unassigned]
+    expect(annotationNotesFor(fingered, 'both')).toBe(fingered)
+    const annotated = annotationNotesFor(fingered, 'R')
+    expect(annotated).toHaveLength(3)
+    expect(annotated.map(note => note.finger)).toEqual([2, undefined, undefined])
+    expect(annotated[1].midi).toBe(48)
   })
 })
