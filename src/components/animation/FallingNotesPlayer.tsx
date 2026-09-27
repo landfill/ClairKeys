@@ -7,6 +7,7 @@ import { BOX_BORDER, PX_PER_SEC, planPlaybackGeometry, planScoreAwareGeometry } 
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
+import { usePracticeReport, type PracticeRun } from '@/hooks/usePracticeReport'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
@@ -46,10 +47,13 @@ export default function FallingNotesPlayer({
   className = '',
   onSessionChange,
   scoreUrl,
+  onPracticeRun,
 }: {
   animationData: CanonicalAnimationData
   className?: string
   scoreUrl?: string
+  /** Receives each finished practice run; omitted, nothing is measured for anyone. */
+  onPracticeRun?: (run: PracticeRun, context: { leavingPage: boolean }) => void
   /**
    * Reports the practice session, not the sounding score. A pause keeps this
    * true: the page chrome must not come back underneath a reader who only
@@ -227,6 +231,8 @@ export default function FallingNotesPlayer({
     const started = await play()
     if (!started && !isSessionActive) orientation.exit()
   }, [isSessionActive, orientation, play])
+
+  usePracticeReport({ isPlaying, isSessionActive, currentTime, totalLength, onReport: onPracticeRun })
 
   // Derive key activation synchronously from the exact playhead passed to the
   // falling-note visualization. An effect would leave the keyboard one render

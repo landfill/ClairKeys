@@ -308,9 +308,12 @@ export async function DELETE(
       }
     }
 
-    // Delete sheet music (cascade will handle practice sessions)
-    await prisma.sheetMusic.delete({
-      where: { id: sheetId }
+    // The practice-record FK is ON DELETE RESTRICT (001_init), so the records
+    // have to go first — every reader's, since a public sheet collects them
+    // from others too. One transaction keeps a failure from leaving either half.
+    await prisma.$transaction(async tx => {
+      await tx.practiceSession.deleteMany({ where: { sheetMusicId: sheetId } })
+      await tx.sheetMusic.delete({ where: { id: sheetId } })
     })
 
     // Clear relevant caches

@@ -17,7 +17,11 @@ jest.mock('@/lib/prisma', () => ({
     },
     category: {
       findFirst: jest.fn()
-    }
+    },
+    practiceSession: {
+      deleteMany: jest.fn()
+    },
+    $transaction: jest.fn()
   }
 }))
 
@@ -27,6 +31,7 @@ const mockDb = prisma as jest.Mocked<typeof prisma>
 describe('/api/sheet/[id]', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(mockDb.$transaction as jest.Mock).mockImplementation(async (work: (tx: typeof prisma) => Promise<unknown>) => work(prisma))
   })
 
   describe('GET', () => {
@@ -303,6 +308,22 @@ describe('/api/sheet/[id]', () => {
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.message).toBe('Sheet music deleted successfully')
+    })
+
+    it('removes every practice record of the sheet in the same transaction, since the FK restricts deletion', async () => {
+      mockGetServerSession.mockResolvedValue({ user: { id: 'user1' } } as any)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue({ id: 1, userId: 'user1' } as any)
+      const order: string[] = []
+      ;(mockDb.practiceSession.deleteMany as jest.Mock).mockImplementation(async () => { order.push('practice'); return { count: 2 } })
+      ;(mockDb.sheetMusic.delete as jest.Mock).mockImplementation(async () => { order.push('sheet'); return {} })
+
+      const response = await DELETE(new NextRequest('http://localhost:3000/api/sheet/1', { method: 'DELETE' }), { params: Promise.resolve({ id: '1' }) })
+
+      expect(response.status).toBe(200)
+      expect(mockDb.$transaction).toHaveBeenCalledTimes(1)
+      // Other readers' records of a public sheet go too: the sheet they belong to is gone.
+      expect(mockDb.practiceSession.deleteMany).toHaveBeenCalledWith({ where: { sheetMusicId: 1 } })
+      expect(order).toEqual(['practice', 'sheet'])
     })
 
     it('should deny access to non-owner', async () => {

@@ -3045,3 +3045,22 @@
 - Scope-risk: narrow
 - Reversibility: clean
 - Related: phases/UI-2026-playback-mode-clarity.md, D-019, #177의 별도 UI 주석
+
+## D-085: 연습 기록은 기존 테이블에 쓰고, 악보 삭제가 기록을 먼저 지운다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT practice-records branch; merge pending
+- Context: `PracticeSession`(001_init)은 운영 DB에 있으나 쓰이지 않았다. FK가 `ON DELETE RESTRICT`여서 기록을 쓰기
+  시작하면 악보 삭제가 실패한다. 삭제 route 주석은 cascade를 가정했다.
+- Decision:
+  1. 스키마를 바꾸지 않는다. 악보 삭제는 한 트랜잭션에서 그 악보의 모든 기록을 지운 뒤 악보를 지운다.
+  2. 기록 API는 로그인 사용자 본인 것만 쓰고 읽는다. 재생할 수 없는 악보는 404로 존재를 드러내지 않는다.
+  3. 연습 시간은 소리가 난 실제 시간(일시정지 제외), 진행률은 도달한 가장 먼 위치 / 곡 길이다. 10초 미만은 기록하지 않는다.
+  4. 비로그인 방문자는 측정·요청하지 않는다.
+- Rejected: FK를 `CASCADE`로 바꾸는 migration | 운영 DB 적용이 따로 필요하고, 코드 트랜잭션으로 같은 결과를 낸다.
+- Rejected: 클라이언트 재생 시간(song seconds)을 연습 시간으로 사용 | 속도를 늦춘 연습이 짧게 기록된다.
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: messy
+- Directive: 악보를 지우는 새 경로를 만들면 기록 삭제를 같은 트랜잭션에 넣는다. 기록은 사용자 데이터이므로 삭제 전에 복구 수단이 없다.
+- Related: phases/FEAT-practice-records.md, D-080, PR182
