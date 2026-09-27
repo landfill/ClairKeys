@@ -31,7 +31,8 @@ CI 대기 후 사용자 병합 차례. 다음은 193.
 190 병합 시도는 base branch policy로 거부됐다: 필수 `Lint and Type Check`가 CI 환경 결함(생성되지 않은 Prisma stub)으로
 실패. 근본 수정 [PR196](https://github.com/landfill/ClairKeys/pull/196)(순서 밖 추가 PR, 사용자 승인 필요). 190은 workflow 종료 후
 실패 job 재실행으로 풀거나, 196 병합 후 main을 합쳐 푼다. → 사용자가 2번(196 먼저)을 선택, **196 MERGED `cd426d2`**,
-**190 MERGED `fa2b9f3`**(사용자 병합, 브랜치 정리 완료). 193은 main을 합친 `ea3652c`로 재검증 완료, CI 대기 후 병합 차례.
+**190 MERGED `fa2b9f3`**(사용자 병합, 브랜치 정리 완료). **193 MERGED `621de94`**(브랜치 정리 완료). 191은 main을 합친 뒤 결합 회귀(seek 포커스 유실)를 고친 `ab2e99d`로
+재검증 완료, CI 대기 후 병합 차례. 이 수정으로 WebKit phone-portrait 간헐 실패(후속 후보)도 해소 예정.
 에이전트의 병합과 `.claude/settings.local.json` 권한 추가는 auto mode 분류기가 거부(Merge Without Review / Self-Modification)해,
 병합 명령은 사용자가 실행한다. 에이전트는 병합 전 준비·검증과 병합 후 확인·정리를 맡는다.
 여섯 PR은 `FallingNotesPlayer.tsx`·`DECISIONS.md` 끝 등을 함께 수정한다. 결정 번호 D-080~085는 PR별로 겹치지
