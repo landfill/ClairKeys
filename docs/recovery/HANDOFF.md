@@ -1,8 +1,19 @@
 # Current Handoff
 
-Last updated: 2026-09-24 KST
+Last updated: 2026-09-27 KST
 
 ## Current phase
+
+**운영 사이트 점검 후속 — IN_PROGRESS (2026-09-27).** 비로그인 PC·모바일 점검 결과 우선순위 결함 4건을
+이슈 [#185](https://github.com/landfill/ClairKeys/issues/185)(첫 재생 샘플 로딩 표시),
+[#186](https://github.com/landfill/ClairKeys/issues/186)(모바일 빠르기 표시가 노트 가림),
+[#187](https://github.com/landfill/ClairKeys/issues/187)(탐색·검색 API 약2초·중복 요청),
+[#188](https://github.com/landfill/ClairKeys/issues/188)(운영 콘솔 디버그 로그)로 등록했다.
+사용자 지시로 디자인 정리와 기능 추가를 바로 진행한다. 디자인은
+[PR189](https://github.com/landfill/ClairKeys/pull/189) head `bba38de`(D-080,
+[phase](phases/UI-2026-review-design.md), [검증](validation/2026-09-27-ui-review-design.md),
+[리뷰](reviews/PR-189.md)). 기능 추가(한 손 연습, 키보드 단축키, 메트로놈·카운트인, 연습 기록·이어서
+하기, 대기 모드·MIDI, 홈 체험 연결)는 각각 별도 브랜치·PR로 진행한다.
 
 **공통 재생 모드 UI 명확화 — DONE, 병합 후 검사 중.** [PR184](https://github.com/landfill/ClairKeys/pull/184)
 non-draft head `be68745` (`a329dcd` 구현 + PR183 병합 main 반영). 사용자는 모드 UI가 특정 악보 문제가 아니라 실제 기능
