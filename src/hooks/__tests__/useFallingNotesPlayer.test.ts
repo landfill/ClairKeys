@@ -481,3 +481,23 @@ describe('useFallingNotesPlayer wait mode with the other practice options', () =
     expect(hook.result.current.waitingFor).toEqual([60])
   })
 })
+
+describe('useFallingNotesPlayer wait mode inside an A-B loop', () => {
+  const piece: FallingNote[] = [{ midi: 60, start: 1, duration: 0.2 }, { midi: 62, start: 3, duration: 0.2 }]
+  const waitSteps = [{ time: 1, pitches: [60] }, { time: 3, pitches: [62] }]
+
+  it('returns to A when a frame jumps past B onto a step outside the loop', async () => {
+    const hook = renderHook(() => useFallingNotesPlayer(piece, { waitSteps }))
+    await act(async () => { await hook.result.current.seek(1.5) })
+    act(() => hook.result.current.markLoopStart())
+    await act(async () => { await hook.result.current.seek(2.5) })
+    act(() => hook.result.current.markLoopEnd())
+    await act(async () => { await hook.result.current.seek(1.5) })
+    await act(async () => { await hook.result.current.play() })
+    mockAudio.startAudio.mockClear()
+
+    await frameAt(3.05)
+    expect(hook.result.current.waitingFor).toBeNull()
+    expect(mockAudio.startAudio.mock.calls[0]?.[1]).toBe(1.5)
+  })
+})

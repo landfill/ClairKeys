@@ -3,10 +3,11 @@ import { useFallingNotesAudio } from '../useFallingNotesAudio'
 
 /** Wait mode sounds the keys a reader taps on screen at once, off the playback clock. */
 
+let mockLoad = () => Promise.resolve({ status: 'ready', readyCount: 30, totalCount: 30 })
 jest.mock('@/utils/pianoSampleBank', () => ({
   getPianoSampleBank: jest.fn(() => ({
     voiceFor: () => ({ buffer: { duration: 6 } as AudioBuffer, playbackRate: 1 }),
-    load: () => Promise.resolve({ status: 'ready', readyCount: 30, totalCount: 30 }),
+    load: () => mockLoad(),
   })),
   disposePianoSampleBank: jest.fn(),
 }))
@@ -63,5 +64,21 @@ describe('useFallingNotesAudio playNoteNow', () => {
     expect(context.resume).toHaveBeenCalled()
     expect(noteStarts).toHaveLength(1)
     unmount()
+  })
+})
+
+describe('useFallingNotesAudio silent clock', () => {
+  it('starts a muted clock at once instead of waiting for the samples it will not play', async () => {
+    jest.useFakeTimers()
+    const previous = mockLoad
+    mockLoad = () => new Promise(() => {}) as never // a download that never finishes
+    makeContext()
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+    let started: boolean | undefined
+    await act(async () => { started = await result.current.startAudio([{ midi: 60, start: 0, duration: 1 }], 0, 1, true) })
+    expect(started).toBe(true)
+    unmount()
+    mockLoad = previous
+    jest.useRealTimers()
   })
 })

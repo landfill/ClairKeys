@@ -367,6 +367,19 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
         setCountInLeft(null)
       }
 
+      // The A-B loop comes first: a frame that jumped past B must return to A,
+      // never stop on a wait step that lies outside the loop.
+      if (loopSection && currentAudioTime >= loopSection.end) {
+        // A successful seek keeps isPlaying and this effect's dependencies
+        // unchanged. Resume this loop explicitly, once the audio is ready.
+        // Cleanup owns cancellation if pause/stop/unmount replaces the effect
+        // while the asynchronous seek is still waiting.
+        void handleSeek(loopSection.start).then(() => {
+          if (!cancelled) rafRef.current = requestAnimationFrame(animationLoop)
+        })
+        return
+      }
+
       // Wait mode: reaching an unplayed step stops the clock exactly on it.
       if (waitSteps?.length) {
         const index = nextWaitStep(waitSteps, playedThroughRef.current)
@@ -383,17 +396,6 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
       }
 
       setCurrentTime(currentAudioTime)
-
-      if (loopSection && currentAudioTime >= loopSection.end) {
-        // A successful seek keeps isPlaying and this effect's dependencies
-        // unchanged. Resume this loop explicitly, once the audio is ready.
-        // Cleanup owns cancellation if pause/stop/unmount replaces the effect
-        // while the asynchronous seek is still waiting.
-        void handleSeek(loopSection.start).then(() => {
-          if (!cancelled) rafRef.current = requestAnimationFrame(animationLoop)
-        })
-        return
-      }
 
       // Auto-stop when song ends
       if (shouldAutoStop(currentAudioTime, totalLength, 2)) {
