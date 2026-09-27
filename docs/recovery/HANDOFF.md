@@ -8,16 +8,26 @@ Last updated: 2026-09-27 KST
 이슈 [#185](https://github.com/landfill/ClairKeys/issues/185)(첫 재생 샘플 로딩 표시),
 [#186](https://github.com/landfill/ClairKeys/issues/186)(모바일 빠르기 표시가 노트 가림),
 [#187](https://github.com/landfill/ClairKeys/issues/187)(탐색·검색 API 약2초·중복 요청),
-[#188](https://github.com/landfill/ClairKeys/issues/188)(운영 콘솔 디버그 로그)로 등록했다.
-사용자 지시로 디자인 정리와 기능 추가를 바로 진행한다. 디자인은
-[PR189](https://github.com/landfill/ClairKeys/pull/189) head `5f3f9a9`(D-080; 로그인 후 보호 경로 복귀 결함 수정 포함,
-[phase](phases/UI-2026-review-design.md), [검증](validation/2026-09-27-ui-review-design.md),
-[리뷰](reviews/PR-189.md)). 기능 추가(한 손 연습, 키보드 단축키, 메트로놈·카운트인, 연습 기록·이어서
-하기, 대기 모드·MIDI, 홈 체험 연결)는 각각 별도 브랜치·PR로 진행한다. 단축키는
-[PR190](https://github.com/landfill/ClairKeys/pull/190) head `a77c7cd`(D-081,
-[검증](validation/2026-09-27-feat-playback-shortcuts.md), [리뷰](reviews/PR-190.md)). PR189·190은 같은 파일을
-수정하므로 먼저 병합되는 쪽 이후 나머지에 main을 합치고 재검증한다. Vercel Preview는 배포 보호 로그인이 필요해
-에이전트가 열지 못한다. 로컬 서버 정리는 `pkill` 대신 `lsof -ti tcp:3000 | xargs kill`을 쓴다(`next-server` 프로세스).
+[#188](https://github.com/landfill/ClairKeys/issues/188)(운영 콘솔 디버그 로그)로 등록했다(미착수).
+사용자 지시로 디자인·기능을 바로 진행해 PR 6개를 열었다. 모두 non-draft, 병합은 PR별 사용자 승인 대기.
+
+| PR | 내용 | 결정 | 리뷰 로그 |
+|---|---|---|---|
+| [189](https://github.com/landfill/ClairKeys/pull/189) | 디자인 정리 + 로그인 후 보호 경로 복귀 결함 | D-080 | [PR-189](reviews/PR-189.md) |
+| [190](https://github.com/landfill/ClairKeys/pull/190) | 재생 키보드 단축키 | D-081 | [PR-190](reviews/PR-190.md) |
+| [191](https://github.com/landfill/ClairKeys/pull/191) | 한 손 연습 | D-082 | [PR-191](reviews/PR-191.md) |
+| [192](https://github.com/landfill/ClairKeys/pull/192) | 메트로놈·준비 박자 | D-083 | [PR-192](reviews/PR-192.md) |
+| [193](https://github.com/landfill/ClairKeys/pull/193) | 이어서 연습하기(브라우저 저장) | D-084 | [PR-193](reviews/PR-193.md) |
+| [194](https://github.com/landfill/ClairKeys/pull/194) | 연습 기록 + 기록 있는 악보 삭제 실패 방지 | D-085 | [PR-194](reviews/PR-194.md) |
+
+189~193의 Codex 지적은 모두 FIXED/REJECTED(근거 회신) 후 스레드 해결, 현재 head CI는 push 직후.
+여섯 PR은 `FallingNotesPlayer.tsx`·`DECISIONS.md` 끝 등을 함께 수정한다. 결정 번호 D-080~085는 PR별로 겹치지
+않게 붙였다. 병합은 한 번에 하나씩, 다음 PR에 main을 합쳐 충돌 해결·재검증한 뒤 진행한다.
+홈 샘플을 실제 재생기로 바꾸는 안은 2026-08-30 사용자 결정(정적 예시)과 충돌해 보류, 대기 모드·MIDI는 요구사항
+결정 필요로 미착수. Vercel Preview는 배포 보호 로그인이 필요해 에이전트가 열지 못한다. 로컬 서버 정리는
+`lsof -ti tcp:3000 | xargs kill`(`next-server`). 로컬 시스템 Python 3.14에는 fastapi가 없어 Python bridge Jest는
+`uv venv -p 3.10` + `omr-service/requirements-ci.txt`로 실행한다. WebKit phone-portrait seek focus E2E는 main에서도
+간헐 실패한다(후속 후보).
 
 **공통 재생 모드 UI 명확화 — DONE, 병합 후 검사 중.** [PR184](https://github.com/landfill/ClairKeys/pull/184)
 non-draft head `be68745` (`a329dcd` 구현 + PR183 병합 main 반영). 사용자는 모드 UI가 특정 악보 문제가 아니라 실제 기능
