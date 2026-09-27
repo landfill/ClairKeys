@@ -12,7 +12,7 @@ Base: 2026-09-27 main `5645b60`.
 
 1. 손 선택 순수 함수, `FallingNotes` 흐림, 재생 훅의 audible notes 계약, 플레이어 UI 테스트를 먼저 실패시킨다.
 2. `handPractice` 유틸과 `FallingNotes.dimHand`를 추가한다. 다른 손 노트는 투명도 0.3이며 운지 배지가 없다.
-3. `useFallingNotesPlayer(notes, audibleNotes)`로 오디오가 예약하는 노트만 분리한다. 곡 길이·재생 위치는
+3. `useFallingNotesPlayer(notes, { audibleNotes })`로 오디오가 예약하는 노트만 분리한다. 곡 길이·재생 위치는
    전체 노트를 따른다. 재생 중 집합이 바뀌면 현재 위치에서 오디오를 다시 예약한다.
 4. 재생 준비 화면에 `연습할 손`(양손/왼손/오른손)과 `다른 손 소리 듣기`(기본 켬)를 둔다. 두 손이 모두 있는
    악보에서만 보인다. 건반 강조와 운지 표시도 연습하는 손만 따른다.

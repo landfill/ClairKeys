@@ -94,7 +94,7 @@ export default function FallingNotesPlayer({
     markLoopStart,
     markLoopEnd,
     clearLoop,
-  } = useFallingNotesPlayer(notes, audibleNotes)
+  } = useFallingNotesPlayer(notes, { audibleNotes })
 
   // Constants
   const pxPerSec = PX_PER_SEC

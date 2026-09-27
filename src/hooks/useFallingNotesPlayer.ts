@@ -10,15 +10,17 @@ import { createLoopSection } from '@/utils/loopSection'
  * Main hook for falling notes player with audio-visual synchronization
  * Based on MVP implementation for precise timing
  */
-export function useFallingNotesPlayer(
-  notes: FallingNote[],
+export interface FallingNotesPlayerOptions {
   /**
    * The notes the audio schedules. Timing, length and the visual playhead
    * always follow `notes`; one-hand practice can silence the other hand here
    * without moving the end of the piece.
    */
-  audibleNotes: FallingNote[] = notes
-) {
+  audibleNotes?: FallingNote[]
+}
+
+export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNotesPlayerOptions = {}) {
+  const audibleNotes = options.audibleNotes ?? notes
   // Playback state. `isPlaying` is whether a score is sounding right now;
   // `isSessionActive` is whether the reader is inside a practice run at all.
   // They diverge on a pause, and the screen needs the second one: a pause is a

@@ -187,7 +187,7 @@ describe('FallingNotesPlayer', () => {
         { midi: 48, start: 1, duration: 1, hand: 'L' },
       ],
     }
-    const lastAudible = () => mockHookCalls[mockHookCalls.length - 1][1] as { midi: number }[]
+    const lastAudible = () => (mockHookCalls[mockHookCalls.length - 1][1] as { audibleNotes: { midi: number }[] }).audibleNotes
 
     it('offers no hand choice for a score that has only one hand', () => {
       setIdle()

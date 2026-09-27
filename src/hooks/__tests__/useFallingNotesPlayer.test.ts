@@ -205,14 +205,14 @@ describe('useFallingNotesPlayer audible notes', () => {
   const rightOnly = [both[0]]
 
   it('schedules only the audible notes while timing still follows the whole score', async () => {
-    const hook = renderHook(() => useFallingNotesPlayer(both, rightOnly))
+    const hook = renderHook(() => useFallingNotesPlayer(both, { audibleNotes: rightOnly }))
     await act(async () => { await hook.result.current.play() })
     expect(mockAudio.startAudio.mock.calls[0][0]).toBe(rightOnly)
     expect(hook.result.current.totalLength).toBe(10)
   })
 
   it('restarts the sounding audio from the playhead when the audible set changes', async () => {
-    const hook = renderHook(({ audible }) => useFallingNotesPlayer(both, audible), {
+    const hook = renderHook(({ audible }) => useFallingNotesPlayer(both, { audibleNotes: audible }), {
       initialProps: { audible: both },
     })
     await act(async () => { await hook.result.current.play() })
@@ -229,7 +229,7 @@ describe('useFallingNotesPlayer audible notes', () => {
   })
 
   it('does not touch the audio while stopped', async () => {
-    const hook = renderHook(({ audible }) => useFallingNotesPlayer(both, audible), {
+    const hook = renderHook(({ audible }) => useFallingNotesPlayer(both, { audibleNotes: audible }), {
       initialProps: { audible: both },
     })
     await act(async () => { hook.rerender({ audible: rightOnly }) })
