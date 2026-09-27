@@ -19,12 +19,17 @@ Last updated: 2026-09-27 KST
 | [192](https://github.com/landfill/ClairKeys/pull/192) | 메트로놈·준비 박자 | D-083 | [PR-192](reviews/PR-192.md) |
 | [193](https://github.com/landfill/ClairKeys/pull/193) | 이어서 연습하기(브라우저 저장) | D-084 | [PR-193](reviews/PR-193.md) |
 | [194](https://github.com/landfill/ClairKeys/pull/194) | 연습 기록 + 기록 있는 악보 삭제 실패 방지 | D-085 | [PR-194](reviews/PR-194.md) |
+| [195](https://github.com/landfill/ClairKeys/pull/195) | 기다리기 모드(MIDI + 화면 건반) | D-086 | [PR-195](reviews/PR-195.md) |
 
-189~193의 Codex 지적은 모두 FIXED/REJECTED(근거 회신) 후 스레드 해결, 현재 head CI는 push 직후.
+189~194의 Codex 지적은 모두 FIXED/REJECTED(근거 회신) 후 스레드 해결.
+**2026-09-27 사용자가 병합 순서 189 → 190 → 193 → 191 → 192 → 194를 승인했다.** 189 병합 직전 재확인(head `d6b0663`,
+CI 16 pass, MERGEABLE/CLEAN, 미해결 스레드 0) 후 `gh pr merge`를 실행했으나 Claude Code auto mode 분류기가
+"Merge Without Review"로 거부했다. 에이전트는 이를 우회하지 않는다. 사용자가 직접 병합하거나 해당 권한을 허용해야 한다.
+각 병합 뒤에는 다음 PR에 main을 합쳐 충돌 해결·재검증이 필요하다(에이전트가 수행 가능).
 여섯 PR은 `FallingNotesPlayer.tsx`·`DECISIONS.md` 끝 등을 함께 수정한다. 결정 번호 D-080~085는 PR별로 겹치지
 않게 붙였다. 병합은 한 번에 하나씩, 다음 PR에 main을 합쳐 충돌 해결·재검증한 뒤 진행한다.
-홈 샘플을 실제 재생기로 바꾸는 안은 2026-08-30 사용자 결정(정적 예시)과 충돌해 보류, 대기 모드·MIDI는 요구사항
-결정 필요로 미착수. Vercel Preview는 배포 보호 로그인이 필요해 에이전트가 열지 못한다. 로컬 서버 정리는
+홈 샘플을 실제 재생기로 바꾸는 안은 2026-08-30 사용자 결정(정적 예시)과 충돌해 보류. 대기 모드·MIDI는 사용자가
+추천안을 승인해 PR195로 구현했다(한 손 연습과의 결합은 191 병합 후 후속). Vercel Preview는 배포 보호 로그인이 필요해 에이전트가 열지 못한다. 로컬 서버 정리는
 `lsof -ti tcp:3000 | xargs kill`(`next-server`). 로컬 시스템 Python 3.14에는 fastapi가 없어 Python bridge Jest는
 `uv venv -p 3.10` + `omr-service/requirements-ci.txt`로 실행한다. WebKit phone-portrait seek focus E2E는 main에서도
 간헐 실패한다(후속 후보).
