@@ -49,3 +49,25 @@ Phase: [UI-2026-review-design](../phases/UI-2026-review-design.md), decision D-0
 
 - 운영 데이터 화면은 Vercel Preview에서 확인 후 [리뷰 로그](../reviews/PR-189.md)에 기록한다.
 - 로그인 상태(공개 설정 필터 표시)는 단위 테스트로만 확인. 실제 OAuth 로그인은 미실행.
+
+## 후속 head `5f3f9a9` — 로그인 복귀 경로 (2026-09-27)
+
+로컬 production build에 fixture 데이터로 PC/모바일 화면을 캡처하던 중, 비로그인 `/library`가 경로별 문구가 아닌
+일반 문구를 보였다. 원인: next-auth `/api/auth/signin`이 로그인 화면으로 보낼 때 `callbackUrl`을 같은 origin의
+절대 URL(`http://localhost:3000/library`)로 넘기고, 로그인 화면의 `toSafeReturnPath`가 이를 `/`로 떨어뜨림.
+그 결과 로그인 후 원래 보호 경로가 아니라 홈으로 돌아가는 기존 결함도 확인(운영에서도 같은 절대 URL 관찰).
+
+| 명령 | 결과 |
+|---|---|
+| `npx jest src/lib/__tests__/returnPath.test.ts` (구현 전) | `toSafeReturnPathFrom` 없음으로 fail |
+| `PATH=<py3.10 venv>/bin:$PATH npx jest` | 1122/1122 pass |
+| `npx tsc --noEmit`, `npm run lint`, `npm run build` | PASS |
+| Playwright explore/playback-mode/session-transition/smoke/**signin-return-path** (5 projects) | **125/125 pass** |
+
+- 이전 head의 WebKit phone-portrait seek focus 간헐 실패는 이번 실행에서 재현되지 않았다(기존 분류 유지).
+- 로컬 캡처 중 `pkill -f "next start"`가 `next-server` 프로세스를 끄지 못해 Playwright가 오래된 빌드를
+  재사용했고 chunk 400으로 로그인 화면이 멈췄다. 포트 기준(`lsof -ti tcp:3000 | xargs kill`) 정리 후 재실행한
+  결과만 위에 기록했다.
+- 화면 확인: Vercel Preview는 배포 보호 로그인이 필요해 열지 못했다. 로컬 build + fixture로 PC 1440×900·모바일
+  390×844의 탐색·검색·재생 준비·없는 악보·로그인 화면을 캡처해 확인했다(카드 1회 표시, `연습 시작 →`, 토큰 색,
+  3단계 안내, `음량 78%`, 손 색 범례, 중첩 없는 오류 카드). 캡처는 세션 scratchpad에만 있다.
