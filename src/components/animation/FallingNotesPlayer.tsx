@@ -7,6 +7,8 @@ import { BOX_BORDER, PX_PER_SEC, planPlaybackGeometry, planScoreAwareGeometry } 
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
+import { useMidiInput, type MidiStatus } from '@/hooks/useMidiInput'
+import { buildWaitSteps } from '@/utils/waitSteps'
 import { usePracticeReport, type PracticeRun } from '@/hooks/usePracticeReport'
 import { usePracticeResume } from '@/hooks/usePracticeResume'
 import { SEEK_STEP_SEC, usePlaybackShortcuts } from '@/hooks/usePlaybackShortcuts'
@@ -54,6 +56,19 @@ function useStoredToggle(key: string): [boolean, (next: boolean) => void] {
  * required rather than vh/vw — iOS measures vh against the toolbar-less height,
  * which would push the keyboard off screen.
  */
+/** What the reader can press with, in wait mode. */
+function midiStatusText(status: MidiStatus, devices: string[]): string {
+  switch (status) {
+    case 'unsupported': return '이 브라우저는 MIDI를 지원하지 않습니다. 화면 건반을 눌러 주세요.'
+    case 'denied': return 'MIDI 사용이 허용되지 않았습니다. 화면 건반을 눌러 주세요.'
+    case 'requesting': return 'MIDI 장치를 확인하는 중입니다.'
+    case 'ready': return devices.length
+      ? `MIDI 연결됨: ${devices.join(', ')} · 화면 건반도 누를 수 있습니다.`
+      : '연결된 MIDI 장치가 없습니다. 피아노를 연결하거나 화면 건반을 눌러 주세요.'
+    default: return '화면 건반을 누르거나 MIDI 피아노를 연결해 주세요.'
+  }
+}
+
 /** m:ss for a song position. */
 function formatClock(seconds: number): string {
   const whole = Math.max(0, Math.floor(seconds))
@@ -152,6 +167,14 @@ export default function FallingNotesPlayer({
     const referenceBeat = (60 / animationData.timingReferenceBpm) * beatUnitQuarters(animationData.timeSignature)
     return (resumeAt: number) => countInClicks(beatGrid, resumeAt, perBar, referenceBeat)
   }, [countInOn, beatGrid, animationData.timeSignature, animationData.timingReferenceBpm])
+
+  // Wait mode (D-086): the piece stops on each step until its keys are played.
+  // With one hand chosen, only that hand's notes are waited for (D-086 note).
+  const [waitOn, setWaitOn] = useState(false)
+  const waitSteps = useMemo(
+    () => (waitOn ? buildWaitSteps(notes.filter(note => isPracticedNote(note, activePractice))) : undefined),
+    [waitOn, notes, activePractice]
+  )
   
   // Use falling notes player hook for audio-visual synchronization
   const {
@@ -175,7 +198,10 @@ export default function FallingNotesPlayer({
     markLoopStart,
     markLoopEnd,
     clearLoop,
-  } = useFallingNotesPlayer(notes, { audibleNotes, clicks: metronomeClicks, countIn })
+    waitingFor,
+    pressKey,
+    playNoteNow,
+  } = useFallingNotesPlayer(notes, { audibleNotes, clicks: metronomeClicks, countIn, waitSteps })
 
   // Constants
   const pxPerSec = PX_PER_SEC
@@ -320,7 +346,8 @@ export default function FallingNotesPlayer({
     if (!started && !isSessionActive) orientation.exit()
   }, [isSessionActive, orientation, play])
 
-  usePracticeReport({ isPlaying, isSessionActive, currentTime, totalLength, onReport: onPracticeRun })
+  // Practice time is time the music runs (D-085); a wait prompt stops the clock.
+  usePracticeReport({ isPlaying: isPlaying && !waitingFor, isSessionActive, currentTime, totalLength, onReport: onPracticeRun })
 
   const resume = usePracticeResume(resumeKey, { currentTime, isPlaying, isSessionActive, totalLength })
   const handleResume = useCallback(async () => {
@@ -353,14 +380,28 @@ export default function FallingNotesPlayer({
     },
   })
 
+  // A MIDI piano sounds by itself; a key tapped on screen needs our sound.
+  const midi = useMidiInput({ enabled: waitOn, onNoteOn: note => { void pressKey(note) } })
+  const handleScreenKey = useCallback((note: number) => {
+    void playNoteNow(note)
+    void pressKey(note)
+  }, [playNoteNow, pressKey])
+  const toggleWait = useCallback((next: boolean) => {
+    setWaitOn(next)
+    // Chrome asks permission for MIDI; ask from this click, never on load.
+    if (next && midi.status === 'idle') void midi.request()
+  }, [midi])
+
   // Derive key activation synchronously from the exact playhead passed to the
   // falling-note visualization. An effect would leave the keyboard one render
   // behind whenever the AudioContext clock advances.
   const activeKeys = useMemo(() => {
+    // While waiting, the keyboard shows what is left to press.
+    if (waitingFor) return new Set(waitingFor)
     return new Set(getActiveNotes(notes, currentTime)
       .filter(note => isPracticedNote(note, activePractice))
       .map(note => note.midi))
-  }, [notes, currentTime, activePractice])
+  }, [notes, currentTime, activePractice, waitingFor])
   
   const activeFingers = useMemo(() => {
     const fingers = new Map<number, string>()
@@ -557,6 +598,23 @@ export default function FallingNotesPlayer({
             )}
           </div>
 
+          <div className="mb-4 text-sm text-ink-muted">
+            <div className="flex flex-wrap items-center gap-x-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={waitOn}
+                  onChange={event => toggleWait(event.target.checked)}
+                  aria-describedby="wait-mode-description"
+                  className="h-4 w-4 accent-accent"
+                />
+                기다리기 모드
+              </label>
+              <span id="wait-mode-description" className="text-xs">맞는 건반을 누를 때까지 멈춰서 기다립니다</span>
+            </div>
+            {waitOn && <p className="mt-1 text-xs" role="status">{midiStatusText(midi.status, midi.devices)}</p>}
+          </div>
+
           {/* The raw gain readout was a tuning aid for DEFAULT_MASTER_GAIN; that value is
               settled, so readers see a share of the range instead (D-080). */}
           <div className="mb-4 flex items-center gap-3">
@@ -668,6 +726,17 @@ export default function FallingNotesPlayer({
             dimHand={otherHand(activePractice)}
           />
 
+          {waitingFor && (
+            <div
+              data-testid="wait-prompt"
+              role="status"
+              aria-live="polite"
+              className="pointer-events-none absolute left-1/2 top-3 z-40 -translate-x-1/2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-ink shadow"
+            >
+              건반을 눌러 주세요 · 남은 음 {waitingFor.length}개
+            </div>
+          )}
+
           {countInLeft !== null && (
             <div
               data-testid="count-in"
@@ -702,6 +771,7 @@ export default function FallingNotesPlayer({
             layout={layout}
             activeKeys={activeKeys}
             activeFingers={showScore ? activeFingers : undefined}
+            onKeyPress={waitOn ? handleScreenKey : undefined}
           />
         </div>
       </div>

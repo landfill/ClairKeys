@@ -102,6 +102,9 @@ interface AudioNodes {
  */
 export const DEFAULT_MASTER_GAIN = 0.5
 
+/** How long a key tapped on screen sounds before its damper falls. */
+const TAPPED_NOTE_SEC = 0.8
+
 /**
  * Metronome click levels, kept under the synthesised note peak (0.3) so a
  * click marks the beat without masking the music. The accent is also higher
@@ -289,9 +292,12 @@ export function useFallingNotesAudio() {
   const createNoteAudio = useCallback((
     midi: number,
     audioContext: AudioContext,
-    masterGain: GainNode
+    masterGain: GainNode,
+    // A single tapped key has no piece to keep on one instrument, so it may use
+    // whatever sample has decoded even before playback chose the sample path.
+    preferSamples: boolean = useSamplesForPlaybackRef.current
   ): AudioNodes => {
-    const voice = useSamplesForPlaybackRef.current
+    const voice = preferSamples
       ? sampleBankRef.current?.voiceFor(midi) ?? null
       : null
 
@@ -639,49 +645,57 @@ export function useFallingNotesAudio() {
       }
     }
 
-    // Wait for the recorded samples before anchoring the clock, so a piece does
-    // not open on the synthesised fallback and switch instruments mid-phrase.
-    // Bounded: a slow or failed load must delay the first note, never withhold
-    // it, and the fallback still covers whatever has not arrived.
-    const bank = sampleBankRef.current
-    setSampleStatus('loading')
-    pendingSampleLoadsRef.current += 1
-    let loadResult: PianoSampleLoadResult | 'timeout'
-    if (bank) {
-      let timer: ReturnType<typeof setTimeout> | undefined
-      loadResult = await Promise.race([
-        bank.load(),
-        new Promise<'timeout'>((resolve) => {
-          timer = setTimeout(() => resolve('timeout'), SAMPLE_LOAD_WAIT_MS)
-        }),
-      ])
-      if (timer !== undefined) clearTimeout(timer)
+    // A muted start schedules nothing (wait mode's silent clock, D-086), so it
+    // must not wait for samples it will not play; tapped keys fall back to the
+    // synthesised tone until the bank has decoded.
+    if (mute) {
+      if (generation !== playbackGenerationRef.current || audioContext.state !== 'running') return false
+      void sampleBankRef.current?.load().catch(() => undefined)
     } else {
-      loadResult = {
-        status: 'failed',
-        readyCount: 0,
-        totalCount: 0,
+      // Wait for the recorded samples before anchoring the clock, so a piece does
+      // not open on the synthesised fallback and switch instruments mid-phrase.
+      // Bounded: a slow or failed load must delay the first note, never withhold
+      // it, and the fallback still covers whatever has not arrived.
+      const bank = sampleBankRef.current
+      setSampleStatus('loading')
+      pendingSampleLoadsRef.current += 1
+      let loadResult: PianoSampleLoadResult | 'timeout'
+      if (bank) {
+        let timer: ReturnType<typeof setTimeout> | undefined
+        loadResult = await Promise.race([
+          bank.load(),
+          new Promise<'timeout'>((resolve) => {
+            timer = setTimeout(() => resolve('timeout'), SAMPLE_LOAD_WAIT_MS)
+          }),
+        ])
+        if (timer !== undefined) clearTimeout(timer)
+      } else {
+        loadResult = {
+          status: 'failed',
+          readyCount: 0,
+          totalCount: 0,
+        }
       }
+
+      pendingSampleLoadsRef.current -= 1
+      const bankStatus = loadResult === 'timeout' ? 'degraded' : loadResult.status
+
+      // Covers both awaits above: a stop, unmount, or newer seek during either the
+      // resume or the sample wait has already taken ownership of the clock.
+      if (generation !== playbackGenerationRef.current || audioContext.state !== 'running') {
+        // Report the bank anyway when no other start is still waiting. `loading`
+        // is what the player reads as "not ready", and it disables the transport
+        // — including the stop that would otherwise clear it. A pause followed by
+        // a seek or a speed change reaches exactly here, and leaving the status
+        // behind locked the reader inside a screen with no working control.
+        // A newer start owns the status while it waits, so it is left alone.
+        if (pendingSampleLoadsRef.current === 0) setSampleStatus(bankStatus)
+        return false
+      }
+
+      useSamplesForPlaybackRef.current = loadResult !== 'timeout' && loadResult.status === 'ready'
+      setSampleStatus(bankStatus)
     }
-
-    pendingSampleLoadsRef.current -= 1
-    const bankStatus = loadResult === 'timeout' ? 'degraded' : loadResult.status
-
-    // Covers both awaits above: a stop, unmount, or newer seek during either the
-    // resume or the sample wait has already taken ownership of the clock.
-    if (generation !== playbackGenerationRef.current || audioContext.state !== 'running') {
-      // Report the bank anyway when no other start is still waiting. `loading`
-      // is what the player reads as "not ready", and it disables the transport
-      // — including the stop that would otherwise clear it. A pause followed by
-      // a seek or a speed change reaches exactly here, and leaving the status
-      // behind locked the reader inside a screen with no working control.
-      // A newer start owns the status while it waits, so it is left alone.
-      if (pendingSampleLoadsRef.current === 0) setSampleStatus(bankStatus)
-      return false
-    }
-
-    useSamplesForPlaybackRef.current = loadResult !== 'timeout' && loadResult.status === 'ready'
-    setSampleStatus(bankStatus)
 
     // Store current state
     notesRef.current = notes
@@ -725,6 +739,51 @@ export function useFallingNotesAudio() {
     activeEndsRef.current = []
     baseAudioTimeRef.current = null
   }, [stopTick])
+
+  /**
+   * Sound one key now, for a key the reader taps on screen in wait mode
+   * (D-086). It is off the playback clock and outside the scheduled set, so a
+   * restart of the schedule — which a correct press triggers — cannot cut it.
+   */
+  const playNoteNow = useCallback(async (midi: number, velocity = 0.7): Promise<boolean> => {
+    if (!initializeAudio()) return false
+    const audioContext = audioContextRef.current
+    const masterGain = masterGainRef.current
+    if (!audioContext || !masterGain) return false
+    if (audioContext.state === 'suspended') {
+      try { await audioContext.resume() } catch { return false }
+    }
+    // Start decoding for the next tap without making this one wait.
+    void sampleBankRef.current?.load().catch(() => undefined)
+
+    const start = audioContext.currentTime + 0.005
+    const end = start + TAPPED_NOTE_SEC
+    try {
+      const nodes = createNoteAudio(midi, audioContext, masterGain, true)
+      let releaseSec: number
+      if (nodes.isSample) {
+        releaseSec = damperReleaseSec(midi)
+        const peak = Math.max(0, velocity) * SAMPLE_PEAK_GAIN
+        nodes.gain.gain.setValueAtTime(peak, start)
+        nodes.gain.gain.setValueAtTime(peak, end)
+        nodes.gain.gain.linearRampToValueAtTime(0, end + releaseSec)
+        nodes.bufferSource?.start(start, 0)
+      } else {
+        const envelope = envelopeBreakpoints(velocity, TAPPED_NOTE_SEC)
+        releaseSec = envelope.releaseSec
+        nodes.gain.gain.setValueAtTime(0, start)
+        nodes.gain.gain.linearRampToValueAtTime(envelope.peak, start + envelope.attackSec)
+        nodes.gain.gain.exponentialRampToValueAtTime(Math.max(envelope.sustain, 1e-4), end)
+        nodes.gain.gain.linearRampToValueAtTime(0, end + releaseSec)
+        nodes.source.start(start)
+      }
+      nodes.source.stop(end + releaseSec)
+      return true
+    } catch (error) {
+      console.warn('Failed to play tapped note:', error)
+      return false
+    }
+  }, [initializeAudio, createNoteAudio])
 
   /**
    * Get current playback time with precise synchronization
@@ -828,7 +887,8 @@ export function useFallingNotesAudio() {
     setVolume,
     sampleStatus,
     reset,
-    getTimingInfo
+    getTimingInfo,
+    playNoteNow
   }
 }
 

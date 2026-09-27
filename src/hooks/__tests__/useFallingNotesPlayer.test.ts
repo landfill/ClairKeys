@@ -200,6 +200,81 @@ describe('useFallingNotesPlayer practice session', () => {
   })
 })
 
+describe('useFallingNotesPlayer wait mode', () => {
+  const piece: FallingNote[] = [
+    { midi: 60, start: 1, duration: 0.5 },
+    { midi: 64, start: 2, duration: 0.5 },
+    { midi: 67, start: 2, duration: 0.5 },
+    { midi: 72, start: 3, duration: 0.5 },
+  ]
+  const waitSteps = [{ time: 1, pitches: [60] }, { time: 2, pitches: [64, 67] }, { time: 3, pitches: [72] }]
+  const setup = () => renderHook(() => useFallingNotesPlayer(piece, { waitSteps }))
+
+  it('runs the clock silently and stops on the next step until its keys are pressed', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    expect(mockAudio.startAudio.mock.calls[0][3]).toBe(true) // muted: the reader makes the sound
+
+    await frameAt(0.5)
+    expect(hook.result.current.waitingFor).toBeNull()
+    await frameAt(1.2)
+    expect(hook.result.current.waitingFor).toEqual([60])
+    expect(hook.result.current.currentTime).toBe(1)
+    expect(hook.result.current.isPlaying).toBe(true)
+    expect(mockAudio.stopAudio).toHaveBeenCalled()
+
+    // A wrong key changes nothing.
+    mockAudio.startAudio.mockClear()
+    await act(async () => { expect(await hook.result.current.pressKey(61)).toBe(false) })
+    expect(hook.result.current.waitingFor).toEqual([60])
+    await act(async () => { expect(await hook.result.current.pressKey(60)).toBe(true) })
+    expect(hook.result.current.waitingFor).toBeNull()
+    expect(mockAudio.startAudio).toHaveBeenCalledTimes(1)
+    expect(mockAudio.startAudio.mock.calls[0][1]).toBe(1)
+    expect(mockAudio.startAudio.mock.calls[0][3]).toBe(true)
+  })
+
+  it('waits for every key of a chord, in any order, and then moves to the next step', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(1.1)
+    await act(async () => { await hook.result.current.pressKey(60) })
+    await frameAt(2.4)
+    expect(hook.result.current.waitingFor).toEqual([64, 67])
+    await act(async () => { await hook.result.current.pressKey(67) })
+    expect(hook.result.current.waitingFor).toEqual([64])
+    await act(async () => { await hook.result.current.pressKey(64) })
+    expect(hook.result.current.waitingFor).toBeNull()
+    await frameAt(2.5)
+    expect(hook.result.current.waitingFor).toBeNull()
+    await frameAt(3.1)
+    expect(hook.result.current.waitingFor).toEqual([72])
+  })
+
+  it('waits for the same step again after a pause, and for the step at a seek target', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(1.3)
+    act(() => hook.result.current.pause())
+    expect(hook.result.current.waitingFor).toBeNull()
+    expect(hook.result.current.currentTime).toBe(1)
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(1)
+    expect(hook.result.current.waitingFor).toEqual([60])
+
+    await act(async () => { await hook.result.current.seek(2) })
+    expect(hook.result.current.waitingFor).toBeNull()
+    await frameAt(2)
+    expect(hook.result.current.waitingFor).toEqual([64, 67])
+  })
+
+  it('ignores key presses outside a wait', async () => {
+    const hook = setup()
+    await act(async () => { expect(await hook.result.current.pressKey(60)).toBe(false) })
+    expect(mockAudio.startAudio).not.toHaveBeenCalled()
+  })
+})
+
 describe('useFallingNotesPlayer count-in and metronome', () => {
   const song: FallingNote[] = [{ midi: 60, start: 0, duration: 10 }]
   const countIn = (resumeAt: number) =>
@@ -374,5 +449,106 @@ describe('useFallingNotesPlayer audible notes with the metronome', () => {
     expect(scheduled).toBe(rightOnly)
     expect(from).toBe(-2)
     expect(options?.clicks?.map(click => (click as { time: number }).time)).toEqual([-2, -1, 4])
+  })
+})
+
+describe('useFallingNotesPlayer wait mode with the other practice options', () => {
+  const piece: FallingNote[] = [{ midi: 60, start: 1, duration: 0.5 }, { midi: 62, start: 2, duration: 0.5 }]
+  const waitSteps = [{ time: 1, pitches: [60] }, { time: 2, pitches: [62] }]
+  const countIn = (resumeAt: number) => [0, 1].map(k => ({ time: resumeAt - 2 + k, accent: k === 0 }))
+
+  it('never counts in and keeps everything silent, since the first press starts the music', async () => {
+    const hook = renderHook(() => useFallingNotesPlayer(piece, { waitSteps, countIn, clicks: [{ time: 1, accent: true }] }))
+    await act(async () => { await hook.result.current.play() })
+    const [, from, , muted, options] = mockAudio.startAudio.mock.calls[0]
+    expect(from).toBe(0)
+    expect(muted).toBe(true)
+    expect(options?.notesFrom).toBeUndefined()
+    expect(hook.result.current.countInLeft).toBeNull()
+  })
+
+  it('does not restart the clock while a wait holds it, even when the click grid changes', async () => {
+    const hook = renderHook(({ clicks }) => useFallingNotesPlayer(piece, { waitSteps, clicks }), {
+      initialProps: { clicks: [] as { time: number; accent: boolean }[] },
+    })
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(1.1)
+    expect(hook.result.current.waitingFor).toEqual([60])
+    mockAudio.startAudio.mockClear()
+
+    await act(async () => { hook.rerender({ clicks: [{ time: 3, accent: true }] }) })
+    expect(mockAudio.startAudio).not.toHaveBeenCalled()
+    expect(hook.result.current.waitingFor).toEqual([60])
+  })
+})
+
+describe('useFallingNotesPlayer wait mode inside an A-B loop', () => {
+  const piece: FallingNote[] = [{ midi: 60, start: 1, duration: 0.2 }, { midi: 62, start: 3, duration: 0.2 }]
+  const waitSteps = [{ time: 1, pitches: [60] }, { time: 3, pitches: [62] }]
+
+  it('returns to A when a frame jumps past B onto a step outside the loop', async () => {
+    const hook = renderHook(() => useFallingNotesPlayer(piece, { waitSteps }))
+    await act(async () => { await hook.result.current.seek(1.5) })
+    act(() => hook.result.current.markLoopStart())
+    await act(async () => { await hook.result.current.seek(2.5) })
+    act(() => hook.result.current.markLoopEnd())
+    await act(async () => { await hook.result.current.seek(1.5) })
+    await act(async () => { await hook.result.current.play() })
+    mockAudio.startAudio.mockClear()
+
+    await frameAt(3.05)
+    expect(hook.result.current.waitingFor).toBeNull()
+    expect(mockAudio.startAudio.mock.calls[0]?.[1]).toBe(1.5)
+  })
+})
+
+describe('useFallingNotesPlayer wait mode press timing', () => {
+  const piece: FallingNote[] = [
+    { midi: 60, start: 1, duration: 0.2 },
+    { midi: 64, start: 2, duration: 0.2 },
+    { midi: 67, start: 2, duration: 0.2 },
+  ]
+  const waitSteps = [{ time: 1, pitches: [60] }, { time: 2, pitches: [64, 67] }]
+  const setup = () => renderHook(() => useFallingNotesPlayer(piece, { waitSteps }))
+
+  it('keeps a press that lands on the onset before the frame installs the wait', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(0.9)
+    mockClock = 1.02 // the clock crossed the onset; no frame has run yet
+    await act(async () => { expect(await hook.result.current.pressKey(60)).toBe(true) })
+    await frameAt(1.05)
+    expect(hook.result.current.waitingFor).toBeNull()
+    await frameAt(2.1)
+    expect(hook.result.current.waitingFor).toEqual([64, 67])
+  })
+
+  it('accepts a press slightly before the note reaches the line', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(0.85)
+    await act(async () => { expect(await hook.result.current.pressKey(60)).toBe(true) })
+    await frameAt(1.01)
+    expect(hook.result.current.waitingFor).toBeNull()
+  })
+
+  it('does not take a press far ahead of its step', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(0.2)
+    await act(async () => { expect(await hook.result.current.pressKey(60)).toBe(false) })
+    await frameAt(1.01)
+    expect(hook.result.current.waitingFor).toEqual([60])
+  })
+
+  it('counts both keys of a chord delivered in the same instant', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(1.01)
+    await act(async () => { await hook.result.current.pressKey(60) })
+    await frameAt(2.05)
+    expect(hook.result.current.waitingFor).toEqual([64, 67])
+    await act(async () => { await Promise.all([hook.result.current.pressKey(64), hook.result.current.pressKey(67)]) })
+    expect(hook.result.current.waitingFor).toBeNull()
   })
 })

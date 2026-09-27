@@ -207,6 +207,8 @@ export interface SimplePianoKeyboardProps {
   activeKeys?: Set<number>;
   /** Active computed player fingers, supplied with the optional score panel. */
   activeFingers?: Map<number, string>;
+  /** Makes the keys playable: called with the MIDI pitch a reader presses (wait mode). */
+  onKeyPress?: (midi: number) => void;
   /** Additional CSS classes */
   className?: string;
 }

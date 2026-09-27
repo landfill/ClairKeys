@@ -4,6 +4,7 @@ import FallingNotesPlayer from '../FallingNotesPlayer'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 
 const mockKeyboardFrames: Set<number>[] = []
+const mockKeyboardInput: { current?: (midi: number) => void } = {}
 const mockPlayerState = {
   isPlaying: true,
   isSessionActive: true,
@@ -11,6 +12,9 @@ const mockPlayerState = {
   tempoScale: 1,
   lookAheadSec: 1.5,
   volume: 0.22,
+  waitingFor: null as number[] | null,
+  pressKey: jest.fn().mockResolvedValue(true),
+  playNoteNow: jest.fn().mockResolvedValue(true),
   countInLeft: null as number | null,
   sampleStatus: 'ready' as 'idle' | 'loading' | 'ready' | 'degraded' | 'failed',
   totalLength: 3,
@@ -61,8 +65,9 @@ jest.mock('../FallingNotes', () => ({
 
 jest.mock('../../piano/SimplePianoKeyboard', () => ({
   __esModule: true,
-  default: ({ activeKeys }: { activeKeys: Set<number> }) => {
+  default: ({ activeKeys, onKeyPress }: { activeKeys: Set<number>; onKeyPress?: (midi: number) => void }) => {
     mockKeyboardFrames.push(new Set(activeKeys))
+    mockKeyboardInput.current = onKeyPress
     return <div data-testid="active-keys">{Array.from(activeKeys).join(',')}</div>
   },
 }))
@@ -95,6 +100,7 @@ const animationData: CanonicalAnimationData = {
 describe('FallingNotesPlayer', () => {
   beforeEach(() => {
     mockKeyboardFrames.length = 0
+    mockPlayerState.waitingFor = null
     mockPlayerState.countInLeft = null
     mockPlayerState.sampleStatus = 'ready'
     mockPlayerState.isPlaying = true
@@ -196,6 +202,51 @@ describe('FallingNotesPlayer', () => {
   // the keyboard out as a column. A separate `height: 100%` wrapper reads as
   // `auto` the moment its parent is sized by flex instead of a pixel height,
   // which collapses the falling area to 0 and lifts the keyboard to the top.
+  describe('wait mode', () => {
+    const lastOptions = () => (mockHookCalls[mockHookCalls.length - 1][1] ?? {}) as { waitSteps?: { time: number; pitches: number[] }[] }
+    const setMidi = (value: unknown) =>
+      Object.defineProperty(navigator, 'requestMIDIAccess', { configurable: true, writable: true, value })
+    afterEach(() => setMidi(undefined))
+
+    it('builds the steps and asks for the MIDI piano from the click that turns it on', async () => {
+      setIdle()
+      setMidi(jest.fn().mockResolvedValue({ inputs: new Map([['0', { name: 'Digital Piano', onmidimessage: null }]]), onstatechange: null }))
+      render(<FallingNotesPlayer animationData={animationData} />)
+      expect(lastOptions().waitSteps).toBeUndefined()
+
+      await act(async () => { fireEvent.click(screen.getByRole('checkbox', { name: '기다리기 모드' })) })
+      expect(lastOptions().waitSteps).toEqual([{ time: 1, pitches: [60] }, { time: 2, pitches: [64] }])
+      expect(navigator.requestMIDIAccess).toHaveBeenCalledTimes(1)
+      expect(screen.getByText(/Digital Piano/)).toBeInTheDocument()
+    })
+
+    it('points to the on-screen keys where the browser has no MIDI', async () => {
+      setIdle()
+      setMidi(undefined)
+      render(<FallingNotesPlayer animationData={animationData} />)
+      await act(async () => { fireEvent.click(screen.getByRole('checkbox', { name: '기다리기 모드' })) })
+      expect(screen.getByText(/MIDI를 지원하지 않습니다/)).toBeInTheDocument()
+    })
+
+    it('shows the keys still to press and plays an on-screen press', async () => {
+      setIdle()
+      const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+      await act(async () => { fireEvent.click(screen.getByRole('checkbox', { name: '기다리기 모드' })) })
+      mockPlayerState.isPlaying = true
+      mockPlayerState.isSessionActive = true
+      mockPlayerState.waitingFor = [60, 64]
+      mockPlayerState.pressKey.mockClear()
+      mockPlayerState.playNoteNow.mockClear()
+      rerender(<FallingNotesPlayer animationData={animationData} />)
+
+      expect(screen.getByTestId('wait-prompt')).toHaveTextContent('남은 음 2개')
+      expect([...mockKeyboardFrames[mockKeyboardFrames.length - 1]]).toEqual([60, 64])
+      await act(async () => { mockKeyboardInput.current?.(60) })
+      expect(mockPlayerState.playNoteNow).toHaveBeenCalledWith(60)
+      expect(mockPlayerState.pressKey).toHaveBeenCalledWith(60)
+    })
+  })
+
   describe('metronome and count-in', () => {
     type Options = { clicks?: { time: number; accent: boolean }[]; countIn?: (at: number) => { time: number }[] }
     const lastOptions = () => (mockHookCalls[mockHookCalls.length - 1][1] ?? {}) as Options
@@ -416,6 +467,48 @@ describe('FallingNotesPlayer', () => {
       setIdle()
       render(<FallingNotesPlayer animationData={animationData} />)
       expect(screen.getByRole('note', { name: '키보드 단축키' })).toHaveTextContent('Space 재생·일시정지')
+    })
+  })
+
+  describe('wait mode with one hand', () => {
+    it('waits only for the practised hand', async () => {
+      setIdle()
+      const twoHands = {
+        ...animationData,
+        notes: [
+          { midi: 72, start: 1, duration: 1, hand: 'R' as const },
+          { midi: 48, start: 1, duration: 1, hand: 'L' as const },
+          { midi: 74, start: 2, duration: 1, hand: 'R' as const },
+        ],
+      }
+      render(<FallingNotesPlayer animationData={twoHands} />)
+      fireEvent.click(screen.getByRole('button', { name: '오른손' }))
+      await act(async () => { fireEvent.click(screen.getByRole('checkbox', { name: '기다리기 모드' })) })
+      const options = mockHookCalls[mockHookCalls.length - 1][1] as { waitSteps?: { time: number; pitches: number[] }[] }
+      expect(options.waitSteps).toEqual([{ time: 1, pitches: [72] }, { time: 2, pitches: [74] }])
+    })
+  })
+
+  describe('practice time in wait mode', () => {
+    it('does not count time stopped at a wait prompt as practice', () => {
+      let now = 0
+      const clock = jest.spyOn(performance, 'now').mockImplementation(() => now)
+      const onPracticeRun = jest.fn()
+      mockPlayerState.isPlaying = true
+      mockPlayerState.isSessionActive = true
+      mockPlayerState.waitingFor = null
+      const { rerender } = render(<FallingNotesPlayer animationData={animationData} onPracticeRun={onPracticeRun} />)
+      now = 20_000
+      mockPlayerState.waitingFor = [60] // stopped at a prompt for a minute
+      rerender(<FallingNotesPlayer animationData={animationData} onPracticeRun={onPracticeRun} />)
+      now = 80_000
+      mockPlayerState.waitingFor = null
+      rerender(<FallingNotesPlayer animationData={animationData} onPracticeRun={onPracticeRun} />)
+      now = 90_000
+      setIdle()
+      rerender(<FallingNotesPlayer animationData={animationData} onPracticeRun={onPracticeRun} />)
+      expect(onPracticeRun.mock.calls[0][0].durationSeconds).toBe(30)
+      clock.mockRestore()
     })
   })
 
