@@ -39,6 +39,43 @@ export function beatsPerBar(timeSignature: string): number {
 }
 
 /**
+ * Measures (zero-based, first part) whose tempo changes after their first
+ * beat. The artifact only records each measure's end points, so beats inside
+ * such a measure cannot be placed; they get no clicks rather than wrong ones.
+ * Position is tracked through notes, chords, backup and forward, so a tempo
+ * mark written after a `backup` to the downbeat is still read as the downbeat.
+ */
+export function measuresWithInnerTempoChange(musicxml: string): Set<number> {
+  const marked = new Set<number>()
+  if (typeof DOMParser === 'undefined' || /<!DOCTYPE|<!ENTITY/i.test(musicxml)) return marked
+  const doc = new DOMParser().parseFromString(musicxml, 'application/xml')
+  if (doc.querySelector('parsererror')) return marked
+  const part = doc.querySelector('part')
+  if (!part) return marked
+
+  Array.from(part.children).filter(child => child.localName === 'measure').forEach((measure, index) => {
+    let position = 0
+    for (const child of Array.from(measure.children)) {
+      const duration = Number(child.querySelector(':scope > duration')?.textContent ?? 0) || 0
+      if (child.localName === 'note') {
+        if (!child.querySelector(':scope > chord') && !child.querySelector(':scope > grace')) position += duration
+      } else if (child.localName === 'backup') {
+        position = Math.max(0, position - duration)
+      } else if (child.localName === 'forward') {
+        position += duration
+      } else if (position > 0) {
+        const sound = child.localName === 'sound' ? child : child.querySelector(':scope > sound')
+        if (sound?.hasAttribute('tempo')) {
+          marked.add(index)
+          break
+        }
+      }
+    }
+  })
+  return marked
+}
+
+/**
  * Beats from the score's own measure map, so a tempo change inside the piece
  * moves the clicks with the notes. Artifact seconds are converted to the
  * animation's seconds the same way `activeScoreMeasure` converts the other way.
@@ -55,9 +92,11 @@ export function beatsFromScoreArtifact(
     .sort((a, b) => a.start - b.start)
   const unit = beatUnitQuarters(timeSignature)
   const toAnimation = artifact.timingReferenceBpm / animationTimingBpm
+  const untrusted = measuresWithInnerTempoChange(artifact.musicxml)
   const beats: MetronomeClick[] = []
 
   measures.forEach((measure, index) => {
+    if (untrusted.has(measure.measureIndex)) return
     const length = measure.endQuarter - measure.startQuarter
     if (!(length > 0) || !(measure.end > measure.start)) return
     const next = measures[index + 1]

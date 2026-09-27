@@ -42,6 +42,9 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
   const [loopStart, setLoopStart] = useState<number | null>(null)
   const [loopEnd, setLoopEnd] = useState<number | null>(null)
 
+  const latestClicks = useRef(clicks)
+  latestClicks.current = clicks
+
   // Count-in in progress: the resume point the picture holds at, and the
   // count-in beats so the UI can count down. Null outside a count-in.
   const countInRef = useRef<{ until: number; beats: number[] } | null>(null)
@@ -90,14 +93,16 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
     updateTempoScale(tempoScale)
     const resumeAt = getCurrentTime()
     const countIn = countInFor?.(resumeAt) ?? []
+    // The count-in is the only beat before the resume point; the metronome
+    // takes over from there, so no beat of the count-in sounds twice.
+    const withCountIn = (grid: MetronomeClick[]) =>
+      [...countIn, ...grid.filter(click => click.time >= resumeAt)]
     const started = await startAudio(
       notes,
       countIn.length ? countIn[0].time : resumeAt,
       tempoScale,
       mute,
-      countIn.length
-        ? { clicks: [...countIn, ...clicks], notesFrom: resumeAt }
-        : { clicks }
+      countIn.length ? { clicks: withCountIn(clicks), notesFrom: resumeAt } : { clicks }
     )
     if (started) {
       if (countIn.length) {
@@ -106,9 +111,20 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
       }
       setIsPlaying(true)
       setIsSessionActive(true)
+      // The start may have waited seconds for samples, and the score's beat
+      // grid may have arrived meanwhile. Apply it, keeping any count-in.
+      const latest = latestClicks.current
+      if (latest !== clicks) {
+        const at = getCurrentTime()
+        stopAudio()
+        const again = countIn.length && at < resumeAt
+          ? await startAudio(notes, at, tempoScale, mute, { clicks: withCountIn(latest), notesFrom: resumeAt })
+          : await startAudio(notes, Math.max(at, resumeAt), tempoScale, mute, { clicks: latest })
+        if (!again) setIsPlaying(false)
+      }
     }
     return started
-  }, [isPlaying, tempoScale, mute, notes, clicks, countInFor, getCurrentTime, startAudio, updateTempoScale])
+  }, [isPlaying, tempoScale, mute, notes, clicks, countInFor, getCurrentTime, startAudio, stopAudio, updateTempoScale])
 
   /**
    * Pause playback

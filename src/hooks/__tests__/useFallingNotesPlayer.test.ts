@@ -252,4 +252,32 @@ describe('useFallingNotesPlayer count-in and metronome', () => {
     expect(mockAudio.startAudio.mock.calls[0][1]).toBe(3.5)
     expect(mockAudio.startAudio.mock.calls[0][4]?.clicks).toEqual([])
   })
+
+  it('keeps the metronome silent during the count-in, so no beat sounds twice', async () => {
+    const grid = [0, 1, 2, 3, 4, 5, 6].map(time => ({ time, accent: false }))
+    const hook = renderHook(() => useFallingNotesPlayer(song, { clicks: grid, countIn }))
+    await act(async () => { await hook.result.current.seek(5) })
+    await act(async () => { await hook.result.current.play() })
+    const { clicks } = mockAudio.startAudio.mock.calls.at(-1)![4]! as { clicks: { time: number }[] }
+    expect(clicks.map(click => click.time)).toEqual([1, 2, 3, 4, 5, 6])
+  })
+
+  it('applies a click grid that arrived while the first start was loading samples', async () => {
+    let finish: (started: boolean) => void = () => {}
+    mockAudio.startAudio.mockImplementationOnce((_notes: FallingNote[], offset: number) => {
+      mockClock = offset
+      return new Promise<boolean>(resolve => { finish = resolve })
+    })
+    const grid = [{ time: 1, accent: true }]
+    const hook = renderHook(({ metronome }) => useFallingNotesPlayer(song, { clicks: metronome }), {
+      initialProps: { metronome: [] as { time: number; accent: boolean }[] },
+    })
+    let playing: Promise<boolean> = Promise.resolve(false)
+    act(() => { playing = hook.result.current.play() })
+    await act(async () => { hook.rerender({ metronome: grid }) })
+    await act(async () => { finish(true); await playing })
+
+    expect(mockAudio.startAudio.mock.calls.at(-1)![4]?.clicks).toBe(grid)
+    expect(hook.result.current.isPlaying).toBe(true)
+  })
 })

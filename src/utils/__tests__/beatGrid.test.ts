@@ -69,6 +69,21 @@ describe('beatsFromScoreArtifact', () => {
     ])
   })
 
+  it('gives no clicks to a bar whose tempo changes partway, since its beats cannot be placed', () => {
+    // Bar 2 turns 60 → 120 BPM after two quarters; its end points hide that.
+    const xml = `<score-partwise version="4.0"><part id="P1">
+      <measure number="1"><direction><sound tempo="60"/></direction><note><duration>4</duration></note></measure>
+      <measure number="2"><note><duration>2</duration></note><direction><sound tempo="120"/></direction><note><duration>2</duration></note></measure>
+      <measure number="3"><direction placement="above"><sound tempo="120"/></direction><note><duration>4</duration></note></measure>
+    </part></score-partwise>`
+    const beats = beatsFromScoreArtifact(
+      { ...artifact([m(0, 0, 4, 0, 4), m(1, 4, 7, 4, 8), m(2, 7, 9, 8, 12)]), musicxml: xml },
+      60,
+      '4/4'
+    )
+    expect(beats.map(b => b.time)).toEqual([0, 1, 2, 3, 7, 7.5, 8, 8.5])
+  })
+
   it('uses dotted-quarter beats in compound time', () => {
     const beats = beatsFromScoreArtifact(artifact([m(0, 0, 4.5, 0, 4.5)]), 60, '9/8')
     expect(beats.map(b => b.time)).toEqual([0, 1.5, 3])
