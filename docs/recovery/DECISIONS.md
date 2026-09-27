@@ -3045,3 +3045,24 @@
 - Scope-risk: narrow
 - Reversibility: clean
 - Related: phases/UI-2026-playback-mode-clarity.md, D-019, #177의 별도 UI 주석
+
+## D-082: 한 손 연습은 다른 손을 숨기지 않고 흐리게 남기며, 소리는 기본으로 유지한다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT hand-practice branch; merge pending
+- Context: 노트에 손 정보가 있으나 한 손만 연습할 방법이 없다. 다른 손을 완전히 숨기면 박자·화성 맥락을 잃고,
+  소리까지 기본으로 끄면 반주 없이 템포를 잡기 어렵다.
+- Decision:
+  1. 선택하지 않은 손의 낙하 노트는 투명도 0.3으로 남기고 운지 배지를 없앤다. 건반 강조는 연습하는 손만 따른다.
+  2. 다른 손 소리는 기본으로 켜 두고 `다른 손 소리 듣기`로 끌 수 있다. 오디오는 `audibleNotes`만 예약하고
+     곡 길이·재생 위치·A-B 구간은 전체 노트를 따른다.
+  3. 손 정보가 없는 노트는 누구의 것인지 모르므로 모든 모드에 남긴다.
+  4. 선택 UI는 재생 준비 화면에만 둔다. D-019의 압축 바 높이 예산을 늘리지 않는다.
+- Rejected: 다른 손 노트를 완전히 숨김 | 연습 중 박자와 화성 맥락을 잃는다.
+- Rejected: 한 손 선택 시 다른 손 소리를 기본으로 끔 | 반주 없이 템포를 잡기 어렵고, 켜고 끄는 선택지가 이미 있다.
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: `audibleNotesFor`는 아무것도 끄지 않을 때 원래 배열을 그대로 돌려줘야 한다. 새 배열을 만들면
+  재생 중 오디오가 매 렌더마다 재시작된다.
+- Related: phases/FEAT-hand-practice.md, D-019

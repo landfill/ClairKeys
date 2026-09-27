@@ -189,6 +189,8 @@ export interface FallingNotesProps {
   height: number;
   /** Piano keyboard layout for positioning */
   layout: KeyLayout;
+  /** Hand the reader is not practising: its notes are faded and lose their fingering. */
+  dimHand?: Hand | null;
 }
 
 /**

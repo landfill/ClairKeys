@@ -10,7 +10,15 @@ import { createLoopSection } from '@/utils/loopSection'
  * Main hook for falling notes player with audio-visual synchronization
  * Based on MVP implementation for precise timing
  */
-export function useFallingNotesPlayer(notes: FallingNote[]) {
+export function useFallingNotesPlayer(
+  notes: FallingNote[],
+  /**
+   * The notes the audio schedules. Timing, length and the visual playhead
+   * always follow `notes`; one-hand practice can silence the other hand here
+   * without moving the end of the piece.
+   */
+  audibleNotes: FallingNote[] = notes
+) {
   // Playback state. `isPlaying` is whether a score is sounding right now;
   // `isSessionActive` is whether the reader is inside a practice run at all.
   // They diverge on a pause, and the screen needs the second one: a pause is a
@@ -56,7 +64,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
 
     updateTempoScale(tempoScale)
     const started = await startAudio(
-      notes,
+      audibleNotes,
       getCurrentTime(),
       tempoScale,
       mute
@@ -66,7 +74,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
       setIsSessionActive(true)
     }
     return started
-  }, [isPlaying, tempoScale, mute, notes, getCurrentTime, startAudio, updateTempoScale])
+  }, [isPlaying, tempoScale, mute, audibleNotes, getCurrentTime, startAudio, updateTempoScale])
 
   /**
    * Pause playback
@@ -103,10 +111,10 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
 
     // If currently playing, restart audio from new position
     if (isPlaying) {
-      const started = await startAudio(notes, clampedTime, tempoScale, mute)
+      const started = await startAudio(audibleNotes, clampedTime, tempoScale, mute)
       if (!started) setIsPlaying(false)
     }
-  }, [totalLength, isPlaying, notes, tempoScale, mute, setOffsetTime, startAudio, stopAudio])
+  }, [totalLength, isPlaying, audibleNotes, tempoScale, mute, setOffsetTime, startAudio, stopAudio])
 
   /**
    * Change tempo with re-synchronization
@@ -125,14 +133,14 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
 
       // Restart with new tempo
       setOffsetTime(currentAudioTime)
-      const started = await startAudio(notes, currentAudioTime, newTempoScale, mute)
+      const started = await startAudio(audibleNotes, currentAudioTime, newTempoScale, mute)
       if (!started) setIsPlaying(false)
     } else {
       stopAudio()
       setTempoScale(newTempoScale)
       updateTempoScale(newTempoScale)
     }
-  }, [isPlaying, mute, notes, getCurrentTime, setOffsetTime, startAudio, stopAudio, updateTempoScale])
+  }, [isPlaying, mute, audibleNotes, getCurrentTime, setOffsetTime, startAudio, stopAudio, updateTempoScale])
 
   /**
    * Toggle mute
@@ -144,12 +152,32 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     if (isPlaying) {
       const currentAudioTime = getCurrentTime()
       stopAudio()
-      const started = await startAudio(notes, currentAudioTime, tempoScale, newMute)
+      const started = await startAudio(audibleNotes, currentAudioTime, tempoScale, newMute)
       if (!started) setIsPlaying(false)
     } else {
       stopAudio()
     }
-  }, [isPlaying, tempoScale, notes, getCurrentTime, startAudio, stopAudio])
+  }, [isPlaying, tempoScale, audibleNotes, getCurrentTime, startAudio, stopAudio])
+
+  // A new audible set while sounding reschedules from the playhead, exactly as
+  // a mute change does. Only the set's identity is watched: the player keeps it
+  // stable (audibleNotesFor returns the same array when nothing is silenced),
+  // and the other inputs are read through a ref so a playback frame or a
+  // tempo change can never trigger this restart.
+  const audibleRestart = useRef({ isPlaying, tempoScale, mute, getCurrentTime, startAudio, stopAudio })
+  audibleRestart.current = { isPlaying, tempoScale, mute, getCurrentTime, startAudio, stopAudio }
+  const previousAudible = useRef(audibleNotes)
+  useEffect(() => {
+    if (previousAudible.current === audibleNotes) return
+    previousAudible.current = audibleNotes
+    const current = audibleRestart.current
+    if (!current.isPlaying) return
+    const at = current.getCurrentTime()
+    current.stopAudio()
+    void current.startAudio(audibleNotes, at, current.tempoScale, current.mute).then(started => {
+      if (!started) setIsPlaying(false)
+    })
+  }, [audibleNotes])
 
   /**
    * Change look ahead time
