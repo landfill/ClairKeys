@@ -8,6 +8,7 @@ import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
 import { usePracticeResume } from '@/hooks/usePracticeResume'
+import { SEEK_STEP_SEC, usePlaybackShortcuts } from '@/hooks/usePlaybackShortcuts'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
@@ -16,6 +17,10 @@ import { getActiveNotes } from '@/utils/visualUtils'
 import ScoreToggle from '@/components/playback/ScoreToggle'
 import ScorePanel from '@/components/playback/ScorePanel'
 import ScoreTimingNotice from '@/components/playback/ScoreTimingNotice'
+import { HAND_COLORS } from '@/types/fallingNotes'
+import { formatVolumePercent } from '@/utils/volumeDisplay'
+
+const SEEK_STEP_LABEL = `${SEEK_STEP_SEC}초 이동`
 
 /**
  * Standing in for a rotation the device will not perform. The box is laid out
@@ -251,6 +256,24 @@ export default function FallingNotesPlayer({
     if (!started && !isSessionActive) orientation.exit()
   }, [resume, seek, play, orientation, isSessionActive])
 
+  // Space and the arrows act on the page, never on a focused control (see
+  // resolvePlaybackShortcut). A start waits for the samples exactly as the play
+  // button does, and it goes through handlePlay so the orientation request is
+  // made from this key press's user activation.
+  const isReady = sampleStatus !== 'loading'
+  usePlaybackShortcuts({
+    onToggle: () => {
+      if (isPlaying) pause()
+      else if (isReady) void handlePlay()
+    },
+    onSeekBy: seconds => {
+      // While a start waits for samples every control is disabled; a seek
+      // now would cancel that start and it would never sound.
+      if (!isReady) return
+      void seek(Math.min(totalLength, Math.max(0, currentTime + seconds)))
+    },
+  })
+
   // Derive key activation synchronously from the exact playhead passed to the
   // falling-note visualization. An effect would leave the keyboard one render
   // behind whenever the AudioContext clock advances.
@@ -360,11 +383,18 @@ export default function FallingNotesPlayer({
           )}
 
           {/* Usage Instructions */}
-          <div className="mb-4">
-            <p className="text-xs text-ink-muted">
-              1. 노트의 아랫변이 히트라인(건반 상단)에 닿을 때 건반을 누르세요. 2. 속도를 고르세요. 3. 어려운 곳은 A와 B로 반복하세요.
-            </p>
-          </div>
+          <ol aria-label="연습 방법" className="mb-4 grid gap-2 text-sm text-ink-muted sm:grid-cols-3">
+            {[
+              '노트의 아랫변이 건반 위 선에 닿을 때 누르세요.',
+              '처음에는 속도를 늦춰 따라가세요.',
+              '어려운 곳은 A와 B로 구간을 정해 반복하세요.',
+            ].map((step, index) => (
+              <li key={step} className="flex gap-2 rounded-lg border border-rule bg-surface px-3 py-2">
+                <span aria-hidden="true" className="font-semibold text-accent">{index + 1}</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
 
           {/* Playback Controls */}
           <div className="mb-4">
@@ -387,9 +417,8 @@ export default function FallingNotesPlayer({
             />
           </div>
 
-          {/* Master volume — a tuning control. The numeric readout is the master
-              gain value; whatever setting sounds right here is the number to lock in
-              as DEFAULT_MASTER_GAIN in useFallingNotesAudio. */}
+          {/* The raw gain readout was a tuning aid for DEFAULT_MASTER_GAIN; that value is
+              settled, so readers see a share of the range instead (D-080). */}
           <div className="mb-4 flex items-center gap-3">
             <label htmlFor="master-volume" className="text-xs text-ink-muted whitespace-nowrap">
               음량
@@ -402,11 +431,11 @@ export default function FallingNotesPlayer({
               step={0.01}
               value={volume}
               onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className="flex-1 max-w-xs"
-              aria-label="음량 (master gain)"
+              className="flex-1 max-w-xs accent-accent"
+              aria-valuetext={formatVolumePercent(volume, MAX_MASTER_GAIN)}
             />
-            <span className="text-xs font-mono text-ink-muted tabular-nums w-10 text-right">
-              {volume.toFixed(2)}
+            <span className="text-xs text-ink-muted tabular-nums w-10 text-right">
+              {formatVolumePercent(volume, MAX_MASTER_GAIN)}
             </span>
           </div>
         </>
@@ -429,6 +458,30 @@ export default function FallingNotesPlayer({
           '샘플을 불러오지 못해 합성음으로 재생합니다.'}
       </div>
 
+      {/* Hidden only on touch screens, which have no space bar to press. A
+          keyboard-only PC reports `pointer: none`, as ScoreToggle also allows. */}
+      {!isSessionActive && (
+        <p role="note" aria-label="키보드 단축키" className="mb-2 text-xs text-ink-muted pointer-coarse:hidden">
+          <kbd className="rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">Space</kbd> 재생·일시정지
+          <span aria-hidden="true"> · </span>
+          <kbd className="rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">←</kbd>
+          <kbd className="ml-1 rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">→</kbd> {SEEK_STEP_LABEL}
+        </p>
+      )}
+      {/* Setup only: during a session this height belongs to the notes, and the
+          session layout budget (#177) must not change. */}
+      {!isSessionActive && (
+        <ul aria-label="노트 색상" className="mb-2 flex flex-wrap items-center gap-3 text-xs text-ink-muted">
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="h-3 w-3 rounded-sm" style={{ background: HAND_COLORS.L }} />
+            왼손
+          </li>
+          <li className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="h-3 w-3 rounded-sm" style={{ background: HAND_COLORS.R }} />
+            오른손
+          </li>
+        </ul>
+      )}
       <ScoreToggle available={Boolean(scoreUrl)} onChange={setShowScore} />
       {showScore && scoreUrl && <ScorePanel url={scoreUrl} notes={notes} currentTime={currentTime}
         timingReferenceBpm={animationData.timingReferenceBpm}

@@ -32,7 +32,7 @@ test('sheet setup presents only functioning playback controls', async ({ page },
   await expect(page.getByRole('button', { name: '일시정지', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: '중지', exact: true })).toBeVisible()
   await expect(page.getByLabel('속도:')).toBeVisible()
-  await expect(page.getByRole('slider', { name: '음량 (master gain)' })).toBeVisible()
+  await expect(page.getByRole('slider', { name: '음량' })).toBeVisible()
   if (info.project.name === 'chromium' || info.project.name === 'Mobile Chrome') {
     await page.screenshot({ path: info.outputPath('playback-setup.png') })
   }

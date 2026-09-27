@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import FallingNotesPlayer from '../FallingNotesPlayer'
+import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 
 const mockKeyboardFrames: Set<number>[] = []
 const mockPlayerState = {
@@ -120,21 +121,35 @@ describe('FallingNotesPlayer', () => {
     expect(screen.getByTestId('tempo-display')).not.toHaveClass('fixed')
   })
 
-  it('shows the current master gain and forwards slider changes to setVolume', () => {
+  it('shows the volume as a share of its range and forwards slider changes to setVolume', () => {
     mockPlayerState.setVolume.mockClear()
     setIdle()
     render(<FallingNotesPlayer animationData={animationData} />)
 
-    // The readout is the gain value itself — that is what makes it usable for
-    // choosing DEFAULT_MASTER_GAIN — so it must render the state, not a percent.
-    const slider = screen.getByLabelText('음량 (master gain)') as HTMLInputElement
+    // The raw gain readout existed to tune DEFAULT_MASTER_GAIN by ear; that value is
+    // settled (D-016) and readers are not tuning it, so the reading is a percentage
+    // of the slider's range (D-080). The slider still carries the gain itself.
+    const slider = screen.getByLabelText('음량') as HTMLInputElement
     expect(slider.value).toBe('0.22')
-    expect(screen.getByText('0.22')).toBeInTheDocument()
+    expect(screen.getByText(`${Math.round((0.22 / MAX_MASTER_GAIN) * 100)}%`)).toBeInTheDocument()
+    expect(screen.queryByLabelText('음량 (master gain)')).not.toBeInTheDocument()
+    expect(screen.queryByText('0.22')).not.toBeInTheDocument()
 
     // A drag forwards the numeric gain to setVolume unchanged; clamping lives in
     // the hook, verified separately.
     fireEvent.change(slider, { target: { value: '0.3' } })
     expect(mockPlayerState.setVolume).toHaveBeenCalledWith(0.3)
+  })
+
+  it('explains the setup steps as a list and which colour belongs to which hand', () => {
+    setIdle()
+    render(<FallingNotesPlayer animationData={animationData} />)
+
+    const steps = screen.getByRole('list', { name: '연습 방법' })
+    expect(steps.querySelectorAll('li')).toHaveLength(3)
+    const legend = screen.getByRole('list', { name: '노트 색상' })
+    expect(legend).toHaveTextContent('왼손')
+    expect(legend).toHaveTextContent('오른손')
   })
 
   it('shows recorded-sample readiness and removes the ineffective treble control', () => {
@@ -266,6 +281,50 @@ describe('FallingNotesPlayer', () => {
     })
   })
 
+  describe('keyboard shortcuts', () => {
+    it('plays from the setup screen with space and seeks five seconds with the arrows', async () => {
+      setIdle()
+      mockPlayerState.seek.mockClear()
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      await act(async () => { fireEvent.keyDown(document.body, { key: ' ' }) })
+      expect(mockPlayerState.play).toHaveBeenCalledTimes(1)
+      expect(mockOrientation.enter).toHaveBeenCalled()
+
+      fireEvent.keyDown(document.body, { key: 'ArrowRight' })
+      fireEvent.keyDown(document.body, { key: 'ArrowLeft' })
+      expect(mockPlayerState.seek.mock.calls).toEqual([[3], [0]])
+    })
+
+    it('pauses a sounding session with space', () => {
+      mockPlayerState.pause.mockClear()
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      fireEvent.keyDown(document.body, { key: ' ' })
+      expect(mockPlayerState.pause).toHaveBeenCalledTimes(1)
+      expect(mockPlayerState.play).not.toHaveBeenCalled()
+    })
+
+    it('does not start or seek while the samples are still loading, as the controls do not', () => {
+      setIdle()
+      mockPlayerState.sampleStatus = 'loading'
+      mockPlayerState.seek.mockClear()
+      render(<FallingNotesPlayer animationData={animationData} />)
+
+      fireEvent.keyDown(document.body, { key: ' ' })
+      // A seek here would stop the pending start and it would never sound.
+      fireEvent.keyDown(document.body, { key: 'ArrowRight' })
+      expect(mockPlayerState.play).not.toHaveBeenCalled()
+      expect(mockPlayerState.seek).not.toHaveBeenCalled()
+    })
+
+    it('tells keyboard users the shortcuts on the setup screen', () => {
+      setIdle()
+      render(<FallingNotesPlayer animationData={animationData} />)
+      expect(screen.getByRole('note', { name: '키보드 단축키' })).toHaveTextContent('Space 재생·일시정지')
+    })
+  })
+
   describe('playback geometry', () => {
     const readColumn = () => {
       const fallingArea = screen.getByTestId('visual-playhead').parentElement!
@@ -388,7 +447,7 @@ describe('FallingNotesPlayer', () => {
       // The full three-row control block is a setup affordance.
       expect(screen.queryByTestId('playback-ready')).not.toBeInTheDocument()
       // So is the line explaining what the hit line means.
-      expect(screen.queryByText(/히트라인/)).not.toBeInTheDocument()
+      expect(screen.queryByRole('list', { name: '연습 방법' })).not.toBeInTheDocument()
       expect(screen.getByTestId('compact-playback-bar')).toBeInTheDocument()
     })
 
@@ -398,7 +457,7 @@ describe('FallingNotesPlayer', () => {
 
       // This slider exists to choose DEFAULT_MASTER_GAIN by ear, which can only
       // be done while listening. Hiding it during playback would defeat it.
-      const slider = screen.getByLabelText('음량 (master gain)') as HTMLInputElement
+      const slider = screen.getByLabelText('음량') as HTMLInputElement
       expect(slider.value).toBe('0.22')
       fireEvent.change(slider, { target: { value: '0.4' } })
       expect(mockPlayerState.setVolume).toHaveBeenCalledWith(0.4)
@@ -420,7 +479,7 @@ describe('FallingNotesPlayer', () => {
       render(<FallingNotesPlayer animationData={animationData} />)
 
       expect(screen.getByTestId('playback-ready')).toBeInTheDocument()
-      expect(screen.getByText(/히트라인/)).toBeInTheDocument()
+      expect(screen.getByRole('list', { name: '연습 방법' })).toBeInTheDocument()
       expect(screen.queryByTestId('compact-playback-bar')).not.toBeInTheDocument()
     })
   })
@@ -436,7 +495,7 @@ describe('FallingNotesPlayer', () => {
 
       expect(screen.getByTestId('compact-playback-bar')).toBeInTheDocument()
       expect(screen.queryByTestId('playback-ready')).not.toBeInTheDocument()
-      expect(screen.queryByText(/히트라인/)).not.toBeInTheDocument()
+      expect(screen.queryByRole('list', { name: '연습 방법' })).not.toBeInTheDocument()
       expect(document.body).toHaveClass('playback-active')
     })
 

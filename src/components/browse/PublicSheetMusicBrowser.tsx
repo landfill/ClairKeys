@@ -7,19 +7,19 @@ import { SheetMusicWithOwner } from '@/types/sheet-music'
 
 interface PublicSheetMusicBrowserProps {
   onSheetMusicClick?: (sheetMusic: SheetMusicWithOwner) => void
-  showSections?: Array<'featured' | 'popular' | 'recent'>
   className?: string
 }
+
+/** One page of the newest-first feed; the explore page has no pagination yet. */
+const PAGE_SIZE = 12
 
 const formatDate = (date: Date | string) =>
   new Date(date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
 
 export default function PublicSheetMusicBrowser({
   onSheetMusicClick,
-  showSections = ['featured', 'popular', 'recent'],
   className = ''
 }: PublicSheetMusicBrowserProps) {
-  const [popularSheets, setPopularSheets] = useState<SheetMusicWithOwner[]>([])
   const [recentSheets, setRecentSheets] = useState<SheetMusicWithOwner[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -29,14 +29,12 @@ export default function PublicSheetMusicBrowser({
       setLoading(true)
       setError(null)
 
-      // Load recent sheets
-      const recentResponse = await fetch('/api/sheet/public?limit=8&sortBy=newest')
+      // Newest first is the only ordering the data can back. "추천"/"인기" used to be
+      // slices of this same feed; a ranking needs a real signal first (D-080).
+      const recentResponse = await fetch(`/api/sheet/public?limit=${PAGE_SIZE}&sortBy=newest`)
       if (!recentResponse.ok) throw new Error('Failed to load recent sheets')
       const recentData = await recentResponse.json()
       setRecentSheets(recentData.sheetMusic || [])
-
-      // For now, use same data for popular (in real app, this would be based on play count, likes, etc.)
-      setPopularSheets(recentData.sheetMusic?.slice(0, 6) || [])
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load sheets')
@@ -65,15 +63,6 @@ export default function PublicSheetMusicBrowser({
       event.preventDefault()
       onSheetMusicClick(sheetMusic)
     }
-  })
-
-  // The ranked rows show their position as a decorative badge, so the rank has to
-  // reach assistive technology some other way. It goes in the link's accessible
-  // name rather than a visually hidden span: sr-only positioning escapes the
-  // truncating heading and widens the document under CSS zoom.
-  const rankedLinkProps = (sheetMusic: SheetMusicWithOwner, index: number) => ({
-    ...linkProps(sheetMusic),
-    'aria-label': `${index + 1}위, ${sheetMusic.title}, ${sheetMusic.composer}`
   })
 
   const Meta = ({ sheetMusic }: { sheetMusic: SheetMusicWithOwner }) => (
@@ -113,11 +102,10 @@ export default function PublicSheetMusicBrowser({
 
   return (
     <div className={`public-sheet-music-browser space-y-6 ${className}`}>
-      {/* Featured Section */}
-      {showSections.includes('featured') && popularSheets.length > 0 && (
-        <Section title="추천 악보">
+      {recentSheets.length > 0 && (
+        <Section title="최근 공개된 악보">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {popularSheets.slice(0, 3).map((sheetMusic) => (
+            {recentSheets.map((sheetMusic) => (
               <Link
                 key={sheetMusic.id}
                 {...linkProps(sheetMusic)}
@@ -146,86 +134,6 @@ export default function PublicSheetMusicBrowser({
                       <Meta sheetMusic={sheetMusic} />
                       <span className="shrink-0 text-xs font-medium text-accent">연습 시작 →</span>
                     </div>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Popular Section */}
-      {showSections.includes('popular') && popularSheets.length > 0 && (
-        <Section title="인기 악보">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {popularSheets.slice(0, 4).map((sheetMusic, index) => (
-              <Link
-                key={sheetMusic.id}
-                {...rankedLinkProps(sheetMusic, index)}
-                className="group block"
-              >
-                <Card padding="none" className="flex h-full min-w-0 items-center gap-3 p-3 group-hover:shadow-md group-focus-visible:shadow-md transition-shadow">
-                  <span
-                    aria-hidden="true"
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                      index < 3 ? 'bg-accent text-on-accent' : 'bg-surface-muted text-ink'
-                    }`}
-                  >
-                    {index + 1}
-                  </span>
-
-                  <div className="min-w-0 flex-1">
-                    <h3
-                      title={sheetMusic.title}
-                      className="font-semibold text-base text-ink truncate group-hover:text-accent transition-colors"
-                    >
-                      {sheetMusic.title}
-                    </h3>
-                    <p className="text-sm text-ink-muted truncate">{sheetMusic.composer}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                      {sheetMusic.category && (
-                        <Badge className="truncate">{sheetMusic.category.name}</Badge>
-                      )}
-                      <Meta sheetMusic={sheetMusic} />
-                    </div>
-                  </div>
-
-                  <span className="shrink-0 text-xs font-medium text-accent">연습 시작 →</span>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Recent Section */}
-      {showSections.includes('recent') && recentSheets.length > 0 && (
-        <Section title="최신 악보">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {recentSheets.slice(0, 8).map((sheetMusic) => (
-              <Link
-                key={sheetMusic.id}
-                {...linkProps(sheetMusic)}
-                className="group block"
-              >
-                <Card padding="none" className="flex h-full min-w-0 flex-col gap-1 p-4 group-hover:shadow-md group-focus-visible:shadow-md transition-shadow">
-                  <h3
-                    title={sheetMusic.title}
-                    className="font-semibold text-sm text-ink break-words line-clamp-2 group-hover:text-accent transition-colors"
-                  >
-                    {sheetMusic.title}
-                  </h3>
-                  <p className="text-xs text-ink-muted break-words line-clamp-1">
-                    {sheetMusic.composer}
-                  </p>
-                  {sheetMusic.category && (
-                    <div className="mt-1">
-                      <Badge className="truncate">{sheetMusic.category.name}</Badge>
-                    </div>
-                  )}
-                  <div className="flex-1" />
-                  <div className="mt-2">
-                    <Meta sheetMusic={sheetMusic} />
                   </div>
                 </Card>
               </Link>
