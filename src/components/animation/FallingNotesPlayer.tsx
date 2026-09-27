@@ -359,7 +359,7 @@ export default function FallingNotesPlayer({
               step={0.01}
               value={volume}
               onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className="flex-1 max-w-xs"
+              className="flex-1 max-w-xs accent-accent"
               aria-valuetext={formatVolumePercent(volume, MAX_MASTER_GAIN)}
             />
             <span className="text-xs text-ink-muted tabular-nums w-10 text-right">

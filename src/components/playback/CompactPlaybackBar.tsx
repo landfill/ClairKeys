@@ -226,7 +226,7 @@ export default function CompactPlaybackBar({
         onChange={event => onVolumeChange(parseFloat(event.target.value))}
         aria-label="음량"
         aria-valuetext={formatVolumePercent(volume, maxVolume)}
-        className="compact-playback-volume w-20 shrink-0"
+        className="compact-playback-volume w-20 shrink-0 accent-accent"
       />
       <span className="hidden shrink-0 w-10 text-right text-xs tabular-nums text-ink-muted sm:inline">
         {formatVolumePercent(volume, maxVolume)}

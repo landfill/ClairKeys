@@ -4,7 +4,7 @@ import { getProviders, signIn, getSession } from 'next-auth/react'
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { toSafeReturnPath } from '@/lib/returnPath'
+import { toSafeReturnPathFrom } from '@/lib/returnPath'
 import { getSigninCopy } from '@/lib/signinCopy'
 import { Button, CheckIcon, LogoMark, StatusState } from '@/components/ui'
 
@@ -22,7 +22,11 @@ function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   // 복귀 대상은 쿼리로 들어온다. 검증 없이 리다이렉트하면 오픈 리다이렉트가 된다.
-  const callbackUrl = toSafeReturnPath(searchParams.get('callbackUrl'))
+  // 보호 경로 미들웨어는 같은 origin의 절대 URL을 넘기므로 그 경우만 경로로 받는다.
+  const callbackUrl = toSafeReturnPathFrom(
+    searchParams.get('callbackUrl'),
+    typeof window === 'undefined' ? 'http://localhost' : window.location.origin
+  )
   const error = searchParams.get('error')
   const copy = getSigninCopy(callbackUrl)
 
