@@ -11,6 +11,7 @@ const mockPlayerState = {
   tempoScale: 1,
   lookAheadSec: 1.5,
   volume: 0.22,
+  countInLeft: null as number | null,
   sampleStatus: 'ready' as 'idle' | 'loading' | 'ready' | 'degraded' | 'failed',
   totalLength: 3,
   play: jest.fn().mockResolvedValue(true),
@@ -94,6 +95,7 @@ const animationData: CanonicalAnimationData = {
 describe('FallingNotesPlayer', () => {
   beforeEach(() => {
     mockKeyboardFrames.length = 0
+    mockPlayerState.countInLeft = null
     mockPlayerState.sampleStatus = 'ready'
     mockPlayerState.isPlaying = true
     mockPlayerState.isSessionActive = true
@@ -194,6 +196,49 @@ describe('FallingNotesPlayer', () => {
   // the keyboard out as a column. A separate `height: 100%` wrapper reads as
   // `auto` the moment its parent is sized by flex instead of a pixel height,
   // which collapses the falling area to 0 and lifts the keyboard to the top.
+  describe('metronome and count-in', () => {
+    type Options = { clicks?: { time: number; accent: boolean }[]; countIn?: (at: number) => { time: number }[] }
+    const lastOptions = () => (mockHookCalls[mockHookCalls.length - 1][1] ?? {}) as Options
+    beforeEach(() => {
+      try { localStorage.clear() } catch { /* jsdom always has storage */ }
+      mockPlayerState.countInLeft = null
+    })
+
+    it('clicks on an even grid when the seconds were baked at one tempo', () => {
+      setIdle()
+      render(<FallingNotesPlayer animationData={animationData} />)
+      expect(lastOptions().clicks ?? []).toEqual([])
+
+      fireEvent.click(screen.getByRole('checkbox', { name: '메트로놈' }))
+      // tempo 120 in 4/4 over a 3 s piece: a click every half second from 0.
+      expect(lastOptions().clicks?.map(click => click.time)).toEqual([0, 0.5, 1, 1.5, 2, 2.5, 3])
+      expect(localStorage.getItem('clairkeys.metronome')).toBe('true')
+    })
+
+    it('refuses a metronome that could drift from a score-read tempo without the measure map', () => {
+      setIdle()
+      render(<FallingNotesPlayer animationData={{ ...animationData, tempoSource: 'score', tempo: 120 }} />)
+      const metronome = screen.getByRole('checkbox', { name: '메트로놈' })
+      expect(metronome).toBeDisabled()
+      expect(screen.getByText(/박자 정보가 없어/)).toBeInTheDocument()
+    })
+
+    it('counts one bar in before playing, at the reference beat', () => {
+      setIdle()
+      render(<FallingNotesPlayer animationData={animationData} />)
+      expect(lastOptions().countIn).toBeUndefined()
+
+      fireEvent.click(screen.getByRole('checkbox', { name: '시작 전 준비 박자' }))
+      expect(lastOptions().countIn?.(2).map(click => click.time)).toEqual([0, 0.5, 1, 1.5])
+    })
+
+    it('shows the count-in countdown over the notes', () => {
+      mockPlayerState.countInLeft = 3
+      render(<FallingNotesPlayer animationData={animationData} />)
+      expect(screen.getByTestId('count-in')).toHaveTextContent('3')
+    })
+  })
+
   describe('hand practice', () => {
     const twoHands: CanonicalAnimationData = {
       ...animationData,

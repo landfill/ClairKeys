@@ -18,10 +18,33 @@ import { annotationNotesFor, audibleNotesFor, hasBothHands, isPracticedNote, oth
 import ScoreToggle from '@/components/playback/ScoreToggle'
 import ScorePanel from '@/components/playback/ScorePanel'
 import ScoreTimingNotice from '@/components/playback/ScoreTimingNotice'
+import type { ScoreArtifact } from '@/types/scoreArtifact'
+import { loadScoreArtifact } from '@/utils/scoreArtifactCache'
+import {
+  beatUnitQuarters,
+  beatsFromScoreArtifact,
+  beatsPerBar,
+  constantBeats,
+  countInClicks,
+  metronomeSource,
+} from '@/utils/beatGrid'
 import { HAND_COLORS } from '@/types/fallingNotes'
 import { formatVolumePercent } from '@/utils/volumeDisplay'
 
 const SEEK_STEP_LABEL = `${SEEK_STEP_SEC}초 이동`
+
+/** A remembered on/off preference; storage may be unavailable, which only forgets it. */
+function useStoredToggle(key: string): [boolean, (next: boolean) => void] {
+  const [value, setValue] = useState(false)
+  useEffect(() => {
+    try { setValue(localStorage.getItem(key) === 'true') } catch { /* storage disabled */ }
+  }, [key])
+  const update = useCallback((next: boolean) => {
+    setValue(next)
+    try { localStorage.setItem(key, String(next)) } catch { /* keep this session usable */ }
+  }, [key])
+  return [value, update]
+}
 
 /**
  * Standing in for a rotation the device will not perform. The box is laid out
@@ -88,6 +111,43 @@ export default function FallingNotesPlayer({
     [notes, activePractice, otherHandAudible]
   )
   const annotationNotes = useMemo(() => annotationNotesFor(notes, activePractice), [notes, activePractice])
+
+  // Metronome and count-in. The score's measure map is the trustworthy beat
+  // grid; it is downloaded only once one of them is switched on.
+  const [metronomeOn, setMetronomeOn] = useStoredToggle('clairkeys.metronome')
+  const [countInOn, setCountInOn] = useStoredToggle('clairkeys.countIn')
+  const [scoreBeats, setScoreBeats] = useState<{ url: string; artifact: ScoreArtifact | null } | null>(null)
+  const wantsBeats = metronomeOn || countInOn
+  useEffect(() => {
+    if (!wantsBeats || !scoreUrl) return
+    let current = true
+    loadScoreArtifact(scoreUrl)
+      .then(artifact => { if (current) setScoreBeats({ url: scoreUrl, artifact }) })
+      .catch(() => { if (current) setScoreBeats({ url: scoreUrl, artifact: null }) })
+    return () => { current = false }
+  }, [wantsBeats, scoreUrl])
+  const loadedScore = scoreBeats && scoreBeats.url === scoreUrl ? scoreBeats : null
+  const scoreArtifact = loadedScore?.artifact ?? null
+  // With a score still to come, wait for it rather than click on a grid that
+  // may be replaced by a different one a moment later.
+  const awaitingScore = Boolean(scoreUrl) && wantsBeats && loadedScore === null
+  const beatSource = metronomeSource(animationData.tempoSource, scoreArtifact !== null)
+  const beatGrid = useMemo(() => {
+    if (scoreArtifact) {
+      return beatsFromScoreArtifact(scoreArtifact, animationData.timingReferenceBpm, animationData.timeSignature)
+    }
+    if (awaitingScore || beatSource !== 'constant') return []
+    return constantBeats(animationData.duration, animationData.timingReferenceBpm, animationData.timeSignature)
+  }, [scoreArtifact, awaitingScore, beatSource, animationData.duration, animationData.timingReferenceBpm, animationData.timeSignature])
+  // Offered when a trustworthy grid exists or may still arrive with the score.
+  const metronomeAvailable = beatSource !== null || (Boolean(scoreUrl) && loadedScore?.artifact !== null)
+  const metronomeClicks = metronomeOn && metronomeAvailable ? beatGrid : undefined
+  const countIn = useMemo(() => {
+    if (!countInOn) return undefined
+    const perBar = beatsPerBar(animationData.timeSignature)
+    const referenceBeat = (60 / animationData.timingReferenceBpm) * beatUnitQuarters(animationData.timeSignature)
+    return (resumeAt: number) => countInClicks(beatGrid, resumeAt, perBar, referenceBeat)
+  }, [countInOn, beatGrid, animationData.timeSignature, animationData.timingReferenceBpm])
   
   // Use falling notes player hook for audio-visual synchronization
   const {
@@ -107,10 +167,11 @@ export default function FallingNotesPlayer({
     setVolume,
     loopStart,
     loopEnd,
+    countInLeft,
     markLoopStart,
     markLoopEnd,
     clearLoop,
-  } = useFallingNotesPlayer(notes, { audibleNotes })
+  } = useFallingNotesPlayer(notes, { audibleNotes, clicks: metronomeClicks, countIn })
 
   // Constants
   const pxPerSec = PX_PER_SEC
@@ -462,6 +523,34 @@ export default function FallingNotesPlayer({
             </div>
           )}
 
+          <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-muted">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={metronomeOn && metronomeAvailable}
+                disabled={!metronomeAvailable}
+                onChange={event => setMetronomeOn(event.target.checked)}
+                className="h-4 w-4 accent-accent"
+              />
+              메트로놈
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={countInOn}
+                onChange={event => setCountInOn(event.target.checked)}
+                className="h-4 w-4 accent-accent"
+              />
+              시작 전 준비 박자
+            </label>
+            {!metronomeAvailable && (
+              <p className="w-full text-xs">
+                이 악보는 마디별 박자 정보가 없어 메트로놈을 켤 수 없습니다. 악보의 빠르기가 곡 중간에 바뀔 수 있어
+                클릭이 노트와 어긋날 수 있기 때문입니다.
+              </p>
+            )}
+          </div>
+
           {/* The raw gain readout was a tuning aid for DEFAULT_MASTER_GAIN; that value is
               settled, so readers see a share of the range instead (D-080). */}
           <div className="mb-4 flex items-center gap-3">
@@ -572,6 +661,17 @@ export default function FallingNotesPlayer({
             layout={layout}
             dimHand={otherHand(activePractice)}
           />
+
+          {countInLeft !== null && (
+            <div
+              data-testid="count-in"
+              role="status"
+              aria-live="assertive"
+              className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center text-7xl font-bold text-white/90"
+            >
+              {countInLeft}
+            </div>
+          )}
 
           {/* Hit Line */}
           <div

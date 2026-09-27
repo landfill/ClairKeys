@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { OpenSheetMusicDisplay } from 'opensheetmusicdisplay'
 import type { FallingNote } from '@/types/fallingNotes'
 import type { ScoreArtifact } from '@/types/scoreArtifact'
-import { isScoreArtifact } from '@/types/scoreArtifact'
+import { loadScoreArtifact } from '@/utils/scoreArtifactCache'
 import { activeScoreMeasure, annotateScoreFingering } from '@/utils/scoreDisplay'
 
 type MeasureBox = { left: number; top: number; width: number; height: number }
@@ -21,17 +21,15 @@ export default function ScorePanel({ url, notes, currentTime, timingReferenceBpm
   const renderRef = useRef<HTMLDivElement>(null)
   const lastSystemRef = useRef<string | null>(null)
   useEffect(() => {
-    const controller = new AbortController()
+    // Shared with the metronome, so the download is not aborted on unmount;
+    // a stale answer is simply ignored.
+    let current = true
     lastSystemRef.current = null
     setArtifact(null); setError(false)
-    fetch(url, { signal: controller.signal, cache: 'no-store' })
-      .then(async response => {
-        if (!response.ok) throw new Error('Score unavailable')
-        const data: unknown = await response.json()
-        if (!isScoreArtifact(data)) throw new Error('Invalid score')
-        if (!controller.signal.aborted) setArtifact(data)
-      }).catch(() => { if (!controller.signal.aborted) setError(true) })
-    return () => controller.abort()
+    loadScoreArtifact(url)
+      .then(data => { if (current) setArtifact(data) })
+      .catch(() => { if (current) setError(true) })
+    return () => { current = false }
   }, [url])
 
   useEffect(() => {

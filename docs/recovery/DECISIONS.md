@@ -3113,6 +3113,29 @@
   재생 중 오디오가 매 렌더마다 재시작된다.
 - Related: phases/FEAT-hand-practice.md, D-019
 
+## D-083: 메트로놈은 박 위치를 믿을 수 있을 때만 켜고, 준비 박자는 화면을 멈춘 채 소리만 센다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT metronome-count-in branch; merge pending
+- Context: 애니메이션 데이터에는 박·마디 정보가 없다. `tempoSource: score`의 초는 마디별 템포 변화로 구워질 수
+  있어(D-013) 기준 BPM 격자가 곡 중간부터 노트와 어긋난다. 악보 artifact에는 마디별 초·4분음표 위치가 있다.
+- Decision:
+  1. 박 격자는 악보 artifact 마디 map을 우선한다. 없으면 `user|unknown` 출처에서만 균등 격자를 쓰고,
+     `score` 출처는 메트로놈을 비활성화하고 이유를 표시한다. artifact는 마디 끝점만 기록하므로 MusicXML에서
+     첫 박 뒤에 템포가 바뀌는 마디를 찾아 그 마디에는 클릭을 넣지 않는다(틀린 박 대신 무음).
+  2. 클릭은 노트와 같은 오디오 anchor·예약 창에 넣고, 보이스 제한과 별개인 짧은 사인 클릭(강박 1760Hz,
+     그 외 1320Hz)으로 합성 노트 최고 레벨(0.3)보다 낮게 둔다.
+  3. 준비 박자는 시계를 한 마디 앞에서 시작하되 재개 위치 전 노트와 메트로놈 클릭은 예약하지 않는다. 그 사이 화면은 재개
+     위치에 고정하고 남은 박을 센다. 이미 친 구간의 노트가 소리 없이 다시 떨어지는 것을 보여주지 않기 위해서다.
+  4. 두 설정은 브라우저에 기억하고, 악보 artifact는 켤 때만 받아 `ScorePanel`과 다운로드를 공유한다.
+- Rejected: 기준 BPM 격자를 항상 사용 | 템포가 바뀌는 곡에서 클릭이 노트와 어긋난다.
+- Rejected: 준비 박자 동안 노트를 움직임 | 재개 전 구간이 소리 없이 다시 떨어져 건반 강조가 거짓이 된다.
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 클릭을 노트와 다른 시계로 예약하지 마라. 클릭 레벨을 올리면 D-016 헤드룸 계산을 다시 확인한다.
+- Related: phases/FEAT-metronome-count-in.md, D-013, D-016
+
 ## D-084: 이어서 연습할 위치는 서버가 아니라 이 브라우저에만 기억한다
 
 - Date: 2026-09-27
