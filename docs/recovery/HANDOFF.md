@@ -99,6 +99,8 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 - 우선순위 결함 이슈 미착수: [#185](https://github.com/landfill/ClairKeys/issues/185) 첫 재생 샘플 로딩 표시,
   [#186](https://github.com/landfill/ClairKeys/issues/186) 모바일 빠르기 표시 가림, [#187](https://github.com/landfill/ClairKeys/issues/187)
   탐색·검색 API 약2초(운영 재확인 시에도 첫 로드 지연), [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그.
+- [#197](https://github.com/landfill/ClairKeys/issues/197) 탐색·검색 탭 중복(2026-09-28 등록, 미착수): 검색어 없는 검색 탭이 탐색 탭과
+  같은 공개 악보를 같은 최신순으로 보여 주고, 공개 목록 API도 두 벌이다. 구현 전 방향 결정 필요(추천: 탭 없이 한 화면·한 API).
 - 사용자 결정 대기: 홈 샘플을 실제 재생기로 바꿀지(2026-08-30 정적 예시 결정과 충돌해 보류).
 - 실기기 미검증: 실제 MIDI 피아노·Chrome MIDI 권한 팝업, 로그인 상태 운영 연습 기록 쓰기, 클릭·반주 청취 레벨.
 - 후속 후보: 탐색 인기 순위(D-080, 연습 기록 신호 생김), 재생 중(압축 바) 손·메트로놈·기다리기 토글,
