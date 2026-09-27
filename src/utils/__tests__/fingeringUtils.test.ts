@@ -626,3 +626,14 @@ describe('fingeringUtils', () => {
     });
   });
 });
+
+describe('hand provenance', () => {
+  it('marks which hands came from the score and which were guessed', () => {
+    const enhanced = addFingeringToNotes([
+      { midi: 72, start: 0, duration: 1, hand: 'R' },
+      { midi: 40, start: 0, duration: 1 },
+    ])
+    expect(enhanced.map(note => note.handSource)).toEqual(['source', 'inferred'])
+    expect(enhanced[1].hand).toBeDefined()
+  })
+})

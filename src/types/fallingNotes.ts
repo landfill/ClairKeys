@@ -40,6 +40,8 @@ export type FallingNote = {
   finger?: Finger;
   /** Provenance exists only at the player boundary; canonical score data stays untouched. */
   fingerSource?: FingerSource;
+  /** Whether `hand` came from the score or was guessed at the player boundary. */
+  handSource?: FingerSource;
   /** Version of the deterministic inference, present only when fingerSource is inferred. */
   fingeringAlgorithm?: string;
   /** Player-only inferred finger-release time; musical/audio duration is unchanged. */
@@ -144,6 +146,8 @@ export type VisualNote = {
   z: number;
   /** Finger number for educational display */
   finger?: Finger;
+  /** Whether the hand came from the score or was guessed. */
+  handSource?: FingerSource;
   /** Hand assignment for color coding */
   hand?: Hand;
 };
@@ -189,6 +193,8 @@ export interface FallingNotesProps {
   height: number;
   /** Piano keyboard layout for positioning */
   layout: KeyLayout;
+  /** Hand the reader is not practising: its notes are faded and lose their fingering. */
+  dimHand?: Hand | null;
 }
 
 /**

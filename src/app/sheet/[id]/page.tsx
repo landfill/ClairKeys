@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
 import { Button, Card, Loading, StatusState } from '@/components/ui'
+import { resumeKeyFor } from '@/utils/practiceResume'
 import LoginButton from '@/components/auth/LoginButton'
 import FallingNotesPlayer from '@/components/animation/FallingNotesPlayer'
 import DemoProvenanceNotice from '@/components/sheet/DemoProvenanceNotice'
@@ -138,16 +139,14 @@ export default function SheetMusicPage() {
     return (
       <MainLayout>
         <Container className="py-8" size="lg">
-          <Card padding="lg">
-            <StatusState
-              title={error?.includes('권한') ? '이 악보에 접근할 수 없습니다' : '악보를 불러오지 못했습니다'}
-              detail={error || '악보 정보를 확인할 수 없습니다.'}
-              tone="error"
-              action={error?.includes('권한')
-                ? <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(`/sheet/${id}`)}`}><Button as="span">로그인하고 계속하기</Button></Link>
-                : <Link href="/explore"><Button as="span" variant="outline">공개 악보 둘러보기</Button></Link>}
-            />
-          </Card>
+          <StatusState
+            title={error?.includes('권한') ? '이 악보에 접근할 수 없습니다' : '악보를 불러오지 못했습니다'}
+            detail={error || '악보 정보를 확인할 수 없습니다.'}
+            tone="error"
+            action={error?.includes('권한')
+              ? <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(`/sheet/${id}`)}`}><Button as="span">로그인하고 계속하기</Button></Link>
+              : <Link href="/explore"><Button as="span" variant="outline">공개 악보 둘러보기</Button></Link>}
+          />
         </Container>
       </MainLayout>
     )
@@ -174,6 +173,7 @@ export default function SheetMusicPage() {
             animationData={animationData} 
             className={isSessionActive ? '' : 'mb-8'}
             onSessionChange={setIsSessionActive}
+            resumeKey={resumeKeyFor(id)}
           />
 
           {/* Sheet Music Info */}
@@ -187,31 +187,31 @@ export default function SheetMusicPage() {
                 로그인하고 계속 연습하기
               </LoginButton>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">악보 정보</h3>
+            <h3 className="text-lg font-semibold text-ink mb-4">악보 정보</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <dt className="text-sm font-medium text-gray-500">저작자</dt>
-                <dd className="text-sm text-gray-900">{sheetMusic.composer}</dd>
+                <dt className="text-sm font-medium text-ink-muted">저작자</dt>
+                <dd className="text-sm text-ink">{sheetMusic.composer}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">카테고리</dt>
-                <dd className="text-sm text-gray-900">{sheetMusic.category || '미분류'}</dd>
+                <dt className="text-sm font-medium text-ink-muted">카테고리</dt>
+                <dd className="text-sm text-ink">{sheetMusic.category || '미분류'}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">공개 설정</dt>
-                <dd className="text-sm text-gray-900">
+                <dt className="text-sm font-medium text-ink-muted">공개 설정</dt>
+                <dd className="text-sm text-ink">
                   {sheetMusic.isPublic ? '공개' : '비공개'}
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">업로드 날짜</dt>
-                <dd className="text-sm text-gray-900">
+                <dt className="text-sm font-medium text-ink-muted">업로드 날짜</dt>
+                <dd className="text-sm text-ink">
                   {new Date(sheetMusic.createdAt).toLocaleDateString('ko-KR')}
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">재생 시간</dt>
-                <dd className="text-sm text-gray-900">
+                <dt className="text-sm font-medium text-ink-muted">재생 시간</dt>
+                <dd className="text-sm text-ink">
                   {Math.floor(animationData.duration / 60)}분 {Math.floor(animationData.duration % 60)}초
                 </dd>
               </div>

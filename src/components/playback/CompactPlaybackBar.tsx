@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useLayoutEffect, useRef, useSyncExternalStore } from 'react'
+import { formatVolumePercent } from '@/utils/volumeDisplay'
 import { Button } from '@/components/ui'
 
 /**
@@ -85,15 +86,24 @@ export default function CompactPlaybackBar({
   const subscribeToLayout = useCallback((onChange: () => void) => {
     if (typeof window.matchMedia !== 'function') return () => {}
     const query = window.matchMedia(NARROW_DESKTOP_QUERY)
-    const handleChange = () => {
-      // Capture focus before React moves the control to its new reading order.
-      restoreSeekFocus.current = document.activeElement === seekRef.current
-      onChange()
-    }
-    query.addEventListener('change', handleChange)
-    return () => query.removeEventListener('change', handleChange)
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
   }, [])
-  const narrowDesktop = useSyncExternalStore(subscribeToLayout, isNarrowDesktop, serverSnapshot)
+  // The layout is re-read on every render, so a render caused elsewhere (a
+  // resize observer upstream) can move the seek control before the media
+  // query's change event runs. Capture focus where the new value is first
+  // read: during render, before React moves the control in the DOM.
+  const lastLayout = useRef<boolean | null>(null)
+  const readLayout = useCallback(() => {
+    const next = isNarrowDesktop()
+    if (lastLayout.current !== null && next !== lastLayout.current &&
+      document.activeElement === seekRef.current) {
+      restoreSeekFocus.current = true
+    }
+    lastLayout.current = next
+    return next
+  }, [])
+  const narrowDesktop = useSyncExternalStore(subscribeToLayout, readLayout, serverSnapshot)
   useLayoutEffect(() => {
     if (restoreSeekFocus.current) seekRef.current?.focus({ preventScroll: true })
     restoreSeekFocus.current = false
@@ -214,8 +224,7 @@ export default function CompactPlaybackBar({
         ))}
       </select>
 
-      {/* The readout is the gain value itself, which is what makes this usable
-          for choosing DEFAULT_MASTER_GAIN by ear during playback. */}
+      {/* The slider carries the gain; the readout is its share of the range (D-080). */}
       <input
         type="range"
         tabIndex={0}
@@ -224,11 +233,12 @@ export default function CompactPlaybackBar({
         step={0.01}
         value={volume}
         onChange={event => onVolumeChange(parseFloat(event.target.value))}
-        aria-label="음량 (master gain)"
-        className="compact-playback-volume w-20 shrink-0"
+        aria-label="음량"
+        aria-valuetext={formatVolumePercent(volume, maxVolume)}
+        className="compact-playback-volume w-20 shrink-0 accent-accent"
       />
-      <span className="hidden shrink-0 w-10 text-right text-xs font-mono tabular-nums text-ink-muted sm:inline">
-        {volume.toFixed(2)}
+      <span className="hidden shrink-0 w-10 text-right text-xs tabular-nums text-ink-muted sm:inline">
+        {formatVolumePercent(volume, maxVolume)}
       </span>
       {/* DOM order follows the second seek row only in the matching layout. */}
       {narrowDesktop && seekControl}

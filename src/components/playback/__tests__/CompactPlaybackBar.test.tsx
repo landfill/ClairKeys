@@ -81,7 +81,7 @@ describe('CompactPlaybackBar', () => {
     fireEvent.change(screen.getByLabelText('재생 속도'), { target: { value: '1.5' } })
     expect(props.onSpeedChange).toHaveBeenCalledWith(1.5)
 
-    fireEvent.change(screen.getByLabelText('음량 (master gain)'), { target: { value: '0.4' } })
+    fireEvent.change(screen.getByLabelText('음량'), { target: { value: '0.4' } })
     expect(props.onVolumeChange).toHaveBeenCalledWith(0.4)
   })
 
@@ -132,7 +132,7 @@ describe('CompactPlaybackBar', () => {
       fireEvent.change(screen.getByLabelText('재생 속도'), { target: { value: '0.5' } })
       expect(props.onSpeedChange).toHaveBeenCalledWith(0.5)
 
-      fireEvent.change(screen.getByLabelText('음량 (master gain)'), { target: { value: '0.4' } })
+      fireEvent.change(screen.getByLabelText('음량'), { target: { value: '0.4' } })
       expect(props.onVolumeChange).toHaveBeenCalledWith(0.4)
     })
   })
@@ -166,5 +166,47 @@ describe('CompactPlaybackBar', () => {
 
     controls.forEach(control => expect(control).toHaveClass('h-10', 'w-10', 'rounded-full'))
     expect(screen.getByLabelText('재생 속도')).toHaveClass('rounded-full')
+  })
+})
+
+describe('CompactPlaybackBar layout change', () => {
+  // The seek control moves in the DOM between the one-row and two-row layouts.
+  // The layout value is re-read on every render, so a render caused by
+  // something else (a resize observer upstream) can move it before the media
+  // query's change event runs. Focus must survive either order.
+  const originalMatchMedia = window.matchMedia
+  let narrow = false
+  const listeners = new Set<() => void>()
+  beforeEach(() => {
+    narrow = false
+    listeners.clear()
+    window.matchMedia = ((query: string) => ({
+      get matches() { return narrow },
+      media: query,
+      addEventListener: (_: string, listener: () => void) => listeners.add(listener),
+      removeEventListener: (_: string, listener: () => void) => listeners.delete(listener),
+    })) as unknown as typeof window.matchMedia
+  })
+  afterEach(() => { window.matchMedia = originalMatchMedia })
+
+  const props = {
+    isReady: true, currentTime: 30, duration: 100, playbackSpeed: 1, volume: 0.22, maxVolume: 1,
+    isPlaying: false, onPlay: jest.fn(), onPause: jest.fn(), onStop: jest.fn(), onSeek: jest.fn(),
+    onSpeedChange: jest.fn(), onVolumeChange: jest.fn(),
+  }
+
+  it('keeps focus on the seek control when another render moves it before the change event', () => {
+    const { rerender } = render(<CompactPlaybackBar {...props} />)
+    screen.getByRole('slider', { name: '재생 위치' }).focus()
+
+    narrow = true
+    rerender(<CompactPlaybackBar {...props} currentTime={31} />) // a render the resize caused elsewhere
+    listeners.forEach(listener => listener()) // the change event arrives late
+    expect(screen.getByRole('slider', { name: '재생 위치' })).toHaveFocus()
+
+    narrow = false
+    rerender(<CompactPlaybackBar {...props} currentTime={32} />)
+    listeners.forEach(listener => listener())
+    expect(screen.getByRole('slider', { name: '재생 위치' })).toHaveFocus()
   })
 })

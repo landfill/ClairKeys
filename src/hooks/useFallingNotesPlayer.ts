@@ -8,6 +8,12 @@ import { createLoopSection } from '@/utils/loopSection'
 import type { MetronomeClick } from '@/utils/beatGrid'
 
 export interface FallingNotesPlayerOptions {
+  /**
+   * The notes the audio schedules. Timing, length and the visual playhead
+   * always follow `notes`; one-hand practice can silence the other hand here
+   * without moving the end of the piece.
+   */
+  audibleNotes?: FallingNote[]
   /** Metronome clicks for the whole piece, or none. Scheduled on every start. */
   clicks?: MetronomeClick[]
   /**
@@ -25,6 +31,7 @@ const NO_CLICKS: MetronomeClick[] = []
  * Based on MVP implementation for precise timing
  */
 export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNotesPlayerOptions = {}) {
+  const audibleNotes = options.audibleNotes ?? notes
   const clicks = options.clicks ?? NO_CLICKS
   const countInFor = options.countIn
   // Playback state. `isPlaying` is whether a score is sounding right now;
@@ -42,6 +49,8 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
   const [loopStart, setLoopStart] = useState<number | null>(null)
   const [loopEnd, setLoopEnd] = useState<number | null>(null)
 
+  const latestAudible = useRef(audibleNotes)
+  latestAudible.current = audibleNotes
   const latestClicks = useRef(clicks)
   latestClicks.current = clicks
 
@@ -98,7 +107,7 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
     const withCountIn = (grid: MetronomeClick[]) =>
       [...countIn, ...grid.filter(click => click.time >= resumeAt)]
     const started = await startAudio(
-      notes,
+      audibleNotes,
       countIn.length ? countIn[0].time : resumeAt,
       tempoScale,
       mute,
@@ -111,20 +120,22 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
       }
       setIsPlaying(true)
       setIsSessionActive(true)
-      // The start may have waited seconds for samples, and the score's beat
-      // grid may have arrived meanwhile. Apply it, keeping any count-in.
-      const latest = latestClicks.current
-      if (latest !== clicks) {
+      // The start may have waited seconds for samples. A hand choice made or a
+      // score beat grid that arrived in that window has not reached the audio
+      // yet; apply both now, keeping any count-in that is still running.
+      const latestNotes = latestAudible.current
+      const latestGrid = latestClicks.current
+      if (latestNotes !== audibleNotes || latestGrid !== clicks) {
         const at = getCurrentTime()
         stopAudio()
         const again = countIn.length && at < resumeAt
-          ? await startAudio(notes, at, tempoScale, mute, { clicks: withCountIn(latest), notesFrom: resumeAt })
-          : await startAudio(notes, Math.max(at, resumeAt), tempoScale, mute, { clicks: latest })
+          ? await startAudio(latestNotes, at, tempoScale, mute, { clicks: withCountIn(latestGrid), notesFrom: resumeAt })
+          : await startAudio(latestNotes, Math.max(at, resumeAt), tempoScale, mute, { clicks: latestGrid })
         if (!again) setIsPlaying(false)
       }
     }
     return started
-  }, [isPlaying, tempoScale, mute, notes, clicks, countInFor, getCurrentTime, startAudio, stopAudio, updateTempoScale])
+  }, [isPlaying, tempoScale, mute, audibleNotes, clicks, countInFor, getCurrentTime, startAudio, stopAudio, updateTempoScale])
 
   /**
    * Pause playback
@@ -165,10 +176,10 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
 
     // If currently playing, restart audio from new position
     if (isPlaying) {
-      const started = await startAudio(notes, clampedTime, tempoScale, mute, { clicks })
+      const started = await startAudio(audibleNotes, clampedTime, tempoScale, mute, { clicks })
       if (!started) setIsPlaying(false)
     }
-  }, [totalLength, isPlaying, notes, clicks, tempoScale, mute, clearCountIn, setOffsetTime, startAudio, stopAudio])
+  }, [totalLength, isPlaying, audibleNotes, clicks, tempoScale, mute, clearCountIn, setOffsetTime, startAudio, stopAudio])
 
   /**
    * Change tempo with re-synchronization
@@ -189,14 +200,14 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
 
       // Restart with new tempo
       setOffsetTime(currentAudioTime)
-      const started = await startAudio(notes, currentAudioTime, newTempoScale, mute, { clicks })
+      const started = await startAudio(audibleNotes, currentAudioTime, newTempoScale, mute, { clicks })
       if (!started) setIsPlaying(false)
     } else {
       stopAudio()
       setTempoScale(newTempoScale)
       updateTempoScale(newTempoScale)
     }
-  }, [isPlaying, mute, notes, clicks, playheadNow, clearCountIn, setOffsetTime, startAudio, stopAudio, updateTempoScale])
+  }, [isPlaying, mute, audibleNotes, clicks, playheadNow, clearCountIn, setOffsetTime, startAudio, stopAudio, updateTempoScale])
 
   /**
    * Toggle mute
@@ -209,31 +220,34 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
       const currentAudioTime = playheadNow()
       clearCountIn()
       stopAudio()
-      const started = await startAudio(notes, currentAudioTime, tempoScale, newMute, { clicks })
+      const started = await startAudio(audibleNotes, currentAudioTime, tempoScale, newMute, { clicks })
       if (!started) setIsPlaying(false)
     } else {
       stopAudio()
     }
-  }, [isPlaying, tempoScale, notes, clicks, playheadNow, clearCountIn, startAudio, stopAudio])
+  }, [isPlaying, tempoScale, audibleNotes, clicks, playheadNow, clearCountIn, startAudio, stopAudio])
 
-  // Turning the metronome on or off while sounding reschedules from the
-  // playhead, as a mute change does. Only the click set's identity is watched;
-  // the other inputs are read through a ref so a playback frame cannot restart.
-  const clickRestart = useRef({ isPlaying, tempoScale, mute, notes, playheadNow, clearCountIn, startAudio, stopAudio })
-  clickRestart.current = { isPlaying, tempoScale, mute, notes, playheadNow, clearCountIn, startAudio, stopAudio }
-  const previousClicks = useRef(clicks)
+  // A new audible set (one-hand practice) or click grid (metronome on/off, a
+  // score grid arriving) while sounding reschedules from the playhead, as a
+  // mute change does. Only the two identities are watched: the player keeps
+  // them stable when nothing changed, and the other inputs are read through a
+  // ref so a playback frame or a tempo change can never trigger this restart.
+  const scheduleRestart = useRef({ isPlaying, tempoScale, mute, playheadNow, clearCountIn, startAudio, stopAudio })
+  scheduleRestart.current = { isPlaying, tempoScale, mute, playheadNow, clearCountIn, startAudio, stopAudio }
+  const previousSchedule = useRef({ audibleNotes, clicks })
   useEffect(() => {
-    if (previousClicks.current === clicks) return
-    previousClicks.current = clicks
-    const current = clickRestart.current
+    const previous = previousSchedule.current
+    if (previous.audibleNotes === audibleNotes && previous.clicks === clicks) return
+    previousSchedule.current = { audibleNotes, clicks }
+    const current = scheduleRestart.current
     if (!current.isPlaying) return
     const at = current.playheadNow()
     current.clearCountIn()
     current.stopAudio()
-    void current.startAudio(current.notes, at, current.tempoScale, current.mute, { clicks }).then(started => {
+    void current.startAudio(audibleNotes, at, current.tempoScale, current.mute, { clicks }).then(started => {
       if (!started) setIsPlaying(false)
     })
-  }, [clicks])
+  }, [audibleNotes, clicks])
 
   /**
    * Change look ahead time

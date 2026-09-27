@@ -27,3 +27,16 @@ describe('globals.css — 토큰', () => {
     expect(withoutComments).not.toMatch(/prefers-color-scheme/)
   })
 })
+
+describe('manifest.json — 브랜드 색', () => {
+  const manifest = JSON.parse(readFileSync(join(process.cwd(), 'public/manifest.json'), 'utf8'))
+  const token = (name: string) =>
+    css.match(new RegExp(`--ck-${name}:\\s*(#[0-9a-fA-F]{6})`))?.[1]?.toLowerCase()
+
+  it('paints the installed app chrome with the site tokens, not the retired blue and black', () => {
+    // 설치된 PWA의 상태 표시줄과 시작 화면은 이 두 값으로 칠해진다. 사이트는 아이보리 종이와
+    // 테라코타인데 파랑(#2563eb)·검정이 남아 있었다.
+    expect(manifest.theme_color.toLowerCase()).toBe(token('accent'))
+    expect(manifest.background_color.toLowerCase()).toBe(token('canvas'))
+  })
+})
