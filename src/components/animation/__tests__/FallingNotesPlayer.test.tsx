@@ -195,6 +195,18 @@ describe('FallingNotesPlayer', () => {
       expect(mockPlayerState.play).toHaveBeenCalledTimes(1)
     })
 
+    it('asks for the landscape screen inside the click, before waiting for the seek', () => {
+      localStorage.setItem(key, JSON.stringify({ time: 45, savedAt: '' }))
+      setIdle()
+      mockOrientation.enter.mockClear()
+      // A seek that never settles: anything after the await would never run.
+      mockPlayerState.seek.mockReturnValue(new Promise(() => {}))
+      render(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+
+      fireEvent.click(screen.getByRole('button', { name: '0:45부터 이어서 연습' }))
+      expect(mockOrientation.enter).toHaveBeenCalledTimes(1)
+    })
+
     it('withdraws the offer once a run starts another way', () => {
       localStorage.setItem(key, JSON.stringify({ time: 45, savedAt: '' }))
       setIdle()

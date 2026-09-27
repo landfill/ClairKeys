@@ -243,9 +243,13 @@ export default function FallingNotesPlayer({
     const saved = resume.offer
     if (!saved) return
     resume.accept()
+    // Fullscreen needs this click's user activation, which an await can
+    // outlive; ask first, exactly as handlePlay does, then seek and start.
+    orientation.enter()
     await seek(saved.time)
-    await handlePlay()
-  }, [resume, seek, handlePlay])
+    const started = await play()
+    if (!started && !isSessionActive) orientation.exit()
+  }, [resume, seek, play, orientation, isSessionActive])
 
   // Derive key activation synchronously from the exact playhead passed to the
   // falling-note visualization. An effect would leave the keyboard one render
