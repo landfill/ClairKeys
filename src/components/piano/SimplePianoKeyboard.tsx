@@ -17,8 +17,20 @@ export default function SimplePianoKeyboard({
   layout, 
   activeKeys = new Set(),
   activeFingers,
+  onKeyPress,
   className = '' 
 }: SimplePianoKeyboardProps) {
+  // Only wait mode makes the keys playable. Pointer events cover mouse, pen and
+  // touch alike, and pressing on pointerdown keeps a tap as immediate as a key.
+  const keyInput = (midi: number) => onKeyPress
+    ? {
+        'data-midi': midi,
+        onPointerDown: (event: React.PointerEvent) => {
+          event.preventDefault()
+          onKeyPress(midi)
+        },
+      }
+    : {}
   const { byMidi, totalWidth } = layout;
 
   // Borders and shadows shrink with the keys. The reference widths are the ones
@@ -42,6 +54,7 @@ export default function SimplePianoKeyboard({
         !pos.black && (
           <div
             key={`white-${midi}`}
+            {...keyInput(midi)}
             className={`absolute transition-colors duration-75 ${
               activeKeys.has(midi) 
                 ? 'bg-blue-200 shadow-inner' 
@@ -53,6 +66,8 @@ export default function SimplePianoKeyboard({
               width: pos.w,
               height: '100%',
               zIndex: Z_INDICES.WHITE_KEY,
+              cursor: onKeyPress ? 'pointer' : undefined,
+              touchAction: onKeyPress ? 'none' : undefined,
               border: `${Math.max(0.5, decorationScale(pos.w, false))}px solid #cbd5e1`,
               borderBottom: `${Math.max(1, 4 * decorationScale(pos.w, false))}px solid #b6c2d1`,
               borderRadius: `0 0 ${8 * decorationScale(pos.w, false)}px ${8 * decorationScale(pos.w, false)}px`,
@@ -83,6 +98,7 @@ export default function SimplePianoKeyboard({
         pos.black && (
           <div
             key={`black-${midi}`}
+            {...keyInput(midi)}
             className={`absolute transition-colors duration-75 ${
               activeKeys.has(midi) 
                 ? 'bg-gray-600 shadow-inner' 
@@ -94,6 +110,8 @@ export default function SimplePianoKeyboard({
               width: pos.w,
               height: '64%',
               zIndex: Z_INDICES.BLACK_KEY,
+              cursor: onKeyPress ? 'pointer' : undefined,
+              touchAction: onKeyPress ? 'none' : undefined,
               borderRadius: 6 * decorationScale(pos.w, true),
               boxShadow: activeKeys.has(midi)
                 ? `inset 0 ${2 * decorationScale(pos.w, true)}px ${4 * decorationScale(pos.w, true)}px rgba(0,0,0,0.3)`

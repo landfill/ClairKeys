@@ -5,12 +5,27 @@ import type { FallingNote } from '@/types/fallingNotes'
 import { useFallingNotesAudio, DEFAULT_MASTER_GAIN } from './useFallingNotesAudio'
 import { calculateSongLength, shouldAutoStop } from '@/utils/visualUtils'
 import { createLoopSection } from '@/utils/loopSection'
+import { nextWaitStep, remainingPitches, type WaitStep } from '@/utils/waitSteps'
+
+export interface FallingNotesPlayerOptions {
+  /**
+   * Wait mode (D-086): the clock runs silently and stops on each step until
+   * its keys are pressed. The reader makes the sound — a MIDI piano itself,
+   * on-screen keys through the audio hook's playNoteNow.
+   */
+  waitSteps?: WaitStep[]
+}
+
+/** A step exactly at the seek target is still ahead of the reader. */
+const JUST_BEFORE = 1e-6
 
 /**
  * Main hook for falling notes player with audio-visual synchronization
  * Based on MVP implementation for precise timing
  */
-export function useFallingNotesPlayer(notes: FallingNote[]) {
+export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNotesPlayerOptions = {}) {
+  const waitSteps = options.waitSteps
+  const waitMode = Boolean(waitSteps?.length)
   // Playback state. `isPlaying` is whether a score is sounding right now;
   // `isSessionActive` is whether the reader is inside a practice run at all.
   // They diverge on a pause, and the screen needs the second one: a pause is a
@@ -26,6 +41,12 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
   const [loopStart, setLoopStart] = useState<number | null>(null)
   const [loopEnd, setLoopEnd] = useState<number | null>(null)
 
+  // Wait mode: steps up to this song time are done; the step being waited on.
+  const playedThroughRef = useRef(Number.NEGATIVE_INFINITY)
+  const [waiting, setWaiting] = useState<{ step: WaitStep; pressed: Set<number> } | null>(null)
+  const waitingRef = useRef(waiting)
+  waitingRef.current = waiting
+
   // Audio management
   const {
     startAudio,
@@ -36,6 +57,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     setVolume,
     sampleStatus,
     reset,
+    playNoteNow,
   } = useFallingNotesAudio()
   
   // Animation refs
@@ -59,14 +81,14 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
       notes,
       getCurrentTime(),
       tempoScale,
-      mute
+      mute || waitMode
     )
     if (started) {
       setIsPlaying(true)
       setIsSessionActive(true)
     }
     return started
-  }, [isPlaying, tempoScale, mute, notes, getCurrentTime, startAudio, updateTempoScale])
+  }, [isPlaying, tempoScale, mute, waitMode, notes, getCurrentTime, startAudio, updateTempoScale])
 
   /**
    * Pause playback
@@ -75,7 +97,9 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     if (!isPlaying) return
 
     // Get precise current time from audio context
-    const currentAudioTime = getCurrentTime()
+    // A pause inside a wait keeps the step unplayed; playing again waits on it.
+    const currentAudioTime = waitingRef.current ? waitingRef.current.step.time : getCurrentTime()
+    setWaiting(null)
     setIsPlaying(false)
     stopAudio()
     setOffsetTime(currentAudioTime)
@@ -86,6 +110,8 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
    * Stop playback
    */
   const handleStop = useCallback(() => {
+    playedThroughRef.current = Number.NEGATIVE_INFINITY
+    setWaiting(null)
     setIsPlaying(false)
     setIsSessionActive(false)
     reset()
@@ -97,16 +123,18 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
    */
   const handleSeek = useCallback(async (newTime: number) => {
     const clampedTime = Math.max(0, Math.min(newTime, totalLength))
+    playedThroughRef.current = clampedTime - JUST_BEFORE
+    setWaiting(null)
     if (!isPlaying) stopAudio()
     setOffsetTime(clampedTime)
     setCurrentTime(clampedTime)
 
     // If currently playing, restart audio from new position
     if (isPlaying) {
-      const started = await startAudio(notes, clampedTime, tempoScale, mute)
+      const started = await startAudio(notes, clampedTime, tempoScale, mute || waitMode)
       if (!started) setIsPlaying(false)
     }
-  }, [totalLength, isPlaying, notes, tempoScale, mute, setOffsetTime, startAudio, stopAudio])
+  }, [totalLength, isPlaying, notes, tempoScale, mute, waitMode, setOffsetTime, startAudio, stopAudio])
 
   /**
    * Change tempo with re-synchronization
@@ -115,8 +143,10 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     const wasPlaying = isPlaying
 
     if (wasPlaying) {
-      // Get current precise time before stopping
-      const currentAudioTime = getCurrentTime()
+      // Get current precise time before stopping. A wait ends here and is
+      // met again at once, since its step is still unplayed.
+      const currentAudioTime = waitingRef.current ? waitingRef.current.step.time : getCurrentTime()
+      setWaiting(null)
       stopAudio()
 
       // Update tempo scale
@@ -125,14 +155,14 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
 
       // Restart with new tempo
       setOffsetTime(currentAudioTime)
-      const started = await startAudio(notes, currentAudioTime, newTempoScale, mute)
+      const started = await startAudio(notes, currentAudioTime, newTempoScale, mute || waitMode)
       if (!started) setIsPlaying(false)
     } else {
       stopAudio()
       setTempoScale(newTempoScale)
       updateTempoScale(newTempoScale)
     }
-  }, [isPlaying, mute, notes, getCurrentTime, setOffsetTime, startAudio, stopAudio, updateTempoScale])
+  }, [isPlaying, mute, waitMode, notes, getCurrentTime, setOffsetTime, startAudio, stopAudio, updateTempoScale])
 
   /**
    * Toggle mute
@@ -150,6 +180,26 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
       stopAudio()
     }
   }, [isPlaying, tempoScale, notes, getCurrentTime, startAudio, stopAudio])
+
+  /**
+   * A key the reader pressed (MIDI or on screen). Returns whether it was one
+   * the current step waits for; a completed step resumes from its own onset.
+   */
+  const pressKey = useCallback(async (midi: number): Promise<boolean> => {
+    const current = waitingRef.current
+    if (!current || !current.step.pitches.includes(midi)) return false
+    const pressed = new Set(current.pressed).add(midi)
+    if (remainingPitches(current.step.pitches, pressed).length > 0) {
+      setWaiting({ step: current.step, pressed })
+      return true
+    }
+    playedThroughRef.current = current.step.time
+    waitingRef.current = null
+    setWaiting(null)
+    const started = await startAudio(notes, current.step.time, tempoScale, true)
+    if (!started) setIsPlaying(false)
+    return true
+  }, [notes, tempoScale, startAudio])
 
   /**
    * Change look ahead time
@@ -189,7 +239,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
 
   // Enhanced animation loop with precise audio-visual synchronization
   useEffect(() => {
-    if (!isPlaying) {
+    if (!isPlaying || waiting) {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current)
         rafRef.current = null
@@ -202,6 +252,22 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
       // Audio, falling notes, and active keys all consume this one score-time
       // value derived from the AudioContext playback anchor.
       const currentAudioTime = getCurrentTime()
+
+      // Wait mode: reaching an unplayed step stops the clock exactly on it.
+      if (waitSteps?.length) {
+        const index = nextWaitStep(waitSteps, playedThroughRef.current)
+        const step = index >= 0 ? waitSteps[index] : null
+        if (step && currentAudioTime >= step.time) {
+          stopAudio()
+          setOffsetTime(step.time)
+          setCurrentTime(step.time)
+          const next = { step, pressed: new Set<number>() }
+          waitingRef.current = next
+          setWaiting(next)
+          return
+        }
+      }
+
       setCurrentTime(currentAudioTime)
 
       if (loopSection && currentAudioTime >= loopSection.end) {
@@ -233,7 +299,7 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
         rafRef.current = null
       }
     }
-  }, [isPlaying, totalLength, getCurrentTime, handleStop, handleSeek, loopSection])
+  }, [isPlaying, waiting, waitSteps, totalLength, getCurrentTime, handleStop, handleSeek, loopSection, setOffsetTime, stopAudio])
 
   return {
     // State
@@ -248,6 +314,8 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     loopEnd,
     sampleStatus,
     totalLength,
+    /** Keys the current wait still needs, ascending, or null outside a wait. */
+    waitingFor: waiting ? remainingPitches(waiting.step.pitches, waiting.pressed) : null,
 
     // Actions
     play: handlePlay,
@@ -261,6 +329,8 @@ export function useFallingNotesPlayer(notes: FallingNote[]) {
     markLoopStart,
     markLoopEnd,
     clearLoop,
+    pressKey,
+    playNoteNow,
 
     // Combined play/pause toggle
     togglePlayPause: isPlaying ? handlePause : handlePlay

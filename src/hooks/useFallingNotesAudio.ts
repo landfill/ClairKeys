@@ -100,6 +100,9 @@ interface AudioNodes {
  */
 export const DEFAULT_MASTER_GAIN = 0.5
 
+/** How long a key tapped on screen sounds before its damper falls. */
+const TAPPED_NOTE_SEC = 0.8
+
 /**
  * Ceiling the runtime volume control clamps to.
  *
@@ -263,9 +266,12 @@ export function useFallingNotesAudio() {
   const createNoteAudio = useCallback((
     midi: number,
     audioContext: AudioContext,
-    masterGain: GainNode
+    masterGain: GainNode,
+    // A single tapped key has no piece to keep on one instrument, so it may use
+    // whatever sample has decoded even before playback chose the sample path.
+    preferSamples: boolean = useSamplesForPlaybackRef.current
   ): AudioNodes => {
-    const voice = useSamplesForPlaybackRef.current
+    const voice = preferSamples
       ? sampleBankRef.current?.voiceFor(midi) ?? null
       : null
 
@@ -667,6 +673,51 @@ export function useFallingNotesAudio() {
   }, [stopTick])
 
   /**
+   * Sound one key now, for a key the reader taps on screen in wait mode
+   * (D-086). It is off the playback clock and outside the scheduled set, so a
+   * restart of the schedule — which a correct press triggers — cannot cut it.
+   */
+  const playNoteNow = useCallback(async (midi: number, velocity = 0.7): Promise<boolean> => {
+    if (!initializeAudio()) return false
+    const audioContext = audioContextRef.current
+    const masterGain = masterGainRef.current
+    if (!audioContext || !masterGain) return false
+    if (audioContext.state === 'suspended') {
+      try { await audioContext.resume() } catch { return false }
+    }
+    // Start decoding for the next tap without making this one wait.
+    void sampleBankRef.current?.load().catch(() => undefined)
+
+    const start = audioContext.currentTime + 0.005
+    const end = start + TAPPED_NOTE_SEC
+    try {
+      const nodes = createNoteAudio(midi, audioContext, masterGain, true)
+      let releaseSec: number
+      if (nodes.isSample) {
+        releaseSec = damperReleaseSec(midi)
+        const peak = Math.max(0, velocity) * SAMPLE_PEAK_GAIN
+        nodes.gain.gain.setValueAtTime(peak, start)
+        nodes.gain.gain.setValueAtTime(peak, end)
+        nodes.gain.gain.linearRampToValueAtTime(0, end + releaseSec)
+        nodes.bufferSource?.start(start, 0)
+      } else {
+        const envelope = envelopeBreakpoints(velocity, TAPPED_NOTE_SEC)
+        releaseSec = envelope.releaseSec
+        nodes.gain.gain.setValueAtTime(0, start)
+        nodes.gain.gain.linearRampToValueAtTime(envelope.peak, start + envelope.attackSec)
+        nodes.gain.gain.exponentialRampToValueAtTime(Math.max(envelope.sustain, 1e-4), end)
+        nodes.gain.gain.linearRampToValueAtTime(0, end + releaseSec)
+        nodes.source.start(start)
+      }
+      nodes.source.stop(end + releaseSec)
+      return true
+    } catch (error) {
+      console.warn('Failed to play tapped note:', error)
+      return false
+    }
+  }, [initializeAudio, createNoteAudio])
+
+  /**
    * Get current playback time with precise synchronization
    */
   const getCurrentTime = useCallback((): number => {
@@ -768,7 +819,8 @@ export function useFallingNotesAudio() {
     setVolume,
     sampleStatus,
     reset,
-    getTimingInfo
+    getTimingInfo,
+    playNoteNow
   }
 }
 

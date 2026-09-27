@@ -3045,3 +3045,23 @@
 - Scope-risk: narrow
 - Reversibility: clean
 - Related: phases/UI-2026-playback-mode-clarity.md, D-019, #177의 별도 UI 주석
+
+## D-086: 기다리기 모드는 MIDI와 화면 건반을 모두 받고, 사용자가 낸 소리만 들려준다
+
+- Date: 2026-09-27
+- Status: Accepted by the user on 2026-09-27 (recommended option); merge pending
+- Context: D-079는 입력 장치와 단계 진행 계약이 없어 `follow` 모드를 보류했다. Web MIDI는 Chrome·Edge·Firefox에
+  있으나 Safari·iOS에는 없다. 사용자는 추천안(둘 다 지원, 사용자가 낸 소리만)을 승인했다.
+- Decision:
+  1. 입력은 MIDI note-on과 화면 건반 pointerdown이다. MIDI 권한은 모드를 켜는 클릭에서만 요청한다.
+  2. 30ms 안에 시작하는 노트를 한 단계로 묶고, 순서와 무관하게 모든 음이 눌리면 진행한다. 틀린 건반은 무시한다.
+  3. 기다리기 모드의 재생은 음소거 시계(`mute`)로 흐르고, 다음 단계 시각에 정확히 멈춘다. 새 시계를 만들지 않는다.
+  4. 소리는 사용자 몫이다. MIDI 피아노는 스스로, 화면 건반은 `playNoteNow`로 즉시 소리 내며 예약 재시작에 끊기지 않는다.
+- Rejected: 레거시 `AnimationPlayer` practice 엔진 연결 | 현재 재생기와 다른 시계·상태를 쓰며 D-079가 실사용에서 제외했다.
+- Rejected: 대기 중에도 반주(나머지 노트)를 재생 | 사용자가 모든 노트를 치는 모드에서 같은 음이 두 번 난다.
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 기다리기 모드에서 노트 예약을 되살리지 마라. 한 손 연습과 결합할 때는 연습하지 않는 손의 노트를 단계에서 빼고
+  그 손만 반주로 예약하는 별도 결정이 필요하다.
+- Related: phases/FEAT-wait-mode-midi.md, D-079
