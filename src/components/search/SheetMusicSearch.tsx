@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { Badge, Button, StatusState } from '@/components/ui'
+import { useState, useEffect, useRef, type MouseEvent } from 'react'
+import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { Badge, Button, Card, StatusState } from '@/components/ui'
 import { useSheetMusicSearch } from '@/hooks/useSheetMusicSearch'
 import { SheetMusicWithOwner } from '@/types/sheet-music'
 
@@ -23,6 +25,15 @@ export default function SheetMusicSearch({
   const [publicFilter, setPublicFilter] = useState<boolean | undefined>(defaultPublicOnly ? true : undefined)
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'composer'>('newest')
   const searchInputRef = useRef<HTMLInputElement>(null)
+  // Private sheets only exist for their owner, so the visibility filter and the
+  // private count mean nothing to a signed-out reader.
+  const { status } = useSession()
+  const isSignedIn = status === 'authenticated'
+  // Losing the session hides the filter; a leftover private choice would keep
+  // requesting results that now answer 401, with no control left to undo it.
+  useEffect(() => {
+    if (status === 'unauthenticated' && publicFilter !== true) setPublicFilter(true)
+  }, [status, publicFilter])
 
   const {
     data,
@@ -72,6 +83,19 @@ export default function SheetMusicSearch({
     })
   }
 
+  // Same contract as the explore cards: a real link, and a plain activation defers to
+  // the caller while a modified click is left to the browser for a new tab.
+  const handleResultClick = (event: MouseEvent<HTMLAnchorElement>, sheetMusic: SheetMusicWithOwner) => {
+    if (!onResultClick) return
+    const wantsNewContext =
+      event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0
+    if (wantsNewContext) return
+    event.preventDefault()
+    onResultClick(sheetMusic)
+  }
+
+  const fieldClass = 'w-full rounded-md border border-rule-strong bg-surface px-3 py-2 text-ink'
+
   return (
     <div className={`sheet-music-search ${className}`}>
       {/* Search Header */}
@@ -86,7 +110,8 @@ export default function SheetMusicSearch({
                 placeholder="곡명 또는 저작자로 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                aria-label="곡명 또는 저작자로 검색"
+                className={`${fieldClass} rounded-full px-4`}
               />
             </div>
             <Button
@@ -100,16 +125,17 @@ export default function SheetMusicSearch({
 
           {/* Filters */}
           {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className={`grid grid-cols-1 gap-4 ${isSignedIn ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
               {/* Category Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="search-category" className="block text-sm font-medium text-ink mb-1">
                   카테고리
                 </label>
                 <select
+                  id="search-category"
                   value={selectedCategory || ''}
                   onChange={(e) => setSelectedCategory(e.target.value ? parseInt(e.target.value) : undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={fieldClass}
                 >
                   <option value="">전체 카테고리</option>
                   {categories.map(category => (
@@ -121,33 +147,35 @@ export default function SheetMusicSearch({
               </div>
 
               {/* Public/Private Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              {isSignedIn && <div>
+                <label htmlFor="search-visibility" className="block text-sm font-medium text-ink mb-1">
                   공개 설정
                 </label>
                 <select
+                  id="search-visibility"
                   value={publicFilter === undefined ? 'all' : publicFilter.toString()}
                   onChange={(e) => {
                     const value = e.target.value
                     setPublicFilter(value === 'all' ? undefined : value === 'true')
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={fieldClass}
                 >
                   <option value="all">전체</option>
                   <option value="true">공개만</option>
                   <option value="false">내 비공개만</option>
                 </select>
-              </div>
+              </div>}
 
               {/* Sort Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="search-sort" className="block text-sm font-medium text-ink mb-1">
                   정렬
                 </label>
                 <select
+                  id="search-sort"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'title' | 'composer')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={fieldClass}
                 >
                   <option value="newest">최신순</option>
                   <option value="oldest">오래된순</option>
@@ -162,9 +190,9 @@ export default function SheetMusicSearch({
 
       {/* Search Stats */}
       {data && (
-        <div className="mb-4 text-sm text-gray-600">
+        <div className="mb-4 text-sm text-ink-muted">
           총 {total.toLocaleString()}개의 악보를 찾았습니다
-          {data.filters && (
+          {isSignedIn && data.filters && (
             <span className="ml-2">
               (공개: {data.filters.totalPublic}, 비공개: {data.filters.totalPrivate})
             </span>
@@ -182,57 +210,39 @@ export default function SheetMusicSearch({
         {hasResults ? (
           <>
             {data!.sheetMusic.map((sheetMusic) => (
-              <div
+              <Link
                 key={sheetMusic.id}
-                className="p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors cursor-pointer"
-                onClick={() => onResultClick?.(sheetMusic)}
+                href={`/sheet/${sheetMusic.id}`}
+                onClick={(event) => handleResultClick(event, sheetMusic)}
+                className="group block"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <Card padding="none" className="flex min-w-0 items-start justify-between gap-4 p-4 group-hover:shadow-md group-focus-visible:shadow-md transition-shadow">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg font-semibold text-ink break-words group-hover:text-accent transition-colors">
                       {sheetMusic.title}
                     </h3>
-                    <p className="text-gray-600 mb-2">
-                      작곡: {sheetMusic.composer}
+                    <p className="text-sm text-ink-muted break-words">
+                      {sheetMusic.composer}
                     </p>
-                    
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
                       {sheetMusic.category && (
-                        <Badge tone="info">
-                          {sheetMusic.category.name}
-                        </Badge>
+                        <Badge className="truncate">{sheetMusic.category.name}</Badge>
                       )}
-                      
-                      <Badge>
-                        {sheetMusic.isPublic ? '공개' : '비공개'}
-                      </Badge>
-                      
+                      {isSignedIn && (
+                        <Badge>{sheetMusic.isPublic ? '공개' : '비공개'}</Badge>
+                      )}
                       {sheetMusic.owner && (
-                        <span>
-                          업로드: {sheetMusic.owner.name || '알 수 없음'}
-                        </span>
+                        <span className="truncate">{sheetMusic.owner.name || '익명'}</span>
                       )}
-                      
-                      <span>
-                        {formatDate(sheetMusic.createdAt)}
-                      </span>
+                      <span aria-hidden="true">·</span>
+                      <span className="shrink-0">{formatDate(sheetMusic.createdAt)}</span>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-2 ml-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onResultClick?.(sheetMusic)
-                      }}
-                    >
-                      재생
-                    </Button>
-                  </div>
-                </div>
-              </div>
+
+                  <span className="shrink-0 self-center text-xs font-medium text-accent">연습 시작 →</span>
+                </Card>
+              </Link>
             ))}
 
             {/* Load More Button */}
@@ -262,8 +272,8 @@ export default function SheetMusicSearch({
       {/* Loading State */}
       {loading && !data && (
         <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-gray-600">검색 중...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+          <p className="mt-2 text-ink-muted">검색 중...</p>
         </div>
       )}
     </div>

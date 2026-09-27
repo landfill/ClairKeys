@@ -7,7 +7,7 @@
  * 복귀 대상은 **같은 origin의 경로만** 허용한다. 외부에서 넘어온 문자열이 그대로 리다이렉트
  * 대상이 되면 오픈 리다이렉트가 된다 — 로그인 화면은 그 문자열이 쿼리로 오는 자리다.
  */
-import { toSafeReturnPath } from '@/lib/returnPath'
+import { toSafeReturnPath, toSafeReturnPathFrom } from '@/lib/returnPath'
 
 describe('toSafeReturnPath', () => {
   it('keeps an ordinary in-app path', () => {
@@ -84,5 +84,36 @@ describe('toSafeReturnPath', () => {
 
   it('refuses an unsafe fallback too', () => {
     expect(toSafeReturnPath(null, 'https://evil.example')).toBe('/')
+  })
+})
+
+/**
+ * next-auth `withAuth` 미들웨어는 보호 경로(`/upload`, `/library`)에서 로그인 화면으로 보낼 때
+ * `callbackUrl`에 요청의 **절대 URL**을 넣는다. 경로만 받는 `toSafeReturnPath`는 이를 `/`로
+ * 떨어뜨려, 로그인 후 원래 화면이 아니라 홈으로 돌아가게 했다.
+ */
+describe('toSafeReturnPathFrom', () => {
+  const origin = 'https://clairkeys.example'
+
+  it('turns this site\'s own absolute URL into its path', () => {
+    expect(toSafeReturnPathFrom('https://clairkeys.example/library', origin)).toBe('/library')
+    expect(toSafeReturnPathFrom('https://clairkeys.example/upload?step=2#top', origin)).toBe('/upload?step=2#top')
+  })
+
+  it('keeps ordinary paths exactly as toSafeReturnPath does', () => {
+    expect(toSafeReturnPathFrom('/sheet/2', origin)).toBe('/sheet/2')
+    expect(toSafeReturnPathFrom('//evil.example', origin)).toBe('/')
+  })
+
+  it('still refuses every other origin, scheme and look-alike', () => {
+    for (const candidate of [
+      'https://evil.example/library',
+      'http://clairkeys.example/library',
+      'https://clairkeys.example.evil.example/library',
+      'https://user@evil.example/library',
+      'javascript:alert(1)',
+    ]) {
+      expect(toSafeReturnPathFrom(candidate, origin)).toBe('/')
+    }
   })
 })

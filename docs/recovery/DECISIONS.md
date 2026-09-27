@@ -3046,6 +3046,33 @@
 - Reversibility: clean
 - Related: phases/UI-2026-playback-mode-clarity.md, D-019, #177의 별도 UI 주석
 
+## D-080: 근거 없는 순위 이름과 개발용 음량 표기를 사용자 화면에서 걷어낸다
+
+- Date: 2026-09-27
+- Status: Accepted for UI-2026 review-design branch; merge pending
+- Context: 2026-09-27 운영 점검에서 탐색의 `추천 악보`·`인기 악보`가 최신순 목록을 잘라 쓴 것이라
+  공개 악보 3곡이 세 칸에 반복되는 것을 확인했다. 재생 수·추천 신호는 저장되지 않는다.
+  재생 준비 화면의 음량은 `음량 (master gain)`·`0.50`으로 보인다. 이 표기는 D-016이
+  `DEFAULT_MASTER_GAIN`을 귀로 정하기 위해 남긴 튜닝용이었다. 그 값은 이후 0.5로 확정됐고,
+  제품 사용자는 음량을 튜닝하지 않는다.
+- Decision:
+  1. 탐색은 데이터가 뒷받침하는 순서 하나(`최근 공개된 악보`, 최신순, 12개)만 보여준다. 한 악보는
+     한 번만 보이고, 모든 카드는 같은 링크·`연습 시작 →` 행동을 가진다. 추천·인기는 실제 신호
+     (예: 연습 기록)가 생긴 뒤 별도 결정으로 다시 도입한다.
+  2. 음량 슬라이더의 값·범위·기본값은 master gain 그대로 두고, 표시와 접근성 이름만 `음량`과
+     범위 대비 백분율로 바꾼다. 공유 게인 체인과 D-016 헤드룸 계산은 바꾸지 않는다.
+  3. 로그인 화면은 origin이 정확히 같은 절대 URL `callbackUrl`에서 경로만 꺼내 기존 경로 판정을 다시
+     통과시킨다(`toSafeReturnPathFrom`). next-auth 미들웨어가 넘기는 값이 이 형태라 로그인 후 복귀와
+     경로별 안내가 모두 `/`로 떨어지던 문제를 함께 고친다. 다른 origin·scheme·userinfo는 계속 거절한다.
+- Rejected: 추천·인기 칸을 유지하고 악보 수가 적을 때만 숨김 | 악보가 늘어도 같은 목록을 다른
+  이름으로 반복하는 문제는 그대로 남는다.
+- Rejected: 음량 표기를 dB로 바꿈 | 튜닝 목적이 끝났고 일반 사용자에게 dB는 또 다른 개발용 단위다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 순위·추천처럼 보이는 섹션 이름은 그 순서를 만든 실제 데이터가 있을 때만 쓴다.
+- Related: phases/UI-2026-review-design.md, D-016
+
 ## D-081: 재생 단축키는 페이지가 가진 키만 쓰고 포커스된 컨트롤의 키를 빼앗지 않는다
 
 - Date: 2026-09-27
