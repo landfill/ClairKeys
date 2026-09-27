@@ -15,12 +15,15 @@ export interface WaitStep {
  */
 export const STEP_TOLERANCE_SEC = 0.03
 
+/** Absorbs binary rounding, so a note exactly on the window's edge stays in. */
+const FLOAT_SLACK = 1e-9
+
 export function buildWaitSteps(notes: FallingNote[], tolerance = STEP_TOLERANCE_SEC): WaitStep[] {
   const sorted = [...notes].sort((a, b) => a.start - b.start)
   const steps: WaitStep[] = []
   let current: { time: number; pitches: Set<number> } | null = null
   for (const note of sorted) {
-    if (!current || note.start - current.time > tolerance) {
+    if (!current || note.start - current.time > tolerance + FLOAT_SLACK) {
       if (current) steps.push({ time: current.time, pitches: [...current.pitches].sort((a, b) => a - b) })
       current = { time: note.start, pitches: new Set() }
     }

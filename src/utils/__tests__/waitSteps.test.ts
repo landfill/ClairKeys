@@ -17,6 +17,18 @@ describe('buildWaitSteps', () => {
     ])
   })
 
+  it('keeps a note exactly at the 30 ms boundary in the same step despite float rounding', () => {
+    // 1.03 - 1 is 0.030000000000000027 in binary floating point.
+    expect(buildWaitSteps([
+      { midi: 60, start: 1, duration: 1 },
+      { midi: 64, start: 1.03, duration: 1 },
+      { midi: 67, start: 1.031, duration: 1 },
+    ])).toEqual([
+      { time: 1, pitches: [60, 64] },
+      { time: 1.031, pitches: [67] },
+    ])
+  })
+
   it('has no steps for an empty piece', () => {
     expect(buildWaitSteps([])).toEqual([])
   })
