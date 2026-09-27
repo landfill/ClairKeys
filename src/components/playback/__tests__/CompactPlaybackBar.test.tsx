@@ -81,7 +81,7 @@ describe('CompactPlaybackBar', () => {
     fireEvent.change(screen.getByLabelText('재생 속도'), { target: { value: '1.5' } })
     expect(props.onSpeedChange).toHaveBeenCalledWith(1.5)
 
-    fireEvent.change(screen.getByLabelText('음량 (master gain)'), { target: { value: '0.4' } })
+    fireEvent.change(screen.getByLabelText('음량'), { target: { value: '0.4' } })
     expect(props.onVolumeChange).toHaveBeenCalledWith(0.4)
   })
 
@@ -132,7 +132,7 @@ describe('CompactPlaybackBar', () => {
       fireEvent.change(screen.getByLabelText('재생 속도'), { target: { value: '0.5' } })
       expect(props.onSpeedChange).toHaveBeenCalledWith(0.5)
 
-      fireEvent.change(screen.getByLabelText('음량 (master gain)'), { target: { value: '0.4' } })
+      fireEvent.change(screen.getByLabelText('음량'), { target: { value: '0.4' } })
       expect(props.onVolumeChange).toHaveBeenCalledWith(0.4)
     })
   })
