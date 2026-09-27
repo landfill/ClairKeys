@@ -7,6 +7,7 @@ import { BOX_BORDER, PX_PER_SEC, planPlaybackGeometry, planScoreAwareGeometry } 
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
+import { usePracticeResume } from '@/hooks/usePracticeResume'
 import { SEEK_STEP_SEC, usePlaybackShortcuts } from '@/hooks/usePlaybackShortcuts'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import FallingNotes from './FallingNotes'
@@ -28,6 +29,12 @@ const SEEK_STEP_LABEL = `${SEEK_STEP_SEC}초 이동`
  * required rather than vh/vw — iOS measures vh against the toolbar-less height,
  * which would push the keyboard off screen.
  */
+/** m:ss for a song position. */
+function formatClock(seconds: number): string {
+  const whole = Math.max(0, Math.floor(seconds))
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`
+}
+
 const rotatedRootStyle: React.CSSProperties = {
   position: 'fixed',
   top: 0,
@@ -51,10 +58,13 @@ export default function FallingNotesPlayer({
   className = '',
   onSessionChange,
   scoreUrl,
+  resumeKey,
 }: {
   animationData: CanonicalAnimationData
   className?: string
   scoreUrl?: string
+  /** Browser storage key for this piece's last position; omitted, nothing is remembered. */
+  resumeKey?: string
   /**
    * Reports the practice session, not the sounding score. A pause keeps this
    * true: the page chrome must not come back underneath a reader who only
@@ -233,6 +243,19 @@ export default function FallingNotesPlayer({
     if (!started && !isSessionActive) orientation.exit()
   }, [isSessionActive, orientation, play])
 
+  const resume = usePracticeResume(resumeKey, { currentTime, isPlaying, isSessionActive, totalLength })
+  const handleResume = useCallback(async () => {
+    const saved = resume.offer
+    if (!saved) return
+    resume.accept()
+    // Fullscreen needs this click's user activation, which an await can
+    // outlive; ask first, exactly as handlePlay does, then seek and start.
+    orientation.enter()
+    await seek(saved.time)
+    const started = await play()
+    if (!started && !isSessionActive) orientation.exit()
+  }, [resume, seek, play, orientation, isSessionActive])
+
   // Space and the arrows act on the page, never on a focused control (see
   // resolvePlaybackShortcut). A start waits for the samples exactly as the play
   // button does, and it goes through handlePlay so the orientation request is
@@ -331,6 +354,34 @@ export default function FallingNotesPlayer({
         </div>
       ) : (
         <>
+          {resume.offer && (
+            <section
+              aria-label="이어서 연습"
+              className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rule bg-surface px-4 py-3"
+            >
+              <p className="text-sm text-ink">
+                지난번 <span className="font-semibold tabular-nums">{formatClock(resume.offer.time)}</span>에서 멈췄습니다.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { void handleResume() }}
+                  disabled={sampleStatus === 'loading'}
+                  className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-on-accent hover:bg-accent-hover disabled:opacity-50"
+                >
+                  {formatClock(resume.offer.time)}부터 이어서 연습
+                </button>
+                <button
+                  type="button"
+                  onClick={resume.dismiss}
+                  className="rounded-full px-4 py-1.5 text-sm font-medium text-ink-muted hover:bg-surface-muted hover:text-ink"
+                >
+                  처음부터
+                </button>
+              </div>
+            </section>
+          )}
+
           {/* Usage Instructions */}
           <ol aria-label="연습 방법" className="mb-4 grid gap-2 text-sm text-ink-muted sm:grid-cols-3">
             {[
