@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useLayoutEffect, useRef, useSyncExternalStore } from 'react'
+import { formatVolumePercent } from '@/utils/volumeDisplay'
 import { Button } from '@/components/ui'
 
 /**
@@ -214,8 +215,7 @@ export default function CompactPlaybackBar({
         ))}
       </select>
 
-      {/* The readout is the gain value itself, which is what makes this usable
-          for choosing DEFAULT_MASTER_GAIN by ear during playback. */}
+      {/* The slider carries the gain; the readout is its share of the range (D-080). */}
       <input
         type="range"
         tabIndex={0}
@@ -224,11 +224,12 @@ export default function CompactPlaybackBar({
         step={0.01}
         value={volume}
         onChange={event => onVolumeChange(parseFloat(event.target.value))}
-        aria-label="음량 (master gain)"
+        aria-label="음량"
+        aria-valuetext={formatVolumePercent(volume, maxVolume)}
         className="compact-playback-volume w-20 shrink-0"
       />
-      <span className="hidden shrink-0 w-10 text-right text-xs font-mono tabular-nums text-ink-muted sm:inline">
-        {volume.toFixed(2)}
+      <span className="hidden shrink-0 w-10 text-right text-xs tabular-nums text-ink-muted sm:inline">
+        {formatVolumePercent(volume, maxVolume)}
       </span>
       {/* DOM order follows the second seek row only in the matching layout. */}
       {narrowDesktop && seekControl}

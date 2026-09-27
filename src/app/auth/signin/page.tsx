@@ -5,6 +5,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { toSafeReturnPath } from '@/lib/returnPath'
+import { getSigninCopy } from '@/lib/signinCopy'
 import { Button, CheckIcon, LogoMark, StatusState } from '@/components/ui'
 
 interface Provider {
@@ -23,6 +24,7 @@ function SignInContent() {
   // 복귀 대상은 쿼리로 들어온다. 검증 없이 리다이렉트하면 오픈 리다이렉트가 된다.
   const callbackUrl = toSafeReturnPath(searchParams.get('callbackUrl'))
   const error = searchParams.get('error')
+  const copy = getSigninCopy(callbackUrl)
 
   useEffect(() => {
     const fetchProviders = async () => {
@@ -92,20 +94,16 @@ function SignInContent() {
     <div className="min-h-screen flex items-center justify-center bg-canvas py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/*
-          일반 인증 화면이 아니라 업로드 여정의 다음 단계로 읽혀야 한다. 계정을 만드는 것이 목적이
-          아니라 악보를 맡기기 위한 절차임을 여기서 말한다.
+          일반 인증 화면이 아니라 사용자가 가려던 여정의 다음 단계로 읽혀야 한다. 제목과 이유는
+          돌아갈 경로가 정한다 — 업로드로 돌아가면 악보를 맡기기 위한 절차임을 여기서 말한다.
         */}
         <div>
           <LogoMark size={32} className="mx-auto text-accent" />
           <h1 className="mt-5 text-center text-2xl font-semibold tracking-tight text-ink">
-            악보를 맡기기 전에 로그인해 주세요
+            {copy.title}
           </h1>
           <ul className="mt-6 space-y-3">
-            {[
-              '변환한 악보를 계정에 저장해 다음에 다시 찾을 수 있습니다.',
-              '변환은 1~3분 걸립니다. 페이지를 닫아도 계속 처리됩니다.',
-              '내 악보는 공개로 설정하기 전까지 나에게만 보입니다.',
-            ].map((reason) => (
+            {copy.reasons.map((reason) => (
               <li key={reason} className="flex gap-3 text-sm text-ink-muted">
                 <CheckIcon size={18} className="mt-0.5 shrink-0 text-state-ready" />
                 <span>{reason}</span>

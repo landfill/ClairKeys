@@ -2,9 +2,46 @@ import { render, screen } from '@testing-library/react'
 import SheetMusicSearch from '../SheetMusicSearch'
 import { useSheetMusicSearch } from '@/hooks/useSheetMusicSearch'
 import { useCategories } from '@/hooks/useCategories'
+import { useSession } from 'next-auth/react'
 
 jest.mock('@/hooks/useSheetMusicSearch')
 jest.mock('@/hooks/useCategories')
+jest.mock('next-auth/react', () => ({ useSession: jest.fn() }))
+
+const mockUseSession = useSession as jest.MockedFunction<typeof useSession>
+const signedOut = () =>
+  mockUseSession.mockReturnValue({ data: null, status: 'unauthenticated', update: jest.fn() })
+const signedIn = () =>
+  mockUseSession.mockReturnValue({
+    data: { user: { id: 'owner', name: '업로더' }, expires: '2099-01-01' },
+    status: 'authenticated',
+    update: jest.fn(),
+  } as unknown as ReturnType<typeof useSession>)
+
+const result = {
+  id: 2,
+  title: '월광 소나타',
+  composer: '베토벤',
+  userId: 'owner',
+  categoryId: 7,
+  category: { id: 7, name: '클래식' },
+  isPublic: true,
+  animationDataUrl: 'https://example.test/2.json',
+  provenance: 'omr',
+  createdAt: new Date('2026-03-04T00:00:00Z'),
+  updatedAt: new Date('2026-03-04T00:00:00Z'),
+  owner: { id: 'owner', name: '업로더' },
+}
+
+const withResults = () => {
+  const current = mockUseSheetMusicSearch.getMockImplementation()?.({}) ?? mockUseSheetMusicSearch({})
+  mockUseSheetMusicSearch.mockReturnValue({
+    ...current,
+    data: { ...current.data!, sheetMusic: [result] as never, pagination: { total: 1, limit: 10, offset: 0, hasMore: false } },
+    hasResults: true,
+    total: 1,
+  })
+}
 
 const mockUseSheetMusicSearch = useSheetMusicSearch as jest.MockedFunction<typeof useSheetMusicSearch>
 const mockUseCategories = useCategories as jest.MockedFunction<typeof useCategories>
@@ -12,6 +49,7 @@ const mockUseCategories = useCategories as jest.MockedFunction<typeof useCategor
 describe('SheetMusicSearch request surface', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    signedOut()
     mockUseSheetMusicSearch.mockReturnValue({
       params: { isPublic: true, limit: 10 },
       data: {
@@ -41,5 +79,41 @@ describe('SheetMusicSearch request surface', () => {
 
     expect(screen.getByRole('option', { name: '클래식' })).toBeInTheDocument()
     expect(mockUseCategories).not.toHaveBeenCalled()
+  })
+
+  it('renders each result as a link to its sheet with the shared practice action', () => {
+    withResults()
+    render(<SheetMusicSearch />)
+
+    const link = screen.getByRole('link', { name: /월광 소나타/ })
+    expect(link).toHaveAttribute('href', '/sheet/2')
+    expect(link).toHaveTextContent('연습 시작 →')
+  })
+
+  it('keeps owner-only visibility controls away from signed-out readers', () => {
+    render(<SheetMusicSearch />)
+
+    expect(screen.queryByLabelText('공개 설정')).not.toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: '내 비공개만' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/비공개: /)).not.toBeInTheDocument()
+  })
+
+  it('still offers the visibility filter to a signed-in owner', () => {
+    signedIn()
+    render(<SheetMusicSearch />)
+
+    expect(screen.getByLabelText('공개 설정')).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: '내 비공개만' })).toBeInTheDocument()
+  })
+
+  it('uses design tokens instead of the legacy gray and blue palette', () => {
+    withResults()
+    const { container } = render(<SheetMusicSearch />)
+
+    const forbidden = /(^|\s)(bg-white|text-gray-\d{3}|border-gray-\d{3}|hover:border-gray-\d{3}|border-blue-\d{3}|focus:ring-blue-\d{3})(\s|$)/
+    const offenders = Array.from(container.querySelectorAll<HTMLElement>('[class]'))
+      .map((n) => n.className)
+      .filter((c) => typeof c === 'string' && forbidden.test(c))
+    expect(offenders).toEqual([])
   })
 })
