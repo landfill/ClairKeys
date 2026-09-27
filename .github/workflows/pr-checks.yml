@@ -82,6 +82,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # @prisma/client's postinstall generation depends on install order and can
+      # silently leave the ungenerated stub, which fails the type check on every
+      # Prisma type. Every other job generates explicitly; so does this one.
+      - name: Generate Prisma client
+        run: npx prisma generate
+
       - name: Run ESLint
         run: npm run lint
 
