@@ -14,6 +14,7 @@ import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { CompactPlaybackBar, PlaybackControls, TempoDisplay } from '@/components/playback'
 import { getActiveNotes } from '@/utils/visualUtils'
+import { annotationNotesFor, audibleNotesFor, hasBothHands, isPracticedNote, otherHand, type PracticeHand } from '@/utils/handPractice'
 import ScoreToggle from '@/components/playback/ScoreToggle'
 import ScorePanel from '@/components/playback/ScorePanel'
 import ScoreTimingNotice from '@/components/playback/ScoreTimingNotice'
@@ -76,6 +77,17 @@ export default function FallingNotesPlayer({
   // Convert canonical animation data to falling notes format
   const notes = useMemo(() => canonicalToFallingNotes(animationData), [animationData])
   const hasReleaseGuidance = useMemo(() => notes.some(note => note.keyRelease !== undefined), [notes])
+  // One-hand practice. The other hand stays on screen as faded context and,
+  // unless the reader silences it, keeps sounding as the accompaniment.
+  const offersHandChoice = useMemo(() => hasBothHands(notes), [notes])
+  const [practiceHand, setPracticeHand] = useState<PracticeHand>('both')
+  const [otherHandAudible, setOtherHandAudible] = useState(true)
+  const activePractice: PracticeHand = offersHandChoice ? practiceHand : 'both'
+  const audibleNotes = useMemo(
+    () => audibleNotesFor(notes, activePractice, otherHandAudible),
+    [notes, activePractice, otherHandAudible]
+  )
+  const annotationNotes = useMemo(() => annotationNotesFor(notes, activePractice), [notes, activePractice])
   
   // Use falling notes player hook for audio-visual synchronization
   const {
@@ -98,7 +110,7 @@ export default function FallingNotesPlayer({
     markLoopStart,
     markLoopEnd,
     clearLoop,
-  } = useFallingNotesPlayer(notes)
+  } = useFallingNotesPlayer(notes, { audibleNotes })
 
   // Constants
   const pxPerSec = PX_PER_SEC
@@ -278,19 +290,21 @@ export default function FallingNotesPlayer({
   // falling-note visualization. An effect would leave the keyboard one render
   // behind whenever the AudioContext clock advances.
   const activeKeys = useMemo(() => {
-    return new Set(getActiveNotes(notes, currentTime).map(note => note.midi))
-  }, [notes, currentTime])
+    return new Set(getActiveNotes(notes, currentTime)
+      .filter(note => isPracticedNote(note, activePractice))
+      .map(note => note.midi))
+  }, [notes, currentTime, activePractice])
   
   const activeFingers = useMemo(() => {
     const fingers = new Map<number, string>()
     if (showScore) for (const note of getActiveNotes(notes, currentTime)) {
-      if (!note.finger) continue
+      if (!note.finger || !isPracticedNote(note, activePractice)) continue
       const previous = fingers.get(note.midi)
       const finger = String(note.finger)
       fingers.set(note.midi, previous && previous !== finger ? `${previous}/${finger}` : finger)
     }
     return fingers
-  }, [notes, currentTime, showScore])
+  }, [notes, currentTime, showScore, activePractice])
 
   // Playback control handlers
   return (
@@ -417,6 +431,37 @@ export default function FallingNotesPlayer({
             />
           </div>
 
+          {offersHandChoice && (
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <div role="group" aria-label="연습할 손" className="inline-flex rounded-full bg-surface-muted p-1">
+                {([['both', '양손'], ['L', '왼손'], ['R', '오른손']] as const).map(([hand, label]) => (
+                  <button
+                    key={hand}
+                    type="button"
+                    aria-pressed={practiceHand === hand}
+                    onClick={() => setPracticeHand(hand)}
+                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                      practiceHand === hand ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {practiceHand !== 'both' && (
+                <label className="flex items-center gap-2 text-sm text-ink-muted">
+                  <input
+                    type="checkbox"
+                    checked={otherHandAudible}
+                    onChange={event => setOtherHandAudible(event.target.checked)}
+                    className="h-4 w-4 accent-accent"
+                  />
+                  다른 손 소리 듣기
+                </label>
+              )}
+            </div>
+          )}
+
           {/* The raw gain readout was a tuning aid for DEFAULT_MASTER_GAIN; that value is
               settled, so readers see a share of the range instead (D-080). */}
           <div className="mb-4 flex items-center gap-3">
@@ -483,7 +528,7 @@ export default function FallingNotesPlayer({
         </ul>
       )}
       <ScoreToggle available={Boolean(scoreUrl)} onChange={setShowScore} />
-      {showScore && scoreUrl && <ScorePanel url={scoreUrl} notes={notes} currentTime={currentTime}
+      {showScore && scoreUrl && <ScorePanel url={scoreUrl} notes={annotationNotes} currentTime={currentTime}
         timingReferenceBpm={animationData.timingReferenceBpm}
         height={scoreGeometry?.scoreHeight} contentFits={scoreGeometry?.contentFits}
         onRequiredHeight={measureScore} />}
@@ -525,6 +570,7 @@ export default function FallingNotesPlayer({
             pxPerSec={pxPerSec}
             height={fallingHeight}
             layout={layout}
+            dimHand={otherHand(activePractice)}
           />
 
           {/* Hit Line */}

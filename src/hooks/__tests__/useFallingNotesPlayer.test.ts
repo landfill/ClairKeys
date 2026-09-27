@@ -196,3 +196,62 @@ describe('useFallingNotesPlayer practice session', () => {
     expect(result.current.isSessionActive).toBe(true)
   })
 })
+
+describe('useFallingNotesPlayer audible notes', () => {
+  const both: FallingNote[] = [
+    { midi: 72, start: 0, duration: 10, hand: 'R' },
+    { midi: 48, start: 0, duration: 10, hand: 'L' },
+  ]
+  const rightOnly = [both[0]]
+
+  it('schedules only the audible notes while timing still follows the whole score', async () => {
+    const hook = renderHook(() => useFallingNotesPlayer(both, { audibleNotes: rightOnly }))
+    await act(async () => { await hook.result.current.play() })
+    expect(mockAudio.startAudio.mock.calls[0][0]).toBe(rightOnly)
+    expect(hook.result.current.totalLength).toBe(10)
+  })
+
+  it('restarts the sounding audio from the playhead when the audible set changes', async () => {
+    const hook = renderHook(({ audible }) => useFallingNotesPlayer(both, { audibleNotes: audible }), {
+      initialProps: { audible: both },
+    })
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(3)
+    mockAudio.startAudio.mockClear()
+
+    await act(async () => { hook.rerender({ audible: rightOnly }) })
+
+    expect(mockAudio.stopAudio).toHaveBeenCalled()
+    expect(mockAudio.startAudio).toHaveBeenCalledTimes(1)
+    expect(mockAudio.startAudio.mock.calls[0][0]).toBe(rightOnly)
+    expect(mockAudio.startAudio.mock.calls[0][1]).toBe(3)
+    expect(hook.result.current.isPlaying).toBe(true)
+  })
+
+  it('does not touch the audio while stopped', async () => {
+    const hook = renderHook(({ audible }) => useFallingNotesPlayer(both, { audibleNotes: audible }), {
+      initialProps: { audible: both },
+    })
+    await act(async () => { hook.rerender({ audible: rightOnly }) })
+    expect(mockAudio.startAudio).not.toHaveBeenCalled()
+  })
+
+  it('starts with the latest audible set when it changed while samples were loading', async () => {
+    let finish: (started: boolean) => void = () => {}
+    mockAudio.startAudio.mockImplementationOnce((_notes: FallingNote[], offset: number) => {
+      mockClock = offset
+      return new Promise<boolean>(resolve => { finish = resolve })
+    })
+    const hook = renderHook(({ audible }) => useFallingNotesPlayer(both, { audibleNotes: audible }), {
+      initialProps: { audible: both },
+    })
+    let playing: Promise<boolean> = Promise.resolve(false)
+    act(() => { playing = hook.result.current.play() })
+    await act(async () => { hook.rerender({ audible: rightOnly }) })
+    await act(async () => { finish(true); await playing })
+
+    const last = mockAudio.startAudio.mock.calls.at(-1)!
+    expect(last[0]).toBe(rightOnly)
+    expect(hook.result.current.isPlaying).toBe(true)
+  })
+})

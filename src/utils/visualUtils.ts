@@ -73,7 +73,8 @@ export function notesToVisualNotes(
       color,
       z: zIndex,
       finger: note.finger,
-      hand: note.hand
+      hand: note.hand,
+      handSource: note.handSource
     });
   }
   

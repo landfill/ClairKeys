@@ -21,8 +21,12 @@ const mockPlayerState = {
   setVolume: jest.fn(),
 }
 
+const mockHookCalls: unknown[][] = []
 jest.mock('@/hooks/useFallingNotesPlayer', () => ({
-  useFallingNotesPlayer: () => mockPlayerState,
+  useFallingNotesPlayer: (...args: unknown[]) => {
+    mockHookCalls.push(args)
+    return mockPlayerState
+  },
 }))
 
 /** Never played, or stopped: the setup screen. */
@@ -190,6 +194,51 @@ describe('FallingNotesPlayer', () => {
   // the keyboard out as a column. A separate `height: 100%` wrapper reads as
   // `auto` the moment its parent is sized by flex instead of a pixel height,
   // which collapses the falling area to 0 and lifts the keyboard to the top.
+  describe('hand practice', () => {
+    const twoHands: CanonicalAnimationData = {
+      ...animationData,
+      notes: [
+        { midi: 72, start: 1, duration: 1, hand: 'R' },
+        { midi: 48, start: 1, duration: 1, hand: 'L' },
+      ],
+    }
+    const lastAudible = () => (mockHookCalls[mockHookCalls.length - 1][1] as { audibleNotes: { midi: number }[] }).audibleNotes
+
+    it('offers no hand choice for a score that has only one hand', () => {
+      setIdle()
+      // Unassigned notes get a hand from the fingering heuristic, so the
+      // single-hand score has to say so explicitly.
+      const rightHandOnly = { ...animationData, notes: animationData.notes.map(note => ({ ...note, hand: 'R' as const })) }
+      render(<FallingNotesPlayer animationData={rightHandOnly} />)
+      expect(screen.queryByRole('group', { name: '연습할 손' })).not.toBeInTheDocument()
+    })
+
+    it('narrows the keyboard to the practised hand and keeps the accompaniment audible by default', () => {
+      setIdle()
+      mockPlayerState.currentTime = 1.5
+      render(<FallingNotesPlayer animationData={twoHands} />)
+
+      expect(screen.getByTestId('active-keys')).toHaveTextContent('72,48')
+      fireEvent.click(screen.getByRole('button', { name: '오른손' }))
+
+      expect(screen.getByRole('button', { name: '오른손' })).toHaveAttribute('aria-pressed', 'true')
+      expect(screen.getByTestId('active-keys')).toHaveTextContent(/^72$/)
+      expect(lastAudible().map(note => note.midi)).toEqual([72, 48])
+    })
+
+    it('silences the other hand only when asked', () => {
+      setIdle()
+      render(<FallingNotesPlayer animationData={twoHands} />)
+      fireEvent.click(screen.getByRole('button', { name: '왼손' }))
+      fireEvent.click(screen.getByRole('checkbox', { name: '다른 손 소리 듣기' }))
+
+      expect(lastAudible().map(note => note.midi)).toEqual([48])
+      fireEvent.click(screen.getByRole('button', { name: '양손' }))
+      expect(lastAudible().map(note => note.midi)).toEqual([72, 48])
+      expect(screen.queryByRole('checkbox', { name: '다른 손 소리 듣기' })).not.toBeInTheDocument()
+    })
+  })
+
   describe('resuming where the reader stopped', () => {
     const key = 'clairkeys.resume.7'
     beforeEach(() => {
