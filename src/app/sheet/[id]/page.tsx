@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
 import { Button, Card, Loading, StatusState } from '@/components/ui'
+import { resumeKeyFor } from '@/utils/practiceResume'
 import LoginButton from '@/components/auth/LoginButton'
 import FallingNotesPlayer from '@/components/animation/FallingNotesPlayer'
 import DemoProvenanceNotice from '@/components/sheet/DemoProvenanceNotice'
@@ -174,6 +175,7 @@ export default function SheetMusicPage() {
             animationData={animationData} 
             className={isSessionActive ? '' : 'mb-8'}
             onSessionChange={setIsSessionActive}
+            resumeKey={resumeKeyFor(id)}
           />
 
           {/* Sheet Music Info */}

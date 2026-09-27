@@ -175,6 +175,85 @@ describe('FallingNotesPlayer', () => {
   // the keyboard out as a column. A separate `height: 100%` wrapper reads as
   // `auto` the moment its parent is sized by flex instead of a pixel height,
   // which collapses the falling area to 0 and lifts the keyboard to the top.
+  describe('resuming where the reader stopped', () => {
+    const key = 'clairkeys.resume.7'
+    beforeEach(() => {
+      localStorage.clear()
+      mockPlayerState.totalLength = 120
+      mockPlayerState.seek.mockClear().mockResolvedValue(undefined)
+    })
+    afterEach(() => { mockPlayerState.totalLength = 3 })
+
+    it('offers the saved position on the setup screen and plays from it', async () => {
+      localStorage.setItem(key, JSON.stringify({ time: 45, savedAt: '2026-09-27T00:00:00Z' }))
+      setIdle()
+      render(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+
+      expect(screen.getByRole('region', { name: '이어서 연습' })).toHaveTextContent('0:45')
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: '0:45부터 이어서 연습' })) })
+      expect(mockPlayerState.seek).toHaveBeenCalledWith(45)
+      expect(mockPlayerState.play).toHaveBeenCalledTimes(1)
+    })
+
+    it('withdraws the offer once a run starts another way', () => {
+      localStorage.setItem(key, JSON.stringify({ time: 45, savedAt: '' }))
+      setIdle()
+      const { rerender } = render(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+      mockPlayerState.isSessionActive = true
+      mockPlayerState.isPlaying = true
+      rerender(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+      setIdle()
+      rerender(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+      expect(screen.queryByRole('region', { name: '이어서 연습' })).not.toBeInTheDocument()
+    })
+
+    it('forgets the position when the reader starts over', () => {
+      localStorage.setItem(key, JSON.stringify({ time: 45, savedAt: '' }))
+      setIdle()
+      render(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+
+      fireEvent.click(screen.getByRole('button', { name: '처음부터' }))
+      expect(screen.queryByRole('region', { name: '이어서 연습' })).not.toBeInTheDocument()
+      expect(localStorage.getItem(key)).toBeNull()
+    })
+
+    it('saves the position while practising and when the page is hidden', () => {
+      mockPlayerState.currentTime = 12.3
+      const { rerender } = render(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+      expect(JSON.parse(localStorage.getItem(key)!).time).toBe(12.3)
+
+      // Within the same five seconds nothing is rewritten.
+      mockPlayerState.currentTime = 13
+      rerender(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+      expect(JSON.parse(localStorage.getItem(key)!).time).toBe(12.3)
+
+      Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' })
+      act(() => { document.dispatchEvent(new Event('visibilitychange')) })
+      Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' })
+      expect(JSON.parse(localStorage.getItem(key)!).time).toBe(13)
+      mockPlayerState.currentTime = 1.5
+    })
+
+    it('does not overwrite the position with the reset to zero after a stop, and forgets a finished run', () => {
+      mockPlayerState.currentTime = 50
+      const { rerender } = render(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+      setIdle()
+      mockPlayerState.currentTime = 0
+      rerender(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+      expect(JSON.parse(localStorage.getItem(key)!).time).toBe(50)
+
+      mockPlayerState.isPlaying = true
+      mockPlayerState.isSessionActive = true
+      mockPlayerState.currentTime = 118
+      rerender(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+      setIdle()
+      mockPlayerState.currentTime = 0
+      rerender(<FallingNotesPlayer animationData={animationData} resumeKey={key} />)
+      expect(localStorage.getItem(key)).toBeNull()
+      mockPlayerState.currentTime = 1.5
+    })
+  })
+
   describe('playback geometry', () => {
     const readColumn = () => {
       const fallingArea = screen.getByTestId('visual-playhead').parentElement!

@@ -3045,3 +3045,17 @@
 - Scope-risk: narrow
 - Reversibility: clean
 - Related: phases/UI-2026-playback-mode-clarity.md, D-019, #177의 별도 UI 주석
+
+## D-084: 이어서 연습할 위치는 서버가 아니라 이 브라우저에만 기억한다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT practice-resume branch; merge pending
+- Context: 마지막 위치를 기억하는 기능은 로그인하지 않은 공개 악보 방문자에게도 필요하다. 서버 저장은 로그인·
+  API·DB 쓰기와 삭제 정합성(현재 `PracticeSession` FK는 `RESTRICT`)을 함께 요구한다.
+- Decision: 악보별 `clairkeys.resume.<id>` 키에 위치만 저장한다. 저장소가 막혀 있거나 값이 손상되면 기능만
+  빠지고 페이지는 정상 동작한다. 연습 기록(서버)은 별도 결정·PR로 다룬다.
+- Rejected: `PracticeSession`에 위치를 저장 | 비로그인 방문자를 제외하고, 삭제 정합성 수정 없이 쓰면 악보 삭제가 실패한다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Related: phases/FEAT-practice-resume.md
