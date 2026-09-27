@@ -501,3 +501,54 @@ describe('useFallingNotesPlayer wait mode inside an A-B loop', () => {
     expect(mockAudio.startAudio.mock.calls[0]?.[1]).toBe(1.5)
   })
 })
+
+describe('useFallingNotesPlayer wait mode press timing', () => {
+  const piece: FallingNote[] = [
+    { midi: 60, start: 1, duration: 0.2 },
+    { midi: 64, start: 2, duration: 0.2 },
+    { midi: 67, start: 2, duration: 0.2 },
+  ]
+  const waitSteps = [{ time: 1, pitches: [60] }, { time: 2, pitches: [64, 67] }]
+  const setup = () => renderHook(() => useFallingNotesPlayer(piece, { waitSteps }))
+
+  it('keeps a press that lands on the onset before the frame installs the wait', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(0.9)
+    mockClock = 1.02 // the clock crossed the onset; no frame has run yet
+    await act(async () => { expect(await hook.result.current.pressKey(60)).toBe(true) })
+    await frameAt(1.05)
+    expect(hook.result.current.waitingFor).toBeNull()
+    await frameAt(2.1)
+    expect(hook.result.current.waitingFor).toEqual([64, 67])
+  })
+
+  it('accepts a press slightly before the note reaches the line', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(0.85)
+    await act(async () => { expect(await hook.result.current.pressKey(60)).toBe(true) })
+    await frameAt(1.01)
+    expect(hook.result.current.waitingFor).toBeNull()
+  })
+
+  it('does not take a press far ahead of its step', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(0.2)
+    await act(async () => { expect(await hook.result.current.pressKey(60)).toBe(false) })
+    await frameAt(1.01)
+    expect(hook.result.current.waitingFor).toEqual([60])
+  })
+
+  it('counts both keys of a chord delivered in the same instant', async () => {
+    const hook = setup()
+    await act(async () => { await hook.result.current.play() })
+    await frameAt(1.01)
+    await act(async () => { await hook.result.current.pressKey(60) })
+    await frameAt(2.05)
+    expect(hook.result.current.waitingFor).toEqual([64, 67])
+    await act(async () => { await Promise.all([hook.result.current.pressKey(64), hook.result.current.pressKey(67)]) })
+    expect(hook.result.current.waitingFor).toBeNull()
+  })
+})

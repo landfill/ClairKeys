@@ -38,6 +38,13 @@ const NO_CLICKS: MetronomeClick[] = []
 const JUST_BEFORE = 1e-6
 
 /**
+ * How early a press may come for the step ahead. Readers press as the note
+ * reaches the line, so a press can land just before the onset, or after it
+ * but before the next frame has installed the wait; neither may be lost.
+ */
+export const EARLY_PRESS_SEC = 0.25
+
+/**
  * Main hook for falling notes player with audio-visual synchronization
  * Based on MVP implementation for precise timing
  */
@@ -68,6 +75,10 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
   const [waiting, setWaiting] = useState<{ step: WaitStep; pressed: Set<number> } | null>(null)
   const waitingRef = useRef(waiting)
   waitingRef.current = waiting
+  // Presses for the step ahead that came before its wait was installed.
+  const armedRef = useRef<{ time: number; pressed: Set<number> } | null>(null)
+  const playingRef = useRef(isPlaying)
+  playingRef.current = isPlaying
 
   const latestAudible = useRef(audibleNotes)
   latestAudible.current = audibleNotes
@@ -169,6 +180,7 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
     // count-in returns to the resume point and the next play counts in again.
     const currentAudioTime = waitingRef.current ? waitingRef.current.step.time : playheadNow()
     setWaiting(null)
+    armedRef.current = null
     clearCountIn()
     setIsPlaying(false)
     stopAudio()
@@ -181,6 +193,7 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
    */
   const handleStop = useCallback(() => {
     playedThroughRef.current = Number.NEGATIVE_INFINITY
+    armedRef.current = null
     setWaiting(null)
     clearCountIn()
     setIsPlaying(false)
@@ -195,6 +208,7 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
   const handleSeek = useCallback(async (newTime: number) => {
     const clampedTime = Math.max(0, Math.min(newTime, totalLength))
     playedThroughRef.current = clampedTime - JUST_BEFORE
+    armedRef.current = null
     setWaiting(null)
     clearCountIn()
     if (!isPlaying) stopAudio()
@@ -286,10 +300,29 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
    */
   const pressKey = useCallback(async (midi: number): Promise<boolean> => {
     const current = waitingRef.current
-    if (!current || !current.step.pitches.includes(midi)) return false
+    if (!current) {
+      // Not waiting yet: arm the step ahead if the press is close enough to it.
+      if (!waitSteps?.length || !playingRef.current) return false
+      const index = nextWaitStep(waitSteps, playedThroughRef.current)
+      const step = index >= 0 ? waitSteps[index] : null
+      if (!step || !step.pitches.includes(midi) || getCurrentTime() < step.time - EARLY_PRESS_SEC) return false
+      const armed = armedRef.current?.time === step.time ? armedRef.current : { time: step.time, pressed: new Set<number>() }
+      armed.pressed.add(midi)
+      armedRef.current = armed
+      // Complete before it was reached: the frame loop passes it without stopping.
+      if (remainingPitches(step.pitches, armed.pressed).length === 0) {
+        playedThroughRef.current = step.time
+        armedRef.current = null
+      }
+      return true
+    }
+    if (!current.step.pitches.includes(midi)) return false
     const pressed = new Set(current.pressed).add(midi)
     if (remainingPitches(current.step.pitches, pressed).length > 0) {
-      setWaiting({ step: current.step, pressed })
+      // Synchronously, so a chord's note-ons delivered together all count.
+      const next = { step: current.step, pressed }
+      waitingRef.current = next
+      setWaiting(next)
       return true
     }
     playedThroughRef.current = current.step.time
@@ -298,7 +331,7 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
     const started = await startAudio(audibleNotes, current.step.time, tempoScale, true, { clicks })
     if (!started) setIsPlaying(false)
     return true
-  }, [audibleNotes, clicks, tempoScale, startAudio])
+  }, [waitSteps, audibleNotes, clicks, tempoScale, getCurrentTime, startAudio])
 
   /**
    * Change look ahead time
@@ -388,7 +421,10 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
           stopAudio()
           setOffsetTime(step.time)
           setCurrentTime(step.time)
-          const next = { step, pressed: new Set<number>() }
+          // Keep any keys already pressed for this step (see EARLY_PRESS_SEC).
+          const armed = armedRef.current?.time === step.time ? armedRef.current.pressed : new Set<number>()
+          armedRef.current = null
+          const next = { step, pressed: armed }
           waitingRef.current = next
           setWaiting(next)
           return

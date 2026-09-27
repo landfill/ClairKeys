@@ -489,6 +489,29 @@ describe('FallingNotesPlayer', () => {
     })
   })
 
+  describe('practice time in wait mode', () => {
+    it('does not count time stopped at a wait prompt as practice', () => {
+      let now = 0
+      const clock = jest.spyOn(performance, 'now').mockImplementation(() => now)
+      const onPracticeRun = jest.fn()
+      mockPlayerState.isPlaying = true
+      mockPlayerState.isSessionActive = true
+      mockPlayerState.waitingFor = null
+      const { rerender } = render(<FallingNotesPlayer animationData={animationData} onPracticeRun={onPracticeRun} />)
+      now = 20_000
+      mockPlayerState.waitingFor = [60] // stopped at a prompt for a minute
+      rerender(<FallingNotesPlayer animationData={animationData} onPracticeRun={onPracticeRun} />)
+      now = 80_000
+      mockPlayerState.waitingFor = null
+      rerender(<FallingNotesPlayer animationData={animationData} onPracticeRun={onPracticeRun} />)
+      now = 90_000
+      setIdle()
+      rerender(<FallingNotesPlayer animationData={animationData} onPracticeRun={onPracticeRun} />)
+      expect(onPracticeRun.mock.calls[0][0].durationSeconds).toBe(30)
+      clock.mockRestore()
+    })
+  })
+
   describe('playback geometry', () => {
     const readColumn = () => {
       const fallingArea = screen.getByTestId('visual-playhead').parentElement!

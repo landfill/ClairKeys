@@ -346,7 +346,8 @@ export default function FallingNotesPlayer({
     if (!started && !isSessionActive) orientation.exit()
   }, [isSessionActive, orientation, play])
 
-  usePracticeReport({ isPlaying, isSessionActive, currentTime, totalLength, onReport: onPracticeRun })
+  // Practice time is time the music runs (D-085); a wait prompt stops the clock.
+  usePracticeReport({ isPlaying: isPlaying && !waitingFor, isSessionActive, currentTime, totalLength, onReport: onPracticeRun })
 
   const resume = usePracticeResume(resumeKey, { currentTime, isPlaying, isSessionActive, totalLength })
   const handleResume = useCallback(async () => {
