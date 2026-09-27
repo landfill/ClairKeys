@@ -14,7 +14,8 @@ Base: 2026-09-27 main `8563266`.
 1. 단축키 판정(`resolvePlaybackShortcut`)과 훅의 포커스 규칙 테스트, 플레이어 통합 테스트를 먼저 실패시킨다.
 2. `usePlaybackShortcuts`를 추가하고 `FallingNotesPlayer`에 연결한다. 레거시 `useKeyboardShortcuts`
    (레거시 `AnimationPlayer` 전용)는 바꾸지 않는다.
-3. 재생 준비 화면에 키보드 사용자용 안내를 둔다(`pointer: fine`에서만 표시).
+3. 재생 준비 화면에 키보드 사용자용 안내를 둔다(터치 기기 `pointer: coarse`에서만 숨김. 키보드 전용 PC는
+   `pointer: none`이므로 표시한다).
 4. 실제 브라우저 E2E로 스크롤 방지와 포커스된 컨트롤의 키 보존을 확인한다.
 
 ## Completion criteria

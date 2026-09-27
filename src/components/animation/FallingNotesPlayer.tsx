@@ -396,9 +396,10 @@ export default function FallingNotesPlayer({
           '샘플을 불러오지 못해 합성음으로 재생합니다.'}
       </div>
 
-      {/* Keyboard users only: a touch screen has no space bar to press. */}
+      {/* Hidden only on touch screens, which have no space bar to press. A
+          keyboard-only PC reports `pointer: none`, as ScoreToggle also allows. */}
       {!isSessionActive && (
-        <p role="note" aria-label="키보드 단축키" className="mb-2 hidden text-xs text-ink-muted pointer-fine:block">
+        <p role="note" aria-label="키보드 단축키" className="mb-2 text-xs text-ink-muted pointer-coarse:hidden">
           <kbd className="rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">Space</kbd> 재생·일시정지
           <span aria-hidden="true"> · </span>
           <kbd className="rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">←</kbd>

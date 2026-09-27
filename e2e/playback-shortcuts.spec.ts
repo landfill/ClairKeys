@@ -86,3 +86,9 @@ test('a focused control keeps its own keys', async ({ page }, info) => {
   await page.waitForTimeout(500)
   await expect(page.getByTestId('compact-playback-bar')).toHaveCount(0)
 })
+
+test('keeps the keyboard hint off touch screens', async ({ page }, info) => {
+  test.skip(!info.project.name.startsWith('Mobile'), 'only the touch projects report a coarse pointer')
+  await prepare(page)
+  await expect(page.getByRole('note', { name: '키보드 단축키' })).toBeHidden()
+})
