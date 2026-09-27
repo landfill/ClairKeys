@@ -29,6 +29,11 @@ export default function SheetMusicSearch({
   // private count mean nothing to a signed-out reader.
   const { status } = useSession()
   const isSignedIn = status === 'authenticated'
+  // Losing the session hides the filter; a leftover private choice would keep
+  // requesting results that now answer 401, with no control left to undo it.
+  useEffect(() => {
+    if (status === 'unauthenticated' && publicFilter !== true) setPublicFilter(true)
+  }, [status, publicFilter])
 
   const {
     data,

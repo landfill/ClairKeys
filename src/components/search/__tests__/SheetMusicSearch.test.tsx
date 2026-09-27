@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import SheetMusicSearch from '../SheetMusicSearch'
 import { useSheetMusicSearch } from '@/hooks/useSheetMusicSearch'
 import { useCategories } from '@/hooks/useCategories'
@@ -115,5 +115,18 @@ describe('SheetMusicSearch request surface', () => {
       .map((n) => n.className)
       .filter((c) => typeof c === 'string' && forbidden.test(c))
     expect(offenders).toEqual([])
+  })
+
+  it('falls back to public results when the session is lost with the private filter selected', () => {
+    signedIn()
+    const { rerender } = render(<SheetMusicSearch />)
+    fireEvent.change(screen.getByLabelText('공개 설정'), { target: { value: 'false' } })
+    const updateParams = mockUseSheetMusicSearch.mock.results.at(-1)!.value.updateParams as jest.Mock
+    expect(updateParams).toHaveBeenLastCalledWith(expect.objectContaining({ isPublic: false }))
+
+    signedOut()
+    rerender(<SheetMusicSearch />)
+    // The filter is hidden now; a private request would only return 401.
+    expect(updateParams).toHaveBeenLastCalledWith(expect.objectContaining({ isPublic: true }))
   })
 })
