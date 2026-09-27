@@ -7,6 +7,7 @@ import { BOX_BORDER, PX_PER_SEC, planPlaybackGeometry, planScoreAwareGeometry } 
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
 import { useFallingNotesPlayer } from '@/hooks/useFallingNotesPlayer'
 import { usePlaybackOrientation } from '@/hooks/usePlaybackOrientation'
+import { usePracticeReport, type PracticeRun } from '@/hooks/usePracticeReport'
 import { usePracticeResume } from '@/hooks/usePracticeResume'
 import { SEEK_STEP_SEC, usePlaybackShortcuts } from '@/hooks/usePlaybackShortcuts'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
@@ -82,11 +83,14 @@ export default function FallingNotesPlayer({
   className = '',
   onSessionChange,
   scoreUrl,
+  onPracticeRun,
   resumeKey,
 }: {
   animationData: CanonicalAnimationData
   className?: string
   scoreUrl?: string
+  /** Receives each finished practice run; omitted, nothing is measured for anyone. */
+  onPracticeRun?: (run: PracticeRun, context: { leavingPage: boolean }) => void
   /** Browser storage key for this piece's last position; omitted, nothing is remembered. */
   resumeKey?: string
   /**
@@ -315,6 +319,8 @@ export default function FallingNotesPlayer({
     const started = await play()
     if (!started && !isSessionActive) orientation.exit()
   }, [isSessionActive, orientation, play])
+
+  usePracticeReport({ isPlaying, isSessionActive, currentTime, totalLength, onReport: onPracticeRun })
 
   const resume = usePracticeResume(resumeKey, { currentTime, isPlaying, isSessionActive, totalLength })
   const handleResume = useCallback(async () => {
