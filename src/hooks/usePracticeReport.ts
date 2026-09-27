@@ -71,10 +71,18 @@ export function usePracticeReport({
   }, [isPlaying, isSessionActive])
 
   useEffect(() => {
+    // Both refs hold objects created once and never replaced.
+    const state = run.current
+    const flushRun = flush.current
     const hide = () => {
-      if (document.visibilityState === 'hidden' && run.current.active) flush.current(true)
+      if (document.visibilityState === 'hidden' && state.active) flushRun(true)
     }
     document.addEventListener('visibilitychange', hide)
-    return () => document.removeEventListener('visibilitychange', hide)
+    return () => {
+      document.removeEventListener('visibilitychange', hide)
+      // An in-app navigation (Back, a link) unmounts the player while the page
+      // stays visible, so neither signal above fires; the run ends here.
+      if (state.active) flushRun(true)
+    }
   }, [])
 }

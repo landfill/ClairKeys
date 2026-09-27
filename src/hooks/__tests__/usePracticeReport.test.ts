@@ -58,4 +58,13 @@ describe('usePracticeReport', () => {
     hook.rerender({ isPlaying: false, isSessionActive: false, currentTime: 0 })
     expect(onReport).toHaveBeenLastCalledWith({ durationSeconds: 15, completedPercentage: 20 }, { leavingPage: false })
   })
+
+  it('reports a run that ends by leaving the page in-app, where the page stays visible', () => {
+    const { onReport, hook } = setup()
+    hook.rerender({ isPlaying: true, isSessionActive: true, currentTime: 0 })
+    now = 25_000
+    hook.rerender({ isPlaying: true, isSessionActive: true, currentTime: 30 })
+    hook.unmount()
+    expect(onReport).toHaveBeenCalledWith({ durationSeconds: 25, completedPercentage: 30 }, { leavingPage: true })
+  })
 })

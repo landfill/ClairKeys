@@ -8,6 +8,8 @@ import { prisma } from '@/lib/prisma'
 
 // Mock dependencies
 jest.mock('next-auth')
+const mockDeleteFile = jest.fn()
+jest.mock('@/services/fileStorageService', () => ({ fileStorageService: { deleteFile: (...args: unknown[]) => mockDeleteFile(...args) } }))
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     sheetMusic: {
@@ -21,6 +23,7 @@ jest.mock('@/lib/prisma', () => ({
     practiceSession: {
       deleteMany: jest.fn()
     },
+    $queryRaw: jest.fn(),
     $transaction: jest.fn()
   }
 }))
@@ -310,12 +313,14 @@ describe('/api/sheet/[id]', () => {
       expect(data.message).toBe('Sheet music deleted successfully')
     })
 
-    it('removes every practice record of the sheet in the same transaction, since the FK restricts deletion', async () => {
+    it('locks the sheet, removes every practice record, then the sheet, and only then its file', async () => {
       mockGetServerSession.mockResolvedValue({ user: { id: 'user1' } } as any)
-      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue({ id: 1, userId: 'user1' } as any)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue({ id: 1, userId: 'user1', animationDataUrl: 'https://storage.example/animation-data/a.json' } as any)
       const order: string[] = []
+      ;(mockDb.$queryRaw as jest.Mock).mockImplementation(async () => { order.push('lock'); return [{ id: 1 }] })
       ;(mockDb.practiceSession.deleteMany as jest.Mock).mockImplementation(async () => { order.push('practice'); return { count: 2 } })
       ;(mockDb.sheetMusic.delete as jest.Mock).mockImplementation(async () => { order.push('sheet'); return {} })
+      mockDeleteFile.mockImplementation(async () => { order.push('file') })
 
       const response = await DELETE(new NextRequest('http://localhost:3000/api/sheet/1', { method: 'DELETE' }), { params: Promise.resolve({ id: '1' }) })
 
@@ -323,7 +328,21 @@ describe('/api/sheet/[id]', () => {
       expect(mockDb.$transaction).toHaveBeenCalledTimes(1)
       // Other readers' records of a public sheet go too: the sheet they belong to is gone.
       expect(mockDb.practiceSession.deleteMany).toHaveBeenCalledWith({ where: { sheetMusicId: 1 } })
-      expect(order).toEqual(['practice', 'sheet'])
+      // The row lock keeps a concurrent practice insert from slipping in between.
+      expect(order).toEqual(['lock', 'practice', 'sheet', 'file'])
+    })
+
+    it('keeps the file when the database deletion fails', async () => {
+      mockGetServerSession.mockResolvedValue({ user: { id: 'user1' } } as any)
+      ;(mockDb.sheetMusic.findUnique as jest.Mock).mockResolvedValue({ id: 1, userId: 'user1', animationDataUrl: 'https://storage.example/animation-data/a.json' } as any)
+      ;(mockDb.$queryRaw as jest.Mock).mockResolvedValue([{ id: 1 }])
+      ;(mockDb.practiceSession.deleteMany as jest.Mock).mockResolvedValue({ count: 0 })
+      ;(mockDb.sheetMusic.delete as jest.Mock).mockRejectedValue(new Error('db down'))
+
+      const response = await DELETE(new NextRequest('http://localhost:3000/api/sheet/1', { method: 'DELETE' }), { params: Promise.resolve({ id: '1' }) })
+
+      expect(response.status).toBe(500)
+      expect(mockDeleteFile).not.toHaveBeenCalled()
     })
 
     it('should deny access to non-owner', async () => {

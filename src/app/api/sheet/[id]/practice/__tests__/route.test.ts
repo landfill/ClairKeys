@@ -99,4 +99,18 @@ describe('GET /api/sheet/[id]/practice', () => {
     session.mockResolvedValue(null)
     expect((await GET(new NextRequest('http://localhost:3000/api/sheet/7/practice'), params())).status).toBe(401)
   })
+
+  it('hides the history of a sheet the reader can no longer play', async () => {
+    // Practised while public, then made private by its owner.
+    db.sheetMusic.findUnique.mockResolvedValue({ id: 7, userId: 'owner', isPublic: false })
+    expect((await GET(new NextRequest('http://localhost:3000/api/sheet/7/practice'), params())).status).toBe(404)
+    expect(db.practiceSession.aggregate).not.toHaveBeenCalled()
+  })
+})
+
+describe('POST racing a deletion', () => {
+  it('answers 404, not 500, when the sheet disappears before the insert lands', async () => {
+    db.practiceSession.create.mockRejectedValue(Object.assign(new Error('fk'), { code: 'P2003' }))
+    expect((await POST(post({ durationSeconds: 30, completedPercentage: 10 }), params())).status).toBe(404)
+  })
 })

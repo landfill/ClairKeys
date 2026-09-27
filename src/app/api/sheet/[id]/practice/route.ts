@@ -8,6 +8,17 @@ const MAX_RUN_SECONDS = 6 * 60 * 60
 
 const noStore = { 'Cache-Control': 'private, no-store' }
 
+/** A private sheet of someone else answers exactly as a missing one. */
+async function findPlayableSheet(sheetId: number, userId: string) {
+  const sheet = await prisma.sheetMusic.findUnique({
+    where: { id: sheetId },
+    select: { id: true, userId: true, isPublic: true },
+  })
+  return sheet && (sheet.isPublic || sheet.userId === userId) ? sheet : null
+}
+
+const notFound = () => NextResponse.json({ error: 'Sheet music not found' }, { status: 404, headers: noStore })
+
 async function readSheetId(params: Promise<{ id: string }>): Promise<number | null> {
   const { id } = await params
   const sheetId = Number(id)
@@ -39,13 +50,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   try {
-    const sheet = await prisma.sheetMusic.findUnique({
-      where: { id: sheetId },
-      select: { id: true, userId: true, isPublic: true },
-    })
-    if (!sheet || (!sheet.isPublic && sheet.userId !== userId)) {
-      return NextResponse.json({ error: 'Sheet music not found' }, { status: 404, headers: noStore })
-    }
+    if (!(await findPlayableSheet(sheetId, userId))) return notFound()
 
     const created = await prisma.practiceSession.create({
       data: {
@@ -58,6 +63,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     })
     return NextResponse.json({ id: created.id }, { status: 201, headers: noStore })
   } catch (error) {
+    // The sheet was deleted between the check and the insert (D-085 row lock).
+    if ((error as { code?: string })?.code === 'P2003') return notFound()
     console.error('Record practice run error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: noStore })
   }
@@ -73,6 +80,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (!sheetId) return NextResponse.json({ error: 'Valid sheet ID is required' }, { status: 400, headers: noStore })
 
   try {
+    // The same access rule as recording: history of a sheet the reader can no
+    // longer play must not reveal that the sheet still exists.
+    if (!(await findPlayableSheet(sheetId, userId))) return notFound()
     const summary = await prisma.practiceSession.aggregate({
       where: { userId, sheetMusicId: sheetId },
       _count: { _all: true },
