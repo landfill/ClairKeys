@@ -1,6 +1,6 @@
 # UI-2026 — 운영 사이트 점검에서 나온 화면 정리
 
-Status: `IN_PROGRESS` — branch `codex/ui-2026-review-design`.
+Status: `DONE` — PR #189 merged `c272c69` (2026-09-27~28, user-run merge after CI and review).
 Base: 2026-09-27 main `3df9702`.
 
 ## Objective

@@ -1,6 +1,6 @@
 # FEAT — 기다리기 모드와 MIDI 입력
 
-Status: `IN_PROGRESS` — branch `codex/feat-wait-mode-midi`.
+Status: `DONE` — PR #195 merged `1f92f61` (2026-09-27~28, user-run merge after CI and review).
 Base: 2026-09-27 main `2c30399`. 사용자가 2026-09-27 추천안(MIDI와 화면 건반 둘 다, 사용자가 낸 소리만)을 승인했다.
 
 ## Objective

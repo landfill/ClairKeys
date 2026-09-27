@@ -1,6 +1,6 @@
 # FEAT — 메트로놈과 시작 전 준비 박자
 
-Status: `IN_PROGRESS` — branch `codex/feat-metronome-count-in`.
+Status: `DONE` — PR #192 merged `9e257ad` (2026-09-27~28, user-run merge after CI and review).
 Base: 2026-09-27 main `5645b60`.
 
 ## Objective

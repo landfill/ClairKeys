@@ -4,45 +4,26 @@ Last updated: 2026-09-27 KST
 
 ## Current phase
 
-**운영 사이트 점검 후속 — IN_PROGRESS (2026-09-27).** 비로그인 PC·모바일 점검 결과 우선순위 결함 4건을
-이슈 [#185](https://github.com/landfill/ClairKeys/issues/185)(첫 재생 샘플 로딩 표시),
-[#186](https://github.com/landfill/ClairKeys/issues/186)(모바일 빠르기 표시가 노트 가림),
-[#187](https://github.com/landfill/ClairKeys/issues/187)(탐색·검색 API 약2초·중복 요청),
-[#188](https://github.com/landfill/ClairKeys/issues/188)(운영 콘솔 디버그 로그)로 등록했다(미착수).
-사용자 지시로 디자인·기능을 바로 진행해 PR 6개를 열었다. 모두 non-draft, 병합은 PR별 사용자 승인 대기.
+**운영 사이트 점검 후속 — DONE (2026-09-27~28).** 비로그인 PC·모바일 점검에서 나온 디자인 정리와 기능 추가를
+PR 8개로 모두 병합했다. 병합 명령은 auto mode 분류기 정책상 사용자가 실행했고, 에이전트가 병합 전 main 합침·충돌
+해결·재검증과 병합 후 확인·브랜치 정리를 맡았다.
 
-| PR | 내용 | 결정 | 리뷰 로그 |
+| PR | 내용 | 결정 | 병합 |
 |---|---|---|---|
-| [189](https://github.com/landfill/ClairKeys/pull/189) | 디자인 정리 + 로그인 후 보호 경로 복귀 결함 | D-080 | [PR-189](reviews/PR-189.md) |
-| [190](https://github.com/landfill/ClairKeys/pull/190) | 재생 키보드 단축키 | D-081 | [PR-190](reviews/PR-190.md) |
-| [191](https://github.com/landfill/ClairKeys/pull/191) | 한 손 연습 | D-082 | [PR-191](reviews/PR-191.md) |
-| [192](https://github.com/landfill/ClairKeys/pull/192) | 메트로놈·준비 박자 | D-083 | [PR-192](reviews/PR-192.md) |
-| [193](https://github.com/landfill/ClairKeys/pull/193) | 이어서 연습하기(브라우저 저장) | D-084 | [PR-193](reviews/PR-193.md) |
-| [194](https://github.com/landfill/ClairKeys/pull/194) | 연습 기록 + 기록 있는 악보 삭제 실패 방지 | D-085 | [PR-194](reviews/PR-194.md) |
-| [195](https://github.com/landfill/ClairKeys/pull/195) | 기다리기 모드(MIDI + 화면 건반) | D-086 | [PR-195](reviews/PR-195.md) |
+| [189](https://github.com/landfill/ClairKeys/pull/189) | 디자인 정리 + 로그인 후 보호 경로 복귀 결함 | D-080 | `c272c69` |
+| [196](https://github.com/landfill/ClairKeys/pull/196) | CI 타입 검사 전 Prisma 생성(간헐 필수 check 실패) | — | `cd426d2` |
+| [190](https://github.com/landfill/ClairKeys/pull/190) | 재생 키보드 단축키 | D-081 | `fa2b9f3` |
+| [193](https://github.com/landfill/ClairKeys/pull/193) | 이어서 연습하기(브라우저 저장) | D-084 | `621de94` |
+| [191](https://github.com/landfill/ClairKeys/pull/191) | 한 손 연습 + seek 포커스 경쟁 수정 | D-082 | `88f600f` |
+| [192](https://github.com/landfill/ClairKeys/pull/192) | 메트로놈·준비 박자(재예약 경로 통합) | D-083 | `9e257ad` |
+| [194](https://github.com/landfill/ClairKeys/pull/194) | 연습 기록 + 기록 있는 악보 삭제 실패 방지 | D-085 | `4e228e2` |
+| [195](https://github.com/landfill/ClairKeys/pull/195) | 기다리기 모드(MIDI+화면 건반), 전 기능과 결합 | D-086 | `1f92f61` |
 
-189~194의 Codex 지적은 모두 FIXED/REJECTED(근거 회신) 후 스레드 해결.
-**2026-09-27 사용자가 병합 순서 189 → 190 → 193 → 191 → 192 → 194를 승인했다.** 189 병합 직전 재확인(head `d6b0663`,
-CI 16 pass, MERGEABLE/CLEAN, 미해결 스레드 0) 후 `gh pr merge`를 실행했으나 Claude Code auto mode 분류기가
-"Merge Without Review"로 거부했다. 에이전트는 이를 우회하지 않는다. 사용자가 직접 병합하거나 해당 권한을 허용해야 한다.
-각 병합 뒤에는 다음 PR에 main을 합쳐 충돌 해결·재검증이 필요하다(에이전트가 수행 가능).
-진행: **189 MERGED `c272c69`**(사용자 직접 병합, 브랜치 정리 완료). 190은 main을 합친 head `38754cf`로 재검증 완료,
-CI 대기 후 사용자 병합 차례. 다음은 193.
-190 병합 시도는 base branch policy로 거부됐다: 필수 `Lint and Type Check`가 CI 환경 결함(생성되지 않은 Prisma stub)으로
-실패. 근본 수정 [PR196](https://github.com/landfill/ClairKeys/pull/196)(순서 밖 추가 PR, 사용자 승인 필요). 190은 workflow 종료 후
-실패 job 재실행으로 풀거나, 196 병합 후 main을 합쳐 푼다. → 사용자가 2번(196 먼저)을 선택, **196 MERGED `cd426d2`**,
-**190 MERGED `fa2b9f3`**(사용자 병합, 브랜치 정리 완료). **193 MERGED `621de94`**(브랜치 정리 완료). **191 MERGED `88f600f`**(결합 회귀였던 seek 포커스 유실 수정 포함, WebKit phone-portrait 간헐 실패 해소).
-**192 MERGED `9e257ad`**, **194 MERGED `4e228e2`**. 195는 main을 합쳐 모든 연습 기능과 결합하고 Codex 두 라운드(7건: 6 FIXED,
-1 REJECTED) + 경계 1건을 처리한 `c4f2f86`로 재검증 완료, CI 대기 후 병합 차례(마지막).
-에이전트의 병합과 `.claude/settings.local.json` 권한 추가는 auto mode 분류기가 거부(Merge Without Review / Self-Modification)해,
-병합 명령은 사용자가 실행한다. 에이전트는 병합 전 준비·검증과 병합 후 확인·정리를 맡는다.
-여섯 PR은 `FallingNotesPlayer.tsx`·`DECISIONS.md` 끝 등을 함께 수정한다. 결정 번호 D-080~085는 PR별로 겹치지
-않게 붙였다. 병합은 한 번에 하나씩, 다음 PR에 main을 합쳐 충돌 해결·재검증한 뒤 진행한다.
-홈 샘플을 실제 재생기로 바꾸는 안은 2026-08-30 사용자 결정(정적 예시)과 충돌해 보류. 대기 모드·MIDI는 사용자가
-추천안을 승인해 PR195로 구현했다(한 손 연습과의 결합은 191 병합 후 후속). Vercel Preview는 배포 보호 로그인이 필요해 에이전트가 열지 못한다. 로컬 서버 정리는
-`lsof -ti tcp:3000 | xargs kill`(`next-server`). 로컬 시스템 Python 3.14에는 fastapi가 없어 Python bridge Jest는
-`uv venv -p 3.10` + `omr-service/requirements-ci.txt`로 실행한다. WebKit phone-portrait seek focus E2E는 main에서도
-간헐 실패한다(후속 후보).
+최종 main `1f92f61` 검증(2026-09-28): tsc 0 errors(`--incremental false`), lint clean, Jest 1242/1242(py3.10 venv),
+build, **Playwright 전체 372 pass / 27 skip / 0 fail**. 병합 커밋 사후 검사 build/tests/Lint/Security PASS(E2E 진행 중이었음),
+Vercel Production success. 운영 `/sheet/92`에서 안내 목록·음량 %·손 선택·메트로놈·준비 박자·기다리기 모드·단축키 안내·
+연습 기록 카드 노출 확인(비로그인). 로컬·원격 브랜치는 main만 남음. 리뷰·검증 근거는 각 `reviews/PR-*.md`,
+`validation/2026-09-27-*.md`.
 
 **공통 재생 모드 UI 명확화 — DONE, 병합 후 검사 중.** [PR184](https://github.com/landfill/ClairKeys/pull/184)
 non-draft head `be68745` (`a329dcd` 구현 + PR183 병합 main 반영). 사용자는 모드 UI가 특정 악보 문제가 아니라 실제 기능
@@ -114,6 +95,14 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 `docker volume inspect`로 보존을 확인했다. 이미지와 다른 Docker 리소스는 정리 범위에 넣지 않았다.
 
 ## Next action
+
+- 우선순위 결함 이슈 미착수: [#185](https://github.com/landfill/ClairKeys/issues/185) 첫 재생 샘플 로딩 표시,
+  [#186](https://github.com/landfill/ClairKeys/issues/186) 모바일 빠르기 표시 가림, [#187](https://github.com/landfill/ClairKeys/issues/187)
+  탐색·검색 API 약2초(운영 재확인 시에도 첫 로드 지연), [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그.
+- 사용자 결정 대기: 홈 샘플을 실제 재생기로 바꿀지(2026-08-30 정적 예시 결정과 충돌해 보류).
+- 실기기 미검증: 실제 MIDI 피아노·Chrome MIDI 권한 팝업, 로그인 상태 운영 연습 기록 쓰기, 클릭·반주 청취 레벨.
+- 후속 후보: 탐색 인기 순위(D-080, 연습 기록 신호 생김), 재생 중(압축 바) 손·메트로놈·기다리기 토글,
+  `PracticeSession` FK CASCADE migration(운영 DB 작업), 계정 삭제 시 기록 처리.
 
 - 사용자 승인 순서로 PR183 `4803bba` → PR184 `8bcfce8` 병합 완료. PR183 사후 검사6개 PASS. 두 작업 브랜치의 로컬·원격 tip이 최신 main 대비 고유0을 확인하고 원격→로컬 순서로 참조를 삭제했다. 이후 사용자가 `.gemini/`를 직접 삭제했고 부재를 확인했다. 현재 로컬·원격 모두 main만 있다. PR184 사후 검사 결과를 확인한다.
 

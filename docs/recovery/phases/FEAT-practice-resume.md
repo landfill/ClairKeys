@@ -1,6 +1,6 @@
 # FEAT — 이어서 연습하기
 
-Status: `IN_PROGRESS` — branch `codex/feat-practice-resume`.
+Status: `DONE` — PR #193 merged `621de94` (2026-09-27~28, user-run merge after CI and review).
 Base: 2026-09-27 main `5645b60`.
 
 ## Objective

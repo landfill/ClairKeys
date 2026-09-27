@@ -1,6 +1,6 @@
 # FEAT — 악보 재생 키보드 단축키
 
-Status: `IN_PROGRESS` — branch `codex/feat-playback-shortcuts`.
+Status: `DONE` — PR #190 merged `fa2b9f3` (2026-09-27~28, user-run merge after CI and review).
 Base: 2026-09-27 main `8563266`.
 
 ## Objective

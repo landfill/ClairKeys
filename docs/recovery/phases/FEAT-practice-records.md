@@ -1,6 +1,6 @@
 # FEAT — 연습 기록
 
-Status: `IN_PROGRESS` — branch `codex/feat-practice-records`.
+Status: `DONE` — PR #194 merged `4e228e2` (2026-09-27~28, user-run merge after CI and review).
 Base: 2026-09-27 main `5645b60`.
 
 ## Objective

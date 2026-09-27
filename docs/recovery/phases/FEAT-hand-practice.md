@@ -1,6 +1,6 @@
 # FEAT — 한 손 연습
 
-Status: `IN_PROGRESS` — branch `codex/feat-hand-practice`.
+Status: `DONE` — PR #191 merged `88f600f` (2026-09-27~28, user-run merge after CI and review).
 Base: 2026-09-27 main `5645b60`.
 
 ## Objective
