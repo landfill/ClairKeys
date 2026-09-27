@@ -26,6 +26,8 @@ Last updated: 2026-09-27 KST
 CI 16 pass, MERGEABLE/CLEAN, 미해결 스레드 0) 후 `gh pr merge`를 실행했으나 Claude Code auto mode 분류기가
 "Merge Without Review"로 거부했다. 에이전트는 이를 우회하지 않는다. 사용자가 직접 병합하거나 해당 권한을 허용해야 한다.
 각 병합 뒤에는 다음 PR에 main을 합쳐 충돌 해결·재검증이 필요하다(에이전트가 수행 가능).
+진행: **189 MERGED `c272c69`**(사용자 직접 병합, 브랜치 정리 완료). 190은 main을 합친 head `38754cf`로 재검증 완료,
+CI 대기 후 사용자 병합 차례. 다음은 193.
 여섯 PR은 `FallingNotesPlayer.tsx`·`DECISIONS.md` 끝 등을 함께 수정한다. 결정 번호 D-080~085는 PR별로 겹치지
 않게 붙였다. 병합은 한 번에 하나씩, 다음 PR에 main을 합쳐 충돌 해결·재검증한 뒤 진행한다.
 홈 샘플을 실제 재생기로 바꾸는 안은 2026-08-30 사용자 결정(정적 예시)과 충돌해 보류. 대기 모드·MIDI는 사용자가
