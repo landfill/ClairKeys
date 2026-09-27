@@ -291,27 +291,31 @@ export async function DELETE(
       )
     }
 
-    // Delete associated files first
+    // The practice-record FK is ON DELETE RESTRICT (001_init), so the records
+    // have to go first — every reader's, since a public sheet collects them
+    // from others too. The row lock comes first: a concurrent practice insert
+    // needs a key-share lock on this row, so it waits and then fails on the
+    // missing sheet instead of landing between the two deletes.
+    await prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "SheetMusic" WHERE id = ${sheetId} FOR UPDATE`
+      await tx.practiceSession.deleteMany({ where: { sheetMusicId: sheetId } })
+      await tx.sheetMusic.delete({ where: { id: sheetId } })
+    })
+
+    // Storage goes only after the database has let go of the sheet; a failed
+    // transaction must not leave a sheet whose animation can no longer load.
     if (existingSheet.animationDataUrl) {
       try {
-        // Extract file path from URL for deletion
         const url = new URL(existingSheet.animationDataUrl)
         const pathParts = url.pathname.split('/')
         const fileName = pathParts[pathParts.length - 1]
-        
-        // Delete from file storage
         const { fileStorageService } = await import('@/services/fileStorageService')
         await fileStorageService.deleteFile('animation-data', fileName)
       } catch (fileError) {
+        // The sheet is already gone; an orphaned file is the lesser failure.
         console.warn('Failed to delete animation data file:', fileError)
-        // Continue with database deletion even if file deletion fails
       }
     }
-
-    // Delete sheet music (cascade will handle practice sessions)
-    await prisma.sheetMusic.delete({
-      where: { id: sheetId }
-    })
 
     // Clear relevant caches
     sheetMusicCache.invalidateUser(existingSheet.userId)

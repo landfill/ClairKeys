@@ -1,16 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
 import { Button, Card, Loading, StatusState } from '@/components/ui'
+import { resumeKeyFor } from '@/utils/practiceResume'
 import LoginButton from '@/components/auth/LoginButton'
 import FallingNotesPlayer from '@/components/animation/FallingNotesPlayer'
 import DemoProvenanceNotice from '@/components/sheet/DemoProvenanceNotice'
 import type { SheetMusicProvenance } from '@prisma/client'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import { normalizeAnimationData, AnimationContractError } from '@/utils/animationContract'
+import type { PracticeRun } from '@/hooks/usePracticeReport'
+import { formatPracticeSummary, type PracticeSummary } from '@/utils/practiceSummary'
 
 interface SheetMusic {
   id: string
@@ -35,6 +39,32 @@ export default function SheetMusicPage() {
   // The practice session, not the sounding score: a pause keeps the focused
   // player, so the header and the info card stay away until the reader stops.
   const [isSessionActive, setIsSessionActive] = useState(false)
+  const { status: authStatus } = useSession()
+  const signedIn = authStatus === 'authenticated'
+  const [practice, setPractice] = useState<PracticeSummary | null>(null)
+
+  // The reader's own history for this sheet (D-085). A failure only hides it.
+  const loadPractice = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/sheet/${id}/practice`, { cache: 'no-store' })
+      if (response.ok) setPractice(await response.json())
+    } catch { /* the history is a convenience */ }
+  }, [id])
+  useEffect(() => {
+    if (signedIn && id) void loadPractice()
+  }, [signedIn, id, loadPractice])
+
+  // keepalive lets a run reported while the page is being hidden still arrive.
+  const reportPractice = useCallback((run: PracticeRun, context: { leavingPage: boolean }) => {
+    void fetch(`/api/sheet/${id}/practice`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(run),
+      keepalive: true,
+    }).then(response => {
+      if (response.ok && !context.leavingPage) void loadPractice()
+    }).catch(() => { /* a lost record is not worth interrupting practice for */ })
+  }, [id, loadPractice])
 
   useEffect(() => {
     if (!id) return
@@ -138,16 +168,14 @@ export default function SheetMusicPage() {
     return (
       <MainLayout>
         <Container className="py-8" size="lg">
-          <Card padding="lg">
-            <StatusState
-              title={error?.includes('권한') ? '이 악보에 접근할 수 없습니다' : '악보를 불러오지 못했습니다'}
-              detail={error || '악보 정보를 확인할 수 없습니다.'}
-              tone="error"
-              action={error?.includes('권한')
-                ? <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(`/sheet/${id}`)}`}><Button as="span">로그인하고 계속하기</Button></Link>
-                : <Link href="/explore"><Button as="span" variant="outline">공개 악보 둘러보기</Button></Link>}
-            />
-          </Card>
+          <StatusState
+            title={error?.includes('권한') ? '이 악보에 접근할 수 없습니다' : '악보를 불러오지 못했습니다'}
+            detail={error || '악보 정보를 확인할 수 없습니다.'}
+            tone="error"
+            action={error?.includes('권한')
+              ? <Link href={`/auth/signin?callbackUrl=${encodeURIComponent(`/sheet/${id}`)}`}><Button as="span">로그인하고 계속하기</Button></Link>
+              : <Link href="/explore"><Button as="span" variant="outline">공개 악보 둘러보기</Button></Link>}
+          />
         </Container>
       </MainLayout>
     )
@@ -174,44 +202,56 @@ export default function SheetMusicPage() {
             animationData={animationData} 
             className={isSessionActive ? '' : 'mb-8'}
             onSessionChange={setIsSessionActive}
+            onPracticeRun={signedIn ? reportPractice : undefined}
+            resumeKey={resumeKeyFor(id)}
           />
 
           {/* Sheet Music Info */}
           {!isSessionActive && <Card padding="lg">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium text-accent">짧은 미리보기</p>
-                <p className="mt-1 text-sm text-ink-muted">전체 연습은 로그인 후 이 곡에서 계속할 수 있습니다.</p>
+            {signedIn ? (
+              <div className="mb-6">
+                <p className="text-sm font-medium text-accent">내 연습 기록</p>
+                <p className="mt-1 text-sm text-ink-muted" data-testid="practice-summary">
+                  {practice ? formatPracticeSummary(practice) : '기록을 불러오는 중입니다'}
+                </p>
               </div>
-              <LoginButton callbackUrl={`/sheet/${id}`}>
-                로그인하고 계속 연습하기
-              </LoginButton>
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">악보 정보</h3>
+            ) : authStatus === 'unauthenticated' ? (
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                {/* Guests can play the whole piece; what signing in adds is the history. */}
+                <div>
+                  <p className="text-sm font-medium text-accent">연습 기록</p>
+                  <p className="mt-1 text-sm text-ink-muted">로그인하면 이 곡을 몇 번, 얼마나 연습했는지 남습니다.</p>
+                </div>
+                <LoginButton callbackUrl={`/sheet/${id}`}>
+                  로그인하고 기록 남기기
+                </LoginButton>
+              </div>
+            ) : null}
+            <h3 className="text-lg font-semibold text-ink mb-4">악보 정보</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <dt className="text-sm font-medium text-gray-500">저작자</dt>
-                <dd className="text-sm text-gray-900">{sheetMusic.composer}</dd>
+                <dt className="text-sm font-medium text-ink-muted">저작자</dt>
+                <dd className="text-sm text-ink">{sheetMusic.composer}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">카테고리</dt>
-                <dd className="text-sm text-gray-900">{sheetMusic.category || '미분류'}</dd>
+                <dt className="text-sm font-medium text-ink-muted">카테고리</dt>
+                <dd className="text-sm text-ink">{sheetMusic.category || '미분류'}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">공개 설정</dt>
-                <dd className="text-sm text-gray-900">
+                <dt className="text-sm font-medium text-ink-muted">공개 설정</dt>
+                <dd className="text-sm text-ink">
                   {sheetMusic.isPublic ? '공개' : '비공개'}
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">업로드 날짜</dt>
-                <dd className="text-sm text-gray-900">
+                <dt className="text-sm font-medium text-ink-muted">업로드 날짜</dt>
+                <dd className="text-sm text-ink">
                   {new Date(sheetMusic.createdAt).toLocaleDateString('ko-KR')}
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">재생 시간</dt>
-                <dd className="text-sm text-gray-900">
+                <dt className="text-sm font-medium text-ink-muted">재생 시간</dt>
+                <dd className="text-sm text-ink">
                   {Math.floor(animationData.duration / 60)}분 {Math.floor(animationData.duration % 60)}초
                 </dd>
               </div>

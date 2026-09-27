@@ -69,7 +69,7 @@ for (const viewport of viewports) {
       await page.evaluate(zoom => { document.documentElement.style.zoom = String(zoom) }, viewport.zoom)
     }
 
-    await expect(page.getByRole('heading', { name: '추천 악보' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: '최근 공개된 악보' })).toBeVisible()
 
     // No horizontal overflow: the long title and the long uploader name must wrap
     // or truncate inside the card rather than widening the document.
@@ -81,10 +81,10 @@ for (const viewport of viewports) {
     expect(overflow.documentWidth).toBeLessThanOrEqual(overflow.clientWidth + 1)
     expect(overflow.bodyWidth).toBeLessThanOrEqual(overflow.clientWidth + 1)
 
-    // Every card in every section is a link to its own sheet, so the whole card is
+    // Every card is a link to its own sheet, shown once (D-080), so the whole card is
     // one keyboard stop instead of an unreachable click handler.
     const cardLinks = page.locator('.public-sheet-music-browser a[href^="/sheet/"]')
-    await expect(cardLinks).toHaveCount(3 + 4 + 8)
+    await expect(cardLinks).toHaveCount(sheets.length)
 
     // The first card has to be inside the opening screen; the audit's complaint was
     // that duplicated blurbs and a full-viewport wrapper pushed sheets below it.
@@ -109,7 +109,7 @@ test('reaches and opens the first explore card with the keyboard alone', async (
   await page.setViewportSize({ width: 1280, height: 720 })
   await page.goto('/explore')
 
-  await expect(page.getByRole('heading', { name: '추천 악보' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '최근 공개된 악보' })).toBeVisible()
 
   const firstCard = page.locator('.public-sheet-music-browser a[href^="/sheet/"]').first()
   await expect(firstCard).toHaveAttribute('href', '/sheet/1')
@@ -177,7 +177,7 @@ test('leaves a modified click to the browser instead of navigating in place', as
   await page.setViewportSize({ width: 1280, height: 720 })
   await page.goto('/explore')
 
-  await expect(page.getByRole('heading', { name: '추천 악보' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '최근 공개된 악보' })).toBeVisible()
   const firstCard = page.locator('.public-sheet-music-browser a[href^="/sheet/"]').first()
 
   // The explore page supplies onSheetMusicClick, so an unconditional preventDefault would

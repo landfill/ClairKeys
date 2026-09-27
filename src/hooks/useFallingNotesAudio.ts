@@ -3,7 +3,9 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import type { FallingNote } from '@/types/fallingNotes'
 import { midiToFreq } from '@/utils/pianoLayout'
+import type { MetronomeClick } from '@/utils/beatGrid'
 import {
+  selectClicksInWindow,
   selectNotesInWindow,
   nextScheduleWindow,
   TICK_MS,
@@ -104,6 +106,28 @@ export const DEFAULT_MASTER_GAIN = 0.5
 const TAPPED_NOTE_SEC = 0.8
 
 /**
+ * Metronome click levels, kept under the synthesised note peak (0.3) so a
+ * click marks the beat without masking the music. The accent is also higher
+ * in pitch, so the downbeat is not told apart by loudness alone.
+ */
+const CLICK_PEAK_GAIN = 0.15
+const CLICK_ACCENT_PEAK_GAIN = 0.22
+const CLICK_FREQUENCY_HZ = 1320
+const CLICK_ACCENT_FREQUENCY_HZ = 1760
+const CLICK_LENGTH_SEC = 0.05
+
+/** Extra material a start can carry beside the notes. */
+export interface StartAudioOptions {
+  /** Metronome and count-in clicks, in song seconds. */
+  clicks?: MetronomeClick[]
+  /**
+   * Notes starting before this song time stay silent. A count-in starts the
+   * clock before the resume point; the music it counts toward begins here.
+   */
+  notesFrom?: number
+}
+
+/**
  * Ceiling the runtime volume control clamps to.
  *
  * Derived rather than chosen: the largest gain at which the loudest playable
@@ -177,6 +201,8 @@ export function useFallingNotesAudio() {
 
   // Rolling-scheduler state, all reset on every startAudio.
   const notesRef = useRef<FallingNote[]>([])
+  const clicksRef = useRef<MetronomeClick[]>([])
+  const notesFromRef = useRef(Number.NEGATIVE_INFINITY)
   const muteRef = useRef(false)
   const scheduleCursorRef = useRef(0)
   const activeEndsRef = useRef<number[]>([])
@@ -385,7 +411,38 @@ export function useFallingNotesAudio() {
       if (activeEndsRef.current[i] <= now) activeEndsRef.current.splice(i, 1)
     }
 
+    // Clicks are not piano voices: they bypass the polyphony limit and carry
+    // their own short envelope, but share the song-time anchor with the notes.
+    for (const click of selectClicksInWindow(clicksRef.current, fromSong, toSong)) {
+      const when = audioTimeAtSongTime(clock, click.time)
+      if (when < now) continue
+      try {
+        const oscillator = audioContext.createOscillator()
+        const clickGain = audioContext.createGain()
+        oscillator.type = 'sine'
+        oscillator.frequency.value = click.accent ? CLICK_ACCENT_FREQUENCY_HZ : CLICK_FREQUENCY_HZ
+        const peak = click.accent ? CLICK_ACCENT_PEAK_GAIN : CLICK_PEAK_GAIN
+        clickGain.gain.setValueAtTime(0, when)
+        clickGain.gain.linearRampToValueAtTime(peak, when + 0.002)
+        clickGain.gain.exponentialRampToValueAtTime(1e-4, when + CLICK_LENGTH_SEC)
+        oscillator.connect(clickGain)
+        clickGain.connect(masterGain)
+        oscillator.start(when)
+        oscillator.stop(when + CLICK_LENGTH_SEC + 0.01)
+        scheduledNodesRef.current.push({
+          source: oscillator,
+          gain: clickGain,
+          isSample: false,
+          end: when + CLICK_LENGTH_SEC + 0.01,
+        })
+      } catch (error) {
+        console.warn('Failed to schedule click:', error)
+      }
+    }
+
+    const notesFrom = notesFromRef.current
     const notes = selectNotesInWindow(notesRef.current, fromSong, toSong, includeSounding)
+      .filter((note) => note.start >= notesFrom)
 
     for (const note of notes) {
       // Map song time to AudioContext time through the single shared anchor.
@@ -552,7 +609,8 @@ export function useFallingNotesAudio() {
     notes: FallingNote[],
     offsetSec: number,
     tempoScale: number,
-    mute: boolean
+    mute: boolean,
+    options: StartAudioOptions = {}
   ): Promise<boolean> => {
     if (!initializeAudio()) {
       setSampleStatus('failed')
@@ -633,6 +691,8 @@ export function useFallingNotesAudio() {
 
     // Store current state
     notesRef.current = notes
+    clicksRef.current = options.clicks ?? []
+    notesFromRef.current = options.notesFrom ?? Number.NEGATIVE_INFINITY
     muteRef.current = mute
     tempoScaleRef.current = tempoScale
     isPlayingRef.current = true

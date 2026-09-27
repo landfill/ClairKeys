@@ -3046,6 +3046,133 @@
 - Reversibility: clean
 - Related: phases/UI-2026-playback-mode-clarity.md, D-019, #177의 별도 UI 주석
 
+## D-080: 근거 없는 순위 이름과 개발용 음량 표기를 사용자 화면에서 걷어낸다
+
+- Date: 2026-09-27
+- Status: Accepted for UI-2026 review-design branch; merge pending
+- Context: 2026-09-27 운영 점검에서 탐색의 `추천 악보`·`인기 악보`가 최신순 목록을 잘라 쓴 것이라
+  공개 악보 3곡이 세 칸에 반복되는 것을 확인했다. 재생 수·추천 신호는 저장되지 않는다.
+  재생 준비 화면의 음량은 `음량 (master gain)`·`0.50`으로 보인다. 이 표기는 D-016이
+  `DEFAULT_MASTER_GAIN`을 귀로 정하기 위해 남긴 튜닝용이었다. 그 값은 이후 0.5로 확정됐고,
+  제품 사용자는 음량을 튜닝하지 않는다.
+- Decision:
+  1. 탐색은 데이터가 뒷받침하는 순서 하나(`최근 공개된 악보`, 최신순, 12개)만 보여준다. 한 악보는
+     한 번만 보이고, 모든 카드는 같은 링크·`연습 시작 →` 행동을 가진다. 추천·인기는 실제 신호
+     (예: 연습 기록)가 생긴 뒤 별도 결정으로 다시 도입한다.
+  2. 음량 슬라이더의 값·범위·기본값은 master gain 그대로 두고, 표시와 접근성 이름만 `음량`과
+     범위 대비 백분율로 바꾼다. 공유 게인 체인과 D-016 헤드룸 계산은 바꾸지 않는다.
+  3. 로그인 화면은 origin이 정확히 같은 절대 URL `callbackUrl`에서 경로만 꺼내 기존 경로 판정을 다시
+     통과시킨다(`toSafeReturnPathFrom`). next-auth 미들웨어가 넘기는 값이 이 형태라 로그인 후 복귀와
+     경로별 안내가 모두 `/`로 떨어지던 문제를 함께 고친다. 다른 origin·scheme·userinfo는 계속 거절한다.
+- Rejected: 추천·인기 칸을 유지하고 악보 수가 적을 때만 숨김 | 악보가 늘어도 같은 목록을 다른
+  이름으로 반복하는 문제는 그대로 남는다.
+- Rejected: 음량 표기를 dB로 바꿈 | 튜닝 목적이 끝났고 일반 사용자에게 dB는 또 다른 개발용 단위다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 순위·추천처럼 보이는 섹션 이름은 그 순서를 만든 실제 데이터가 있을 때만 쓴다.
+- Related: phases/UI-2026-review-design.md, D-016
+
+## D-081: 재생 단축키는 페이지가 가진 키만 쓰고 포커스된 컨트롤의 키를 빼앗지 않는다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT playback-shortcuts branch; merge pending
+- Context: `/sheet/[id]`에는 단축키가 없었다. 레거시 `useKeyboardShortcuts`는 input/textarea만 제외해,
+  포커스된 버튼 위 Space를 한 번 더 실행하고 슬라이더·select 위 방향키로 재생 위치도 함께 옮긴다.
+- Decision: 새 `usePlaybackShortcuts`는 Space(재생/일시정지)와 ←/→(5초)만 다룬다. 대상이 이미 그 키에
+  의미를 가진 요소(버튼·링크·입력·select·contenteditable·slider 등 ARIA 위젯)이거나, 다른 핸들러가
+  `preventDefault`했거나, 수정키(Shift 포함)가 눌렸거나, Space 자동 반복이면 아무것도 하지 않는다. 샘플 로딩으로
+  컨트롤이 비활성화된 동안에는 재생·이동 모두 하지 않는다. 처리한 키는
+  `preventDefault`로 페이지 스크롤을 막는다. 재생은 재생 버튼과 같은 경로(`handlePlay`)를 탄다.
+- Rejected: 레거시 `useKeyboardShortcuts` 재사용 | 포커스 규칙이 틀려 이중 실행이 생기고, 레거시 플레이어의
+  동작을 함께 바꾸게 된다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 페이지 단축키를 추가할 때 `resolvePlaybackShortcut`의 소유 요소 목록을 먼저 갱신한다.
+- Related: phases/FEAT-playback-shortcuts.md, D-079
+
+## D-082: 한 손 연습은 다른 손을 숨기지 않고 흐리게 남기며, 소리는 기본으로 유지한다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT hand-practice branch; merge pending
+- Context: 노트에 손 정보가 있으나 한 손만 연습할 방법이 없다. 다른 손을 완전히 숨기면 박자·화성 맥락을 잃고,
+  소리까지 기본으로 끄면 반주 없이 템포를 잡기 어렵다.
+- Decision:
+  1. 선택하지 않은 손의 낙하 노트는 투명도 0.3으로 남기고 운지 배지를 없앤다. 건반 강조는 연습하는 손만 따른다.
+  2. 다른 손 소리는 기본으로 켜 두고 `다른 손 소리 듣기`로 끌 수 있다. 오디오는 `audibleNotes`만 예약하고
+     곡 길이·재생 위치·A-B 구간은 전체 노트를 따른다.
+  3. 손 정보가 없는 노트는 누구의 것인지 모르므로 모든 모드에 남긴다.
+  4. 선택 UI는 재생 준비 화면에만 둔다. D-019의 압축 바 높이 예산을 늘리지 않는다.
+- Rejected: 다른 손 노트를 완전히 숨김 | 연습 중 박자와 화성 맥락을 잃는다.
+- Rejected: 한 손 선택 시 다른 손 소리를 기본으로 끔 | 반주 없이 템포를 잡기 어렵고, 켜고 끄는 선택지가 이미 있다.
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: `audibleNotesFor`는 아무것도 끄지 않을 때 원래 배열을 그대로 돌려줘야 한다. 새 배열을 만들면
+  재생 중 오디오가 매 렌더마다 재시작된다.
+- Related: phases/FEAT-hand-practice.md, D-019
+
+## D-083: 메트로놈은 박 위치를 믿을 수 있을 때만 켜고, 준비 박자는 화면을 멈춘 채 소리만 센다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT metronome-count-in branch; merge pending
+- Context: 애니메이션 데이터에는 박·마디 정보가 없다. `tempoSource: score`의 초는 마디별 템포 변화로 구워질 수
+  있어(D-013) 기준 BPM 격자가 곡 중간부터 노트와 어긋난다. 악보 artifact에는 마디별 초·4분음표 위치가 있다.
+- Decision:
+  1. 박 격자는 악보 artifact 마디 map을 우선한다. 없으면 `user|unknown` 출처에서만 균등 격자를 쓰고,
+     `score` 출처는 메트로놈을 비활성화하고 이유를 표시한다. artifact는 마디 끝점만 기록하므로 MusicXML에서
+     첫 박 뒤에 템포가 바뀌는 마디를 찾아 그 마디에는 클릭을 넣지 않는다(틀린 박 대신 무음).
+  2. 클릭은 노트와 같은 오디오 anchor·예약 창에 넣고, 보이스 제한과 별개인 짧은 사인 클릭(강박 1760Hz,
+     그 외 1320Hz)으로 합성 노트 최고 레벨(0.3)보다 낮게 둔다.
+  3. 준비 박자는 시계를 한 마디 앞에서 시작하되 재개 위치 전 노트와 메트로놈 클릭은 예약하지 않는다. 그 사이 화면은 재개
+     위치에 고정하고 남은 박을 센다. 이미 친 구간의 노트가 소리 없이 다시 떨어지는 것을 보여주지 않기 위해서다.
+  4. 두 설정은 브라우저에 기억하고, 악보 artifact는 켤 때만 받아 `ScorePanel`과 다운로드를 공유한다.
+- Rejected: 기준 BPM 격자를 항상 사용 | 템포가 바뀌는 곡에서 클릭이 노트와 어긋난다.
+- Rejected: 준비 박자 동안 노트를 움직임 | 재개 전 구간이 소리 없이 다시 떨어져 건반 강조가 거짓이 된다.
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 클릭을 노트와 다른 시계로 예약하지 마라. 클릭 레벨을 올리면 D-016 헤드룸 계산을 다시 확인한다.
+- Related: phases/FEAT-metronome-count-in.md, D-013, D-016
+
+## D-084: 이어서 연습할 위치는 서버가 아니라 이 브라우저에만 기억한다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT practice-resume branch; merge pending
+- Context: 마지막 위치를 기억하는 기능은 로그인하지 않은 공개 악보 방문자에게도 필요하다. 서버 저장은 로그인·
+  API·DB 쓰기와 삭제 정합성(현재 `PracticeSession` FK는 `RESTRICT`)을 함께 요구한다.
+- Decision: 악보별 `clairkeys.resume.<id>` 키에 위치만 저장한다. 저장소가 막혀 있거나 값이 손상되면 기능만
+  빠지고 페이지는 정상 동작한다. 연습 기록(서버)은 별도 결정·PR로 다룬다.
+- Rejected: `PracticeSession`에 위치를 저장 | 비로그인 방문자를 제외하고, 삭제 정합성 수정 없이 쓰면 악보 삭제가 실패한다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Related: phases/FEAT-practice-resume.md
+
+## D-085: 연습 기록은 기존 테이블에 쓰고, 악보 삭제가 기록을 먼저 지운다
+
+- Date: 2026-09-27
+- Status: Accepted for FEAT practice-records branch; merge pending
+- Context: `PracticeSession`(001_init)은 운영 DB에 있으나 쓰이지 않았다. FK가 `ON DELETE RESTRICT`여서 기록을 쓰기
+  시작하면 악보 삭제가 실패한다. 삭제 route 주석은 cascade를 가정했다.
+- Decision:
+  1. 스키마를 바꾸지 않는다. 악보 삭제는 한 트랜잭션에서 악보 행을 `FOR UPDATE`로 잠그고, 그 악보의 모든 기록을
+     지운 뒤 악보를 지운다. 동시 기록 삽입은 잠금을 기다린 뒤 FK로 실패하고(API 404), 저장소 파일은 트랜잭션이
+     성공한 뒤에만 지운다.
+  2. 기록 API는 로그인 사용자 본인 것만 쓰고 읽는다. 쓰기와 읽기 모두 재생할 수 없는 악보(예: 이후 비공개로 바뀐
+     남의 악보)는 404로 존재를 드러내지 않는다.
+  3. 연습 시간은 소리가 난 실제 시간(일시정지 제외), 진행률은 도달한 가장 먼 위치 / 곡 길이다. 10초 미만은 기록하지 않는다.
+     연습 종료, 페이지 숨김, 플레이어 unmount(앱 안 이동) 때 보고한다.
+  4. 비로그인 방문자는 측정·요청하지 않는다.
+- Rejected: FK를 `CASCADE`로 바꾸는 migration | 운영 DB 적용이 따로 필요하고, 코드 트랜잭션으로 같은 결과를 낸다.
+- Rejected: 클라이언트 재생 시간(song seconds)을 연습 시간으로 사용 | 속도를 늦춘 연습이 짧게 기록된다.
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: messy
+- Directive: 악보를 지우는 새 경로를 만들면 기록 삭제를 같은 트랜잭션에 넣는다. 기록은 사용자 데이터이므로 삭제 전에 복구 수단이 없다.
+- Related: phases/FEAT-practice-records.md, D-080, PR182
+
 ## D-086: 기다리기 모드는 MIDI와 화면 건반을 모두 받고, 사용자가 낸 소리만 들려준다
 
 - Date: 2026-09-27
@@ -3057,6 +3184,9 @@
   2. 30ms 안에 시작하는 노트를 한 단계로 묶고, 순서와 무관하게 모든 음이 눌리면 진행한다. 틀린 건반은 무시한다.
   3. 기다리기 모드의 재생은 음소거 시계(`mute`)로 흐르고, 다음 단계 시각에 정확히 멈춘다. 새 시계를 만들지 않는다.
   4. 소리는 사용자 몫이다. MIDI 피아노는 스스로, 화면 건반은 `playNoteNow`로 즉시 소리 내며 예약 재시작에 끊기지 않는다.
+  5. 다른 연습 기능과 결합(2026-09-28, main 합침): 기다리기 모드에서는 준비 박자를 쓰지 않고(첫 단계를 누르는 것이
+     시작이다) 메트로놈 클릭도 소리 내지 않는다. 한 손을 고르면 그 손의 노트만 단계로 기다린다. 대기로 시계가
+     멈춘 동안에는 손 집합·클릭·음소거 변경이 재생을 다시 시작하지 않고, 대기가 풀릴 때 반영된다.
 - Rejected: 레거시 `AnimationPlayer` practice 엔진 연결 | 현재 재생기와 다른 시계·상태를 쓰며 D-079가 실사용에서 제외했다.
 - Rejected: 대기 중에도 반주(나머지 노트)를 재생 | 사용자가 모든 노트를 치는 모드에서 같은 음이 두 번 난다.
 - Confidence: medium

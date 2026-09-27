@@ -165,6 +165,8 @@ export function addFingeringToNotes(notes: FallingNote[]): FallingNote[] {
   inferHandPhrases(enhancedNotes, notes);
 
   enhancedNotes.forEach((note, index) => {
+    // One-hand practice must not treat a guessed hand as the score's (D-082).
+    note.handSource = isValidHand(notes[index].hand) ? 'source' : 'inferred';
     if (isValidFinger(notes[index].finger)) {
       note.fingerSource = 'source';
       delete note.fingeringAlgorithm;
