@@ -100,3 +100,16 @@ export function nextScheduleWindow(
 
   return { from, to: target, cursor: target, skippedStale: from > cursorSec }
 }
+
+/**
+ * Clicks whose time falls in the schedule window `[fromSec, toSec)`. Clicks are
+ * instantaneous, so there is no "still sounding" case to include.
+ */
+export function selectClicksInWindow<T extends { time: number }>(
+  clicks: T[],
+  fromSec: number,
+  toSec: number
+): T[] {
+  if (toSec <= fromSec) return []
+  return clicks.filter((click) => click.time >= fromSec && click.time < toSec)
+}
