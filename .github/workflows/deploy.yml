@@ -104,7 +104,8 @@ jobs:
 
   # Branch protection is not strict, so a PR can merge on checks run against an older
   # main. This run is the only E2E evidence for the tree that was actually merged.
-  # It also builds the app, which is why there is no separate build job.
+  # Playwright's webServer runs `npm run build && npm start` on CI, so this job also
+  # builds the merge commit; there is no separate build job or build step.
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
@@ -145,9 +146,6 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-
-      - name: Build application
-        run: npm run build
 
       - name: Run E2E tests
         run: npm run test:e2e

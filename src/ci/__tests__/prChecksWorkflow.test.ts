@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+const GATE = "if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}"
+
 describe('PR summary workflow', () => {
   const workflow = readFileSync(
     join(process.cwd(), '.github/workflows/pr-checks.yml'),
@@ -27,8 +29,26 @@ describe('PR summary workflow', () => {
     expect(patterns).toEqual(['**', '!docs/**', '!**/*.md'])
     for (const job of ['test-unit', 'test-e2e', 'security-scan', 'build-check']) {
       const body = workflow.split(new RegExp(`^  ${job}:\\s*$`, 'm'))[1].split(/^  [a-z-]+:\s*$/m)[0]
-      expect(body).toContain("if: needs.changes.outputs.code == 'true'")
+      expect(body).toContain(GATE)
     }
+  })
+
+  // A failed or skipped detector leaves `code` empty. Skipped required jobs count
+  // as passed, so the gate must read "not proven docs-only" and must not inherit
+  // the detector's failure through `needs` -- otherwise a code PR merges on Lint alone.
+  it('runs the gated jobs when change detection fails', () => {
+    expect(GATE).toContain('!cancelled()')
+    expect(GATE).toContain("needs.changes.outputs.code != 'false'")
+    const allChecks = workflow.split(/^  all-checks:\s*$/m)[1]
+    expect(allChecks).toContain('changes=${{ needs.changes.result }}')
+  })
+
+  // Playwright's webServer runs `npm run build && npm start` on CI, so a separate
+  // build step before `npm run test:e2e` builds the app twice.
+  it('builds once in the E2E job', () => {
+    const e2e = workflow.split(/^  test-e2e:\s*$/m)[1].split(/^  [a-z-]+:\s*$/m)[0]
+    expect(e2e).toContain('run: npm run test:e2e')
+    expect(e2e).not.toContain('run: npm run build')
   })
 
   // Branch protection requires these contexts by job name. Renaming a job leaves

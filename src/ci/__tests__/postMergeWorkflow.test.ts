@@ -40,17 +40,21 @@ describe('post-merge workflow', () => {
     expect(workflow).not.toContain('prisma migrate deploy')
   })
 
-  // The E2E job builds the app before running Playwright, so the merge commit is
-  // built without a separate `build` job (D-087). The old `build` job passed empty
-  // `secrets.*` values to the build; it is gone with it.
+  // Playwright's webServer runs `npm run build && npm start` on CI, so the E2E job
+  // builds the merge commit and there is no separate `build` job or build step
+  // (D-087). The old `build` job passed empty `secrets.*` values; it is gone with it.
   it('still validates the merge commit', () => {
+    const playwrightConfig = readFileSync(join(process.cwd(), 'playwright.config.ts'), 'utf8')
+    expect(playwrightConfig).toContain("command: 'npm run build && npm start'")
+    expect(playwrightConfig).toContain('reuseExistingServer: !process.env.CI')
+    expect(workflow).not.toContain('run: npm run build')
+
     expect(workflow).toMatch(/^ {2}lint:\s*$/m)
     expect(workflow).toMatch(/^ {2}test:\s*$/m)
     expect(workflow).toMatch(/^ {2}e2e:\s*$/m)
     expect(workflow).toContain('run: npm test')
     expect(workflow).toContain('run: npm run lint')
     expect(workflow).toContain('run: npx tsc --noEmit')
-    expect(workflow).toContain('run: npm run build')
     expect(workflow).toContain('run: npm run test:e2e')
     expect(workflow).toContain('run: npm audit --audit-level high')
   })
