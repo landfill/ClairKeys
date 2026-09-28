@@ -92,8 +92,17 @@ for (const viewport of viewports) {
     await play.click()
 
     // Held samples keep the start waiting (up to SAMPLE_LOAD_WAIT_MS): the
-    // pressed button and the note area both say so.
-    await expect(play).toHaveAttribute('aria-busy', 'true')
+    // pressed button and the note area both say so. A browser whose audio
+    // cannot start never reaches that wait; as in playback-session-transition,
+    // only headless Firefox on a runner without audio output has done that.
+    const waited = await expect(play)
+      .toHaveAttribute('aria-busy', 'true', { timeout: 5000 })
+      .then(() => true, () => false)
+    if (!waited) {
+      expect(browserName, 'the start never waited for the samples in a browser that can play audio').toBe('firefox')
+      await expect(page.getByTestId('compact-playback-bar')).toHaveCount(0)
+      test.skip(true, 'headless firefox on this runner has no audio output, so no start waits for samples')
+    }
     await expect(play).toContainText('준비 중')
     await expect(play).toBeInViewport()
     await expect(page.getByTestId('sample-loading')).toBeVisible()
@@ -105,12 +114,7 @@ for (const viewport of viewports) {
       .getByTestId('compact-playback-bar')
       .waitFor({ state: 'visible', timeout: 15000 })
       .then(() => true, () => false)
-    if (!started) {
-      // As in playback-session-transition: only headless Firefox on a runner
-      // without audio output has ever failed to start.
-      expect(browserName, 'playback did not start in a browser that supports it').toBe('firefox')
-      test.skip(true, 'headless firefox on this runner has no audio output')
-    }
+    expect(started, 'playback did not start after the samples were released').toBe(true)
 
     await expect(page.getByTestId('sample-loading')).toHaveCount(0)
     // One bank per page: the start decoded the prefetched bytes rather than
