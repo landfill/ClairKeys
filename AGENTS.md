@@ -46,7 +46,8 @@
 | `docs/recovery/ROADMAP.md` 상태 칼럼 | ROADMAP 단계 구성·선행조건, 기타 상태 기록이 아닌 문서 |
 
 직접 커밋도 매번 원격 동기화 → 해당 파일만 stage·검토 → Lore 커밋 → main push 순서로 수행한다.
-명령·SHA·결과를 스스로 재확인한다. 직접 push는 required checks를 우회할 수 있으므로 직후
+명령·SHA·결과를 스스로 재확인한다. `docs/`·`*.md`만 바꾼 push는 CI를 실행하지 않는다(D-087).
+직접 push에 그 밖의 파일이 섞였다면 required checks를 우회한 것이므로 직후
 `gh api repos/<owner>/<repo>/commits/<sha>/check-runs`로 확인하고, 실패는 즉시 다음 상태 기록 커밋에 남긴다.
 작업 브랜치와 상태 기록을 분리하는 상세 절차는 [WORKFLOW](docs/recovery/WORKFLOW.md)를 따른다.
 

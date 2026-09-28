@@ -47,15 +47,23 @@ npx playwright test application-smoke.spec.ts
 
 ## CI
 
-`.github/workflows/pr-checks.yml`이 PR마다 다음을 실행한다.
+워크플로는 두 개이고, 같은 검사를 한 커밋에 두 번 돌리지 않는다(D-087).
+
+`.github/workflows/pr-checks.yml`이 PR마다 다음을 실행한다. `docs/`·`*.md`만 바뀐 PR은 `Lint`만 돌고
+나머지는 건너뛴다(건너뛴 job은 필수 검사에서 통과로 집계된다). 같은 PR에 새 커밋이 push되면 이전 실행은 취소된다.
 
 | 잡 | 내용 |
 |---|---|
-| Lint and Type Check | `npm run lint`, `npx tsc --noEmit` |
-| Unit Tests | PostgreSQL 서비스 컨테이너 위에서 `npm run test:coverage` |
+| Lint | `prisma generate`, `npm run lint`, `npx tsc --noEmit` |
+| Run Tests | PostgreSQL 서비스 컨테이너 위에서 `npm run test:coverage` |
 | E2E Tests | `npm run build` 후 `npm run test:e2e`, 리포트 아티팩트 업로드 |
-| Security Scan | `npm audit --audit-level high`, CodeQL |
+| Security Audit | `npm audit --audit-level high`, CodeQL |
 | Build Check | `prisma generate` + `npm run build` |
+| All Checks Complete | 위 job이 모두 success 또는 skipped인지 확인(cancelled도 실패) |
 
-`.github/workflows/deploy.yml`은 `main` 병합 후 검증만 수행한다. 실제 배포는 Vercel Git 연동이
+브랜치 보호의 필수 검사는 `Lint`·`Run Tests`·`E2E Tests`·`Security Audit`이다. job 이름을 바꾸면 필수 검사가
+영원히 대기 상태가 되므로 브랜치 보호 설정도 함께 바꿔야 한다.
+
+`.github/workflows/deploy.yml`(Post-merge checks)은 `main` push에서 Lint·Run Tests·E2E Tests·Security Audit을
+한 번씩 실행한다. `docs/`·`*.md`만 바꾼 push(상태 기록)는 실행하지 않는다. 배포는 하지 않으며 Vercel Git 연동이
 담당한다 — 자세한 내용은 [deployment.md](deployment.md).
