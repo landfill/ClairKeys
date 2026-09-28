@@ -16,8 +16,37 @@ describe('PR summary workflow', () => {
     expect(summaryJob).not.toMatch(/permissions:\n      issues: write/)
   })
 
-  it('routes OMR service changes through the required unit-test job', () => {
-    expect(workflow).toMatch(/tests:\s+[\s\S]*- 'omr-service\/\*\*'/)
-    expect(workflow).toContain("needs.changes.outputs.tests == 'true'")
+  // pr-checks.yml is the only PR gate (D-087). Any file that is not documentation
+  // -- omr-service/, next.config.mjs, scripts/, fixtures/ -- must run the tests;
+  // the old per-area filters silently missed some of them.
+  it('runs the gated jobs for every change except documentation', () => {
+    const filter = workflow.split(/^ {12}code:\s*$/m)[1].split(/^\s*$/m)[0]
+    const patterns = filter.match(/- '([^']+)'/g)?.map((line) => line.slice(3, -1))
+
+    expect(workflow).toContain("predicate-quantifier: 'every'")
+    expect(patterns).toEqual(['**', '!docs/**', '!**/*.md'])
+    for (const job of ['test-unit', 'test-e2e', 'security-scan', 'build-check']) {
+      const body = workflow.split(new RegExp(`^  ${job}:\\s*$`, 'm'))[1].split(/^  [a-z-]+:\s*$/m)[0]
+      expect(body).toContain("if: needs.changes.outputs.code == 'true'")
+    }
+  })
+
+  // Branch protection requires these contexts by job name. Renaming a job leaves
+  // the required check pending forever, so a rename must change the settings too.
+  it('reports every required status check', () => {
+    const names = [...workflow.matchAll(/^ {4}name: (.+)$/gm)].map((match) => match[1])
+    for (const required of ['Lint', 'Run Tests', 'E2E Tests', 'Security Audit']) {
+      expect(names).toContain(required)
+    }
+  })
+
+  it('cancels the run for a superseded PR head', () => {
+    expect(workflow).toMatch(/^concurrency:\n {2}group: pr-checks-\$\{\{ github\.event\.pull_request\.number \}\}\n {2}cancel-in-progress: true$/m)
+  })
+
+  it('fails the aggregate check unless each job succeeded or was skipped', () => {
+    const allChecks = workflow.split(/^  all-checks:\s*$/m)[1]
+    expect(allChecks).toContain('success|skipped)')
+    expect(allChecks).not.toContain('== "failure"')
   })
 })

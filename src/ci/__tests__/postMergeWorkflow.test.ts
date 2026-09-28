@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
@@ -40,19 +40,36 @@ describe('post-merge workflow', () => {
     expect(workflow).not.toContain('prisma migrate deploy')
   })
 
-  // The surviving `build` job still passes `secrets.DATABASE_URL` and friends to
-  // `npm run build`. They all resolve to empty strings today and the job passes
-  // anyway, so the build does not actually need them. They are left alone
-  // deliberately: that job was never failing, and issue #28 is about the deploy
-  // path. Asserting their absence here would be asserting something untrue.
-
+  // The E2E job builds the app before running Playwright, so the merge commit is
+  // built without a separate `build` job (D-087). The old `build` job passed empty
+  // `secrets.*` values to the build; it is gone with it.
   it('still validates the merge commit', () => {
+    expect(workflow).toMatch(/^ {2}lint:\s*$/m)
     expect(workflow).toMatch(/^ {2}test:\s*$/m)
-    expect(workflow).toMatch(/^ {2}build:\s*$/m)
+    expect(workflow).toMatch(/^ {2}e2e:\s*$/m)
     expect(workflow).toContain('run: npm test')
     expect(workflow).toContain('run: npm run lint')
     expect(workflow).toContain('run: npx tsc --noEmit')
     expect(workflow).toContain('run: npm run build')
+    expect(workflow).toContain('run: npm run test:e2e')
+    expect(workflow).toContain('run: npm audit --audit-level high')
+  })
+
+  // Status records are committed straight to main after every unit of work. They
+  // change no code, so they must not re-run the whole suite -- but only they may
+  // be skipped: any other file in the push has to run everything (D-087).
+  it('skips pushes that touch only documentation, and nothing else', () => {
+    const ignored = workflow
+      .split(/^ {4}paths-ignore:\s*$/m)[1]
+      .split(/^ {2}workflow_dispatch:/m)[0]
+      .match(/- '([^']+)'/g)
+      ?.map((line) => line.slice(3, -1))
+
+    expect(ignored).toEqual(['docs/**', '**/*.md'])
+  })
+
+  it('is the only workflow that runs on a push to main', () => {
+    expect(existsSync(join(process.cwd(), '.github/workflows/test.yml'))).toBe(false)
   })
 
   it('leaves every job reachable', () => {
