@@ -54,6 +54,7 @@ export class PianoSampleBank {
    */
   load(): Promise<PianoSampleLoadResult> {
     if (this.loading) return this.loading
+    bankHasLoaded = true
 
     if (typeof fetch !== 'function') {
       // No way to retrieve the samples at all. Reported once here rather than
@@ -161,9 +162,15 @@ export class PianoSampleBank {
  * the bank fetches the sample itself, keeping its own failure reporting.
  */
 const prefetched = new Map<number, Promise<ArrayBuffer | null>>()
+/**
+ * Set by the first bank load. A reader can press 재생 before the idle prefetch
+ * runs; the bank then fetches for itself, and a prefetch arriving afterwards
+ * would download the whole set again into bytes nothing decodes.
+ */
+let bankHasLoaded = false
 
 export function prefetchPianoSamples(): void {
-  if (prefetched.size > 0 || typeof fetch !== 'function') return
+  if (bankHasLoaded || prefetched.size > 0 || typeof fetch !== 'function') return
 
   for (const midi of SAMPLE_MIDI_NOTES) {
     prefetched.set(

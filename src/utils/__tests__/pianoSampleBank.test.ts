@@ -277,6 +277,21 @@ describe('PianoSampleBank', () => {
       expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length + 1)
     })
 
+    // A reader can press 재생 before the idle prefetch runs. The bank then
+    // fetches for itself, and a prefetch arriving afterwards would download
+    // the whole set a second time into bytes nothing will ever decode.
+    it('does nothing once a bank has started loading', async () => {
+      const fetchMock = makeFetch()
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples, PianoSampleBank: FreshBank } = freshModule()
+
+      const loading = new FreshBank(makeContext()).load()
+      prefetchPianoSamples()
+      await loading
+
+      expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length)
+    })
+
     it('hands the bytes to one bank only, since decoding detaches them', async () => {
       const fetchMock = makeFetch()
       global.fetch = fetchMock as unknown as typeof fetch
