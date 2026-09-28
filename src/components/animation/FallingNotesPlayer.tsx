@@ -821,10 +821,14 @@ export default function FallingNotesPlayer({
             <div
               data-testid="sample-loading"
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 text-sm font-medium text-white/90"
+              className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center"
             >
-              <span className="h-7 w-7 animate-spin rounded-full border-2 border-white/30 border-t-white motion-reduce:animate-none" />
-              피아노 소리를 준비하는 중…
+              {/* A backing panel: the first notes sit still under it and would
+                  otherwise run through the text. */}
+              <div className="flex flex-col items-center gap-3 rounded-xl bg-black/80 px-5 py-4 text-sm font-medium text-white shadow-lg">
+                <span className="h-7 w-7 animate-spin rounded-full border-2 border-white/30 border-t-white motion-reduce:animate-none" />
+                피아노 소리를 준비하는 중…
+              </div>
             </div>
           )}
 
