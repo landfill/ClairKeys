@@ -9,7 +9,7 @@
 2. `git rev-list --count main..origin/main`이 0이 아니면 로컬 `main`을 fast-forward한다.
    현재 `main`이면 `git pull --ff-only`, 다른 브랜치이면 `git fetch origin main:main`을 사용한다.
    충돌·분기·사용자 변경 때문에 안전하게 동기화할 수 없으면 덮어쓰지 말고 blocker를 기록한다.
-3. 다음 순서로 읽는다:
+3. 다음 순서로 읽는다. 읽기 순서는 여기에만 정의한다:
    [README](docs/recovery/README.md) → [HANDOFF](docs/recovery/HANDOFF.md) → HANDOFF의 현재 phase →
    [WORKFLOW](docs/recovery/WORKFLOW.md) → [BASELINE](docs/recovery/BASELINE.md) → [Lore](docs/recovery/LORE_COMMIT_PROTOCOL.md).
 4. HANDOFF의 `Current phase`, `Next action`, `Known blockers`와 phase의 진입·완료 조건으로 범위를 정한다.
@@ -20,8 +20,15 @@
 ## 변경·검증·승인
 
 - 기존 미커밋 변경은 사용자 소유다. 되돌리거나 자신의 커밋에 섞지 않는다.
-- 한 PR에는 하나의 단계 또는 명확한 목적만 담는다. 관련 파일만 명시적으로 stage한다.
+- 한 PR에는 하나의 단계 또는 명확한 목적만, 한 커밋에는 하나의 결정 단위만 담는다. 관련 파일만 명시적으로 stage한다.
 - 동작 변경 전에 회귀 테스트 또는 재현 fixture를 추가한다. 관련 필수 검증의 명령·결과·한계를 기록해야 구현 완료를 주장할 수 있다.
+- 검증은 한 커밋 트리에 한 번씩만 한다(D-088):
+  - 로컬: 재현 테스트(수정 전 실패 확인), 변경 영역의 테스트, 전체 Jest, `tsc --noEmit`, lint.
+    워크플로·설정만 바꿔도 전체 Jest를 돌린다(`src/ci`가 워크플로 구조를 고정한다).
+    `docs/`·`*.md`만 바꾼 변경은 편집 문서의 링크 확인으로 충분하다(CI도 `Lint`만 돈다). 그래도 결과는 validation에 남긴다.
+  - 로컬 Playwright는 변경 영역 spec을 필요한 브라우저로만 돌린다. 6개 브라우저 전체 E2E와 production build는 PR CI가 맡는다.
+  - CI가 통과시킨 커밋을 로컬에서 다시 전체 검증하지 않는다. 병합 후 main은 병합 커밋의 `Post-merge checks` 결과로 확인한다.
+  - CI가 대신할 수 없는 확인(preview·운영 화면, 실기기, OMR VM, 운영 DB)은 그대로 수행하고 기록한다.
 - 스펙·phase와 달라야 한다면 관련 phase와 `docs/recovery/DECISIONS.md`에 이유를 먼저 기록한 뒤 구현한다.
 - 모든 커밋은 Lore 형식을 따른다. Lore에 정의된 trailer key만 허용하며 `Co-Authored-By:`·`Claude-Session:` 등 에이전트 서명을 넣지 않는다.
 - PR은 생성부터 review-ready여야 한다. Draft로 생성했다면 즉시 ready로 전환한다.
@@ -57,8 +64,19 @@
   개인 메모리·채팅·임시 경로·외부 노트만으로 인계하지 않는다.
 - 커밋·PR 생성·리뷰 수정·병합·이슈 처리 등 작업 단위가 끝나면 즉시 상태 기록을 갱신한다.
   세션 종료까지 미루지 않고 날짜는 `YYYY-MM-DD`로 쓴다.
-- HANDOFF는 **현재 상태·다음 행동·제약·근거 링크**를 갱신한다. 과거 세션 본문을 계속 덧붙이지 않는다.
-  상세 범위는 phase, 검증은 validation, 리뷰는 reviews, 결정은 DECISIONS에 둔다.
+- 같은 사실은 원본 한 곳에만 자세히 쓰고 다른 곳에서는 링크한다(D-088):
+
+  | 사실 | 원본 | 다른 곳에는 |
+  |---|---|---|
+  | 검증 명령·결과·baseline 차이·미검증 범위 | `validation/` | PR 본문·phase·HANDOFF는 링크. 커밋 `Tested`/`Not-tested`는 그 커밋에서 실행한 것만 한 줄 |
+  | CI 결과, 리뷰 지적과 처리, 병합·브랜치 정리 | `reviews/PR-<n>.md` | HANDOFF·phase는 링크 |
+  | 범위·단계·진행 | `phases/` | HANDOFF는 링크 |
+  | 결정과 이유 | `DECISIONS.md` | 결정 번호로 참조 |
+  | 현재 상태·다음 행동·blocker·유효한 제약 | `HANDOFF.md` | — |
+
+- HANDOFF는 **현재 상태·다음 행동·제약·근거 링크**만 둔다. 작업마다 몇 줄과 링크로 쓰고, 과거 세션 본문을 덧붙이지 않는다.
+  끝난 작업은 다음 작업이 시작되면 지우고, 해소된 blocker와 끝난 정리 기록도 지운다(근거는 원본 문서와 git 이력에 있다).
+  150줄을 넘으면 정리한다.
 - 병합 후 낡을 PR OPEN·READY_FOR_REVIEW·작업 브랜치 상태는 HANDOFF에 고정하지 않는다.
   해당 리뷰 로그와 GitHub live state로 확인한다. 세션 종료 전 모든 근거가 저장소에 있는지 확인한다.
 - 타입 검사·린트를 생략한 빌드를 전체 검증 성공으로, 설명 없는 테스트 실패를 기존 실패로 기록하지 않는다.

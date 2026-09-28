@@ -3221,3 +3221,26 @@
 - Directive: PR 워크플로 job 이름을 바꾸면 브랜치 보호의 필수 검사도 같이 바꿔라. 앱이 읽는 `.md` 파일을 만들면
   경로 필터 예외를 먼저 고쳐라.
 - Related: phases/CI-dedupe-workflows.md, PR196, D-077(문서 전용 push의 Vercel 배포 제외)
+
+## D-088: 한 커밋 트리는 한 번 검증하고, 같은 사실은 원본 한 곳에만 쓴다
+
+- Date: 2026-09-28
+- Status: Accepted by the user on 2026-09-28 (recommended direction); merge pending
+- Context: D-087로 CI 중복을 없앤 뒤에도 규약이 로컬 전체 재검증과 다중 기록을 요구하거나 허용했다. PR195는 같은 트리를
+  로컬 2번·CI 3~4번 검증했고, 결과를 6곳에 적었다. HANDOFF는 360줄로 자기 규칙을 어겼다.
+- Decision:
+  1. 로컬 검증은 재현 테스트, 변경 영역 테스트, 전체 Jest, tsc, lint다. 6개 브라우저 전체 E2E와 production build는 PR CI가
+     맡는다. CI가 통과시킨 커밋을 로컬에서 다시 전체 검증하지 않고, 병합 후 main은 `Post-merge checks` 결과로 확인한다.
+  2. CI가 대신할 수 없는 확인(preview·운영 화면, 실기기, OMR VM, 운영 DB)은 줄이지 않는다.
+  3. 검증은 validation, CI·리뷰·병합은 reviews, 범위·진행은 phase, 결정은 DECISIONS, 현재 상태는 HANDOFF가 원본이고
+     나머지는 링크한다. Lore `Tested`는 그 커밋에서 실행한 것만 한 줄로 쓴다.
+  4. HANDOFF는 끝난 작업을 다음 작업 시작 시 지우고 150줄을 넘으면 정리한다.
+  5. 규칙은 AGENTS에만 두고 WORKFLOW는 명령 절차만 담는다. 읽기 순서도 AGENTS에만 정의한다.
+- Rejected: 로컬 검증을 관련 테스트만으로 축소 | 전체 Jest는 1~2분이고, PR198에서 워크플로 계약 테스트 실패를 미리 잡을 수 있었다.
+- Rejected: HANDOFF 과거 본문을 별도 이력 파일로 복사 | git 이력과 원본 문서에 이미 있어 또 하나의 사본이 된다.
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: CI에 없는 검증(운영·실기기·VM)을 CI 통과로 대신하지 마라. 로컬 전체 E2E가 필요한 변경(재생 타이밍 등)은
+  이유를 validation에 쓰고 돌린다 — 금지가 아니라 기본값이다.
+- Related: phases/DOC-2-harness-dedupe.md, D-087, PR198
