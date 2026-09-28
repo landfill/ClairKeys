@@ -62,6 +62,21 @@ export interface PublicSheetMusicListResponse {
     offset: number
     hasMore: boolean
   }
+  /** Categories holding a public sheet; sent with the first page only (#197). */
+  categories?: Array<{
+    id: number
+    name: string
+    count: number
+  }>
+}
+
+/** What `/api/sheet/public` accepts: the explore page's search, filter and sort. */
+export interface PublicSheetMusicQuery {
+  search?: string
+  categoryId?: number
+  sortBy?: 'newest' | 'oldest' | 'title' | 'composer'
+  limit?: number
+  offset?: number
 }
 
 export interface SheetMusicResponse {
@@ -86,22 +101,3 @@ export interface SearchSheetMusicParams {
   sortOrder?: 'asc' | 'desc'
 }
 
-export interface SearchSheetMusicResponse {
-  success: boolean
-  sheetMusic: SheetMusicWithOwner[]
-  pagination: {
-    total: number
-    limit: number
-    offset: number
-    hasMore: boolean
-  }
-  filters?: {
-    categories: Array<{
-      id: number
-      name: string
-      count: number
-    }>
-    totalPublic: number
-    totalPrivate: number
-  }
-}

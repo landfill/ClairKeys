@@ -1,26 +1,18 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MainLayout, PageHeader, Container } from '@/components/layout'
-import { SheetMusicSearch } from '@/components/search'
 import { PublicSheetMusicBrowser } from '@/components/browse'
 import { SheetMusicWithOwner } from '@/types/sheet-music'
 import { Button } from '@/components/ui'
 
 export default function ExplorePage() {
-  const [activeTab, setActiveTab] = useState<'browse' | 'search'>('browse')
   const router = useRouter()
 
   const handleSheetMusicClick = (sheetMusic: SheetMusicWithOwner) => {
     // Navigate to the sheet music page
     router.push(`/sheet/${sheetMusic.id}`)
   }
-
-  const tabs = [
-    { id: 'browse' as const, label: '탐색' },
-    { id: 'search' as const, label: '검색' }
-  ]
 
   return (
     <MainLayout>
@@ -30,48 +22,12 @@ export default function ExplorePage() {
       />
       
       <Container className="py-6">
-        {/* Tab Navigation */}
-        <div data-testid="explore-tabs" className="flex space-x-1 mb-6 p-1 bg-surface-muted rounded-full max-w-md mx-auto">
-          {tabs.map((tab) => (
-            <Button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              variant={activeTab === tab.id ? 'outline' : 'ghost'}
-              size="sm"
-              className="flex-1"
-              aria-pressed={activeTab === tab.id}
-            >
-              <span>{tab.label}</span>
-            </Button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        <div>
-          {activeTab === 'browse' && (
-            <div>
-              <PublicSheetMusicBrowser 
-                onSheetMusicClick={handleSheetMusicClick}
-                className="w-full"
-              />
-            </div>
-          )}
-
-          {activeTab === 'search' && (
-            <div className="space-y-4">
-              <p className="text-center text-sm text-ink-muted">
-                원하는 악보를 검색하고 필터를 사용해 찾아보세요
-              </p>
-
-              <SheetMusicSearch 
-                onResultClick={handleSheetMusicClick}
-                showFilters={true}
-                defaultPublicOnly={true}
-                className="w-full"
-              />
-            </div>
-          )}
-        </div>
+        {/* One screen: the browse and search tabs listed the same public sheets
+            from two endpoints (#197, D-091). */}
+        <PublicSheetMusicBrowser
+          onSheetMusicClick={handleSheetMusicClick}
+          className="w-full"
+        />
 
         {/* Quick Actions */}
         <div className="fixed bottom-6 right-6">

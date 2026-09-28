@@ -1,31 +1,34 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { SearchSheetMusicParams, SearchSheetMusicResponse } from '@/types/sheet-music'
+import { PublicSheetMusicListResponse, PublicSheetMusicQuery } from '@/types/sheet-music'
 
-interface UseSheetMusicSearchOptions {
-  initialParams?: SearchSheetMusicParams
+interface UsePublicSheetMusicOptions {
+  initialParams?: PublicSheetMusicQuery
   autoSearch?: boolean
   debounceMs?: number
 }
 
-const paramsKey = (params: SearchSheetMusicParams) => JSON.stringify([
+const paramsKey = (params: PublicSheetMusicQuery) => JSON.stringify([
   params.search ?? null,
   params.categoryId ?? null,
-  params.isPublic ?? null,
   params.limit ?? null,
   params.offset ?? null,
   params.sortBy ?? null,
-  params.sortOrder ?? null,
 ])
 
-export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
+/**
+ * The explore page's one list (#197, D-091): the public sheets, narrowed by
+ * search, category and sort, a page at a time. Typing waits out a debounce; a
+ * change marked `immediate` (a choice from a menu) is requested at once.
+ */
+export function usePublicSheetMusic(options: UsePublicSheetMusicOptions = {}) {
   const {
     initialParams = {},
     autoSearch = true,
     debounceMs = 300
   } = options
 
-  const [params, setParams] = useState<SearchSheetMusicParams>(initialParams)
-  const [data, setData] = useState<SearchSheetMusicResponse | null>(null)
+  const [params, setParams] = useState<PublicSheetMusicQuery>(initialParams)
+  const [data, setData] = useState<PublicSheetMusicListResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -33,6 +36,7 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
   const lastAutoSearchKeyRef = useRef<string | null>(null)
   const queuedAutoSearchKeyRef = useRef<string | null>(null)
   const latestRequestRef = useRef(0)
+  const immediateRef = useRef(false)
   const paramsRef = useRef(params)
 
   useEffect(() => {
@@ -41,7 +45,7 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
 
   // Debounced search function
   const search = useCallback(
-    async (searchParams: SearchSheetMusicParams, append = false) => {
+    async (searchParams: PublicSheetMusicQuery, append = false) => {
       const requestId = latestRequestRef.current + 1
       latestRequestRef.current = requestId
       setLoading(true)
@@ -52,19 +56,17 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
         
         if (searchParams.search) queryParams.set('search', searchParams.search)
         if (searchParams.categoryId) queryParams.set('categoryId', searchParams.categoryId.toString())
-        if (searchParams.isPublic !== undefined) queryParams.set('isPublic', searchParams.isPublic.toString())
         if (searchParams.limit) queryParams.set('limit', searchParams.limit.toString())
         if (searchParams.offset) queryParams.set('offset', searchParams.offset.toString())
         if (searchParams.sortBy) queryParams.set('sortBy', searchParams.sortBy)
-        if (searchParams.sortOrder) queryParams.set('sortOrder', searchParams.sortOrder)
 
-        const response = await fetch(`/api/sheet/search?${queryParams.toString()}`)
+        const response = await fetch(`/api/sheet/public?${queryParams.toString()}`)
         
         if (!response.ok) {
           throw new Error(`Search failed: ${response.statusText}`)
         }
 
-        const result: SearchSheetMusicResponse = await response.json()
+        const result: PublicSheetMusicListResponse = await response.json()
         if (requestId !== latestRequestRef.current) return
 
         setData(previous => {
@@ -72,7 +74,9 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
 
           return {
             ...result,
-            sheetMusic: [...previous.sheetMusic, ...result.sheetMusic]
+            sheetMusic: [...previous.sheetMusic, ...result.sheetMusic],
+            // Only the first page carries the filter list.
+            categories: result.categories ?? previous.categories
           }
         })
         
@@ -102,8 +106,11 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
       return
     }
 
-    if (!hasStartedAutoSearchRef.current) {
+    // The first search pays no debounce, and neither does a change the caller
+    // marked immediate.
+    if (!hasStartedAutoSearchRef.current || immediateRef.current) {
       hasStartedAutoSearchRef.current = true
+      immediateRef.current = false
       lastAutoSearchKeyRef.current = currentParamsKey
       void search(params)
       return
@@ -128,13 +135,18 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
     }
   }, [params, search, autoSearch, debounceMs])
 
-  // Update search parameters
-  const updateParams = useCallback((newParams: Partial<SearchSheetMusicParams>) => {
+  // Update search parameters. `immediate` skips the debounce for this change;
+  // an unchanged value requests nothing either way.
+  const updateParams = useCallback((
+    newParams: Partial<PublicSheetMusicQuery>,
+    { immediate = false }: { immediate?: boolean } = {}
+  ) => {
     setParams(prev => {
       const next = { ...prev, ...newParams }
       const changed = Object.keys(next).some(key => (
-        next[key as keyof SearchSheetMusicParams] !== prev[key as keyof SearchSheetMusicParams]
+        next[key as keyof PublicSheetMusicQuery] !== prev[key as keyof PublicSheetMusicQuery]
       ))
+      if (changed && immediate) immediateRef.current = true
       return changed ? next : prev
     })
   }, [])
@@ -161,7 +173,8 @@ export function useSheetMusicSearch(options: UseSheetMusicSearchOptions = {}) {
   const loadMore = useCallback(async () => {
     if (!data || !data.pagination.hasMore || loading) return
 
-    const nextOffset = data.pagination.offset + data.pagination.limit
+    // Continue after what is on screen, whatever page size produced it.
+    const nextOffset = data.sheetMusic.length
     await search({ ...params, offset: nextOffset }, true)
   }, [data, params, search, loading])
 
