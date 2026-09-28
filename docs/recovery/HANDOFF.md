@@ -18,7 +18,7 @@ Last updated: 2026-09-28 KST
 ## Next action
 
 - OMR 재시도 시간 초과 테스트 2건이 전체 Jest 부하에서 간헐 실패(20ms 마감 경쟁, [원인](validation/2026-09-28-doc2-harness-dedupe.md)). 별도 작업 후보.
-- #185 종료 코멘트·close는 사용자 승인 대기(근거: [리뷰](reviews/PR-200.md)).
+- #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 우선순위 결함 이슈 미착수(추천 순서 #186 → #188 → #197 결정 → #187 → #121):
   [#186](https://github.com/landfill/ClairKeys/issues/186) 모바일 빠르기 표시 가림,
   [#187](https://github.com/landfill/ClairKeys/issues/187) 탐색·검색 API 약 2초, [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그.
