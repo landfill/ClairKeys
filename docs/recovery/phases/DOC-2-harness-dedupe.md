@@ -37,6 +37,5 @@ AGENTS.md, WORKFLOW.md, `docs/recovery/README.md`, LORE_COMMIT_PROTOCOL.md, PR �
 
 ## Progress
 
-- 2026-09-28: 규약 문서 수정. PR199 첫 CI는 문서 전용 PR로서 `Lint`만 실행, 필수 나머지 skipped, All Checks Complete PASS.
-- 2026-09-28: Codex P1(검증 기록 누락·문서 전용 변경의 Jest 범위 모호)을 받아 문서 전용 변경의 검증 범위를 AGENTS에 명시하고
-  [검증](../validation/2026-09-28-doc2-harness-dedupe.md)을 남겼다.
+- 2026-09-28: 규약 문서 수정. PR 진행(CI·리뷰·병합)은 [리뷰 로그](../reviews/PR-199.md), 검증은
+  [validation](../validation/2026-09-28-doc2-harness-dedupe.md)이 원본이다. 병합 뒤 상태는 main에서 갱신한다.
