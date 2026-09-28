@@ -1,6 +1,6 @@
 # #197 공개 악보 탐색을 한 화면·한 API로
 
-Status: IN_REVIEW
+Status: DONE
 Date: 2026-09-28
 Issue: https://github.com/landfill/ClairKeys/issues/197
 
@@ -60,3 +60,4 @@ Issue: https://github.com/landfill/ClairKeys/issues/197
 
 - 2026-09-28: 방향 결정(1안), 현재 구조 조사, 계획 작성.
 - 2026-09-28: 구현·로컬 검증. WebKit CSS 200% 확대에서 flex 안 검색 입력창이 고유 폭을 유지해 문서가 넘친 것을 E2E로 발견, 감싸는 칸이 폭을 정하도록 수정.
+- 2026-09-28: 사용자 승인("병합")으로 PR202 `76183e8`를 `54af927`에 병합, #197 자동 종료. 운영 확인은 [리뷰 로그](../reviews/PR-202.md).

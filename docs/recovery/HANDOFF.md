@@ -6,12 +6,12 @@ Last updated: 2026-09-28 KST
 
 ## Current phase
 
-**#197 공개 악보 탐색 한 화면·한 API — IN_REVIEW (2026-09-28).** [PR202](https://github.com/landfill/ClairKeys/pull/202) head `76183e8`.
-사용자가 1안(탭 없이 한 화면·한 API)을 선택(D-091). 탐색·검색 탭을 합치고 목록 요청을 `/api/sheet/public` 하나로 모았다.
-`/api/sheet/search`·검색 탭·비공개 필터 삭제. 로컬 검증 PASS, CI·Codex 리뷰 확인 중. 병합은 사용자 승인 필요.
-[phase](phases/ISSUE-197-explore-single-screen.md), [검증](validation/2026-09-28-issue-197-explore-single-screen.md), [리뷰](reviews/PR-202.md).
+**#197 공개 악보 탐색 한 화면·한 API — DONE (2026-09-28).** PR202 `54af927`, 사후 검사·운영 배포·운영 확인 PASS.
+탐색·검색 탭을 한 화면으로 합치고 목록 요청을 `/api/sheet/public` 하나로 모았다(D-091). 운영 `/explore`에서 열 때 요청 1회·탭 없음.
+[PR202](https://github.com/landfill/ClairKeys/pull/202), [phase](phases/ISSUE-197-explore-single-screen.md),
+[검증](validation/2026-09-28-issue-197-explore-single-screen.md), [리뷰](reviews/PR-202.md).
 
-최근 완료(상세는 각 리뷰 로그): #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
+최근 완료(상세는 각 리뷰 로그): #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
 [validation](validation/) `2026-09-27-*`), #177 PR183·PR184(2026-09-22), UI 일관성 PR182, #178 PR179~181(D-076·D-077),
 #125 PR173·175(D-075), DB 문서 PR174·176.
 
@@ -21,10 +21,10 @@ Last updated: 2026-09-28 KST
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - CI E2E job(`pr-checks.yml` `test-e2e`)에 `timeout-minutes`가 없어 멈추면 기본 360분 동안 돈다(평소 17~18분). 30분 상한 후보(별도 PR).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
-- PR202: CI·Codex 리뷰 대응 후 사용자 병합 승인 대기. 병합 후 운영 `/explore` 확인(요청 1회, 카테고리 목록).
-- 우선순위 결함 이슈 미착수(추천 순서 #188 → #187 → #121):
-  [#187](https://github.com/landfill/ClairKeys/issues/187) 탐색 API 약 2초(PR202 뒤에는 `/api/sheet/public` 하나, `Server-Timing` 있음),
-  [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그.
+- 추천 다음 작업 [#187](https://github.com/landfill/ClairKeys/issues/187) 탐색 API 지연: 운영 함수가 `iad1`(미국 동부)에서 돌고
+  cache MISS 때 DB 3건에 1.6~3.9초([근거](reviews/PR-202.md)). `vercel.json`에 `regions` 없음. Supabase 지역 확인이 필요하다
+  (MCP 권한 없음, 로컬 env에 운영 DB 주소 없음 → 사용자 확인). 함수 지역 변경은 운영 배포라 별도 승인.
+- 그다음 [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그 → #121.
 - 사용자 결정 대기: 홈 샘플을 실제 재생기로 바꿀지(2026-08-30 정적 예시 결정과 충돌해 보류).
 - 실기기 미검증: 실제 MIDI 피아노·Chrome MIDI 권한 팝업, 로그인 상태 운영 연습 기록 쓰기, 클릭·반주 청취 레벨.
 - 후속 후보: 탐색 인기 순위(D-080), 재생 중(압축 바) 손·메트로놈·기다리기 토글, `PracticeSession` FK CASCADE migration
