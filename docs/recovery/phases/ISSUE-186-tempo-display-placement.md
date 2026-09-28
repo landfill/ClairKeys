@@ -1,6 +1,6 @@
 # #186 재생 화면 빠르기 표시 위치
 
-Status: IN_REVIEW
+Status: DONE
 Date: 2026-09-28
 Issue: https://github.com/landfill/ClairKeys/issues/186
 
@@ -50,3 +50,4 @@ Issue: https://github.com/landfill/ClairKeys/issues/186
 ## Progress
 
 - 2026-09-28: 원인 확인, 재현(E2E 3건·Jest 1건 선실패), 구현·로컬 검증. 검증은 validation, CI·리뷰는 리뷰 로그가 원본이다.
+- 2026-09-28: 사용자 승인("병합")으로 PR201 `55d7ad9`를 `4bc5178`에 병합, #186 자동 종료. 운영 확인은 [리뷰 로그](../reviews/PR-201.md).

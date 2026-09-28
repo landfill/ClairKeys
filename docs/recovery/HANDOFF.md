@@ -6,9 +6,9 @@ Last updated: 2026-09-28 KST
 
 ## Current phase
 
-**#186 재생 화면 빠르기 표시 위치 — IN_REVIEW (2026-09-28).** [PR201](https://github.com/landfill/ClairKeys/pull/201) head `55d7ad9`.
-재생 중 빠르기 pill(`fixed`)이 회전된 루트 안에서 노트 레인을 가렸다. 컴팩트 바 아래 in-flow 한 줄로 옮기고 세션 루트를
-화면 높이에 고정했다(D-090). 로컬 검증 PASS, CI·Codex 리뷰 확인 중. 병합은 사용자 승인 필요.
+**#186 재생 화면 빠르기 표시 위치 — DONE (2026-09-28).** PR201 `4bc5178`, 사후 검사·운영 배포·운영 확인 PASS.
+재생 중 빠르기 표시를 노트 레인 위 `fixed` pill에서 컴팩트 바 아래 한 줄로 옮기고 세션 루트를 화면 높이에 고정했다(D-090).
+운영 `/sheet/92` 회전·가로·PC에서 겹침 0. [PR201](https://github.com/landfill/ClairKeys/pull/201),
 [phase](phases/ISSUE-186-tempo-display-placement.md), [검증](validation/2026-09-28-issue-186-tempo-display-placement.md),
 [리뷰](reviews/PR-201.md).
 
@@ -20,7 +20,7 @@ Last updated: 2026-09-28 KST
 
 - OMR 재시도 시간 초과 테스트 2건이 전체 Jest 부하에서 간헐 실패(20ms 마감 경쟁, [원인](validation/2026-09-28-doc2-harness-dedupe.md)). 별도 작업 후보.
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
-- PR201: CI·Codex 리뷰 대응 후 사용자 병합 승인 대기. 병합 후 운영 `/sheet/92` 모바일 재생 화면 확인.
+- CI E2E job(`pr-checks.yml` `test-e2e`)에 `timeout-minutes`가 없어 멈추면 기본 360분 동안 돈다(평소 17~18분). 30분 상한 후보(별도 PR).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
 - 우선순위 결함 이슈 미착수(추천 순서 #188 → #197 결정 → #187 → #121):
   [#187](https://github.com/landfill/ClairKeys/issues/187) 탐색·검색 API 약 2초, [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그.
