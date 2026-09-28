@@ -16,21 +16,11 @@
 
 ## Validation
 
-| Check | Result | Evidence record |
-|---|---|---|
-| Focused tests |  |  |
-| Type check |  |  |
-| Lint |  |  |
-| Unit tests |  |  |
-| Build |  |  |
-| Manual/E2E |  |  |
+- Record: `docs/recovery/validation/<file>.md` (commands, results, baseline difference, gaps live there)
+- Local summary (one line):
+- Not verified:
 
-## Baseline difference
-
-- Fixed failures:
-- Remaining known failures (each item must link to a validation/baseline record):
-- Evidence records:
-- New failures:
+Hosted checks are this PR's own checks; do not copy their results here.
 
 ## Risks and rollback
 

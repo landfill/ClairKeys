@@ -1,42 +1,54 @@
 # Branch, Validation, PR, and Review Workflow
 
-핵심 규칙·시작 시 읽기 순서·상태 기록 분류는 [AGENTS.md](../../AGENTS.md)가 기준이다.
-이 문서는 그 규칙을 실행하는 절차다. 기본 브랜치와 신규 PR base는 `main`이다.
-DOC-1의 과거 `master` 전환 예외는 [당시 phase](phases/DOC-1-default-branch-main-migration.md)에 남긴다.
+규칙은 [AGENTS.md](../../AGENTS.md)에만 있다. 이 문서는 그 규칙을 실행하는 명령과 순서다. 규칙을 여기에 다시 적지 않는다.
+기본 브랜치와 신규 PR base는 `main`이다. DOC-1의 과거 `master` 전환 예외는 [당시 phase](phases/DOC-1-default-branch-main-migration.md)에 남긴다.
 
-## 1. 작업 준비와 구현
+## 1. 구현과 로컬 검증
 
-1. AGENTS의 세션 시작 절차로 원격 동기화·사용자 변경 확인·문서 읽기를 마친다.
-2. 최신 main에서 `codex/<phase>-<topic>`을 만든다. 관련 phase 계획을 확인하거나 작성한다.
-3. 동작 변경은 재현 테스트·fixture와 실패 결과를 먼저 확보한다.
-4. 하나의 원인 또는 계약을 수정하고 관련 필수 검증을 실행한다. 스펙 이탈은 phase·DECISIONS를 먼저 수정한다.
-5. 검증 명령·결과·baseline 차이·미검증 범위를 `validation/YYYY-MM-DD-<phase>-<slug>.md`에 기록한다.
-6. 변경 내용을 AGENTS의 커밋 분류에 따라 작업 브랜치와 main 상태 기록으로 분리한다.
+1. 최신 main에서 `git switch -c codex/<phase>-<topic>`. phase 계획을 확인하거나 작성한다.
+2. 재현 테스트를 먼저 추가하고 실패 결과를 남긴다.
+3. 수정 후 로컬 검증(범위는 AGENTS "검증은 한 커밋 트리에 한 번씩만"):
+
+   ```bash
+   # Jest의 OMR 회귀는 Python 3.10 + omr-service/requirements-ci.txt가 필요하다. venv는 한 번만 만든다.
+   uv venv --python 3.10 <venv> && uv pip install --python <venv>/bin/python -r omr-service/requirements-ci.txt
+   PATH=<venv>/bin:$PATH npx jest
+   npx tsc --noEmit --incremental false
+   npm run lint
+   npx playwright test <변경 영역 spec> --project=chromium   # 필요한 브라우저만
+   ```
+
+4. `validation/YYYY-MM-DD-<phase>-<slug>.md`에 명령·결과·baseline 차이·미검증 범위를 쓴다.
 
 ## 2. 커밋과 상태 기록
 
-- 작업 브랜치에는 코드·테스트·규약·계획·관련 결정을 커밋한다. 하나의 커밋은 하나의 결정 단위다.
-- 파일을 명시적으로 stage하고 `git status --short`와 staged diff로 사용자 변경이 섞이지 않았는지 확인한다.
-- 커밋 형식과 trailer는 [Lore](LORE_COMMIT_PROTOCOL.md)를 따른다.
+- 파일을 명시적으로 stage하고 `git status --short`와 `git diff --cached`로 사용자 변경이 섞이지 않았는지 본다.
 - 상태 기록은 매 작업 단위 직후 main에 반영한다. 별도 상태 기록 PR은 만들지 않는다.
 
 작업 브랜치에서 상태 기록을 작성했다면 다음 순서로 분리한다:
 
 1. 작업 브랜치 변경을 선별 커밋한다. 사용자 변경을 임의 stash·reset하지 않는다.
-2. 원격을 fetch하고 main을 fast-forward한다. 상태 파일 변경이 안전하게 이동 가능한지 확인한 뒤 main으로 전환한다.
-   전환이 사용자 변경과 충돌하면 중단하고 blocker를 기록한다. 강제 전환하지 않는다.
-3. 상태 파일만 stage하고 내용·명령·SHA·결과 및 사용자 변경 제외 여부를 확인한다.
-4. Lore 형식으로 커밋·push한다. 상태 파일만 바꾼 push에는 CI가 없다(D-087). 다른 파일이 섞였다면 해당 SHA의
-   check-runs를 확인하고, 실패가 있으면 즉시 다음 상태 기록 커밋에 남긴다.
+2. `git fetch origin` 후 main을 fast-forward하고 main으로 전환한다. 사용자 변경과 충돌하면 중단하고 blocker를 기록한다.
+3. 상태 파일만 stage하고 내용·명령·SHA·결과를 확인한다.
+4. Lore 형식으로 커밋·push한다. 상태 파일만 바꾼 push에는 CI가 없다(D-087). 다른 파일이 섞였다면
+   `gh api repos/<owner>/<repo>/commits/<sha>/check-runs`를 확인하고, 실패는 즉시 다음 상태 기록 커밋에 남긴다.
 5. 작업이 남으면 작업 브랜치로 돌아간다. main에만 둔 상태 기록을 코드 커밋에 다시 섞지 않는다.
 
 ## 3. PR과 리뷰 반복
 
-1. 검증된 범위로 non-draft PR을 생성한다. 목적·범위·제외 범위·위험·검증·baseline 차이·rollback 방법을 설명한다.
-2. 번호가 생기면 즉시 `reviews/PR-<number>.md`를 만들고 HANDOFF에서 연결한다. §2에 따라 main에 기록한다.
-3. 현재 head의 CI와 리뷰를 확인하고 각 finding을 아래 상태로 분류한다.
-4. 유효한 finding은 재현 → 최소 수정 → 검증 → 작업 브랜치 커밋·push 후 재확인한다.
-5. 리뷰 로그를 main에 갱신한다. 리뷰·CI 수정이 끝날 때까지 반복한다.
+1. `gh pr create --base main`으로 non-draft PR을 만든다. 검증은 validation 기록 링크와 한 줄 요약으로 쓴다.
+2. 번호가 생기면 `reviews/PR-<number>.md`를 만들고 HANDOFF에서 링크한다(§2 절차로 main에 기록).
+3. `gh pr checks <n>`과 리뷰를 확인한다. 실패 job 로그는 `gh api repos/<owner>/<repo>/actions/jobs/<job-id>/logs`로 읽는다.
+4. 각 finding을 아래 상태로 분류하고, 유효하면 재현 → 최소 수정 → 로컬 검증 → 커밋·push한다.
+5. 스레드마다 회신한 뒤 **스레드 id를 지정해** resolve한다. 일괄 resolve는 처리 중 새로 달린 지적까지 닫는다.
+
+   ```bash
+   gh api -X POST repos/<owner>/<repo>/pulls/<n>/comments/<comment-id>/replies -f body='...'
+   gh api graphql -f query='query{repository(owner:"<owner>",name:"<repo>"){pullRequest(number:<n>){reviewThreads(first:50){nodes{id isResolved comments(first:1){nodes{databaseId}}}}}}}'
+   gh api graphql -f query='mutation{resolveReviewThread(input:{threadId:"<thread-id>"}){thread{isResolved}}}'
+   ```
+
+6. 리뷰 로그를 main에 갱신한다. 새 push마다 Codex가 재리뷰하므로 최신 head의 리뷰 완료를 확인할 때까지 반복한다.
 
 | 리뷰 상태 | 의미 |
 |---|---|
@@ -46,28 +58,19 @@ DOC-1의 과거 `master` 전환 예외는 [당시 phase](phases/DOC-1-default-br
 | REJECTED | 근거를 기록하고 적용하지 않음 |
 | SUPERSEDED | 후속 리뷰·설계로 대체 |
 
-리뷰 루프 종료에는 필수 CI 성공, 미해결 actionable review와 새 실패 없음, 최신 리뷰 로그·HANDOFF가 필요하다.
-기준선 때문에 실행 불가능한 검증은 이유와 후속 단계를 기록하며 전체 검증 성공으로 표현하지 않는다.
-이 상태에서도 대상 PR의 명시적 병합 승인을 기다린다.
-
 ## 4. 승인 후 병합과 정리
 
-1. 대상 PR 승인 후 현재 head의 CI·리뷰·mergeability를 다시 확인하고 병합한다.
-2. main에 실제 병합 커밋이 반영됐는지 및 그 커밋의 체크 결과를 확인한다.
-3. 원격 ref를 fetch하고 로컬·원격 작업 브랜치 tip 모두 최신 main에 포함됐는지 확인한다.
-4. 사용자 미커밋 변경 또는 어느 tip의 고유 커밋이 있으면 두 브랜치를 보존하고 HANDOFF에 blocker를 기록한다.
-5. 두 tip 모두 포함되고 사용자 미커밋 변경이 없으면 원격 브랜치 삭제 → main 이동 → 로컬 브랜치 삭제 순서로 정리한다.
-6. 병합·검증·정리 결과를 HANDOFF·phase 상태·validation·review에 main 직접 커밋으로 남긴다.
-7. 다음 코드 작업은 최신 main에서 새 브랜치를 만든다.
+1. 현재 head의 CI·리뷰·mergeability를 확인하고, 확인한 head로 고정해 병합한다(전체 SHA만 받는다):
+
+   ```bash
+   gh pr merge <n> --merge --match-head-commit $(git rev-parse origin/<branch>)
+   ```
+
+2. main을 fast-forward하고 병합 커밋의 `Post-merge checks` 결과를 확인한다. 로컬 전체 재검증은 하지 않는다.
+3. `git fetch --prune origin` 후 로컬·원격 tip이 main에 포함됐는지 `git rev-list --count main..<tip>`으로 확인한다.
+4. 사용자 미커밋 변경 또는 고유 커밋이 있으면 두 브랜치를 보존하고 HANDOFF에 blocker를 기록한다.
+5. 모두 포함되면 `git push origin --delete <branch>` → main 이동 → `git branch -d <branch>` 순서로 정리한다.
+6. 병합·검증·정리 결과는 리뷰 로그에, 단계 상태는 phase에 쓰고, HANDOFF는 링크와 다음 행동만 갱신한다.
 
 단계 DONE은 병합과 완료 조건 충족 후에만 확정한다. 마감 PR에 예정 상태를 담았다면 병합 순간부터 효력이 생긴다.
 예정 DONE만으로 의존 단계 브랜치를 시작하지 않는다.
-
-## 5. 세션 종료 확인
-
-- 해당 작업의 필수 검증과 미검증 범위가 validation에 있는가?
-- 현재 상태·다음 행동·blocker가 간결한 HANDOFF에 있고 상세 근거로 연결되는가?
-- 결정 변경이 관련 작업 브랜치·PR에 포함되고 상태 기록은 main에 반영됐는가?
-- PR은 non-draft이며 최신 CI·리뷰 결과가 기록됐는가?
-- 병합했다면 main 반영과 브랜치 정리 또는 보존 사유가 기록됐는가?
-- 사용자 변경을 보존했고 모든 인계 근거가 저장소 안에 있는가?

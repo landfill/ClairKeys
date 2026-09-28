@@ -2,15 +2,9 @@
 
 이 디렉터리는 ClairKeys 복구·정확도 개선 작업의 영구 기록이다. 어떤 코드 에이전트나 새 세션에서도 여기서 현재 상태와 다음 작업을 복원할 수 있어야 한다.
 
-## 읽기 순서
+## 읽기 순서와 규칙
 
-1. [현재 핸드오프](HANDOFF.md)
-2. `HANDOFF.md`가 지정한 `phases/` 아래의 현재 단계 문서
-3. [브랜치·PR·리뷰 흐름](WORKFLOW.md)
-4. [검증 기준선](BASELINE.md)
-5. [Lore 커밋 규약](LORE_COMMIT_PROTOCOL.md)
-6. [우선순위 로드맵](ROADMAP.md)
-7. [기술 결정 기록](DECISIONS.md)
+세션 시작 시 읽기 순서와 작업 규칙은 [AGENTS.md](../../AGENTS.md)에만 있다. 실행 명령은 [WORKFLOW](WORKFLOW.md)에 있다.
 
 ## 기록 구조
 
