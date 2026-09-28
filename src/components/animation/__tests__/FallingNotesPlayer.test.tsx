@@ -130,8 +130,16 @@ describe('FallingNotesPlayer', () => {
   it('shows the metronome value and provenance before and during playback', () => {
     const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
 
-    expect(screen.getByTestId('tempo-display')).toHaveTextContent('♩=120 (출처 미상)')
-    expect(screen.getByTestId('tempo-display')).toHaveClass('fixed')
+    const playing = screen.getByTestId('tempo-display')
+    expect(playing).toHaveTextContent('♩=120 (출처 미상)')
+    // Issue #186: a fixed overlay inside the rotated player lands on the lane.
+    // During a session the readout is a line of its own, below the transport
+    // and above the notes, so the box can only shrink around it.
+    expect(playing).not.toHaveClass('fixed')
+    expect(screen.getByTestId('compact-playback-bar').compareDocumentPosition(playing))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    expect(playing.compareDocumentPosition(screen.getByTestId('playback-box')))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
 
     setIdle()
     rerender(<FallingNotesPlayer animationData={animationData} />)
@@ -778,7 +786,10 @@ describe('FallingNotesPlayer', () => {
       const root = container.firstElementChild as HTMLElement
 
       expect(root.style.transform).toBe('')
-      expect(root.className).toContain('min-h-[100dvh]')
+      // Exactly one screen, not at least one: a min-height let the box's own
+      // height hold the measured wrapper open past a short window (#186).
+      expect(root.style.height).toBe('100dvh')
+      expect(root.className).not.toContain('min-h-')
       expect(document.body).not.toHaveClass('playback-rotated')
     })
   })
