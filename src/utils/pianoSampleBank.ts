@@ -43,6 +43,8 @@ export class PianoSampleBank {
   private readonly abort = new AbortController()
   private loading: Promise<PianoSampleLoadResult> | null = null
   private disposed = false
+  /** Holds prefetched requests, so disposing it has to stop them too. */
+  private claimedPrefetch = false
 
   constructor(context: AudioContext) {
     this.context = context
@@ -87,7 +89,11 @@ export class PianoSampleBank {
 
   private async loadOne(sampleMidi: number): Promise<void> {
     try {
-      const encoded = (await takePrefetched(sampleMidi)) ?? (await this.fetchOne(sampleMidi))
+      const claimed = takePrefetched(sampleMidi)
+      if (claimed) this.claimedPrefetch = true
+      const encoded = (await claimed) ?? (await this.fetchOne(sampleMidi))
+      // Disposed while the bytes were on their way: the context is gone.
+      if (this.disposed) return
       // `decodeAudioData` is expensive and synchronous inside the browser's
       // audio thread; awaiting each one individually is what keeps a decode from
       // blocking the samples that have already arrived.
@@ -143,6 +149,7 @@ export class PianoSampleBank {
   dispose(): void {
     this.disposed = true
     this.abort.abort()
+    if (this.claimedPrefetch) abortPrefetch()
     this.buffers.clear()
   }
 }
@@ -168,24 +175,34 @@ const prefetched = new Map<number, Promise<ArrayBuffer | null>>()
  * would download the whole set again into bytes nothing decodes.
  */
 let bankHasLoaded = false
+/** Stops the prefetch requests once the bank that claimed them is disposed. */
+let prefetchAbort: AbortController | null = null
 
 export function prefetchPianoSamples(): void {
   if (bankHasLoaded || prefetched.size > 0 || typeof fetch !== 'function') return
 
+  const abort = new AbortController()
+  prefetchAbort = abort
   for (const midi of SAMPLE_MIDI_NOTES) {
     prefetched.set(
       midi,
-      fetch(sampleUrl(midi))
+      fetch(sampleUrl(midi), { signal: abort.signal })
         .then((response) => (response.ok ? response.arrayBuffer() : null))
         .catch(() => null)
     )
   }
 }
 
-function takePrefetched(sampleMidi: number): Promise<ArrayBuffer | null> {
+function takePrefetched(sampleMidi: number): Promise<ArrayBuffer | null> | undefined {
   const entry = prefetched.get(sampleMidi)
   prefetched.delete(sampleMidi)
-  return entry ?? Promise.resolve(null)
+  return entry
+}
+
+function abortPrefetch(): void {
+  prefetchAbort?.abort()
+  prefetchAbort = null
+  prefetched.clear()
 }
 
 /**

@@ -292,6 +292,34 @@ describe('PianoSampleBank', () => {
       expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length)
     })
 
+    // Leaving the page mid-download disposes the bank. The claimed prefetch
+    // requests must stop with it and nothing may decode against the closed
+    // context, exactly as for the bank's own fetches.
+    it('stops claimed prefetches and decodes nothing once the bank is disposed', async () => {
+      let release!: () => void
+      const gate = new Promise<void>(resolve => { release = resolve })
+      const signals: AbortSignal[] = []
+      const fetchMock = jest.fn(async (url: string, init?: { signal?: AbortSignal }) => {
+        if (init?.signal) signals.push(init.signal)
+        await gate
+        return { ok: true, arrayBuffer: async () => ({ url }) as unknown as ArrayBuffer }
+      }) as unknown as FetchMock
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples, PianoSampleBank: FreshBank } = freshModule()
+
+      prefetchPianoSamples()
+      const context = makeContext()
+      const bank = new FreshBank(context)
+      const loading = bank.load()
+      bank.dispose()
+      release()
+      await loading
+
+      expect(signals).toHaveLength(SAMPLE_MIDI_NOTES.length)
+      expect(signals.every(signal => signal.aborted)).toBe(true)
+      expect(context.decodeAudioData).not.toHaveBeenCalled()
+    })
+
     it('hands the bytes to one bank only, since decoding detaches them', async () => {
       const fetchMock = makeFetch()
       global.fetch = fetchMock as unknown as typeof fetch
