@@ -6,24 +6,20 @@ Last updated: 2026-09-28 KST
 
 ## Current phase
 
-**작업 규약 중복 정리 — DONE (2026-09-28).** PR199 `8550d42`(D-088): 로컬은 재현·변경 영역·전체 Jest·tsc·lint, 전체 E2E·build는
-CI, 병합 후는 `Post-merge checks`로 확인. 같은 사실은 원본 한 곳(AGENTS 표)에만 쓰고 HANDOFF는 150줄 이내. 새 규약의 첫 실제
-적용은 다음 코드 PR이다. [phase](phases/DOC-2-harness-dedupe.md), [검증](validation/2026-09-28-doc2-harness-dedupe.md),
-[리뷰](reviews/PR-199.md).
+**#185 첫 재생 샘플 로딩 — IN_REVIEW (2026-09-28).** 샘플을 페이지에서 미리 받고, 기다리는 동안 누른 버튼·노트 영역에 표시한다
+(D-089). 로컬 A/B: Fast 4G 2.7→1.5초, Slow 4G에서 10초 본 뒤 3.9초·합성음→1.5초·녹음 피아노, 3초만 보면 개선 없음.
+[PR200](https://github.com/landfill/ClairKeys/pull/200), [phase](phases/ISSUE-185-first-play-loading.md),
+[검증](validation/2026-09-28-issue-185-first-play-loading.md), [리뷰](reviews/PR-200.md).
 
-**CI 중복 실행 제거 — DONE (2026-09-28).** PR198 `5bffb90`(D-087): PR 게이트는 `pr-checks.yml` 하나, main push는
-`Post-merge checks` 하나, 문서 전용 push는 CI 없음. **`src/ci/__tests__`가 워크플로 구조를 Jest로 고정하므로 CI 변경도 전체
-Jest를 로컬에서 돌린다.** [phase](phases/CI-dedupe-workflows.md), [검증](validation/2026-09-28-ci-dedupe-workflows.md),
-[리뷰](reviews/PR-198.md).
-
-최근 완료(상세는 각 리뷰 로그): 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
+최근 완료(상세는 각 리뷰 로그): 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
 [validation](validation/) `2026-09-27-*`), #177 PR183·PR184(2026-09-22), UI 일관성 PR182, #178 PR179~181(D-076·D-077),
 #125 PR173·175(D-075), DB 문서 PR174·176.
 
 ## Next action
 
 - OMR 재시도 시간 초과 테스트 2건이 전체 Jest 부하에서 간헐 실패(20ms 마감 경쟁, [원인](validation/2026-09-28-doc2-harness-dedupe.md)). 별도 작업 후보.
-- 우선순위 결함 이슈 미착수: [#185](https://github.com/landfill/ClairKeys/issues/185) 첫 재생 샘플 로딩 표시,
+- PR200(#185): CI·Codex 재리뷰 대응 후 사용자 병합 승인 대기.
+- 우선순위 결함 이슈 미착수(추천 순서 #186 → #188 → #197 결정 → #187 → #121):
   [#186](https://github.com/landfill/ClairKeys/issues/186) 모바일 빠르기 표시 가림,
   [#187](https://github.com/landfill/ClairKeys/issues/187) 탐색·검색 API 약 2초, [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그.
 - [#197](https://github.com/landfill/ClairKeys/issues/197) 탐색·검색 탭 중복: 구현 전 방향 결정 필요(추천: 탭 없이 한 화면·한 API).
