@@ -13,6 +13,7 @@ import { usePracticeReport, type PracticeRun } from '@/hooks/usePracticeReport'
 import { usePracticeResume } from '@/hooks/usePracticeResume'
 import { SEEK_STEP_SEC, usePlaybackShortcuts } from '@/hooks/usePlaybackShortcuts'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
+import { prefetchPianoSamples } from '@/utils/pianoSampleBank'
 import FallingNotes from './FallingNotes'
 import SimplePianoKeyboard from '../piano/SimplePianoKeyboard'
 import { CompactPlaybackBar, PlaybackControls, TempoDisplay } from '@/components/playback'
@@ -33,6 +34,40 @@ import {
 } from '@/utils/beatGrid'
 import { HAND_COLORS } from '@/types/fallingNotes'
 import { formatVolumePercent } from '@/utils/volumeDisplay'
+
+/** How long the playing screen shows that the recorded piano was replaced. */
+const FALLBACK_NOTICE_MS = 4000
+/**
+ * Every seek and speed change restarts the audio through the sample wait, which
+ * reports 'loading' for a moment even when the samples are already decoded. Only
+ * a wait longer than this is worth an indicator; a shorter one would flash.
+ */
+const LOADING_INDICATOR_DELAY_MS = 200
+
+/**
+ * Fetch the recorded samples once the page has settled, before the first 재생
+ * (issue #185). The click still decodes and waits as before; this only moves
+ * the download into time the reader spends looking at the page. A reader who
+ * asked the browser to save data keeps the old behaviour: nothing is fetched
+ * until they choose to play.
+ */
+function usePrefetchedSamples() {
+  useEffect(() => {
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
+    if (connection?.saveData) return
+
+    const idle = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number
+      cancelIdleCallback?: (handle: number) => void
+    }
+    if (idle.requestIdleCallback) {
+      const handle = idle.requestIdleCallback(prefetchPianoSamples, { timeout: 2000 })
+      return () => idle.cancelIdleCallback?.(handle)
+    }
+    const timer = setTimeout(prefetchPianoSamples, 1000)
+    return () => clearTimeout(timer)
+  }, [])
+}
 
 const SEEK_STEP_LABEL = `${SEEK_STEP_SEC}초 이동`
 
@@ -367,6 +402,47 @@ export default function FallingNotesPlayer({
   // button does, and it goes through handlePlay so the orientation request is
   // made from this key press's user activation.
   const isReady = sampleStatus !== 'loading'
+  usePrefetchedSamples()
+
+  // A wait for the samples is shown on the pressed button and over the notes
+  // (issue #185). A first 재생 waits on the setup screen, since the session
+  // opens only once the audio has started (D-056); a restart inside a session
+  // waits too.
+  const waitingForSamples = sampleStatus === 'loading'
+  const [showLoading, setShowLoading] = useState(false)
+  useEffect(() => {
+    if (!waitingForSamples) {
+      setShowLoading(false)
+      return
+    }
+    const timer = setTimeout(() => setShowLoading(true), LOADING_INDICATOR_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [waitingForSamples])
+
+  // The playing screen hides the setup status line, so a start that fell back
+  // to synthesis says so over the notes for a moment. The status region still
+  // announces it to a screen reader. Shown when the outcome changes, not on
+  // every restart: a seek passes through 'loading' and lands on the same
+  // fallback, which the reader already knows.
+  const [showFallback, setShowFallback] = useState(false)
+  const settledStatusRef = useRef<typeof sampleStatus | null>(null)
+  useEffect(() => {
+    if (sampleStatus === 'loading') return
+    const changed = settledStatusRef.current !== sampleStatus
+    settledStatusRef.current = sampleStatus
+    if (!isSessionActive || !(sampleStatus === 'degraded' || sampleStatus === 'failed')) {
+      setShowFallback(false)
+    } else if (changed) {
+      setShowFallback(true)
+    }
+  }, [sampleStatus, isSessionActive])
+  // Its own effect, so a restart during the notice cannot cancel the hide.
+  useEffect(() => {
+    if (!showFallback) return
+    const timer = setTimeout(() => setShowFallback(false), FALLBACK_NOTICE_MS)
+    return () => clearTimeout(timer)
+  }, [showFallback])
+
   usePlaybackShortcuts({
     onToggle: () => {
       if (isPlaying) pause()
@@ -523,6 +599,7 @@ export default function FallingNotesPlayer({
             <PlaybackControls
               isPlaying={isPlaying}
               isReady={sampleStatus !== 'loading'}
+              isPreparing={showLoading}
               currentTime={currentTime}
               duration={totalLength}
               playbackSpeed={tempoScale}
@@ -734,6 +811,30 @@ export default function FallingNotesPlayer({
               className="pointer-events-none absolute left-1/2 top-3 z-40 -translate-x-1/2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-ink shadow"
             >
               건반을 눌러 주세요 · 남은 음 {waitingFor.length}개
+            </div>
+          )}
+
+          {/* The clock does not move until the samples arrive, so nothing falls
+              behind this; it says why nothing has started. Hidden from
+              assistive technology: the status region already announces it. */}
+          {showLoading && (
+            <div
+              data-testid="sample-loading"
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 text-sm font-medium text-white/90"
+            >
+              <span className="h-7 w-7 animate-spin rounded-full border-2 border-white/30 border-t-white motion-reduce:animate-none" />
+              피아노 소리를 준비하는 중…
+            </div>
+          )}
+
+          {showFallback && (
+            <div
+              data-testid="sample-fallback"
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-3 z-40 -translate-x-1/2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-ink shadow"
+            >
+              {sampleStatus === 'failed' ? '샘플을 불러오지 못해' : '샘플이 늦어'} 이번 재생은 합성음으로 재생합니다
             </div>
           )}
 

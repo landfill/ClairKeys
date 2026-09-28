@@ -86,14 +86,7 @@ export class PianoSampleBank {
 
   private async loadOne(sampleMidi: number): Promise<void> {
     try {
-      const response = await fetch(sampleUrl(sampleMidi), {
-        signal: this.abort.signal,
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
-
-      const encoded = await response.arrayBuffer()
+      const encoded = (await takePrefetched(sampleMidi)) ?? (await this.fetchOne(sampleMidi))
       // `decodeAudioData` is expensive and synchronous inside the browser's
       // audio thread; awaiting each one individually is what keeps a decode from
       // blocking the samples that have already arrived.
@@ -111,6 +104,16 @@ export class PianoSampleBank {
       // log on every keystroke for the rest of the session.
       console.warn(`Piano sample ${sampleMidi} unavailable, using synthesis:`, error)
     }
+  }
+
+  private async fetchOne(sampleMidi: number): Promise<ArrayBuffer> {
+    const response = await fetch(sampleUrl(sampleMidi), {
+      signal: this.abort.signal,
+    })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+    return response.arrayBuffer()
   }
 
   /**
@@ -141,6 +144,41 @@ export class PianoSampleBank {
     this.abort.abort()
     this.buffers.clear()
   }
+}
+
+/**
+ * Encoded sample bytes fetched before any AudioContext exists (issue #185).
+ *
+ * The bank is created by the first 재생 click, because an AudioContext needs a
+ * user gesture to run; fetching only then meant a first visit on a slow
+ * connection spent the whole SAMPLE_LOAD_WAIT_MS downloading and played the
+ * synthesised fallback anyway. Fetching needs no context, so the player starts
+ * it while the reader is still looking at the page and the bank only decodes.
+ *
+ * Each entry is handed out once: `decodeAudioData` detaches the buffer it is
+ * given, so a second bank has to fetch its own copy (the samples are served
+ * `immutable`, so that is a cache hit). A failed prefetch resolves to `null` and
+ * the bank fetches the sample itself, keeping its own failure reporting.
+ */
+const prefetched = new Map<number, Promise<ArrayBuffer | null>>()
+
+export function prefetchPianoSamples(): void {
+  if (prefetched.size > 0 || typeof fetch !== 'function') return
+
+  for (const midi of SAMPLE_MIDI_NOTES) {
+    prefetched.set(
+      midi,
+      fetch(sampleUrl(midi))
+        .then((response) => (response.ok ? response.arrayBuffer() : null))
+        .catch(() => null)
+    )
+  }
+}
+
+function takePrefetched(sampleMidi: number): Promise<ArrayBuffer | null> {
+  const entry = prefetched.get(sampleMidi)
+  prefetched.delete(sampleMidi)
+  return entry ?? Promise.resolve(null)
 }
 
 /**

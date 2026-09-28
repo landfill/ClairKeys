@@ -30,6 +30,25 @@ function renderControls(overrides: Partial<React.ComponentProps<typeof PlaybackC
 }
 
 describe('PlaybackControls', () => {
+  // Issue #185: a first 재생 waits for the recorded samples on the setup screen.
+  // The pressed button only faded, and the status line sat far below it.
+  it('says on the pressed button that the piano is being prepared', () => {
+    renderControls({ isReady: false, isPreparing: true })
+    const play = screen.getByRole('button', { name: '재생' })
+
+    expect(play).toHaveTextContent('준비 중')
+    expect(play).toHaveAttribute('aria-busy', 'true')
+    expect(play).toBeDisabled()
+  })
+
+  it('keeps the plain play button when not preparing', () => {
+    renderControls()
+    const play = screen.getByRole('button', { name: '재생' })
+
+    expect(play).toHaveTextContent('재생')
+    expect(play).not.toHaveAttribute('aria-busy')
+  })
+
   it('makes learner-selected A and B markers first-class controls', () => {
     function LoopHarness() {
       const [loopStart, setLoopStart] = useState<number | null>(null)

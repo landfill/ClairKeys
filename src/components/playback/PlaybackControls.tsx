@@ -6,6 +6,11 @@ import { Button } from '@/components/ui'
 interface PlaybackControlsProps {
   isPlaying: boolean
   isReady: boolean
+  /**
+   * A start is waiting for the recorded samples (issue #185). Shown on the play
+   * button, the control the reader just pressed; the name stays 재생.
+   */
+  isPreparing?: boolean
   currentTime: number
   duration: number
   playbackSpeed: number
@@ -25,6 +30,7 @@ interface PlaybackControlsProps {
 export default function PlaybackControls({
   isPlaying,
   isReady,
+  isPreparing = false,
   currentTime,
   duration,
   playbackSpeed,
@@ -129,10 +135,15 @@ export default function PlaybackControls({
             disabled={!isReady || isPlaying}
             className="h-12 w-20 gap-1 p-0 !px-0 !py-0 text-xs"
             aria-label="재생"
+            aria-busy={isPreparing || undefined}
             data-testid="playback-play"
           >
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="m8 5 11 7-11 7V5Z" /></svg>
-            <span>재생</span>
+            {isPreparing ? (
+              <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" />
+            ) : (
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="m8 5 11 7-11 7V5Z" /></svg>
+            )}
+            <span>{isPreparing ? '준비 중' : '재생'}</span>
           </Button>
           
           {/* Pause Button */}
