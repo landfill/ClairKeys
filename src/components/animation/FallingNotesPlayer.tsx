@@ -490,6 +490,23 @@ export default function FallingNotesPlayer({
     return fingers
   }, [notes, currentTime, showScore, activePractice])
 
+  // One readout, two places: above the setup controls, and during a session on
+  // its own line under the transport — outside the lane it used to cover (#186).
+  const tempoDisplay = (
+    <TempoDisplay
+      tempo={animationData.tempo}
+      tempoSource={animationData.tempoSource}
+      timingReferenceBpm={animationData.timingReferenceBpm}
+      scoreTempo={animationData.scoreTempo}
+      isPlaybackActive={isSessionActive}
+      className={isSessionActive ? '' : 'mb-4'}
+    >
+      {isSessionActive && hasReleaseGuidance && <span role="note" className="ml-2 text-xs text-ink-muted">
+        옅은 노트: 소리 유지 · 자동 손 떼기 제안
+      </span>}
+    </TempoDisplay>
+  )
+
   // Playback control handlers
   return (
     <div
@@ -497,26 +514,16 @@ export default function FallingNotesPlayer({
       className={[
         'w-full mx-auto',
         isSessionActive ? 'max-w-none flex flex-col' : 'max-w-6xl',
-        // An explicit cross-axis height replaces min-h while rotated; keeping
-        // both would constrain the box along the wrong axis.
-        isSessionActive && !orientation.rotate ? 'min-h-[100dvh]' : '',
         className,
       ].filter(Boolean).join(' ')}
-      style={orientation.rotate ? rotatedRootStyle : scoreGeometry ? { height: '100dvh' } : undefined}
+      // A session owns exactly one screen. A min-height let the measured
+      // wrapper grow to the box it sizes, a fixed point that overflowed a short
+      // window by the height of every row above the box (#186, D-090). Rotated,
+      // the explicit height is along the other axis.
+      style={orientation.rotate ? rotatedRootStyle : isSessionActive ? { height: '100dvh' } : undefined}
     >
       {!isSessionActive && <ScoreTimingNotice metadata={animationData.metadata} />}
-      <TempoDisplay
-        tempo={animationData.tempo}
-        tempoSource={animationData.tempoSource}
-        timingReferenceBpm={animationData.timingReferenceBpm}
-        scoreTempo={animationData.scoreTempo}
-        isPlaybackActive={isSessionActive}
-        className={isSessionActive ? '' : 'mb-4'}
-      >
-        {isSessionActive && hasReleaseGuidance && <span role="note" className="ml-2 text-xs text-ink-muted">
-          옅은 노트: 소리 유지 · 자동 손 떼기 제안
-        </span>}
-      </TempoDisplay>
+      {!isSessionActive && tempoDisplay}
 
       {!isSessionActive && hasReleaseGuidance && <p className="mb-2 text-xs text-ink-muted" role="note">
         옅은 노트는 손을 뗀 뒤 소리가 이어지는 구간입니다. 손 떼기 시점은 자동 연습 제안이며,
@@ -528,7 +535,7 @@ export default function FallingNotesPlayer({
            viewport this mode targets is 390px tall in total; the stacked setup
            chrome cost 264px of it, and restoring it on every pause moved every
            control the reader was using. */
-        <div className="mb-2">
+        <div>
           <CompactPlaybackBar
             isReady={sampleStatus !== 'loading'}
             isPlaying={isPlaying}
@@ -549,6 +556,12 @@ export default function FallingNotesPlayer({
             onLoopEnd={markLoopEnd}
             onLoopClear={clearLoop}
           />
+          {/* In the flow, so the visualization wrapper measures around it, and
+              in place of the 8px gap the bar used to keep: 20px against 8px.
+              Where the box has spare margin (most screens) nothing changes;
+              on a 375px-tall rotated phone the lane gives up those 12px and
+              stays above its one-second floor (D-090). */}
+          {tempoDisplay}
         </div>
       ) : (
         <>

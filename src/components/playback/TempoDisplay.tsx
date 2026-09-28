@@ -8,7 +8,15 @@ export interface TempoDisplayProps extends TempoDisplayInput {
   children?: ReactNode
 }
 
-/** Shows the recorded tempo and whether it came from the score or the user. */
+/**
+ * Shows the recorded tempo and whether it came from the score or the user.
+ *
+ * During playback it is one small line in the page flow, never an overlay
+ * (issue #186). A phone held upright rotates the player with a transform, and a
+ * transformed ancestor becomes the containing block of anything `fixed` inside
+ * it, so the old fixed pill landed on the falling-note lane. The caller places
+ * the line outside the lane; the lane's measured wrapper absorbs its height.
+ */
 export default function TempoDisplay({
   isPlaybackActive = false,
   className = '',
@@ -22,10 +30,8 @@ export default function TempoDisplay({
       data-testid="tempo-display"
       aria-label={`메트로놈: ${display.primary}`}
       className={[
-        'text-sm font-medium text-gray-700',
-        isPlaybackActive
-          ? 'fixed left-2 right-2 top-16 z-50 mx-auto max-w-2xl rounded-lg border border-gray-200 bg-white/95 px-3 py-2 text-center shadow-sm backdrop-blur-sm'
-          : '',
+        'font-medium text-gray-700',
+        isPlaybackActive ? 'px-1 pb-1 text-xs leading-4' : 'text-sm',
         className,
       ].filter(Boolean).join(' ')}
     >
