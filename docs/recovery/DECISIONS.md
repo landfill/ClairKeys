@@ -3294,3 +3294,27 @@
 - Directive: 재생 화면에 새 정보를 띄울 때 `fixed`를 쓰지 않는다. 회전된 루트 안에서는 뷰포트가 아니라 루트 기준이 된다.
   한시적 안내(대기·합성음·기다리기)는 노트 영역 안 `absolute` 오버레이로 둔다.
 - Related: phases/ISSUE-186-tempo-display-placement.md, D-013(빠르기 출처 표시), PR140(옅은 노트 범례), #177(재생 높이)
+
+## D-091: 공개 악보 찾기는 탭 없는 한 화면이고, 목록 요청은 `/api/sheet/public` 하나다
+
+- Date: 2026-09-28
+- Status: Accepted by the user on 2026-09-28 (#197 방향 1안 선택); merge pending
+- Context: #197. `/explore`의 탐색 탭(`/api/sheet/public`)과 검색 탭(`/api/sheet/search`)이 검색어가 없으면 같은 공개 악보를
+  같은 최신순으로 보였다(PR189·D-080으로 "추천/인기"를 걷어낸 뒤 완전히 같아졌다). 공개 판정(D-075)이 두 API에 따로 있었고,
+  검색 탭은 탭을 오가면 조건이 초기화됐다. 검색 API의 로그인 사용자용 비공개 보기는 `/library`(`/api/sheet`)와 겹쳤다.
+- Decision:
+  1. 탭을 없앤다. `PublicSheetMusicBrowser` 한 화면에 검색창·카테고리·정렬, "공개 악보 n개", 3열 카드, 더 보기를 둔다.
+     목록 이름은 정렬과 무관한 "공개 악보 목록"이다.
+  2. 목록 요청은 `/api/sheet/public` 하나다. 정렬 `newest`·`oldest`·`title`·`composer`(id로 동률 해소), `limit` 1~50(기본 12),
+     첫 페이지에만 공개·비데모 악보가 있는 카테고리와 개수를 함께 보낸다(화면을 열 때 요청 1회). 세션을 읽지 않는다.
+  3. `/api/sheet/search`, `SheetMusicSearch`, 공개 설정(내 비공개) 필터를 삭제한다. 내 비공개 악보 찾기는 `/library`의 역할이다.
+  4. 입력은 500ms debounce, 카테고리·정렬 선택은 즉시 요청한다. 조건 초기화는 검색어·카테고리만 지우고 정렬은 둔다.
+  5. 검색 API에 있던 `Server-Timing`은 공개 API로 옮긴다(#187 지연 분석 근거).
+- Rejected: 탭 유지·역할 분리 | 추천·인기 신호가 없어(D-080) 탐색 탭에 채울 내용이 없다.
+- Rejected: 검색 탭만 제거하고 탐색 위에 검색창 | 필터·정렬·더 보기를 다시 만들어야 해 1안과 작업량 차이가 작다.
+- Rejected: 검색 API를 남기고 탐색이 그것을 부름 | 세션 조회·비공개 분기가 공개 목록 경로에 남고, 공개 판정이 두 곳에 그대로 있다.
+- Confidence: high
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 공개 목록 조건은 `/api/sheet/public`의 `PUBLIC_ONLY` 한 곳에서만 바꾼다. 공개 화면에 비공개 보기를 다시 넣지 않는다.
+- Related: phases/ISSUE-197-explore-single-screen.md, D-075(공개 판정), D-080(추천·인기 제거), #187(지연)

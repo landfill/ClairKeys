@@ -59,10 +59,6 @@ export const LazyProcessingDashboard = createLazyComponent(
   () => import('@/components/processing/ProcessingDashboard')
 )
 
-export const LazySheetMusicSearch = createLazyComponent(
-  () => import('@/components/search/SheetMusicSearch')
-)
-
 export const LazyPublicSheetMusicBrowser = createLazyComponent(
   () => import('@/components/browse/PublicSheetMusicBrowser')
 )

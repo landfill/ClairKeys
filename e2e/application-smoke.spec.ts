@@ -145,7 +145,10 @@ test.describe('Public application smoke checks', () => {
     ).toBeVisible()
   })
 
-  test('opens search with one public request and no user-category request', async ({ page }) => {
+  // #197: search lives on the explore screen itself and reads the same public
+  // list; there is no second endpoint and no signed-in category lookup.
+  test('opens explore with one public request and searches through it', async ({ page }) => {
+    const publicRequests: URL[] = []
     let searchRequests = 0
     let categoryRequests = 0
 
@@ -158,45 +161,31 @@ test.describe('Public application smoke checks', () => {
     })
 
     await page.route('**/api/sheet/public**', async route => {
+      const url = new URL(route.request().url())
+      publicRequests.push(url)
+      const searched = url.searchParams.get('search') === '검색 성능'
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          sheetMusic: [],
-          pagination: { total: 0, limit: 8, offset: 0, hasMore: false },
+          sheetMusic: searched ? [{
+            id: 105,
+            title: '검색 성능 검증곡',
+            composer: '검증 작곡가',
+            categoryId: 1,
+            category: { id: 1, name: '클래식' },
+            createdAt: '2026-09-01T00:00:00.000Z',
+            owner: { id: 'owner', name: '검증자' },
+          }] : [],
+          pagination: { total: searched ? 1 : 0, limit: 12, offset: 0, hasMore: false },
+          categories: [{ id: 1, name: '클래식', count: 1 }],
         }),
       })
     })
     await page.route('**/api/sheet/search**', async route => {
       searchRequests += 1
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          success: true,
-          sheetMusic: [{
-            id: 105,
-            title: '검색 성능 검증곡',
-            composer: '검증 작곡가',
-            userId: 'owner',
-            categoryId: 1,
-            category: { id: 1, name: '클래식' },
-            isPublic: true,
-            provenance: 'omr',
-            animationDataUrl: '/public.json',
-            createdAt: '2026-09-01T00:00:00.000Z',
-            updatedAt: '2026-09-01T00:00:00.000Z',
-            owner: { id: 'owner', name: '검증자' },
-          }],
-          pagination: { total: 1, limit: 10, offset: 0, hasMore: false },
-          filters: {
-            categories: [{ id: 1, name: '클래식', count: 1 }],
-            totalPublic: 1,
-            totalPrivate: 0,
-          },
-        }),
-      })
+      await route.fulfill({ status: 404, body: '' })
     })
     await page.route('**/api/categories**', async route => {
       categoryRequests += 1
@@ -204,14 +193,16 @@ test.describe('Public application smoke checks', () => {
     })
 
     await page.goto('/explore')
-    await page.getByRole('button', { name: '검색', exact: true }).click()
-
-    await expect(page.getByPlaceholder('곡명 또는 저작자로 검색...')).toBeVisible()
-    await expect(page.getByText('검색 성능 검증곡')).toBeVisible()
-    // The previous mount-time parameter rewrite scheduled a second request at
-    // 500 ms. Wait past that boundary before asserting the request count.
+    await expect(page.getByText('아직 공개된 악보가 없습니다')).toBeVisible()
+    // The retired search tab rewrote its parameters on mount and asked again
+    // at 500 ms. Wait past that boundary before counting.
     await page.waitForTimeout(650)
-    expect(searchRequests).toBe(1)
+    expect(publicRequests).toHaveLength(1)
+
+    await page.getByPlaceholder('곡명 또는 저작자로 검색...').fill('검색 성능')
+    await expect(page.getByText('검색 성능 검증곡')).toBeVisible()
+    expect(publicRequests.at(-1)?.searchParams.get('search')).toBe('검색 성능')
+    expect(searchRequests).toBe(0)
     expect(categoryRequests).toBe(0)
   })
 })

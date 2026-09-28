@@ -38,7 +38,9 @@ const viewports = [
   { name: 'large desktop with CSS zoom 200%', width: 1440, height: 900, zoom: 2 },
 ]
 
+/** Serves the public list and records every request the page makes to it. */
 async function serveFixture(page: import('@playwright/test').Page) {
+  const requests: URL[] = []
   await page.addInitScript(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register = async () => {
@@ -48,16 +50,22 @@ async function serveFixture(page: import('@playwright/test').Page) {
   })
 
   await page.route('**/api/sheet/public**', async route => {
+    const url = new URL(route.request().url())
+    requests.push(url)
+    const search = url.searchParams.get('search')
+    const matching = search ? sheets.filter(sheet => sheet.title.includes(search)) : sheets
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
         success: true,
-        sheetMusic: sheets,
-        pagination: { total: sheets.length, limit: 8, offset: 0, hasMore: false },
+        sheetMusic: matching,
+        pagination: { total: matching.length, limit: 12, offset: 0, hasMore: false },
+        categories: [{ id: 1, name: '클래식', count: sheets.length }],
       }),
     })
   })
+  return requests
 }
 
 for (const viewport of viewports) {
@@ -69,7 +77,7 @@ for (const viewport of viewports) {
       await page.evaluate(zoom => { document.documentElement.style.zoom = String(zoom) }, viewport.zoom)
     }
 
-    await expect(page.getByRole('heading', { name: '최근 공개된 악보' })).toBeVisible()
+    await expect(page.getByRole('region', { name: '공개 악보 목록' })).toBeVisible()
 
     // No horizontal overflow: the long title and the long uploader name must wrap
     // or truncate inside the card rather than widening the document.
@@ -109,7 +117,7 @@ test('reaches and opens the first explore card with the keyboard alone', async (
   await page.setViewportSize({ width: 1280, height: 720 })
   await page.goto('/explore')
 
-  await expect(page.getByRole('heading', { name: '최근 공개된 악보' })).toBeVisible()
+  await expect(page.getByRole('region', { name: '공개 악보 목록' })).toBeVisible()
 
   const firstCard = page.locator('.public-sheet-music-browser a[href^="/sheet/"]').first()
   await expect(firstCard).toHaveAttribute('href', '/sheet/1')
@@ -155,21 +163,33 @@ test('reaches and opens the first explore card with the keyboard alone', async (
   await expect(page).toHaveURL(/\/sheet\/1$/)
 })
 
-test('announces which explore tab is selected', async ({ page }) => {
-  await serveFixture(page)
+// #197: the browse and search tabs listed the same sheets from two endpoints.
+// One screen now holds the list and its conditions, and opening it is one request.
+test('finds public sheets on one screen with one request on open', async ({ page }) => {
+  const requests = await serveFixture(page)
   await page.goto('/explore')
 
-  // "검색" also names the search form's submit button, so the tab strip is scoped.
-  const tabs = page.getByTestId('explore-tabs')
-  const browseTab = tabs.getByRole('button', { name: '탐색', exact: true })
-  const searchTab = tabs.getByRole('button', { name: '검색', exact: true })
+  await expect(page.getByRole('region', { name: '공개 악보 목록' })).toBeVisible()
+  await expect(page.getByTestId('explore-tabs')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '탐색', exact: true })).toHaveCount(0)
+  // The old search tab rewrote its parameters on mount and asked again at
+  // 500 ms; wait past that before counting.
+  await page.waitForTimeout(650)
+  expect(requests.map(url => url.pathname)).toEqual(['/api/sheet/public'])
 
-  await expect(browseTab).toHaveAttribute('aria-pressed', 'true')
-  await expect(searchTab).toHaveAttribute('aria-pressed', 'false')
+  const category = page.getByLabel('카테고리')
+  await category.selectOption('1')
+  await expect.poll(() => requests.at(-1)?.searchParams.get('categoryId')).toBe('1')
 
-  await searchTab.click()
-  await expect(searchTab).toHaveAttribute('aria-pressed', 'true')
-  await expect(browseTab).toHaveAttribute('aria-pressed', 'false')
+  const box = page.getByRole('searchbox', { name: '곡명 또는 저작자로 검색' })
+  await box.fill('아라베스크')
+  await expect.poll(() => requests.at(-1)?.searchParams.get('search')).toBe('아라베스크')
+  await expect(page.locator('.public-sheet-music-browser a[href^="/sheet/"]')).toHaveCount(1)
+
+  // Both conditions hold together on the same screen.
+  expect(requests.at(-1)?.searchParams.get('categoryId')).toBe('1')
+  await expect(category).toHaveValue('1')
+  await expect(box).toHaveValue('아라베스크')
 })
 
 test('leaves a modified click to the browser instead of navigating in place', async ({ page }) => {
@@ -177,7 +197,7 @@ test('leaves a modified click to the browser instead of navigating in place', as
   await page.setViewportSize({ width: 1280, height: 720 })
   await page.goto('/explore')
 
-  await expect(page.getByRole('heading', { name: '최근 공개된 악보' })).toBeVisible()
+  await expect(page.getByRole('region', { name: '공개 악보 목록' })).toBeVisible()
   const firstCard = page.locator('.public-sheet-music-browser a[href^="/sheet/"]').first()
 
   // The explore page supplies onSheetMusicClick, so an unconditional preventDefault would
