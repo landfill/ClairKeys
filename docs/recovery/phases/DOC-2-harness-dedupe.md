@@ -1,6 +1,6 @@
 # 작업 규약 중복 정리
 
-Status: IN_REVIEW
+Status: DONE
 Date: 2026-09-28
 
 ## Objective
@@ -39,3 +39,4 @@ AGENTS.md, WORKFLOW.md, `docs/recovery/README.md`, LORE_COMMIT_PROTOCOL.md, PR �
 
 - 2026-09-28: 규약 문서 수정. PR 진행(CI·리뷰·병합)은 [리뷰 로그](../reviews/PR-199.md), 검증은
   [validation](../validation/2026-09-28-doc2-harness-dedupe.md)이 원본이다. 병합 뒤 상태는 main에서 갱신한다.
+- 2026-09-28: 사용자 승인("리뷰 통과하면 병합")으로 PR199 `fd934c6`을 `8550d42`에 병합. HANDOFF 66줄(4단계 완료). 완료 조건 충족.

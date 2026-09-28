@@ -6,9 +6,10 @@ Last updated: 2026-09-28 KST
 
 ## Current phase
 
-**작업 규약 중복 정리 — IN_REVIEW (2026-09-28).** 같은 트리의 로컬·CI 반복 검증, 같은 결과의 다중 기록, 규칙 이중 정의를
-정리한다(D-088). [PR199](https://github.com/landfill/ClairKeys/pull/199), [phase](phases/DOC-2-harness-dedupe.md),
-[리뷰](reviews/PR-199.md). 이 HANDOFF 축소는 그 phase의 4단계다.
+**작업 규약 중복 정리 — DONE (2026-09-28).** PR199 `8550d42`(D-088): 로컬은 재현·변경 영역·전체 Jest·tsc·lint, 전체 E2E·build는
+CI, 병합 후는 `Post-merge checks`로 확인. 같은 사실은 원본 한 곳(AGENTS 표)에만 쓰고 HANDOFF는 150줄 이내. 새 규약의 첫 실제
+적용은 다음 코드 PR이다. [phase](phases/DOC-2-harness-dedupe.md), [검증](validation/2026-09-28-doc2-harness-dedupe.md),
+[리뷰](reviews/PR-199.md).
 
 **CI 중복 실행 제거 — DONE (2026-09-28).** PR198 `5bffb90`(D-087): PR 게이트는 `pr-checks.yml` 하나, main push는
 `Post-merge checks` 하나, 문서 전용 push는 CI 없음. **`src/ci/__tests__`가 워크플로 구조를 Jest로 고정하므로 CI 변경도 전체
@@ -21,7 +22,6 @@ Jest를 로컬에서 돌린다.** [phase](phases/CI-dedupe-workflows.md), [검�
 
 ## Next action
 
-- PR199: 문서 전용 PR의 skipped→success 집계 확인(PASS), Codex P1 수정. 최신 head Codex 재리뷰 확인 후 사용자 병합 승인 대기.
 - OMR 재시도 시간 초과 테스트 2건이 전체 Jest 부하에서 간헐 실패(20ms 마감 경쟁, [원인](validation/2026-09-28-doc2-harness-dedupe.md)). 별도 작업 후보.
 - 우선순위 결함 이슈 미착수: [#185](https://github.com/landfill/ClairKeys/issues/185) 첫 재생 샘플 로딩 표시,
   [#186](https://github.com/landfill/ClairKeys/issues/186) 모바일 빠르기 표시 가림,
