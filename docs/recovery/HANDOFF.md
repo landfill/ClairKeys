@@ -21,8 +21,8 @@ Jest를 로컬에서 돌린다.** [phase](phases/CI-dedupe-workflows.md), [검�
 
 ## Next action
 
-- PR199: CI·Codex 리뷰 대응 후 사용자 병합 승인 대기. 문서 전용 PR이므로 필수 검사가 skipped→success로 집계되는지 확인한다.
-- `5bffb90` Post-merge checks: Lint·Run Tests·Security Audit PASS, E2E 진행 중(02:24 UTC). 결과를 [리뷰](reviews/PR-198.md)에 남긴다.
+- PR199: 문서 전용 PR의 skipped→success 집계 확인(PASS), Codex P1 수정. 최신 head Codex 재리뷰 확인 후 사용자 병합 승인 대기.
+- OMR 재시도 시간 초과 테스트 2건이 전체 Jest 부하에서 간헐 실패(20ms 마감 경쟁, [원인](validation/2026-09-28-doc2-harness-dedupe.md)). 별도 작업 후보.
 - 우선순위 결함 이슈 미착수: [#185](https://github.com/landfill/ClairKeys/issues/185) 첫 재생 샘플 로딩 표시,
   [#186](https://github.com/landfill/ClairKeys/issues/186) 모바일 빠르기 표시 가림,
   [#187](https://github.com/landfill/ClairKeys/issues/187) 탐색·검색 API 약 2초, [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그.
