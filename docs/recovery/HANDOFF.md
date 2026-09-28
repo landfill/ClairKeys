@@ -6,7 +6,7 @@ Last updated: 2026-09-28 KST
 
 ## Current phase
 
-**#185 첫 재생 샘플 로딩 — IN_REVIEW (2026-09-28).** 샘플을 페이지에서 미리 받고, 기다리는 동안 누른 버튼·노트 영역에 표시한다
+**#185 첫 재생 샘플 로딩 — DONE, 병합 후 확인 중 (2026-09-28).** PR200 `1d7295c`. 샘플을 페이지에서 미리 받고, 기다리는 동안 누른 버튼·노트 영역에 표시한다
 (D-089). 로컬 A/B: Fast 4G 2.7→1.5초, Slow 4G에서 10초 본 뒤 3.9초·합성음→1.5초·녹음 피아노, 3초만 보면 개선 없음.
 [PR200](https://github.com/landfill/ClairKeys/pull/200), [phase](phases/ISSUE-185-first-play-loading.md),
 [검증](validation/2026-09-28-issue-185-first-play-loading.md), [리뷰](reviews/PR-200.md).
@@ -18,7 +18,7 @@ Last updated: 2026-09-28 KST
 ## Next action
 
 - OMR 재시도 시간 초과 테스트 2건이 전체 Jest 부하에서 간헐 실패(20ms 마감 경쟁, [원인](validation/2026-09-28-doc2-harness-dedupe.md)). 별도 작업 후보.
-- PR200(#185): `1f418cb` CI 전부 PASS, Codex 새 지적 0, 미해결 스레드 0. 사용자 병합 승인 대기.
+- PR200(#185) 병합 후: `1d7295c` Post-merge checks와 Vercel Production 결과, 운영 `/sheet/92` 클릭 전 샘플 요청·"준비 중" 표시 확인. 이후 #185 종료 코멘트.
 - 우선순위 결함 이슈 미착수(추천 순서 #186 → #188 → #197 결정 → #187 → #121):
   [#186](https://github.com/landfill/ClairKeys/issues/186) 모바일 빠르기 표시 가림,
   [#187](https://github.com/landfill/ClairKeys/issues/187) 탐색·검색 API 약 2초, [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그.

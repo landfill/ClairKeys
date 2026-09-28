@@ -1,6 +1,6 @@
 # #185 첫 재생 샘플 로딩
 
-Status: IN_REVIEW
+Status: DONE
 Date: 2026-09-28
 Issue: https://github.com/landfill/ClairKeys/issues/185
 
@@ -48,3 +48,4 @@ Issue: https://github.com/landfill/ClairKeys/issues/185
 ## Progress
 
 - 2026-09-28: 운영 재현·원인 확인, 계획 작성, 구현. 진행(CI·리뷰)은 리뷰 로그, 검증은 validation이 원본이다.
+- 2026-09-28: 사용자 승인("병합해줘")으로 PR200 `1f418cb`를 `1d7295c`에 병합. 운영 확인은 [리뷰 로그](../reviews/PR-200.md).
