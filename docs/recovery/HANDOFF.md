@@ -6,12 +6,13 @@ Last updated: 2026-09-28 KST
 
 ## Current phase
 
-**#185 첫 재생 샘플 로딩 — DONE (2026-09-28).** PR200 `1d7295c`, 사후 검사·운영 배포·운영 확인 PASS. 샘플을 페이지에서 미리 받고, 기다리는 동안 누른 버튼·노트 영역에 표시한다
-(D-089). 로컬 A/B: Fast 4G 2.7→1.5초, Slow 4G에서 10초 본 뒤 3.9초·합성음→1.5초·녹음 피아노, 3초만 보면 개선 없음.
-[PR200](https://github.com/landfill/ClairKeys/pull/200), [phase](phases/ISSUE-185-first-play-loading.md),
-[검증](validation/2026-09-28-issue-185-first-play-loading.md), [리뷰](reviews/PR-200.md).
+**#186 재생 화면 빠르기 표시 위치 — IN_REVIEW (2026-09-28).** [PR201](https://github.com/landfill/ClairKeys/pull/201) head `55d7ad9`.
+재생 중 빠르기 pill(`fixed`)이 회전된 루트 안에서 노트 레인을 가렸다. 컴팩트 바 아래 in-flow 한 줄로 옮기고 세션 루트를
+화면 높이에 고정했다(D-090). 로컬 검증 PASS, CI·Codex 리뷰 확인 중. 병합은 사용자 승인 필요.
+[phase](phases/ISSUE-186-tempo-display-placement.md), [검증](validation/2026-09-28-issue-186-tempo-display-placement.md),
+[리뷰](reviews/PR-201.md).
 
-최근 완료(상세는 각 리뷰 로그): 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
+최근 완료(상세는 각 리뷰 로그): #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
 [validation](validation/) `2026-09-27-*`), #177 PR183·PR184(2026-09-22), UI 일관성 PR182, #178 PR179~181(D-076·D-077),
 #125 PR173·175(D-075), DB 문서 PR174·176.
 
@@ -19,8 +20,9 @@ Last updated: 2026-09-28 KST
 
 - OMR 재시도 시간 초과 테스트 2건이 전체 Jest 부하에서 간헐 실패(20ms 마감 경쟁, [원인](validation/2026-09-28-doc2-harness-dedupe.md)). 별도 작업 후보.
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
-- 우선순위 결함 이슈 미착수(추천 순서 #186 → #188 → #197 결정 → #187 → #121):
-  [#186](https://github.com/landfill/ClairKeys/issues/186) 모바일 빠르기 표시 가림,
+- PR201: CI·Codex 리뷰 대응 후 사용자 병합 승인 대기. 병합 후 운영 `/sheet/92` 모바일 재생 화면 확인.
+- 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
+- 우선순위 결함 이슈 미착수(추천 순서 #188 → #197 결정 → #187 → #121):
   [#187](https://github.com/landfill/ClairKeys/issues/187) 탐색·검색 API 약 2초, [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그.
 - [#197](https://github.com/landfill/ClairKeys/issues/197) 탐색·검색 탭 중복: 구현 전 방향 결정 필요(추천: 탭 없이 한 화면·한 API).
 - 사용자 결정 대기: 홈 샘플을 실제 재생기로 바꿀지(2026-08-30 정적 예시 결정과 충돌해 보류).
