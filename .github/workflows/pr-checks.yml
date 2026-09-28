@@ -5,68 +5,42 @@ on:
     branches: [ main, develop ]
     types: [opened, synchronize, reopened]
 
+# A new push to the same PR supersedes the previous head; finishing the old
+# head's 16-minute E2E run proves nothing about what will be merged.
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   changes:
     name: Detect changes
     runs-on: ubuntu-latest
     outputs:
-      frontend: ${{ steps.changes.outputs.frontend }}
-      backend: ${{ steps.changes.outputs.backend }}
-      tests: ${{ steps.changes.outputs.tests }}
-      docs: ${{ steps.changes.outputs.docs }}
-      core: ${{ steps.changes.outputs.core }}
-    
+      code: ${{ steps.changes.outputs.code }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # One filter: any file that is not documentation. The previous per-area
+      # filters had to name every directory a job depends on and silently missed
+      # some (next.config.mjs, src/repositories, scripts/, fixtures/). This
+      # workflow is now the only PR gate, so a miss would skip every test.
       - name: Detect changes
         uses: dorny/paths-filter@v3
         id: changes
         with:
+          predicate-quantifier: 'every'
           filters: |
-            frontend:
-              - 'src/components/**'
-              - 'src/app/**'
-              - 'src/hooks/**'
-              - 'public/**'
-              - '*.css'
-              - 'tailwind.config.js'
-            backend:
-              - 'src/lib/**'
-              - 'src/services/**'
-              - 'prisma/**'
-              - 'src/app/api/**'
-            tests:
-              - '**/*.test.*'
-              - '**/*.spec.*'
-              - 'omr-service/**'
-              - 'jest.config.js'
-              - 'jest.setup.js'
-              - 'playwright.config.ts'
-              - 'e2e/**'
-            docs:
-              - '*.md'
-              - 'docs/**'
-            # Everything the other filters do not name but every job depends on.
-            # src/utils holds the render geometry and the data contract, so a
-            # change there reaches the built bundle and the rendered DOM even
-            # though it is neither a component nor an API route.
-            core:
-              - 'src/utils/**'
-              - 'src/types/**'
-              - 'src/middleware.ts'
-              - 'middleware.ts'
-              - 'package.json'
-              - 'package-lock.json'
-              - 'next.config.js'
-              - 'tsconfig.json'
-              - '.github/workflows/**'
+            code:
+              - '**'
+              - '!docs/**'
+              - '!**/*.md'
 
   lint-and-type-check:
-    name: Lint and Type Check
+    name: Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -95,10 +69,10 @@ jobs:
         run: npx tsc --noEmit
 
   test-unit:
-    name: Unit Tests
+    name: Run Tests
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.tests == 'true' || needs.changes.outputs.core == 'true'
+    if: needs.changes.outputs.code == 'true'
 
     services:
       postgres:
@@ -162,7 +136,7 @@ jobs:
     name: E2E Tests
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.tests == 'true' || needs.changes.outputs.core == 'true'
+    if: needs.changes.outputs.code == 'true'
 
     services:
       postgres:
@@ -221,10 +195,10 @@ jobs:
           retention-days: 7
 
   security-scan:
-    name: Security Scan
+    name: Security Audit
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' || needs.changes.outputs.core == 'true'
+    if: needs.changes.outputs.code == 'true'
 
     steps:
       - name: Checkout code
@@ -254,7 +228,7 @@ jobs:
     name: Build Check
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true' || needs.changes.outputs.core == 'true'
+    if: needs.changes.outputs.code == 'true'
 
     steps:
       - name: Checkout code
@@ -327,7 +301,7 @@ jobs:
                   { data: 'Status', header: true },
                   { data: 'Result', header: true }
                 ],
-                ['Lint & Type Check', getEmoji(results.lint), results.lint],
+                ['Lint (ESLint + tsc)', getEmoji(results.lint), results.lint],
                 ['Unit Tests', getEmoji(results.unit), results.unit],
                 ['E2E Tests', getEmoji(results.e2e), results.e2e],
                 ['Security Scan', getEmoji(results.security), results.security],
@@ -350,13 +324,17 @@ jobs:
     steps:
       - name: Check all results
         run: |
-          if [[ "${{ needs.lint-and-type-check.result }}" == "failure" || 
-                "${{ needs.test-unit.result }}" == "failure" || 
-                "${{ needs.test-e2e.result }}" == "failure" || 
-                "${{ needs.security-scan.result }}" == "failure" || 
-                "${{ needs.build-check.result }}" == "failure" ]]; then
-            echo "❌ One or more checks failed"
-            exit 1
-          else
-            echo "✅ All checks passed or skipped"
-          fi
+          # Only success or skipped (no code changed) counts. A cancelled or
+          # timed-out job used to pass this gate because only "failure" was checked.
+          failed=0
+          for r in "lint=${{ needs.lint-and-type-check.result }}" \
+                   "unit=${{ needs.test-unit.result }}" \
+                   "e2e=${{ needs.test-e2e.result }}" \
+                   "security=${{ needs.security-scan.result }}" \
+                   "build=${{ needs.build-check.result }}"; do
+            case "${r#*=}" in
+              success|skipped) echo "✅ $r" ;;
+              *) echo "❌ $r"; failed=1 ;;
+            esac
+          done
+          exit $failed

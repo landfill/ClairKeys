@@ -11,7 +11,7 @@
 ## Next.js 앱 (Vercel)
 
 배포는 Vercel Git 연동이 단독으로 수행한다. GitHub Actions는 배포하지 않는다 —
-`.github/workflows/deploy.yml`은 `main` 병합 후 테스트만 돌린다. 이 워크플로에 있던 배포·마이그레이션·
+`.github/workflows/deploy.yml`은 `main` 병합 후 테스트만 돌린다(문서 전용 push 제외). 이 워크플로에 있던 배포·마이그레이션·
 헬스체크 잡은 저장소에 시크릿이 없어 한 번도 성공한 적이 없었고, 병합이 실제로 배포된 것처럼
 읽히기 때문에 제거됐다(이슈 #28).
 

@@ -3198,3 +3198,26 @@
 - Directive: 기다리기 모드에서 노트 예약을 되살리지 마라. 한 손 연습과 결합할 때는 연습하지 않는 손의 노트를 단계에서 빼고
   그 손만 반주로 예약하는 별도 결정이 필요하다.
 - Related: phases/FEAT-wait-mode-midi.md, D-079
+
+## D-087: 한 커밋의 검사는 한 번만 돌리고, 문서 전용 push는 CI를 돌리지 않는다
+
+- Date: 2026-09-28
+- Status: Accepted by the user on 2026-09-28; merge pending
+- Context: 7일간 러너 2,680분 중 문서 전용 main push가 926분, PR의 두 워크플로 중복이 약 700분이었다.
+  상태 기록을 main에 바로 커밋하는 규약(AGENTS)과 경로 필터 없는 push CI가 겹쳐 기록 1건마다 16분 E2E가 돌았다.
+- Decision:
+  1. PR 게이트는 `pr-checks.yml` 하나다. job 이름을 기존 필수 검사(`Lint`·`Run Tests`·`E2E Tests`·`Security Audit`)에
+     맞춰 브랜치 보호 설정을 바꾸지 않는다. 조건으로 건너뛴 job은 필수 검사에서 통과로 집계된다.
+  2. 테스트 실행 여부는 "문서 외 파일이 바뀌었는가" 하나로 정한다. 영역별 필터는 쓰지 않는다.
+  3. 같은 PR의 새 push는 이전 실행을 취소한다. main push는 취소하지 않는다(병합 커밋마다 근거가 필요하다).
+  4. main push 검사는 `deploy.yml`(Post-merge checks) 하나이며 `docs/**`·`**/*.md`만 바뀐 push는 실행하지 않는다.
+     브랜치 보호가 strict가 아니므로 병합된 트리의 E2E는 여기서 한 번 돈다.
+- Rejected: 필수 검사를 `All Checks Complete` 하나로 바꾸기 | 브랜치 보호 설정 변경과 병합 시점 조율이 필요하고,
+  이름 맞추기로 같은 효과를 얻는다.
+- Rejected: `test.yml`에 경로 필터만 추가 | 워크플로 수준 필터는 필수 검사를 보고하지 않아 문서 전용 PR이 병합되지 않는다.
+- Confidence: high
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: PR 워크플로 job 이름을 바꾸면 브랜치 보호의 필수 검사도 같이 바꿔라. 앱이 읽는 `.md` 파일을 만들면
+  경로 필터 예외를 먼저 고쳐라.
+- Related: phases/CI-dedupe-workflows.md, PR196, D-077(문서 전용 push의 Vercel 배포 제외)
