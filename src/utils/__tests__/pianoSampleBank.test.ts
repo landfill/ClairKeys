@@ -196,4 +196,157 @@ describe('PianoSampleBank', () => {
       disposePianoSampleBank(context)
     })
   })
+
+  // Issue #185: the bank used to start fetching only when the first 재생 click
+  // created the AudioContext, so a first visit on a slow connection waited the
+  // full SAMPLE_LOAD_WAIT_MS and then played the synthesised fallback anyway.
+  // The bytes can be fetched while the reader is still looking at the page;
+  // only decoding needs the context.
+  describe('prefetchPianoSamples', () => {
+    type Module = typeof import('../pianoSampleBank')
+    /** A fresh module, so one test's prefetched bytes cannot leak into the next. */
+    function freshModule(): Module {
+      let loaded: Module | undefined
+      jest.isolateModules(() => {
+        loaded = jest.requireActual('../pianoSampleBank') as Module
+      })
+      return loaded!
+    }
+
+    it('fetches every sample once, before any AudioContext exists', () => {
+      const fetchMock = makeFetch()
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples } = freshModule()
+
+      prefetchPianoSamples()
+      prefetchPianoSamples()
+
+      expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length)
+      expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(SAMPLE_MIDI_NOTES.map(sampleUrl))
+    })
+
+    it('decodes the prefetched bytes instead of fetching them again', async () => {
+      const fetchMock = makeFetch()
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples, PianoSampleBank: FreshBank } = freshModule()
+
+      prefetchPianoSamples()
+      const context = makeContext()
+      const result = await new FreshBank(context).load()
+
+      expect(result.status).toBe('ready')
+      expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length)
+      expect(context.decodeAudioData).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length)
+    })
+
+    it('waits for a prefetch still in flight rather than requesting the sample twice', async () => {
+      let release!: () => void
+      const gate = new Promise<void>(resolve => { release = resolve })
+      const fetchMock = jest.fn(async (url: string) => {
+        await gate
+        return { ok: true, arrayBuffer: async () => ({ url }) as unknown as ArrayBuffer }
+      }) as FetchMock
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples, PianoSampleBank: FreshBank } = freshModule()
+
+      prefetchPianoSamples()
+      const loading = new FreshBank(makeContext()).load()
+      release()
+
+      await expect(loading).resolves.toMatchObject({ status: 'ready' })
+      expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length)
+    })
+
+    it('fetches a sample itself when its prefetch failed', async () => {
+      const failing = new Set([sampleUrl(SAMPLE_MIDI_NOTES[0])])
+      let prefetching = true
+      const fetchMock = jest.fn(async (url: string) =>
+        prefetching && failing.has(url)
+          ? { ok: false, status: 503 }
+          : { ok: true, arrayBuffer: async () => ({ url }) as unknown as ArrayBuffer }
+      ) as FetchMock
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples, PianoSampleBank: FreshBank } = freshModule()
+
+      prefetchPianoSamples()
+      await Promise.resolve()
+      prefetching = false
+      const result = await new FreshBank(makeContext()).load()
+
+      expect(result).toMatchObject({ status: 'ready', readyCount: SAMPLE_MIDI_NOTES.length })
+      expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length + 1)
+    })
+
+    // A reader can press 재생 before the idle prefetch runs. The bank then
+    // fetches for itself, and a prefetch arriving afterwards would download
+    // the whole set a second time into bytes nothing will ever decode.
+    it('does nothing once a bank has started loading', async () => {
+      const fetchMock = makeFetch()
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples, PianoSampleBank: FreshBank } = freshModule()
+
+      const loading = new FreshBank(makeContext()).load()
+      prefetchPianoSamples()
+      await loading
+
+      expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length)
+    })
+
+    // Leaving the page mid-download disposes the bank. The claimed prefetch
+    // requests must stop with it and nothing may decode against the closed
+    // context, exactly as for the bank's own fetches.
+    it('stops claimed prefetches and decodes nothing once the bank is disposed', async () => {
+      let release!: () => void
+      const gate = new Promise<void>(resolve => { release = resolve })
+      const signals: AbortSignal[] = []
+      const fetchMock = jest.fn(async (url: string, init?: { signal?: AbortSignal }) => {
+        if (init?.signal) signals.push(init.signal)
+        await gate
+        return { ok: true, arrayBuffer: async () => ({ url }) as unknown as ArrayBuffer }
+      }) as unknown as FetchMock
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples, PianoSampleBank: FreshBank } = freshModule()
+
+      prefetchPianoSamples()
+      const context = makeContext()
+      const bank = new FreshBank(context)
+      const loading = bank.load()
+      bank.dispose()
+      release()
+      await loading
+
+      expect(signals).toHaveLength(SAMPLE_MIDI_NOTES.length)
+      expect(signals.every(signal => signal.aborted)).toBe(true)
+      expect(context.decodeAudioData).not.toHaveBeenCalled()
+    })
+
+    // Client-side navigation keeps this module. A reader who leaves a score
+    // mid-download must still get a prefetch on the next score they open.
+    it('prefetches again after the bank that held the set is disposed', async () => {
+      const fetchMock = makeFetch()
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples, PianoSampleBank: FreshBank } = freshModule()
+
+      const bank = new FreshBank(makeContext())
+      const loading = bank.load()
+      bank.dispose()
+      await loading
+      prefetchPianoSamples()
+
+      expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length * 2)
+    })
+
+    it('hands the bytes to one bank only, since decoding detaches them', async () => {
+      const fetchMock = makeFetch()
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples, PianoSampleBank: FreshBank } = freshModule()
+
+      prefetchPianoSamples()
+      await new FreshBank(makeContext()).load()
+      await new FreshBank(makeContext()).load()
+
+      // The second context fetches for itself (the browser cache serves it).
+      expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length * 2)
+    })
+  })
 })

@@ -74,12 +74,19 @@ jest.mock('../../piano/SimplePianoKeyboard', () => ({
 
 jest.mock('@/components/playback', () => ({
   ...jest.requireActual('@/components/playback'),
-  PlaybackControls: ({ isReady, onPlay }: { isReady: boolean; onPlay: () => void }) => (
+  PlaybackControls: ({ isReady, isPreparing, onPlay }: { isReady: boolean; isPreparing?: boolean; onPlay: () => void }) => (
     <div>
       <div data-testid="playback-ready">{String(isReady)}</div>
+      <div data-testid="playback-preparing">{String(Boolean(isPreparing))}</div>
       <button type="button" data-testid="play" onClick={onPlay}>play</button>
     </div>
   ),
+}))
+
+const mockPrefetch = jest.fn()
+jest.mock('@/utils/pianoSampleBank', () => ({
+  ...jest.requireActual('@/utils/pianoSampleBank'),
+  prefetchPianoSamples: () => mockPrefetch(),
 }))
 
 const animationData: CanonicalAnimationData = {
@@ -185,6 +192,159 @@ describe('FallingNotesPlayer', () => {
     rerender(<FallingNotesPlayer animationData={animationData} />)
     expect(screen.getByText(/불러오지 못해 합성음으로 재생합니다/)).toBeInTheDocument()
     expect(screen.getByTestId('playback-ready')).toHaveTextContent('true')
+  })
+
+  // Issue #185: the session starts the moment 재생 is pressed, but the clock
+  // waits for the samples. The status line above is screen-reader-only during a
+  // session, so without this the screen sat at 0:00 with nothing moving.
+  describe('while a session waits for the samples', () => {
+    it('shows that the piano is being prepared over the notes', () => {
+      jest.useFakeTimers()
+      setPaused()
+      mockPlayerState.sampleStatus = 'loading'
+      render(<FallingNotesPlayer animationData={animationData} />)
+      act(() => { jest.advanceTimersByTime(300) })
+      jest.useRealTimers()
+
+      expect(screen.getByTestId('sample-loading')).toHaveTextContent('피아노 소리를 준비하는 중')
+      // The announcement stays in the one status region, not twice.
+      expect(screen.getByTestId('sample-loading')).toHaveAttribute('aria-hidden', 'true')
+      expect(screen.getByRole('status', { name: '' })).toHaveTextContent('녹음 피아노 샘플을 준비 중입니다.')
+    })
+
+    // Every seek and speed change restarts the audio through the same wait,
+    // which passes 'loading' for a moment even when the samples are decoded.
+    it('does not flash for a restart that finds the samples ready', () => {
+      jest.useFakeTimers()
+      try {
+        mockPlayerState.sampleStatus = 'loading'
+        const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+        act(() => { jest.advanceTimersByTime(50) })
+        expect(screen.queryByTestId('sample-loading')).not.toBeInTheDocument()
+        mockPlayerState.sampleStatus = 'ready'
+        rerender(<FallingNotesPlayer animationData={animationData} />)
+        act(() => { jest.advanceTimersByTime(500) })
+
+        expect(screen.queryByTestId('sample-loading')).not.toBeInTheDocument()
+      } finally {
+        jest.useRealTimers()
+      }
+    })
+
+    it('removes the indicator once the samples are ready', () => {
+      mockPlayerState.sampleStatus = 'loading'
+      const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+      mockPlayerState.sampleStatus = 'ready'
+      rerender(<FallingNotesPlayer animationData={animationData} />)
+
+      expect(screen.queryByTestId('sample-loading')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('sample-fallback')).not.toBeInTheDocument()
+    })
+
+    it('shows the synthesised fallback on the playing screen for a few seconds', () => {
+      jest.useFakeTimers()
+      try {
+        mockPlayerState.sampleStatus = 'degraded'
+        render(<FallingNotesPlayer animationData={animationData} />)
+        expect(screen.getByTestId('sample-fallback')).toHaveTextContent('합성음으로 재생')
+
+        act(() => { jest.advanceTimersByTime(5000) })
+        expect(screen.queryByTestId('sample-fallback')).not.toBeInTheDocument()
+      } finally {
+        jest.useRealTimers()
+      }
+    })
+
+    it('does not repeat the fallback notice for each seek that restarts the same fallback', () => {
+      jest.useFakeTimers()
+      try {
+        mockPlayerState.sampleStatus = 'degraded'
+        const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+        act(() => { jest.advanceTimersByTime(5000) })
+
+        mockPlayerState.sampleStatus = 'loading'
+        rerender(<FallingNotesPlayer animationData={animationData} />)
+        mockPlayerState.sampleStatus = 'degraded'
+        rerender(<FallingNotesPlayer animationData={animationData} />)
+
+        expect(screen.queryByTestId('sample-fallback')).not.toBeInTheDocument()
+      } finally {
+        jest.useRealTimers()
+      }
+    })
+
+    it('still hides the fallback notice when a seek lands while it is showing', () => {
+      jest.useFakeTimers()
+      try {
+        mockPlayerState.sampleStatus = 'degraded'
+        const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+        act(() => { jest.advanceTimersByTime(1000) })
+        mockPlayerState.sampleStatus = 'loading'
+        rerender(<FallingNotesPlayer animationData={animationData} />)
+        mockPlayerState.sampleStatus = 'degraded'
+        rerender(<FallingNotesPlayer animationData={animationData} />)
+
+        act(() => { jest.advanceTimersByTime(4000) })
+        expect(screen.queryByTestId('sample-fallback')).not.toBeInTheDocument()
+      } finally {
+        jest.useRealTimers()
+      }
+    })
+
+    // The first 재생 waits on the setup screen: the session opens only once the
+    // audio has started (D-056), so that wait is the one a first visit sees.
+    it('shows the same indicator and a preparing play button on the setup screen', () => {
+      jest.useFakeTimers()
+      try {
+        setIdle()
+        mockPlayerState.sampleStatus = 'loading'
+        render(<FallingNotesPlayer animationData={animationData} />)
+        expect(screen.getByTestId('playback-preparing')).toHaveTextContent('false')
+
+        act(() => { jest.advanceTimersByTime(300) })
+        expect(screen.getByTestId('sample-loading')).toBeInTheDocument()
+        expect(screen.getByTestId('playback-preparing')).toHaveTextContent('true')
+      } finally {
+        jest.useRealTimers()
+      }
+    })
+  })
+
+  describe('fetching the samples before the first 재생', () => {
+    const connection = (navigator as Navigator & { connection?: unknown })
+    afterEach(() => {
+      delete (connection as { connection?: unknown }).connection
+    })
+
+    it('starts fetching once the page is idle, before any click', () => {
+      jest.useFakeTimers()
+      try {
+        mockPrefetch.mockClear()
+        setIdle()
+        render(<FallingNotesPlayer animationData={animationData} />)
+        expect(mockPrefetch).not.toHaveBeenCalled()
+
+        act(() => { jest.advanceTimersByTime(2000) })
+        expect(mockPrefetch).toHaveBeenCalledTimes(1)
+      } finally {
+        jest.useRealTimers()
+      }
+    })
+
+    it('leaves the download to the click when the reader asked to save data', () => {
+      jest.useFakeTimers()
+      try {
+        mockPrefetch.mockClear()
+        Object.defineProperty(navigator, 'connection', { value: { saveData: true }, configurable: true })
+        setIdle()
+        render(<FallingNotesPlayer animationData={animationData} />)
+
+        act(() => { jest.advanceTimersByTime(5000) })
+        expect(mockPrefetch).not.toHaveBeenCalled()
+      } finally {
+        jest.useRealTimers()
+      }
+    })
   })
 
   it('marks controls not ready only while loading', () => {
