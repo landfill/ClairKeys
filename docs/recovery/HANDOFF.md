@@ -18,7 +18,7 @@ Last updated: 2026-09-28 KST
 ## Next action
 
 - OMR 재시도 시간 초과 테스트 2건이 전체 Jest 부하에서 간헐 실패(20ms 마감 경쟁, [원인](validation/2026-09-28-doc2-harness-dedupe.md)). 별도 작업 후보.
-- PR200(#185): CI·Codex 재리뷰 대응 후 사용자 병합 승인 대기.
+- PR200(#185): `1f418cb` CI 전부 PASS, Codex 새 지적 0, 미해결 스레드 0. 사용자 병합 승인 대기.
 - 우선순위 결함 이슈 미착수(추천 순서 #186 → #188 → #197 결정 → #187 → #121):
   [#186](https://github.com/landfill/ClairKeys/issues/186) 모바일 빠르기 표시 가림,
   [#187](https://github.com/landfill/ClairKeys/issues/187) 탐색·검색 API 약 2초, [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그.
