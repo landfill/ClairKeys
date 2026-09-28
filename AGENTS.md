@@ -25,6 +25,7 @@
 - 검증은 한 커밋 트리에 한 번씩만 한다(D-088):
   - 로컬: 재현 테스트(수정 전 실패 확인), 변경 영역의 테스트, 전체 Jest, `tsc --noEmit`, lint.
     워크플로·설정만 바꿔도 전체 Jest를 돌린다(`src/ci`가 워크플로 구조를 고정한다).
+    `docs/`·`*.md`만 바꾼 변경은 편집 문서의 링크 확인으로 충분하다(CI도 `Lint`만 돈다). 그래도 결과는 validation에 남긴다.
   - 로컬 Playwright는 변경 영역 spec을 필요한 브라우저로만 돌린다. 6개 브라우저 전체 E2E와 production build는 PR CI가 맡는다.
   - CI가 통과시킨 커밋을 로컬에서 다시 전체 검증하지 않는다. 병합 후 main은 병합 커밋의 `Post-merge checks` 결과로 확인한다.
   - CI가 대신할 수 없는 확인(preview·운영 화면, 실기기, OMR VM, 운영 DB)은 그대로 수행하고 기록한다.
