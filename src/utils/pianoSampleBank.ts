@@ -150,6 +150,9 @@ export class PianoSampleBank {
     this.disposed = true
     this.abort.abort()
     if (this.claimedPrefetch) abortPrefetch()
+    // The context is gone; the next score's player may prefetch again (from
+    // the browser cache, since the samples are served immutable).
+    bankHasLoaded = false
     this.buffers.clear()
   }
 }
@@ -170,9 +173,10 @@ export class PianoSampleBank {
  */
 const prefetched = new Map<number, Promise<ArrayBuffer | null>>()
 /**
- * Set by the first bank load. A reader can press 재생 before the idle prefetch
- * runs; the bank then fetches for itself, and a prefetch arriving afterwards
- * would download the whole set again into bytes nothing decodes.
+ * Set while a bank is loading or holds the set. A reader can press 재생 before
+ * the idle prefetch runs; the bank then fetches for itself, and a prefetch
+ * arriving afterwards would download the whole set again into bytes nothing
+ * decodes. Cleared on dispose, since client-side navigation keeps this module.
  */
 let bankHasLoaded = false
 /** Stops the prefetch requests once the bank that claimed them is disposed. */

@@ -320,6 +320,22 @@ describe('PianoSampleBank', () => {
       expect(context.decodeAudioData).not.toHaveBeenCalled()
     })
 
+    // Client-side navigation keeps this module. A reader who leaves a score
+    // mid-download must still get a prefetch on the next score they open.
+    it('prefetches again after the bank that held the set is disposed', async () => {
+      const fetchMock = makeFetch()
+      global.fetch = fetchMock as unknown as typeof fetch
+      const { prefetchPianoSamples, PianoSampleBank: FreshBank } = freshModule()
+
+      const bank = new FreshBank(makeContext())
+      const loading = bank.load()
+      bank.dispose()
+      await loading
+      prefetchPianoSamples()
+
+      expect(fetchMock).toHaveBeenCalledTimes(SAMPLE_MIDI_NOTES.length * 2)
+    })
+
     it('hands the bytes to one bank only, since decoding detaches them', async () => {
       const fetchMock = makeFetch()
       global.fetch = fetchMock as unknown as typeof fetch
