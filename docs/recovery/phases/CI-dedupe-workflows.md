@@ -1,6 +1,6 @@
 # CI 중복 실행 제거
 
-Status: IN_REVIEW
+Status: DONE
 Date: 2026-09-28
 
 ## Objective
@@ -46,3 +46,6 @@ Date: 2026-09-28
 ## Progress
 
 - 2026-09-28: 워크플로·규약 수정, actionlint 1.7.7 통과, 경로 필터를 picomatch로 표본 검증.
+- 2026-09-28: 사용자 승인("CI 통과하면 병합")으로 PR198 head `4770fc3`(전 CI PASS, Codex 재리뷰 지적 0, 미해결 스레드 0)을
+  `5bffb90`에 병합. 병합 커밋에는 `Post-merge checks`만 실행(`Tests` 없음). 이어진 문서 전용 상태 기록 push의 Actions 실행 여부는
+  [검증](../validation/2026-09-28-ci-dedupe-workflows.md)에 기록.

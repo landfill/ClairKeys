@@ -4,11 +4,12 @@ Last updated: 2026-09-28 KST
 
 ## Current phase
 
-**CI 중복 실행 제거 — IN_REVIEW (2026-09-28).** 7일 러너 2,680분 중 문서 전용 main push 926분, PR 워크플로 두 벌 중복
-약 700분을 계측했다. [PR198](https://github.com/landfill/ClairKeys/pull/198)이 `pr-checks.yml` 단일 PR 게이트,
-`deploy.yml` 단일 main 검사(문서 전용 push 제외)로 바꾼다(D-087, 브랜치 보호 설정 변경 없음). 병합 전까지는 이 기록 같은
-문서 push도 기존 CI를 돈다. [phase](phases/CI-dedupe-workflows.md), [검증](validation/2026-09-28-ci-dedupe-workflows.md),
-[리뷰](reviews/PR-198.md).
+**CI 중복 실행 제거 — DONE (2026-09-28).** 7일 러너 2,680분 중 문서 전용 main push 926분, PR 워크플로 두 벌 중복 약 700분을
+계측했다. [PR198](https://github.com/landfill/ClairKeys/pull/198)을 사용자 승인으로 `5bffb90`에 병합: PR 게이트는 `pr-checks.yml`
+하나(필수 검사 이름 일치, 문서 외 전체 필터, 이전 head 취소, 감지 실패 시 테스트 실행), main push 검사는 `deploy.yml` 하나이고
+`docs/**`·`**/*.md`만 바꾼 push는 CI를 돌리지 않는다(D-087). 병합 커밋은 `Post-merge checks` 1벌만 실행했다.
+**워크플로 구조는 `src/ci/__tests__`가 Jest로 고정하므로 CI 변경도 전체 Jest를 로컬에서 돌린다.**
+[phase](phases/CI-dedupe-workflows.md), [검증](validation/2026-09-28-ci-dedupe-workflows.md), [리뷰](reviews/PR-198.md).
 
 **운영 사이트 점검 후속 — DONE (2026-09-27~28).** 비로그인 PC·모바일 점검에서 나온 디자인 정리와 기능 추가를
 PR 8개로 모두 병합했다. 병합 명령은 auto mode 분류기 정책상 사용자가 실행했고, 에이전트가 병합 전 main 합침·충돌
@@ -102,7 +103,7 @@ DB 구성 문서 작업 완료: PR174의 후속 명령 지적2개를 PR176으로
 
 ## Next action
 
-- PR198 CI·Codex 리뷰 대응 후 사용자 병합 승인 대기. 병합 후 첫 문서 전용 push에 Actions 실행이 없는지 확인한다.
+- `5bffb90` Post-merge checks 결과와, 이 상태 기록 push(문서 전용)에 Actions 실행이 없는지 확인해 다음 기록에 남긴다.
 - 후속 후보(규약 중복, 미착수): 로컬 전체 Playwright와 병합 후 로컬 전체 재검증이 CI와 겹침, 같은 검증 결과를
   Lore·validation·reviews·phase·HANDOFF·PR 본문에 반복 기록, HANDOFF 과거 본문 누적(350줄), 읽기 순서가 AGENTS·README에 이중 정의.
 - 우선순위 결함 이슈 미착수: [#185](https://github.com/landfill/ClairKeys/issues/185) 첫 재생 샘플 로딩 표시,
