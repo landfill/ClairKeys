@@ -10,8 +10,6 @@ import { PianoAnimationData, AnimationState, AnimationEvent } from '@/types/anim
 export interface UseAnimationEngineOptions {
   /** Auto-initialize audio on first play */
   autoInitAudio?: boolean
-  /** Enable debug logging */
-  debug?: boolean
 }
 
 export interface UseAnimationEngineReturn {
@@ -40,7 +38,7 @@ export interface UseAnimationEngineReturn {
 }
 
 export function useAnimationEngine(options: UseAnimationEngineOptions = {}): UseAnimationEngineReturn {
-  const { autoInitAudio: _autoInitAudio = true, debug = false } = options
+  const { autoInitAudio: _autoInitAudio = true } = options
   
   const [state, setState] = useState<AnimationState>({
     isPlaying: false,
@@ -58,11 +56,7 @@ export function useAnimationEngine(options: UseAnimationEngineOptions = {}): Use
   const updateState = useCallback(() => {
     const newState = engineRef.current.getState()
     setState(newState)
-    
-    if (debug) {
-      console.log('Animation state updated:', newState)
-    }
-  }, [debug])
+  }, [])
 
   // Set up event listeners
   useEffect(() => {
@@ -124,69 +118,37 @@ export function useAnimationEngine(options: UseAnimationEngineOptions = {}): Use
   const loadAnimation = useCallback((data: PianoAnimationData) => {
     engineRef.current.loadAnimation(data)
     updateState()
-    
-    if (debug) {
-      console.log('Animation loaded:', data.title)
-    }
-  }, [updateState, debug])
+  }, [updateState])
 
   const play = useCallback(() => {
     engineRef.current.play()
-    
-    if (debug) {
-      console.log('Animation play requested')
-    }
-  }, [debug])
+  }, [])
 
   const pause = useCallback(() => {
     engineRef.current.pause()
-    
-    if (debug) {
-      console.log('Animation pause requested')
-    }
-  }, [debug])
+  }, [])
 
   const stop = useCallback(() => {
     engineRef.current.stop()
-    
-    if (debug) {
-      console.log('Animation stop requested')
-    }
-  }, [debug])
+  }, [])
 
   const seekTo = useCallback((time: number) => {
     engineRef.current.seekTo(time)
-    
-    if (debug) {
-      console.log('Animation seek to:', time)
-    }
-  }, [debug])
+  }, [])
 
   const setSpeed = useCallback((speed: number) => {
     engineRef.current.setSpeed(speed)
-    
-    if (debug) {
-      console.log('Animation speed set to:', speed)
-    }
-  }, [debug])
+  }, [])
 
   const setMode = useCallback((mode: 'listen' | 'follow' | 'practice') => {
     engineRef.current.setMode(mode)
-    
-    if (debug) {
-      console.log('Animation mode set to:', mode)
-    }
-  }, [debug])
+  }, [])
 
   const processUserInput = useCallback((note: string): boolean => {
     const result = engineRef.current.processUserInput(note)
     
-    if (debug) {
-      console.log('User input processed:', note, 'correct:', result)
-    }
-    
     return result
-  }, [debug])
+  }, [])
 
   const addEventListener = useCallback((event: string, callback: (event: AnimationEvent) => void) => {
     if (!eventListenersRef.current.has(event)) {

@@ -51,7 +51,6 @@ export default function MobileTouchOptimizer({
       }
     } catch {
       // Haptic feedback not supported or failed
-      console.log('Haptic feedback not supported')
     }
   }, [enableHapticFeedback, getHapticIntensity])
 

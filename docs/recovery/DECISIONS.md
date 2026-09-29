@@ -3340,3 +3340,28 @@
 - Reversibility: clean (`regions` 한 줄 되돌림)
 - Directive: 함수 지역은 DB 지역과 같게 둔다. DB를 옮기면 `regions`와 이 테스트를 함께 바꾼다.
 - Related: phases/ISSUE-187-api-latency.md, D-091(공개 목록 API), #187
+
+## D-093: 앱 코드는 `console.log`를 쓰지 않고, lint가 이를 막는다
+
+- Date: 2026-09-29
+- Status: Proposed in #188 PR; merge pending
+- Context: #188. 운영 악보 페이지가 애니메이션 파일의 Storage URL과 파일 앞 200자를 읽는 사람의 콘솔에 찍었고,
+  모든 페이지가 SW 등록 로그를 남겼다. 서버 쪽에서는 `/api/categories` POST가 `JSON.stringify(authOptions)`를 로그에 남겼는데,
+  next-auth provider 객체는 `options.clientSecret`까지 직렬화한다(로컬에서 확인). NextAuth `session` 이벤트는 세션 조회마다
+  사용자 이메일을 로그에 남겼다. `src`(테스트 제외)의 `console.log`는 89곳이었고 막는 규칙이 없었다.
+- Decision:
+  1. `src`와 `public/sw.js`의 `console.log`를 모두 지운다. `console.warn`·`console.error`의 실패 보고는 유지한다.
+     SW 등록 실패는 `console.warn`으로 바꾼다. 로그만 하던 코드(로그용 재조회 fetch, 빈 이벤트 핸들러, 앱에서 켜지 않던
+     `useAnimationEngine`의 `debug` 옵션)도 함께 지운다.
+  2. ESLint `no-console`을 `error`로 켜고 `warn`·`error`만 허용한다. 테스트 파일은 제외한다.
+     꼭 필요한 로그는 이유를 적은 disable 주석으로만 남긴다.
+  3. NextAuth debug는 next-auth 기본값에 맡긴다(`authOptions.debug`가 켜진 개발 환경에서만 출력).
+  4. 운영 페이지 콘솔에 `log` 메시지가 없음을 E2E(`e2e/console-quiet.spec.ts`)로 고정한다.
+- Rejected: 개발 환경 전용 logger 도입 | 지워진 로그 대부분이 이모지 추적용이었고, 남길 만한 서버 사건 로그는 아직 소비처가 없다.
+  운영 관측은 #121에서 목적을 정해 새로 설계한다.
+- Rejected: 빌드에서 `console.log` 제거(compiler `removeConsole`) | 코드에는 남아 서버 로그와 개발 환경이 계속 섞이고, 규칙 없이 다시 늘어난다.
+- Confidence: high
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 새 로그가 필요하면 `warn`/`error`로 실패만 보고하거나 목적을 적어 disable한다. 비밀·개인정보·원문 데이터는 어떤 레벨로도 찍지 않는다.
+- Related: phases/ISSUE-188-console-logs.md, #188, #121

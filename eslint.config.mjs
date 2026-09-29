@@ -26,10 +26,19 @@ const eslintConfig = [
     },
   },
   {
+    // Development logs reached the production console, one with a Storage URL
+    // and file contents, and a server route logged authOptions (#188). Warnings
+    // and errors stay; anything else needs a deliberate disable comment.
+    rules: {
+      "no-console": ["error", { allow: ["warn", "error"] }],
+    },
+  },
+  {
     // Mocks and test doubles routinely need `any`; keep the rule for src code only
     files: ["**/__tests__/**", "**/*.test.*", "**/*.spec.*"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+      "no-console": "off",
     },
   },
 ];

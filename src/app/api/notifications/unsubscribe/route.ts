@@ -27,10 +27,6 @@ export async function POST(request: NextRequest) {
 
     // 구독 정보를 데이터베이스에서 제거
     // 실제 구현에서는 푸시 구독 테이블에서 해당 endpoint를 가진 레코드 삭제
-    console.log('Push subscription removed:', {
-      userId: session.user.id,
-      endpoint
-    })
 
     return NextResponse.json({
       success: true,

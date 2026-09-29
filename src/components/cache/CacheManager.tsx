@@ -23,8 +23,7 @@ export default function CacheManager() {
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
-        .then((registration) => {
-          console.log('Service Worker registered:', registration)
+        .then(() => {
           setSwRegistered(true)
           
           // Get initial cache stats

@@ -191,17 +191,11 @@ export class CacheService {
    */
   private cleanup(): void {
     const now = Date.now()
-    let cleaned = 0
     
     for (const [key, entry] of this.cache) {
       if (now > entry.timestamp + entry.ttl * 1000) {
         this.cache.delete(key)
-        cleaned++
       }
-    }
-    
-    if (cleaned > 0) {
-      console.log(`Cache cleanup: removed ${cleaned} expired entries`)
     }
   }
 

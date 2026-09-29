@@ -31,8 +31,6 @@ export async function POST(
       )
     }
 
-    console.log(`Job cancelled by user: ${sessionId}`)
-
     return NextResponse.json({
       success: true,
       message: 'Processing cancelled successfully',

@@ -88,17 +88,12 @@ export class PDFParserService {
   }): Promise<PianoAnimationData> {
     assertDemoGenerationAllowed()
 
-    console.log('PDFParserService: Starting PDF parsing...')
-    console.log('PDFParserService: Buffer length:', fileBuffer.length)
-
     try {
       // For now, we'll use enhanced demo data generation based on file metadata
       // This ensures system stability while avoiding complex PDF.js/Node.js compatibility issues
       // In production, this would be replaced with actual OMR processing using specialized libraries
       
-      console.log('PDFParserService: Generating enhanced demo data based on PDF metadata...')
       const enhancedDemo = this.createEnhancedDemo(metadata, fileBuffer.length)
-      console.log('PDFParserService: Enhanced demo created successfully')
       
       return enhancedDemo
       
@@ -107,7 +102,6 @@ export class PDFParserService {
       console.error('Error details:', error instanceof Error ? error.message : 'Unknown error')
       
       // Always fall back to basic demo data to ensure system stability
-      console.log('PDFParserService: Using basic fallback demo data')
       return this.createDemoAnimation(metadata, 'PDF processing completed with demo data')
     }
   }
@@ -128,11 +122,9 @@ export class PDFParserService {
       
       // Detect staff lines (horizontal lines)
       const staffLines = this.detectStaffLines(image)
-      console.log(`PDFParserService: Detected ${staffLines.length} staff lines`)
       
       // Detect notes (circular/oval shapes)
       const notes = this.detectNotes(image, staffLines)
-      console.log(`PDFParserService: Detected ${notes.length} potential notes`)
       
       return { staffLines, notes }
     } catch (error) {
@@ -250,7 +242,6 @@ export class PDFParserService {
     const notes: DetectedNote[] = []
     
     if (staffLines.length === 0) {
-      console.log('PDFParserService: No staff lines found, cannot detect notes')
       return notes
     }
     
@@ -429,7 +420,6 @@ export class PDFParserService {
     
     // If no notes detected, create a simple demo
     if (notes.length === 0) {
-      console.log('PDFParserService: No notes detected, creating demo sequence')
       return this.createDemoAnimation(metadata, 'No notes detected in PDF')
     }
     
@@ -465,8 +455,6 @@ export class PDFParserService {
     originalFileName: string
     fileSize: number
   }, bufferLength: number): PianoAnimationData {
-    console.log('PDFParserService: Creating enhanced demo with PDF-based variations')
-    
     // Create different melodies based on file characteristics
     const melodyVariations = HISTORICAL_DEMO_NOTE_SEQUENCES
     

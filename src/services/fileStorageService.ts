@@ -59,36 +59,14 @@ export class FileStorageService {
     metadata: FileMetadata
   ): Promise<UploadResult> {
     try {
-      console.log('🔄 Starting animation data upload...')
-      console.log('Metadata received:', {
-        name: metadata.name,
-        userId: metadata.userId,
-        size: metadata.size,
-        type: metadata.type,
-        isPublic: metadata.isPublic
-      })
-
       const fileName = this.generateFileName(metadata.name, metadata.userId, 'animation')
       const filePath = `${metadata.userId}/${fileName}`
-      
-      console.log('📁 Generated file path:', filePath)
-      console.log('📂 Target bucket:', this.ANIMATION_BUCKET)
-      
+
       // Convert data to JSON string
       const jsonData = JSON.stringify(data, null, 2)
       const buffer = Buffer.from(jsonData, 'utf-8')
-      
-      const dataObj = (data ?? {}) as Record<string, unknown>
-      console.log('📊 Data stats:', {
-        jsonLength: jsonData.length,
-        bufferLength: buffer.length,
-        dataKeys: Object.keys(dataObj),
-        hasNotes: Array.isArray(dataObj.notes),
-        notesCount: Array.isArray(dataObj.notes) ? dataObj.notes.length : 'N/A'
-      })
 
-      console.log('⬆️ Attempting upload to Supabase...')
-      const { data: uploadData, error } = await getSupabaseServer().storage
+      const { error } = await getSupabaseServer().storage
         .from(this.ANIMATION_BUCKET)
         .upload(filePath, buffer, {
           contentType: 'application/json',
@@ -106,18 +84,13 @@ export class FileStorageService {
         return { success: false, error: error.message }
       }
 
-      console.log('✅ Upload successful! Upload data:', uploadData)
-
       // Get public URL if public
       const { data: { publicUrl } } = getSupabaseServer().storage
         .from(this.ANIMATION_BUCKET)
         .getPublicUrl(filePath)
 
-      console.log('🔗 Generated public URL:', publicUrl)
-
       // Verify file exists by checking if we can access it
       try {
-        console.log('🔍 Verifying file upload...')
         const { data: files, error: listError } = await getSupabaseServer().storage
           .from(this.ANIMATION_BUCKET)
           .list(metadata.userId)
@@ -126,13 +99,7 @@ export class FileStorageService {
           console.warn('⚠️ Could not verify file upload:', listError.message)
         } else {
           const uploadedFile = files?.find(f => f.name === fileName)
-          if (uploadedFile) {
-            console.log('✅ File verification successful:', {
-              name: uploadedFile.name,
-              size: uploadedFile.metadata?.size,
-              lastModified: uploadedFile.updated_at
-            })
-          } else {
+          if (!uploadedFile) {
             console.warn('⚠️ File not found in listing after upload')
           }
         }
@@ -215,9 +182,6 @@ export class FileStorageService {
     data: unknown
   ): Promise<UploadResult> {
     try {
-      console.log('🔄 Updating existing animation data...')
-      console.log('📍 Existing URL:', existingUrl)
-
       // Extract storage path from existing URL
       const storagePath = this.extractStoragePath(existingUrl)
       if (!storagePath) {
@@ -227,20 +191,12 @@ export class FileStorageService {
         }
       }
 
-      console.log('📁 Extracted storage path:', storagePath)
-
       // Prepare data for upload
       const jsonData = JSON.stringify(data, null, 2)
       const buffer = Buffer.from(jsonData, 'utf8')
 
-      console.log('📊 Data to update:', {
-        jsonLength: jsonData.length,
-        bufferLength: buffer.length,
-        path: storagePath
-      })
-
       // Update the file in place
-      const { data: updateData, error } = await getSupabaseServer().storage
+      const { error } = await getSupabaseServer().storage
         .from(this.ANIMATION_BUCKET)
         .update(storagePath, buffer, {
           cacheControl: '3600',
@@ -254,26 +210,6 @@ export class FileStorageService {
           success: false, 
           error: error.message 
         }
-      }
-
-      console.log('✅ File updated successfully:', updateData)
-
-      // Verify the update
-      try {
-        console.log('🔍 Verifying file update...')
-        const verifyResponse = await fetch(existingUrl + '?t=' + Date.now()) // Cache bust
-        if (verifyResponse.ok) {
-          const updatedContent = await verifyResponse.json()
-          console.log('✅ File update verified:', {
-            url: existingUrl,
-            notesCount: updatedContent.notes?.length,
-            hasFingerInfo: updatedContent.notes?.some(
-              (note: { finger?: number }) => note.finger !== undefined
-            ) || false
-          })
-        }
-      } catch (verifyError) {
-        console.warn('⚠️ File verification failed:', verifyError)
       }
 
       return {

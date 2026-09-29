@@ -236,18 +236,4 @@ describe('useAnimationEngine', () => {
     expect(result.current.state.mode).toBe('follow')
     expect(result.current.state.isReady).toBe(true)
   })
-
-  it('should enable debug logging when option is set', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
-    
-    const { result } = renderHook(() => useAnimationEngine({ debug: true }))
-    
-    act(() => {
-      result.current.loadAnimation(testAnimationData)
-    })
-    
-    expect(consoleSpy).toHaveBeenCalledWith('Animation loaded:', 'Test Song')
-    
-    consoleSpy.mockRestore()
-  })
 })

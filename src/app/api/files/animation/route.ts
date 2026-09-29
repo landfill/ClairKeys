@@ -99,14 +99,11 @@ export async function GET(request: NextRequest) {
     const sheetMusicId = searchParams.get('sheetMusicId')
 
     if (!sheetMusicId) {
-      console.log('❌ GET /api/files/animation - Missing sheetMusicId parameter')
       return NextResponse.json(
         { error: 'Missing sheetMusicId parameter' },
         { status: 400 }
       )
     }
-
-    console.log(`🔍 GET /api/files/animation - Request for sheetMusicId: ${sheetMusicId}, User: ${session.user.id}`)
 
     // Get sheet music with access check
     const sheetMusic = await prisma.sheetMusic.findFirst({
@@ -120,19 +117,13 @@ export async function GET(request: NextRequest) {
     })
 
     if (!sheetMusic) {
-      console.log(`❌ Sheet music not found or no access for ID ${sheetMusicId}`)
       return NextResponse.json(
         { error: 'Sheet music not found or no access' },
         { status: 404 }
       )
     }
 
-    console.log(`✅ Found sheet music: "${sheetMusic.title}" by ${sheetMusic.composer}`)
-    console.log(`📄 animationDataUrl: ${sheetMusic.animationDataUrl}`)
-    console.log(`🔓 isPublic: ${sheetMusic.isPublic}`)
-
     if (!sheetMusic.animationDataUrl) {
-      console.log(`❌ No animation data URL found for sheet music ID ${sheetMusicId}`)
       return NextResponse.json(
         { error: 'Animation data not found' },
         { status: 404 }
@@ -162,7 +153,6 @@ export async function GET(request: NextRequest) {
 
     // For public sheet music, return the URL directly
     if (sheetMusic.isPublic) {
-      console.log(`✅ Returning public URL: ${sheetMusic.animationDataUrl}`)
       return NextResponse.json({
         url: sheetMusic.animationDataUrl
       })
@@ -178,7 +168,6 @@ export async function GET(request: NextRequest) {
 
       const signedUrl = await fileStorageService.getSignedUrl('animation-data', filePath, 3600)
 
-      console.log(`✅ Generated signed URL for private file: ${filePath}`)
       return NextResponse.json({
         url: signedUrl
       })

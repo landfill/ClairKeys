@@ -6,14 +6,10 @@ import { getAsyncUploadProcessor } from '@/services/asyncUploadProcessor'
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Async upload API called')
-    
     // Check authentication
     const session = await getServerSession(authOptions)
-    console.log('Session:', session?.user?.id)
     
     if (!session?.user?.id) {
-      console.log('No session found')
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -91,8 +87,6 @@ export async function POST(request: NextRequest) {
     
     // Create a new processing job
     const sessionId = await processingQueue.createJob(session.user.id, metadata)
-    
-    console.log(`Created processing job: ${sessionId}`)
 
     // Convert file to buffer
     const fileBuffer = await file.arrayBuffer()

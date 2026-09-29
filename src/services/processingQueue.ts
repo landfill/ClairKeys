@@ -92,7 +92,6 @@ class ProcessingQueueService {
     
     this.jobTimeouts.set(sessionId, timeout)
 
-    console.log(`Created processing job: ${sessionId} for user: ${userId}`)
     return sessionId
   }
 
@@ -116,12 +115,6 @@ class ProcessingQueueService {
     if (updates.completed || updates.error) {
       job.endTime = Date.now()
     }
-
-    console.log(`Updated job ${sessionId}:`, {
-      stage: job.stage,
-      progress: job.progress,
-      message: job.message
-    })
 
     return true
   }
@@ -184,7 +177,6 @@ class ProcessingQueueService {
     job.message = '사용자에 의해 취소됨'
     job.endTime = Date.now()
 
-    console.log(`Cancelled job: ${sessionId}`)
     return true
   }
 
@@ -234,7 +226,6 @@ class ProcessingQueueService {
 
     // Remove job
     this.jobs.delete(sessionId)
-    console.log(`Removed job: ${sessionId}`)
   }
 
   /**
@@ -256,7 +247,6 @@ class ProcessingQueueService {
     }
 
     if (cleanedCount > 0) {
-      console.log(`Cleaned up ${cleanedCount} old jobs`)
     }
   }
 

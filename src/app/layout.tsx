@@ -80,11 +80,8 @@ export default function RootLayout({
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('ClairKeys SW registered: ', registration.scope);
-                    })
                     .catch(function(err) {
-                      console.log('ClairKeys SW registration failed: ', err);
+                      console.warn('ClairKeys SW registration failed: ', err);
                     });
                 });
               }

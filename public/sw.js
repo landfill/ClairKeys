@@ -91,8 +91,6 @@ const ROUTE_PATTERNS = [
 
 // Install event - Cache essential resources
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installing...')
-  
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
       return cache.addAll([
@@ -111,8 +109,6 @@ self.addEventListener('install', (event) => {
 
 // Activate event - Clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating...')
-  
   event.waitUntil(
     Promise.all([
       // Clean up old caches
@@ -124,7 +120,6 @@ self.addEventListener('activate', (event) => {
                 cacheName !== API_CACHE && 
                 cacheName !== SAMPLE_CACHE && 
                 cacheName !== ANIMATION_CACHE) {
-              console.log('Deleting old cache:', cacheName)
               return caches.delete(cacheName)
             }
           })
@@ -330,7 +325,6 @@ async function cleanupExpiredEntries() {
         const route = findMatchingRoute(url.pathname)
         
         if (route && isExpired(response, route.maxAge)) {
-          console.log('Removing expired cache entry:', request.url)
           await cache.delete(request)
         }
       }
