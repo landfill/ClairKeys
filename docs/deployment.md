@@ -19,7 +19,7 @@
 
 - `installCommand`: `npm install --legacy-peer-deps`
 - `buildCommand`: `npm run build` (`prisma generate` 포함)
-- 리전: `iad1`
+- 리전: `icn1`(서울). DB·Storage(Supabase `ap-northeast-2`)와 OMR VM이 모두 국내라 함수도 그 옆에 둔다(D-092)
 - API 함수 `maxDuration`: 기본 30초
 
 보안 헤더(`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`)와
