@@ -1,6 +1,6 @@
 # #187 한 페이지의 `/api/auth/session` 호출
 
-Status: IN_PROGRESS
+Status: DONE (2026-09-29). #187 종료.
 Date: 2026-09-29
 Issue: https://github.com/landfill/ClairKeys/issues/187
 Previous stage: [함수 지역](ISSUE-187-api-latency.md) (DONE, PR203)
@@ -44,4 +44,5 @@ Previous stage: [함수 지역](ISSUE-187-api-latency.md) (DONE, PR203)
 
 ## Progress
 
-- 2026-09-29: 운영 측정으로 원인 확인, 계획·구현·로컬 검증.
+- 2026-09-29: 운영 측정으로 원인 확인, 계획·구현·로컬 검증([검증](../validation/2026-09-29-issue-187-auth-session.md)).
+- 2026-09-29: PR204 병합 `4b45fcd`(사용자 승인), 운영에서 6개 경로 모두 세션 요청 1회. [리뷰](../reviews/PR-204.md). #187 근거 코멘트 후 종료.

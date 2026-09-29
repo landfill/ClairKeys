@@ -38,7 +38,19 @@ Date: 2026-09-29 KST · Branch `codex/issue-187-auth-session` · head `8926646` 
 
 - 로그인 상태는 `/api/auth/session`을 `page.route`로 사용자 세션 JSON으로 응답해 흉내 냈다. 실제 OAuth 로그인은 거치지 않았다.
 
+## 운영 측정 (변경 후, 병합 `4b45fcd`, Production deployment 6728198410)
+
+같은 방법(비로그인, 헤드리스 Chromium, Service Worker 차단, `networkidle` + 3초).
+
+| 경로 | 변경 전 | 변경 후 |
+|---|---|---|
+| `/` | 1 | 1 |
+| `/explore` | 1 | 1 |
+| `/sheet/95` (전 `/sheet/87`) | 1 | 1 |
+| `/auth/signin` | 2 | **1** |
+| `/upload` → `/auth/signin` | 2 | **1** |
+| `/profile` → `/auth/signin` | 2 | **1** |
+
 ## 미검증
 
-- 운영 호출 횟수(변경 후). 병합(= 운영 배포) 후 같은 방법으로 `/auth/signin`·`/upload`를 잰다.
-- 실제 Google 로그인 후 로그인 페이지 재방문 시 복귀.
+- 실제 Google 로그인 후 로그인 페이지 재방문 시 복귀(E2E는 세션 응답을 흉내 냈다).
