@@ -1,6 +1,6 @@
 # #188 운영 콘솔의 디버그 로그와 내부 URL
 
-Status: IN_PROGRESS
+Status: DONE (2026-09-29). #188 종료.
 Date: 2026-09-29
 Issue: https://github.com/landfill/ClairKeys/issues/188
 
@@ -38,4 +38,5 @@ Issue: https://github.com/landfill/ClairKeys/issues/188
 
 ## Progress
 
-- 2026-09-29: 운영 재현, 계획·구현·로컬 검증.
+- 2026-09-29: 운영 재현, 계획·구현·로컬 검증([검증](../validation/2026-09-29-issue-188-console-logs.md)).
+- 2026-09-29: PR205 병합 `196baf4`(사용자 승인), 운영 4개 경로 콘솔 메시지 0. [리뷰](../reviews/PR-205.md). #188 근거 코멘트 후 종료.

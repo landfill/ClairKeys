@@ -34,8 +34,20 @@ Date: 2026-09-29 KST · Branch `codex/issue-188-console-logs` · head `f771739` 
 
 - 로그 제거로 남은 빈 블록·미사용 변수를 정리했고, 빈 줄 삭제는 모두 제거한 로그 바로 옆임을 diff로 확인했다.
 
+## 운영 측정 (변경 후, 병합 `196baf4`, Production deployment 6729903475)
+
+비로그인 헤드리스 Chromium, 서비스 워커 허용, `networkidle` + 3초.
+
+| 경로 | 변경 전 콘솔 | 변경 후 콘솔 | 활성 SW |
+|---|---|---|---|
+| `/` | log 1 | 0 | `/sw.js` |
+| `/explore` | log 1 | 0 | `/sw.js` |
+| `/sheet/95` | log 6 (Storage URL·원문 포함) | 0 | `/sw.js` |
+| `/auth/signin` | — | 0 | `/sw.js` |
+
+- 운영 `https://clairkeys.vercel.app/sw.js`의 `console.log` 0개. 서비스 워커 등록·활성화는 그대로 된다.
+
 ## 미검증
 
-- 운영 콘솔(변경 후). 병합(= 운영 배포) 후 같은 경로를 잰다. 새 `sw.js`는 바이트가 달라 방문 시 재설치된다.
 - 업로드·실시간 처리·PWA 설치 흐름의 실제 동작(로그 줄만 지웠고 해당 E2E는 돌리지 않았다).
 - 운영 Vercel 로그에 과거 secret·이메일이 남았는지.
