@@ -1,6 +1,6 @@
 # #187 탐색 API 지연
 
-Status: IN_PROGRESS
+Status: DONE (2026-09-29, 함수 지역 단계). `/api/auth/session` 중복 호출은 후속 단계로 #187에 남는다.
 Date: 2026-09-29
 Issue: https://github.com/landfill/ClairKeys/issues/187
 
@@ -41,4 +41,5 @@ Issue: https://github.com/landfill/ClairKeys/issues/187
 
 ## Progress
 
-- 2026-09-29: Supabase 지역 확인(사용자), 계획·구현·로컬 검증.
+- 2026-09-29: Supabase 지역 확인(사용자), 계획·구현·로컬 검증([검증](../validation/2026-09-29-issue-187-region.md)).
+- 2026-09-29: PR203 병합 `1c18608`(사용자 승인), 운영 배포 후 함수 `icn1` 확인, warm MISS 서버 `total` 25~45ms(변경 전 `db` 1630~3920ms). [리뷰](../reviews/PR-203.md).

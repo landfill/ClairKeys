@@ -6,11 +6,13 @@ Last updated: 2026-09-29 KST
 
 ## Current phase
 
-**#187 탐색 API 지연 — IN_PROGRESS (2026-09-29).** 함수 지역 `iad1`→`icn1`(DB·Storage는 Supabase `ap-northeast-2`), 공개 API
-`Server-Timing`에 `instance`·`connect` 추가(D-092). [PR203](https://github.com/landfill/ClairKeys/pull/203) 리뷰·CI 중, 병합 승인 대기.
-[phase](phases/ISSUE-187-api-latency.md), [검증](validation/2026-09-29-issue-187-region.md), [리뷰](reviews/PR-203.md).
+**#187 탐색 API 지연(함수 지역 단계) — DONE (2026-09-29).** PR203 `1c18608`, 사후 검사·운영 배포 PASS.
+함수를 `iad1`→`icn1`(DB와 같은 서울)로 옮겼다(D-092). 운영 `x-vercel-id: icn1::icn1`, warm MISS 서버 total 25~45ms
+(변경 전 `db` 1.6~3.9초), cold 첫 요청은 클라이언트 2.67s 중 서버 계측 516ms.
+[PR203](https://github.com/landfill/ClairKeys/pull/203), [phase](phases/ISSUE-187-api-latency.md),
+[검증](validation/2026-09-29-issue-187-region.md), [리뷰](reviews/PR-203.md).
 
-최근 완료(상세는 각 리뷰 로그): #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
+최근 완료(상세는 각 리뷰 로그): #187 함수 지역 PR203(D-092), #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
 [validation](validation/) `2026-09-27-*`), #177 PR183·PR184(2026-09-22), UI 일관성 PR182, #178 PR179~181(D-076·D-077),
 #125 PR173·175(D-075), DB 문서 PR174·176.
 
@@ -20,9 +22,8 @@ Last updated: 2026-09-29 KST
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - CI E2E job(`pr-checks.yml` `test-e2e`)에 `timeout-minutes`가 없어 멈추면 기본 360분 동안 돈다(평소 17~18분). 30분 상한 후보(별도 PR).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
-- #187: [PR203](https://github.com/landfill/ClairKeys/pull/203) CI·리뷰 대응 → 사용자 병합 승인(= 운영 배포) → 운영에서
-  `x-vercel-id` 함수 지역과 cold·warm MISS `connect`·`db`·`total`을 측정해 [검증](validation/2026-09-29-issue-187-region.md)에 전후 기록.
-  정정: 변경 전 `vercel.json`에는 `regions: ["iad1"]`가 명시돼 있었다("regions 없음"은 틀린 기록). `/api/auth/session` 4회 호출은 후속 PR.
+- #187 남은 기준: 한 페이지의 `/api/auth/session` 4회 호출(클라이언트, 별도 PR). #187은 이것 때문에 열어 둔다.
+  cold 요청의 서버 계측 밖 기동 시간 약 2.1s는 후속 관찰 후보. 정정: 변경 전 `vercel.json`에는 `regions: ["iad1"]`가 명시돼 있었다.
 - 그다음 [#188](https://github.com/landfill/ClairKeys/issues/188) 운영 콘솔 로그 → #121.
 - 사용자 결정 대기: 홈 샘플을 실제 재생기로 바꿀지(2026-08-30 정적 예시 결정과 충돌해 보류).
 - 실기기 미검증: 실제 MIDI 피아노·Chrome MIDI 권한 팝업, 로그인 상태 운영 연습 기록 쓰기, 클릭·반주 청취 레벨.
