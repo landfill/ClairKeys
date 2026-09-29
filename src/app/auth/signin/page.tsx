@@ -1,6 +1,6 @@
 'use client'
 
-import { getProviders, signIn, getSession } from 'next-auth/react'
+import { getProviders, signIn, useSession } from 'next-auth/react'
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -30,6 +30,16 @@ function SignInContent() {
   const error = searchParams.get('error')
   const copy = getSigninCopy(callbackUrl)
 
+  // The root SessionProvider has already asked for the session; getSession()
+  // here would send a second /api/auth/session request on every visit (#187).
+  const { status } = useSession()
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push(callbackUrl)
+    }
+  }, [status, callbackUrl, router])
+
   useEffect(() => {
     const fetchProviders = async () => {
       const res = await getProviders()
@@ -37,16 +47,8 @@ function SignInContent() {
       setLoading(false)
     }
 
-    const checkSession = async () => {
-      const session = await getSession()
-      if (session) {
-        router.push(callbackUrl)
-      }
-    }
-
-    checkSession()
     fetchProviders()
-  }, [callbackUrl, router])
+  }, [])
 
   const handleSignIn = async (providerId: string) => {
     try {
