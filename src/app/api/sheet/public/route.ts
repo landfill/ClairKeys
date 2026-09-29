@@ -25,6 +25,10 @@ const ORDER_BY: Record<string, Prisma.SheetMusicOrderByWithRelationInput[]> = {
   composer: [{ composer: 'asc' }, { id: 'asc' }],
 }
 
+// The first request an instance serves also pays for starting the query
+// engine; the Server-Timing header says which kind a measurement was (#187).
+let servedBefore = false
+
 const intParam = (value: string | null, fallback: number) => {
   const parsed = parseInt(value ?? '', 10)
   return Number.isNaN(parsed) ? fallback : parsed
@@ -62,6 +66,15 @@ export async function GET(request: NextRequest) {
     // holds a public sheet, and it gets that list with the first page so that
     // opening the page is one request. It ignores the current search and
     // category, or choosing one would empty the menu of every other.
+    const instance = servedBefore ? 'warm' : 'cold'
+    servedBefore = true
+
+    // Opening the connection first keeps its cost out of the query timing. It
+    // is a no-op once the instance holds a connection.
+    const connectStartedAt = performance.now()
+    await prisma.$connect()
+    const connectDurationMs = performance.now() - connectStartedAt
+
     const databaseStartedAt = performance.now()
     const [sheetMusic, total, categories] = await Promise.all([
       prisma.sheetMusic.findMany({
@@ -123,8 +136,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(responseData, {
       headers: {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-        // Latency evidence for #187, which the retired search route used to carry.
+        // Latency evidence for #187: instance, connection and queries apart.
         'Server-Timing': [
+          `instance;desc="${instance}"`,
+          `connect;dur=${connectDurationMs.toFixed(1)}`,
           `db;dur=${databaseDurationMs.toFixed(1)};desc="${databaseQueryCount} queries"`,
           `total;dur=${(performance.now() - requestStartedAt).toFixed(1)}`,
         ].join(', ')

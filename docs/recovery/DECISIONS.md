@@ -3318,3 +3318,25 @@
 - Reversibility: clean
 - Directive: 공개 목록 조건은 `/api/sheet/public`의 `PUBLIC_ONLY` 한 곳에서만 바꾼다. 공개 화면에 비공개 보기를 다시 넣지 않는다.
 - Related: phases/ISSUE-197-explore-single-screen.md, D-075(공개 판정), D-080(추천·인기 제거), #187(지연)
+
+## D-092: 서버 함수는 데이터 옆 서울(`icn1`)에서 돈다
+
+- Date: 2026-09-29
+- Status: Proposed; merge pending(병합이 곧 운영 배포다)
+- Context: #187. 공개 목록 API가 cache MISS 때 DB 3건에 1.6~3.9초 걸렸다([PR202 리뷰](reviews/PR-202.md)).
+  `vercel.json`이 함수를 `iad1`(미국 동부)에 고정했지만 DB·Storage는 Supabase `ap-northeast-2`(서울, 사용자 확인 2026-09-29),
+  OMR VM은 NAVER Cloud(국내)다. 사용자 요청은 `icn1` 엣지로 들어와 미국에서 실행된 뒤, 쿼리마다 다시 서울을 왕복했다.
+- Decision:
+  1. `vercel.json` `regions`를 `["icn1"]`로 바꾼다. 모든 함수(API·NextAuth·업로드·OMR 콜백)가 한 지역으로 옮겨진다.
+     외부 의존 중 한국 밖은 Google OAuth뿐이고, 로그인 한 번에 몇 번 부르는 정도다.
+  2. `/api/sheet/public`의 `Server-Timing`에 `instance`(`cold`/`warm`)와 `connect`(연결 시간)를 `db`(쿼리) 앞에 둔다.
+     연결은 쿼리 전에 `prisma.$connect()`로 따로 연다. 이미 연결된 인스턴스에서는 즉시 끝난다.
+  3. 회귀 테스트로 지역(`src/ci/__tests__/vercelRegion.test.ts`)과 헤더 구성(공개 API 테스트)을 고정한다.
+- Rejected: 캐시 시간만 늘림 | 이미 `s-maxage=60, stale-while-revalidate=300`이다. MISS 자체와 다른 API(업로드·악보 열기)는 그대로 느리다.
+- Rejected: DB를 미국으로 이전 | 사용자와 OMR VM이 한국이라 다른 모든 경로가 멀어지고, 운영 데이터 이전이 필요하다.
+- Rejected: 원인을 먼저 계측하고 지역은 나중에 | 지역 불일치는 설정만으로 확인된 사실이고, 계측은 같은 배포에서 전후를 가른다.
+- Confidence: high
+- Scope-risk: moderate
+- Reversibility: clean (`regions` 한 줄 되돌림)
+- Directive: 함수 지역은 DB 지역과 같게 둔다. DB를 옮기면 `regions`와 이 테스트를 함께 바꾼다.
+- Related: phases/ISSUE-187-api-latency.md, D-091(공개 목록 API), #187

@@ -102,6 +102,6 @@
   "devCommand": "npm run dev",
   "framework": "nextjs",
   "regions": [
-    "iad1"
+    "icn1"
   ]
 }

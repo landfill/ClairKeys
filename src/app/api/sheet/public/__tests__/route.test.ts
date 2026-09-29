@@ -9,6 +9,7 @@ import { GET } from '../route'
 jest.mock('next-auth')
 jest.mock('@/lib/prisma', () => ({
   prisma: {
+    $connect: jest.fn(),
     sheetMusic: {
       findMany: jest.fn(),
       count: jest.fn(),
@@ -19,6 +20,7 @@ jest.mock('@/lib/prisma', () => ({
   },
 }))
 
+const mockConnect = prisma.$connect as jest.Mock
 const mockFindMany = prisma.sheetMusic.findMany as jest.Mock
 const mockCount = prisma.sheetMusic.count as jest.Mock
 const mockCategories = prisma.category.findMany as jest.Mock
@@ -30,6 +32,7 @@ const get = (query = '') => GET(new NextRequest(`http://localhost/api/sheet/publ
 describe('GET /api/sheet/public', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockConnect.mockResolvedValue(undefined)
     mockFindMany.mockResolvedValue([])
     mockCount.mockResolvedValue(0)
     mockCategories.mockResolvedValue([])
@@ -126,7 +129,39 @@ describe('GET /api/sheet/public', () => {
     releaseCount(0)
     const response = await pending
     expect(response.headers.get('Cache-Control')).toBe('public, s-maxage=60, stale-while-revalidate=300')
-    // Kept for #187's latency work, which the search route used to serve.
     expect(response.headers.get('Server-Timing')).toMatch(/db;dur=[\d.]+;desc="3 queries", total;dur=[\d.]+/)
+  })
+
+  // #187: a slow miss can be a cold instance, the connection, or the queries.
+  // The header names each so a measurement says which one it was.
+  it('times the connection apart from the queries and marks a cold instance', async () => {
+    let releaseConnect: () => void = () => undefined
+    mockConnect.mockReturnValue(new Promise<void>(resolve => { releaseConnect = resolve }))
+
+    const pending = get()
+    await Promise.resolve()
+    expect(mockConnect).toHaveBeenCalledTimes(1)
+    expect(mockFindMany).not.toHaveBeenCalled()
+
+    releaseConnect()
+    const timing = (await pending).headers.get('Server-Timing')
+    expect(timing).toMatch(
+      /^instance;desc="(cold|warm)", connect;dur=[\d.]+, db;dur=[\d.]+;desc="3 queries", total;dur=[\d.]+$/
+    )
+  })
+
+  it('calls only the first request of an instance cold', async () => {
+    await jest.isolateModulesAsync(async () => {
+      const { prisma: fresh } = await import('@/lib/prisma')
+      ;(fresh.$connect as jest.Mock).mockResolvedValue(undefined)
+      ;(fresh.sheetMusic.findMany as jest.Mock).mockResolvedValue([])
+      ;(fresh.sheetMusic.count as jest.Mock).mockResolvedValue(0)
+      ;(fresh.category.findMany as jest.Mock).mockResolvedValue([])
+      const { GET: freshGet } = await import('../route')
+      const request = () => freshGet(new NextRequest('http://localhost/api/sheet/public'))
+
+      expect((await request()).headers.get('Server-Timing')).toMatch(/^instance;desc="cold", /)
+      expect((await request()).headers.get('Server-Timing')).toMatch(/^instance;desc="warm", /)
+    })
   })
 })
