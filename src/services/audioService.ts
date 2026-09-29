@@ -85,7 +85,6 @@ export class AudioService {
       this.volume.toDestination()
 
       this.isInitialized = true
-      console.log('Audio service initialized successfully')
     } catch (error) {
       console.error('Failed to initialize audio service:', error)
       throw error

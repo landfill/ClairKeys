@@ -89,21 +89,16 @@ export default function SheetMusicPage() {
 
         // Load animation data from file storage
         try {
-          console.log(`🔍 Fetching animation data for sheet music ID: ${id}`)
           const animationUrl = data.sheetMusic.animationDataUrl
           if (!animationUrl) {
             console.error('❌ No animation URL found in sheet response')
             setError('애니메이션 데이터 URL이 없습니다.')
             return
           }
-          
-          console.log(`🔗 Fetching animation file from: ${animationUrl}`)
-          
+
           // Fetch the actual animation JSON file
           const jsonResponse = await fetch(animationUrl)
-          
-          console.log(`📡 Animation file response status: ${jsonResponse.status}`)
-          
+
           if (!jsonResponse.ok) {
             console.error(`❌ Failed to fetch animation file: ${jsonResponse.status}`)
             setError('애니메이션 파일을 다운로드하는 중 오류가 발생했습니다.')
@@ -111,7 +106,6 @@ export default function SheetMusicPage() {
           }
 
           const responseText = await jsonResponse.text()
-          console.log(`📝 Raw animation file content (first 200 chars):`, responseText.substring(0, 200))
           
           if (!responseText || responseText.trim() === '') {
             console.error('❌ Empty response from animation file')
@@ -124,7 +118,6 @@ export default function SheetMusicPage() {
             // unchecked `as` cast. Accepts canonical, legacy Shape A, and
             // converter.py-style JSON; throws AnimationContractError otherwise.
             const parsedAnimationData = normalizeAnimationData(JSON.parse(responseText))
-            console.log(`✅ Successfully validated animation data`, parsedAnimationData)
             setAnimationData(parsedAnimationData)
           } catch (jsonError) {
             if (jsonError instanceof AnimationContractError) {

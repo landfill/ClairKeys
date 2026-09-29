@@ -91,7 +91,6 @@ export function useRealTimeProcessing(
   const setupPolling = useCallback((sessionId: string) => {
     cleanup()
 
-    console.log(`Setting up polling for session: ${sessionId}`)
     setError('실시간 연결 실패 - 폴링으로 전환')
 
     const poll = async () => {
@@ -100,7 +99,6 @@ export function useRealTimeProcessing(
 
         if (!response.ok) {
           if (response.status === 404) {
-            console.log('Session not found, stopping polling')
             cleanup()
             return
           }
@@ -164,7 +162,6 @@ export function useRealTimeProcessing(
       const eventSource = new EventSource(`/api/processing-status/${sessionId}`)
 
       eventSource.onopen = () => {
-        console.log(`SSE connected for session: ${sessionId}`)
         setIsConnected(true)
         setError(null)
         reconnectAttemptsRef.current = 0
@@ -175,7 +172,6 @@ export function useRealTimeProcessing(
           const data = JSON.parse(event.data)
           
           if (data.type === 'connected') {
-            console.log('SSE connection established')
             return
           }
 
@@ -234,7 +230,6 @@ export function useRealTimeProcessing(
         // Try to reconnect with exponential backoff
         if (reconnectAttemptsRef.current < maxReconnectAttempts) {
           const delay = Math.pow(2, reconnectAttemptsRef.current) * 1000
-          console.log(`Attempting to reconnect in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${maxReconnectAttempts})`)
           
           setTimeout(() => {
             if (currentSessionRef.current) {
@@ -243,7 +238,6 @@ export function useRealTimeProcessing(
             }
           }, delay)
         } else {
-          console.log('Max reconnection attempts reached, falling back to polling')
           if (currentSessionRef.current) {
             setupPolling(currentSessionRef.current)
           }
@@ -289,7 +283,6 @@ export function useRealTimeProcessing(
       const sessionId = result.sessionId
 
       currentSessionRef.current = sessionId
-      console.log(`Started processing with session ID: ${sessionId}`)
 
       // Setup real-time connection
       setupSSEConnection(sessionId)

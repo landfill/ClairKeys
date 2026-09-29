@@ -90,7 +90,6 @@ export default function PWAInstallPrompt({
   // 앱 설치 후 이벤트 처리
   useEffect(() => {
     const handleAppInstalled = () => {
-      console.log('ClairKeys PWA installed successfully')
       setIsInstalled(true)
       setShowPrompt(false)
       setDeferredPrompt(null)
@@ -116,10 +115,8 @@ export default function PWAInstallPrompt({
       const choiceResult = await deferredPrompt.userChoice
       
       if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted the install prompt')
         onInstall?.()
       } else {
-        console.log('User dismissed the install prompt')
         onDismiss?.()
       }
       

@@ -71,7 +71,6 @@ export default function MultiStageUploadUI({
     reconnect
   } = useRealTimeProcessing({
     onComplete: (result) => {
-      console.log('Real-time processing completed:', result)
       onUploadComplete(result)
     },
     onError: (error) => {
@@ -82,9 +81,6 @@ export default function MultiStageUploadUI({
         message: error
       }))
       onError(error)
-    },
-    onStageChange: (stage) => {
-      console.log('Stage changed to:', stage)
     }
   })
 

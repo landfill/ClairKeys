@@ -13,7 +13,6 @@ export async function GET() {
     const authDurationMs = performance.now() - authStartedAt
     
     if (!session?.user) {
-      console.log('No session or user found in GET')
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -91,13 +90,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
-    console.log('Session in categories API:', JSON.stringify(session, null, 2))
-    console.log('Auth options:', JSON.stringify(authOptions, null, 2))
-    
+
     if (!session?.user) {
-      console.log('No session or user found')
-      console.log('Session user:', session?.user)
       return NextResponse.json(
         { error: 'Unauthorized - No valid session found' },
         { status: 401 }
