@@ -96,9 +96,12 @@ class WedgeRetryRuntimeTests(unittest.TestCase):
 
     def test_timeout_kills_candidate_and_preserves_selected_result(self):
         process = HangingProcess()
+        # A frozen module clock keeps the full budget until the JVM starts, so a
+        # loaded runner cannot skip the spawn; asyncio's own timer still expires.
         with patch('omr.audiveris.asyncio.create_subprocess_exec',
-                   new=AsyncMock(return_value=process)):
-            self.assertEqual(self.run_retry(monotonic() + .02), self.original)
+                   new=AsyncMock(return_value=process)), patch(
+                       'omr.audiveris.monotonic', return_value=0):
+            self.assertEqual(self.run_retry(.05), self.original)
         self.assertTrue(process.killed)
         self.assertTrue(process.waited)
 

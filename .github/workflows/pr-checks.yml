@@ -137,6 +137,8 @@ jobs:
   test-e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    # Normal runs take 16-19 minutes; a hang would otherwise hold the runner for 360.
+    timeout-minutes: 30
     needs: changes
     # Skip only when the detector proved the change is docs-only. If it failed, `code`
     # is empty and the job runs; skipped required jobs would otherwise count as passed.

@@ -91,8 +91,11 @@ class WholeNoteRetryRuntimeTests(unittest.TestCase):
 
     def test_timed_out_retry_is_killed_and_original_survives(self):
         process = HangingProcess()
-        with patch('omr.audiveris.asyncio.create_subprocess_exec', new=AsyncMock(return_value=process)):
-            self.assertEqual(self.run_retry(monotonic() + .02), self.original)
+        # A frozen module clock keeps the full budget until the JVM starts, so a
+        # loaded runner cannot skip the spawn; asyncio's own timer still expires.
+        with patch('omr.audiveris.asyncio.create_subprocess_exec', new=AsyncMock(return_value=process)), patch(
+                'omr.audiveris.monotonic', return_value=0):
+            self.assertEqual(self.run_retry(.05), self.original)
         self.assertTrue(process.killed)
         self.assertTrue(process.waited)
 
