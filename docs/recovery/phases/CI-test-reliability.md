@@ -1,6 +1,6 @@
 # CI 검사 신뢰성: 간헐 실패 테스트와 E2E 시간 상한
 
-Status: IN_REVIEW
+Status: DONE
 Date: 2026-09-30
 
 ## Objective
@@ -37,3 +37,5 @@ Date: 2026-09-30
 ## Progress
 
 - 2026-09-30: 두 수정 커밋(`d06332c`, `6d21565`)과 로컬 검증 완료. [검증](../validation/2026-09-30-ci-test-reliability.md).
+- 2026-09-30: Security Audit이 새 brace-expansion advisory로 막혀 PR207(`09011cc`)로 분리 수정 후 main 반영(`b049724`), CI 12/12 PASS.
+  사용자 승인으로 PR206을 `8bb3fda`에 병합. [리뷰](../reviews/PR-206.md).
