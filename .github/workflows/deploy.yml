@@ -109,6 +109,8 @@ jobs:
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    # Normal runs take 16-19 minutes; a hang would otherwise hold the runner for 360.
+    timeout-minutes: 30
 
     services:
       postgres:

@@ -51,6 +51,13 @@ describe('PR summary workflow', () => {
     expect(e2e).not.toContain('run: npm run build')
   })
 
+  // E2E normally takes 16-19 minutes. Without a cap a hung webServer or browser
+  // holds the runner for GitHub's default 360 minutes before the PR sees a result.
+  it('caps the E2E job well below the 360-minute default', () => {
+    const e2e = workflow.split(/^  test-e2e:\s*$/m)[1].split(/^  [a-z-]+:\s*$/m)[0]
+    expect(e2e).toMatch(/^ {4}timeout-minutes: 30$/m)
+  })
+
   // Branch protection requires these contexts by job name. Renaming a job leaves
   // the required check pending forever, so a rename must change the settings too.
   it('reports every required status check', () => {
