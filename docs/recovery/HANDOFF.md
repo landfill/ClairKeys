@@ -1,13 +1,13 @@
 # Current Handoff
 
-Last updated: 2026-09-30 KST
+Last updated: 2026-10-02 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
 
 **CI 검사 신뢰성 — DONE (2026-09-30).** PR206 `8bb3fda`: OMR 재시도 시간 초과 테스트 3건 결정화, 두 E2E job 30분 상한.
-감사 게이트를 막은 새 brace-expansion advisory는 PR207 `09011cc`로 고쳤다.
+감사 게이트를 막은 새 brace-expansion advisory는 PR207 `09011cc`로 고쳤다. 두 병합 커밋 모두 Post-merge PASS.
 [phase](phases/CI-test-reliability.md), [검증](validation/2026-09-30-ci-test-reliability.md), [PR206 리뷰](reviews/PR-206.md), [PR207 리뷰](reviews/PR-207.md).
 
 최근 완료(상세는 각 리뷰 로그): CI 신뢰성 PR206·207, #188 콘솔 로그 PR205(D-093), #187 탐색 API 지연 PR203·204(D-092, 이슈 종료), #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
@@ -17,7 +17,6 @@ Last updated: 2026-09-30 KST
 ## Next action
 
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
-- PR206 병합 커밋 `8bb3fda`의 Post-merge checks 결과 확인([리뷰](reviews/PR-206.md)).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
 - 후속 후보(#187 밖): cold 요청의 서버 계측 밖 기동 시간 약 2.1s, 홈 로드 때 나가는 `/api/auth/signin?callbackUrl=%2Fupload`.
 - 추천 다음 작업 [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측(D-093에서 구조화 로그를 여기로 넘겼다).
