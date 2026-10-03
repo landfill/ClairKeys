@@ -24,7 +24,7 @@ describe('isProtectedPath', () => {
   })
 
   it('leaves public routes open', () => {
-    for (const pathname of ['/', '/explore', '/sheet/2', '/auth/signin', '/auth/error', '/offline']) {
+    for (const pathname of ['/', '/learn', '/learn/keyboard', '/explore', '/sheet/2', '/auth/signin', '/auth/error', '/offline']) {
       expect(isProtectedPath(pathname)).toBe(false)
     }
   })
