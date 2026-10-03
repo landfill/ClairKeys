@@ -27,7 +27,7 @@ export default function PracticePage() {
         <section aria-labelledby="one-hand">
           <h2 id="one-hand" className="text-lg font-semibold text-ink">한 손씩</h2>
           <p className="mt-2">양손 음표가 있는 곡은 재생 전에 연습할 손에서 양손·왼손·오른손을 고를 수 있어요. 한 손을 고르면 다른 손의 노트가 옅어져요.</p>
-          <p className="mt-2">다른 손 소리 듣기를 켜면 다른 손의 소리도 함께 들어요. 끄면 연습할 손의 소리만 들어요. 한 손 음표만 있는 곡에는 손 선택이 나오지 않아요.</p>
+          <p className="mt-2">다른 손 소리 듣기를 켜면 다른 손의 소리도 함께 들어요. 끄면 연습할 손의 소리만 들어요. 한 손 음표만 있는 곡에는 손 선택이 나오지 않아요. 기다리기 모드에서는 다른 손 소리도 자동으로 나오지 않아요.</p>
         </section>
         <section aria-labelledby="ab-loop">
           <h2 id="ab-loop" className="text-lg font-semibold text-ink">A-B 구간 반복</h2>
@@ -38,15 +38,16 @@ export default function PracticePage() {
           <h2 id="wait-mode" className="text-lg font-semibold text-ink">기다리기 모드</h2>
           <p className="mt-2">재생 전에 기다리기 모드를 켜면 맞는 건반을 누를 때까지 진행이 멈춰요. 화면의 건반을 누르거나 MIDI 피아노 입력을 받을 수 있어요. MIDI 지원 브라우저에서는 모드를 켤 때 연결 권한을 요청해요. MIDI를 지원하지 않는 브라우저에서도 화면 건반은 사용할 수 있어요.</p>
           <p className="mt-2">한 손을 선택했다면 연습할 손의 음표만 기다려요. 같은 시점의 여러 음은 필요한 건반을 모두 눌러야 다음으로 진행해요.</p>
+          <p className="mt-2">기다리기 모드에서는 자동 연주 소리, 메트로놈, 준비 박자가 나오지 않아요. 화면에서 누른 건반만 앱이 소리를 내요. MIDI로 누른 음은 앱이 소리를 내지 않으므로 연결한 악기의 자체 소리를 들어요.</p>
         </section>
         <section aria-labelledby="metronome">
           <h2 id="metronome" className="text-lg font-semibold text-ink">메트로놈</h2>
           <p className="mt-2">재생 전에 메트로놈을 켜면 박자에 맞춘 클릭 소리를 들어요. 시작 전 준비 박자를 켜면 연주가 시작되기 전에 준비 박자를 들어요.</p>
-          <p className="mt-2">악보에 필요한 박자 정보가 없으면 메트로놈을 켤 수 없어요. 재생 화면에 나오는 안내를 확인해 주세요.</p>
+          <p className="mt-2">악보에 필요한 박자 정보가 없으면 메트로놈을 켤 수 없어요. 재생 화면에 나오는 안내를 확인해 주세요. 기다리기 모드에서는 메트로놈과 준비 박자가 나오지 않아요.</p>
         </section>
         <section aria-labelledby="keyboard-shortcuts">
           <h2 id="keyboard-shortcuts" className="text-lg font-semibold text-ink">키보드 단축키</h2>
-          <p className="mt-2">재생 화면에서 아래 키를 사용할 수 있어요. 터치 기기에는 물리 키보드 단축키가 없어요. 화면의 재생·일시정지·위치 조작을 이용해 주세요.</p>
+          <p className="mt-2">재생 화면에서 아래 키를 사용할 수 있어요. 물리 키보드가 없으면 화면의 재생·일시정지·위치 조작을 이용해 주세요.</p>
           <table aria-label="재생 화면 키보드 단축키" className="mt-3 w-full border-collapse text-left">
             <thead><tr className="border-b border-rule"><th scope="col" className="p-2 text-ink">키</th><th scope="col" className="p-2 text-ink">동작</th></tr></thead>
             <tbody>{shortcuts.map(shortcut => (

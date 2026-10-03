@@ -105,6 +105,7 @@ export default function SimplePianoKeyboard({
             }}
           >
             {activeKeys.has(midi) && activeFingers?.has(midi) && <span
+              data-fingering-mark
               aria-label={`${midi}번 건반 운지 ${activeFingers.get(midi)}`}
               className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 rounded bg-blue-600 px-1 text-xs font-bold text-white"
             >{activeFingers.get(midi)}</span>}
@@ -121,8 +122,10 @@ export default function SimplePianoKeyboard({
                   : { fontSize: pos.w >= 18 ? 12 : 10, lineHeight: '12px' }}
               >{label.marker ? null : label.name}</span>
             })()}
+            {/* 같은 하단 자리에 계이름과 옥타브 표식이 겹치지 않도록 대체한다. */}
             {midi % 12 === 0 && !showNoteNames && (
               <span
+                data-octave-mark
                 aria-label={`C${Math.floor(midi / 12) - 1} octave marker`}
                 className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-ink-muted"
                 style={{ fontSize: `${Math.max(7, 10 * decorationScale(pos.w, false))}px` }}
@@ -161,6 +164,7 @@ export default function SimplePianoKeyboard({
             }}
           >
             {activeKeys.has(midi) && activeFingers?.has(midi) && <span
+              data-fingering-mark
               aria-label={`${midi}번 건반 운지 ${activeFingers.get(midi)}`}
               className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 rounded bg-blue-600 px-1 text-xs font-bold text-white"
             >{activeFingers.get(midi)}</span>}
