@@ -83,7 +83,7 @@ L-6의 곡 분석과 진입 화면, 관련 Jest·E2E.
 - 2026-10-04: L-1 PR216 병합(`6b4c750`), #210 종료. L-2 착수.
 - 2026-10-04: L-2 PR218 생성. L-3 착수.
 - 2026-10-04: L-2 PR218 병합(`9d18ce2`), #211 종료.
-- 2026-10-04: L-3 재생 화면 요소 수 기준값(변경 전, controls/text): 데스크톱 재생 전 14/9·재생 중 8/0·일시정지 8/0, 터치 14/8·7/0·7/0.
-  설명 이동 후 재생 전 15/5(양쪽), 재생 중·일시정지 동일. 측정 spec `e2e/playback-element-count.spec.ts`(L-3 브랜치).
+- 2026-10-04: L-3 재생 화면 요소 수 전후 비교는 [검증 기록](../validation/2026-10-04-learn-3-practice.md)이 원본이다. 처음 잰 기준값은 태그 기준 단위라
+  설명 텍스트를 빠뜨렸고, 로컬 리뷰 뒤 새 단위로 `9d18ce2`에서 다시 쟀다. 측정 spec `e2e/playback-element-count.spec.ts`(L-3 브랜치).
 - 2026-10-04: 정리 후보: `PracticeGuideControls`는 `AnimationPlayer`에서만 쓰이고 `AnimationPlayer`는 `src/app`의 어느 라우트에서도 도달하지 않는다
   (`animation/index.ts`·`ui/LazyComponent.tsx`가 내보내기만 함). 실제 `/sheet/[id]`는 `FallingNotesPlayer`를 직접 쓴다. 이번 범위에서는 지우지 않는다.

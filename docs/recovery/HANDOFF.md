@@ -15,8 +15,8 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
-- #212(L-3): 브랜치 `codex/learn-3-practice`(미푸시). 측정 spec·설명 이동·`/learn/practice`·계이름 표시 토글 구현과 로컬 검증 완료(`bd4dcf8`), main 병합 포함.
-  남은 것: 로컬 리뷰 반영 → 검증 기록 → PR 생성(사용자 승인). 기준값과 정리 후보는 [phase](phases/LEARN-beginner-learning.md) Progress.
+- #212(L-3): 브랜치 `codex/learn-3-practice` `3b6017e`(미푸시). 구현·로컬 검증·로컬 리뷰 반영 완료, [검증](validation/2026-10-04-learn-3-practice.md).
+  PR 생성(사용자 승인) → CI·리뷰 → 병합 승인. 이 PR은 D-094에 6항(요소 수가 세는 것, 건반 표시의 기록 규칙)을 더한다.
 - 그 뒤 #213(L-4, 선행 L-2 충족), #214(L-5, 선행 L-1·L-3).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
