@@ -16,7 +16,7 @@ PR216의 Security Audit이 PR과 무관한 `braces` 권고(패치 버전 없음)
 
 ## Next action
 
-- 다음: PR217 CI 확인 → 병합 승인 요청 → 병합 후 PR216 브랜치를 main에 맞춰 갱신·CI 확인 → 병합 승인 요청. 그 뒤 #211(L-2)·#212(L-3).
+- 다음: PR217(CI 전부 PASS, thread 0) 병합 승인 대기 → 병합 후 PR216 브랜치를 main에 맞춰 갱신·CI 확인 → 병합 승인 요청. 그 뒤 #211(L-2)·#212(L-3).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
 - 후속 후보(#187 밖): cold 요청의 서버 계측 밖 기동 시간 약 2.1s, 홈 로드 때 나가는 `/api/auth/signin?callbackUrl=%2Fupload`.
