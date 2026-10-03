@@ -39,7 +39,7 @@ Decision: [D-094](../DECISIONS.md)
 |---|---|---|---|---|
 | L-1 | [#210](https://github.com/landfill/ClairKeys/issues/210) | `배우기` 메뉴, `/learn` 홈(단계 지도), 공통 레슨 레이아웃, 이 문서와 D-094 | 없음 | DONE ([PR216](../reviews/PR-216.md)) |
 | L-2 | [#211](https://github.com/landfill/ClairKeys/issues/211) | `/learn/keyboard` 건반 익히기(누르면 이름과 소리, 가운데 도, 도 찾기 연습) | L-1 | DONE ([PR218](../reviews/PR-218.md)) |
-| L-3 | [#212](https://github.com/landfill/ClairKeys/issues/212) | 재생 화면 설명을 `/learn/practice`로 옮기고 계이름 표시 토글 추가 | L-1 | IN_PROGRESS |
+| L-3 | [#212](https://github.com/landfill/ClairKeys/issues/212) | 재생 화면 설명을 `/learn/practice`로 옮기고 계이름 표시 토글 추가 | L-1 | DONE ([PR219](../reviews/PR-219.md)) |
 | L-4 | [#213](https://github.com/landfill/ClairKeys/issues/213) | `/learn/reading` 악보 읽기(음높이, 길이·박자). 크면 L-4a·L-4b로 나눈다 | L-2 | IN_PROGRESS |
 | L-5 | [#214](https://github.com/landfill/ClairKeys/issues/214) | `/learn/hands` 손 자세와 손가락 번호, 재생 화면 운지 표시와 연결 | L-1, L-3 | NOT_STARTED |
 | L-6 | [#215](https://github.com/landfill/ClairKeys/issues/215) | 내 곡의 소개(원본 근거가 있는 곡 정보와 레슨 연결) | L-2, L-4, L-5 | NOT_STARTED |
@@ -86,7 +86,10 @@ L-6의 곡 분석과 진입 화면, 관련 Jest·E2E.
 - 2026-10-04: L-2 PR218 생성. L-3 착수.
 - 2026-10-04: L-2 PR218 병합(`9d18ce2`), #211 종료.
 - 2026-10-04: L-3 재생 화면 요소 수 전후 비교는 [검증 기록](../validation/2026-10-04-learn-3-practice.md)이 원본이다. 처음 잰 기준값은 태그 기준 단위라
-  설명 텍스트를 빠뜨렸고, 로컬 리뷰 뒤 새 단위로 `9d18ce2`에서 다시 쟀다. 측정 spec `e2e/playback-element-count.spec.ts`(L-3 브랜치).
+  설명 텍스트를 빠뜨렸고, 로컬 리뷰 뒤 새 단위로 `9d18ce2`에서 다시 쟀다. 측정 spec `e2e/playback-element-count.spec.ts`.
 - 2026-10-04: 정리 후보: `PracticeGuideControls`는 `AnimationPlayer`에서만 쓰이고 `AnimationPlayer`는 `src/app`의 어느 라우트에서도 도달하지 않는다
   (`animation/index.ts`·`ui/LazyComponent.tsx`가 내보내기만 함). 실제 `/sheet/[id]`는 `FallingNotesPlayer`를 직접 쓴다. 이번 범위에서는 지우지 않는다.
 - 2026-10-04: L-3 PR219 생성. L-4 착수.
+- 2026-10-04: L-3 PR219 병합(`12faf42`), #212 종료. D-094 6항 추가.
+- 2026-10-04: L-4 착수 결정(이슈 #213 "착수 시 정해 기록"): 악보 그림은 손으로 그린 SVG가 아니라 기존 OSMD(`opensheetmusicdisplay`, `ScorePanel`이 쓰는 엔진)로
+  코드에서 만든 MusicXML을 렌더링한다(기호 모양을 검수할 사람이 없어 조판 엔진에 맡긴다). 음높이(L-4a)와 길이·박자(L-4b) 두 PR로 나눈다.
