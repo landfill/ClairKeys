@@ -6,9 +6,9 @@
  * - 시각 변경(A)이 깨뜨리면 안 되는 것: `playback-chrome` 클래스. 재생 중 Header·Footer를 숨기는
  *   `globals.css`의 규칙이 이 클래스에 걸려 있어서, 셸을 다시 그리다 클래스를 잃으면 재생 화면이
  *   조용히 좁아진다 (D-019, D-024 Directive).
- * - 도달 경로 변경(B)이 만든 것: 내비게이션 3개 구성과 죽은 링크 부재 (D-026 G1-4, DS0-3, DS0-5).
+ * - 도달 경로 변경(B)이 만든 것: 로그인 여부에 따른 내비게이션 구성과 죽은 링크 부재 (D-026 G1-4, DS0-3, DS0-5).
  */
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { useSession } from 'next-auth/react'
 import Header from '../Header'
 import Footer from '../Footer'
@@ -64,18 +64,20 @@ describe('Header — 재생 계약', () => {
   })
 })
 
-describe('Header — 내비게이션 구성 (D-026 G1-4)', () => {
-  it('offers only 탐색 to signed-out visitors', () => {
+describe('Header — 내비게이션 구성 (D-094)', () => {
+  it('offers 배우기 / 탐색 to signed-out visitors', () => {
     mockUseSession.mockReturnValue(signedOut as never)
     render(<Header />)
 
     const nav = screen.getAllByRole('navigation')[0]
+    expect(within(nav).getAllByRole('link').map(link => link.textContent)).toEqual(['배우기', '탐색'])
+    expect(within(nav).getByRole('link', { name: '배우기' })).toHaveAttribute('href', '/learn')
     expect(within(nav).getByRole('link', { name: '탐색' })).toHaveAttribute('href', '/explore')
     expect(within(nav).queryByRole('link', { name: '내 악보' })).toBeNull()
     expect(within(nav).queryByRole('link', { name: '새 악보' })).toBeNull()
   })
 
-  it('offers exactly 내 악보 / 새 악보 / 탐색 to signed-in users', () => {
+  it('offers exactly 배우기 / 탐색 / 내 악보 / 새 악보 to signed-in users', () => {
     mockUseSession.mockReturnValue(signedIn as never)
     render(<Header />)
 
@@ -84,7 +86,19 @@ describe('Header — 내비게이션 구성 (D-026 G1-4)', () => {
       .getAllByRole('link')
       .map((link) => link.textContent?.trim())
 
-    expect(labels).toEqual(['내 악보', '새 악보', '탐색'])
+    expect(labels).toEqual(['배우기', '탐색', '내 악보', '새 악보'])
+  })
+
+  it.each([signedOut, signedIn])('uses the same order in the mobile menu ($status)', async session => {
+    mockUseSession.mockReturnValue(session as never)
+    render(<Header />)
+    fireEvent.click(screen.getByRole('button', { name: '메뉴 열기' }))
+    const nav = screen.getByRole('navigation', { name: '주요 (모바일)' })
+    expect(within(nav).getAllByRole('link').map(link => link.textContent)).toEqual(
+      session.data ? ['배우기', '탐색', '내 악보', '새 악보'] : ['배우기', '탐색'],
+    )
+    fireEvent.click(within(nav).getByRole('link', { name: '배우기' }))
+    expect(screen.queryByRole('navigation', { name: '주요 (모바일)' })).toBeNull()
   })
 
   it('drops the 처리 상태 entry — /processing is gone (D-026 G1-4)', () => {

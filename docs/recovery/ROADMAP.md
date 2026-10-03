@@ -149,6 +149,19 @@ DS-5·DS-6의 화면이 나중에 들어오면서 통일이 다시 깨진다.
 - 홈 → 업로드 → 이탈 → 완료 → 첫 재생 종단 검증
 - 상세: [DS-7](phases/DS-7-states.md)
 
+## 초보자 학습 트랙 `배우기` (이슈 [#208](https://github.com/landfill/ClairKeys/issues/208))
+
+학습 콘텐츠는 `/learn` 페이지에 두고 재생 화면에는 최소 표시만 더한다(D-094). 범위·제약은 [phase](phases/LEARN-beginner-learning.md), 단계별 할 일은 각 이슈가 원본이다.
+
+| 순서 | ID | 단계 | 상태 | 권장 브랜치 | 선행 조건 |
+|---:|---|---|---|---|---|
+| 1 | L-1 | `배우기` 메뉴와 `/learn` 홈, 공통 레슨 레이아웃 (#210) | IN_PROGRESS | `codex/learn-1-menu-home` | 없음 |
+| 2 | L-2 | 건반 익히기 `/learn/keyboard` (#211) | NOT_STARTED | `codex/learn-2-keyboard` | L-1 |
+| 3 | L-3 | 재생 화면 설명 이동과 계이름 토글 `/learn/practice` (#212) | NOT_STARTED | `codex/learn-3-practice` | L-1 |
+| 4 | L-4 | 악보 읽기 `/learn/reading` (#213) | NOT_STARTED | `codex/learn-4-reading` | L-2 |
+| 5 | L-5 | 손 자세와 손가락 번호 `/learn/hands` (#214) | NOT_STARTED | `codex/learn-5-hands` | L-1, L-3 |
+| 6 | L-6 | 내 곡의 소개 (#215) | NOT_STARTED | `codex/learn-6-song-intro` | L-2, L-4, L-5 |
+
 ## 이슈 #76 전체 완료 조건
 
 DS-1~DS-7이 전부 `DONE`이고 아래를 모두 충족할 때 이슈 #76을 닫는다. 각 항목은 담당 단계가 자기

@@ -17,20 +17,22 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   /**
-   * `내 악보`·`새 악보`·`탐색` 세 개다 (D-026 G1-4). 홈은 워드마크가 맡는다.
+   * 배우기·탐색은 누구나 열고, 내 악보·새 악보는 로그인한 사용자에게 보인다 (D-094).
+   * 홈은 워드마크가 맡는다.
    *
    * `처리 상태`가 빠진 이유는 화면을 정리해서가 아니다. 그 화면은 `ProcessingJob`을 읽는데
    * canonical 업로드 경로가 그 테이블에 한 행도 쓰지 않아, 악보를 가진 계정에서도 비어 있었다.
    * 대체 도달 경로는 내 악보의 상태 배지이며 DS-4가 만든다.
    */
   const navItems = [
+    { href: '/learn', label: '배우기' },
+    { href: '/explore', label: '탐색' },
     ...(session
       ? [
           { href: '/library', label: '내 악보' },
           { href: '/upload', label: '새 악보' },
         ]
       : []),
-    { href: '/explore', label: '탐색' },
   ]
 
   return (
