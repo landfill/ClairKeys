@@ -7,24 +7,34 @@ jest.mock('@/lib/learn/lessons', () => {
   return { ...actual, LEARN_LESSONS: actual.LEARN_LESSONS.map((lesson: object) => ({ ...lesson })) }
 })
 
-beforeEach(() => { LEARN_LESSONS.forEach(lesson => { lesson.available = lesson.id === 'practice' }) })
+beforeEach(() => { LEARN_LESSONS.forEach(lesson => { lesson.available = lesson.id === 'keyboard' || lesson.id === 'practice' }) })
 
 describe('LessonLayout', () => {
-  it('renders one h1, the lesson body and a named return link without dead neighbours', () => {
-    render(<LessonLayout lessonId="practice"><h2>음높이</h2></LessonLayout>)
+  it.each([
+    { id: 'keyboard', title: '건반', neighbour: '다음 레슨: 연습 방법', href: '/learn/practice', absent: /이전 레슨/ },
+    { id: 'practice', title: '연습 방법', neighbour: '이전 레슨: 건반', href: '/learn/keyboard', absent: /다음 레슨/ },
+  ])('renders one h1, the body, map and only the published neighbour for $id', ({ id, title, neighbour, href, absent }) => {
+    render(<LessonLayout lessonId={id}><h2>음높이</h2></LessonLayout>)
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
-    expect(screen.getByRole('heading', { level: 1, name: '연습 방법' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: title })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: '음높이' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
-    expect(screen.getAllByRole('link')).toHaveLength(1)
+    expect(screen.getByRole('link', { name: neighbour })).toHaveAttribute('href', href)
+    expect(screen.queryByRole('link', { name: absent })).toBeNull()
+    expect(screen.getAllByRole('link')).toHaveLength(2)
   })
 
   it('names previous and next links and skips unavailable lessons', () => {
-    LEARN_LESSONS[0].available = true
-    LEARN_LESSONS[3].available = true
     render(<LessonLayout lessonId="reading">레슨 본문</LessonLayout>)
     expect(screen.getByRole('link', { name: '이전 레슨: 건반' })).toHaveAttribute('href', '/learn/keyboard')
     expect(screen.getByRole('link', { name: '다음 레슨: 연습 방법' })).toHaveAttribute('href', '/learn/practice')
     expect(screen.queryByRole('link', { name: /손/ })).toBeNull()
+  })
+
+  it('keeps only the map link when every neighbour is unavailable', () => {
+    LEARN_LESSONS.forEach(lesson => { lesson.available = false })
+    render(<LessonLayout lessonId="reading">레슨 본문</LessonLayout>)
+    expect(screen.getAllByRole('link')).toHaveLength(1)
+    expect(screen.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
   })
 })

@@ -13,6 +13,8 @@ it('uses one lesson heading and presents the six real practice topics', () => {
   expect(lesson.getAllByRole('heading', { level: 2 }).map(node => node.textContent)).toEqual([
     '느리게 시작', '한 손씩', 'A-B 구간 반복', '기다리기 모드', '메트로놈', '키보드 단축키',
   ])
+  expect(lesson.getByRole('link', { name: '이전 레슨: 건반' })).toHaveAttribute('href', '/learn/keyboard')
+  expect(lesson.queryByRole('link', { name: /다음 레슨/ })).toBeNull()
   expect(lesson.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
   expect(screen.getByText(/노트의 아랫변이 건반 위 선에 닿을 때/)).toBeInTheDocument()
   const table = lesson.getByRole('table', { name: '재생 화면 키보드 단축키' })

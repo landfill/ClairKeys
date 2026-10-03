@@ -12,6 +12,7 @@ for (const width of [320, 1280]) {
     await expect(page.getByRole('heading', { level: 1, name: '연습 방법' })).toBeVisible()
     await expect(page).toHaveTitle(/연습 방법/)
     await expect(page.getByRole('main').getByRole('heading', { level: 2 })).toHaveText(topics)
+    await expect(page.getByRole('link', { name: '이전 레슨: 건반' })).toHaveAttribute('href', '/learn/keyboard')
     await expect(page.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
     const overflow = await page.evaluate(() => ({
       documentWidth: document.documentElement.scrollWidth,
