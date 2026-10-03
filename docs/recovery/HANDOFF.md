@@ -6,8 +6,8 @@ Last updated: 2026-10-03 KST
 
 ## Current phase
 
-**#208 초보자 학습 영역(`배우기`) — L-0 계획 IN_REVIEW (2026-10-03).** [PR209](reviews/PR-209.md), D-094,
-[phase](phases/LEARN-beginner-learning.md). 병합 후 L-1부터 진행.
+**#208 초보자 학습 영역(`배우기`) — 이슈 등록 완료 (2026-10-03), 구현 미착수.** 단계 이슈 #210(L-1)·#211(L-2)·#212(L-3)·
+#213(L-4)·#214(L-5)·#215(L-6). 계획 PR209는 사용자 지시로 닫았다(이슈 등록 단계는 PR 대상 아님, [기록](reviews/PR-209.md)).
 
 최근 완료(상세는 각 리뷰 로그): CI 신뢰성 PR206·207(Post-merge PASS), #188 콘솔 로그 PR205(D-093), #187 탐색 API 지연 PR203·204(D-092, 이슈 종료), #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
 [validation](validation/) `2026-09-27-*`), #177 PR183·PR184(2026-09-22), UI 일관성 PR182, #178 PR179~181(D-076·D-077),
@@ -15,7 +15,7 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
-- PR209(L-0) 리뷰 처리 후 사용자 병합 승인 대기. 이어서 L-1 `배우기` 골격.
+- 다음 구현: #210(L-1). phase 문서와 D-094는 그 PR에 함께 넣는다(PR209 커밋 `4e79fc5`, `refs/pull/209/head`에서 재사용 가능).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
 - 후속 후보(#187 밖): cold 요청의 서버 계측 밖 기동 시간 약 2.1s, 홈 로드 때 나가는 `/api/auth/signin?callbackUrl=%2Fupload`.
@@ -31,7 +31,8 @@ Last updated: 2026-10-03 KST
 
 - 새 PR 병합과 운영 배포는 각각 명시적 승인이 필요하다. 과거 승인을 새 범위로 확대하지 않는다.
 - LEARN 트랙(#208) 작업 방식(사용자 지시 2026-10-03): 구현 Codex `gpt-6.1-sol`, 리뷰 Codex `gpt-6-astra` reasoning `high`,
-  Claude는 오케스트레이션만 한다. 상세는 [phase 작업 방식](phases/LEARN-beginner-learning.md).
+  Claude는 오케스트레이션만 한다. 앞으로 할 작업은 GitHub 이슈로 등록하고, 이슈 등록만으로 PR을 만들지 않는다.
+  리뷰 명령: diff 리뷰는 `codex review --base main`, 지시문이 필요하면 `codex exec -s read-only`(둘은 함께 쓸 수 없다).
 - 운영 DB: index migration `20260901060000` 미적용([PR173 리뷰](reviews/PR-173.md)). `PracticeSession` FK 변경도 운영 DB 작업이다.
 - 운영에 비공개 악보가 없어 비공개 차단은 로컬 실제 DB로만 검증했다. 비공개 악보가 생기면 운영에서 404를 확인한다.
 - Storage의 public animation URL 의존성은 현행 코드 제약이다. 비공개 JSON 보호는 후속 코드 수정이 필요하다.
