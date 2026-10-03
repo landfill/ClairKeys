@@ -47,4 +47,13 @@ describe('Next config', () => {
 
     expect(config.experimental?.optimizeCss).toBe(true)
   })
+
+  // `optimizeCss` makes the Next server `require('critters')` while rendering. The
+  // security gate audits production dependencies only (D-095), so a package the server
+  // loads must not sit in devDependencies where the gate cannot see it.
+  it('ships the package optimizeCss loads at run time', () => {
+    const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
+    expect(pkg.dependencies).toHaveProperty('critters')
+    expect(pkg.devDependencies).not.toHaveProperty('critters')
+  })
 })

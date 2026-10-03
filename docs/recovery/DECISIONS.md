@@ -3365,3 +3365,26 @@
 - Reversibility: clean
 - Directive: 새 로그가 필요하면 `warn`/`error`로 실패만 보고하거나 목적을 적어 disable한다. 비밀·개인정보·원문 데이터는 어떤 레벨로도 찍지 않는다.
 - Related: phases/ISSUE-188-console-logs.md, #188, #121
+
+## D-095: 보안 감사 게이트는 배포되는 의존성만 막는다
+
+- Date: 2026-10-03
+- Status: Proposed in audit-gate PR; merge pending
+- Context: PR216의 Security Audit이 `braces` high 권고(GHSA-vfj7-8cjw-p6xm, `<=3.0.3`)로 실패했다. PR216은 의존성을 바꾸지 않았다.
+  3.0.3이 npm의 최신 버전이라 패치된 버전이 없고, PR207처럼 override 하한을 올릴 수 없다. `braces`는
+  Jest(`jest → @jest/core → micromatch`)와 ESLint(`eslint-config-next → @next/eslint-plugin-next → fast-glob → micromatch`)
+  경로로만 들어오는 개발 도구 의존성이며(lock에서 모두 `dev: true`) `npm audit --omit=dev`는 0건이다.
+  게이트가 PR 체크와 Post-merge checks 양쪽에 있어 모든 PR 병합이 막혔다. 사용자가 2026-10-03 운영 의존성으로 좁히는 안을 골랐다.
+- Decision:
+  1. 두 워크플로의 감사를 `npm audit --omit=dev --audit-level high`로 바꾼다. 두 명령은 같게 유지하고 `src/ci` 테스트로 고정한다.
+  2. 서버가 런타임에 불러오는 `critters`(`experimental.optimizeCss`)를 `devDependencies`에서 `dependencies`로 옮긴다.
+     `devDependencies` 전체를 `src`·`next.config.mjs`·`public/sw.js`의 import와 대조했고 런타임 사용은 이것뿐이었다.
+- Rejected: 권고 하나만 허용 목록 | `npm audit`에 예외 기능이 없어 결과를 걸러내는 스크립트가 필요하고, 패치가 나오면 다시 지워야 한다.
+- Rejected: 패치가 나올 때까지 대기 | 배포물에 들어가지 않는 도구 때문에 모든 병합이 기한 없이 멈춘다.
+- Rejected: `npm audit fix --force` | `eslint-config-next`를 14.x로 내리는 제안이며 실제 수정이 아니다.
+- Confidence: high
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: 개발 도구의 high 권고는 이 게이트가 더는 잡지 않는다. 필요하면 로컬에서 `npm audit`으로 확인한다.
+  `dependencies`와 `devDependencies` 분류가 틀리면 게이트가 새므로, 런타임에 쓰는 패키지를 `devDependencies`에 두지 않는다.
+- Related: PR216, PR207(brace-expansion override), D-087
