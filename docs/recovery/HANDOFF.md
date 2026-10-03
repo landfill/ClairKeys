@@ -15,7 +15,7 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
-- #212(L-3): [PR219](reviews/PR-219.md) CI·hosted 리뷰 확인 → 병합 승인 요청. 이 PR은 D-094에 6항을 더한다.
+- #212(L-3): [PR219](reviews/PR-219.md) CI 전부 PASS, thread 0, 병합 승인 대기. 이 PR은 D-094에 6항을 더한다.
 - #213(L-4): 브랜치 `codex/learn-4-reading` 착수. `reading`의 `available`은 PR219 병합 뒤 main을 병합하고 켠다(L-2·L-3 때 같은 테스트 5개가 충돌했다).
 - 그 뒤 #214(L-5, 선행 L-1·L-3), #215(L-6, 선행 L-2·L-4·L-5).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
