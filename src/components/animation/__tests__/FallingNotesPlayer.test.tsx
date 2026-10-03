@@ -1,4 +1,6 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
+import { renderToString } from 'react-dom/server.node'
+import { hydrateRoot, type Root } from 'react-dom/client'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import FallingNotesPlayer from '../FallingNotesPlayer'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
@@ -65,10 +67,10 @@ jest.mock('../FallingNotes', () => ({
 
 jest.mock('../../piano/SimplePianoKeyboard', () => ({
   __esModule: true,
-  default: ({ activeKeys, onKeyPress }: { activeKeys: Set<number>; onKeyPress?: (midi: number) => void }) => {
+  default: ({ activeKeys, onKeyPress, showNoteNames }: { activeKeys: Set<number>; onKeyPress?: (midi: number) => void; showNoteNames?: boolean }) => {
     mockKeyboardFrames.push(new Set(activeKeys))
     mockKeyboardInput.current = onKeyPress
-    return <div data-testid="active-keys">{Array.from(activeKeys).join(',')}</div>
+    return <div data-testid="active-keys" data-note-names={String(Boolean(showNoteNames))}>{Array.from(activeKeys).join(',')}</div>
   },
 }))
 
@@ -106,6 +108,7 @@ const animationData: CanonicalAnimationData = {
 
 describe('FallingNotesPlayer', () => {
   beforeEach(() => {
+    localStorage.removeItem('clairkeys.noteNames')
     mockKeyboardFrames.length = 0
     mockPlayerState.waitingFor = null
     mockPlayerState.countInLeft = null
@@ -116,6 +119,48 @@ describe('FallingNotesPlayer', () => {
     mockOrientation.enter.mockClear()
     mockOrientation.exit.mockClear()
     mockPlayerState.play.mockClear().mockResolvedValue(true)
+  })
+
+  it('hydrates a stored on preference without mismatched server HTML', async () => {
+    setIdle()
+    localStorage.setItem('clairkeys.noteNames', 'true')
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const container = document.createElement('div')
+    let root: Root | undefined
+    try {
+      container.innerHTML = renderToString(<FallingNotesPlayer animationData={animationData} />)
+      const serverToggle = container.querySelector('input[aria-label="건반에 계이름 표시"]') as HTMLInputElement
+      expect(serverToggle).not.toBeNull()
+      expect(serverToggle.checked).toBe(false)
+      document.body.appendChild(container)
+      await act(async () => { root = hydrateRoot(container, <FallingNotesPlayer animationData={animationData} />) })
+      expect(error).not.toHaveBeenCalled()
+      expect(container.querySelector('input[aria-label="건반에 계이름 표시"]')).toBeChecked()
+    } finally {
+      await act(async () => { root?.unmount() })
+      container.remove()
+      error.mockRestore()
+    }
+  })
+
+  it('offers note names only before playback, defaulting off', () => {
+    setIdle()
+    const { rerender } = render(<FallingNotesPlayer animationData={animationData} />)
+    const toggle = screen.getByRole('checkbox', { name: '건반에 계이름 표시' })
+    expect(toggle).not.toBeChecked()
+    expect(screen.getByTestId('active-keys')).toHaveAttribute('data-note-names', 'false')
+    fireEvent.click(toggle)
+    expect(toggle).toBeChecked()
+    expect(screen.getByTestId('active-keys')).toHaveAttribute('data-note-names', 'true')
+    expect(localStorage.getItem('clairkeys.noteNames')).toBe('true')
+    setPaused()
+    rerender(<FallingNotesPlayer animationData={animationData} />)
+    expect(screen.queryByRole('checkbox', { name: '건반에 계이름 표시' })).toBeNull()
+    expect(screen.getByTestId('active-keys')).toHaveAttribute('data-note-names', 'true')
+    mockPlayerState.isPlaying = true
+    rerender(<FallingNotesPlayer animationData={animationData} />)
+    expect(screen.queryByRole('checkbox', { name: '건반에 계이름 표시' })).toBeNull()
+    expect(screen.getByTestId('active-keys')).toHaveAttribute('data-note-names', 'true')
   })
 
   it('derives the visual frame and active keys from the same playhead on first render', () => {
@@ -168,12 +213,12 @@ describe('FallingNotesPlayer', () => {
     expect(mockPlayerState.setVolume).toHaveBeenCalledWith(0.3)
   })
 
-  it('explains the setup steps as a list and which colour belongs to which hand', () => {
+  it('links to practice help and keeps the hand colour legend', () => {
     setIdle()
     render(<FallingNotesPlayer animationData={animationData} />)
 
-    const steps = screen.getByRole('list', { name: '연습 방법' })
-    expect(steps.querySelectorAll('li')).toHaveLength(3)
+    expect(screen.queryByRole('list', { name: '연습 방법' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveAttribute('href', '/learn/practice')
     const legend = screen.getByRole('list', { name: '노트 색상' })
     expect(legend).toHaveTextContent('왼손')
     expect(legend).toHaveTextContent('오른손')
@@ -631,10 +676,11 @@ describe('FallingNotesPlayer', () => {
       expect(mockPlayerState.seek).not.toHaveBeenCalled()
     })
 
-    it('tells keyboard users the shortcuts on the setup screen', () => {
+    it('moves the keyboard hint to the practice lesson', () => {
       setIdle()
       render(<FallingNotesPlayer animationData={animationData} />)
-      expect(screen.getByRole('note', { name: '키보드 단축키' })).toHaveTextContent('Space 재생·일시정지')
+      expect(screen.queryByRole('note', { name: '키보드 단축키' })).not.toBeInTheDocument()
+      expect(screen.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveAttribute('href', '/learn/practice')
     })
   })
 
@@ -806,6 +852,7 @@ describe('FallingNotesPlayer', () => {
       expect(screen.queryByTestId('playback-ready')).not.toBeInTheDocument()
       // So is the line explaining what the hit line means.
       expect(screen.queryByRole('list', { name: '연습 방법' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: '연습 방법과 단축키 보기' })).not.toBeInTheDocument()
       expect(screen.getByTestId('compact-playback-bar')).toBeInTheDocument()
     })
 
@@ -837,7 +884,8 @@ describe('FallingNotesPlayer', () => {
       render(<FallingNotesPlayer animationData={animationData} />)
 
       expect(screen.getByTestId('playback-ready')).toBeInTheDocument()
-      expect(screen.getByRole('list', { name: '연습 방법' })).toBeInTheDocument()
+      expect(screen.queryByRole('list', { name: '연습 방법' })).not.toBeInTheDocument()
+      expect(screen.getByRole('link', { name: '연습 방법과 단축키 보기' })).toBeInTheDocument()
       expect(screen.queryByTestId('compact-playback-bar')).not.toBeInTheDocument()
     })
   })
@@ -854,6 +902,7 @@ describe('FallingNotesPlayer', () => {
       expect(screen.getByTestId('compact-playback-bar')).toBeInTheDocument()
       expect(screen.queryByTestId('playback-ready')).not.toBeInTheDocument()
       expect(screen.queryByRole('list', { name: '연습 방법' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: '연습 방법과 단축키 보기' })).not.toBeInTheDocument()
       expect(document.body).toHaveClass('playback-active')
     })
 
