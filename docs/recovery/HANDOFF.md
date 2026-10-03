@@ -15,8 +15,7 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
-- 다음: PR216 병합 커밋의 Post-merge checks(run 37132264218)와 운영 `https://clairkeys.vercel.app/learn` 확인 결과를 PR216 리뷰 로그에 기록한다.
-- 다음 구현: #211(L-2) 브랜치 `codex/learn-2-keyboard`, 이어서 #212(L-3). 둘 다 선행은 L-1뿐이다.
+- 다음 구현: #211(L-2) 브랜치 `codex/learn-2-keyboard` `2cc4734`(미푸시) 구현·로컬 검증 완료, 로컬 리뷰 중 → PR 생성(사용자 승인). 이어서 #212(L-3).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
 - 후속 후보(#187 밖): cold 요청의 서버 계측 밖 기동 시간 약 2.1s, 홈 로드 때 나가는 `/api/auth/signin?callbackUrl=%2Fupload`.
