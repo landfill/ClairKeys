@@ -1,9 +1,9 @@
 import { LEARN_LESSONS, getLessonNavigation } from '../lessons'
 
 describe('learn lessons', () => {
-  it('defines the map order and keeps every L-1 lesson unavailable', () => {
+  it('defines the map order and opens only the keyboard lesson in L-2', () => {
     expect(LEARN_LESSONS.map(({ id, title, href, available }) => [id, title, href, available])).toEqual([
-      ['keyboard', '건반', '/learn/keyboard', false],
+      ['keyboard', '건반', '/learn/keyboard', true],
       ['reading', '악보 읽기', '/learn/reading', false],
       ['hands', '손', '/learn/hands', false],
       ['practice', '연습 방법', '/learn/practice', false],
@@ -12,8 +12,13 @@ describe('learn lessons', () => {
 
   it('offers no neighbours while all lessons are unavailable', () => {
     for (const lesson of LEARN_LESSONS) {
-      expect(getLessonNavigation(lesson.id)).toEqual({ previous: undefined, next: undefined })
+      expect(getLessonNavigation(lesson.id, LEARN_LESSONS.map(item => ({ ...item, available: false })))).toEqual({ previous: undefined, next: undefined })
     }
+  })
+
+  it('uses the shared published keyboard as the previous lesson', () => {
+    expect(getLessonNavigation('keyboard')).toEqual({ previous: undefined, next: undefined })
+    expect(getLessonNavigation('reading')).toEqual({ previous: LEARN_LESSONS[0], next: undefined })
   })
 
   it('skips unavailable lessons in both directions and respects the boundaries', () => {

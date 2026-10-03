@@ -17,6 +17,7 @@ export default function SimplePianoKeyboard({
   layout, 
   activeKeys = new Set(),
   activeFingers,
+  learningKeys,
   onKeyPress,
   className = '' 
 }: SimplePianoKeyboardProps) {
@@ -32,6 +33,31 @@ export default function SimplePianoKeyboard({
       }
     : {}
   const { byMidi, totalWidth } = layout;
+
+  // 학습에서는 각 음을 키보드·스크린리더로 고를 수 있어야 한다. 재생용 표시는 그대로 둔다.
+  if (learningKeys) {
+    return (
+      <div className={`relative select-none ${className}`} style={{ height: '100%', width: totalWidth }}>
+        {[...byMidi.entries()].sort(([a], [b]) => a - b).map(([midi, pos]) => {
+          const label = learningKeys.get(midi)
+          return (
+            <button
+              type="button"
+              key={midi}
+              data-midi={midi}
+              aria-label={label?.accessibleName}
+              aria-pressed={activeKeys.has(midi)}
+              onClick={() => onKeyPress?.(midi)}
+              className={`absolute rounded-b border border-rule text-xs ${pos.black ? 'bg-ink text-surface' : 'bg-surface text-ink'} ${activeKeys.has(midi) ? 'ring-2 ring-inset ring-accent' : ''}`}
+              style={{ left: pos.x, top: 0, width: pos.w, height: pos.black ? '64%' : '100%', zIndex: pos.black ? Z_INDICES.BLACK_KEY : Z_INDICES.WHITE_KEY }}
+            >
+              <span aria-hidden="true" className={`absolute inset-x-0 bottom-2 ${midi === 60 ? 'font-semibold text-accent' : ''}`}>{label?.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    )
+  }
 
   // Borders and shadows shrink with the keys. The reference widths are the ones
   // a key has at the base density, so they are derived rather than written out —
