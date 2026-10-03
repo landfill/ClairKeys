@@ -67,6 +67,13 @@ describe('PR summary workflow', () => {
     }
   })
 
+  // Same command as the post-merge workflow: a PR that passes here must not fail the
+  // audit on main, and neither gate may stall on a dev-tool advisory (D-095).
+  it('audits only the dependencies that ship', () => {
+    const audits = workflow.match(/npm audit[^\n]*/g)
+    expect(audits).toEqual(['npm audit --omit=dev --audit-level high'])
+  })
+
   it('cancels the run for a superseded PR head', () => {
     expect(workflow).toMatch(/^concurrency:\n {2}group: pr-checks-\$\{\{ github\.event\.pull_request\.number \}\}\n {2}cancel-in-progress: true$/m)
   })

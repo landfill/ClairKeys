@@ -56,7 +56,14 @@ describe('post-merge workflow', () => {
     expect(workflow).toContain('run: npm run lint')
     expect(workflow).toContain('run: npx tsc --noEmit')
     expect(workflow).toContain('run: npm run test:e2e')
-    expect(workflow).toContain('run: npm audit --audit-level high')
+    expect(workflow).toContain('run: npm audit --omit=dev --audit-level high')
+  })
+
+  // The audit gates what ships. An advisory with no patched release in a test or lint
+  // tool would otherwise stop every merge until upstream publishes one (D-095).
+  it('audits only the dependencies that ship', () => {
+    const audits = workflow.match(/npm audit[^\n]*/g)
+    expect(audits).toEqual(['npm audit --omit=dev --audit-level high'])
   })
 
   // Status records are committed straight to main after every unit of work. They
