@@ -69,9 +69,12 @@ describe('PR summary workflow', () => {
 
   // Same command as the post-merge workflow: a PR that passes here must not fail the
   // audit on main, and neither gate may stall on a dev-tool advisory (D-095).
+  // Matching whole step lines keeps a commented-out copy of the command from passing.
   it('audits only the dependencies that ship', () => {
-    const audits = workflow.match(/npm audit[^\n]*/g)
-    expect(audits).toEqual(['npm audit --omit=dev --audit-level high'])
+    const job = workflow.split(/^  security-scan:\s*$/m)[1].split(/^  [a-z-]+:\s*$/m)[0]
+    const steps = job.match(/^ {8}run: .*audit.*$/gm)
+    expect(steps).toEqual(['        run: npm audit --omit=dev --audit-level high'])
+    expect(workflow.match(/npm audit/g)).toHaveLength(1)
   })
 
   it('cancels the run for a superseded PR head', () => {
