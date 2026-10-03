@@ -9,8 +9,12 @@ test('opens the public learning map without a sign-in redirect', async ({ page }
   await expect(page).toHaveTitle(/배우기/)
   const map = page.getByRole('list', { name: '학습 단계' })
   await expect(map.getByRole('listitem')).toHaveCount(4)
-  await expect(map.getByRole('link')).toHaveCount(0)
-  await expect(map.getByText('준비 중')).toHaveCount(4)
+  await expect(map.getByRole('link')).toHaveCount(1)
+  await expect(map.getByRole('link', { name: '건반' })).toHaveAttribute('href', '/learn/keyboard')
+  await expect(map.getByText('준비 중')).toHaveCount(3)
+  await map.getByRole('link', { name: '건반' }).click()
+  await expect(page).toHaveURL(/\/learn\/keyboard$/)
+  await expect(page.getByRole('heading', { level: 1, name: '건반' })).toBeVisible()
 })
 
 test('opens learning from the desktop menu', async ({ page }) => {
