@@ -46,6 +46,7 @@ export default function SimplePianoKeyboard({
               key={midi}
               data-midi={midi}
               aria-label={label?.accessibleName}
+              disabled={label?.disabled}
               aria-pressed={activeKeys.has(midi)}
               onClick={() => onKeyPress?.(midi)}
               className={`absolute rounded-b border border-rule text-xs ${pos.black ? 'bg-ink text-surface' : 'bg-surface text-ink'} ${activeKeys.has(midi) ? 'ring-2 ring-inset ring-accent' : ''}`}

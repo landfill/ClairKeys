@@ -6,6 +6,7 @@ import { Button } from '@/components/ui'
 import { useFallingNotesAudio } from '@/hooks/useFallingNotesAudio'
 import { useMidiInput } from '@/hooks/useMidiInput'
 import { buildKeyLayout, A0_MIDI, C8_MIDI } from '@/utils/pianoLayout'
+import { revealKeyboardKey } from '@/utils/keyboardScroll'
 import { chooseDoTarget, judgeDo, midiToSolfege, VISIBLE_RANGE } from '@/lib/learn/keyboard'
 
 const layout = buildKeyLayout(44, VISIBLE_RANGE)
@@ -33,11 +34,7 @@ export default function KeyboardLesson({ random = Math.random }: { random?: () =
   useEffect(() => { setMounted(true) }, [])
 
   useLayoutEffect(() => {
-    const region = keyboardRegion.current
-    const middleC = layout.byMidi.get(60)
-    if (!region || !middleC || region.clientWidth >= region.scrollWidth) return
-    // 문서나 포커스를 움직이지 않고 첫 화면의 가운데 도만 영역 안에 맞춘다.
-    region.scrollLeft = Math.max(0, Math.min(region.scrollWidth - region.clientWidth, middleC.x + middleC.w / 2 - region.clientWidth / 2))
+    revealKeyboardKey(keyboardRegion.current, layout.byMidi.get(60))
   }, [])
 
   const press = (midi: number) => {

@@ -202,7 +202,7 @@ export interface FallingNotesProps {
  */
 export interface SimplePianoKeyboardProps {
   /** 학습용 이름을 주면 포커스 가능한 토큰 기반 버튼으로 표시한다. */
-  learningKeys?: ReadonlyMap<number, { label: string; accessibleName: string }>;
+  learningKeys?: ReadonlyMap<number, { label: string; accessibleName: string; disabled?: boolean }>;
   /** Piano keyboard layout */
   layout: KeyLayout;
   /** Currently pressed/highlighted keys */

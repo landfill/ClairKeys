@@ -1,0 +1,172 @@
+import { expect, test, type Page } from '@playwright/test'
+
+async function prepare(page: Page) {
+  await page.addInitScript(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register = async () => { throw new Error('isolated reading fixture') }
+    }
+  })
+}
+const explorer = (page: Page) => page.getByTestId('reading-explorer')
+
+async function selectNotes(page: Page) {
+  const area = explorer(page)
+  await area.getByRole('button', { name: '음 선택: 레 (4옥타브)', exact: true }).click()
+  await expect(area.getByRole('status', { name: '선택한 음' })).toContainText('레 · 4옥타브 · 높은음자리표 · 오선 바로 아래 칸')
+  await expect(area.getByRole('button', { name: '레 (4옥타브)', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await area.getByRole('button', { name: '도 (3옥타브)', exact: true }).click()
+  await expect(area.getByRole('button', { name: '음 선택: 도 (3옥타브)', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(area.getByRole('status', { name: '선택한 음' })).toContainText('도 · 3옥타브 · 낮은음자리표 · 둘째 칸')
+}
+
+test('opens the pitch lesson without hydration or console errors and renders actual OSMD notes', async ({ page }) => {
+  const pageErrors: string[] = []
+  const consoleErrors: string[] = []
+  page.on('pageerror', error => pageErrors.push(error.message))
+  page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()) })
+  await prepare(page)
+  const response = await page.goto('/learn/reading')
+  expect(response?.status()).toBe(200)
+  await expect(page).toHaveURL(/\/learn\/reading$/)
+  const main = page.getByRole('main')
+  await expect(main.getByRole('heading', { level: 1 })).toHaveCount(1)
+  await expect(main.getByRole('heading', { level: 1, name: '악보 읽기' })).toBeVisible()
+  await expect(main.getByRole('heading', { level: 2 })).toHaveText(['오선', '높은음자리표', '낮은음자리표', '가운데 도', '오선과 건반 연결하기'])
+  const score = page.locator('[data-example="treble-lines"]')
+  await expect(score.locator('svg')).toHaveCount(1)
+  // OSMD는 VexFlow의 StaveNote 그룹으로 실제 음표를 그린다.
+  await expect(score.locator('svg g.vf-stavenote')).toHaveCount(5)
+  await selectNotes(page)
+  await expect(explorer(page).locator('[data-example="selected-note"] svg')).toHaveCount(1)
+  await page.waitForLoadState('networkidle')
+  expect(pageErrors).toEqual([])
+  expect(consoleErrors).toEqual([])
+})
+
+test('keeps notes, staff positions and key selection working when piano samples fail', async ({ page }) => {
+  await prepare(page)
+  let aborted = 0
+  await page.route('**/samples/piano/**', async route => { await route.abort(); aborted++ })
+  await page.goto('/learn/reading')
+  expect(aborted).toBe(0)
+  await selectNotes(page)
+  await explorer(page).getByRole('button', { name: '선택한 음 들어 보기', exact: true }).click()
+  await expect.poll(() => aborted).toBe(30)
+  await expect(explorer(page).getByRole('status', { name: '선택한 음' })).toContainText('도 · 3옥타브')
+  await explorer(page).getByRole('button', { name: '미 (4옥타브)', exact: true }).click()
+  await expect(explorer(page).getByRole('status', { name: '선택한 음' })).toContainText('미 · 4옥타브 · 높은음자리표 · 첫째 줄')
+})
+
+for (const width of [320, 390]) {
+  test(`fits ${width}px with scrolling confined to the keyboard`, async ({ page }) => {
+    await prepare(page)
+    await page.setViewportSize({ width, height: 844 })
+    await page.goto('/learn/reading')
+    await expect(page.locator('[data-example="treble-lines"] svg')).toHaveCount(1)
+    const area = explorer(page)
+    const keyboard = area.getByRole('region', { name: '음높이 학습 건반 (좌우 스크롤)' })
+    const fullyVisible = async (midi: number) => keyboard.evaluate((region, pitch) => {
+      const bounds = region.getBoundingClientRect()
+      const key = region.querySelector(`button[data-midi="${pitch}"]`)!.getBoundingClientRect()
+      return key.left >= bounds.left + region.clientLeft && key.right <= bounds.left + region.clientLeft + region.clientWidth
+    }, midi)
+    await expect.poll(() => fullyVisible(60)).toBe(true)
+    const chooseHighC = area.getByRole('button', { name: '음 선택: 도 (5옥타브)', exact: true })
+    await chooseHighC.scrollIntoViewIfNeeded()
+    const before = await page.evaluate(() => scrollY)
+    await chooseHighC.click()
+    await expect.poll(() => fullyVisible(72)).toBe(true)
+    expect(await page.evaluate(() => scrollY)).toBe(before)
+    await expect(chooseHighC).toBeFocused()
+    await selectNotes(page)
+    const overflow = await page.evaluate(() => ({
+      document: document.documentElement.scrollWidth,
+      body: document.body.scrollWidth,
+      viewport: document.documentElement.clientWidth,
+    }))
+    expect(overflow.document).toBeLessThanOrEqual(overflow.viewport + 1)
+    expect(overflow.body).toBeLessThanOrEqual(overflow.viewport + 1)
+  })
+}
+
+test('keeps alternative text and the lesson interactive when the OSMD chunk cannot load', async ({ page }) => {
+  await prepare(page)
+  let blocked = 0
+  await page.route('**/_next/static/chunks/**', async route => {
+    const response = await route.fetch()
+    const body = await response.text()
+    // 페이지 코드와 구분해 공개 API와 악보 배치 규칙을 포함한 OSMD 청크만 차단한다.
+    if (body.includes('OpenSheetMusicDisplay') && body.includes('EngravingRules')) {
+      blocked++
+      await route.abort()
+    } else await route.fulfill({ response })
+  })
+  try {
+    await page.goto('/learn/reading')
+    await expect.poll(() => blocked).toBeGreaterThan(0)
+    const example = page.locator('[data-example="treble-lines"]')
+    await expect(example.getByText(/악보 그림을 불러오지 못했어요/)).toBeVisible()
+    await expect(example.locator('figcaption')).toContainText('첫째 줄에 미')
+    await selectNotes(page)
+    await expect(explorer(page).getByRole('button', { name: '도 (3옥타브)', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  } finally {
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+  }
+})
+
+for (const width of [1280, 320, 390]) {
+  test(`fits and centres every score drawing without a load-time layout shift at ${width}px`, async ({ page }) => {
+    await prepare(page)
+    await page.setViewportSize({ width, height: 844 })
+    let release = () => {}
+    const gate = new Promise<void>(resolve => { release = resolve })
+    let held = 0
+    await page.route('**/_next/static/chunks/**', async route => {
+      const response = await route.fetch()
+      const body = await response.text()
+      if (body.includes('OpenSheetMusicDisplay') && body.includes('EngravingRules')) {
+        held++
+        await gate
+      }
+      await route.fulfill({ response })
+    })
+    try {
+      await page.goto('/learn/reading', { waitUntil: 'domcontentloaded' })
+      await expect.poll(() => held).toBeGreaterThan(0)
+      await page.evaluate(() => document.fonts.ready)
+      const figures = page.locator('main figure[data-example]')
+      await expect(figures).toHaveCount(8)
+      const frames = figures.getByRole('img')
+      const placeholders = await frames.evaluateAll(nodes => nodes.map(node => {
+        const rect = node.getBoundingClientRect()
+        return { top: rect.top, width: rect.width, height: rect.height }
+      }))
+      release()
+      await expect(figures.locator('svg')).toHaveCount(8)
+      await expect(figures.locator('[role="img"][aria-busy="true"]')).toHaveCount(0)
+      const geometry = await figures.evaluateAll(nodes => nodes.map(node => {
+        const box = node.querySelector('[role="img"]')!.getBoundingClientRect()
+        const svg = node.querySelector('svg')!
+        const rect = svg.getBoundingClientRect()
+        const music = [...svg.querySelectorAll('g.staffline')].map(group => group.getBoundingClientRect())
+        return {
+          frame: { top: box.top, width: box.width, height: box.height },
+          inside: rect.left >= box.left && rect.right <= box.right && rect.top >= box.top && rect.bottom <= box.bottom,
+          heightRatio: rect.height / box.height,
+          horizontalBalance: Math.abs((rect.left - box.left) - (box.right - rect.right)),
+          verticalBalance: Math.abs((rect.top - box.top) - (box.bottom - rect.bottom)),
+          musicFitsSvg: music.length > 0 && music.every(bounds => bounds.left >= rect.left - 1 && bounds.right <= rect.right + 1 && bounds.top >= rect.top - 1 && bounds.bottom <= rect.bottom + 1),
+        }
+      }))
+      geometry.forEach((item, index) => {
+        expect(item.frame).toEqual(placeholders[index])
+        expect(item.inside).toBe(true)
+        // 좁은 화면에서는 폭에 맞춰 줄이고, 넓은 화면에서는 상자 높이의 대부분을 그림에 쓴다.
+        expect(item.heightRatio).toBeGreaterThanOrEqual(width === 1280 ? 0.75 : 0.4)
+        expect(item.horizontalBalance).toBeLessThanOrEqual(2)
+        expect(item.verticalBalance).toBeLessThanOrEqual(2)
+        expect(item.musicFitsSvg).toBe(true)
+      })
+    } finally { release(); await page.unrouteAll({ behavior: 'ignoreErrors' }) }
+  })
+}
