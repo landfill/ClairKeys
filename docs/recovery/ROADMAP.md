@@ -185,6 +185,21 @@ DS0-1(비공개 악보 public 버킷 노출)은 이 완료 조건에 포함되�
 전환 조건식, `playback-chrome`, D-010·D-011·D-018 저장 경계)도 항목별 대조로 유지됨을 확인했다.
 이슈 #76은 사용자 지시로 2026-08-30 `COMPLETED`로 닫혔다 — 종단 판정 요약을 이슈 코멘트로 남긴 뒤 닫았고, 후속 작업 후보는 이 이슈가 아니라 HANDOFF에서 추적한다.
 
+## 초보자 학습 트랙 (이슈 [#208](https://github.com/landfill/ClairKeys/issues/208))
+
+완전 초보자가 건반·악보·손가락 번호를 이해하도록 `배우기` 영역을 만든다(D-094). 재생 화면에는 치는 동안 보는 표시만 더한다.
+상세·완료 조건·작업 방식(구현·리뷰 모델): [LEARN](phases/LEARN-beginner-learning.md).
+
+| 순서 | ID | 단계 | 상태 | 권장 브랜치 | 선행 조건 |
+|---:|---|---|---|---|---|
+| 0 | L-0 | 이슈·계획·D-094 | IN_REVIEW | `codex/learn-0-plan` | — |
+| 1 | L-1 | `배우기` 메뉴·`/learn` 홈·레슨 레이아웃 | NOT_STARTED | `codex/learn-1-shell` | L-0 |
+| 2 | L-2 | 건반 익히기 `/learn/keyboard` | NOT_STARTED | `codex/learn-2-keyboard` | L-1 |
+| 3 | L-3 | 재생 화면 정리·계이름 토글·`/learn/practice` | NOT_STARTED | `codex/learn-3-player-notes` | L-1 |
+| 4 | L-4 | 악보 읽기 `/learn/reading` | NOT_STARTED | `codex/learn-4-reading` | L-2 |
+| 5 | L-5 | 손 자세와 손가락 번호 `/learn/hands` | NOT_STARTED | `codex/learn-5-hands` | L-1, L-3 |
+| 6 | L-6 | 곡 소개 | NOT_STARTED | `codex/learn-6-song-intro` | L-2, L-4, L-5 |
+
 ## 단계별 결과물
 
 ### DOC-1: 기본 브랜치 `main` 전환
