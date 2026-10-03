@@ -39,7 +39,7 @@ Decision: [D-094](../DECISIONS.md)
 |---|---|---|---|---|
 | L-1 | [#210](https://github.com/landfill/ClairKeys/issues/210) | `배우기` 메뉴, `/learn` 홈(단계 지도), 공통 레슨 레이아웃, 이 문서와 D-094 | 없음 | DONE ([PR216](../reviews/PR-216.md)) |
 | L-2 | [#211](https://github.com/landfill/ClairKeys/issues/211) | `/learn/keyboard` 건반 익히기(누르면 이름과 소리, 가운데 도, 도 찾기 연습) | L-1 | IN_PROGRESS |
-| L-3 | [#212](https://github.com/landfill/ClairKeys/issues/212) | 재생 화면 설명을 `/learn/practice`로 옮기고 계이름 표시 토글 추가 | L-1 | NOT_STARTED |
+| L-3 | [#212](https://github.com/landfill/ClairKeys/issues/212) | 재생 화면 설명을 `/learn/practice`로 옮기고 계이름 표시 토글 추가 | L-1 | IN_PROGRESS |
 | L-4 | [#213](https://github.com/landfill/ClairKeys/issues/213) | `/learn/reading` 악보 읽기(음높이, 길이·박자). 크면 L-4a·L-4b로 나눈다 | L-2 | NOT_STARTED |
 | L-5 | [#214](https://github.com/landfill/ClairKeys/issues/214) | `/learn/hands` 손 자세와 손가락 번호, 재생 화면 운지 표시와 연결 | L-1, L-3 | NOT_STARTED |
 | L-6 | [#215](https://github.com/landfill/ClairKeys/issues/215) | 내 곡의 소개(원본 근거가 있는 곡 정보와 레슨 연결) | L-2, L-4, L-5 | NOT_STARTED |
@@ -81,3 +81,4 @@ L-6의 곡 분석과 진입 화면, 관련 Jest·E2E.
 
 - 2026-10-03: 이슈 #208·#210~#215 등록, L-1 착수.
 - 2026-10-04: L-1 PR216 병합(`6b4c750`), #210 종료. L-2 착수.
+- 2026-10-04: L-2 PR218 생성. L-3 착수.
