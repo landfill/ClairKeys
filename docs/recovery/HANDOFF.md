@@ -15,9 +15,8 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
-- PR218 병합 커밋 `9d18ce2`의 Post-merge checks와 운영 `/learn/keyboard` 확인 결과를 PR218 리뷰 로그에 기록한다.
-- #212(L-3): 브랜치 `codex/learn-3-practice`(미푸시). 측정 spec·설명 이동·`/learn/practice` 완료, main 병합 완료. 남은 것: 계이름 표시 토글 →
-  로컬 리뷰 → 검증 기록 → PR 생성(사용자 승인). 기준값과 정리 후보는 [phase](phases/LEARN-beginner-learning.md) Progress.
+- #212(L-3): 브랜치 `codex/learn-3-practice`(미푸시). 측정 spec·설명 이동·`/learn/practice`·계이름 표시 토글 구현과 로컬 검증 완료(`bd4dcf8`), main 병합 포함.
+  남은 것: 로컬 리뷰 반영 → 검증 기록 → PR 생성(사용자 승인). 기준값과 정리 후보는 [phase](phases/LEARN-beginner-learning.md) Progress.
 - 그 뒤 #213(L-4, 선행 L-2 충족), #214(L-5, 선행 L-1·L-3).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
