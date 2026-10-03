@@ -1,19 +1,24 @@
 import { LEARN_LESSONS, getLessonNavigation } from '../lessons'
 
 describe('learn lessons', () => {
-  it('defines the map order and keeps every L-1 lesson unavailable', () => {
+  it('defines the map order and opens only practice in L-3', () => {
     expect(LEARN_LESSONS.map(({ id, title, href, available }) => [id, title, href, available])).toEqual([
       ['keyboard', '건반', '/learn/keyboard', false],
       ['reading', '악보 읽기', '/learn/reading', false],
       ['hands', '손', '/learn/hands', false],
-      ['practice', '연습 방법', '/learn/practice', false],
+      ['practice', '연습 방법', '/learn/practice', true],
     ])
   })
 
   it('offers no neighbours while all lessons are unavailable', () => {
     for (const lesson of LEARN_LESSONS) {
-      expect(getLessonNavigation(lesson.id)).toEqual({ previous: undefined, next: undefined })
+      expect(getLessonNavigation(lesson.id, LEARN_LESSONS.map(item => ({ ...item, available: false })))).toEqual({ previous: undefined, next: undefined })
     }
+  })
+
+  it('links forward to published practice only', () => {
+    expect(getLessonNavigation('hands')).toEqual({ previous: undefined, next: LEARN_LESSONS[3] })
+    expect(getLessonNavigation('practice')).toEqual({ previous: undefined, next: undefined })
   })
 
   it('skips unavailable lessons in both directions and respects the boundaries', () => {

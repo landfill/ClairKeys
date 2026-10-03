@@ -7,13 +7,13 @@ jest.mock('@/lib/learn/lessons', () => {
   return { ...actual, LEARN_LESSONS: actual.LEARN_LESSONS.map((lesson: object) => ({ ...lesson })) }
 })
 
-afterEach(() => { LEARN_LESSONS.forEach(lesson => { lesson.available = false }) })
+beforeEach(() => { LEARN_LESSONS.forEach(lesson => { lesson.available = lesson.id === 'practice' }) })
 
 describe('LessonLayout', () => {
   it('renders one h1, the lesson body and a named return link without dead neighbours', () => {
-    render(<LessonLayout lessonId="reading"><h2>음높이</h2></LessonLayout>)
+    render(<LessonLayout lessonId="practice"><h2>음높이</h2></LessonLayout>)
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
-    expect(screen.getByRole('heading', { level: 1, name: '악보 읽기' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: '연습 방법' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: '음높이' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
     expect(screen.getAllByRole('link')).toHaveLength(1)

@@ -168,12 +168,12 @@ describe('FallingNotesPlayer', () => {
     expect(mockPlayerState.setVolume).toHaveBeenCalledWith(0.3)
   })
 
-  it('explains the setup steps as a list and which colour belongs to which hand', () => {
+  it('links to practice help and keeps the hand colour legend', () => {
     setIdle()
     render(<FallingNotesPlayer animationData={animationData} />)
 
-    const steps = screen.getByRole('list', { name: '연습 방법' })
-    expect(steps.querySelectorAll('li')).toHaveLength(3)
+    expect(screen.queryByRole('list', { name: '연습 방법' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveAttribute('href', '/learn/practice')
     const legend = screen.getByRole('list', { name: '노트 색상' })
     expect(legend).toHaveTextContent('왼손')
     expect(legend).toHaveTextContent('오른손')
@@ -631,10 +631,11 @@ describe('FallingNotesPlayer', () => {
       expect(mockPlayerState.seek).not.toHaveBeenCalled()
     })
 
-    it('tells keyboard users the shortcuts on the setup screen', () => {
+    it('moves the keyboard hint to the practice lesson', () => {
       setIdle()
       render(<FallingNotesPlayer animationData={animationData} />)
-      expect(screen.getByRole('note', { name: '키보드 단축키' })).toHaveTextContent('Space 재생·일시정지')
+      expect(screen.queryByRole('note', { name: '키보드 단축키' })).not.toBeInTheDocument()
+      expect(screen.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveAttribute('href', '/learn/practice')
     })
   })
 
@@ -806,6 +807,7 @@ describe('FallingNotesPlayer', () => {
       expect(screen.queryByTestId('playback-ready')).not.toBeInTheDocument()
       // So is the line explaining what the hit line means.
       expect(screen.queryByRole('list', { name: '연습 방법' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: '연습 방법과 단축키 보기' })).not.toBeInTheDocument()
       expect(screen.getByTestId('compact-playback-bar')).toBeInTheDocument()
     })
 
@@ -837,7 +839,8 @@ describe('FallingNotesPlayer', () => {
       render(<FallingNotesPlayer animationData={animationData} />)
 
       expect(screen.getByTestId('playback-ready')).toBeInTheDocument()
-      expect(screen.getByRole('list', { name: '연습 방법' })).toBeInTheDocument()
+      expect(screen.queryByRole('list', { name: '연습 방법' })).not.toBeInTheDocument()
+      expect(screen.getByRole('link', { name: '연습 방법과 단축키 보기' })).toBeInTheDocument()
       expect(screen.queryByTestId('compact-playback-bar')).not.toBeInTheDocument()
     })
   })
@@ -854,6 +857,7 @@ describe('FallingNotesPlayer', () => {
       expect(screen.getByTestId('compact-playback-bar')).toBeInTheDocument()
       expect(screen.queryByTestId('playback-ready')).not.toBeInTheDocument()
       expect(screen.queryByRole('list', { name: '연습 방법' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: '연습 방법과 단축키 보기' })).not.toBeInTheDocument()
       expect(document.body).toHaveClass('playback-active')
     })
 

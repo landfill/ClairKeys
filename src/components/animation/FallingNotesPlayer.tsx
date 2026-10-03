@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import { buildResponsiveKeyLayout } from '@/utils/pianoLayout'
@@ -11,7 +12,7 @@ import { useMidiInput, type MidiStatus } from '@/hooks/useMidiInput'
 import { buildWaitSteps } from '@/utils/waitSteps'
 import { usePracticeReport, type PracticeRun } from '@/hooks/usePracticeReport'
 import { usePracticeResume } from '@/hooks/usePracticeResume'
-import { SEEK_STEP_SEC, usePlaybackShortcuts } from '@/hooks/usePlaybackShortcuts'
+import { usePlaybackShortcuts } from '@/hooks/usePlaybackShortcuts'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import { prefetchPianoSamples } from '@/utils/pianoSampleBank'
 import FallingNotes from './FallingNotes'
@@ -69,7 +70,6 @@ function usePrefetchedSamples() {
   }, [])
 }
 
-const SEEK_STEP_LABEL = `${SEEK_STEP_SEC}초 이동`
 
 /** A remembered on/off preference; storage may be unavailable, which only forgets it. */
 function useStoredToggle(key: string): [boolean, (next: boolean) => void] {
@@ -593,19 +593,9 @@ export default function FallingNotesPlayer({
             </section>
           )}
 
-          {/* Usage Instructions */}
-          <ol aria-label="연습 방법" className="mb-4 grid gap-2 text-sm text-ink-muted sm:grid-cols-3">
-            {[
-              '노트의 아랫변이 건반 위 선에 닿을 때 누르세요.',
-              '처음에는 속도를 늦춰 따라가세요.',
-              '어려운 곳은 A와 B로 구간을 정해 반복하세요.',
-            ].map((step, index) => (
-              <li key={step} className="flex gap-2 rounded-lg border border-rule bg-surface px-3 py-2">
-                <span aria-hidden="true" className="font-semibold text-accent">{index + 1}</span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
+          <Link href="/learn/practice" className="mb-4 inline-block rounded-sm text-sm text-accent hover:underline">
+            연습 방법과 단축키 보기
+          </Link>
 
           {/* Playback Controls */}
           <div className="mb-4">
@@ -746,16 +736,6 @@ export default function FallingNotesPlayer({
           '샘플을 불러오지 못해 합성음으로 재생합니다.'}
       </div>
 
-      {/* Hidden only on touch screens, which have no space bar to press. A
-          keyboard-only PC reports `pointer: none`, as ScoreToggle also allows. */}
-      {!isSessionActive && (
-        <p role="note" aria-label="키보드 단축키" className="mb-2 text-xs text-ink-muted pointer-coarse:hidden">
-          <kbd className="rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">Space</kbd> 재생·일시정지
-          <span aria-hidden="true"> · </span>
-          <kbd className="rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">←</kbd>
-          <kbd className="ml-1 rounded border border-rule-strong bg-surface px-1.5 py-0.5 font-sans">→</kbd> {SEEK_STEP_LABEL}
-        </p>
-      )}
       {/* Setup only: during a session this height belongs to the notes, and the
           session layout budget (#177) must not change. */}
       {!isSessionActive && (

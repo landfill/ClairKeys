@@ -22,8 +22,14 @@ import type { CanonicalAnimationData } from '../src/types/animationContract'
  * [data-testid="playback-box"] > div:first-child > div:first-child(낙하 음표 그림),
  * [data-testid="playback-box"] canvas(캔버스 구현도 제외).
  * 현재 FallingNotes는 캔버스가 아닌 div 그림이다. 형제인 기다리기·카운트인 안내는 제외하지 않는다.
- * 단계 A는 기준값 수치를 단언하지 않고 상태 진입만 검증한다.
+ * 상태 진입과 기준값 이하의 요소 수를 검증한다.
  */
+
+// main `6b4c750` 이후 측정: 재생 전 합계는 스크롤 아래 요소도 포함한다.
+const BASELINE = {
+  desktop: { beforePlayTotal: 23, controls: 8, textBlocks: 0 },
+  touch: { beforePlayTotal: 22, controls: 7, textBlocks: 0 },
+} as const
 
 const animation: CanonicalAnimationData = {
   version: '1.1', title: '재생 화면 요소 수 측정', composer: '측정 fixture',
@@ -53,7 +59,7 @@ async function prepare(page: Page) {
   await page.goto('/sheet/212')
 }
 
-async function measure(root: Locator, environment: string, state: string) {
+async function measure(root: Locator, environment: keyof typeof BASELINE, state: 'before-play' | 'playing' | 'paused') {
   const measurement = await root.evaluate((element, selectors) => {
     const elements: { controls: string[]; textBlocks: string[]; belowFold: { kind: string; element: string }[] } = {
       controls: [], textBlocks: [], belowFold: [],
@@ -102,6 +108,15 @@ async function measure(root: Locator, environment: string, state: string) {
   const json = JSON.stringify(result)
   await test.info().attach(`element-count-${environment}-${state}.json`, { body: json, contentType: 'application/json' })
   process.stdout.write(`ELEMENT_COUNT ${json}\n`)
+  const totalControls = measurement.controls + measurement.elements.belowFold.filter(item => item.kind === 'controls').length
+  const totalTextBlocks = measurement.textBlocks + measurement.elements.belowFold.filter(item => item.kind === 'textBlocks').length
+  const baseline = BASELINE[environment]
+  if (state === 'before-play') {
+    expect(totalControls + totalTextBlocks).toBeLessThanOrEqual(baseline.beforePlayTotal)
+  } else {
+    expect(totalControls).toBeLessThanOrEqual(baseline.controls)
+    expect(totalTextBlocks).toBeLessThanOrEqual(baseline.textBlocks)
+  }
 }
 
 test('measures setup, playing and paused playback elements', async ({ page }) => {
@@ -117,6 +132,11 @@ test('measures setup, playing and paused playback elements', async ({ page }) =>
   await expect(root.getByTestId('playback-pause')).toBeDisabled()
   await expect(root.getByTestId('compact-playback-bar')).toHaveCount(0)
   await expect(root.getByTestId('sample-loading')).toHaveCount(0)
+  await expect(root.getByRole('list', { name: '연습 방법' })).toHaveCount(0)
+  await expect(root.getByRole('note', { name: '키보드 단축키' })).toHaveCount(0)
+  const help = root.getByRole('link', { name: '연습 방법과 단축키 보기' })
+  await expect(help).toHaveCount(1)
+  await expect(help).toHaveAttribute('href', '/learn/practice')
   await measure(root, environment, 'before-play')
 
   await root.getByTestId('playback-play').click()
@@ -129,6 +149,7 @@ test('measures setup, playing and paused playback elements', async ({ page }) =>
   await expect.poll(currentTime).toBeGreaterThanOrEqual(1)
   const firstTime = await currentTime()
   await expect.poll(currentTime).toBeGreaterThan(firstTime)
+  await expect(help).toHaveCount(0)
   await measure(root, environment, 'playing')
 
   await pause.click()
@@ -139,5 +160,6 @@ test('measures setup, playing and paused playback elements', async ({ page }) =>
   // 버튼 표시뿐 아니라 시간이 멈췄는지 확인한다.
   await page.waitForTimeout(1100)
   expect(await currentTime()).toBe(pausedTime)
+  await expect(help).toHaveCount(0)
   await measure(root, environment, 'paused')
 })
