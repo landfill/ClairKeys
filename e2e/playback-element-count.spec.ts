@@ -22,7 +22,8 @@ import type { CanonicalAnimationData } from '../src/types/animationContract'
  * [data-testid="playback-box"] > div:first-child > div:first-child(낙하 음표 그림),
  * [data-testid="playback-box"] canvas(캔버스 구현도 제외).
  * 현재 FallingNotes는 캔버스가 아닌 div 그림이다. 형제인 기다리기·카운트인 안내는 제외하지 않는다.
- * 상태 진입과 기준값 이하의 요소 수를 검증한다.
+ * keyLabels: 건반 영역의 계이름 글자와 가운데 도 표식 중 뷰포트에 보이는 수를 별도로 센다.
+ * 상태 진입과 기준값 이하의 요소 수를 검증하고 켜짐·꺼짐의 조작·설명 수를 비교한다.
  */
 
 // main `6b4c750` 이후 측정: 재생 전 합계는 스크롤 아래 요소도 포함한다.
@@ -46,6 +47,8 @@ const excludedSelector = '[data-testid="playback-box"] > div:last-child, [data-t
 
 async function prepare(page: Page) {
   await page.addInitScript(() => {
+    localStorage.removeItem('clairkeys.noteNames')
+    localStorage.removeItem('clairkeys.resume.212')
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register = async () => { throw new Error('isolated element count fixture') }
     }
@@ -59,7 +62,7 @@ async function prepare(page: Page) {
   await page.goto('/sheet/212')
 }
 
-async function measure(root: Locator, environment: keyof typeof BASELINE, state: 'before-play' | 'playing' | 'paused') {
+async function measure(root: Locator, enabled: boolean, environment: keyof typeof BASELINE, state: 'before-play' | 'playing' | 'paused') {
   const measurement = await root.evaluate((element, selectors) => {
     const elements: { controls: string[]; textBlocks: string[]; belowFold: { kind: string; element: string }[] } = {
       controls: [], textBlocks: [], belowFold: [],
@@ -72,31 +75,34 @@ async function measure(root: Locator, environment: keyof typeof BASELINE, state:
       const name = node.getAttribute('aria-label') || labelledBy || labels || (node as HTMLElement).innerText || node.textContent || node.getAttribute('title') || ''
       return `${node.tagName.toLowerCase()}: ${compact(name).slice(0, 20)}`
     }
+    const visibleRect = (node: Element) => {
+      const rect = node.getBoundingClientRect()
+      if (rect.width <= 0 || rect.height <= 0) return null
+      for (let ancestor: Element | null = node; ancestor; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor)
+        if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return null
+      }
+      return rect.left < window.innerWidth && rect.right > 0 ? rect : null
+    }
     const collect = (selector: string, kind: 'controls' | 'textBlocks') => {
       for (const node of element.querySelectorAll(selector)) {
         if (node.closest(selectors.excluded)) continue
         if (kind === 'textBlocks' && (node.closest(selectors.controls) || !compact(node.textContent || ''))) continue
-        const rect = node.getBoundingClientRect()
-        if (rect.width <= 0 || rect.height <= 0) continue
-        let hidden = false
-        for (let ancestor: Element | null = node; ancestor; ancestor = ancestor.parentElement) {
-          const style = getComputedStyle(ancestor)
-          if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') {
-            hidden = true
-            break
-          }
-        }
-        if (hidden || rect.left >= window.innerWidth || rect.right <= 0) continue
-        if (rect.top >= window.innerHeight) {
-          elements.belowFold.push({ kind, element: label(node) })
-        } else if (rect.bottom > 0) {
-          elements[kind].push(label(node))
-        }
+        const rect = visibleRect(node)
+        if (!rect) continue
+        if (rect.top >= window.innerHeight) elements.belowFold.push({ kind, element: label(node) })
+        else if (rect.bottom > 0) elements[kind].push(label(node))
       }
     }
+    // 가운데 도의 좁은 폭 표식도 계이름 표시의 일부로 따로 센다.
+    const keyLabels = [...element.querySelectorAll('[data-testid="playback-box"] > div:last-child [data-note-label]')]
+      .filter(node => { const rect = visibleRect(node); return rect && rect.top < window.innerHeight && rect.bottom > 0 })
+      .map(node => `${node.getAttribute('data-label-midi')}: ${node.textContent || '가운데 도 표식'}`)
     collect(selectors.controls, 'controls')
     collect(selectors.text, 'textBlocks')
     return {
+      keyLabels: keyLabels.length,
+      keyLabelElements: keyLabels,
       controls: elements.controls.length,
       textBlocks: elements.textBlocks.length,
       belowFold: elements.belowFold.length,
@@ -104,19 +110,23 @@ async function measure(root: Locator, environment: keyof typeof BASELINE, state:
       viewport: { width: window.innerWidth, height: window.innerHeight },
     }
   }, { controls: controlsSelector, text: textSelector, excluded: excludedSelector })
-  const result = { environment, project: test.info().project.name, state, ...measurement }
+  const result = { noteNames: enabled, environment, project: test.info().project.name, state, ...measurement }
   const json = JSON.stringify(result)
-  await test.info().attach(`element-count-${environment}-${state}.json`, { body: json, contentType: 'application/json' })
+  await test.info().attach(`element-count-${environment}-${state}-${enabled ? "on" : "off"}.json`, { body: json, contentType: 'application/json' })
   process.stdout.write(`ELEMENT_COUNT ${json}\n`)
   const totalControls = measurement.controls + measurement.elements.belowFold.filter(item => item.kind === 'controls').length
   const totalTextBlocks = measurement.textBlocks + measurement.elements.belowFold.filter(item => item.kind === 'textBlocks').length
   const baseline = BASELINE[environment]
   if (state === 'before-play') {
+    expect(totalControls).toBe(16)
     expect(totalControls + totalTextBlocks).toBeLessThanOrEqual(baseline.beforePlayTotal)
   } else {
     expect(totalControls).toBeLessThanOrEqual(baseline.controls)
     expect(totalTextBlocks).toBeLessThanOrEqual(baseline.textBlocks)
   }
+  if (!enabled) expect(measurement.keyLabels).toBe(0)
+  else if (state !== 'before-play') expect(measurement.keyLabels).toBeGreaterThan(0)
+  return { controls: totalControls, textBlocks: totalTextBlocks }
 }
 
 test('measures setup, playing and paused playback elements', async ({ page }) => {
@@ -124,42 +134,53 @@ test('measures setup, playing and paused playback elements', async ({ page }) =>
   test.skip(project !== 'chromium' && project !== 'Mobile Chrome', '측정 환경은 데스크톱 chromium과 터치 Mobile Chrome이다.')
   const environment = project === 'chromium' ? 'desktop' : 'touch'
   if (environment === 'desktop') await page.setViewportSize({ width: 1280, height: 720 })
-  await prepare(page)
-  const root = page.locator('main [data-testid="playback-box"]').locator('xpath=../..')
-  await expect(root).toHaveCount(1)
-  await expect(page.getByRole('heading', { name: animation.title, exact: true })).toBeVisible()
-  await expect(root.getByTestId('playback-play')).toBeEnabled()
-  await expect(root.getByTestId('playback-pause')).toBeDisabled()
-  await expect(root.getByTestId('compact-playback-bar')).toHaveCount(0)
-  await expect(root.getByTestId('sample-loading')).toHaveCount(0)
-  await expect(root.getByRole('list', { name: '연습 방법' })).toHaveCount(0)
-  await expect(root.getByRole('note', { name: '키보드 단축키' })).toHaveCount(0)
-  const help = root.getByRole('link', { name: '연습 방법과 단축키 보기' })
-  await expect(help).toHaveCount(1)
-  await expect(help).toHaveAttribute('href', '/learn/practice')
-  await measure(root, environment, 'before-play')
+  const off: { controls: number; textBlocks: number }[] = []
+  for (const enabled of [false, true]) {
+    const results: { controls: number; textBlocks: number }[] = []
+    await prepare(page)
+    const toggle = page.getByRole('checkbox', { name: '건반에 계이름 표시' })
+    await toggle.setChecked(enabled)
+    // 처음 측정하는 화면은 문서 맨 위로 맞춰 비교한다.
+    await page.evaluate(() => window.scrollTo(0, 0))
+    const root = page.locator('main [data-testid="playback-box"]').locator('xpath=../..')
+    await expect(root).toHaveCount(1)
+    await expect(page.getByRole('heading', { name: animation.title, exact: true })).toBeVisible()
+    await expect(root.getByTestId('playback-play')).toBeEnabled()
+    await expect(root.getByTestId('playback-pause')).toBeDisabled()
+    await expect(root.getByTestId('compact-playback-bar')).toHaveCount(0)
+    await expect(root.getByTestId('sample-loading')).toHaveCount(0)
+    await expect(root.getByRole('list', { name: '연습 방법' })).toHaveCount(0)
+    await expect(root.getByRole('note', { name: '키보드 단축키' })).toHaveCount(0)
+    const help = root.getByRole('link', { name: '연습 방법과 단축키 보기' })
+    await expect(help).toHaveCount(1)
+    await expect(help).toHaveAttribute('href', '/learn/practice')
+    results.push(await measure(root, enabled, environment, 'before-play'))
 
-  await root.getByTestId('playback-play').click()
-  await expect(root.getByTestId('compact-playback-bar')).toBeVisible({ timeout: 15000 })
-  const pause = root.getByRole('button', { name: '일시정지', exact: true })
-  await expect(pause).toBeEnabled()
-  await expect(root.getByTestId('sample-loading')).toHaveCount(0)
-  const position = root.getByRole('slider', { name: '재생 위치', exact: true })
-  const currentTime = async () => Number(await position.getAttribute('aria-valuenow'))
-  await expect.poll(currentTime).toBeGreaterThanOrEqual(1)
-  const firstTime = await currentTime()
-  await expect.poll(currentTime).toBeGreaterThan(firstTime)
-  await expect(help).toHaveCount(0)
-  await measure(root, environment, 'playing')
+    await root.getByTestId('playback-play').click()
+    await expect(root.getByTestId('compact-playback-bar')).toBeVisible({ timeout: 15000 })
+    const pause = root.getByRole('button', { name: '일시정지', exact: true })
+    await expect(pause).toBeEnabled()
+    await expect(root.getByTestId('sample-loading')).toHaveCount(0)
+    const position = root.getByRole('slider', { name: '재생 위치', exact: true })
+    const currentTime = async () => Number(await position.getAttribute('aria-valuenow'))
+    await expect.poll(currentTime).toBeGreaterThanOrEqual(1)
+    const firstTime = await currentTime()
+    await expect.poll(currentTime).toBeGreaterThan(firstTime)
+    await expect(help).toHaveCount(0)
+    results.push(await measure(root, enabled, environment, 'playing'))
 
-  await pause.click()
-  await expect(root.getByRole('button', { name: '재생', exact: true })).toBeEnabled()
-  await expect(root.getByRole('button', { name: '일시정지', exact: true })).toHaveCount(0)
-  await expect(root.getByTestId('compact-playback-bar')).toBeVisible()
-  const pausedTime = await currentTime()
-  // 버튼 표시뿐 아니라 시간이 멈췄는지 확인한다.
-  await page.waitForTimeout(1100)
-  expect(await currentTime()).toBe(pausedTime)
-  await expect(help).toHaveCount(0)
-  await measure(root, environment, 'paused')
+    await pause.click()
+    await expect(root.getByRole('button', { name: '재생', exact: true })).toBeEnabled()
+    await expect(root.getByRole('button', { name: '일시정지', exact: true })).toHaveCount(0)
+    await expect(root.getByTestId('compact-playback-bar')).toBeVisible()
+    const pausedTime = await currentTime()
+    // 버튼 표시뿐 아니라 시간이 멈췄는지 확인한다.
+    await page.waitForTimeout(1100)
+    expect(await currentTime()).toBe(pausedTime)
+    await expect(help).toHaveCount(0)
+    results.push(await measure(root, enabled, environment, 'paused'))
+    if (!enabled) off.push(...results)
+    else expect(results).toEqual(off)
+  }
+
 })

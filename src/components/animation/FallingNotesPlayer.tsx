@@ -13,6 +13,7 @@ import { buildWaitSteps } from '@/utils/waitSteps'
 import { usePracticeReport, type PracticeRun } from '@/hooks/usePracticeReport'
 import { usePracticeResume } from '@/hooks/usePracticeResume'
 import { usePlaybackShortcuts } from '@/hooks/usePlaybackShortcuts'
+import { readNoteNames, writeNoteNames } from '@/lib/learn/keyLabels'
 import { MAX_MASTER_GAIN } from '@/hooks/useFallingNotesAudio'
 import { prefetchPianoSamples } from '@/utils/pianoSampleBank'
 import FallingNotes from './FallingNotes'
@@ -151,6 +152,13 @@ export default function FallingNotesPlayer({
   onSessionChange?: (isSessionActive: boolean) => void
 }) {
   const [showScore, setShowScore] = useState(false)
+  const [showNoteNames, setShowNoteNames] = useState(false)
+  // 저장값은 마운트 뒤에 읽어 서버 HTML과 첫 렌더를 맞춘다.
+  useEffect(() => { setShowNoteNames(readNoteNames()) }, [])
+  const toggleNoteNames = (next: boolean) => {
+    setShowNoteNames(next)
+    writeNoteNames(next)
+  }
   // Convert canonical animation data to falling notes format
   const notes = useMemo(() => canonicalToFallingNotes(animationData), [animationData])
   const hasReleaseGuidance = useMemo(() => notes.some(note => note.keyRelease !== undefined), [notes])
@@ -652,6 +660,11 @@ export default function FallingNotesPlayer({
 
           <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-muted">
             <label className="flex items-center gap-2">
+              <input type="checkbox" aria-label="건반에 계이름 표시" checked={showNoteNames}
+                onChange={event => toggleNoteNames(event.target.checked)} className="h-4 w-4 accent-accent" />
+              건반에 계이름 표시
+            </label>
+            <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={metronomeOn && metronomeAvailable}
@@ -867,6 +880,7 @@ export default function FallingNotesPlayer({
         >
           <SimplePianoKeyboard
             layout={layout}
+            showNoteNames={showNoteNames}
             activeKeys={activeKeys}
             activeFingers={showScore ? activeFingers : undefined}
             onKeyPress={waitOn ? handleScreenKey : undefined}

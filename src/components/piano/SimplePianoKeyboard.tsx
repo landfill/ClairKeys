@@ -3,6 +3,7 @@
 import React from 'react'
 import type { SimplePianoKeyboardProps } from '@/types/fallingNotes'
 import { Z_INDICES } from '@/utils/visualUtils'
+import { getKeyLabel } from '@/lib/learn/keyLabels'
 import {
   BASE_PLAYBACK_KEY_WIDTH,
   BLACK_KEY_WIDTH_RATIO
@@ -18,6 +19,7 @@ export default function SimplePianoKeyboard({
   activeKeys = new Set(),
   activeFingers,
   learningKeys,
+  showNoteNames = false,
   onKeyPress,
   className = '' 
 }: SimplePianoKeyboardProps) {
@@ -106,7 +108,20 @@ export default function SimplePianoKeyboard({
               aria-label={`${midi}번 건반 운지 ${activeFingers.get(midi)}`}
               className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 rounded bg-blue-600 px-1 text-xs font-bold text-white"
             >{activeFingers.get(midi)}</span>}
-            {midi % 12 === 0 && (
+            {showNoteNames && (() => {
+              const label = getKeyLabel(midi, pos.w)
+              if (!label) return null
+              return <span
+                data-note-label
+                data-label-midi={midi}
+                aria-hidden="true"
+                className={`pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap ${midi === 60 ? 'text-accent font-bold underline decoration-2' : 'text-ink-muted'}`}
+                style={label.marker
+                  ? { width: Math.min(4, pos.w), height: 4, borderTop: '2px solid currentColor', borderBottom: '1px solid currentColor' }
+                  : { fontSize: pos.w >= 18 ? 12 : 10, lineHeight: '12px' }}
+              >{label.marker ? null : label.name}</span>
+            })()}
+            {midi % 12 === 0 && !showNoteNames && (
               <span
                 aria-label={`C${Math.floor(midi / 12) - 1} octave marker`}
                 className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-ink-muted"

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import LessonLayout from '@/components/learn/LessonLayout'
 import { SEEK_STEP_SEC } from '@/utils/playbackShortcuts'
 
@@ -21,6 +22,7 @@ export default function PracticePage() {
           <h2 id="slow-start" className="text-lg font-semibold text-ink">느리게 시작</h2>
           <p className="mt-2">노트의 아랫변이 건반 위 선에 닿을 때 건반을 눌러요. 처음에는 속도를 늦춰 따라가요. 재생 전에는 속도 메뉴에서, 재생 중에는 압축된 조작 바의 재생 속도 메뉴에서 바꿀 수 있어요.</p>
           <p className="mt-2">0.25배부터 2배까지 고를 수 있어요. 느린 속도로 익힌 다음 조금씩 빠르게 연습해 보세요.</p>
+          <p className="mt-2">재생 전에 건반에 계이름 표시를 켜면 흰 건반 아래에 도·레·미·파·솔·라·시가 나타나고 가운데 도가 강조돼요. 좁은 화면에서는 도만 보이고, 도 글자도 들어가지 않으면 가운데 도의 두 줄 표식만 남아요. 재생 중에는 정지한 뒤 설정을 바꿀 수 있어요. 이름과 위치는 <Link href="/learn/keyboard" className="rounded-sm text-accent hover:underline">건반 레슨</Link>에서 익혀 보세요.</p>
         </section>
         <section aria-labelledby="one-hand">
           <h2 id="one-hand" className="text-lg font-semibold text-ink">한 손씩</h2>
