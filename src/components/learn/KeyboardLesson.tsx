@@ -1,6 +1,6 @@
 'use client'
 
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import SimplePianoKeyboard from '@/components/piano/SimplePianoKeyboard'
 import { Button } from '@/components/ui'
 import { useFallingNotesAudio } from '@/hooks/useFallingNotesAudio'
@@ -20,6 +20,7 @@ const blackGroups = [...layout.byMidi.keys()].filter(midi => midi % 12 === 0).fl
 
 export default function KeyboardLesson({ random = Math.random }: { random?: () => number }) {
   const keyboardRegion = useRef<HTMLDivElement>(null)
+  const [mounted, setMounted] = useState(false)
   const [selected, setSelected] = useState<number | null>(null)
   const [pressCount, setPressCount] = useState(0)
   const [sound, setSound] = useState(true)
@@ -27,6 +28,9 @@ export default function KeyboardLesson({ random = Math.random }: { random?: () =
   const [target, setTarget] = useState<number | null>(null)
   const [result, setResult] = useState<'correct' | 'retry' | null>(null)
   const { playNoteNow } = useFallingNotesAudio()
+
+  // 서버와 첫 렌더의 MIDI 안내를 맞추고, 브라우저 지원 여부는 마운트 뒤에 보여 준다.
+  useEffect(() => { setMounted(true) }, [])
 
   useLayoutEffect(() => {
     const region = keyboardRegion.current
@@ -55,18 +59,19 @@ export default function KeyboardLesson({ random = Math.random }: { random?: () =
     }
   }
   const midi = useMidiInput({ enabled: true, onNoteOn: press })
+  const midiStatus = mounted ? midi.status : null
   const note = selected === null ? null : midiToSolfege(selected)
 
   return (
     <div className="space-y-6">
       <section aria-labelledby="keyboard-heading">
         <h2 id="keyboard-heading" className="text-lg font-semibold text-ink">건반의 이름과 위치</h2>
-        <p className="mt-2 text-sm text-ink-muted">검은 건반은 2개와 3개씩 묶여 반복돼요. 2개 묶음의 바로 왼쪽 흰 건반이 도예요. 가운데 도는 C4이며, 아래 건반에 표시되어 있어요.</p>
-        <p className="mt-2 text-sm text-ink-muted">3옥타브의 도(C3)부터 5옥타브의 도(C5)까지 보여 줍니다. 건반에 Tab으로 이동한 뒤 Enter 또는 Space로 눌러 보세요. 좁은 화면에서는 건반 영역을 좌우로 스크롤할 수 있어요.</p>
+        <p className="mt-2 text-sm text-ink-muted">검은 건반은 2개와 3개씩 묶여 반복돼요. 2개 묶음의 바로 왼쪽 흰 건반이 도예요. 가운데 도는 C4예요. 아래 건반에 표시되어 있어요.</p>
+        <p className="mt-2 text-sm text-ink-muted">3옥타브의 도(C3)부터 5옥타브의 도(C5)까지 보여 줘요. 건반을 클릭하거나 터치해 보세요. 키보드에서는 Tab으로 이동한 뒤 Enter 또는 Space로 누를 수 있어요. 좁은 화면에서는 건반 영역을 좌우로 스크롤할 수 있어요.</p>
         <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
           <label className="flex items-center gap-2"><input type="checkbox" checked={sound} onChange={event => setSound(event.target.checked)} />소리 켜기</label>
-          <Button variant="outline" onClick={() => { void midi.request() }} disabled={midi.status === 'unsupported' || midi.status === 'requesting'}>MIDI 연결</Button>
-          <p className="text-ink-muted">{midi.status === 'unsupported' ? '이 브라우저는 MIDI를 지원하지 않아요.' : midi.status === 'denied' ? 'MIDI 권한을 허용하면 연결할 수 있어요.' : midi.status === 'ready' ? `연결된 MIDI: ${midi.devices.join(', ') || '장치를 연결해 주세요'}` : midi.status === 'requesting' ? 'MIDI 연결 중' : 'MIDI 피아노도 연결할 수 있어요.'}</p>
+          <Button variant="outline" onClick={() => { void midi.request() }} disabled={midiStatus === null || midiStatus === 'unsupported' || midiStatus === 'requesting'}>MIDI 연결</Button>
+          <p className="text-ink-muted">{midiStatus === null ? 'MIDI 지원 여부를 확인하고 있어요.' : midiStatus === 'unsupported' ? '이 브라우저는 MIDI를 지원하지 않아요.' : midiStatus === 'denied' ? 'MIDI 권한을 허용하면 연결할 수 있어요.' : midiStatus === 'ready' ? (midi.devices.length ? `${midi.devices.join(', ')}에 연결되어 있어요.` : 'MIDI 장치를 연결해 주세요.') : midiStatus === 'requesting' ? 'MIDI를 연결하고 있어요.' : 'MIDI 피아노도 연결할 수 있어요.'}</p>
         </div>
         <div ref={keyboardRegion} role="region" aria-label="학습 건반 (좌우 스크롤)" tabIndex={0} className="mt-4 max-w-full overflow-x-auto rounded border border-rule">
           <div style={{ width: layout.totalWidth }}>

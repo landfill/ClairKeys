@@ -1,6 +1,24 @@
 import { expect, test, type Page } from '@playwright/test'
 import { SAMPLE_MIDI_NOTES } from '../src/utils/pianoSamples'
 
+test('loads the keyboard lesson without page or console errors, including hydration', async ({ page, browserName }) => {
+  const pageErrors: string[] = []
+  const consoleErrors: string[] = []
+  page.on('pageerror', error => pageErrors.push(error.message))
+  page.on('console', message => {
+    if (message.type() === 'error') consoleErrors.push(message.text())
+  })
+  await page.goto('/learn/keyboard')
+  if (browserName === 'chromium') {
+    expect(await page.evaluate(() => typeof navigator.requestMIDIAccess)).toBe('function')
+    await expect(page.getByRole('button', { name: 'MIDI 연결' })).toBeEnabled()
+    await expect(page.getByText('MIDI 피아노도 연결할 수 있어요.')).toBeVisible()
+  }
+  await page.waitForLoadState('networkidle')
+  expect(pageErrors).toEqual([])
+  expect(consoleErrors).toEqual([])
+})
+
 async function answerPractice(page: Page) {
   await page.getByRole('button', { name: '도 찾기 시작' }).click()
   const question = await page.getByTestId('do-target').textContent()
