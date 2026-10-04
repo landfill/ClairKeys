@@ -42,7 +42,7 @@ Decision: [D-094](../DECISIONS.md)
 | L-3 | [#212](https://github.com/landfill/ClairKeys/issues/212) | 재생 화면 설명을 `/learn/practice`로 옮기고 계이름 표시 토글 추가 | L-1 | DONE ([PR219](../reviews/PR-219.md)) |
 | L-4 | [#213](https://github.com/landfill/ClairKeys/issues/213) | `/learn/reading` 악보 읽기(음높이, 길이·박자). 크면 L-4a·L-4b로 나눈다 | L-2 | DONE ([PR220](../reviews/PR-220.md), [PR223](../reviews/PR-223.md)) |
 | L-5 | [#214](https://github.com/landfill/ClairKeys/issues/214) | `/learn/hands` 손 자세와 손가락 번호, 재생 화면 운지 표시와 연결 | L-1, L-3 | DONE ([PR221](../reviews/PR-221.md)) |
-| L-6 | [#215](https://github.com/landfill/ClairKeys/issues/215) | 내 곡의 소개(원본 근거가 있는 곡 정보와 레슨 연결) | L-2, L-4, L-5 | IN_PROGRESS |
+| L-6 | [#215](https://github.com/landfill/ClairKeys/issues/215) | 내 곡의 소개(원본 근거가 있는 곡 정보와 레슨 연결) | L-2, L-4, L-5 | DONE ([PR224](../reviews/PR-224.md)) |
 
 ### 단계에 걸친 제약
 
@@ -107,3 +107,5 @@ L-6의 곡 분석과 진입 화면, 관련 Jest·E2E.
 - 2026-10-04: L-6 구현 중 결정 변경: 박자 행을 뺐다(모든 곡에 같은 "확인되지 않았어요"가 나오고 재생 화면과 불일치, 로컬 리뷰 의견). 최종 표시 항목은 음역·재생 시간·손 구분·빠르기.
   후속 후보: 검증된 박자·조표가 페이지 수준에 오면 출처와 함께 추가. 근거는 [검증](../validation/2026-10-04-learn-6-song-intro.md).
 - 2026-10-04: L-6 PR224 생성(#208의 마지막 단계).
+- 2026-10-04: L-6 PR224 병합(`7301603`), #215 종료. 여섯 단계(L-1~L-6)가 모두 병합됐다. phase Status는 병합 커밋의 Post-merge checks와 운영 확인,
+  #208 완료 조건 대조가 끝난 뒤 DONE으로 바꾼다. #208 종료는 사용자가 정한다.
