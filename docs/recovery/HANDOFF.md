@@ -8,7 +8,7 @@ Last updated: 2026-10-04 KST
 
 **이슈 [#229](https://github.com/landfill/ClairKeys/issues/229) 미사용 `AnimationPlayer` 정리 — [PR231](reviews/PR-231.md) CI·리뷰 확인 중, 병합은 사용자 승인 대기.**
 삭제 근거와 로컬 검증은 [검증](validation/2026-10-04-issue-229-unused-animation-player.md).
-이슈 [#222](https://github.com/landfill/ClairKeys/issues/222)는 [PR230](reviews/PR-230.md) 병합(2026-10-04) 뒤 Post-merge checks의 E2E 재시도 수 확인 대기. 원인과 수정은 [검증](validation/2026-10-04-issue-222-console-quiet-flake.md). #208 초보자 학습 영역은 2026-10-04에 종료했다([phase](phases/LEARN-beginner-learning.md) DONE).
+이슈 [#222](https://github.com/landfill/ClairKeys/issues/222)는 종료했다: [PR230](reviews/PR-230.md) 병합 뒤 Post-merge checks에서도 E2E 재시도 0건(연속 두 번). #208 초보자 학습 영역은 2026-10-04에 종료했다([phase](phases/LEARN-beginner-learning.md) DONE).
 
 최근 완료(상세는 각 리뷰 로그): #222 PR230, LEARN L-6 PR224, L-4b PR223, L-5 PR221, L-4a PR220, L-3 PR219, L-2 PR218, L-1 PR216(D-094), 감사 게이트 PR217(D-095), CI 신뢰성 PR206·207(Post-merge PASS), #188 콘솔 로그 PR205(D-093), #187 탐색 API 지연 PR203·204(D-092, 이슈 종료), #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
 [validation](validation/) `2026-09-27-*`), #177 PR183·PR184(2026-09-22), UI 일관성 PR182, #178 PR179~181(D-076·D-077),
@@ -17,7 +17,6 @@ Last updated: 2026-10-04 KST
 ## Next action
 
 - #229: PR231의 CI와 hosted 리뷰를 확인해 리뷰 로그에 남기고, actionable 지적은 수정한다. 병합은 사용자 명시 승인 뒤에만 한다.
-- #222: 병합 커밋 `166ad3f`의 Post-merge checks에서 E2E 재시도가 0건인지 확인하고(PR CI에 이은 두 번째 표본) 결과를 PR230 리뷰 로그와 이슈 코멘트에 남긴다.
 - 그 밖의 열린 후보(모두 GitHub 이슈, 미착수):
   [#225](https://github.com/landfill/ClairKeys/issues/225) 용어 사전, [#226](https://github.com/landfill/ClairKeys/issues/226) 연습 진도 페이지(범위 결정 필요),
   [#227](https://github.com/landfill/ClairKeys/issues/227) 첫 곡 코스(선행: OMR을 거치지 않는 입력 경로),
