@@ -68,3 +68,12 @@ PR232 병합 main을 통합하면서 배우기 홈의 코스·용어 사전 링�
 네이티브 시작 E2E는 AudioContext의 resume을 관찰만 한다. 실제 장치가 시작되지 않은 Firefox에서 state=suspended·pending 근거가 있을 때만
 오류 안내·정지 UI 유지로 검증하고 진단을 첨부한다. 이 분기를 실제 오디오 재생 성공으로 기록하지 않는다. 테스트를 skip하거나 대체 clock으로 성공시키지 않는다.
 CI의 실패 원인이 다른 경우(클릭 미전달/정상 context인데 재생 불가 등)는 이 단언도 실패한다. 다음 CI에서 실제 native 상태를 확인한다.
+
+## 승인된 #228 연결 — `947af59`
+
+PR234가 main에 병합된 뒤 D-096·D-097을 모두 유지해 통합했다. CoursePlayer가 SongIntro에 실제 정적 scoreUrl을 전달한다.
+세 내장곡의 실제 score JSON을 사용하는 컴포넌트 회귀는 연결 전 3건 FAIL, 연결 후 3건 PASS다.
+전체 Jest 159 suites / 1562 tests, tsc, lint PASS. 코스·song-provenance E2E는 Chromium/Firefox/Mobile Chrome에서 32 PASS/1 skip(모바일 악보 패널)이다.
+내장곡 셋의 4/4·샵/플랫 없음·원본 출처 문구·레슨 링크를 실제 정적 자산으로 확인했다.
+Chrome 수동 확인에서는 초기 개발 자산이 갱신되지 않은 화면이 있었으나 강제 새로고침 후 원본 정보가 표시됐다. 사용자의 RHWP 확장이
+html에 붙인 data-hwp 속성으로 개발 hydration 경고도 관찰했다. 격리된 브라우저 E2E는 통과했고 운영 설정·확장은 변경하지 않았다.
