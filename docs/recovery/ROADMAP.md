@@ -160,7 +160,7 @@ DS-5·DS-6의 화면이 나중에 들어오면서 통일이 다시 깨진다.
 | 3 | L-3 | 재생 화면 설명 이동과 계이름 토글 `/learn/practice` (#212) | DONE | `codex/learn-3-practice` | L-1 |
 | 4 | L-4 | 악보 읽기 `/learn/reading` (#213) | IN_PROGRESS | `codex/learn-4-reading` | L-2 |
 | 5 | L-5 | 손 자세와 손가락 번호 `/learn/hands` (#214) | DONE | `codex/learn-5-hands` | L-1, L-3 |
-| 6 | L-6 | 내 곡의 소개 (#215) | NOT_STARTED | `codex/learn-6-song-intro` | L-2, L-4, L-5 |
+| 6 | L-6 | 내 곡의 소개 (#215) | IN_PROGRESS | `codex/learn-6-song-intro` | L-2, L-4, L-5 |
 
 ## 이슈 #76 전체 완료 조건
 

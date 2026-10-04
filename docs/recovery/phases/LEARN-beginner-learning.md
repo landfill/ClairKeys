@@ -42,7 +42,7 @@ Decision: [D-094](../DECISIONS.md)
 | L-3 | [#212](https://github.com/landfill/ClairKeys/issues/212) | 재생 화면 설명을 `/learn/practice`로 옮기고 계이름 표시 토글 추가 | L-1 | DONE ([PR219](../reviews/PR-219.md)) |
 | L-4 | [#213](https://github.com/landfill/ClairKeys/issues/213) | `/learn/reading` 악보 읽기(음높이, 길이·박자). 크면 L-4a·L-4b로 나눈다 | L-2 | IN_PROGRESS |
 | L-5 | [#214](https://github.com/landfill/ClairKeys/issues/214) | `/learn/hands` 손 자세와 손가락 번호, 재생 화면 운지 표시와 연결 | L-1, L-3 | DONE ([PR221](../reviews/PR-221.md)) |
-| L-6 | [#215](https://github.com/landfill/ClairKeys/issues/215) | 내 곡의 소개(원본 근거가 있는 곡 정보와 레슨 연결) | L-2, L-4, L-5 | NOT_STARTED |
+| L-6 | [#215](https://github.com/landfill/ClairKeys/issues/215) | 내 곡의 소개(원본 근거가 있는 곡 정보와 레슨 연결) | L-2, L-4, L-5 | IN_PROGRESS |
 
 ### 단계에 걸친 제약
 
@@ -97,3 +97,9 @@ L-6의 곡 분석과 진입 화면, 관련 Jest·E2E.
 - 2026-10-04: L-4a PR220 병합(`5d54bec`, 사용자의 사전 병합 허용). #213은 L-4b가 남아 OPEN. `/learn/reading`은 지도 비공개(URL로만).
 - 2026-10-04: L-5 PR221 생성. L-4b(길이·박자) 착수.
 - 2026-10-04: L-5 PR221 병합(`c00e6e5`), #214 종료. 터치 재생 전 요소 수 합계가 기준과 같다(27). 이후 재생 전 추가는 다른 것을 빼야 한다.
+- 2026-10-04: L-4b PR223 생성(#213을 닫고 `reading` 공개).
+- 2026-10-04: L-6 착수 결정(이슈 #215 "착수 시 결정해 기록"). 진입 위치는 새 경로가 아니라 `/sheet/[id]`의 기존 "악보 정보" 카드 영역이다.
+  재생 화면 루트 밖이라 D-094 요소 수 기준(터치 재생 전 여유 0)을 건드리지 않고, 새 경로가 없어 비공개 악보 접근 규칙이 그대로다.
+  표시 규칙: 음역·길이는 음표 데이터에서 계산해 항상, 손은 원본 `handSource`일 때만 단정(추정이면 추정이라고 표시), 빠르기는 `tempoSource`가 `score`·`user`일 때만,
+  박자는 JSON `timeSignature`만으로는 표시하지 않고 검증된 출처가 있을 때만, 조는 검증된 출처가 있을 때 조표(샵·플랫 수)로만 쓰고 장·단조를 단정하지 않는다.
+  음표·쉼표 종류는 표시하지 않는다. 작업 지시 원본은 git 제외 `local-test-data/results/learn-6/l6-brief.md`, 진행 메모는 같은 폴더의 `progress.md`.

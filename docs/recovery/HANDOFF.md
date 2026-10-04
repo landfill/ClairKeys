@@ -6,7 +6,7 @@ Last updated: 2026-10-03 KST
 
 ## Current phase
 
-**#208 초보자 학습 영역(`배우기`) — L-1(#210) 완료([PR216](reviews/PR-216.md) 병합 2026-10-04), L-2(#211) 완료([PR218](reviews/PR-218.md) 병합 2026-10-04), L-3(#212) 완료([PR219](reviews/PR-219.md) 병합 2026-10-04), L-4a(#213 첫 PR) 완료([PR220](reviews/PR-220.md) 병합 2026-10-04), L-5(#214) 완료([PR221](reviews/PR-221.md) 병합 2026-10-04), L-4b(#213 둘째 PR) 구현 중.**
+**#208 초보자 학습 영역(`배우기`) — L-1(#210) 완료([PR216](reviews/PR-216.md) 병합 2026-10-04), L-2(#211) 완료([PR218](reviews/PR-218.md) 병합 2026-10-04), L-3(#212) 완료([PR219](reviews/PR-219.md) 병합 2026-10-04), L-4a(#213 첫 PR) 완료([PR220](reviews/PR-220.md) 병합 2026-10-04), L-5(#214) 완료([PR221](reviews/PR-221.md) 병합 2026-10-04), L-4b(#213 둘째 PR) [PR223](reviews/PR-223.md) 리뷰 중, L-6(#215) 착수.**
 계획과 단계 상태는 [phase](phases/LEARN-beginner-learning.md), 결정은 D-094. 남은 단계 #211(L-2)·#212(L-3)·#213(L-4)·#214(L-5)·#215(L-6).
 
 최근 완료(상세는 각 리뷰 로그): LEARN L-5 PR221, L-4a PR220, L-3 PR219, L-2 PR218, L-1 PR216(D-094), 감사 게이트 PR217(D-095), CI 신뢰성 PR206·207(Post-merge PASS), #188 콘솔 로그 PR205(D-093), #187 탐색 API 지연 PR203·204(D-092, 이슈 종료), #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
@@ -17,10 +17,16 @@ Last updated: 2026-10-03 KST
 
 - #213(L-4): L-4a 음높이는 [PR220](reviews/PR-220.md) 병합(`5d54bec`, 사용자의 사전 병합 허용 — 그 허용은 PR220 하나였고 소진됐다).
   L-4b 길이·박자는 L-5 PR 뒤에 `codex/learn-4b-reading-rhythm`에서 시작하고 그때 `reading`의 `available`을 켠다. 새 학습 페이지 E2E는 PR 전에 Firefox로도 돌린다.
-- #213 L-4b(길이·박자): 브랜치 `codex/learn-4b-reading-rhythm` `a26394d`(미푸시). 구현·main 병합·`reading` 공개·로컬 리뷰 반영 완료,
-  [검증](validation/2026-10-04-learn-4b-reading-rhythm.md). PR 생성(사용자 승인 필요) → CI·리뷰 → 병합 승인. 이 PR이 #213을 닫는다.
-- Codex 주간 한도: 2026-10-04 세션 중 22% → 9%. 사용자는 "한도는 여유있다"고 확인했다. 10% 미만 경고와 `gpt-6-luna` 전환 제안 창이 떴고 모델은 지정된 `gpt-6.1-sol`을 유지했다.
-  L-6 시작 전에 남은 한도와 모델을 사용자에게 다시 확인한다.
+- #213 L-4b: [PR223](reviews/PR-223.md) CI·hosted 리뷰 확인 → 병합 승인 요청. 이 PR이 #213을 닫는다.
+- #215 L-6(마지막 단계): 브랜치 `codex/learn-6-song-intro`. 착수 결정은 [phase](phases/LEARN-beginner-learning.md) Progress.
+  PR223 병합 뒤 main을 병합한다(링크 대상 `/learn/reading#meters` 등은 L-4b가 만든다).
+- **Codex 한도 소진 시 이어받기**(사용자 지시 2026-10-04: L-6은 `gpt-6.1-sol` 그대로, 한도가 차면 다음 계정으로 전환해 이어서 한다. 세션 중 22% → 8%):
+  1. 워커가 멈추면 워킹 트리의 미커밋 변경을 지우지 않는다. `git status`, `git log main..HEAD`, `local-test-data/results/learn-6/progress.md`로 어디까지 됐는지 본다.
+  2. 사용자가 Codex 계정을 바꾼 뒤(`codex logout` → `codex login`), Orca에서 새 터미널을 띄운다:
+     `orca terminal create --worktree active --title "L-6 구현 (gpt-6.1-sol)" --command 'codex --model gpt-6.1-sol -s workspace-write -a never' --json`,
+     `terminal wait --for tui-idle` 뒤 `terminal send`로 "`local-test-data/results/learn-6/l6-brief.md`를 읽고 이어서 수행하라. 먼저 `git status`와 `progress.md`로 상태를 파악하라"를 보낸다.
+  3. 리뷰는 `codex --model gpt-6-astra -c model_reasoning_effort="high" -s read-only -a never`. 리뷰 지시문 끝에 "지적만 35줄 이내로 다시 출력"을 넣는다(터미널은 마지막 화면만 읽힌다).
+  4. E2E·측정·커밋·기록은 오케스트레이터가 한다(워커 샌드박스는 포트와 `.git`을 못 쓴다). 브랜치를 바꾼 뒤에는 `.next/types`를 지운다. 새 학습 화면 E2E는 Firefox도 돌린다.
 - 이슈 [#222](https://github.com/landfill/ClairKeys/issues/222): `console-quiet.spec.ts:40`이 CI에서 세 번 연속 첫 시도 실패 후 재시도 통과. 원인 가설(서비스 워커 미차단)은 미확인.
 - 그 뒤 #215(L-6, 선행 L-2·L-4·L-5).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
