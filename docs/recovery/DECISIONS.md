@@ -3426,5 +3426,6 @@
 - Rejected: 내장곡을 OMR에 제출하거나 운영 DB에 업로드 | 인식 오류/운영 쓰기 없이 정적 공개 콘텐츠로 해결할 수 있다.
 - Confidence: high
 - Scope-risk: moderate
-- Directive: 원본과 생성물은 같은 PR에 갱신한다. 내장곡을 사용자 PDF 변환 결과로 표현하지 않는다. 정적 코스에는 SheetMusic ID나 DB 연습 저장을 가짜로 부여하지 않는다.
+- Directive: 원본과 생성물은 같은 PR에 갱신한다. 내장곡을 사용자 PDF 변환 결과로 표현하지 않는다. 정적 코스에는 SheetMusic ID나 DB 연습 저장을 가짜로 부여하지 않는다. CI에서 오디오 장치가 시작되지 않으면 네이티브 context 증거와 정지 UI를 검증하고 실제 재생 성공으로 기록하지 않는다. 오디오 시계 모사나 테스트 skip으로 통과시키지 않는다.
+- Follow-up: #227 E2E의 resume 미완료 재현에서 모바일 회전이 복귀하지 않아 코스 이동을 막았다. 공유 startAudio의 resume 대기를 4초로 제한하고 기존 상태 줄에서 실패를 안내한다. 늦은 완료가 재생을 재개하지 않는 회귀를 고정하며 오디오 clock 원칙은 유지한다.
 - Related: #227, phases/LEARN-first-course.md, D-094

@@ -103,6 +103,7 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
     setOffsetTime,
     setVolume,
     sampleStatus,
+    audioStartError,
     reset,
     playNoteNow,
   } = useFallingNotesAudio()
@@ -465,6 +466,7 @@ export function useFallingNotesPlayer(notes: FallingNote[], options: FallingNote
     loopStart,
     loopEnd,
     sampleStatus,
+    audioStartError,
     totalLength,
     /** Beats left in the count-in (counting down to 1), or null. */
     countInLeft,

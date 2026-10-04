@@ -168,6 +168,8 @@ export const MAX_MASTER_GAIN = CLIP_SAFETY / loudestRealisticMixdown()
  * Bounded so a bad network delays the first note instead of withholding it.
  */
 export const SAMPLE_LOAD_WAIT_MS = 2500
+export const AUDIO_RESUME_WAIT_MS = 4000
+const AUDIO_START_ERROR = '오디오를 시작하지 못했습니다. 소리 설정을 확인한 뒤 다시 재생해 주세요.'
 
 export type PianoSamplePlaybackStatus =
   | 'idle'
@@ -177,6 +179,7 @@ export type PianoSamplePlaybackStatus =
   | 'failed'
 
 export function useFallingNotesAudio() {
+  const [audioStartError, setAudioStartError] = useState<string | null>(null)
   const [sampleStatus, setSampleStatus] = useState<PianoSamplePlaybackStatus>('idle')
   const audioContextRef = useRef<AudioContext | null>(null)
   const masterGainRef = useRef<GainNode | null>(null)
@@ -614,7 +617,9 @@ export function useFallingNotesAudio() {
     mute: boolean,
     options: StartAudioOptions = {}
   ): Promise<boolean> => {
+    setAudioStartError(null)
     if (!initializeAudio()) {
+      setAudioStartError(AUDIO_START_ERROR)
       setSampleStatus('failed')
       return false
     }
@@ -639,12 +644,27 @@ export function useFallingNotesAudio() {
     // user-gesture-gated resume result and report failure to the player instead
     // of entering a visual-only "playing" state with a frozen playhead.
     if (audioContext.state === 'suspended') {
+      let timer: ReturnType<typeof setTimeout> | undefined
       try {
-        await audioContext.resume()
+        const resumed = await Promise.race([
+          audioContext.resume().then(() => true),
+          new Promise<boolean>(resolve => { timer = setTimeout(() => resolve(false), AUDIO_RESUME_WAIT_MS) }),
+        ])
+        if (!resumed) {
+          if (generation === playbackGenerationRef.current) setAudioStartError(AUDIO_START_ERROR)
+          return false
+        }
       } catch (error) {
         console.warn('AudioContext resume failed:', error)
+        if (generation === playbackGenerationRef.current) setAudioStartError(AUDIO_START_ERROR)
         return false
+      } finally {
+        if (timer !== undefined) clearTimeout(timer)
       }
+    }
+    if (audioContext.state !== 'running') {
+      if (generation === playbackGenerationRef.current) setAudioStartError(AUDIO_START_ERROR)
+      return false
     }
 
     // A muted start schedules nothing (wait mode's silent clock, D-086), so it
@@ -901,6 +921,7 @@ export function useFallingNotesAudio() {
     setOffsetTime,
     setVolume,
     sampleStatus,
+    audioStartError,
     reset,
     getTimingInfo,
     playNoteNow,
