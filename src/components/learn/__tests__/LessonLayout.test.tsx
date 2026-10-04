@@ -7,11 +7,11 @@ jest.mock('@/lib/learn/lessons', () => {
   return { ...actual, LEARN_LESSONS: actual.LEARN_LESSONS.map((lesson: object) => ({ ...lesson })) }
 })
 
-beforeEach(() => { LEARN_LESSONS.forEach(lesson => { lesson.available = lesson.id !== 'reading' }) })
+beforeEach(() => { LEARN_LESSONS.forEach(lesson => { lesson.available = true }) })
 
 describe('LessonLayout', () => {
   it.each([
-    { id: 'keyboard', title: '건반', neighbour: '다음 레슨: 손', href: '/learn/hands', absent: /이전 레슨/ },
+    { id: 'keyboard', title: '건반', neighbour: '다음 레슨: 악보 읽기', href: '/learn/reading', absent: /이전 레슨/ },
     { id: 'practice', title: '연습 방법', neighbour: '이전 레슨: 손', href: '/learn/hands', absent: /다음 레슨/ },
   ])('renders one h1, the body, map and only the published neighbour for $id', ({ id, title, neighbour, href, absent }) => {
     render(<LessonLayout lessonId={id}><h2>음높이</h2></LessonLayout>)
@@ -24,16 +24,16 @@ describe('LessonLayout', () => {
     expect(screen.getAllByRole('link')).toHaveLength(2)
   })
 
-  it('names previous and next links and skips unavailable lessons', () => {
+  it('names the previous and next links for reading', () => {
     render(<LessonLayout lessonId="reading">레슨 본문</LessonLayout>)
     expect(screen.getByRole('link', { name: '이전 레슨: 건반' })).toHaveAttribute('href', '/learn/keyboard')
     expect(screen.getByRole('link', { name: '다음 레슨: 손' })).toHaveAttribute('href', '/learn/hands')
     expect(screen.queryByRole('link', { name: '다음 레슨: 연습 방법' })).toBeNull()
   })
 
-  it('links hands back to keyboard and forward to practice', () => {
+  it('links hands back to reading and forward to practice', () => {
     render(<LessonLayout lessonId="hands">본문</LessonLayout>)
-    expect(screen.getByRole('link', { name: '이전 레슨: 건반' })).toHaveAttribute('href', '/learn/keyboard')
+    expect(screen.getByRole('link', { name: '이전 레슨: 악보 읽기' })).toHaveAttribute('href', '/learn/reading')
     expect(screen.getByRole('link', { name: '다음 레슨: 연습 방법' })).toHaveAttribute('href', '/learn/practice')
   })
 

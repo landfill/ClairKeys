@@ -14,6 +14,7 @@ for (const width of [320, 1280]) {
     await expect(page.getByRole('main').getByText(/물리 키보드가 없으면 화면의 재생/)).toBeVisible()
     await expect(page.getByRole('main').getByRole('heading', { level: 2 })).toHaveText(topics)
     await expect(page.getByRole('link', { name: '이전 레슨: 손' })).toHaveAttribute('href', '/learn/hands')
+    await expect(page.getByRole('navigation', { name: '레슨 이동', exact: true }).getByRole('link', { name: /다음 레슨/ })).toHaveCount(0)
     await expect(page.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
     const overflow = await page.evaluate(() => ({
       documentWidth: document.documentElement.scrollWidth,

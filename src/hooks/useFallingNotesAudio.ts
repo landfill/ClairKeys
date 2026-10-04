@@ -188,6 +188,8 @@ export function useFallingNotesAudio() {
   // change takes effect from the next note the scheduler builds.
   const trebleRolloffRef = useRef(DEFAULT_TREBLE_ROLLOFF)
   const scheduledNodesRef = useRef<AudioNodes[]>([])
+  const tappedNodesRef = useRef<AudioNodes[]>([])
+  const tapGenerationRef = useRef(0)
   const baseAudioTimeRef = useRef<number | null>(null)
   const offsetSecRef = useRef(0)
   const tempoScaleRef = useRef(1)
@@ -740,12 +742,20 @@ export function useFallingNotesAudio() {
     baseAudioTimeRef.current = null
   }, [stopTick])
 
+  // Explicit opt-in: transport restarts must still leave wait-mode taps ringing.
+  const stopTappedNotes = useCallback(() => {
+    tapGenerationRef.current++
+    stopAudioNodes(tappedNodesRef.current)
+    tappedNodesRef.current = []
+  }, [])
+
   /**
    * Sound one key now, for a key the reader taps on screen in wait mode
    * (D-086). It is off the playback clock and outside the scheduled set, so a
    * restart of the schedule — which a correct press triggers — cannot cut it.
    */
   const playNoteNow = useCallback(async (midi: number, velocity = 0.7): Promise<boolean> => {
+    const generation = tapGenerationRef.current
     if (!initializeAudio()) return false
     const audioContext = audioContextRef.current
     const masterGain = masterGainRef.current
@@ -753,6 +763,8 @@ export function useFallingNotesAudio() {
     if (audioContext.state === 'suspended') {
       try { await audioContext.resume() } catch { return false }
     }
+    if (generation !== tapGenerationRef.current) return false
+    tappedNodesRef.current = tappedNodesRef.current.filter(node => node.end > audioContext.currentTime)
     // Start decoding for the next tap without making this one wait.
     void sampleBankRef.current?.load().catch(() => undefined)
 
@@ -778,6 +790,8 @@ export function useFallingNotesAudio() {
         nodes.source.start(start)
       }
       nodes.source.stop(end + releaseSec)
+      nodes.end = end + releaseSec
+      tappedNodesRef.current.push(nodes)
       return true
     } catch (error) {
       console.warn('Failed to play tapped note:', error)
@@ -868,6 +882,7 @@ export function useFallingNotesAudio() {
   useEffect(() => {
     return () => {
       stopAudio()
+      stopTappedNotes()
       if (audioContextRef.current) {
         // Release the decoded buffers before closing: they are ~20 MB and belong
         // to this context, so nothing can play them again once it is closed.
@@ -876,7 +891,7 @@ export function useFallingNotesAudio() {
         audioContextRef.current.close()
       }
     }
-  }, [stopAudio])
+  }, [stopAudio, stopTappedNotes])
 
   return {
     startAudio,
@@ -888,7 +903,8 @@ export function useFallingNotesAudio() {
     sampleStatus,
     reset,
     getTimingInfo,
-    playNoteNow
+    playNoteNow,
+    stopTappedNotes
   }
 }
 

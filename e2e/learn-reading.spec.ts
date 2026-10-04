@@ -19,7 +19,7 @@ async function selectNotes(page: Page) {
   await expect(area.getByRole('status', { name: '선택한 음' })).toContainText('도 · 3옥타브 · 낮은음자리표 · 둘째 칸')
 }
 
-test('opens the pitch lesson without hydration or console errors and renders actual OSMD notes', async ({ page }) => {
+test('opens the pitch and rhythm lesson without hydration or console errors and renders actual OSMD notes', async ({ page }) => {
   const pageErrors: string[] = []
   const consoleErrors: string[] = []
   page.on('pageerror', error => pageErrors.push(error.message))
@@ -31,7 +31,12 @@ test('opens the pitch lesson without hydration or console errors and renders act
   const main = page.getByRole('main')
   await expect(main.getByRole('heading', { level: 1 })).toHaveCount(1)
   await expect(main.getByRole('heading', { level: 1, name: '악보 읽기' })).toBeVisible()
-  await expect(main.getByRole('heading', { level: 2 })).toHaveText(['오선', '높은음자리표', '낮은음자리표', '가운데 도', '오선과 건반 연결하기'])
+  await expect(main.getByRole('heading', { level: 2 })).toHaveText(['오선', '높은음자리표', '낮은음자리표', '가운데 도', '오선과 건반 연결하기', '음표의 길이', '쉼표', '점음표', '박자표'])
+  const navigation = main.getByRole('navigation', { name: '레슨 이동', exact: true })
+  await expect(navigation.getByRole('link', { name: '이전 레슨: 건반', exact: true })).toHaveAttribute('href', '/learn/keyboard')
+  await expect(navigation.getByRole('link', { name: '다음 레슨: 손', exact: true })).toHaveAttribute('href', '/learn/hands')
+  await expect(main.getByRole('link', { name: '손 레슨', exact: true })).toHaveAttribute('href', '/learn/hands')
+  await expect(main.getByRole('link', { name: '연습 방법 레슨', exact: true })).toHaveAttribute('href', '/learn/practice')
   const score = page.locator('[data-example="treble-lines"]')
   await expect(score.getByRole('img', { name: '높은음자리표 줄 음 악보', exact: true })).toBeVisible()
   const caption = score.locator('figcaption')
@@ -42,6 +47,25 @@ test('opens the pitch lesson without hydration or console errors and renders act
   await expect(score.locator('svg')).toHaveCount(1)
   // OSMD는 VexFlow의 StaveNote 그룹으로 실제 음표를 그린다.
   await expect(score.locator('svg g.vf-stavenote')).toHaveCount(5)
+  await expect(score.locator('svg g.vf-timesignature')).toHaveCount(0)
+  for (const id of ['note-whole', 'note-half', 'note-quarter', 'note-eighth', 'rest-whole', 'rest-half', 'rest-quarter', 'rest-eighth', 'note-dotted-half', 'note-dotted-quarter', 'meter-four', 'meter-three', 'meter-six']) {
+    const rhythm = page.locator(`[data-example="${id}"]`)
+    await expect(rhythm.locator('svg')).toHaveCount(1)
+    const time = rhythm.locator('svg g.vf-timesignature')
+    await expect(time).toHaveCount(1)
+    // OSMD의 숫자 박자표는 위·아래 숫자를 각각 SVG path로 그린다.
+    // C 기호 하나로 대체되지 않고 두 숫자 모두 실제 크기를 갖는다.
+    await expect(time.locator('path')).toHaveCount(2)
+    const digits = await time.locator('path').evaluateAll(nodes => nodes.map(node => {
+      const rect = node.getBoundingClientRect()
+      return { width: rect.width, height: rect.height }
+    }))
+    expect(digits.every(digit => digit.width > 0 && digit.height > 0)).toBe(true)
+  }
+  await page.getByRole('button', { name: '8분의 6박자 들어 보기', exact: true }).click()
+  const progress = page.getByRole('status', { name: '리듬 재생 차례', exact: true })
+  await expect(progress).toContainText('8분음표', { timeout: 12000 })
+  await expect(progress).toHaveCount(0, { timeout: 15000 })
   await selectNotes(page)
   await expect(explorer(page).locator('[data-example="selected-note"] svg')).toHaveCount(1)
   await page.waitForLoadState('networkidle')
@@ -53,14 +77,16 @@ test('keeps notes, staff positions and key selection working when piano samples 
   await prepare(page)
   let aborted = 0
   await page.route('**/samples/piano/**', async route => { await route.abort(); aborted++ })
-  await page.goto('/learn/reading')
-  expect(aborted).toBe(0)
-  await selectNotes(page)
-  await explorer(page).getByRole('button', { name: '선택한 음 들어 보기', exact: true }).click()
-  await expect.poll(() => aborted).toBe(30)
-  await expect(explorer(page).getByRole('status', { name: '선택한 음' })).toContainText('도 · 3옥타브')
-  await explorer(page).getByRole('button', { name: '미 (4옥타브)', exact: true }).click()
-  await expect(explorer(page).getByRole('status', { name: '선택한 음' })).toContainText('미 · 4옥타브 · 높은음자리표 · 첫째 줄')
+  try {
+    await page.goto('/learn/reading')
+    expect(aborted).toBe(0)
+    await selectNotes(page)
+    await explorer(page).getByRole('button', { name: '선택한 음 들어 보기', exact: true }).click()
+    await expect.poll(() => aborted).toBe(30)
+    await expect(explorer(page).getByRole('status', { name: '선택한 음' })).toContainText('도 · 3옥타브')
+    await explorer(page).getByRole('button', { name: '미 (4옥타브)', exact: true }).click()
+    await expect(explorer(page).getByRole('status', { name: '선택한 음' })).toContainText('미 · 4옥타브 · 높은음자리표 · 첫째 줄')
+  } finally { await page.unrouteAll({ behavior: 'ignoreErrors' }) }
 })
 
 for (const width of [320, 390]) {
@@ -85,6 +111,12 @@ for (const width of [320, 390]) {
     expect(await page.evaluate(() => scrollY)).toBe(before)
     await expect(chooseHighC).toBeFocused()
     await selectNotes(page)
+    const table = page.getByRole('table', { name: '음표 길이 비교', exact: true })
+    const tableFits = await table.evaluate(element => {
+      const box = element.getBoundingClientRect()
+      return box.left >= 0 && box.right <= document.documentElement.clientWidth && element.scrollWidth <= element.clientWidth
+    })
+    expect(tableFits).toBe(true)
     const overflow = await page.evaluate(() => ({
       document: document.documentElement.scrollWidth,
       body: document.body.scrollWidth,
@@ -143,14 +175,14 @@ for (const width of [1280, 320, 390]) {
       await expect.poll(() => held).toBeGreaterThan(0)
       await page.evaluate(() => document.fonts.ready)
       const figures = page.locator('main figure[data-example]')
-      await expect(figures).toHaveCount(8)
+      await expect(figures).toHaveCount(21)
       const frames = figures.getByRole('img')
       const placeholders = await frames.evaluateAll(nodes => nodes.map(node => {
         const rect = node.getBoundingClientRect()
         return { top: rect.top, width: rect.width, height: rect.height }
       }))
       release()
-      await expect(figures.locator('svg')).toHaveCount(8)
+      await expect(figures.locator('svg')).toHaveCount(21)
       await expect(figures.locator('[role="img"][aria-busy="true"]')).toHaveCount(0)
       const geometry = await figures.evaluateAll(nodes => nodes.map(node => {
         const box = node.querySelector('[role="img"]')!.getBoundingClientRect()
@@ -218,32 +250,65 @@ for (const width of [1280, 390]) {
   })
 }
 
-test('shows audio initialization failure directly below the clicked example in the viewport', async ({ page }) => {
+for (const label of ['높은음자리표 줄 음 들어 보기', '점4분음표 들어 보기']) {
+  test(`shows audio initialization failure directly below ${label} in the viewport`, async ({ page }) => {
+    await prepare(page)
+    await page.addInitScript(() => {
+      const unavailable = class { constructor() { throw new Error('isolated audio initialization failure') } }
+      Object.defineProperty(window, 'AudioContext', { configurable: true, value: unavailable })
+      Object.defineProperty(window, 'webkitAudioContext', { configurable: true, value: unavailable })
+    })
+    await page.goto('/learn/reading')
+    const button = page.getByRole('button', { name: label, exact: true })
+    await button.scrollIntoViewIfNeeded()
+    // 안내가 생길 공간 없이 버튼의 아래쪽을 뷰포트 끝에 맞춘다.
+    await button.evaluate(element => {
+      const rect = element.getBoundingClientRect()
+      window.scrollBy({ top: rect.bottom - window.innerHeight, behavior: 'instant' })
+    })
+    await expect(button).toBeInViewport({ ratio: 0.9 })
+    await button.click()
+    const notice = button.locator('..').getByRole('status').filter({ hasText: '소리를 재생하지 못했어요' })
+    await expect(notice).toContainText('소리를 재생하지 못했어요')
+    // WebKit의 소수점 픽셀 반올림(0.5px 미만)을 허용한다.
+    await expect(notice).toBeInViewport({ ratio: 0.95 })
+    await expect(page.getByText('소리를 재생하지 못했어요', { exact: false })).toHaveCount(1)
+    const buttonBox = await button.boundingBox()
+    const noticeBox = await notice.boundingBox()
+    expect(buttonBox).not.toBeNull()
+    expect(noticeBox).not.toBeNull()
+    expect(noticeBox!.y - (buttonBox!.y + buttonBox!.height)).toBeGreaterThanOrEqual(0)
+    expect(noticeBox!.y - (buttonBox!.y + buttonBox!.height)).toBeLessThanOrEqual(12)
+    await selectNotes(page)
+  })
+}
+
+
+test('continues rhythm text when AudioContext resume never settles', async ({ page }) => {
   await prepare(page)
   await page.addInitScript(() => {
-    const unavailable = class { constructor() { throw new Error('isolated audio initialization failure') } }
-    Object.defineProperty(window, 'AudioContext', { configurable: true, value: unavailable })
-    Object.defineProperty(window, 'webkitAudioContext', { configurable: true, value: unavailable })
+    const contexts = window as typeof window & { webkitAudioContext?: typeof AudioContext }
+    for (const Context of [contexts.AudioContext, contexts.webkitAudioContext]) {
+      if (!Context) continue
+      Object.defineProperty(Context.prototype, 'state', { configurable: true, get: () => 'suspended' })
+      Context.prototype.resume = () => new Promise<void>(() => {})
+    }
   })
   await page.goto('/learn/reading')
-  const button = page.getByRole('button', { name: '높은음자리표 줄 음 들어 보기', exact: true }).first()
-  await button.scrollIntoViewIfNeeded()
-  // 안내가 생길 공간 없이 버튼의 아래쪽을 뷰포트 끝에 맞춘다.
-  await button.evaluate(element => {
-    const rect = element.getBoundingClientRect()
-    window.scrollBy({ top: rect.bottom - window.innerHeight, behavior: 'instant' })
-  })
-  await expect(button).toBeInViewport({ ratio: 1 })
+  const button = page.getByRole('button', { name: '8분의 6박자 들어 보기', exact: true })
   await button.click()
-  const notice = button.locator('..').getByRole('status')
-  await expect(notice).toContainText('소리를 재생하지 못했어요')
-  await expect(notice).toBeInViewport({ ratio: 1 })
-  await expect(page.getByText('소리를 재생하지 못했어요', { exact: false })).toHaveCount(1)
-  const buttonBox = await button.boundingBox()
-  const noticeBox = await notice.boundingBox()
-  expect(buttonBox).not.toBeNull()
-  expect(noticeBox).not.toBeNull()
-  expect(noticeBox!.y - (buttonBox!.y + buttonBox!.height)).toBeGreaterThanOrEqual(0)
-  expect(noticeBox!.y - (buttonBox!.y + buttonBox!.height)).toBeLessThanOrEqual(12)
-  await selectNotes(page)
+  const area = button.locator('..')
+  await expect(area.getByRole('status', { name: '소리 준비 상태' })).toBeVisible()
+  const notice = area.getByRole('status').filter({ hasText: '소리를 재생하지 못했어요' })
+  await expect(notice).toBeVisible({ timeout: 12000 })
+  // WebKit의 소수점 픽셀 반올림(0.5px 미만)을 허용한다.
+  await expect(notice).toBeInViewport({ ratio: 0.95 })
+  await expect(area.getByRole('status', { name: '소리 준비 상태' })).toHaveCount(0)
+  const progress = area.getByRole('status', { name: '리듬 재생 차례' })
+  await expect(progress).toBeVisible()
+  const readTurn = () => progress.evaluateAll(nodes => Number(nodes[0]?.textContent?.match(/(\d+)\/6/)?.[1] ?? 0))
+  const firstTurn = await readTurn()
+  expect(firstTurn).toBeGreaterThan(0)
+  await expect.poll(readTurn, { intervals: [50, 100], timeout: 12000 }).toBeGreaterThan(firstTurn)
+  await expect(progress).toHaveCount(0, { timeout: 12000 })
 })

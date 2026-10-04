@@ -1,7 +1,10 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { ListenButton, ReadingAudioProvider } from '../ReadingAudio'
 const playNoteNow = jest.fn().mockResolvedValue(true)
-jest.mock('@/hooks/useFallingNotesAudio', () => ({ useFallingNotesAudio: () => ({ playNoteNow }) }))
+const stopAudio = jest.fn()
+const stopTappedNotes = jest.fn()
+const setVolume = jest.fn()
+jest.mock('@/hooks/useFallingNotesAudio', () => ({ useFallingNotesAudio: () => ({ playNoteNow, stopAudio, stopTappedNotes, setVolume }) }))
 beforeAll(() => { Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, writable: true, value: jest.fn() }) })
 afterAll(() => { Reflect.deleteProperty(Element.prototype, 'scrollIntoView') })
 beforeEach(() => { playNoteNow.mockReset().mockResolvedValue(true); jest.useFakeTimers() })

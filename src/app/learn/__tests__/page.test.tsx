@@ -7,7 +7,7 @@ jest.mock('@/lib/learn/lessons', () => {
   return { ...actual, LEARN_LESSONS: actual.LEARN_LESSONS.map((lesson: object) => ({ ...lesson })) }
 })
 
-beforeEach(() => { LEARN_LESSONS.forEach(lesson => { lesson.available = lesson.id !== 'reading' }) })
+beforeEach(() => { LEARN_LESSONS.forEach(lesson => { lesson.available = true }) })
 
 it('has metadata and one h1 followed by h2 lesson titles in map order', () => {
   render(<LearnPage />)
@@ -21,7 +21,8 @@ it('has metadata and one h1 followed by h2 lesson titles in map order', () => {
   expect(screen.getAllByRole('heading')).toHaveLength(5)
 })
 
-it('shows every unavailable lesson as 준비 중 without links', () => {
+it('shows unavailable fixture lessons as 준비 중 without links', () => {
+  LEARN_LESSONS[1].available = false
   render(<LearnPage />)
   const items = within(screen.getByRole('list', { name: '학습 단계' })).getAllByRole('listitem')
   expect(items).toHaveLength(4)
@@ -36,12 +37,12 @@ it('shows every unavailable lesson as 준비 중 without links', () => {
   })
 })
 
-it('links a lesson as soon as its shared availability flag is enabled', () => {
-  LEARN_LESSONS[1].available = true
+it('links all four published lessons without 준비 중', () => {
   render(<LearnPage />)
   expect(screen.getByRole('link', { name: '건반' })).toHaveAttribute('href', '/learn/keyboard')
   expect(screen.getByRole('link', { name: '악보 읽기' })).toHaveAttribute('href', '/learn/reading')
   expect(screen.getByRole('link', { name: '연습 방법' })).toHaveAttribute('href', '/learn/practice')
+  expect(screen.getByRole('link', { name: '손' })).toHaveAttribute('href', '/learn/hands')
   expect(screen.getAllByRole('link')).toHaveLength(4)
   expect(screen.queryAllByText('준비 중')).toHaveLength(0)
 })
