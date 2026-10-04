@@ -15,7 +15,7 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
-- #213(L-4): 두 PR로 나눈다. L-4a 음높이는 [PR220](reviews/PR-220.md) CI·hosted 리뷰 확인 중. 통과하면 사용자의 사전 허용(이 PR 하나)에 따라 병합한다.
+- #213(L-4): 두 PR로 나눈다. L-4a 음높이는 [PR220](reviews/PR-220.md)의 Firefox E2E 실패와 hosted P2를 수정 중(임시 워크트리, Orca 터미널 "L-4a CI 수정"). 고친 head가 통과하면 사용자의 사전 허용(이 PR 하나)에 따라 병합한다.
   L-4b 길이·박자는 PR220 병합 뒤 시작하고 그때 `reading`의 `available`을 켠다. 악보 그림은 OSMD로 렌더링(phase Progress).
 - #214(L-5): 브랜치 `codex/learn-5-hands` 착수(선행 L-1·L-3 충족). 재생 화면에 링크를 더하므로 요소 수 측정 spec의 기준을 지킨다(D-094 6).
 - 그 뒤 #215(L-6, 선행 L-2·L-4·L-5).
