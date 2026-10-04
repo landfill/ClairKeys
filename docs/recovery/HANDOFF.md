@@ -16,9 +16,9 @@ Last updated: 2026-10-03 KST
 ## Next action
 
 - #213(L-4): L-4a 음높이는 [PR220](reviews/PR-220.md) 병합(`5d54bec`, 사용자의 사전 병합 허용 — 그 허용은 PR220 하나였고 소진됐다).
-  병합 커밋의 Post-merge checks와 운영 `/learn/reading`(URL 직접) 확인 결과를 PR220 리뷰 로그에 기록한다.
   L-4b 길이·박자는 L-5 PR 뒤에 `codex/learn-4b-reading-rhythm`에서 시작하고 그때 `reading`의 `available`을 켠다. 새 학습 페이지 E2E는 PR 전에 Firefox로도 돌린다.
-- #214(L-5): 브랜치 `codex/learn-5-hands` 착수(선행 L-1·L-3 충족). 재생 화면에 링크를 더하므로 요소 수 측정 spec의 기준을 지킨다(D-094 6).
+- #214(L-5): 브랜치 `codex/learn-5-hands` `d3fcb74`(미푸시). 구현·main 병합·로컬 검증 완료, 로컬 리뷰 중 → 검증 기록(표준 자료 대조 포함) → PR 생성(사용자 승인 필요).
+  재생 전 요소 수: 데스크톱 합 27(기준 31), 터치 합 27(기준 27, 여유 0). 재생 중·일시정지는 기준과 같다.
 - 그 뒤 #215(L-6, 선행 L-2·L-4·L-5).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
