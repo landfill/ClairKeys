@@ -37,3 +37,19 @@ DB schema·migration·쓰기 경로·재생 화면은 변경하지 않았다. �
 운영 계정의 실제 기록·운영 DB 성능·실제 로그인 제공자 흐름·실기기·스크린리더 낭독 미검증.
 API DB 집계는 Prisma mock 계약 테스트이며 실제 DB 쓰기를 수행하지 않았다. 브라우저에서는 실제 비로그인 API 401과 middleware 리디렉션을 확인했다.
 전체 브라우저 매트릭스와 최종 production build는 PR CI에 맡긴다. preview는 PR 생성 후 확인한다.
+
+## PR235 P2 수정 — `5425f79`
+
+리뷰가 지적한 offset의 중복/누락 위험을 수용했다. 첫 조회의 asOf 이전 PracticeSession만 집계하고 마지막 MAX(createdAt)·sheet ID보다
+뒤에 있는 그룹을 HAVING 조건으로 읽는다. 페이지 사이에 새 세션이 생겨도 기존 조회 순서를 바꾸지 않는다. 현재 악보 접근권한은 계속 검사한다.
+응답은 현재 cursor와 nextCursor를 반환하며 이전 페이지도 같은 asOf cursor로 돌아간다. 새 기록은 새로고침 시 반영한다고 화면에 설명한다.
+
+- 수정 전 cursor 회귀: 8 FAIL/3 PASS(기준 시각·cursor·입력 검증이 없고 offset을 사용함).
+- 수정 후 API/UI 대상: 14 PASS. 잘못된 cursor, 다음/이전 snapshot 유지, aggregate timestamp/ID 경계, offset 미사용 검증.
+- 전체 Jest: 157 suites / 1550 tests PASS.
+- tsc: 최초 브랜치 전환 후 남은 `.next/types`의 course 경로 참조로 FAIL. 생성물을 정리한 현재 브랜치에서 재실행 PASS. 소스 타입 오류는 없었다.
+- lint PASS. history E2E 12 PASS(11.4초), 실제 요청 cursor 흐름 `없음 → second → first` 단언 추가. 320px/데스크톱 screenshot 유지.
+- `git diff --check` PASS.
+
+DB를 mock한 단위 테스트와 API fixture E2E라는 한계는 유지된다. 운영 DB 성능 검증은 하지 않았다.
+리뷰 회신·resolve와 새 CI 상태는 [PR235 로그](../reviews/PR-235.md)가 원본이다.
