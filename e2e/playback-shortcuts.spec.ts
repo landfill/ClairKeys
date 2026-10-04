@@ -36,7 +36,8 @@ const seekValue = (page: import('@playwright/test').Page) =>
 test('space plays and pauses from the page, and the arrows move five seconds', async ({ page, browserName }, info) => {
   test.skip(info.project.name.startsWith('Mobile'), 'touch projects have no physical keyboard to press')
   await prepare(page)
-  await expect(page.getByRole('note', { name: '키보드 단축키' })).toBeVisible()
+  await expect(page.getByRole('note', { name: '키보드 단축키' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveAttribute('href', '/learn/practice')
 
   // Nothing focused: the key belongs to the page.
   await page.locator('body').click({ position: { x: 5, y: 5 } })
@@ -87,8 +88,9 @@ test('a focused control keeps its own keys', async ({ page }, info) => {
   await expect(page.getByTestId('compact-playback-bar')).toHaveCount(0)
 })
 
-test('keeps the keyboard hint off touch screens', async ({ page }, info) => {
+test('links touch users to the practice lesson without an inline keyboard hint', async ({ page }, info) => {
   test.skip(!info.project.name.startsWith('Mobile'), 'only the touch projects report a coarse pointer')
   await prepare(page)
-  await expect(page.getByRole('note', { name: '키보드 단축키' })).toBeHidden()
+  await expect(page.getByRole('note', { name: '키보드 단축키' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveAttribute('href', '/learn/practice')
 })

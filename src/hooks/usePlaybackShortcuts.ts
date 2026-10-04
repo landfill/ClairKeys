@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 
-/** How far one arrow press moves the playhead, in score seconds. */
-export const SEEK_STEP_SEC = 5
+import { SEEK_STEP_SEC } from '@/utils/playbackShortcuts'
+export { SEEK_STEP_SEC } from '@/utils/playbackShortcuts'
 
 export type PlaybackShortcut = { type: 'toggle' } | { type: 'seek'; by: number }
 

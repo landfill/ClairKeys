@@ -13,5 +13,7 @@ it('opens the unpublished lesson with one h1 and five pitch topics', () => {
   expect(screen.getAllByRole('heading', { level: 2 }).map(node => node.textContent)).toEqual(['오선', '높은음자리표', '낮은음자리표', '가운데 도', '오선과 건반 연결하기'])
   expect(screen.getByRole('link', { name: '건반 레슨' })).toHaveAttribute('href', '/learn/keyboard')
   expect(screen.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
-  expect(screen.queryByRole('link', { name: /손|연습 방법/ })).toBeNull()
+  expect(screen.getByRole('link', { name: '이전 레슨: 건반' })).toHaveAttribute('href', '/learn/keyboard')
+  expect(screen.getByRole('link', { name: '다음 레슨: 연습 방법' })).toHaveAttribute('href', '/learn/practice')
+  expect(document.querySelector('a[href="/learn/hands"]')).toBeNull()
 })
