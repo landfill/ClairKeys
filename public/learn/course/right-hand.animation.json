@@ -1,0 +1,90 @@
+{
+  "version": "1.1",
+  "title": "도에서 솔까지",
+  "composer": "ClairKeys",
+  "metadata": {
+    "title": "도에서 솔까지",
+    "composer": "ClairKeys"
+  },
+  "notes": [
+    {
+      "midi": 60,
+      "start": 0.0,
+      "duration": 1.0,
+      "hand": "R",
+      "finger": 1,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 62,
+      "start": 1.0,
+      "duration": 1.0,
+      "hand": "R",
+      "finger": 2,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 2.0,
+      "duration": 1.0,
+      "hand": "R",
+      "finger": 3,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 65,
+      "start": 3.0,
+      "duration": 1.0,
+      "hand": "R",
+      "finger": 4,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 67,
+      "start": 4.0,
+      "duration": 1.0,
+      "hand": "R",
+      "finger": 5,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 64,
+      "start": 5.0,
+      "duration": 1.0,
+      "hand": "R",
+      "finger": 3,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 62,
+      "start": 6.0,
+      "duration": 1.0,
+      "hand": "R",
+      "finger": 2,
+      "voice": 1,
+      "staff": 1
+    },
+    {
+      "midi": 60,
+      "start": 7.0,
+      "duration": 1.0,
+      "hand": "R",
+      "finger": 1,
+      "voice": 1,
+      "staff": 1
+    }
+  ],
+  "duration": 8.0,
+  "tempo": 60.0,
+  "tempoSource": "score",
+  "timingReferenceBpm": 60.0,
+  "scoreTempo": 60.0,
+  "timeSignature": "4/4",
+  "keySignature": "C"
+}

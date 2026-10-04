@@ -1,0 +1,90 @@
+{
+  "version": "1.1",
+  "title": "왼손의 산책",
+  "composer": "ClairKeys",
+  "metadata": {
+    "title": "왼손의 산책",
+    "composer": "ClairKeys"
+  },
+  "notes": [
+    {
+      "midi": 48,
+      "start": 0.0,
+      "duration": 1.0,
+      "hand": "L",
+      "finger": 5,
+      "voice": 2,
+      "staff": 2
+    },
+    {
+      "midi": 50,
+      "start": 1.0,
+      "duration": 1.0,
+      "hand": "L",
+      "finger": 4,
+      "voice": 2,
+      "staff": 2
+    },
+    {
+      "midi": 52,
+      "start": 2.0,
+      "duration": 1.0,
+      "hand": "L",
+      "finger": 3,
+      "voice": 2,
+      "staff": 2
+    },
+    {
+      "midi": 53,
+      "start": 3.0,
+      "duration": 1.0,
+      "hand": "L",
+      "finger": 2,
+      "voice": 2,
+      "staff": 2
+    },
+    {
+      "midi": 55,
+      "start": 4.0,
+      "duration": 1.0,
+      "hand": "L",
+      "finger": 1,
+      "voice": 2,
+      "staff": 2
+    },
+    {
+      "midi": 52,
+      "start": 5.0,
+      "duration": 1.0,
+      "hand": "L",
+      "finger": 3,
+      "voice": 2,
+      "staff": 2
+    },
+    {
+      "midi": 50,
+      "start": 6.0,
+      "duration": 1.0,
+      "hand": "L",
+      "finger": 4,
+      "voice": 2,
+      "staff": 2
+    },
+    {
+      "midi": 48,
+      "start": 7.0,
+      "duration": 1.0,
+      "hand": "L",
+      "finger": 5,
+      "voice": 2,
+      "staff": 2
+    }
+  ],
+  "duration": 8.0,
+  "tempo": 60.0,
+  "tempoSource": "score",
+  "timingReferenceBpm": 60.0,
+  "scoreTempo": 60.0,
+  "timeSignature": "4/4",
+  "keySignature": "C"
+}

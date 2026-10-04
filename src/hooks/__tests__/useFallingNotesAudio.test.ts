@@ -112,6 +112,27 @@ describe('useFallingNotesAudio', () => {
     warn.mockRestore()
   })
 
+  it('bounds a resume that never settles and ignores its late completion', async () => {
+    const context = makeAudioContext('suspended')
+    let resume!: () => void
+    ;(context.resume as jest.Mock).mockImplementation(() => new Promise<void>(resolve => { resume = resolve }))
+    setAudioContextConstructor(jest.fn(() => context) as unknown as typeof AudioContext)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+    let started: boolean | undefined
+    act(() => { void result.current.startAudio([], 0, 1, false).then(value => { started = value }) })
+    await act(async () => { jest.advanceTimersByTime(4100) })
+    expect(started).toBe(false)
+    expect(result.current.audioStartError).toContain('오디오를 시작하지 못했습니다')
+    await act(async () => {
+      Object.defineProperty(context, 'state', { value: 'running', configurable: true })
+      resume()
+    })
+    expect(result.current.getTimingInfo().isPlaying).toBe(false)
+    await act(async () => { expect(await result.current.startAudio([], 0, 1, false)).toBe(true) })
+    expect(result.current.audioStartError).toBeNull()
+    unmount()
+  })
+
   it('does not start after stop invalidates a pending resume request', async () => {
     const context = makeAudioContext('suspended')
     let finishResume: (() => void) | undefined

@@ -230,6 +230,7 @@ export default function FallingNotesPlayer({
     lookAheadSec,
     volume,
     sampleStatus,
+    audioStartError,
     totalLength,
     play,
     pause,
@@ -743,6 +744,7 @@ export default function FallingNotesPlayer({
         aria-live="polite"
         className={isSessionActive ? 'sr-only' : 'mb-4 text-xs text-ink-muted'}
       >
+        {audioStartError ?? <>
         {sampleStatus === 'idle' && '녹음 피아노 샘플은 첫 재생 때 준비됩니다.'}
         {sampleStatus === 'loading' && '녹음 피아노 샘플을 준비 중입니다.'}
         {sampleStatus === 'ready' && '녹음 피아노 샘플로 재생합니다.'}
@@ -750,6 +752,7 @@ export default function FallingNotesPlayer({
           '샘플이 일부만 준비되었거나 늦어 이번 재생은 합성음으로 재생합니다.'}
         {sampleStatus === 'failed' &&
           '샘플을 불러오지 못해 합성음으로 재생합니다.'}
+        </>}
       </div>
 
       {/* Setup only: during a session this height belongs to the notes, and the
