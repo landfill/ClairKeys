@@ -6,7 +6,7 @@ Last updated: 2026-10-03 KST
 
 ## Current phase
 
-**#208 초보자 학습 영역(`배우기`) — L-1(#210) 완료([PR216](reviews/PR-216.md) 병합 2026-10-04), L-2(#211) 완료([PR218](reviews/PR-218.md) 병합 2026-10-04), L-3(#212) 완료([PR219](reviews/PR-219.md) 병합 2026-10-04), L-4a(#213 첫 PR) 완료([PR220](reviews/PR-220.md) 병합 2026-10-04), L-5(#214) 완료([PR221](reviews/PR-221.md) 병합 2026-10-04), L-4(#213) 완료([PR223](reviews/PR-223.md) 병합 2026-10-04), 마지막 단계 L-6(#215) PR 생성 전.**
+**#208 초보자 학습 영역(`배우기`) — L-1(#210) 완료([PR216](reviews/PR-216.md) 병합 2026-10-04), L-2(#211) 완료([PR218](reviews/PR-218.md) 병합 2026-10-04), L-3(#212) 완료([PR219](reviews/PR-219.md) 병합 2026-10-04), L-4a(#213 첫 PR) 완료([PR220](reviews/PR-220.md) 병합 2026-10-04), L-5(#214) 완료([PR221](reviews/PR-221.md) 병합 2026-10-04), L-4(#213) 완료([PR223](reviews/PR-223.md) 병합 2026-10-04), 마지막 단계 L-6(#215) [PR224](reviews/PR-224.md) 리뷰 중.**
 계획과 단계 상태는 [phase](phases/LEARN-beginner-learning.md), 결정은 D-094. 남은 단계 #211(L-2)·#212(L-3)·#213(L-4)·#214(L-5)·#215(L-6).
 
 최근 완료(상세는 각 리뷰 로그): LEARN L-4b PR223, L-5 PR221, L-4a PR220, L-3 PR219, L-2 PR218, L-1 PR216(D-094), 감사 게이트 PR217(D-095), CI 신뢰성 PR206·207(Post-merge PASS), #188 콘솔 로그 PR205(D-093), #187 탐색 API 지연 PR203·204(D-092, 이슈 종료), #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
@@ -18,8 +18,9 @@ Last updated: 2026-10-03 KST
 - #213(L-4): L-4a 음높이는 [PR220](reviews/PR-220.md) 병합(`5d54bec`, 사용자의 사전 병합 허용 — 그 허용은 PR220 하나였고 소진됐다).
   L-4b 길이·박자는 L-5 PR 뒤에 `codex/learn-4b-reading-rhythm`에서 시작하고 그때 `reading`의 `available`을 켠다. 새 학습 페이지 E2E는 PR 전에 Firefox로도 돌린다.
 - PR223 병합 커밋 `0ebca0e`의 Post-merge checks와 운영 `/learn/reading`·`/learn` 확인 결과를 PR223 리뷰 로그에 기록한다.
-- #215 L-6(마지막 단계): 브랜치 `codex/learn-6-song-intro` `60b4c44`(미푸시, main 병합 포함). 구현·로컬 리뷰 반영·main 병합 뒤 재검증 완료,
-  [검증](validation/2026-10-04-learn-6-song-intro.md). PR 생성(사용자 승인) → CI·리뷰 → 병합 승인. 병합되면 #208의 모든 단계가 끝난다(#208 종료 여부는 사용자에게 확인).
+- #215 L-6(마지막 단계): [PR224](reviews/PR-224.md) CI·hosted 리뷰 확인 → 병합 승인 요청. [검증](validation/2026-10-04-learn-6-song-intro.md).
+  병합되면 #208의 여섯 단계가 모두 끝난다. 그 뒤: Post-merge checks·운영 확인, phase Status를 DONE으로, #208 종료 여부를 사용자에게 확인.
+  CI에서 수정이 필요하면 임시 워크트리(`git worktree add -b l6-fix-local <경로> origin/codex/learn-6-song-intro`)나 이 브랜치에서 고친다.
 - **Codex 한도 소진 시 이어받기**(사용자 지시 2026-10-04: L-6은 `gpt-6.1-sol` 그대로, 한도가 차면 다음 계정으로 전환해 이어서 한다. 세션 중 22% → 3%):
   1. 워커가 멈추면 워킹 트리의 미커밋 변경을 지우지 않는다. `git status`, `git log main..HEAD`, `local-test-data/results/learn-6/progress.md`로 어디까지 됐는지 본다.
   2. 사용자가 Codex 계정을 바꾼 뒤(`codex logout` → `codex login`), Orca에서 새 터미널을 띄운다:
