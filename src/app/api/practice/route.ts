@@ -7,10 +7,9 @@ import type { PracticeHistoryItem, PracticeHistoryResponse } from '@/types/pract
 const PAGE_SIZE = 20
 const headers = { 'Cache-Control': 'private, no-store' }
 
-interface Cursor { asOf: Date; after?: { at: Date; sheetId: number } }
+interface Cursor { maxSessionId: number; after?: { at: Date; sheetId: number } }
 const encodeCursor = (cursor: Cursor) => Buffer.from(JSON.stringify(cursor)).toString('base64url')
-function readCursor(raw: string | null): Cursor {
-  if (raw === null) return { asOf: new Date() }
+function readCursor(raw: string): Cursor {
   if (!/^[A-Za-z0-9_-]{1,1024}$/.test(raw)) throw new Error('Invalid cursor')
   const value: unknown = JSON.parse(Buffer.from(raw, 'base64url').toString())
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid cursor')
@@ -21,28 +20,38 @@ function readCursor(raw: string | null): Cursor {
     if (!Number.isFinite(parsed.getTime()) || parsed.toISOString() !== input) throw new Error('Invalid cursor date')
     return parsed
   }
-  const asOf = date(source.asOf)
-  if (source.after === undefined) return { asOf }
+  const maxSessionId = source.maxSessionId
+  if (typeof maxSessionId !== 'number' || !Number.isInteger(maxSessionId) || maxSessionId < 0 || maxSessionId > 2147483647) throw new Error('Invalid record boundary')
+  if (source.after === undefined) return { maxSessionId }
   if (!source.after || typeof source.after !== 'object') throw new Error('Invalid cursor position')
   const after = source.after as Record<string, unknown>
   const at = date(after.at)
-  if (at > asOf || typeof after.sheetId !== 'number' || !Number.isInteger(after.sheetId) || after.sheetId < 1 || after.sheetId > 2147483647) throw new Error('Invalid cursor position')
-  return { asOf, after: { at, sheetId: after.sheetId } }
+  if (typeof after.sheetId !== 'number' || !Number.isInteger(after.sheetId) || after.sheetId < 1 || after.sheetId > 2147483647) throw new Error('Invalid cursor position')
+  return { maxSessionId, after: { at, sheetId: after.sheetId } }
 }
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
   const userId = session?.user?.id
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers })
-  let cursor: Cursor
-  try { cursor = readCursor(request.nextUrl.searchParams.get('cursor')) } catch {
-    return NextResponse.json({ error: 'Invalid cursor' }, { status: 400, headers })
+  let cursor: Cursor | undefined
+  const rawCursor = request.nextUrl.searchParams.get('cursor')
+  if (rawCursor !== null) {
+    try { cursor = readCursor(rawCursor) } catch {
+      return NextResponse.json({ error: 'Invalid cursor' }, { status: 400, headers })
+    }
   }
   try {
     const readable = { OR: [{ isPublic: true }, { userId }] }
+    if (!cursor) {
+      const committed = await prisma.practiceSession.aggregate({
+        where: { userId, sheetMusic: readable }, _max: { id: true },
+      })
+      cursor = { maxSessionId: committed._max.id ?? 0 }
+    }
     const groups = await prisma.practiceSession.groupBy({
       by: ['sheetMusicId'],
-      where: { userId, sheetMusic: readable, createdAt: { lte: cursor.asOf } },
+      where: { userId, sheetMusic: readable, id: { lte: cursor.maxSessionId } },
       _count: { _all: true },
       _sum: { durationSeconds: true },
       _max: { completedPercentage: true, createdAt: true },
@@ -71,7 +80,7 @@ export async function GET(request: NextRequest) {
     })
     const last = visible.at(-1)
     const nextCursor = groups.length > PAGE_SIZE && last?._max.createdAt
-      ? encodeCursor({ asOf: cursor.asOf, after: { at: last._max.createdAt, sheetId: last.sheetMusicId } }) : null
+      ? encodeCursor({ maxSessionId: cursor.maxSessionId, after: { at: last._max.createdAt, sheetId: last.sheetMusicId } }) : null
     return NextResponse.json({ cursor: encodeCursor(cursor), nextCursor, items } satisfies PracticeHistoryResponse, { headers })
   } catch {
     return NextResponse.json({ error: 'Could not load practice history' }, { status: 500, headers })

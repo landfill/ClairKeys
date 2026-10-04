@@ -60,3 +60,9 @@ DB를 mock한 단위 테스트와 API fixture E2E라는 한계는 유지된다. 
 Chrome에서 클릭하면 로그인 화면으로 이동하는 것을 확인했다. 비로그인 사용자에게 기록 화면이 노출되지 않는다.
 이 preview의 로그인 callbackUrl은 운영 `https://clairkeys.vercel.app/practice`로 구성되어 있어 실제 OAuth 로그인은 진행하지 않았다.
 로그인 후 기록·페이지 이동은 로컬 session/API fixture E2E로 검증했으며, 실제 운영 계정·DB 기록 확인은 미검증이다.
+
+## 최신 main 통합 — `b44bec8`
+
+승인·병합된 PR234의 main을 통합하고 D-097·D-098을 모두 유지했다. phase에서 이 구현 검증 원본으로 바로 연결하도록 링크를 추가했다.
+통합 트리의 전체 Jest 159 suites / 1571 tests, tsc, lint, phase 상대 링크와 `git diff --check` PASS.
+기록 화면·API 구현은 cursor 수정 뒤와 같아 로컬 history E2E를 중복 실행하지 않았고, 해당 12건의 결과와 새 PR CI로 확인한다.

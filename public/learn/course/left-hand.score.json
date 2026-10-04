@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "musicxml": "<score-partwise version=\"4.0\">\n  <work>\n    <work-title>왼손의 산책</work-title>\n  </work>\n  <identification>\n    <creator type=\"composer\">ClairKeys</creator>\n    <rights>Original exercise created for ClairKeys, 2026. No third-party melody or arrangement used.</rights>\n  </identification>\n  <part-list>\n    <score-part id=\"P1\">\n      <part-name>Piano</part-name>\n    </score-part>\n  </part-list>\n  <part id=\"P1\">\n    <measure number=\"1\">\n      <attributes>\n        <divisions>1</divisions>\n        <key>\n          <fifths>0</fifths>\n        </key>\n        <time>\n          <beats>4</beats>\n          <beat-type>4</beat-type>\n        </time>\n        <staves>2</staves>\n        <clef number=\"1\">\n          <sign>G</sign>\n          <line>2</line>\n        </clef>\n        <clef number=\"2\">\n          <sign>F</sign>\n          <line>4</line>\n        </clef>\n      </attributes>\n      <direction placement=\"above\">\n        <direction-type>\n          <metronome>\n            <beat-unit>quarter</beat-unit>\n            <per-minute>60</per-minute>\n          </metronome>\n        </direction-type>\n        <sound tempo=\"60\" />\n      </direction>\n      <note id=\"p1-m1-n1\">\n        <pitch>\n          <step>C</step>\n          <octave>3</octave>\n        </pitch>\n        <duration>1</duration>\n        <voice>2</voice>\n        <type>quarter</type>\n        <staff>2</staff>\n        <notations>\n          <technical>\n            <fingering>5</fingering>\n          </technical>\n        </notations>\n      </note>\n      <note id=\"p1-m1-n2\">\n        <pitch>\n          <step>D</step>\n          <octave>3</octave>\n        </pitch>\n        <duration>1</duration>\n        <voice>2</voice>\n        <type>quarter</type>\n        <staff>2</staff>\n        <notations>\n          <technical>\n            <fingering>4</fingering>\n          </technical>\n        </notations>\n      </note>\n      <note id=\"p1-m1-n3\">\n        <pitch>\n          <step>E</step>\n          <octave>3</octave>\n        </pitch>\n        <duration>1</duration>\n        <voice>2</voice>\n        <type>quarter</type>\n        <staff>2</staff>\n        <notations>\n          <technical>\n            <fingering>3</fingering>\n          </technical>\n        </notations>\n      </note>\n      <note id=\"p1-m1-n4\">\n        <pitch>\n          <step>F</step>\n          <octave>3</octave>\n        </pitch>\n        <duration>1</duration>\n        <voice>2</voice>\n        <type>quarter</type>\n        <staff>2</staff>\n        <notations>\n          <technical>\n            <fingering>2</fingering>\n          </technical>\n        </notations>\n      </note>\n    </measure>\n    <measure number=\"2\">\n      <note id=\"p1-m2-n1\">\n        <pitch>\n          <step>G</step>\n          <octave>3</octave>\n        </pitch>\n        <duration>1</duration>\n        <voice>2</voice>\n        <type>quarter</type>\n        <staff>2</staff>\n        <notations>\n          <technical>\n            <fingering>1</fingering>\n          </technical>\n        </notations>\n      </note>\n      <note id=\"p1-m2-n2\">\n        <pitch>\n          <step>E</step>\n          <octave>3</octave>\n        </pitch>\n        <duration>1</duration>\n        <voice>2</voice>\n        <type>quarter</type>\n        <staff>2</staff>\n        <notations>\n          <technical>\n            <fingering>3</fingering>\n          </technical>\n        </notations>\n      </note>\n      <note id=\"p1-m2-n3\">\n        <pitch>\n          <step>D</step>\n          <octave>3</octave>\n        </pitch>\n        <duration>1</duration>\n        <voice>2</voice>\n        <type>quarter</type>\n        <staff>2</staff>\n        <notations>\n          <technical>\n            <fingering>4</fingering>\n          </technical>\n        </notations>\n      </note>\n      <note id=\"p1-m2-n4\">\n        <pitch>\n          <step>C</step>\n          <octave>3</octave>\n        </pitch>\n        <duration>1</duration>\n        <voice>2</voice>\n        <type>quarter</type>\n        <staff>2</staff>\n        <notations>\n          <technical>\n            <fingering>5</fingering>\n          </technical>\n        </notations>\n      </note>\n      <barline location=\"right\">\n        <bar-style>light-heavy</bar-style>\n      </barline>\n    </measure>\n  </part>\n</score-partwise>",
+  "measures": [
+    {
+      "partIndex": 0,
+      "measureIndex": 0,
+      "start": 0.0,
+      "end": 4.0,
+      "startQuarter": 0.0,
+      "endQuarter": 4.0
+    },
+    {
+      "partIndex": 0,
+      "measureIndex": 1,
+      "start": 4.0,
+      "end": 8.0,
+      "startQuarter": 4.0,
+      "endQuarter": 8.0
+    }
+  ],
+  "notes": [
+    {
+      "xmlId": "p1-m1-n1",
+      "noteIndex": 0
+    },
+    {
+      "xmlId": "p1-m1-n2",
+      "noteIndex": 1
+    },
+    {
+      "xmlId": "p1-m1-n3",
+      "noteIndex": 2
+    },
+    {
+      "xmlId": "p1-m1-n4",
+      "noteIndex": 3
+    },
+    {
+      "xmlId": "p1-m2-n1",
+      "noteIndex": 4
+    },
+    {
+      "xmlId": "p1-m2-n2",
+      "noteIndex": 5
+    },
+    {
+      "xmlId": "p1-m2-n3",
+      "noteIndex": 6
+    },
+    {
+      "xmlId": "p1-m2-n4",
+      "noteIndex": 7
+    }
+  ],
+  "timingReferenceBpm": 60.0,
+  "tempoSource": "score"
+}
