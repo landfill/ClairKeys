@@ -64,10 +64,13 @@ export default function HandsKeyboard() {
           <SimplePianoKeyboard layout={layout} learningKeys={learningKeys} activeKeys={new Set(selected === null ? [] : [selected])} onKeyPress={press} />
         </div>
       </div>
+      <p role="status" aria-label="소리 재생 상태" aria-live="polite" aria-atomic="true"
+        className={audioFailed ? 'text-sm text-ink-muted' : 'sr-only'}>
+        {audioFailed ? '소리를 재생하지 못했어요. 건반 이름과 손가락 번호는 계속 확인할 수 있어요.' : ''}
+      </p>
       <p role="status" aria-label="누른 건반" aria-live="polite" aria-atomic="true" className="text-sm text-ink">
         <span key={pressCount}>{note ? `${note.middleC ? '가운데 도' : note.name} · ${note.octave}옥타브 · ${finger ? `${HAND_NAMES[hand]} ${finger}번 ${FINGER_NAMES[finger]}` : '현재 다섯 손가락 자리 밖의 음이에요.'}` : '건반을 누르면 계이름과 손가락 번호가 나와요.'}</span>
       </p>
-      {audioFailed && <p className="text-sm text-ink-muted">소리를 재생하지 못했어요. 건반 이름과 손가락 번호는 계속 확인할 수 있어요.</p>}
     </div>
   )
 }
