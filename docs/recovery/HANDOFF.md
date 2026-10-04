@@ -6,7 +6,7 @@ Last updated: 2026-10-03 KST
 
 ## Current phase
 
-**이슈 [#222](https://github.com/landfill/ClairKeys/issues/222) — `console-quiet` 악보 테스트의 CI 반복 실패. 원인 확인·수정·로컬 검증 완료, PR 생성 전.**
+**이슈 [#222](https://github.com/landfill/ClairKeys/issues/222) — `console-quiet` 악보 테스트의 CI 반복 실패. 원인 확인·수정·로컬 검증 완료, [PR230](reviews/PR-230.md) 리뷰 중.**
 브랜치 `codex/issue-222-console-quiet-flake` `75904df`(미푸시), [검증](validation/2026-10-04-issue-222-console-quiet-flake.md). phase 문서 없음(테스트 한 파일 변경).
 #208 초보자 학습 영역은 2026-10-04에 종료했다([phase](phases/LEARN-beginner-learning.md) DONE).
 
@@ -16,7 +16,7 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
-- #222: PR 생성(사용자 승인) → PR CI에서 재시도 없이 통과하는지 확인 → 병합 승인. 원인은 서비스 워커가 탭을 제어한 뒤 애니메이션 요청을 직접 보내 `page.route`를 지나친 것.
+- #222: [PR230](reviews/PR-230.md) CI에서 `console-quiet`이 재시도 없이 통과하는지(`flaky` 0건) 확인 → 병합 승인 요청 → 병합 후 Post-merge checks에서도 같은지 확인.
 - 그 밖의 열린 후보(모두 GitHub 이슈, 미착수):
   [#225](https://github.com/landfill/ClairKeys/issues/225) 용어 사전, [#226](https://github.com/landfill/ClairKeys/issues/226) 연습 진도 페이지(범위 결정 필요),
   [#227](https://github.com/landfill/ClairKeys/issues/227) 첫 곡 코스(선행: OMR을 거치지 않는 입력 경로),
