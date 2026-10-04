@@ -4,10 +4,12 @@ import { useId, useMemo } from 'react'
 import Link from 'next/link'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import { canonicalToFallingNotes } from '@/utils/dataConverter'
+import { useScoreProvenance } from '@/hooks/useScoreProvenance'
 import { analyzeSongIntro } from '@/lib/learn/songIntro'
 
 const linkClass = 'rounded-sm text-accent hover:underline'
-export default function SongIntro({ data }: { data: CanonicalAnimationData }) {
+export default function SongIntro({ data, scoreUrl }: { data: CanonicalAnimationData; scoreUrl?: string }) {
+  const provenance = useScoreProvenance(scoreUrl)
   const headingId = useId()
   const intro = useMemo(() => analyzeSongIntro(data, canonicalToFallingNotes(data)), [data])
   const range = intro.range.value
@@ -38,6 +40,16 @@ export default function SongIntro({ data }: { data: CanonicalAnimationData }) {
           <div className="mt-2"><Link href="/learn/practice" className={linkClass}>연습 방법에서 빠르기와 연습 알아보기</Link></div>
         </dd>
       </div>
+      {provenance.meter && <div>
+        <dt className="font-medium text-ink-muted">박자</dt>
+        <dd className="mt-1 text-ink">{provenance.meter}<p className="mt-1 text-ink-muted">원본 악보 기준</p>
+          <Link href="/learn/reading#meters" className={`mt-2 inline-flex min-h-11 items-center ${linkClass}`}>악보 읽기에서 박자표 익히기</Link>
+        </dd>
+      </div>}
+      {provenance.key && <div>
+        <dt className="font-medium text-ink-muted">조표</dt>
+        <dd className="mt-1 text-ink">{provenance.key}<p className="mt-1 text-ink-muted">원본 악보 기준</p></dd>
+      </div>}
     </dl>
   </section>
 }
