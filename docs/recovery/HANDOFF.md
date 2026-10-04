@@ -17,7 +17,6 @@ Last updated: 2026-10-03 KST
 
 - #213(L-4): L-4a 음높이는 [PR220](reviews/PR-220.md) 병합(`5d54bec`, 사용자의 사전 병합 허용 — 그 허용은 PR220 하나였고 소진됐다).
   L-4b 길이·박자는 L-5 PR 뒤에 `codex/learn-4b-reading-rhythm`에서 시작하고 그때 `reading`의 `available`을 켠다. 새 학습 페이지 E2E는 PR 전에 Firefox로도 돌린다.
-- PR223 병합 커밋 `0ebca0e`의 Post-merge checks와 운영 `/learn/reading`·`/learn` 확인 결과를 PR223 리뷰 로그에 기록한다.
 - #215 L-6(마지막 단계): [PR224](reviews/PR-224.md) CI·hosted 리뷰 확인 → 병합 승인 요청. [검증](validation/2026-10-04-learn-6-song-intro.md).
   병합되면 #208의 여섯 단계가 모두 끝난다. 그 뒤: Post-merge checks·운영 확인, phase Status를 DONE으로, #208 종료 여부를 사용자에게 확인.
   CI에서 수정이 필요하면 임시 워크트리(`git worktree add -b l6-fix-local <경로> origin/codex/learn-6-song-intro`)나 이 브랜치에서 고친다.
