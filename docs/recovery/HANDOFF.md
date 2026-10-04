@@ -14,7 +14,7 @@ PR231 병합 후 확인 완료. E2E flaky 1건과 나머지 결과는 [PR231 로
 
 ## Next action
 
-- #226: 사용자 승인 범위의 API·로그인 전용 페이지 구현과 로컬 검증 완료([검증](validation/2026-10-04-issue-226-practice-history.md)). [PR235](reviews/PR-235.md) P2를 기준 시각+cursor 조회로 수정·검증·회신·resolve. 새 CI·재리뷰 확인.
+- #226: 사용자 승인 범위의 API·로그인 전용 페이지 구현과 로컬 검증 완료([검증](validation/2026-10-04-issue-226-practice-history.md)). [PR235](reviews/PR-235.md) P2를 기준 시각+cursor 조회로 수정·검증·회신·resolve. 최신 main 통합·검증 링크 리뷰도 처리. 최종 CI·재리뷰 확인.
 - #227: 기존 converter를 저작 시점에 재사용한 창작 3곡·공개 코스 구현 및 로컬 검증 완료([검증](validation/2026-10-04-issue-227-first-course.md)). [PR233](reviews/PR-233.md)의 오디오 시작 실패 복구와 내장곡 박자·조표 연결 제출, 최종 CI·리뷰 확인.
 - #228: 공유 악보 캐시에서 원본 박자·조표만 읽는 구현·로컬 검증 완료([검증](validation/2026-10-04-issue-228-score-provenance.md)). [PR234](reviews/PR-234.md) 승인 후 병합·이슈 종료·브랜치 정리. Post-merge checks 결과 확인.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
