@@ -11,13 +11,15 @@ const duration = (seconds: number) => `${Math.floor(seconds / 60)}분 ${seconds 
 type LoadState = { status: 'loading' } | { status: 'error'; expired: boolean } | { status: 'ready'; data: PracticeHistoryResponse }
 
 function Records() {
-  const [page, setPage] = useState(1)
+  const [cursors, setCursors] = useState<(string | null)[]>([null])
+  const cursor = cursors[cursors.length - 1]
+  const page = cursors.length
   const [attempt, setAttempt] = useState(0)
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   useEffect(() => {
     const controller = new AbortController()
     setState({ status: 'loading' })
-    void fetch(`/api/practice?page=${page}`, { cache: 'no-store', signal: controller.signal })
+    void fetch(`/api/practice${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`, { cache: 'no-store', signal: controller.signal })
       .then(async response => {
         if (!response.ok) {
           if (!controller.signal.aborted) setState({ status: 'error', expired: response.status === 401 })
@@ -28,10 +30,10 @@ function Records() {
       })
       .catch(() => { if (!controller.signal.aborted) setState({ status: 'error', expired: false }) })
     return () => controller.abort()
-  }, [page, attempt])
+  }, [cursor, attempt])
 
   return <>
-    <p className="mb-5 text-sm text-ink-muted">10초 이상 실제로 재생한 연습 기록을 모았어요. 최고 재생 위치는 곡에서 가장 멀리 재생한 지점이에요.</p>
+    <p className="mb-5 text-sm text-ink-muted">10초 이상 실제로 재생한 연습 기록을 모았어요. 최고 재생 위치는 곡에서 가장 멀리 재생한 지점이에요. 새 기록은 새로고침하면 반영돼요.</p>
     {state.status === 'loading' ? <div role="status" aria-label="연습 기록 불러오는 중" className="py-10"><Loading /></div>
       : state.status === 'error' ? <StatusState tone="error" title="연습 기록을 불러오지 못했습니다" detail={state.expired ? '다시 로그인하면 내 기록을 볼 수 있어요.' : '잠시 후 다시 시도해 주세요.'}
         action={state.expired ? <Link className={linkClass} href="/auth/signin?callbackUrl=%2Fpractice">다시 로그인</Link> : <Button onClick={() => setAttempt(value => value + 1)}>다시 시도</Button>} />
@@ -52,8 +54,8 @@ function Records() {
             </ul>
           </>}
     <nav aria-label="연습 기록 페이지" className="mt-6 flex flex-wrap justify-between gap-3">
-      <Button variant="outline" disabled={page === 1 || state.status === 'loading'} onClick={() => setPage(value => value - 1)}>이전 페이지</Button>
-      <Button variant="outline" disabled={state.status !== 'ready' || !state.data.hasMore} onClick={() => setPage(value => value + 1)}>다음 페이지</Button>
+      <Button variant="outline" disabled={page === 1 || state.status === 'loading'} onClick={() => setCursors(value => value.slice(0, -1))}>이전 페이지</Button>
+      <Button variant="outline" disabled={state.status !== 'ready' || !state.data.nextCursor} onClick={() => { if (state.status === 'ready' && state.data.nextCursor) setCursors(value => [...value.slice(0, -1), state.data.cursor, state.data.nextCursor]) }}>다음 페이지</Button>
     </nav>
   </>
 }

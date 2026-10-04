@@ -8,7 +8,7 @@ export interface PracticeHistoryItem {
   lastPracticedAt: string | null
 }
 export interface PracticeHistoryResponse {
-  page: number
-  hasMore: boolean
+  cursor: string
+  nextCursor: string | null
   items: PracticeHistoryItem[]
 }

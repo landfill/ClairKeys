@@ -7,25 +7,50 @@ import type { PracticeHistoryItem, PracticeHistoryResponse } from '@/types/pract
 const PAGE_SIZE = 20
 const headers = { 'Cache-Control': 'private, no-store' }
 
+interface Cursor { asOf: Date; after?: { at: Date; sheetId: number } }
+const encodeCursor = (cursor: Cursor) => Buffer.from(JSON.stringify(cursor)).toString('base64url')
+function readCursor(raw: string | null): Cursor {
+  if (raw === null) return { asOf: new Date() }
+  if (!/^[A-Za-z0-9_-]{1,1024}$/.test(raw)) throw new Error('Invalid cursor')
+  const value: unknown = JSON.parse(Buffer.from(raw, 'base64url').toString())
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid cursor')
+  const source = value as Record<string, unknown>
+  const date = (input: unknown) => {
+    if (typeof input !== 'string') throw new Error('Invalid cursor date')
+    const parsed = new Date(input)
+    if (!Number.isFinite(parsed.getTime()) || parsed.toISOString() !== input) throw new Error('Invalid cursor date')
+    return parsed
+  }
+  const asOf = date(source.asOf)
+  if (source.after === undefined) return { asOf }
+  if (!source.after || typeof source.after !== 'object') throw new Error('Invalid cursor position')
+  const after = source.after as Record<string, unknown>
+  const at = date(after.at)
+  if (at > asOf || typeof after.sheetId !== 'number' || !Number.isInteger(after.sheetId) || after.sheetId < 1 || after.sheetId > 2147483647) throw new Error('Invalid cursor position')
+  return { asOf, after: { at, sheetId: after.sheetId } }
+}
+
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
   const userId = session?.user?.id
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers })
-  const rawPage = request.nextUrl.searchParams.get('page') ?? '1'
-  const page = Number(rawPage)
-  if (!/^[1-9]\d*$/.test(rawPage) || !Number.isSafeInteger(page) || page > 10000) {
-    return NextResponse.json({ error: 'Invalid page' }, { status: 400, headers })
+  let cursor: Cursor
+  try { cursor = readCursor(request.nextUrl.searchParams.get('cursor')) } catch {
+    return NextResponse.json({ error: 'Invalid cursor' }, { status: 400, headers })
   }
   try {
     const readable = { OR: [{ isPublic: true }, { userId }] }
     const groups = await prisma.practiceSession.groupBy({
       by: ['sheetMusicId'],
-      where: { userId, sheetMusic: readable },
+      where: { userId, sheetMusic: readable, createdAt: { lte: cursor.asOf } },
       _count: { _all: true },
       _sum: { durationSeconds: true },
       _max: { completedPercentage: true, createdAt: true },
       orderBy: [{ _max: { createdAt: 'desc' } }, { sheetMusicId: 'desc' }],
-      skip: (page - 1) * PAGE_SIZE,
+      having: cursor.after ? { OR: [
+        { createdAt: { _max: { lt: cursor.after.at } } },
+        { AND: [{ createdAt: { _max: { equals: cursor.after.at } } }, { sheetMusicId: { lt: cursor.after.sheetId } }] },
+      ] } : undefined,
       take: PAGE_SIZE + 1,
     })
     const visible = groups.slice(0, PAGE_SIZE)
@@ -44,7 +69,10 @@ export async function GET(request: NextRequest) {
         lastPracticedAt: group._max.createdAt?.toISOString() ?? null,
       }] : []
     })
-    return NextResponse.json({ page, hasMore: groups.length > PAGE_SIZE, items } satisfies PracticeHistoryResponse, { headers })
+    const last = visible.at(-1)
+    const nextCursor = groups.length > PAGE_SIZE && last?._max.createdAt
+      ? encodeCursor({ asOf: cursor.asOf, after: { at: last._max.createdAt, sheetId: last.sheetMusicId } }) : null
+    return NextResponse.json({ cursor: encodeCursor(cursor), nextCursor, items } satisfies PracticeHistoryResponse, { headers })
   } catch {
     return NextResponse.json({ error: 'Could not load practice history' }, { status: 500, headers })
   }

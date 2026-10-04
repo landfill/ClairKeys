@@ -11,13 +11,13 @@ it('does not request records for a guest', () => {
   expect(fetch).not.toHaveBeenCalled()
 })
 it('explains an empty history and offers a way to choose a song', async () => {
-  ;(fetch as jest.Mock).mockResolvedValue({ ok: true, json: async () => ({ page: 1, hasMore: false, items: [] }) })
+  ;(fetch as jest.Mock).mockResolvedValue({ ok: true, json: async () => ({ cursor: 'snapshot-start', nextCursor: null, items: [] }) })
   render(<PracticeHistory />)
   expect(await screen.findByText('아직 연습 기록이 없습니다')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: '연습할 곡 찾기' })).toHaveAttribute('href', '/explore')
 })
 it('hides old account data immediately when the session changes', async () => {
-  ;(fetch as jest.Mock).mockResolvedValue({ ok: true, json: async () => ({ page: 1, hasMore: false, items: [{ sheetId: 1, title: '이전 계정의 곡', composer: '작곡가', count: 1, totalSeconds: 30, bestPercentage: 20, lastPracticedAt: '2026-10-04T01:00:00Z' }] }) })
+  ;(fetch as jest.Mock).mockResolvedValue({ ok: true, json: async () => ({ cursor: 'snapshot-start', nextCursor: null, items: [{ sheetId: 1, title: '이전 계정의 곡', composer: '작곡가', count: 1, totalSeconds: 30, bestPercentage: 20, lastPracticedAt: '2026-10-04T01:00:00Z' }] }) })
   const { rerender } = render(<PracticeHistory />)
   await screen.findByText('이전 계정의 곡')
   ;(fetch as jest.Mock).mockImplementation(() => new Promise(() => {}))

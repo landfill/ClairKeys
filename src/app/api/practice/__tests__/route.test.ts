@@ -20,28 +20,45 @@ it('requires a session without touching the database', async () => {
 it('aggregates only the reader and sheets they can still access, returning no-store', async () => {
   const res = await GET(request())
   expect(res.headers.get('Cache-Control')).toBe('private, no-store')
-  expect(groupBy).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: 'reader', sheetMusic: { OR: [{ isPublic: true }, { userId: 'reader' }] } }, by: ['sheetMusicId'], take: 21, skip: 0 }))
+  expect(groupBy).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: 'reader', sheetMusic: { OR: [{ isPublic: true }, { userId: 'reader' }] }, createdAt: { lte: expect.any(Date) } }, by: ['sheetMusicId'], take: 21 }))
   expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { id: { in: [1] }, OR: [{ isPublic: true }, { userId: 'reader' }] } }))
-  expect(await res.json()).toEqual({ page: 1, hasMore: false, items: [{ sheetId: 1, title: '내 연습곡', composer: '작곡가', count: 3, totalSeconds: 125, bestPercentage: 42, lastPracticedAt: '2026-10-04T01:00:00.000Z' }] })
+  expect(await res.json()).toEqual({ cursor: expect.any(String), nextCursor: null, items: [{ sheetId: 1, title: '내 연습곡', composer: '작곡가', count: 3, totalSeconds: 125, bestPercentage: 42, lastPracticedAt: '2026-10-04T01:00:00.000Z' }] })
 })
 it('drops a sheet whose access disappeared between grouping and title lookup', async () => {
   findMany.mockResolvedValue([])
   expect((await (await GET(request())).json()).items).toEqual([])
 })
-it('paginates deterministically without exposing the look-ahead item', async () => {
-  groupBy.mockResolvedValue(Array.from({ length: 21 }, (_, i) => group(i + 1)))
-  findMany.mockResolvedValue(Array.from({ length: 20 }, (_, i) => ({ id: i + 1, title: '곡', composer: '저자' })))
-  const data = await (await GET(request('?page=2'))).json()
-  expect(data.items).toHaveLength(20); expect(data.hasMore).toBe(true); expect(data.page).toBe(2)
-  expect(groupBy).toHaveBeenCalledWith(expect.objectContaining({ skip: 20, take: 21, orderBy: [{ _max: { createdAt: 'desc' } }, { sheetMusicId: 'desc' }] }))
+it('anchors subsequent pages to the same snapshot and aggregate date/id cursor without offsets', async () => {
+  groupBy.mockResolvedValueOnce(Array.from({ length: 21 }, (_, i) => group(100 - i)))
+  findMany.mockResolvedValueOnce(Array.from({ length: 20 }, (_, i) => ({ id: 100 - i, title: '곡', composer: '저자' })))
+  const first = await (await GET(request())).json()
+  expect(first.items).toHaveLength(20)
+  const next = JSON.parse(Buffer.from(first.nextCursor, 'base64url').toString())
+  const start = JSON.parse(Buffer.from(first.cursor, 'base64url').toString())
+  expect(next.asOf).toBe(start.asOf)
+  expect(next.after).toEqual({ at: '2026-10-04T01:00:00.000Z', sheetId: 81 })
+  groupBy.mockResolvedValueOnce([])
+  await GET(request(`?cursor=${first.nextCursor}`))
+  const secondQuery = groupBy.mock.calls[1][0]
+  expect(secondQuery).not.toHaveProperty('skip')
+  expect(secondQuery.where.createdAt.lte).toEqual(new Date(start.asOf))
+  expect(secondQuery.having).toEqual({ OR: [
+    { createdAt: { _max: { lt: new Date(next.after.at) } } },
+    { AND: [{ createdAt: { _max: { equals: new Date(next.after.at) } } }, { sheetMusicId: { lt: 81 } }] },
+  ] })
+  expect(secondQuery.orderBy).toEqual([{ _max: { createdAt: 'desc' } }, { sheetMusicId: 'desc' }])
+  await GET(request(`?cursor=${first.cursor}`))
+  expect(groupBy.mock.calls[2][0].where.createdAt.lte).toEqual(new Date(start.asOf))
+  expect(groupBy.mock.calls[2][0].having).toBeUndefined()
 })
-it.each(['0', '-1', '1.5', 'abc', '10001'])('rejects invalid page %s', async value => {
-  expect((await GET(request(`?page=${value}`))).status).toBe(400)
+const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url')
+it.each(['', 'abc', encode({ asOf: 'invalid' }), encode({ asOf: '2026-10-04T01:00:00.000Z', after: { at: '2026-10-04T02:00:00.000Z', sheetId: 1 } }), encode({ asOf: '2026-10-04T01:00:00.000Z', after: { at: '2026-10-04T00:00:00.000Z', sheetId: -1 } })])('rejects invalid cursor %s', async value => {
+  expect((await GET(request(`?cursor=${value}`))).status).toBe(400)
   expect(groupBy).not.toHaveBeenCalled()
 })
 it('returns an empty page without querying titles', async () => {
   groupBy.mockResolvedValue([])
-  expect(await (await GET(request())).json()).toEqual({ page: 1, hasMore: false, items: [] })
+  expect(await (await GET(request())).json()).toEqual({ cursor: expect.any(String), nextCursor: null, items: [] })
   expect(findMany).not.toHaveBeenCalled()
 })
 it('contains database errors in an explicit failure response', async () => {
