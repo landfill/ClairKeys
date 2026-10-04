@@ -16,7 +16,7 @@ Last updated: 2026-10-03 KST
 ## Next action
 
 - #213(L-4): 브랜치 `codex/learn-4-reading`. 두 PR로 나눈다: L-4a 음높이(구현 중), L-4b 길이·박자. 악보 그림은 OSMD로 렌더링(phase Progress).
-  L-4a 구현·main 병합 완료(`eb39e0a`, 미푸시), 로컬 리뷰 중. `reading`의 `available`은 L-4b에서 켠다(지도 설명이 길이·박자까지 약속한다).
+  L-4a 구현·main 병합·로컬 리뷰 반영 완료(`697301d`), [검증](validation/2026-10-04-learn-4a-reading-pitch.md), PR 생성·CI 확인 중. `reading`의 `available`은 L-4b에서 켠다(지도 설명이 길이·박자까지 약속한다).
   사용자 지시(2026-10-04): L-4a PR은 준비되면 만들고, 통과하면 예외적으로 승인 없이 병합한다(이 PR 하나에 한함). 음악 사실 주장은 표준 교재와 대조한 표를 검증 기록에 남긴다.
 - #214(L-5, 선행 L-1·L-3 충족)는 L-4a PR 뒤에 시작한다.
 - 그 뒤 #215(L-6, 선행 L-2·L-4·L-5).
