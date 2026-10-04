@@ -204,7 +204,7 @@ export interface SimplePianoKeyboardProps {
   /** 재생용 흰 건반의 장식용 계이름 표시. */
   showNoteNames?: boolean;
   /** 학습용 이름을 주면 포커스 가능한 토큰 기반 버튼으로 표시한다. */
-  learningKeys?: ReadonlyMap<number, { label: string; accessibleName: string }>;
+  learningKeys?: ReadonlyMap<number, { label: string; accessibleName: string; disabled?: boolean }>;
   /** Piano keyboard layout */
   layout: KeyLayout;
   /** Currently pressed/highlighted keys */
