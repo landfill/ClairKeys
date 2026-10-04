@@ -6,7 +6,7 @@ Last updated: 2026-10-04 KST
 
 ## Current phase
 
-**이슈 [#229](https://github.com/landfill/ClairKeys/issues/229) 미사용 `AnimationPlayer` 정리 — 브랜치 `codex/issue-229-unused-animation-player`에 로컬 커밋 `36b4efa`(미푸시), PR 생성 승인 대기.**
+**이슈 [#229](https://github.com/landfill/ClairKeys/issues/229) 미사용 `AnimationPlayer` 정리 — [PR231](reviews/PR-231.md) CI·리뷰 확인 중, 병합은 사용자 승인 대기.**
 삭제 근거와 로컬 검증은 [검증](validation/2026-10-04-issue-229-unused-animation-player.md).
 이슈 [#222](https://github.com/landfill/ClairKeys/issues/222)는 [PR230](reviews/PR-230.md) 병합(2026-10-04) 뒤 Post-merge checks의 E2E 재시도 수 확인 대기. 원인과 수정은 [검증](validation/2026-10-04-issue-222-console-quiet-flake.md). #208 초보자 학습 영역은 2026-10-04에 종료했다([phase](phases/LEARN-beginner-learning.md) DONE).
 
@@ -16,7 +16,7 @@ Last updated: 2026-10-04 KST
 
 ## Next action
 
-- #229: 사용자 승인 후 브랜치를 push하고 PR을 만든다(`Closes #229`). 6개 브라우저 E2E와 production build는 PR CI가 맡는다.
+- #229: PR231의 CI와 hosted 리뷰를 확인해 리뷰 로그에 남기고, actionable 지적은 수정한다. 병합은 사용자 명시 승인 뒤에만 한다.
 - #222: 병합 커밋 `166ad3f`의 Post-merge checks에서 E2E 재시도가 0건인지 확인하고(PR CI에 이은 두 번째 표본) 결과를 PR230 리뷰 로그와 이슈 코멘트에 남긴다.
 - 그 밖의 열린 후보(모두 GitHub 이슈, 미착수):
   [#225](https://github.com/landfill/ClairKeys/issues/225) 용어 사전, [#226](https://github.com/landfill/ClairKeys/issues/226) 연습 진도 페이지(범위 결정 필요),
