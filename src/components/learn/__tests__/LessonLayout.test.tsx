@@ -21,7 +21,7 @@ describe('LessonLayout', () => {
     expect(screen.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
     expect(screen.getByRole('link', { name: neighbour })).toHaveAttribute('href', href)
     expect(screen.queryByRole('link', { name: absent })).toBeNull()
-    expect(screen.getAllByRole('link')).toHaveLength(2)
+    expect(screen.getAllByRole('link')).toHaveLength(3)
   })
 
   it('names the previous and next links for reading', () => {
@@ -37,10 +37,10 @@ describe('LessonLayout', () => {
     expect(screen.getByRole('link', { name: '다음 레슨: 연습 방법' })).toHaveAttribute('href', '/learn/practice')
   })
 
-  it('keeps only the map link when every neighbour is unavailable', () => {
+  it('keeps map and glossary links when every neighbour is unavailable', () => {
     LEARN_LESSONS.forEach(lesson => { lesson.available = false })
     render(<LessonLayout lessonId="reading">레슨 본문</LessonLayout>)
-    expect(screen.getAllByRole('link')).toHaveLength(1)
+    expect(screen.getAllByRole('link')).toHaveLength(2)
     expect(screen.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
   })
 })

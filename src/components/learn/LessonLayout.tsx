@@ -21,6 +21,7 @@ export default function LessonLayout({ lessonId, children }: LessonLayoutProps) 
         <nav aria-label="레슨 이동" className="mt-8 flex flex-wrap gap-4 border-t border-rule pt-4 text-sm">
           {previous && <Link href={previous.href} className="rounded-sm text-accent hover:underline">이전 레슨: {previous.title}</Link>}
           <Link href="/learn" className="rounded-sm text-accent hover:underline">단계 지도로 돌아가기</Link>
+          <Link href="/learn/glossary" className="rounded-sm text-accent hover:underline">용어 사전</Link>
           {next && <Link href={next.href} className="rounded-sm text-accent hover:underline">다음 레슨: {next.title}</Link>}
         </nav>
       </Container>

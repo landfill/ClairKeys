@@ -27,6 +27,7 @@ export default function LearnPage() {
             </li>
           ))}
         </ol>
+        <p className="mt-6 text-sm text-ink-muted">낯선 말이 있다면 <Link href="/learn/glossary" className="inline-flex min-h-11 items-center rounded-sm text-accent hover:underline">용어 사전</Link>에서 찾아보세요.</p>
       </Container>
     </MainLayout>
   )
