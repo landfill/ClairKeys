@@ -14,7 +14,7 @@ PR231 병합 후 확인 완료. E2E flaky 1건과 나머지 결과는 [PR231 로
 
 ## Next action
 
-- #225: [PR232](reviews/PR-232.md) 현재 head CI·리뷰 대응 후 병합 승인 요청.
+- #225: [PR232](reviews/PR-232.md) 현재 head CI·리뷰·preview 확인 완료, 사용자에게 병합 승인 요청 후 답변 대기.
 - #226: 사용자 범위 결정 후 구현. 권고는 로그인 사용자의 기존 곡별 연습 기록 모음(열람/실력/레슨 완료 판정 없음).
 - #227: 기존 converter를 저작 시점에 재사용한 창작 3곡·공개 코스 구현 및 로컬 검증 완료([검증](validation/2026-10-04-issue-227-first-course.md)). [PR233](reviews/PR-233.md) 생성 후 CI·리뷰 대응.
 - #228: 공유 악보 캐시에서 원본 박자·조표만 읽는 구현·로컬 검증 완료([검증](validation/2026-10-04-issue-228-score-provenance.md)). [PR234](reviews/PR-234.md) 생성 후 CI·리뷰 대응.
