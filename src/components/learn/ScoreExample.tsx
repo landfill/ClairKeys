@@ -52,12 +52,24 @@ export default function ScoreExample({ example }: { example: ReadingExample }) {
         return { x, y, width: Math.max(...corners.map(point => point.x)) - x, height: Math.max(...corners.map(point => point.y)) - y }
       })
       if (!bounds.length) bounds.push(svg.getBBox())
-      const left = Math.min(...bounds.map(box => box.x)) - 2
-      const top = Math.min(...bounds.map(box => box.y)) - 2
-      const artWidth = Math.max(...bounds.map(box => box.x + box.width)) + 2 - left
-      const artHeight = Math.max(...bounds.map(box => box.y + box.height)) + 2 - top
-      if (!(artWidth > 0 && artHeight > 0)) throw new Error('OSMD score example bounds are empty')
-      const scale = Math.min(Math.max(1, frameBox.clientWidth - 24) / artWidth, Math.max(1, frameBox.clientHeight - 24) / artHeight)
+      const drawingLeft = Math.min(...bounds.map(box => box.x))
+      const drawingTop = Math.min(...bounds.map(box => box.y))
+      const drawingWidth = Math.max(...bounds.map(box => box.x + box.width)) - drawingLeft
+      const drawingHeight = Math.max(...bounds.map(box => box.y + box.height)) - drawingTop
+      if (!(drawingWidth > 0 && drawingHeight > 0)) throw new Error('OSMD score example bounds are empty')
+      const availableWidth = Math.max(1, frameBox.clientWidth - 24)
+      const availableHeight = Math.max(1, frameBox.clientHeight - 24)
+      // 사방 8 SVG 단위: 엔진별 경계 차이와 선 두께를 덮는다.
+      // 축소 시에도 4 화면 px를 확보하도록, 양쪽 여백을 뺀 크기로 역산한다.
+      const screenPadding = 4
+      const padding = Math.max(8,
+        screenPadding * drawingWidth / Math.max(1, availableWidth - screenPadding * 2),
+        screenPadding * drawingHeight / Math.max(1, availableHeight - screenPadding * 2))
+      const left = drawingLeft - padding
+      const top = drawingTop - padding
+      const artWidth = drawingWidth + padding * 2
+      const artHeight = drawingHeight + padding * 2
+      const scale = Math.min(availableWidth / artWidth, availableHeight / artHeight)
       const width = artWidth * scale
       const height = artHeight * scale
       svg.setAttribute('viewBox', `${left} ${top} ${artWidth} ${artHeight}`)

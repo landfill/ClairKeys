@@ -51,8 +51,22 @@ it('fits the actual drawing bounds at readable size inside a stable placeholder'
   await waitFor(() => expect(image).toHaveAttribute('aria-busy', 'false'))
   expect(image.className).toBe(placeholderClass)
   const svg = container.querySelector('svg')!
-  expect(svg).toHaveAttribute('viewBox', '8 18 184 68')
+  expect(svg).toHaveAttribute('viewBox', '2 12 196 80')
   expect(parseFloat(svg.style.height)).toBe(104)
   expect(parseFloat(svg.style.width)).toBeLessThanOrEqual(296)
   expect(svg).toHaveAttribute('preserveAspectRatio', 'xMidYMid meet')
+})
+
+it('preserves at least four screen pixels of padding when a narrow frame scales the drawing down', async () => {
+  jest.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(100)
+  jest.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(128)
+  const { container } = render(<ScoreExample example={READING_EXAMPLES[0]} />)
+  await waitFor(() => expect(screen.getByRole('img')).toHaveAttribute('aria-busy', 'false'))
+  const svg = container.querySelector('svg')!
+  const [left, top, width, height] = svg.getAttribute('viewBox')!.split(' ').map(Number)
+  const scale = parseFloat(svg.style.width) / width
+  for (const inset of [10 - left, 20 - top, left + width - 190, top + height - 84]) {
+    expect(inset * scale).toBeGreaterThanOrEqual(4 - 0.000001)
+  }
+  expect(parseFloat(svg.style.width)).toBeLessThanOrEqual(76)
 })

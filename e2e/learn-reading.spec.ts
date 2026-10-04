@@ -163,6 +163,7 @@ for (const width of [1280, 320, 390]) {
           heightRatio: rect.height / box.height,
           horizontalBalance: Math.abs((rect.left - box.left) - (box.right - rect.right)),
           verticalBalance: Math.abs((rect.top - box.top) - (box.bottom - rect.bottom)),
+          musicInset: music.length ? Math.min(...music.flatMap(bounds => [bounds.left - rect.left, rect.right - bounds.right, bounds.top - rect.top, rect.bottom - bounds.bottom])) : 0,
           musicFitsSvg: music.length > 0 && music.every(bounds => bounds.left >= rect.left - 1 && bounds.right <= rect.right + 1 && bounds.top >= rect.top - 1 && bounds.bottom <= rect.bottom + 1),
         }
       }))
@@ -174,6 +175,8 @@ for (const width of [1280, 320, 390]) {
         expect(item.horizontalBalance).toBeLessThanOrEqual(2)
         expect(item.verticalBalance).toBeLessThanOrEqual(2)
         expect(item.musicFitsSvg).toBe(true)
+        // 제품의 최소 4px 여백의 절반. 엔진 차이가 있어도 가장자리에 닿지 않는다.
+        expect(item.musicInset).toBeGreaterThanOrEqual(2)
       })
     } finally { release(); await page.unrouteAll({ behavior: 'ignoreErrors' }) }
   })
@@ -214,3 +217,33 @@ for (const width of [1280, 390]) {
     }
   })
 }
+
+test('shows audio initialization failure directly below the clicked example in the viewport', async ({ page }) => {
+  await prepare(page)
+  await page.addInitScript(() => {
+    const unavailable = class { constructor() { throw new Error('isolated audio initialization failure') } }
+    Object.defineProperty(window, 'AudioContext', { configurable: true, value: unavailable })
+    Object.defineProperty(window, 'webkitAudioContext', { configurable: true, value: unavailable })
+  })
+  await page.goto('/learn/reading')
+  const button = page.getByRole('button', { name: '높은음자리표 줄 음 들어 보기', exact: true }).first()
+  await button.scrollIntoViewIfNeeded()
+  // 안내가 생길 공간 없이 버튼의 아래쪽을 뷰포트 끝에 맞춘다.
+  await button.evaluate(element => {
+    const rect = element.getBoundingClientRect()
+    window.scrollBy({ top: rect.bottom - window.innerHeight, behavior: 'instant' })
+  })
+  await expect(button).toBeInViewport({ ratio: 1 })
+  await button.click()
+  const notice = button.locator('..').getByRole('status')
+  await expect(notice).toContainText('소리를 재생하지 못했어요')
+  await expect(notice).toBeInViewport({ ratio: 1 })
+  await expect(page.getByText('소리를 재생하지 못했어요', { exact: false })).toHaveCount(1)
+  const buttonBox = await button.boundingBox()
+  const noticeBox = await notice.boundingBox()
+  expect(buttonBox).not.toBeNull()
+  expect(noticeBox).not.toBeNull()
+  expect(noticeBox!.y - (buttonBox!.y + buttonBox!.height)).toBeGreaterThanOrEqual(0)
+  expect(noticeBox!.y - (buttonBox!.y + buttonBox!.height)).toBeLessThanOrEqual(12)
+  await selectNotes(page)
+})
