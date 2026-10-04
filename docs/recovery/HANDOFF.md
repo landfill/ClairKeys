@@ -7,14 +7,14 @@ Last updated: 2026-10-04 KST
 ## Current phase
 
 **#225·#226·#227·#228을 완료하는 goal 진행 중(사용자 지시 2026-10-04). #121은 제외한다.**
-#225 용어 사전 구현·로컬 검증 완료: [검증](validation/2026-10-04-issue-225-glossary.md).
+#225 용어 사전 [PR232](reviews/PR-232.md) 생성·로컬 검증 완료: [검증](validation/2026-10-04-issue-225-glossary.md).
 전체 실행 계획은 `codex/issue-225-learn-glossary` 브랜치의 `docs/recovery/phases/LEARN-followups.md`에 있다(병합 전).
 #226 기존 PracticeSession 모델·API 조사 완료, 사용자에게 범위 선택 질문 전달. 답변 전 구현하지 않는다.
 PR231 병합 후 확인 완료. E2E flaky 1건과 나머지 결과는 [PR231 로그](reviews/PR-231.md).
 
 ## Next action
 
-- #225: review-ready PR 생성 후 현재 head CI·리뷰 대응, 대상 PR 병합 승인 요청.
+- #225: [PR232](reviews/PR-232.md) 현재 head CI·리뷰 대응 후 병합 승인 요청.
 - #226: 사용자 범위 결정 후 구현. 권고는 로그인 사용자의 기존 곡별 연습 기록 모음(열람/실력/레슨 완료 판정 없음).
 - #227: OMR 없는 검증된 입력 경로 조사·결정 후 첫 곡 코스 구현.
 - #228: 원본 출처가 있는 박자·조표 공유 방식 결정 후 구현.
