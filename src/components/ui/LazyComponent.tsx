@@ -47,10 +47,6 @@ export const LazyPianoKeyboard = createLazyComponent(
   () => import('@/components/piano/PianoKeyboard')
 )
 
-export const LazyAnimationPlayer = createLazyComponent(
-  () => import('@/components/animation/AnimationPlayer')
-)
-
 export const LazyFileUpload = createLazyComponent(
   () => import('@/components/upload/FileUpload')
 )
