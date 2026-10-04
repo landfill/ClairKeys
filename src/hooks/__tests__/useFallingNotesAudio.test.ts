@@ -390,4 +390,31 @@ describe('useFallingNotesAudio', () => {
 
     unmount()
   })
+  it('explicitly cancels tapped voices without changing transport stop behaviour', async () => {
+    const { context, sources } = makeRecordingContext()
+    setAudioContextConstructor(jest.fn(() => context) as unknown as typeof AudioContext)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+    await act(async () => { await result.current.playNoteNow(60, 0.7) })
+    const before = sources.map(source => source.stop.mock.calls.length)
+    act(() => { result.current.stopAudio() })
+    expect(sources.map(source => source.stop.mock.calls.length)).toEqual(before)
+    act(() => { result.current.stopTappedNotes() })
+    expectCutShort(sources, before, context.currentTime)
+    unmount()
+  })
+  it('does not sound an old tap if explicitly cancelled while resume is pending', async () => {
+    const { context, sources } = makeRecordingContext()
+    Object.defineProperty(context, 'state', { configurable: true, value: 'suspended' })
+    let resumed!: () => void
+    jest.mocked(context.resume).mockImplementationOnce(() => new Promise<void>(resolve => { resumed = resolve }))
+    setAudioContextConstructor(jest.fn(() => context) as unknown as typeof AudioContext)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+    let pending!: Promise<boolean>
+    act(() => { pending = result.current.playNoteNow(60) })
+    act(() => { result.current.stopTappedNotes() })
+    await act(async () => { resumed(); expect(await pending).toBe(false) })
+    expect(sources).toHaveLength(0)
+    unmount()
+  })
+
 })

@@ -88,12 +88,20 @@ export function rhythmMusicXml(example: RhythmExample): string {
   return `<?xml version="1.0" encoding="utf-8"?><score-partwise version="4.0"><part-list><score-part id="P1"><part-name>리듬</part-name></score-part></part-list><part id="P1"><measure number="1"><attributes><divisions>2</divisions><key><fifths>0</fifths></key><time symbol="normal"><beats>${time.beats}</beats><beat-type>${time.unit}</beat-type></time><clef><sign>G</sign><line>2</line></clef></attributes>${notes}</measure></part></score-partwise>`
 }
 
+// A lesson illustration of bar/group accents, with rests left silent.
+export function rhythmVelocity(meter: Meter, item: RhythmItem, startQuarterBeats: number): number | null {
+  if (item.kind === 'rest') return null
+  if (startQuarterBeats === 0) return 0.85
+  const groupLength = meter === '6/8' ? 1.5 : 1
+  return startQuarterBeats % groupLength === 0 ? 0.65 : 0.45
+}
+
 export function rhythmTimeline(example: RhythmExample) {
   validate(example)
   let at = 0
   const events = example.items.map(item => {
     const durationMs = quarterBeats(item.value, item.dotted) * 60000 / RHYTHM_BPM
-    const event = { startMs: at, durationMs, midi: item.kind === 'rest' ? null : RHYTHM_MIDI, label: rhythmItemName(item) }
+    const event = { startMs: at, durationMs, midi: item.kind === 'rest' ? null : RHYTHM_MIDI, label: rhythmItemName(item), velocity: rhythmVelocity(example.meter, item, at * RHYTHM_BPM / 60000) }
     at += durationMs
     return event
   })

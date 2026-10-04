@@ -95,6 +95,7 @@ export default function ReadingPage() {
             <p className="mt-2">세로줄(마디줄)로 나눈 한 구간이 마디예요. 박자표의 아래 숫자는 세는 기준 음표를 가리키고, 위 숫자는 그 음표 몇 개의 길이가 한 마디에 들어가는지 알려 줘요. 아래 숫자 4는 4분음표, 8은 8분음표를 가리켜요.</p>
             <p className="mt-2">4분의 4박자는 4분음표를 한 박으로 네 박, 4분의 3박자는 세 박을 세요. 그림에서는 한 박의 8분음표 두 개를 묶었어요.</p>
             <p className="mt-2">8분의 6박자는 한 마디에 8분음표 여섯 개가 들어가요. 셋씩 두 묶음으로 세요. 전체 길이는 4분음표 세 개와 같아요.</p>
+            <p className="mt-2">들어 보기에서는 각 묶음의 첫 음을 조금 세게 내서, 4분의 3박자는 둘씩 세 묶음으로, 8분의 6박자는 셋씩 두 묶음으로 들려요.</p>
             <RhythmExamples ids={['meter-four', 'meter-three', 'meter-six']} />
           </section>
           <p>손가락 번호는 <Link href="/learn/hands" className="rounded-sm text-accent hover:underline">손 레슨</Link>에서, 연습 방법은 <Link href="/learn/practice" className="rounded-sm text-accent hover:underline">연습 방법 레슨</Link>에서 익혀 봐요.</p>

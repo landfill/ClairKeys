@@ -96,3 +96,15 @@ it('names the eighth-note example and beams its first beat together', () => {
   const xml = new DOMParser().parseFromString(rhythmMusicXml(example), 'text/xml')
   expect([...xml.querySelectorAll('beam')].map(node => node.textContent)).toEqual(['begin', 'end'])
 })
+
+it('accents each beat group differently in three-quarter and six-eighth meter', () => {
+  const three = rhythmTimeline(RHYTHM_EXAMPLES.find(item => item.id === 'meter-three')!)
+  const six = rhythmTimeline(RHYTHM_EXAMPLES.find(item => item.id === 'meter-six')!)
+  const threeVelocities = three.events.map(event => event.velocity)
+  const sixVelocities = six.events.map(event => event.velocity)
+  expect(threeVelocities).toEqual([0.85, 0.45, 0.65, 0.45, 0.65, 0.45])
+  expect(sixVelocities).toEqual([0.85, 0.45, 0.45, 0.65, 0.45, 0.45])
+  expect(threeVelocities).not.toEqual(sixVelocities)
+  expect(rhythmTimeline(RHYTHM_EXAMPLES.find(item => item.id === 'meter-four')!).events.map(event => event.velocity)).toEqual([0.85, 0.45, 0.65, 0.45, 0.65, 0.45, 0.65, 0.45])
+  expect(rhythmTimeline(RHYTHM_EXAMPLES.find(item => item.id === 'note-eighth')!).events.map(event => event.velocity)).toEqual([0.85, 0.45, null, null])
+})

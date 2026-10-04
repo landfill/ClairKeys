@@ -3,7 +3,10 @@ import ReadingExplorer from '../ReadingExplorer'
 import { ReadingAudioProvider } from '../ReadingAudio'
 
 const playNoteNow = jest.fn().mockResolvedValue(true)
-jest.mock('@/hooks/useFallingNotesAudio', () => ({ useFallingNotesAudio: () => ({ playNoteNow }) }))
+const stopAudio = jest.fn()
+const stopTappedNotes = jest.fn()
+const setVolume = jest.fn()
+jest.mock('@/hooks/useFallingNotesAudio', () => ({ useFallingNotesAudio: () => ({ playNoteNow, stopAudio, stopTappedNotes, setVolume }) }))
 jest.mock('../ScoreExample', () => ({ __esModule: true, default: () => <div data-testid="mock-reading-score">악보 예시</div> }))
 beforeEach(() => playNoteNow.mockReset().mockResolvedValue(true))
 afterEach(() => jest.restoreAllMocks())
