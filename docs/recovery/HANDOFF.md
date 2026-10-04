@@ -6,8 +6,9 @@ Last updated: 2026-10-03 KST
 
 ## Current phase
 
-**진행 중인 phase 없음.** #208 초보자 학습 영역(`배우기`)은 여섯 단계(L-1~L-6)를 모두 병합·검증하고 2026-10-04에 종료했다([phase](phases/LEARN-beginner-learning.md) DONE,
-완료 근거는 이슈 #208의 마지막 코멘트). 결정은 D-094(6항 포함)·D-095.
+**이슈 [#222](https://github.com/landfill/ClairKeys/issues/222) — `console-quiet` 악보 테스트의 CI 반복 실패. 원인 확인·수정·로컬 검증 완료, PR 생성 전.**
+브랜치 `codex/issue-222-console-quiet-flake` `75904df`(미푸시), [검증](validation/2026-10-04-issue-222-console-quiet-flake.md). phase 문서 없음(테스트 한 파일 변경).
+#208 초보자 학습 영역은 2026-10-04에 종료했다([phase](phases/LEARN-beginner-learning.md) DONE).
 
 최근 완료(상세는 각 리뷰 로그): LEARN L-6 PR224, L-4b PR223, L-5 PR221, L-4a PR220, L-3 PR219, L-2 PR218, L-1 PR216(D-094), 감사 게이트 PR217(D-095), CI 신뢰성 PR206·207(Post-merge PASS), #188 콘솔 로그 PR205(D-093), #187 탐색 API 지연 PR203·204(D-092, 이슈 종료), #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
 [validation](validation/) `2026-09-27-*`), #177 PR183·PR184(2026-09-22), UI 일관성 PR182, #178 PR179~181(D-076·D-077),
@@ -15,8 +16,8 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
-- 다음 작업은 사용자가 고른다. 열린 후보(모두 GitHub 이슈, 미착수):
-  [#222](https://github.com/landfill/ClairKeys/issues/222) `console-quiet.spec.ts:40`이 CI에서 다섯 번 연속 첫 시도 실패 후 재시도 통과(원인 가설인 서비스 워커 미차단은 미확인),
+- #222: PR 생성(사용자 승인) → PR CI에서 재시도 없이 통과하는지 확인 → 병합 승인. 원인은 서비스 워커가 탭을 제어한 뒤 애니메이션 요청을 직접 보내 `page.route`를 지나친 것.
+- 그 밖의 열린 후보(모두 GitHub 이슈, 미착수):
   [#225](https://github.com/landfill/ClairKeys/issues/225) 용어 사전, [#226](https://github.com/landfill/ClairKeys/issues/226) 연습 진도 페이지(범위 결정 필요),
   [#227](https://github.com/landfill/ClairKeys/issues/227) 첫 곡 코스(선행: OMR을 거치지 않는 입력 경로),
   [#228](https://github.com/landfill/ClairKeys/issues/228) 곡 소개에 검증된 박자·조표, [#229](https://github.com/landfill/ClairKeys/issues/229) 쓰이지 않는 `AnimationPlayer`·`PracticeGuideControls` 정리,
