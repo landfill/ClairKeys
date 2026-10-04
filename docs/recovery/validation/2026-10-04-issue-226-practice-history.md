@@ -53,3 +53,10 @@ API DB 집계는 Prisma mock 계약 테스트이며 실제 DB 쓰기를 수행�
 
 DB를 mock한 단위 테스트와 API fixture E2E라는 한계는 유지된다. 운영 DB 성능 검증은 하지 않았다.
 리뷰 회신·resolve와 새 CI 상태는 [PR235 로그](../reviews/PR-235.md)가 원본이다.
+
+## Preview — `5425f79`
+
+[Vercel preview](https://clairkeys-git-codex-issue-226-practic-f2cf28-landfills-projects.vercel.app)의 `/learn`에 내 연습 기록 링크가 보이며,
+Chrome에서 클릭하면 로그인 화면으로 이동하는 것을 확인했다. 비로그인 사용자에게 기록 화면이 노출되지 않는다.
+이 preview의 로그인 callbackUrl은 운영 `https://clairkeys.vercel.app/practice`로 구성되어 있어 실제 OAuth 로그인은 진행하지 않았다.
+로그인 후 기록·페이지 이동은 로컬 session/API fixture E2E로 검증했으며, 실제 운영 계정·DB 기록 확인은 미검증이다.
