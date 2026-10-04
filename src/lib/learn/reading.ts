@@ -57,10 +57,14 @@ export function describeExample(example: ReadingExample): string {
   }).join(', ')}.`
 }
 
+export function musicXmlPitch(midi: number): string {
+  return `<pitch><step>${STEPS[whiteIndex(midi)]}</step><octave>${midiToSolfege(midi).octave}</octave></pitch>`
+}
+
 export function exampleMusicXml(example: ReadingExample): string {
   if (!example.midis.length) throw new RangeError('예시에는 음이 하나 이상 필요합니다.')
   if (example.clef !== 'G' && example.clef !== 'F') throw new RangeError('지원하지 않는 음자리표입니다.')
-  const notes = example.midis.map(midi => `<note><pitch><step>${STEPS[whiteIndex(midi)]}</step><octave>${midiToSolfege(midi).octave}</octave></pitch><duration>1</duration><type>quarter</type></note>`).join('')
+  const notes = example.midis.map(midi => `<note>${musicXmlPitch(midi)}<duration>1</duration><type>quarter</type></note>`).join('')
   // 음높이 예시의 모든 음을 한 마디에 담고, 박자표는 예시 렌더러에서 숨긴다.
   return `<?xml version="1.0" encoding="utf-8"?><score-partwise version="4.0"><part-list><score-part id="P1"><part-name>예시</part-name></score-part></part-list><part id="P1"><measure number="1"><attributes><divisions>1</divisions><key><fifths>0</fifths></key><time><beats>${example.midis.length}</beats><beat-type>4</beat-type></time><clef><sign>${example.clef}</sign><line>${example.clef === 'G' ? 2 : 4}</line></clef></attributes>${notes}</measure></part></score-partwise>`
 }

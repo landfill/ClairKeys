@@ -17,10 +17,12 @@ Last updated: 2026-10-03 KST
 
 - #213(L-4): L-4a 음높이는 [PR220](reviews/PR-220.md) 병합(`5d54bec`, 사용자의 사전 병합 허용 — 그 허용은 PR220 하나였고 소진됐다).
   L-4b 길이·박자는 L-5 PR 뒤에 `codex/learn-4b-reading-rhythm`에서 시작하고 그때 `reading`의 `available`을 켠다. 새 학습 페이지 E2E는 PR 전에 Firefox로도 돌린다.
-- #213 L-4b: [PR223](reviews/PR-223.md) CI·hosted 리뷰 확인 → 병합 승인 요청. 이 PR이 #213을 닫는다.
-- #215 L-6(마지막 단계): 브랜치 `codex/learn-6-song-intro`. 착수 결정은 [phase](phases/LEARN-beginner-learning.md) Progress.
-  PR223 병합 뒤 main을 병합한다(링크 대상 `/learn/reading#meters` 등은 L-4b가 만든다).
-- **Codex 한도 소진 시 이어받기**(사용자 지시 2026-10-04: L-6은 `gpt-6.1-sol` 그대로, 한도가 차면 다음 계정으로 전환해 이어서 한다. 세션 중 22% → 8%):
+- #213 L-4b: [PR223](reviews/PR-223.md)에 CI 실패 수정 `bb23f55`를 push했다(소리 시작 대기 상한 4초 + 벽시계 진행, 테스트 단언 2건 완화). CI 전부 PASS, thread 0, 병합 승인 대기.
+  임시 워크트리 `<세션 scratchpad>/l4b-wt`(브랜치 `l4b-fix-local`)는 PR 병합 뒤 정리한다.
+- #215 L-6(마지막 단계): 브랜치 `codex/learn-6-song-intro` `8b2670c`(미푸시). 구현·로컬 리뷰 반영·로컬 검증 완료, [검증](validation/2026-10-04-learn-6-song-intro.md).
+  남은 것: PR223 병합 뒤 main 병합과 재검증 → PR 생성(사용자 승인) → CI·리뷰 → 병합 승인. 병합되면 #208의 모든 단계가 끝난다(#208 종료 여부는 사용자에게 확인).
+  표시 항목은 음역·재생 시간·손 구분·빠르기. 박자·조는 근거가 없어 표시하지 않는다(후속 후보: 검증된 박자·조표를 페이지 수준에서 쓸 수 있게 되면 추가).
+- **Codex 한도 소진 시 이어받기**(사용자 지시 2026-10-04: L-6은 `gpt-6.1-sol` 그대로, 한도가 차면 다음 계정으로 전환해 이어서 한다. 세션 중 22% → 3%):
   1. 워커가 멈추면 워킹 트리의 미커밋 변경을 지우지 않는다. `git status`, `git log main..HEAD`, `local-test-data/results/learn-6/progress.md`로 어디까지 됐는지 본다.
   2. 사용자가 Codex 계정을 바꾼 뒤(`codex logout` → `codex login`), Orca에서 새 터미널을 띄운다:
      `orca terminal create --worktree active --title "L-6 구현 (gpt-6.1-sol)" --command 'codex --model gpt-6.1-sol -s workspace-write -a never' --json`,

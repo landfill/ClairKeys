@@ -1,5 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import ScoreExample from '../ScoreExample'
+import { OpenSheetMusicDisplay } from 'opensheetmusicdisplay'
+import { RHYTHM_EXAMPLES } from '@/lib/learn/rhythm'
 import { READING_EXAMPLES } from '@/lib/learn/reading'
 
 const load = jest.fn().mockResolvedValue(undefined)
@@ -69,4 +71,13 @@ it('preserves at least four screen pixels of padding when a narrow frame scales 
     expect(inset * scale).toBeGreaterThanOrEqual(4 - 0.000001)
   }
   expect(parseFloat(svg.style.width)).toBeLessThanOrEqual(76)
+})
+
+
+it('shows time signatures only for rhythm examples', async () => {
+  const { rerender } = render(<ScoreExample example={READING_EXAMPLES[0]} />)
+  await waitFor(() => expect(draw).toHaveBeenCalled())
+  expect(jest.mocked(OpenSheetMusicDisplay).mock.calls.at(-1)?.[1]).toEqual(expect.objectContaining({ drawTimeSignatures: false }))
+  rerender(<ScoreExample example={RHYTHM_EXAMPLES[0]} />)
+  await waitFor(() => expect(jest.mocked(OpenSheetMusicDisplay).mock.calls.at(-1)?.[1]).toEqual(expect.objectContaining({ drawTimeSignatures: true })))
 })

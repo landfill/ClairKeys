@@ -674,4 +674,18 @@ describe('useFallingNotesAudio - recorded samples', () => {
 
     unmount()
   })
+  it('cancels a sounding sampled tap only through the explicit tap cancellation API', async () => {
+    const { context, sources } = makeSampleContext()
+    useContext(context)
+    const { result, unmount } = renderHook(() => useFallingNotesAudio())
+    await act(async () => { await result.current.playNoteNow(67, 0.65) })
+    expect(sources).toHaveLength(1)
+    const scheduledStops = sources[0].stop.mock.calls.length
+    act(() => { result.current.stopAudio() })
+    expect(sources[0].stop).toHaveBeenCalledTimes(scheduledStops)
+    act(() => { result.current.stopTappedNotes() })
+    expect(sources[0].stop).toHaveBeenLastCalledWith(10.02)
+    unmount()
+  })
+
 })
