@@ -1,6 +1,6 @@
 # #228 곡 소개의 검증된 박자·조표
 
-Status: IN_PROGRESS
+Status: DONE
 Date: 2026-10-04
 Issue: https://github.com/landfill/ClairKeys/issues/228
 
@@ -29,3 +29,5 @@ SongIntro, 원본 XML의 보수적인 정보 추출기, `/sheet/[id]`의 score U
 - 2026-10-04: 공유 캐시 조사, 출처 경로 결정. #226은 사용자 답변 대기.
 
 - 2026-10-04: PR234 사용자 승인 후 병합·#228 종료. Post-merge 확인 대기([PR234](../reviews/PR-234.md)).
+
+- 2026-10-04: Post-merge checks PASS, 내장곡 연결도 PR233에서 병합됨. 완료 근거는 [PR234](../reviews/PR-234.md)·[PR233](../reviews/PR-233.md).

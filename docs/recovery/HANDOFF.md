@@ -10,13 +10,13 @@ Last updated: 2026-10-04 KST
 #225 용어 사전 완료: [PR232](reviews/PR-232.md) 병합·Post-merge PASS·이슈 종료·브랜치 정리.
 전체 실행 계획은 [후속 phase](phases/LEARN-followups.md)에 있다.
 #226 사용자 권장안 선택(2026-10-04): 로그인 사용자의 곡별 연습 기록만 표시, 비로그인 저장·레슨 열람·완료 판정 없음([조사](validation/2026-10-04-issue-226-discovery.md)).
+#228 원본 박자·조표 완료([PR234](reviews/PR-234.md), Post-merge PASS).
 PR231 병합 후 확인 완료. E2E flaky 1건과 나머지 결과는 [PR231 로그](reviews/PR-231.md).
 
 ## Next action
 
-- #226: 사용자 승인 범위의 API·로그인 전용 페이지 구현과 로컬 검증 완료([검증](validation/2026-10-04-issue-226-practice-history.md)). [PR235](reviews/PR-235.md) P2를 기준 시각+cursor 조회로 수정·검증·회신·resolve. 최신 main 통합·검증 링크 리뷰도 처리. 최종 CI·재리뷰 확인.
-- #227: 기존 converter를 저작 시점에 재사용한 창작 3곡·공개 코스 구현 및 로컬 검증 완료([검증](validation/2026-10-04-issue-227-first-course.md)). [PR233](reviews/PR-233.md)의 오디오 시작 실패 복구와 내장곡 박자·조표 연결 제출, 최종 CI·리뷰 확인.
-- #228: 공유 악보 캐시에서 원본 박자·조표만 읽는 구현·로컬 검증 완료([검증](validation/2026-10-04-issue-228-score-provenance.md)). [PR234](reviews/PR-234.md) 승인 후 병합·이슈 종료·브랜치 정리. Post-merge checks 결과 확인.
+- #226: 사용자 승인 범위의 API·로그인 전용 페이지 구현과 로컬 검증 완료([검증](validation/2026-10-04-issue-226-practice-history.md)). [PR235](reviews/PR-235.md) CI는 통과했으나 추가 P2(DB 기준점)가 남았다. 최초 조회의 최대 기록 ID 상한으로 수정·검증·재리뷰 대응.
+- #227: 기존 converter를 저작 시점에 재사용한 창작 3곡·공개 코스 구현 및 로컬 검증 완료([검증](validation/2026-10-04-issue-227-first-course.md)). [PR233](reviews/PR-233.md) 사용자 승인 후 병합·#227 종료·브랜치 정리. Post-merge checks 확인.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
   재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
