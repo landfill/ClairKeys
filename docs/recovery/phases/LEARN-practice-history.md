@@ -1,6 +1,6 @@
 # #226 내 연습 기록
 
-Status: IN_PROGRESS
+Status: DONE
 Date: 2026-10-04
 Issue: https://github.com/landfill/ClairKeys/issues/226
 
@@ -45,3 +45,5 @@ offset은 페이지 사이에 기록이 추가되거나 공개 상태가 달라�
 새로 할당된 ID는 기존 조회에 들어오지 않는다. timestamp는 곡별 정렬과 keyset 위치에만 쓴다.
 
 - 2026-10-04: PR235 사용자 승인 후 병합·#226 종료·브랜치 정리. Post-merge 확인 대기([PR235](../reviews/PR-235.md)).
+
+- 2026-10-05: Post-merge checks PASS, 운영 기존 로그인 기록 읽기와 비로그인 API 차단 확인, 이슈·브랜치 정리 완료([PR235](../reviews/PR-235.md), [검증](../validation/2026-10-04-issue-226-practice-history.md)).

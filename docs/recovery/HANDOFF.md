@@ -6,14 +6,14 @@ Last updated: 2026-10-05 KST
 
 ## Current phase
 
-**#225·#226·#227·#228의 구현·검증·리뷰·승인 병합·이슈 종료·브랜치 정리를 마쳤다. 마지막 PR235 Post-merge checks와 전체 완료 대조를 기다린다. Goal은 아직 완료 처리하지 않았다.**
-범위·완료 조건: [후속 phase](phases/LEARN-followups.md). #121은 제외·보류 상태다.
-근거: [PR232](reviews/PR-232.md) · [PR233](reviews/PR-233.md) · [PR234](reviews/PR-234.md) · [PR235](reviews/PR-235.md).
+**#225·#226·#227·#228 후속 목표 완료(2026-10-05 KST).** 구현·회귀 검증·CI·리뷰 대응·대상별 사용자 승인 병합·Post-merge checks·이슈 종료·브랜치 정리를 모두 마쳤다.
+원본: [완료 대조](validation/2026-10-04-learn-followups-completion-audit.md) · [후속 phase](phases/LEARN-followups.md).
+PR 근거: [PR232](reviews/PR-232.md) · [PR233](reviews/PR-233.md) · [PR234](reviews/PR-234.md) · [PR235](reviews/PR-235.md).
 #226은 사용자가 선택한 로그인 사용자 곡별 기록만 제공한다. 비로그인 저장·레슨 열람·완료 판정은 없다([검증](validation/2026-10-04-issue-226-practice-history.md)).
 
 ## Next action
 
-- PR235 병합 커밋 `07ff563`의 Post-merge checks(run 37210345935) 결과·재시도를 확인한다. [완료 대조](validation/2026-10-04-learn-followups-completion-audit.md)의 마지막 검사·상태 항목을 마치고 phase·HANDOFF·goal 상태를 갱신한다.
+- 진행 중인 구현 없음. 다음 작업은 사용자가 선택한다. #121은 아래 보류 조건을 유지한다.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
   재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.

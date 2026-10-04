@@ -3,7 +3,8 @@
 Started: 2026-10-04 KST
 Last checked: 2026-10-05 KST
 Audited app merge: `07ff563717be7d6d926e60e4c9f04eefa63239c6`
-Overall: PENDING — 마지막 Post-merge checks(run 37210345935) 완료 전에는 goal을 완료 처리하지 않는다.
+Completed: 2026-10-05 KST
+Overall: PASS — 네 이슈의 요구사항·승인 병합·Post-merge·종료·정리 근거를 확인했다. 이 마감 기록 push와 원격 동기화를 확인한 뒤 goal 도구를 complete로 전환한다.
 
 ## 요구사항과 근거
 
@@ -31,8 +32,8 @@ Overall: PENDING — 마지막 Post-merge checks(run 37210345935) 완료 전에�
 | 브랜치 안전 정리 | PASS | 각 병합 뒤 tip 포함·clean 확인. 마지막 `ls-remote`와 `for-each-ref`에서 네 작업 ref가 모두 없음 |
 | #121 제외 | PASS | #121 OPEN, updatedAt `2026-09-20T00:46:03Z`로 점검 시작과 같음. 목표 시작 `9f1e052` 이후 omr-service와 CI workflow 변경 없음 |
 | 최종 main 앱 코드 | PASS | `git diff e5f77ac..HEAD -- src prisma public e2e scripts package*.json next.config.mjs` 차이 없음. 추가 main 커밋은 상태 문서 |
-| 마지막 병합 후 검사 | PENDING | [run 37210345935](https://github.com/landfill/ClairKeys/actions/runs/37210345935): 조회 시 Lint·Run Tests·Security Audit PASS, E2E 실행 중 |
-| 최종 phase·HANDOFF·goal 상태 | PENDING | 마지막 검사 통과 후 갱신·push 확인과 goal complete 필요 |
+| 마지막 병합 후 검사 | PASS | [run 37210345935](https://github.com/landfill/ClairKeys/actions/runs/37210345935) 전부 PASS. E2E 747 passed/67 skipped/재시도 0. 상세는 [PR235](../reviews/PR-235.md) |
+| 최종 phase·HANDOFF 상태 | PASS | 관련 phase DONE, HANDOFF에 완료와 근거 링크 반영. goal 상태 전환은 이 기록의 push 확인 뒤 수행 |
 
 ## 한계와 범위 밖
 

@@ -1,6 +1,6 @@
 # LEARN 후속: 용어·진도·첫 곡·곡 정보
 
-Status: IN_PROGRESS
+Status: DONE
 Date: 2026-10-04
 Issues: #225, #226, #227, #228
 
@@ -51,3 +51,5 @@ Post-merge checks 확인 및 이슈 종료·기록 일치를 모두 충족해야
 - 2026-10-04: #225 PR232의 Post-merge checks PASS 확인, 해당 단계 완료([PR232](../reviews/PR-232.md)).
 
 - 2026-10-04: 대상 네 이슈의 PR232·233·234·235가 모두 사용자 승인 후 병합되고 이슈가 종료됐다. PR235 Post-merge와 최종 완료 대조가 남았다.
+
+- 2026-10-05: 네 이슈의 완료 조건·승인 병합·최종 Post-merge·종료 상태를 모두 대조했다. [완료 대조 원본](../validation/2026-10-04-learn-followups-completion-audit.md). #121은 제외·보류 그대로다.
