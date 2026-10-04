@@ -17,9 +17,10 @@ Last updated: 2026-10-03 KST
 
 - #213(L-4): L-4a 음높이는 [PR220](reviews/PR-220.md) 병합(`5d54bec`, 사용자의 사전 병합 허용 — 그 허용은 PR220 하나였고 소진됐다).
   L-4b 길이·박자는 L-5 PR 뒤에 `codex/learn-4b-reading-rhythm`에서 시작하고 그때 `reading`의 `available`을 켠다. 새 학습 페이지 E2E는 PR 전에 Firefox로도 돌린다.
-- #214(L-5): [PR221](reviews/PR-221.md) CI·hosted 리뷰 확인 → 병합 승인 요청. 재생 전 요소 수: 데스크톱 합 27(기준 31), 터치 합 27(기준 27, 여유 0).
+- #214(L-5): [PR221](reviews/PR-221.md) CI 전부 PASS, thread 0, 병합 승인 대기. 재생 전 요소 수: 데스크톱 합 27(기준 31), 터치 합 27(기준 27, 여유 0).
 - #213 L-4b(길이·박자): 브랜치 `codex/learn-4b-reading-rhythm` 착수. `reading`의 `available`은 PR221 병합 뒤 main을 병합하고 켠다(같은 테스트가 충돌한다).
 - Codex 주간 한도 25% 미만 경고(2026-10-04)에 대해 사용자가 "한도는 여유있다"고 확인했다. L-4b·L-6을 이어서 진행한다.
+- 후속 후보: `e2e/console-quiet.spec.ts:40`(악보 페이지 콘솔 검사)이 CI에서 세 번 연속 첫 시도 실패 후 재시도 통과(PR220 두 번, PR221). 원인 미조사.
 - 그 뒤 #215(L-6, 선행 L-2·L-4·L-5).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
