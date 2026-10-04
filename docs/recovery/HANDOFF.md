@@ -16,7 +16,7 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
-- #222: [PR230](reviews/PR-230.md) CI에서 `console-quiet`이 재시도 없이 통과하는지(`flaky` 0건) 확인 → 병합 승인 요청 → 병합 후 Post-merge checks에서도 같은지 확인.
+- #222: [PR230](reviews/PR-230.md) CI 전부 PASS, E2E 재시도 0건(직전 다섯 실행은 매번 2건). 병합 승인 대기 → 병합 후 Post-merge checks에서도 재시도 0건인지 확인.
 - 그 밖의 열린 후보(모두 GitHub 이슈, 미착수):
   [#225](https://github.com/landfill/ClairKeys/issues/225) 용어 사전, [#226](https://github.com/landfill/ClairKeys/issues/226) 연습 진도 페이지(범위 결정 필요),
   [#227](https://github.com/landfill/ClairKeys/issues/227) 첫 곡 코스(선행: OMR을 거치지 않는 입력 경로),
