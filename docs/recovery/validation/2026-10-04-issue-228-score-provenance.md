@@ -29,7 +29,7 @@ URL 변경 시 이전 정보 즉시 숨김, stale 응답 무시, 동일 URL 다�
 
 ## Gaps and integration
 
-전체 브라우저 매트릭스·production build는 PR CI. 실기기·스크린리더·운영은 미확인. preview는 PR 생성 뒤 확인한다.
+전체 브라우저 매트릭스·production build는 PR CI. 실기기·스크린리더·운영은 미확인. preview의 실제 공개 악보 확인은 [PR234 로그](../reviews/PR-234.md)에 기록했다.
 변경 박자/조표를 시간순으로 소개하는 UI는 이번 범위에 넣지 않았다. 하나의 값으로 요약할 수 없으면 행을 숨기는 보수적인 계약이다.
 #227의 내장곡도 동일 ScoreArtifact 형식이다. #228 병합 후 PR233에서 CoursePlayer의 SongIntro에 scoreUrl을 연결하고
 실제 내장곡 E2E를 추가해야 네 이슈 전체 연결이 끝난다. 병합 전 종속 브랜치 작업을 시작하지 않는 AGENTS를 따른다.

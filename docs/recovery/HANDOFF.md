@@ -9,7 +9,7 @@ Last updated: 2026-10-04 KST
 **#225·#226·#227·#228을 완료하는 goal 진행 중(사용자 지시 2026-10-04). #121은 제외한다.**
 #225 용어 사전 [PR232](reviews/PR-232.md) 생성·로컬 검증 완료: [검증](validation/2026-10-04-issue-225-glossary.md).
 전체 실행 계획은 `codex/issue-225-learn-glossary` 브랜치의 `docs/recovery/phases/LEARN-followups.md`에 있다(병합 전).
-#226 기존 PracticeSession 모델·API 조사 완료, 사용자에게 범위 선택 질문 전달. 답변 전 구현하지 않는다.
+#226 [기존 모델·API 조사](validation/2026-10-04-issue-226-discovery.md) 완료, 사용자에게 범위 선택 질문 전달. 답변 전 구현하지 않는다.
 PR231 병합 후 확인 완료. E2E flaky 1건과 나머지 결과는 [PR231 로그](reviews/PR-231.md).
 
 ## Next action
