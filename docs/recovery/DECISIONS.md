@@ -3417,6 +3417,18 @@
   `dependencies`와 `devDependencies` 분류가 틀리면 게이트가 새므로, 런타임에 쓰는 패키지를 `devDependencies`에 두지 않는다.
 - Related: PR216, PR207(brace-expansion override), D-087
 
+## D-097: 곡 소개는 공유 악보 아티팩트에서 확실한 박자·조표만 읽는다
+
+- Date: 2026-10-04
+- Context: JSON의 timeSignature와 keySignature에는 원본과 기본값을 구분할 근거가 없다. 기존 score artifact에 실제 XML과 검증된 로드 경로가 있다.
+- Decision: 페이지가 소개에 score URL을 넘기고 기존 `loadScoreArtifact` Promise 캐시를 공유한다. 모든 파트의 첫 음/쉼표 전에 명시되고 곡 전체에서 한 값으로 일치하는 일반 박자표/전통 조표만 표시한다. 복합 표현·다중 값·로드 실패는 해당 행을 생략한다. 조는 명명하지 않고 샵/플랫 개수와 원본 악보 출처를 쓴다.
+- Rejected: 애니메이션 계약에 새 출처 필드 | 기존 저장물에는 여전히 출처가 없고 변환·저장·정규화 경로 변경 범위가 더 크다.
+- Rejected: 기본값 4/4 또는 C 표시 | 원본에서 확인한 사실로 오해하게 된다.
+- Confidence: high
+- Scope-risk: moderate
+- Directive: 단일 값으로 요약할 수 없는 악보를 임의로 첫 박자/조표만으로 대표하지 않는다. 계정별 비공개 악보 접근은 기존 score endpoint를 그대로 사용한다.
+- Related: #228, phases/LEARN-song-provenance.md, D-049, D-052, D-094
+
 ## D-098: 연습 진도 첫 버전은 로그인 사용자의 기존 곡별 기록만 모은다
 
 - Date: 2026-10-04

@@ -244,7 +244,7 @@ export default function SheetMusicPage() {
                 </dd>
               </div>
             </dl>
-            <SongIntro data={animationData} />
+            <SongIntro data={animationData} scoreUrl={sheetMusic.hasScore ? `/api/sheet/${id}/score` : undefined} />
           </Card>}
         </Container>
       </MainLayout>

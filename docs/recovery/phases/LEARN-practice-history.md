@@ -26,6 +26,7 @@ Issue: https://github.com/landfill/ClairKeys/issues/226
 ## Completion criteria
 
 위 기능과 인증·접근 경계 검증, 전체 로컬 테스트·CI·리뷰, 사용자 승인 후 병합·Post-merge·이슈 상태 일치.
+명령·결과·한계의 원본은 [구현 검증 기록](../validation/2026-10-04-issue-226-practice-history.md)이다.
 
 ## Progress
 
