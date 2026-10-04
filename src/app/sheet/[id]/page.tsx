@@ -10,6 +10,7 @@ import { resumeKeyFor } from '@/utils/practiceResume'
 import LoginButton from '@/components/auth/LoginButton'
 import FallingNotesPlayer from '@/components/animation/FallingNotesPlayer'
 import DemoProvenanceNotice from '@/components/sheet/DemoProvenanceNotice'
+import SongIntro from '@/components/sheet/SongIntro'
 import type { SheetMusicProvenance } from '@prisma/client'
 import type { CanonicalAnimationData } from '@/types/animationContract'
 import { normalizeAnimationData, AnimationContractError } from '@/utils/animationContract'
@@ -221,7 +222,7 @@ export default function SheetMusicPage() {
               </div>
             ) : null}
             <h3 className="text-lg font-semibold text-ink mb-4">악보 정보</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <dt className="text-sm font-medium text-ink-muted">저작자</dt>
                 <dd className="text-sm text-ink">{sheetMusic.composer}</dd>
@@ -242,13 +243,8 @@ export default function SheetMusicPage() {
                   {new Date(sheetMusic.createdAt).toLocaleDateString('ko-KR')}
                 </dd>
               </div>
-              <div>
-                <dt className="text-sm font-medium text-ink-muted">재생 시간</dt>
-                <dd className="text-sm text-ink">
-                  {Math.floor(animationData.duration / 60)}분 {Math.floor(animationData.duration % 60)}초
-                </dd>
-              </div>
-            </div>
+            </dl>
+            <SongIntro data={animationData} />
           </Card>}
         </Container>
       </MainLayout>
