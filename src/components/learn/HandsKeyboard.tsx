@@ -5,6 +5,7 @@ import { Button } from '@/components/ui'
 import SimplePianoKeyboard from '@/components/piano/SimplePianoKeyboard'
 import { useFallingNotesAudio } from '@/hooks/useFallingNotesAudio'
 import { buildKeyLayout } from '@/utils/pianoLayout'
+import { revealKeyboardKey } from '@/utils/keyboardScroll'
 import { midiToSolfege, VISIBLE_RANGE } from '@/lib/learn/keyboard'
 import { FINGER_NAMES, FIVE_FINGER_POSITIONS, fingerForKey, type LessonHand } from '@/lib/learn/hands'
 
@@ -28,13 +29,11 @@ export default function HandsKeyboard() {
   })), [hand])
 
   useLayoutEffect(() => {
-    const region = keyboardRegion.current
-    if (!region || region.clientWidth >= region.scrollWidth) return
     const positions = FIVE_FINGER_POSITIONS[hand]
     const first = layout.byMidi.get(positions[0].midi)!
     const last = layout.byMidi.get(positions[positions.length - 1].midi)!
-    // 문서나 포커스를 움직이지 않고 다섯 건반이 처음 표시 범위에 함께 들어오게 맞춘다.
-    region.scrollLeft = Math.max(0, Math.min(region.scrollWidth - region.clientWidth, (first.x + last.x + last.w) / 2 - region.clientWidth / 2))
+    // 다섯 건반의 전체 폭을 하나의 대상으로 삼아 같은 공용 스크롤 규칙을 적용한다.
+    revealKeyboardKey(keyboardRegion.current, { x: first.x, w: last.x + last.w - first.x })
   }, [hand])
 
   const press = (midi: number) => {
