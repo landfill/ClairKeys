@@ -6,8 +6,8 @@ Last updated: 2026-10-03 KST
 
 ## Current phase
 
-**#208 초보자 학습 영역(`배우기`) — 여섯 단계(L-1~L-6) 모두 병합(2026-10-04, 마지막 [PR224](reviews/PR-224.md)). 마무리 확인 중.**
-계획과 단계 상태는 [phase](phases/LEARN-beginner-learning.md), 결정은 D-094(6항 포함)·D-095. 단계 이슈 #210~#215는 모두 종료, 상위 #208은 OPEN.
+**#208 초보자 학습 영역(`배우기`) — 여섯 단계(L-1~L-6) 모두 병합·검증 완료(2026-10-04). [phase](phases/LEARN-beginner-learning.md) DONE.**
+마지막 [PR224](reviews/PR-224.md)의 Post-merge checks PASS, 운영에서 곡 소개 확인. 결정은 D-094(6항 포함)·D-095. 단계 이슈 #210~#215 종료, 상위 #208은 OPEN(종료는 사용자 결정).
 
 최근 완료(상세는 각 리뷰 로그): LEARN L-6 PR224, L-4b PR223, L-5 PR221, L-4a PR220, L-3 PR219, L-2 PR218, L-1 PR216(D-094), 감사 게이트 PR217(D-095), CI 신뢰성 PR206·207(Post-merge PASS), #188 콘솔 로그 PR205(D-093), #187 탐색 API 지연 PR203·204(D-092, 이슈 종료), #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
 [validation](validation/) `2026-09-27-*`), #177 PR183·PR184(2026-09-22), UI 일관성 PR182, #178 PR179~181(D-076·D-077),
@@ -17,18 +17,15 @@ Last updated: 2026-10-03 KST
 
 - #213(L-4): L-4a 음높이는 [PR220](reviews/PR-220.md) 병합(`5d54bec`, 사용자의 사전 병합 허용 — 그 허용은 PR220 하나였고 소진됐다).
   L-4b 길이·박자는 L-5 PR 뒤에 `codex/learn-4b-reading-rhythm`에서 시작하고 그때 `reading`의 `available`을 켠다. 새 학습 페이지 E2E는 PR 전에 Firefox로도 돌린다.
-- PR224 병합 커밋 `7301603`의 Post-merge checks와 운영 `/sheet/<공개 악보>`의 "이 곡 소개" 확인 결과를 PR224 리뷰 로그에 기록한다.
-- 그 뒤 #208 완료 조건을 항목별로 대조해 사용자에게 보고하고, phase Status를 DONE으로 바꾼다. #208 종료 여부는 사용자가 정한다.
+- #208 종료 여부를 사용자에게 확인한다. 완료 조건 대조는 phase Progress의 마지막 항목. 본문 체크리스트 여섯 줄은 GitHub가 자동으로 체크하지 않아 미체크 상태다.
+- 다음 작업 후보: 이슈 [#222](https://github.com/landfill/ClairKeys/issues/222)(`console-quiet.spec.ts:40`이 CI에서 다섯 번 연속 첫 시도 실패 후 재시도 통과. 원인 가설인 서비스 워커 미차단은 미확인), [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측.
 - LEARN 후속 후보: 검증된 박자·조표를 페이지 수준에서 쓸 수 있게 되면 곡 소개에 추가(L-6), `PracticeGuideControls`·`AnimationPlayer` 정리(L-3),
   터치 재생 전 요소 수가 기준과 같아 추가 여유 없음(L-5), 실기기·스크린리더·청취 미검증(각 검증 기록의 Gaps).
-- **Codex 한도 소진 시 이어받기**(사용자 지시 2026-10-04: L-6은 `gpt-6.1-sol` 그대로, 한도가 차면 다음 계정으로 전환해 이어서 한다. 세션 중 22% → 3%):
-  1. 워커가 멈추면 워킹 트리의 미커밋 변경을 지우지 않는다. `git status`, `git log main..HEAD`, `local-test-data/results/learn-6/progress.md`로 어디까지 됐는지 본다.
-  2. 사용자가 Codex 계정을 바꾼 뒤(`codex logout` → `codex login`), Orca에서 새 터미널을 띄운다:
-     `orca terminal create --worktree active --title "L-6 구현 (gpt-6.1-sol)" --command 'codex --model gpt-6.1-sol -s workspace-write -a never' --json`,
-     `terminal wait --for tui-idle` 뒤 `terminal send`로 "`local-test-data/results/learn-6/l6-brief.md`를 읽고 이어서 수행하라. 먼저 `git status`와 `progress.md`로 상태를 파악하라"를 보낸다.
-  3. 리뷰는 `codex --model gpt-6-astra -c model_reasoning_effort="high" -s read-only -a never`. 리뷰 지시문 끝에 "지적만 35줄 이내로 다시 출력"을 넣는다(터미널은 마지막 화면만 읽힌다).
-  4. E2E·측정·커밋·기록은 오케스트레이터가 한다(워커 샌드박스는 포트와 `.git`을 못 쓴다). 브랜치를 바꾼 뒤에는 `.next/types`를 지운다. 새 학습 화면 E2E는 Firefox도 돌린다.
-- 이슈 [#222](https://github.com/landfill/ClairKeys/issues/222): `console-quiet.spec.ts:40`이 CI에서 세 번 연속 첫 시도 실패 후 재시도 통과. 원인 가설(서비스 워커 미차단)은 미확인.
+- 워커 운영 메모(LEARN 트랙에서 쓴 방식): 구현 `codex --model gpt-6.1-sol -s workspace-write -a never`, 리뷰 `codex --model gpt-6-astra -c model_reasoning_effort="high" -s read-only -a never`를
+  Orca 새 터미널에 띄우고 지시문은 파일로 두어 경로만 보낸다. 긴 작업의 지시문·진행 메모는 git 제외 `local-test-data/results/<작업>/`에 두면 계정·세션이 바뀌어도 이어받을 수 있다.
+  리뷰 지시문 끝에 "지적만 35줄 이내로 다시 출력"을 넣는다(터미널은 마지막 화면만 읽힌다). E2E·측정·커밋·기록은 오케스트레이터가 한다. 브랜치를 바꾼 뒤 `.next/types`를 지운다.
+  새 화면의 E2E는 PR 전에 Firefox도 돌린다. macOS WebKit은 Tab 포커스 단언이 설정 탓에 실패한다(CI Linux는 통과).
+  Codex 주간 한도는 2026-10-04 세션에서 22% → 3%까지 썼다. 한도 경고 시 뜨는 모델 전환 제안은 지정 모델 유지로 닫았다.
 - 그 뒤 #215(L-6, 선행 L-2·L-4·L-5).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
