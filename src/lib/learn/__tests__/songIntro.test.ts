@@ -34,3 +34,14 @@ it('names both piano boundaries and middle C directly', () => {
   expect(analyze({ notes: [{ midi: 21, start: 0, duration: 1 }, { midi: 108, start: 1, duration: 1 }] }).range.value).toEqual({ minMidi: 21, maxMidi: 108, low: '라(0옥타브)', high: '도(8옥타브)', middleC: '가운데 도보다 낮은 음과 높은 음이 함께 있어요.' })
   expect(analyze().range.value?.middleC).toBe('가운데 도만 있어요.')
 })
+
+it('does not promote a normalization default into verified meter or key', () => {
+  const original = { version: '1.1', title: '원본', composer: '작곡가', duration: 1, tempo: null, tempoSource: 'unknown', timingReferenceBpm: 60, notes: [{ midi: 60, start: 0, duration: 1 }] }
+  expect(original).not.toHaveProperty('timeSignature')
+  expect(original).not.toHaveProperty('keySignature')
+  const normalized = normalizeAnimationData(original)
+  expect(normalized.timeSignature).toBe('4/4')
+  const result = analyzeSongIntro(normalized, canonicalToFallingNotes(normalized))
+  expect(result.meter).toEqual({ kind: 'meter', status: 'unknown' })
+  expect(result.key).toEqual({ kind: 'key', status: 'unknown' })
+})

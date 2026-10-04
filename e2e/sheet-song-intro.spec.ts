@@ -34,7 +34,8 @@ test('introduces a public song outside playback and links to a lesson without co
   await expect(area).toContainText('0분 14초')
   await expect(area).toContainText('양손')
   await expect(area).toContainText('♩=80 (악보에서 읽음)')
-  await expect(area).toContainText('박자 정보는 확인되지 않았어요')
+  await expect(area.locator('dt').filter({ hasText: /^박자$/ })).toHaveCount(0)
+  await expect(area.locator('a[href="/learn/reading#meters"]')).toHaveCount(0)
   await expect(area).not.toContainText(/4\/4|장조|단조|음표 종류|쉼표 종류/)
   await expect(page.getByText('재생 시간', { exact: true })).toHaveCount(1)
   const player = page.locator('main [data-testid="playback-box"]').locator('xpath=../..')
@@ -78,3 +79,14 @@ for (const width of [320, 390]) {
     expect(errors).toEqual([])
   })
 }
+
+test('opens the pitch explorer anchor from the song range link', async ({ page }) => {
+  await fixture(page)
+  await page.goto('/sheet/215')
+  await intro(page).getByRole('link', { name: '악보 읽기에서 음높이 연결하기', exact: true }).click()
+  await expect(page).toHaveURL(/\/learn\/reading#pitch-explorer$/)
+  const target = page.locator('#pitch-explorer')
+  await expect(target).toHaveText('오선과 건반 연결하기')
+  await expect(target).toBeVisible()
+  await expect(target).toBeInViewport({ ratio: 1 })
+})

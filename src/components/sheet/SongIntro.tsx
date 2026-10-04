@@ -34,14 +34,8 @@ export default function SongIntro({ data }: { data: CanonicalAnimationData }) {
       </div>
       <div>
         <dt className="font-medium text-ink-muted">빠르기</dt>
-        <dd className="mt-1 text-ink">{tempo ? <>{tempo.primary}{tempo.secondary && <p className="mt-1 text-ink-muted">{tempo.secondary}</p>}</> : '악보에서 빠르기를 읽지 못했어요.'}
+        <dd className="mt-1 text-ink">{tempo ? <>{tempo.primary}{tempo.secondary && <p className="mt-1 text-ink-muted">{tempo.secondary}</p>}</> : '확인된 빠르기 정보가 없어요.'}
           <div className="mt-2"><Link href="/learn/practice" className={linkClass}>연습 방법에서 빠르기와 연습 알아보기</Link></div>
-        </dd>
-      </div>
-      <div>
-        <dt className="font-medium text-ink-muted">박자</dt>
-        <dd className="mt-1 text-ink">박자 정보는 확인되지 않았어요.
-          <div className="mt-2"><Link href="/learn/reading#meters" className={linkClass}>악보 읽기에서 박자 알아보기</Link></div>
         </dd>
       </div>
     </dl>
