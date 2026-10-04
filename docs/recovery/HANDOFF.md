@@ -7,16 +7,15 @@ Last updated: 2026-10-04 KST
 ## Current phase
 
 **#225·#226·#227·#228을 완료하는 goal 진행 중(사용자 지시 2026-10-04). #121은 제외한다.**
-#225 용어 사전 [PR232](reviews/PR-232.md) 생성·로컬 검증 완료: [검증](validation/2026-10-04-issue-225-glossary.md).
+#225 용어 사전 완료: [PR232](reviews/PR-232.md) 병합·Post-merge PASS·이슈 종료·브랜치 정리.
 전체 실행 계획은 [후속 phase](phases/LEARN-followups.md)에 있다.
 #226 사용자 권장안 선택(2026-10-04): 로그인 사용자의 곡별 연습 기록만 표시, 비로그인 저장·레슨 열람·완료 판정 없음([조사](validation/2026-10-04-issue-226-discovery.md)).
 PR231 병합 후 확인 완료. E2E flaky 1건과 나머지 결과는 [PR231 로그](reviews/PR-231.md).
 
 ## Next action
 
-- #225: [PR232](reviews/PR-232.md) 승인 후 병합·이슈 종료·브랜치 정리 완료. Post-merge checks 결과 확인.
-- #226: 사용자 승인 범위의 API·로그인 전용 페이지 구현과 로컬 검증 완료([검증](validation/2026-10-04-issue-226-practice-history.md)). [PR235](reviews/PR-235.md) 생성 후 CI·리뷰 대응.
-- #227: 기존 converter를 저작 시점에 재사용한 창작 3곡·공개 코스 구현 및 로컬 검증 완료([검증](validation/2026-10-04-issue-227-first-course.md)). [PR233](reviews/PR-233.md)의 Firefox 재생 시작 E2E 실패 원인 조사·수정.
+- #226: 사용자 승인 범위의 API·로그인 전용 페이지 구현과 로컬 검증 완료([검증](validation/2026-10-04-issue-226-practice-history.md)). [PR235](reviews/PR-235.md) P2 페이지 중복/누락 리뷰를 기준 시각+cursor 조회로 수정.
+- #227: 기존 converter를 저작 시점에 재사용한 창작 3곡·공개 코스 구현 및 로컬 검증 완료([검증](validation/2026-10-04-issue-227-first-course.md)). [PR233](reviews/PR-233.md)의 resume 미완료·모바일 회전 복귀 수정 제출, 새 CI·리뷰 확인.
 - #228: 공유 악보 캐시에서 원본 박자·조표만 읽는 구현·로컬 검증 완료([검증](validation/2026-10-04-issue-228-score-provenance.md)). [PR234](reviews/PR-234.md) 전체 CI 통과 후 사용자에게 병합 승인 요청, 답변 대기.
 - 통합 순서: #228 병합 뒤 PR233에 scoreUrl을 전달해 내장곡의 박자·조표까지 연결하고 검증한다. #226 결정 대기 동안 #227·#228을 먼저 구현했다.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
