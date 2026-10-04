@@ -152,7 +152,10 @@ async function measure(root: Locator, enabled: boolean | null, environment: Envi
   }
   if (!MEASURE_ONLY) {
     const baseline = requireBaseline(BASELINE)[environment][state]
-    if (state === 'before-play') expect(counts.controls + counts.textBlocks).toBeLessThanOrEqual(baseline.controls + baseline.textBlocks)
+    if (state === 'before-play') {
+      expect(counts.controls).toBe(17)
+      expect(counts.controls + counts.textBlocks).toBeLessThanOrEqual(baseline.controls + baseline.textBlocks)
+    }
     else {
       expect(counts.controls).toBeLessThanOrEqual(baseline.controls)
       expect(counts.textBlocks).toBeLessThanOrEqual(baseline.textBlocks)
@@ -216,20 +219,27 @@ test('measures setup, playing and paused playback elements', async ({ page }) =>
       await expect(root.getByRole('note', { name: '키보드 단축키' })).toHaveCount(0)
       await expect(root.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveCount(1)
       await expect(root.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveAttribute('href', '/learn/practice')
+      await expect(root.getByRole('link', { name: '손가락 번호 보기' })).toHaveAttribute('href', '/learn/hands')
     }
     await page.evaluate(() => scrollTo(0, 0))
     await expect(root.getByTestId('playback-play')).toBeEnabled()
     await expect(root.getByTestId('playback-pause')).toBeDisabled()
     results.push(await measure(root, enabled, environment, 'before-play'))
     const currentTime = await start(root)
-    if (!MEASURE_ONLY) await expect(root.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveCount(0)
+    if (!MEASURE_ONLY) {
+      await expect(root.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveCount(0)
+      await expect(root.getByRole('link', { name: '손가락 번호 보기' })).toHaveCount(0)
+    }
     results.push(await measure(root, enabled, environment, 'playing'))
     await root.getByRole('button', { name: '일시정지', exact: true }).click()
     await expect(root.getByRole('button', { name: '재생', exact: true })).toBeEnabled()
     const pausedTime = await currentTime()
     await page.waitForTimeout(1100)
     expect(await currentTime()).toBe(pausedTime)
-    if (!MEASURE_ONLY) await expect(root.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveCount(0)
+    if (!MEASURE_ONLY) {
+      await expect(root.getByRole('link', { name: '연습 방법과 단축키 보기' })).toHaveCount(0)
+      await expect(root.getByRole('link', { name: '손가락 번호 보기' })).toHaveCount(0)
+    }
     results.push(await measure(root, enabled, environment, 'paused'))
     if (!MEASURE_ONLY) {
       if (!enabled) off.push(...results)

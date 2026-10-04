@@ -10,6 +10,6 @@ it('uses the shared lesson shell with one h1 and metadata', () => {
   expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
   expect(screen.getByRole('heading', { level: 1, name: '건반' })).toBeInTheDocument()
   expect(screen.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
-  expect(screen.getByRole('link', { name: '다음 레슨: 연습 방법' })).toHaveAttribute('href', '/learn/practice')
+  expect(screen.getByRole('link', { name: '다음 레슨: 악보 읽기' })).toHaveAttribute('href', '/learn/reading')
   expect(screen.queryByRole('link', { name: /이전 레슨/ })).toBeNull()
 })

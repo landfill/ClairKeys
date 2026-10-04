@@ -28,7 +28,7 @@ async function settle(page: Page) {
   await page.waitForTimeout(1000)
 }
 
-for (const path of ['/', '/explore', '/learn', '/learn/keyboard', '/learn/practice']) {
+for (const path of ['/', '/explore', '/learn', '/learn/keyboard', '/learn/reading', '/learn/hands', '/learn/practice']) {
   test(`${path} writes nothing to the console log`, async ({ page }) => {
     const logs = collectLogs(page)
     await page.goto(path)

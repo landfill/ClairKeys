@@ -163,6 +163,21 @@ describe('FallingNotesPlayer', () => {
     expect(screen.getByTestId('active-keys')).toHaveAttribute('data-note-names', 'true')
   })
 
+  it('offers finger help for original or inferred numbering only on the setup screen', () => {
+    setIdle()
+    const fingered = { ...animationData, notes: [{ midi: 60, start: 1, duration: 1, finger: 1 as const, hand: 'R' as const }] }
+    const { rerender } = render(<FallingNotesPlayer animationData={fingered} />)
+    expect(screen.getByRole('link', { name: '손가락 번호 보기' })).toHaveAttribute('href', '/learn/hands')
+    rerender(<FallingNotesPlayer animationData={animationData} />)
+    expect(screen.getByRole('link', { name: '손가락 번호 보기' })).toHaveAttribute('href', '/learn/hands')
+    setPaused()
+    rerender(<FallingNotesPlayer animationData={fingered} />)
+    expect(screen.queryByRole('link', { name: '손가락 번호 보기' })).toBeNull()
+    mockPlayerState.isPlaying = true
+    rerender(<FallingNotesPlayer animationData={fingered} />)
+    expect(screen.queryByRole('link', { name: '손가락 번호 보기' })).toBeNull()
+  })
+
   it('derives the visual frame and active keys from the same playhead on first render', () => {
     render(<FallingNotesPlayer animationData={animationData} />)
 

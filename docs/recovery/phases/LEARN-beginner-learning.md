@@ -41,7 +41,7 @@ Decision: [D-094](../DECISIONS.md)
 | L-2 | [#211](https://github.com/landfill/ClairKeys/issues/211) | `/learn/keyboard` 건반 익히기(누르면 이름과 소리, 가운데 도, 도 찾기 연습) | L-1 | DONE ([PR218](../reviews/PR-218.md)) |
 | L-3 | [#212](https://github.com/landfill/ClairKeys/issues/212) | 재생 화면 설명을 `/learn/practice`로 옮기고 계이름 표시 토글 추가 | L-1 | DONE ([PR219](../reviews/PR-219.md)) |
 | L-4 | [#213](https://github.com/landfill/ClairKeys/issues/213) | `/learn/reading` 악보 읽기(음높이, 길이·박자). 크면 L-4a·L-4b로 나눈다 | L-2 | IN_PROGRESS |
-| L-5 | [#214](https://github.com/landfill/ClairKeys/issues/214) | `/learn/hands` 손 자세와 손가락 번호, 재생 화면 운지 표시와 연결 | L-1, L-3 | IN_PROGRESS |
+| L-5 | [#214](https://github.com/landfill/ClairKeys/issues/214) | `/learn/hands` 손 자세와 손가락 번호, 재생 화면 운지 표시와 연결 | L-1, L-3 | DONE ([PR221](../reviews/PR-221.md)) |
 | L-6 | [#215](https://github.com/landfill/ClairKeys/issues/215) | 내 곡의 소개(원본 근거가 있는 곡 정보와 레슨 연결) | L-2, L-4, L-5 | NOT_STARTED |
 
 ### 단계에 걸친 제약
@@ -96,3 +96,4 @@ L-6의 곡 분석과 진입 화면, 관련 Jest·E2E.
 - 2026-10-04: L-4a PR220 생성(#213의 음높이 부분, 지도 공개는 L-4b). L-5 착수.
 - 2026-10-04: L-4a PR220 병합(`5d54bec`, 사용자의 사전 병합 허용). #213은 L-4b가 남아 OPEN. `/learn/reading`은 지도 비공개(URL로만).
 - 2026-10-04: L-5 PR221 생성. L-4b(길이·박자) 착수.
+- 2026-10-04: L-5 PR221 병합(`c00e6e5`), #214 종료. 터치 재생 전 요소 수 합계가 기준과 같다(27). 이후 재생 전 추가는 다른 것을 빼야 한다.

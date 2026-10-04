@@ -97,6 +97,7 @@ export default function ReadingPage() {
             <p className="mt-2">8분의 6박자는 한 마디에 8분음표 여섯 개가 들어가요. 셋씩 두 묶음으로 세요. 전체 길이는 4분음표 세 개와 같아요.</p>
             <RhythmExamples ids={['meter-four', 'meter-three', 'meter-six']} />
           </section>
+          <p>손가락 번호는 <Link href="/learn/hands" className="rounded-sm text-accent hover:underline">손 레슨</Link>에서, 연습 방법은 <Link href="/learn/practice" className="rounded-sm text-accent hover:underline">연습 방법 레슨</Link>에서 익혀 봐요.</p>
         </div>
       </ReadingAudioProvider>
     </LessonLayout>
