@@ -41,7 +41,7 @@ Decision: [D-094](../DECISIONS.md)
 | L-2 | [#211](https://github.com/landfill/ClairKeys/issues/211) | `/learn/keyboard` 건반 익히기(누르면 이름과 소리, 가운데 도, 도 찾기 연습) | L-1 | DONE ([PR218](../reviews/PR-218.md)) |
 | L-3 | [#212](https://github.com/landfill/ClairKeys/issues/212) | 재생 화면 설명을 `/learn/practice`로 옮기고 계이름 표시 토글 추가 | L-1 | DONE ([PR219](../reviews/PR-219.md)) |
 | L-4 | [#213](https://github.com/landfill/ClairKeys/issues/213) | `/learn/reading` 악보 읽기(음높이, 길이·박자). 크면 L-4a·L-4b로 나눈다 | L-2 | IN_PROGRESS |
-| L-5 | [#214](https://github.com/landfill/ClairKeys/issues/214) | `/learn/hands` 손 자세와 손가락 번호, 재생 화면 운지 표시와 연결 | L-1, L-3 | NOT_STARTED |
+| L-5 | [#214](https://github.com/landfill/ClairKeys/issues/214) | `/learn/hands` 손 자세와 손가락 번호, 재생 화면 운지 표시와 연결 | L-1, L-3 | IN_PROGRESS |
 | L-6 | [#215](https://github.com/landfill/ClairKeys/issues/215) | 내 곡의 소개(원본 근거가 있는 곡 정보와 레슨 연결) | L-2, L-4, L-5 | NOT_STARTED |
 
 ### 단계에 걸친 제약
@@ -93,3 +93,4 @@ L-6의 곡 분석과 진입 화면, 관련 Jest·E2E.
 - 2026-10-04: L-3 PR219 병합(`12faf42`), #212 종료. D-094 6항 추가.
 - 2026-10-04: L-4 착수 결정(이슈 #213 "착수 시 정해 기록"): 악보 그림은 손으로 그린 SVG가 아니라 기존 OSMD(`opensheetmusicdisplay`, `ScorePanel`이 쓰는 엔진)로
   코드에서 만든 MusicXML을 렌더링한다(기호 모양을 검수할 사람이 없어 조판 엔진에 맡긴다). 음높이(L-4a)와 길이·박자(L-4b) 두 PR로 나눈다.
+- 2026-10-04: L-4a PR220 생성(#213의 음높이 부분, 지도 공개는 L-4b). L-5 착수.
