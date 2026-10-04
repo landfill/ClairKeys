@@ -3441,3 +3441,16 @@
 - Scope-risk: moderate
 - Directive: 단일 값으로 요약할 수 없는 악보를 임의로 첫 박자/조표만으로 대표하지 않는다. 계정별 비공개 악보 접근은 기존 score endpoint를 그대로 사용한다.
 - Related: #228, phases/LEARN-song-provenance.md, D-049, D-052, D-094
+
+## D-098: 연습 진도 첫 버전은 로그인 사용자의 기존 곡별 기록만 모은다
+
+- Date: 2026-10-04
+- Context: #226은 저장 범위와 완료 기준의 사용자 결정이 필요했다. 사용자는 기존 곡별 기록 모음 권장안을 선택했다.
+- Decision: PracticeSession의 사용자별·현재 접근 가능한 악보 기록을 집계한다. `/practice`는 로그인 전용, 배우기 홈에서 진입하며 `/learn`은 공개다. 최초 조회에서 DB에 보이는 최대 PracticeSession ID 이하의 기록을 마지막 집계 날짜·곡 ID cursor로 최근 연습순 20곡씩 조회하고 곡별 기록 횟수·총 재생 시간·최고 재생 위치·최근 연습일을 표시한다. DB 변경은 없다.
+- Rejected: 앱 시각만으로 기록 범위 제한 | DB 시계 차이와 늦게 반영되는 입력을 막기 위해 cursor에 최대 기록 ID 상한을 저장한다(PR235 추가 P2).
+- Rejected: offset 페이지 조회 | 기록 추가와 공개 상태 변경 사이에 같은 곡이 중복되거나 누락될 수 있어 PR235 P2 리뷰를 수용했다.
+- Rejected: 열람을 레슨 완료로 표시 | 사용자가 선택한 범위에 없고 학습 완료 근거가 없다.
+- Confidence: high
+- Scope-risk: moderate
+- Directive: completedPercentage는 최대 재생 위치다. 정답률·숙련도·완료율로 이름을 바꾸지 않는다. 타인의 비공개 악보를 기록 목록에서 노출하지 않는다.
+- Related: #226, phases/LEARN-practice-history.md, D-085

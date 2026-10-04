@@ -5,7 +5,7 @@
  * 런타임의 `Request`를 찾다가 죽는다. 판정은 문자열 연산이므로 런타임이 필요 없다.
  */
 
-export const PROTECTED_PATHS = ['/library', '/upload', '/profile', '/admin'] as const
+export const PROTECTED_PATHS = ['/library', '/upload', '/profile', '/admin', '/practice'] as const
 
 /**
  * 세그먼트 경계로 판정한다. `startsWith`만 쓰면 `/admin`이 `/administrator`와 `/admin-tools`까지,
