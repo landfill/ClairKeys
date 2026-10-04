@@ -17,7 +17,6 @@ Last updated: 2026-10-03 KST
 
 - #213(L-4): L-4a 음높이는 [PR220](reviews/PR-220.md) 병합(`5d54bec`, 사용자의 사전 병합 허용 — 그 허용은 PR220 하나였고 소진됐다).
   L-4b 길이·박자는 L-5 PR 뒤에 `codex/learn-4b-reading-rhythm`에서 시작하고 그때 `reading`의 `available`을 켠다. 새 학습 페이지 E2E는 PR 전에 Firefox로도 돌린다.
-- PR221 병합 커밋 `c00e6e5`의 Post-merge checks와 운영 `/learn/hands` 확인 결과를 PR221 리뷰 로그에 기록한다.
 - #213 L-4b(길이·박자): 브랜치 `codex/learn-4b-reading-rhythm` 착수. 구현이 끝나면 main(L-5 포함)을 병합하고 `reading`의 `available`을 켠다. 이 PR이 #213을 닫는다.
 - Codex 주간 한도 25% 미만 경고(2026-10-04)에 대해 사용자가 "한도는 여유있다"고 확인했다. L-4b·L-6을 이어서 진행한다.
 - 이슈 [#222](https://github.com/landfill/ClairKeys/issues/222): `console-quiet.spec.ts:40`이 CI에서 세 번 연속 첫 시도 실패 후 재시도 통과. 원인 가설(서비스 워커 미차단)은 미확인.
