@@ -15,8 +15,6 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
-- #213(L-4): L-4a 음높이는 [PR220](reviews/PR-220.md) 병합(`5d54bec`, 사용자의 사전 병합 허용 — 그 허용은 PR220 하나였고 소진됐다).
-  L-4b 길이·박자는 L-5 PR 뒤에 `codex/learn-4b-reading-rhythm`에서 시작하고 그때 `reading`의 `available`을 켠다. 새 학습 페이지 E2E는 PR 전에 Firefox로도 돌린다.
 - #208 종료 여부를 사용자에게 확인한다. 완료 조건 대조는 phase Progress의 마지막 항목. 본문 체크리스트 여섯 줄은 GitHub가 자동으로 체크하지 않아 미체크 상태다.
 - 다음 작업 후보: 이슈 [#222](https://github.com/landfill/ClairKeys/issues/222)(`console-quiet.spec.ts:40`이 CI에서 다섯 번 연속 첫 시도 실패 후 재시도 통과. 원인 가설인 서비스 워커 미차단은 미확인), [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측.
 - LEARN 후속 후보: 검증된 박자·조표를 페이지 수준에서 쓸 수 있게 되면 곡 소개에 추가(L-6), `PracticeGuideControls`·`AnimationPlayer` 정리(L-3),
