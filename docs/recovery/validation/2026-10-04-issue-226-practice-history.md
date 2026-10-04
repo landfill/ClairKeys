@@ -66,3 +66,16 @@ Chrome에서 클릭하면 로그인 화면으로 이동하는 것을 확인했�
 승인·병합된 PR234의 main을 통합하고 D-097·D-098을 모두 유지했다. phase에서 이 구현 검증 원본으로 바로 연결하도록 링크를 추가했다.
 통합 트리의 전체 Jest 159 suites / 1571 tests, tsc, lint, phase 상대 링크와 `git diff --check` PASS.
 기록 화면·API 구현은 cursor 수정 뒤와 같아 로컬 history E2E를 중복 실행하지 않았고, 해당 12건의 결과와 새 PR CI로 확인한다.
+
+## DB 기록 ID 기준점 — `e5f77ac`
+
+추가 P2를 수용해 앱 시각 asOf 조건을 제거했다. 최초 요청에서 현재 사용자·접근 가능한 악보의 최대 PracticeSession ID를 DB에서 읽고
+현재/다음 cursor에 보관한다. 이후 모든 집계는 `id <= maxSessionId`를 적용하며 기준점을 다시 계산하지 않는다.
+`createdAt`은 정렬과 keyset 경계에만 사용한다. 새로 할당된 더 큰 ID는 과거 시각을 가진 기록이어도 기존 조회에 들어오지 않는다.
+
+- 수정 전 DB 기준점 회귀: 3 FAIL/10 PASS.
+- 수정 후 API/UI 대상: 16 PASS. DB 시각이 앱보다 앞선 fixture, 이후 더 큰 기록 ID가 생겨도 기존 상한 유지, 이전 페이지 상한 유지,
+  잘못된 ID cursor, 기준점 DB 조회 실패, 인증·접근 필터를 검증했다.
+- 승인된 첫 곡 코스 main 통합 후 전체 Jest 161 suites / 1581 tests, tsc, lint PASS.
+- 기록·학습 지도 E2E × Chromium/Firefox/Mobile Chrome: 24 PASS(20.0초).
+- `git diff --check` PASS. DB schema·운영 DB 쓰기 없음. 실제 운영 DB 부하 검증은 하지 않았다.

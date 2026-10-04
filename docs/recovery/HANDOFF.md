@@ -15,7 +15,7 @@ PR231 병합 후 확인 완료. E2E flaky 1건과 나머지 결과는 [PR231 로
 
 ## Next action
 
-- #226: 사용자 승인 범위의 API·로그인 전용 페이지 구현과 로컬 검증 완료([검증](validation/2026-10-04-issue-226-practice-history.md)). [PR235](reviews/PR-235.md) CI는 통과했으나 추가 P2(DB 기준점)가 남았다. 최초 조회의 최대 기록 ID 상한으로 수정·검증·재리뷰 대응.
+- #226: 사용자 승인 범위의 API·로그인 전용 페이지 구현과 로컬 검증 완료([검증](validation/2026-10-04-issue-226-practice-history.md)). [PR235](reviews/PR-235.md) 추가 P2를 최대 DB 기록 ID 상한으로 수정·검증·회신·resolve했다. 최종 head CI·재리뷰 확인 후 병합 승인 요청.
 - #227: 기존 converter를 저작 시점에 재사용한 창작 3곡·공개 코스 구현 및 로컬 검증 완료([검증](validation/2026-10-04-issue-227-first-course.md)). [PR233](reviews/PR-233.md) 사용자 승인 후 병합·#227 종료·브랜치 정리. Post-merge checks 확인.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
