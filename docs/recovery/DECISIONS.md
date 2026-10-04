@@ -3429,3 +3429,15 @@
 - Directive: 원본과 생성물은 같은 PR에 갱신한다. 내장곡을 사용자 PDF 변환 결과로 표현하지 않는다. 정적 코스에는 SheetMusic ID나 DB 연습 저장을 가짜로 부여하지 않는다. CI에서 오디오 장치가 시작되지 않으면 네이티브 context 증거와 정지 UI를 검증하고 실제 재생 성공으로 기록하지 않는다. 오디오 시계 모사나 테스트 skip으로 통과시키지 않는다.
 - Follow-up: #227 E2E의 resume 미완료 재현에서 모바일 회전이 복귀하지 않아 코스 이동을 막았다. 공유 startAudio의 resume 대기를 4초로 제한하고 기존 상태 줄에서 실패를 안내한다. 늦은 완료가 재생을 재개하지 않는 회귀를 고정하며 오디오 clock 원칙은 유지한다.
 - Related: #227, phases/LEARN-first-course.md, D-094
+
+## D-097: 곡 소개는 공유 악보 아티팩트에서 확실한 박자·조표만 읽는다
+
+- Date: 2026-10-04
+- Context: JSON의 timeSignature와 keySignature에는 원본과 기본값을 구분할 근거가 없다. 기존 score artifact에 실제 XML과 검증된 로드 경로가 있다.
+- Decision: 페이지가 소개에 score URL을 넘기고 기존 `loadScoreArtifact` Promise 캐시를 공유한다. 모든 파트의 첫 음/쉼표 전에 명시되고 곡 전체에서 한 값으로 일치하는 일반 박자표/전통 조표만 표시한다. 복합 표현·다중 값·로드 실패는 해당 행을 생략한다. 조는 명명하지 않고 샵/플랫 개수와 원본 악보 출처를 쓴다.
+- Rejected: 애니메이션 계약에 새 출처 필드 | 기존 저장물에는 여전히 출처가 없고 변환·저장·정규화 경로 변경 범위가 더 크다.
+- Rejected: 기본값 4/4 또는 C 표시 | 원본에서 확인한 사실로 오해하게 된다.
+- Confidence: high
+- Scope-risk: moderate
+- Directive: 단일 값으로 요약할 수 없는 악보를 임의로 첫 박자/조표만으로 대표하지 않는다. 계정별 비공개 악보 접근은 기존 score endpoint를 그대로 사용한다.
+- Related: #228, phases/LEARN-song-provenance.md, D-049, D-052, D-094

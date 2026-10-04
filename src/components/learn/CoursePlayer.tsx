@@ -17,7 +17,7 @@ export default function CoursePlayer({ piece, next }: { piece: CoursePiece; next
         <p className="text-sm text-ink-muted">ClairKeys 창작 연습곡 · 이 코스를 위해 작성한 원본 악보예요.</p>
         <p className="mt-2 text-sm text-ink-muted">이 코스의 연습 기록은 계정에 저장되지 않아요.</p>
         <a href={piece.sourceUrl} download className="mt-2 inline-flex min-h-11 items-center rounded-sm text-sm text-accent hover:underline">원본 악보 내려받기 (MusicXML)</a>
-        <SongIntro data={piece.data} />
+        <SongIntro data={piece.data} scoreUrl={piece.scoreUrl} />
         <nav aria-label="코스 이동" className="mt-6 flex flex-wrap gap-4 border-t border-rule pt-4 text-sm">
           <Link href="/learn/course" className="inline-flex min-h-11 items-center rounded-sm text-accent hover:underline">첫 곡 코스로 돌아가기</Link>
           {next && <Link href={`/learn/course/${next.slug}`} className="inline-flex min-h-11 items-center rounded-sm text-accent hover:underline">다음 곡: {next.title}</Link>}

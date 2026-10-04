@@ -42,3 +42,29 @@ Jest의 별도 기대값은 생성기에서 가져오지 않으며 음높이·�
 
 실기기·실제 MIDI·청취·스크린리더 낭독·preview/운영은 미확인. 정적 코스는 DB의 SheetMusic이 아니므로 계정 연습 기록을 쓰지 않으며 화면에 명시한다.
 박자·조표의 곡 소개 표시는 #228이 담당한다. 원본 MusicXML에는 명시된 4/4와 fifths=0이 있어 후속 단계가 사용할 수 있다.
+
+## CI 이후 수정 — `b48a20d` / `7a995d2`
+
+PR232 병합 main을 통합하면서 배우기 홈의 코스·용어 사전 링크를 모두 유지했다(`b48a20d`).
+첫 CI Firefox의 재생 시작 실패는 [PR233 로그](../reviews/PR-233.md)에 있다.
+`AudioContext.resume()`이 끝나지 않는 fixture로 기존 E2E 실패를 재현했고, 모바일에서는 회전 상태가 복귀하지 않아 코스 링크 클릭도 막혔다.
+공유 startAudio에서 resume 대기를 4초로 제한해 false를 반환하고 기존 orientation.exit 경로로 돌아오도록 수정했다.
+기존 status 줄을 오류 안내로 바꾸므로 조작 요소를 추가하지 않는다. 원래 오디오 시계를 유지하며 늦은 resume 완료가 자동 재생을 일으키지 않는다.
+
+| 검증 | 결과 |
+|---|---|
+| resume 영구 pending E2E 재현 | FAIL 의도: compact bar 없음. 추가 모바일 이동 검증도 click 차단으로 실패 |
+| 새 오디오 훅 회귀(수정 전) | FAIL 의도: 4.1초 이후에도 started가 undefined(미완료) |
+| 수정 후 오디오 훅 | PASS 11 tests. 4초 실패 반환·오류 상태·늦은 완료 후 정지 유지·다시 재생 성공 |
+| 전체 Jest (`7a995d2` 트리) | PASS 156 suites / 1538 tests |
+| tsc / lint | PASS |
+| 코스 + playback-element-count × Chromium/Firefox/Mobile Chrome | 16 passed / 3 skipped / 2 failed. 코스 14 PASS·모바일 악보 1 skip. 실패 2건은 dev 서버의 기존 디버그 텍스트 5개가 production 요소 기준에 포함된 결과 |
+| 기존 `ELEMENT_COUNT_MEASURE_ONLY=1`로 수정 전후 같은 dev 환경 비교 | PASS: 2환경 × 재생 전/재생 중/일시정지의 controls/textBlocks가 정확히 동일. baseline은 `b48a20d`의 플레이어 파일이며 측정 뒤 현재 소스를 바이트 단위로 복원 |
+
+개발 모드 실측(전=후): desktop 재생 전 17/15, 재생 중·일시정지 8/8; touch 재생 전 17/15, 재생 중·일시정지 7/6.
+기존 dev 전용 Current Time/Total Length/Active Keys/Tempo Scale/Look Ahead 5개가 포함된다. Production 기준 검증은 새 PR CI가 맡는다.
+기준값이나 제외 selector를 바꾸지 않았다. 새 concern이 생겨 해당 트리의 전체 검증을 다시 실행했다(D-088).
+
+네이티브 시작 E2E는 AudioContext의 resume을 관찰만 한다. 실제 장치가 시작되지 않은 Firefox에서 state=suspended·pending 근거가 있을 때만
+오류 안내·정지 UI 유지로 검증하고 진단을 첨부한다. 이 분기를 실제 오디오 재생 성공으로 기록하지 않는다. 테스트를 skip하거나 대체 clock으로 성공시키지 않는다.
+CI의 실패 원인이 다른 경우(클릭 미전달/정상 context인데 재생 불가 등)는 이 단언도 실패한다. 다음 CI에서 실제 native 상태를 확인한다.

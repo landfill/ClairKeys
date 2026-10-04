@@ -112,3 +112,15 @@ test('preserves the course when the audio device cannot resume', async ({ page }
   await page.getByRole('link', { name: '첫 곡 코스로 돌아가기' }).click()
   await expect(page.getByRole('heading', { level: 1, name: '첫 곡 코스' })).toBeVisible()
 })
+
+
+test('introduces verified meter and key for all authored course pieces', async ({ page }) => {
+  for (const slug of ['right-hand', 'left-hand', 'both-hands']) {
+    await page.goto(`/learn/course/${slug}`)
+    const intro = page.getByRole('region', { name: '이 곡 소개', exact: true })
+    await expect(intro).toContainText('4/4')
+    await expect(intro).toContainText('샵·플랫 없음')
+    await expect(intro.getByText('원본 악보 기준', { exact: true })).toHaveCount(2)
+    await expect(intro.getByRole('link', { name: '악보 읽기에서 박자표 익히기' })).toHaveAttribute('href', '/learn/reading#meters')
+  }
+})
