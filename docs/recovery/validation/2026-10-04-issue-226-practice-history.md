@@ -34,7 +34,7 @@ DB schema·migration·쓰기 경로·재생 화면은 변경하지 않았다. �
 
 ## Gaps
 
-운영 계정의 실제 기록·운영 DB 성능·실제 로그인 제공자 흐름·실기기·스크린리더 낭독 미검증.
+초기 구현 검증에서는 운영 계정의 실제 기록·운영 DB 성능·실제 로그인 제공자 흐름·실기기·스크린리더 낭독을 확인하지 않았다. 이후 기존 로그인 세션의 읽기 확인은 아래에 추가했다.
 API DB 집계는 Prisma mock 계약 테스트이며 실제 DB 쓰기를 수행하지 않았다. 브라우저에서는 실제 비로그인 API 401과 middleware 리디렉션을 확인했다.
 전체 브라우저 매트릭스와 최종 production build는 PR CI에 맡긴다. preview는 PR 생성 후 확인한다.
 
@@ -79,3 +79,19 @@ Chrome에서 클릭하면 로그인 화면으로 이동하는 것을 확인했�
 - 승인된 첫 곡 코스 main 통합 후 전체 Jest 161 suites / 1581 tests, tsc, lint PASS.
 - 기록·학습 지도 E2E × Chromium/Firefox/Mobile Chrome: 24 PASS(20.0초).
 - `git diff --check` PASS. DB schema·운영 DB 쓰기 없음. 실제 운영 DB 부하 검증은 하지 않았다.
+
+## 병합 후 운영 읽기 확인
+
+운영 `/learn`에서 세 신규 진입 링크를 확인했다. 기존에 로그인되어 있던 Chrome 세션으로 `/practice`를 열어 실제 DB 기록이 표시되는 것을 확인했다.
+한 곡의 기존 상세 화면 요약과 횟수·최고 재생 위치·최근 연습일을 대조했고, 시간도 기존 분 단위 표기와 일치했다.
+계정명·곡명·비공개 식별자·개별 기록 값은 이 공개 기록에 보관하지 않는다. 새 연습 기록 생성·업로드·직접 DB 쓰기는 수행하지 않았다.
+
+- 자격증명 없는 운영 `GET /api/practice`: 401, `Cache-Control: private, no-store`, `{"error":"Unauthorized"}`.
+- 소유 비공개 악보의 원본 score endpoint에 자격증명 없는 GET: 404 `Score not found`.
+- 같은 악보의 metadata endpoint는 기존 코드 계약대로 403 `Access denied`. 처음 두 endpoint 모두 404를 기대한 보조 확인은 이 계약 차이 때문에 실패했고, 소스 대조 후 각 endpoint의 기대값을 확인했다. 접근 규칙을 변경하지 않았다.
+- 실제 DB 첫 페이지 읽기는 확인했다. 보조 cursor 직접 탐색은 브라우저의 `ERR_BLOCKED_BY_CLIENT`로 수행하지 못했으며 우회하지 않았다. 다중 페이지·cursor 경계는 앞선 API 단위/E2E fixture 검증 범위다.
+- 선택적인 로컬 임시 PostgreSQL 검증은 Docker daemon이 실행 중이 아니어서 시작하지 않았다. Docker나 운영 환경을 변경하지 않았다.
+
+현재 남은 한계: 운영 DB 부하·실제 계정 다중 페이지·실제 로그인 제공자 흐름·실기기·스크린리더 낭독. 기존 로그인 세션의 실제 기록 읽기 확인은 완료했다.
+
+서비스워커 경로도 확인했다: `/api/practice`는 `public/sw.js`의 캐시 대상 패턴과 일치하지 않아 개인 API 응답을 별도 캐시에 넣지 않는다.

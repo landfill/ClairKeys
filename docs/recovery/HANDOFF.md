@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-10-04 KST
+Last updated: 2026-10-05 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
@@ -13,12 +13,12 @@ Last updated: 2026-10-04 KST
 
 ## Next action
 
-- PR235 병합 커밋 `07ff563`의 Post-merge checks(run 37210345935) 결과·재시도를 확인한다. 전체 목표 완료 조건을 대조하고 phase·HANDOFF·goal 상태를 갱신한다.
+- PR235 병합 커밋 `07ff563`의 Post-merge checks(run 37210345935) 결과·재시도를 확인한다. [완료 대조](validation/2026-10-04-learn-followups-completion-audit.md)의 마지막 검사·상태 항목을 마치고 phase·HANDOFF·goal 상태를 갱신한다.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
   재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
 - LEARN이 남긴 제약: 터치 재생 전 요소 수 합계가 기준과 같다(27). 재생 화면에 요소를 더하려면 다른 것을 빼야 한다(D-094 6항, `e2e/playback-element-count.spec.ts`).
-  실기기 터치·회전, 실제 MIDI, 청취, 스크린리더, 운영의 비공개 악보는 LEARN 전 단계에서 미검증이다(각 검증 기록의 Gaps).
+  실기기 터치·회전, 실제 MIDI, 청취, 스크린리더는 미검증이다. 운영 비공개 원본 보호의 후속 읽기 확인은 아래 근거를 따른다.
 - 워커 운영 메모(LEARN 트랙에서 쓴 방식): 구현 `codex --model gpt-6.1-sol -s workspace-write -a never`, 리뷰 `codex --model gpt-6-astra -c model_reasoning_effort="high" -s read-only -a never`를
   Orca 새 터미널에 띄우고 지시문은 파일로 두어 경로만 보낸다. 긴 작업의 지시문·진행 메모는 git 제외 `local-test-data/results/<작업>/`에 두면 계정·세션이 바뀌어도 이어받을 수 있다.
   리뷰 지시문 끝에 "지적만 35줄 이내로 다시 출력"을 넣는다(터미널은 마지막 화면만 읽힌다). E2E·측정·커밋·기록은 오케스트레이터가 한다. 브랜치를 바꾼 뒤 `.next/types`를 지운다.
@@ -44,7 +44,7 @@ Last updated: 2026-10-04 KST
   워커는 백그라운드가 아니라 Orca 새 터미널에서 띄워 사용자가 볼 수 있게 한다(대화형 `codex --model <m> -s <mode> -a never`,
   지시문은 파일로 두고 경로만 보낸다). 워커 샌드박스는 포트·`.git` 쓰기를 못 하므로 E2E·fetch는 오케스트레이터가 한다.
 - 운영 DB: index migration `20260901060000` 미적용([PR173 리뷰](reviews/PR-173.md)). `PracticeSession` FK 변경도 운영 DB 작업이다.
-- 운영에 비공개 악보가 없어 비공개 차단은 로컬 실제 DB로만 검증했다. 비공개 악보가 생기면 운영에서 404를 확인한다.
+- 운영 비공개 원본 score의 비로그인 404와 metadata의 기존 403 계약을 읽기 전용으로 확인했다([운영 확인](validation/2026-10-04-issue-226-practice-history.md)).
 - Storage의 public animation URL 의존성은 현행 코드 제약이다. 비공개 JSON 보호는 후속 코드 수정이 필요하다.
 - Vercel에 이미 누적된 배포 저장량 정리(보존 정책·삭제)는 사용자가 직접 한다(#178).
 - #134 판단은 원본 기준표 평가(phase 완료 조건)로 한다. 사용자는 악보를 읽지 않고 청취로 오류를 구분하기 어렵다.
