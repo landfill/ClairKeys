@@ -94,3 +94,12 @@ PR219(L-3) 병합 후 main을 브랜치에 병합. 충돌 없음. 병합으로 �
 - OSMD는 페이지에서 예시마다 인스턴스를 만든다(8개). 저사양 기기의 로드 시간은 측정하지 않았다.
 - 그림 여백 제거는 OSMD가 만든 SVG의 경계를 측정하는 방식이라 OSMD 버전이 바뀌면 E2E의 크기 단언이 먼저 깨진다(의도한 경보).
 - 리뷰 수정 커밋은 로컬 재리뷰를 하지 않았다.
+
+## PR CI 이후 추가 (2026-10-04, `b540a7f`)
+
+- CI E2E가 Firefox에서 실패(`learn-reading.spec.ts:126`): 악보 그림을 측정 경계에 딱 맞춰 잘라내 Firefox의 1.1~1.6px 큰 경계가 밖으로 나감.
+  잘라내는 영역에 사방 8 SVG 단위(화면 최소 4px) 여백을 두고, 그림이 최소 2px 안쪽에 있다는 단언을 추가. 허용치는 늘리지 않았다.
+- hosted P2: 소리 실패 안내를 누른 버튼 아래에 표시. 폰에서 버튼이 화면 아래 끝이면 안내가 화면 밖이라 `scrollIntoView(nearest)` 추가(Mobile Chrome E2E로 발견).
+- 로컬 재검증: Jest 1460/1460, tsc, lint PASS. E2E 8개 spec × 5개 프로젝트 203 passed / 6 failed / 6 skipped. 실패 6건은 webkit·Mobile Safari의 Tab 포커스 단언
+  (macOS WebKit 설정, CI Linux WebKit에서는 통과). CI `b540a7f`: 전부 PASS(E2E 575 passed, 2 flaky).
+- 교훈: 새 학습 페이지의 E2E는 PR 전에 로컬에서 Firefox로도 돌린다(L-4a 커밋 `b540a7f`의 Directive).
