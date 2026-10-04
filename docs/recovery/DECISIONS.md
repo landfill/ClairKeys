@@ -3416,3 +3416,15 @@
 - Directive: 개발 도구의 high 권고는 이 게이트가 더는 잡지 않는다. 필요하면 로컬에서 `npm audit`으로 확인한다.
   `dependencies`와 `devDependencies` 분류가 틀리면 게이트가 새므로, 런타임에 쓰는 패키지를 `devDependencies`에 두지 않는다.
 - Related: PR216, PR207(brace-expansion override), D-087
+
+## D-096: 내장 첫 곡은 원본 MusicXML에서 저작 시점에 변환한다
+
+- Date: 2026-10-04
+- Context: #227은 OMR 인식 오류를 가르치지 않는 입력 경로가 선행이다. 기존 converter는 MusicXML을 직접 읽어 재생 JSON과 악보 아티팩트를 함께 만든다.
+- Decision: 프로젝트용 창작 MusicXML을 원본으로 보관하고 기존 `convert_with_artifact`로 정적 자산을 생성한다. 생성 시각은 결과에서 제거해 결정적으로 비교하며 테스트가 원본 음높이·시작·길이·손·운지와 생성물 최신성을 검증한다. 실행 중 DB/VM/OMR 없이 공개 코스에서 기존 재생기를 사용한다.
+- Rejected: 프런트에서 MusicXML 변환을 새로 구현 | 이미 검증한 시간·손·운지 규칙을 중복하게 된다.
+- Rejected: 내장곡을 OMR에 제출하거나 운영 DB에 업로드 | 인식 오류/운영 쓰기 없이 정적 공개 콘텐츠로 해결할 수 있다.
+- Confidence: high
+- Scope-risk: moderate
+- Directive: 원본과 생성물은 같은 PR에 갱신한다. 내장곡을 사용자 PDF 변환 결과로 표현하지 않는다. 정적 코스에는 SheetMusic ID나 DB 연습 저장을 가짜로 부여하지 않는다.
+- Related: #227, phases/LEARN-first-course.md, D-094

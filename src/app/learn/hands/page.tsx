@@ -28,6 +28,7 @@ export default function HandsPage() {
           <p className="mt-2">왼손은 새끼손가락(5)을 한 옥타브 아래 도(C3)에 놓아요. 도·레·미·파·솔(C3~G3)에 5·4·3·2·1을 차례로 놓아요.</p>
           <p className="mt-2">이 자리는 다섯 손가락을 익히는 한 가지 연습이에요. 다른 곡에서도 도를 언제나 같은 손가락으로 치는 것은 아니에요. 건반 위치는 <Link href="/learn/keyboard" className="rounded-sm text-accent hover:underline">건반 레슨</Link>에서 확인해 보세요.</p>
           <HandsKeyboard />
+          <p className="mt-4">이 자리로 <Link href="/learn/course" className="inline-flex min-h-11 items-center rounded-sm text-accent hover:underline">첫 곡 코스</Link>의 짧은 곡을 연습해 보세요.</p>
         </section>
         <section aria-labelledby="playback-fingers">
           <h2 id="playback-fingers" className="text-lg font-semibold text-ink">재생 화면과 연결</h2>
