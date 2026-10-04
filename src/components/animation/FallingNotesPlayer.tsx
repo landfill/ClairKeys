@@ -161,6 +161,8 @@ export default function FallingNotesPlayer({
   }
   // Convert canonical animation data to falling notes format
   const notes = useMemo(() => canonicalToFallingNotes(animationData), [animationData])
+  // 원본 번호와 자동 제안을 모두 포함해 실제 숫자가 있는 곡의 설정에서만 설명을 연결한다.
+  const hasFingering = useMemo(() => notes.some(note => note.finger !== undefined), [notes])
   const hasReleaseGuidance = useMemo(() => notes.some(note => note.keyRelease !== undefined), [notes])
   // One-hand practice. The other hand stays on screen as faded context and,
   // unless the reader silences it, keeps sounding as the accompaniment.
@@ -601,9 +603,10 @@ export default function FallingNotesPlayer({
             </section>
           )}
 
-          <Link href="/learn/practice" className="mb-4 inline-block rounded-sm text-sm text-accent hover:underline">
-            연습 방법과 단축키 보기
-          </Link>
+          <div className="mb-4 flex flex-wrap gap-4">
+            <Link href="/learn/practice" className="inline-block rounded-sm text-sm text-accent hover:underline">연습 방법과 단축키 보기</Link>
+            {hasFingering && <Link href="/learn/hands" className="inline-block rounded-sm text-sm text-accent hover:underline">손가락 번호 보기</Link>}
+          </div>
 
           {/* Playback Controls */}
           <div className="mb-4">

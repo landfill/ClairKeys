@@ -14,6 +14,6 @@ it('opens the unpublished lesson with one h1 and five pitch topics', () => {
   expect(screen.getByRole('link', { name: '건반 레슨' })).toHaveAttribute('href', '/learn/keyboard')
   expect(screen.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
   expect(screen.getByRole('link', { name: '이전 레슨: 건반' })).toHaveAttribute('href', '/learn/keyboard')
-  expect(screen.getByRole('link', { name: '다음 레슨: 연습 방법' })).toHaveAttribute('href', '/learn/practice')
-  expect(document.querySelector('a[href="/learn/hands"]')).toBeNull()
+  expect(screen.getByRole('link', { name: '다음 레슨: 손' })).toHaveAttribute('href', '/learn/hands')
+  expect(document.querySelector('a[href="/learn/practice"]')).toBeNull()
 })
