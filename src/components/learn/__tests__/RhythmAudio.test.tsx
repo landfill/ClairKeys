@@ -86,23 +86,61 @@ it('shows preparation until sample loading and the audio lead have finished', as
   await act(async () => { fireEvent.click(screen.getByRole('button', { name: '리듬' })) })
   expect(screen.getByRole('status', { name: '소리 준비 상태' })).toHaveTextContent('소리를 준비하고 있어요')
   expect(screen.queryByRole('status', { name: '리듬 재생 차례' })).toBeNull()
-  await act(async () => { await jest.advanceTimersByTimeAsync(5000) })
+  await act(async () => { await jest.advanceTimersByTimeAsync(2500) })
   expect(screen.queryByRole('status', { name: '리듬 재생 차례' })).toBeNull()
   await act(async () => { clockStart = performance.now() + 50; ready(true) })
   expect(screen.queryByRole('status', { name: '리듬 재생 차례' })).toBeNull()
   await act(async () => { await jest.advanceTimersByTimeAsync(50) })
   expect(screen.queryByRole('status', { name: '소리 준비 상태' })).toBeNull()
   expect(screen.getByRole('status', { name: '리듬 재생 차례' })).toHaveTextContent('1/4 · 8분음표')
+  expect(screen.queryByText(/소리를 재생하지 못했어요/)).toBeNull()
 })
-it('ends preparation with the adjacent failure notice and no playback counter on failure', async () => {
-  startAudio.mockResolvedValueOnce(false)
+it.each(['pending', 'false', 'throw'])('continues every rhythm event on the wall clock after %s audio failure', async failure => {
+  if (failure === 'pending') startAudio.mockImplementationOnce(() => new Promise<boolean>(() => {}))
+  else if (failure === 'throw') startAudio.mockImplementationOnce(() => { throw new Error('audio unavailable') })
+  else startAudio.mockResolvedValueOnce(false)
+  jest.spyOn(console, 'warn').mockImplementation(() => {})
   render(<ReadingAudioProvider><ListenButton rhythm={mixed} label="리듬" /></ReadingAudioProvider>)
   const button = screen.getByRole('button', { name: '리듬' })
   await act(async () => { fireEvent.click(button) })
+  if (failure === 'pending') {
+    await act(async () => { await jest.advanceTimersByTimeAsync(3999) })
+    expect(screen.getByRole('status', { name: '소리 준비 상태' })).toBeInTheDocument()
+    await act(async () => { await jest.advanceTimersByTimeAsync(1) })
+  }
   expect(button.nextElementSibling).toHaveTextContent('소리를 재생하지 못했어요')
   expect(button.nextElementSibling).toHaveAttribute('role', 'status')
   expect(screen.queryByRole('status', { name: '소리 준비 상태' })).toBeNull()
+  expect(screen.getByRole('status', { name: '리듬 재생 차례' })).toHaveTextContent('1/4 · 8분음표')
+  for (const [milliseconds, label] of [[375, '2/4 · 8분음표'], [375, '3/4 · 4분쉼표'], [750, '4/4 · 2분쉼표']] as const) {
+    await act(async () => { await jest.advanceTimersByTimeAsync(milliseconds) })
+    expect(screen.getByRole('status', { name: '리듬 재생 차례' })).toHaveTextContent(label)
+  }
+  await act(async () => { await jest.advanceTimersByTimeAsync(1500) })
   expect(screen.queryByRole('status', { name: '리듬 재생 차례' })).toBeNull()
+})
+it('stops a late audio start without restarting the silent playback counter', async () => {
+  let ready!: (value: boolean) => void
+  startAudio.mockImplementationOnce(() => new Promise<boolean>(resolve => { ready = resolve }))
+  render(<ReadingAudioProvider><ListenButton rhythm={mixed} label="리듬" /></ReadingAudioProvider>)
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '리듬' })) })
+  await act(async () => { await jest.advanceTimersByTimeAsync(4750) })
+  const stops = stopAudio.mock.calls.length
+  await act(async () => { ready(true) })
+  expect(stopAudio).toHaveBeenCalledTimes(stops + 1)
+  expect(screen.getByRole('status', { name: '리듬 재생 차례' })).toHaveTextContent('3/4 · 4분쉼표')
+})
+it.each(['switch', 'repeat', 'unmount'])('clears a pending audio-start deadline on %s', async action => {
+  startAudio.mockImplementation(() => new Promise<boolean>(() => {}))
+  const { unmount } = render(<ReadingAudioProvider><ListenButton rhythm={mixed} label="리듬" /><ListenButton midis={[60]} label="음높이" /></ReadingAudioProvider>)
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '리듬' })) })
+  await act(async () => { await jest.advanceTimersByTimeAsync(1000) })
+  if (action === 'unmount') unmount()
+  else await act(async () => { fireEvent.click(screen.getByRole('button', { name: action === 'repeat' ? '리듬' : '음높이' })) })
+  await act(async () => { await jest.advanceTimersByTimeAsync(3000) })
+  expect(screen.queryByText(/소리를 재생하지 못했어요/)).toBeNull()
+  expect(screen.queryByRole('status', { name: '리듬 재생 차례' })).toBeNull()
+  if (action !== 'repeat') expect(jest.getTimerCount()).toBe(0)
 })
 it.each([
   ['음높이', '리듬'], ['리듬', '음높이'], ['리듬', '다른 리듬'],

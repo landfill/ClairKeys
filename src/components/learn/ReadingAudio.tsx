@@ -5,6 +5,9 @@ import { Button } from '@/components/ui'
 import { DEFAULT_MASTER_GAIN, useFallingNotesAudio } from '@/hooks/useFallingNotesAudio'
 import { rhythmTimeline, type RhythmExample } from '@/lib/learn/rhythm'
 
+// 샘플 로딩 상한(2500ms)에 여유를 주되, 오디오 장치가 없어도 글 진행을 시작한다.
+const RHYTHM_AUDIO_START_WAIT_MS = 4000
+
 type PreviewRequest = { midis: readonly number[]; rhythm?: never } | { rhythm: RhythmExample; midis?: never }
 type Progress = { buttonId: string; index: number; count: number; label: string }
 const AudioPreview = createContext<{
@@ -51,14 +54,28 @@ export function ReadingAudioProvider({ children }: { children: ReactNode }) {
       // 기존 피아노 일정 재생기로 길이를 연주하고, 쉼표에서는 같은 버스의 소리만 끈다.
       setVolume(timeline.events[0].midi === null ? 0 : DEFAULT_MASTER_GAIN)
       let sounding = false
-      try { if (notes.length) sounding = await startAudio(notes, 0, 1, false) }
-      catch (error) { if (token === run.current) console.warn('Reading rhythm audio unavailable:', error) }
-      if (token !== run.current) return
-      if (notes.length && !sounding) {
-        setPreparingButton(null)
-        setFailedButton(buttonId)
-        cancel()
-        return
+      if (notes.length) {
+        let abandoned = false
+        const starting = (async () => {
+          try { return await startAudio(notes, 0, 1, false) }
+          catch (error) {
+            if (token === run.current) console.warn('Reading rhythm audio unavailable:', error)
+            return false
+          }
+        })().then(played => {
+          // 취소는 이미 오디오 세대를 무효화했다. 새 예시의 소리는 멈추지 않는다.
+          if (abandoned && token === run.current) stopAudio()
+          return played
+        })
+        sounding = await Promise.race([starting, wait(RHYTHM_AUDIO_START_WAIT_MS).then(() => false)])
+        abandoned = true
+        if (token !== run.current) return
+        cancelWait.current?.()
+        if (!sounding) {
+          stopAudio()
+          setPreparingButton(null)
+          setFailedButton(buttonId)
+        }
       }
       const wallStart = performance.now()
       const clock = () => sounding ? getCurrentTime() * 1000 : performance.now() - wallStart
