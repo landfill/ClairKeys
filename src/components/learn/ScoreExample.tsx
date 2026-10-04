@@ -2,15 +2,18 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import type { OpenSheetMusicDisplay } from 'opensheetmusicdisplay'
+import { describeRhythm, rhythmMusicXml, type RhythmExample } from '@/lib/learn/rhythm'
 import { describeExample, exampleMusicXml, type ReadingExample } from '@/lib/learn/reading'
 
-export default function ScoreExample({ example }: { example: ReadingExample }) {
+export default function ScoreExample({ example }: { example: ReadingExample | RhythmExample }) {
   const captionId = useId()
   const host = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
-  const xml = exampleMusicXml(example)
-  const description = describeExample(example)
+  const rhythm = 'meter' in example
+  const xml = rhythm ? rhythmMusicXml(example) : exampleMusicXml(example)
+  const description = rhythm ? describeRhythm(example) : describeExample(example)
+  const itemCount = rhythm ? example.items.length : example.midis.length
 
   useEffect(() => {
     const container = host.current
@@ -30,7 +33,7 @@ export default function ScoreExample({ example }: { example: ReadingExample }) {
     const draw = () => {
       if (disposed || !display) return
       // 음 개수에 맞춘 폭으로 한 마디를 그린 뒤, 실제 그림을 상자에 맞게 확대한다.
-      container.style.width = `${Math.max(160, 90 + example.midis.length * 22)}px`
+      container.style.width = `${Math.max(160, 90 + itemCount * 22)}px`
       display.render()
       const svg = container.querySelector('svg')
       if (!svg) throw new Error('OSMD score example SVG is missing')
@@ -92,7 +95,7 @@ export default function ScoreExample({ example }: { example: ReadingExample }) {
         display = new Display(container, {
           backend: 'svg', autoResize: false, drawingParameters: 'compacttight',
           drawTitle: false, drawComposer: false, drawPartNames: false, drawCredits: false,
-          drawMeasureNumbers: false, drawTimeSignatures: false, disableCursor: true,
+          drawMeasureNumbers: false, drawTimeSignatures: rhythm, disableCursor: true,
           autoGenerateMultipleRestMeasuresFromRestMeasures: false,
           defaultColorMusic: getComputedStyle(container).color,
         })
@@ -121,7 +124,7 @@ export default function ScoreExample({ example }: { example: ReadingExample }) {
       try { display?.clear() } catch (error) { console.warn('Reading score cleanup failed:', error) }
       container.replaceChildren()
     }
-  }, [xml, example.midis.length])
+  }, [xml, itemCount, rhythm])
 
   return (
     <figure className="min-w-0" data-example={example.id} aria-label={`${example.title} 예시`} aria-describedby={captionId}>

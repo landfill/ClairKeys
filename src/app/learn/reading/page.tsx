@@ -4,11 +4,12 @@ import LessonLayout from '@/components/learn/LessonLayout'
 import ReadingExplorer from '@/components/learn/ReadingExplorer'
 import ScoreExample from '@/components/learn/ScoreExample'
 import { ListenButton, ReadingAudioProvider } from '@/components/learn/ReadingAudio'
+import { RHYTHM_EXAMPLES } from '@/lib/learn/rhythm'
 import { READING_EXAMPLES } from '@/lib/learn/reading'
 
 export const metadata: Metadata = {
-  title: '악보 읽기: 음높이 | ClairKeys',
-  description: '오선의 줄과 칸, 높은음자리표와 낮은음자리표를 읽고 가운데 도를 건반과 연결해 봐요.',
+  title: '악보 읽기 | ClairKeys',
+  description: '오선의 음높이를 건반과 연결하고, 음표와 쉼표의 길이, 점음표, 박자표를 예시로 익혀 봐요.',
 }
 
 function Examples({ ids }: { ids: readonly string[] }) {
@@ -17,6 +18,17 @@ function Examples({ ids }: { ids: readonly string[] }) {
       <p className="mb-2 text-sm font-semibold text-ink">{example.title}</p>
       <ScoreExample example={example} />
       <ListenButton midis={example.midis} label={`${example.title} 들어 보기`} />
+    </div>
+  ))}</div>
+}
+
+
+function RhythmExamples({ ids }: { ids: readonly string[] }) {
+  return <div className="mt-4 grid gap-5">{RHYTHM_EXAMPLES.filter(example => ids.includes(example.id)).map(example => (
+    <div key={example.id} className="min-w-0">
+      <p className="mb-2 font-semibold text-ink">{example.title}</p>
+      <ScoreExample example={example} />
+      <ListenButton rhythm={example} label={`${example.title} 들어 보기`} />
     </div>
   ))}</div>
 }
@@ -52,6 +64,38 @@ export default function ReadingPage() {
             <h2 id="pitch-explorer" className="text-lg font-semibold text-ink">오선과 건반 연결하기</h2>
             <p className="mt-2">음 선택 버튼이나 흰 건반을 누르면 같은 음의 악보와 위치, 계이름을 확인할 수 있어요. 소리는 들어 보기 버튼으로 확인해요. 건반 이름과 위치는 <Link href="/learn/keyboard" className="rounded-sm text-accent hover:underline">건반 레슨</Link>에서도 익힐 수 있어요.</p>
             <ReadingExplorer />
+          </section>
+          <section aria-labelledby="note-lengths">
+            <h2 id="note-lengths" className="text-lg font-semibold text-ink">음표의 길이</h2>
+            <p className="mt-2">길이는 4분음표를 한 박으로 놓고 비교해요. 온음표는 4박, 2분음표는 2박, 4분음표는 1박, 8분음표는 반 박이에요.</p>
+            <p className="mt-2">온음표는 빈 머리만 있고, 2분음표는 빈 머리에 기둥이 있어요. 4분음표는 찬 머리에 기둥이 있고, 8분음표는 찬 머리와 기둥에 꼬리 하나가 붙어요. 이어지는 8분음표는 꼬리 대신 굵은 가로줄로 서로 이어 그리기도 해요.</p>
+            <p className="mt-2">리듬 예시 소리는 4분음표 기준으로 분당 80번의 빠르기예요. 음높이는 같은 솔(G4)을 써서 길이에 집중할 수 있어요.</p>
+            <table className="mt-3 w-full border-collapse text-left">
+              <caption className="mb-2 text-left font-semibold text-ink">음표 길이 비교</caption>
+              <thead><tr className="border-b border-rule"><th scope="col" className="p-2 text-ink">음표 이름</th><th scope="col" className="p-2 text-ink">4분음표 기준 박 수</th></tr></thead>
+              <tbody>{[['온음표', '4박'], ['2분음표', '2박'], ['4분음표', '1박'], ['8분음표', '반 박'], ['점2분음표', '3박'], ['점4분음표', '1박 반']].map(([name, length]) => (
+                <tr key={name} className="border-b border-rule"><th scope="row" className="p-2 font-normal">{name}</th><td className="p-2">{length}</td></tr>
+              ))}</tbody>
+            </table>
+            <RhythmExamples ids={['note-whole', 'note-half', 'note-quarter', 'note-eighth']} />
+          </section>
+          <section aria-labelledby="rest-lengths">
+            <h2 id="rest-lengths" className="text-lg font-semibold text-ink">쉼표</h2>
+            <p className="mt-2">쉼표는 같은 이름의 음표와 같은 길이만큼 쉬는 표시예요. 아래 4분의 4박자 예시에서 온쉼표는 4박, 2분쉼표는 2박, 4분쉼표는 1박, 8분쉼표는 반 박을 쉬어요.</p>
+            <p className="mt-2">쉼표 들어 보기는 소리 없이 정해진 시간만큼 지나가요. 버튼 아래의 재생 차례 글로 진행을 확인할 수 있어요.</p>
+            <RhythmExamples ids={['rest-whole', 'rest-half', 'rest-quarter', 'rest-eighth']} />
+          </section>
+          <section aria-labelledby="dotted-lengths">
+            <h2 id="dotted-lengths" className="text-lg font-semibold text-ink">점음표</h2>
+            <p className="mt-2">음표에 점이 하나 붙으면 원래 길이의 절반만큼 길어져요. 원래 길이의 1.5배예요. 점2분음표는 2박에 1박을 더해 3박이고, 점4분음표는 1박에 반 박을 더해 1박 반이에요.</p>
+            <RhythmExamples ids={['note-dotted-half', 'note-dotted-quarter']} />
+          </section>
+          <section aria-labelledby="meters">
+            <h2 id="meters" className="text-lg font-semibold text-ink">박자표</h2>
+            <p className="mt-2">세로줄(마디줄)로 나눈 한 구간이 마디예요. 박자표의 아래 숫자는 세는 기준 음표를 가리키고, 위 숫자는 그 음표 몇 개의 길이가 한 마디에 들어가는지 알려 줘요. 아래 숫자 4는 4분음표, 8은 8분음표를 가리켜요.</p>
+            <p className="mt-2">4분의 4박자는 4분음표를 한 박으로 네 박, 4분의 3박자는 세 박을 세요. 그림에서는 한 박의 8분음표 두 개를 묶었어요.</p>
+            <p className="mt-2">8분의 6박자는 한 마디에 8분음표 여섯 개가 들어가요. 셋씩 두 묶음으로 세요. 전체 길이는 4분음표 세 개와 같아요.</p>
+            <RhythmExamples ids={['meter-four', 'meter-three', 'meter-six']} />
           </section>
         </div>
       </ReadingAudioProvider>
