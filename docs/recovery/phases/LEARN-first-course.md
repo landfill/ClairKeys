@@ -1,6 +1,6 @@
 # #227 첫 곡 코스
 
-Status: IN_PROGRESS
+Status: DONE
 Date: 2026-10-04
 Issue: https://github.com/landfill/ClairKeys/issues/227
 
@@ -54,3 +54,5 @@ resume 미완료 fixture에서 모바일의 회전 요청이 끝나지 않아 �
 시간이 흐르는 척하는 대체 재생 시계는 도입하지 않는다(D-007). 관련 훅 회귀와 모바일 이동·요소 수를 추가 검증한다.
 
 - 2026-10-04: PR233 최종 CI·리뷰 통과 후 사용자 승인 병합, #227 종료. Post-merge 확인 대기([PR233](../reviews/PR-233.md)).
+
+- 2026-10-04: Post-merge checks PASS 확인. 원본 대조·공개 코스·출처 연결·오디오 실패 복구·최종 CI/리뷰·승인 병합을 완료했다([PR233](../reviews/PR-233.md)).
