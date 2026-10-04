@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { OpenSheetMusicDisplay } from 'opensheetmusicdisplay'
 import { describeExample, exampleMusicXml, type ReadingExample } from '@/lib/learn/reading'
 
 export default function ScoreExample({ example }: { example: ReadingExample }) {
+  const captionId = useId()
   const host = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading')
@@ -111,13 +112,13 @@ export default function ScoreExample({ example }: { example: ReadingExample }) {
   }, [xml, example.midis.length])
 
   return (
-    <figure className="min-w-0" data-example={example.id}>
-      <div ref={frameRef} role="img" aria-label={description} aria-busy={status === 'loading'}
+    <figure className="min-w-0" data-example={example.id} aria-label={`${example.title} 예시`} aria-describedby={captionId}>
+      <div ref={frameRef} role="img" aria-label={`${example.title} 악보`} aria-busy={status === 'loading'}
         className="relative flex h-32 w-full items-center justify-center overflow-hidden rounded border border-rule bg-surface p-3">
         <div ref={host} aria-hidden="true" data-testid="score-example-svg" className="shrink-0 text-ink" />
         {status !== 'ready' && <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center px-4 text-center text-sm text-ink-muted">{status === 'failed' ? '악보 그림을 불러오지 못했어요. 아래 설명을 확인해 주세요.' : '악보 그림을 준비하고 있어요.'}</span>}
       </div>
-      <figcaption className="mt-2 text-sm text-ink-muted">{description}</figcaption>
+      <figcaption id={captionId} className="mt-2 text-sm text-ink-muted">{description}</figcaption>
     </figure>
   )
 }

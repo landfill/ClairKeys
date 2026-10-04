@@ -4,7 +4,7 @@ import { ReadingAudioProvider } from '../ReadingAudio'
 
 const playNoteNow = jest.fn().mockResolvedValue(true)
 jest.mock('@/hooks/useFallingNotesAudio', () => ({ useFallingNotesAudio: () => ({ playNoteNow }) }))
-jest.mock('../ScoreExample', () => ({ __esModule: true, default: () => <div>악보 예시</div> }))
+jest.mock('../ScoreExample', () => ({ __esModule: true, default: () => <div data-testid="mock-reading-score">악보 예시</div> }))
 beforeEach(() => playNoteNow.mockReset().mockResolvedValue(true))
 afterEach(() => jest.restoreAllMocks())
 it('ties selection, staff position and the existing keyboard buttons to the same MIDI', () => {
@@ -56,4 +56,17 @@ it('leaves wide keyboards alone for initial and button selections', () => {
   expect(region.scrollLeft).toBe(0)
   fireEvent.click(screen.getByRole('button', { name: /^음 선택: 도 \(5옥타브\)$/ }))
   expect(region.scrollLeft).toBe(0)
+})
+
+
+it('keeps keyboard and guidance before changing score drawings on phones', () => {
+  render(<ReadingAudioProvider><ReadingExplorer /></ReadingAudioProvider>)
+  const keyboard = screen.getByRole('region', { name: '음높이 학습 건반 (좌우 스크롤)' })
+  const guidance = screen.getByRole('status', { name: '선택한 음' })
+  for (const name of ['음 선택: 가운데 도 (4옥타브)', '음 선택: 레 (4옥타브)', '음 선택: 시 (3옥타브)', '음 선택: 가운데 도 (4옥타브)']) {
+    fireEvent.click(screen.getByRole('button', { name }))
+    const score = screen.getAllByTestId('mock-reading-score')[0]
+    expect(keyboard.compareDocumentPosition(score) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    expect(guidance.compareDocumentPosition(score) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+  }
 })

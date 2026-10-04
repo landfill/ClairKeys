@@ -1,4 +1,4 @@
-import { staffPosition, exampleMusicXml, READING_EXAMPLES } from '../reading'
+import { staffPosition, exampleMusicXml, READING_EXAMPLES, describeExample } from '../reading'
 import { midiToSolfege } from '../keyboard'
 
 it.each([
@@ -65,4 +65,27 @@ it('writes the exact pitch/octave for every teaching example', () => {
     const xml = new DOMParser().parseFromString(exampleMusicXml(example), 'text/xml')
     expect([...xml.querySelectorAll('pitch')].map(pitch => [pitch.querySelector('step')?.textContent, pitch.querySelector('octave')?.textContent])).toEqual(expected[index])
   })
+})
+
+
+it.each([
+  [57, 'G', { kind: 'ledger-line', side: 'below', number: 2, name: '아래 덧줄 2개' }],
+  [64, 'F', { kind: 'ledger-line', side: 'above', number: 2, name: '위 덧줄 2개' }],
+  [62, 'G', { kind: 'outside-space', side: 'below', number: 1, name: '오선 바로 아래 칸' }],
+  [79, 'G', { kind: 'outside-space', side: 'above', number: 1, name: '오선 바로 위 칸' }],
+  [59, 'F', { kind: 'outside-space', side: 'above', number: 1, name: '오선 바로 위 칸' }],
+  [41, 'F', { kind: 'outside-space', side: 'below', number: 1, name: '오선 바로 아래 칸' }],
+] as const)('names boundary MIDI %i in clef %s from literal standards', (midi, clef, expected) => {
+  expect(staffPosition(midi, clef)).toEqual(expected)
+})
+
+it('describes every example with the complete literal standard text', () => {
+  expect(READING_EXAMPLES.map(describeExample)).toEqual([
+    '높은음자리표 오선. 첫째 줄에 미(4옥타브), 둘째 줄에 솔(4옥타브), 셋째 줄에 시(4옥타브), 넷째 줄에 레(5옥타브), 다섯째 줄에 파(5옥타브).',
+    '높은음자리표 오선. 첫째 칸에 파(4옥타브), 둘째 칸에 라(4옥타브), 셋째 칸에 도(5옥타브), 넷째 칸에 미(5옥타브).',
+    '낮은음자리표 오선. 첫째 줄에 솔(2옥타브), 둘째 줄에 시(2옥타브), 셋째 줄에 레(3옥타브), 넷째 줄에 파(3옥타브), 다섯째 줄에 라(3옥타브).',
+    '낮은음자리표 오선. 첫째 칸에 라(2옥타브), 둘째 칸에 도(3옥타브), 셋째 칸에 미(3옥타브), 넷째 칸에 솔(3옥타브).',
+    '높은음자리표 오선. 아래 덧줄 하나에 가운데 도(4옥타브).',
+    '낮은음자리표 오선. 위 덧줄 하나에 가운데 도(4옥타브).',
+  ])
 })

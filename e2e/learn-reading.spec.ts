@@ -33,6 +33,12 @@ test('opens the pitch lesson without hydration or console errors and renders act
   await expect(main.getByRole('heading', { level: 1, name: '악보 읽기' })).toBeVisible()
   await expect(main.getByRole('heading', { level: 2 })).toHaveText(['오선', '높은음자리표', '낮은음자리표', '가운데 도', '오선과 건반 연결하기'])
   const score = page.locator('[data-example="treble-lines"]')
+  await expect(score.getByRole('img', { name: '높은음자리표 줄 음 악보', exact: true })).toBeVisible()
+  const caption = score.locator('figcaption')
+  const captionId = await caption.getAttribute('id')
+  expect(captionId).toBeTruthy()
+  await expect(score).toHaveAttribute('aria-describedby', captionId!)
+  await expect(caption).toContainText('첫째 줄에 미(4옥타브), 둘째 줄에 솔(4옥타브)')
   await expect(score.locator('svg')).toHaveCount(1)
   // OSMD는 VexFlow의 StaveNote 그룹으로 실제 음표를 그린다.
   await expect(score.locator('svg g.vf-stavenote')).toHaveCount(5)
@@ -106,6 +112,8 @@ test('keeps alternative text and the lesson interactive when the OSMD chunk cann
     await expect.poll(() => blocked).toBeGreaterThan(0)
     const example = page.locator('[data-example="treble-lines"]')
     await expect(example.getByText(/악보 그림을 불러오지 못했어요/)).toBeVisible()
+    await expect(example.getByRole('img', { name: '높은음자리표 줄 음 악보', exact: true })).toBeVisible()
+    await expect(example).toHaveAttribute('aria-describedby', (await example.locator('figcaption').getAttribute('id'))!)
     await expect(example.locator('figcaption')).toContainText('첫째 줄에 미')
     await selectNotes(page)
     await expect(explorer(page).getByRole('button', { name: '도 (3옥타브)', exact: true })).toHaveAttribute('aria-pressed', 'true')
@@ -168,5 +176,41 @@ for (const width of [1280, 320, 390]) {
         expect(item.musicFitsSvg).toBe(true)
       })
     } finally { release(); await page.unrouteAll({ behavior: 'ignoreErrors' }) }
+  })
+}
+
+
+for (const width of [1280, 390]) {
+  test(`keeps the keyboard and selection guidance in place across middle-C clef changes at ${width}px`, async ({ page }) => {
+    await prepare(page)
+    await page.setViewportSize({ width, height: 844 })
+    await page.goto('/learn/reading')
+    await expect(page.locator('[data-example="treble-lines"] svg')).toHaveCount(1)
+    await page.evaluate(() => document.fonts.ready)
+    const area = explorer(page)
+    const keyboard = area.getByRole('region', { name: '음높이 학습 건반 (좌우 스크롤)' })
+    const guidance = area.getByRole('status', { name: '선택한 음' })
+    // 비교 중 클릭이 문서를 자동 스크롤하지 않도록 선택 버튼을 화면 안에 둔다.
+    await area.evaluate(element => scrollTo(0, scrollY + element.getBoundingClientRect().top - 16))
+    const initial = { keyboard: await keyboard.boundingBox(), guidance: await guidance.boundingBox() }
+    expect(initial.keyboard).not.toBeNull()
+    expect(initial.guidance).not.toBeNull()
+    const keys = [
+      { name: '음 선택: 가운데 도 (4옥타브)', midis: 60 },
+      { name: '음 선택: 레 (4옥타브)', midis: 62 },
+      { name: '음 선택: 시 (3옥타브)', midis: 59 },
+      { name: '음 선택: 가운데 도 (4옥타브)', midis: 60 },
+    ]
+    for (const key of keys) {
+      await area.getByRole('button', { name: key.name, exact: true }).click()
+      await expect(area.locator(`button[data-midi="${key.midis}"]`)).toHaveAttribute('aria-pressed', 'true')
+      await expect(area.locator('[data-example="selected-middle-bass"]')).toHaveCount(key.midis === 60 ? 1 : 0)
+      expect((await keyboard.boundingBox())?.y).toBe(initial.keyboard!.y)
+      expect((await guidance.boundingBox())?.y).toBe(initial.guidance!.y)
+    }
+    if (width === 390) {
+      const box = await keyboard.boundingBox()
+      expect(box!.y + box!.height).toBeLessThanOrEqual(844)
+    }
   })
 }

@@ -39,20 +39,22 @@ export default function ReadingExplorer() {
         {whiteMidis.map(midi => {
           const item = midiToSolfege(midi)
           return <Button key={midi} size="sm" variant={midi === selected ? 'primary' : 'outline'}
+            className="border border-rule"
             aria-label={`음 선택: ${item.accessibleName}`} aria-pressed={midi === selected} onClick={() => select(midi, true)}>{item.middleC ? '가운데 도' : item.name} {item.octave}</Button>
         })}
       </div>
-      <ScoreExample example={example} />
-      {selected === 60 && <ScoreExample example={{ ...example, id: 'selected-middle-bass', clef: 'F' }} />}
-      <p role="status" aria-live="polite" aria-atomic="true" aria-label="선택한 음" className="text-sm text-ink">
-        {note.middleC ? '가운데 도' : note.name} · {note.octave}옥타브 · {clef === 'G' ? '높은음자리표' : '낮은음자리표'} · {staffPosition(selected, clef).name}
-      </p>
+      {/* 선택에 따라 그림 수나 설명 높이가 달라져도 건반의 위치는 유지한다. */}
       <div ref={keyboardRegion} role="region" aria-label="음높이 학습 건반 (좌우 스크롤)" tabIndex={0} className="max-w-full overflow-x-auto rounded border border-rule">
         <div className="h-44" style={{ width: layout.totalWidth }}>
           <SimplePianoKeyboard layout={layout} learningKeys={learningKeys} activeKeys={new Set([selected])} onKeyPress={select} />
         </div>
       </div>
+      <p role="status" aria-live="polite" aria-atomic="true" aria-label="선택한 음" className="text-sm text-ink">
+        {note.middleC ? '가운데 도' : note.name} · {note.octave}옥타브 · {clef === 'G' ? '높은음자리표' : '낮은음자리표'} · {staffPosition(selected, clef).name}
+      </p>
       <ListenButton midis={[selected]} label="선택한 음 들어 보기" />
+      <ScoreExample example={example} />
+      {selected === 60 && <ScoreExample example={{ ...example, id: 'selected-middle-bass', clef: 'F' }} />}
     </div>
   )
 }
