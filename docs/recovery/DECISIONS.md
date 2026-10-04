@@ -3416,3 +3416,14 @@
 - Directive: 개발 도구의 high 권고는 이 게이트가 더는 잡지 않는다. 필요하면 로컬에서 `npm audit`으로 확인한다.
   `dependencies`와 `devDependencies` 분류가 틀리면 게이트가 새므로, 런타임에 쓰는 패키지를 `devDependencies`에 두지 않는다.
 - Related: PR216, PR207(brace-expansion override), D-087
+
+## D-098: 연습 진도 첫 버전은 로그인 사용자의 기존 곡별 기록만 모은다
+
+- Date: 2026-10-04
+- Context: #226은 저장 범위와 완료 기준의 사용자 결정이 필요했다. 사용자는 기존 곡별 기록 모음 권장안을 선택했다.
+- Decision: PracticeSession의 사용자별·현재 접근 가능한 악보 기록을 집계한다. `/practice`는 로그인 전용, 배우기 홈에서 진입하며 `/learn`은 공개다. 최근 연습순 20곡씩 조회하고 곡별 기록 횟수·총 재생 시간·최고 재생 위치·최근 연습일을 표시한다. DB 변경은 없다.
+- Rejected: 열람을 레슨 완료로 표시 | 사용자가 선택한 범위에 없고 학습 완료 근거가 없다.
+- Confidence: high
+- Scope-risk: moderate
+- Directive: completedPercentage는 최대 재생 위치다. 정답률·숙련도·완료율로 이름을 바꾸지 않는다. 타인의 비공개 악보를 기록 목록에서 노출하지 않는다.
+- Related: #226, phases/LEARN-practice-history.md, D-085

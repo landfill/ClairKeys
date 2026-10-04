@@ -28,6 +28,7 @@ export default function LearnPage() {
           ))}
         </ol>
         <p className="mt-6 text-sm text-ink-muted">낯선 말이 있다면 <Link href="/learn/glossary" className="inline-flex min-h-11 items-center rounded-sm text-accent hover:underline">용어 사전</Link>에서 찾아보세요.</p>
+        <p className="mt-2 text-sm text-ink-muted">로그인해서 연습한 곡은 <Link href="/practice" className="inline-flex min-h-11 items-center rounded-sm text-accent hover:underline">내 연습 기록</Link>에서 돌아볼 수 있어요.</p>
       </Container>
     </MainLayout>
   )
