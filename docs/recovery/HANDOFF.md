@@ -6,23 +6,19 @@ Last updated: 2026-10-04 KST
 
 ## Current phase
 
-**진행 중인 작업 없음. 이슈 [#229](https://github.com/landfill/ClairKeys/issues/229) 미사용 `AnimationPlayer` 정리는 [PR231](reviews/PR-231.md) 병합(2026-10-04, `b449c47`)으로 종료했고 브랜치도 정리했다. Post-merge checks 결과 확인만 남았다.**
-삭제 근거와 로컬 검증은 [검증](validation/2026-10-04-issue-229-unused-animation-player.md).
-2026-10-04 19:00 KST GitHub 대조: 열린 이슈 5개, 열린 PR 0개로 아래 목록과 일치한다([점검 기록](validation/2026-10-04-handoff-github-status.md)). PR의 최신 CI·리뷰·병합 상태는 리뷰 로그와 GitHub live state에서 확인한다.
-이슈 [#222](https://github.com/landfill/ClairKeys/issues/222)는 종료했다: [PR230](reviews/PR-230.md) 병합 뒤 Post-merge checks에서도 E2E 재시도 0건(연속 두 번). #208 초보자 학습 영역은 2026-10-04에 종료했다([phase](phases/LEARN-beginner-learning.md) DONE).
-
-최근 완료(상세는 각 리뷰 로그): #229 PR231, #222 PR230, LEARN L-6 PR224, L-4b PR223, L-5 PR221, L-4a PR220, L-3 PR219, L-2 PR218, L-1 PR216(D-094), 감사 게이트 PR217(D-095), CI 신뢰성 PR206·207(Post-merge PASS), #188 콘솔 로그 PR205(D-093), #187 탐색 API 지연 PR203·204(D-092, 이슈 종료), #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
-[validation](validation/) `2026-09-27-*`), #177 PR183·PR184(2026-09-22), UI 일관성 PR182, #178 PR179~181(D-076·D-077),
-#125 PR173·175(D-075), DB 문서 PR174·176.
+**#225·#226·#227·#228을 완료하는 goal 진행 중(사용자 지시 2026-10-04). #121은 제외한다.**
+#225 용어 사전 구현·로컬 검증 완료: [검증](validation/2026-10-04-issue-225-glossary.md).
+전체 실행 계획은 `codex/issue-225-learn-glossary` 브랜치의 `docs/recovery/phases/LEARN-followups.md`에 있다(병합 전).
+#226 기존 PracticeSession 모델·API 조사 완료, 사용자에게 범위 선택 질문 전달. 답변 전 구현하지 않는다.
+PR231 병합 후 확인 완료. E2E flaky 1건과 나머지 결과는 [PR231 로그](reviews/PR-231.md).
 
 ## Next action
 
-- #229: 병합 커밋 `b449c47`의 Post-merge checks(run 37193723067) 결과를 확인해 PR231 리뷰 로그에 남긴다. E2E 재시도 수도 함께 센다(#222 수정 뒤 네 번째 표본).
-- 다음 작업은 사용자가 고른다. #121은 보류 중이다(아래).
-- 그 밖의 열린 후보(모두 GitHub 이슈, 미착수):
-  [#225](https://github.com/landfill/ClairKeys/issues/225) 용어 사전, [#226](https://github.com/landfill/ClairKeys/issues/226) 연습 진도 페이지(범위 결정 필요),
-  [#227](https://github.com/landfill/ClairKeys/issues/227) 첫 곡 코스(선행: OMR을 거치지 않는 입력 경로),
-  [#228](https://github.com/landfill/ClairKeys/issues/228) 곡 소개에 검증된 박자·조표.
+- #225: review-ready PR 생성 후 현재 head CI·리뷰 대응, 대상 PR 병합 승인 요청.
+- #226: 사용자 범위 결정 후 구현. 권고는 로그인 사용자의 기존 곡별 연습 기록 모음(열람/실력/레슨 완료 판정 없음).
+- #227: OMR 없는 검증된 입력 경로 조사·결정 후 첫 곡 코스 구현.
+- #228: 원본 출처가 있는 박자·조표 공유 방식 결정 후 구현.
+- PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
   재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
 - LEARN이 남긴 제약: 터치 재생 전 요소 수 합계가 기준과 같다(27). 재생 화면에 요소를 더하려면 다른 것을 빼야 한다(D-094 6항, `e2e/playback-element-count.spec.ts`).
