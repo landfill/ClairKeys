@@ -75,3 +75,12 @@ E2E: 공개 악보의 소개와 레슨 이동(`/learn/reading#pitch-explorer` �
 - 이슈가 예로 든 다섯 항목 중 박자·조는 표시하지 않는다(위 결정). 이슈의 "불확실한 값은 그렇다고 표시하거나 뺀다"에 따른 것이다.
 - 리뷰 수정 커밋 `8b2670c`는 로컬 재리뷰를 하지 않았다. main 병합(L-4b 포함) 뒤의 검증은 PR 생성 전에 다시 한다.
 - Codex 주간 한도는 이 기록 시점에 3% 남았다. 구현·리뷰 워커의 모델 전환 제안은 모두 "현재 모델 유지"로 닫았다.
+
+## main 병합 뒤 재검증 (2026-10-04, `60b4c44`)
+
+PR223(L-4b) 병합 뒤 main을 브랜치에 병합. 충돌 없음.
+- `PATH=<ci-venv>/bin:$PATH npx jest`: 154 suites, 1533 tests PASS. `tsc`, lint PASS.
+- `npx playwright test` sheet-song-intro, playback-element-count, application-smoke, console-quiet, playback-mode-clarity, playback-session-transition, practice-records, learn-reading, learn-home
+  `--project=chromium --project=firefox --project="Mobile Chrome"`: 141 passed, 3 skipped.
+- 재생 화면 요소 수: 재생 전 데스크톱 17/10, 재생 중·일시정지 8/3, keyMarks 꺼짐 7·켜짐 50(L-5 후와 동일).
+- 화면(1280px, 박자 행 제거 뒤): 음역·재생 시간·손 구분·빠르기와 레슨 링크. 박자 행 없음.

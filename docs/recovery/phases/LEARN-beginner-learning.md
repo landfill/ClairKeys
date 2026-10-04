@@ -40,7 +40,7 @@ Decision: [D-094](../DECISIONS.md)
 | L-1 | [#210](https://github.com/landfill/ClairKeys/issues/210) | `배우기` 메뉴, `/learn` 홈(단계 지도), 공통 레슨 레이아웃, 이 문서와 D-094 | 없음 | DONE ([PR216](../reviews/PR-216.md)) |
 | L-2 | [#211](https://github.com/landfill/ClairKeys/issues/211) | `/learn/keyboard` 건반 익히기(누르면 이름과 소리, 가운데 도, 도 찾기 연습) | L-1 | DONE ([PR218](../reviews/PR-218.md)) |
 | L-3 | [#212](https://github.com/landfill/ClairKeys/issues/212) | 재생 화면 설명을 `/learn/practice`로 옮기고 계이름 표시 토글 추가 | L-1 | DONE ([PR219](../reviews/PR-219.md)) |
-| L-4 | [#213](https://github.com/landfill/ClairKeys/issues/213) | `/learn/reading` 악보 읽기(음높이, 길이·박자). 크면 L-4a·L-4b로 나눈다 | L-2 | IN_PROGRESS |
+| L-4 | [#213](https://github.com/landfill/ClairKeys/issues/213) | `/learn/reading` 악보 읽기(음높이, 길이·박자). 크면 L-4a·L-4b로 나눈다 | L-2 | DONE ([PR220](../reviews/PR-220.md), [PR223](../reviews/PR-223.md)) |
 | L-5 | [#214](https://github.com/landfill/ClairKeys/issues/214) | `/learn/hands` 손 자세와 손가락 번호, 재생 화면 운지 표시와 연결 | L-1, L-3 | DONE ([PR221](../reviews/PR-221.md)) |
 | L-6 | [#215](https://github.com/landfill/ClairKeys/issues/215) | 내 곡의 소개(원본 근거가 있는 곡 정보와 레슨 연결) | L-2, L-4, L-5 | IN_PROGRESS |
 
@@ -103,3 +103,6 @@ L-6의 곡 분석과 진입 화면, 관련 Jest·E2E.
   표시 규칙: 음역·길이는 음표 데이터에서 계산해 항상, 손은 원본 `handSource`일 때만 단정(추정이면 추정이라고 표시), 빠르기는 `tempoSource`가 `score`·`user`일 때만,
   박자는 JSON `timeSignature`만으로는 표시하지 않고 검증된 출처가 있을 때만, 조는 검증된 출처가 있을 때 조표(샵·플랫 수)로만 쓰고 장·단조를 단정하지 않는다.
   음표·쉼표 종류는 표시하지 않는다. 작업 지시 원본은 git 제외 `local-test-data/results/learn-6/l6-brief.md`, 진행 메모는 같은 폴더의 `progress.md`.
+- 2026-10-04: L-4b PR223 병합(`0ebca0e`), #213 종료. 단계 지도의 네 레슨 모두 공개.
+- 2026-10-04: L-6 구현 중 결정 변경: 박자 행을 뺐다(모든 곡에 같은 "확인되지 않았어요"가 나오고 재생 화면과 불일치, 로컬 리뷰 의견). 최종 표시 항목은 음역·재생 시간·손 구분·빠르기.
+  후속 후보: 검증된 박자·조표가 페이지 수준에 오면 출처와 함께 추가. 근거는 [검증](../validation/2026-10-04-learn-6-song-intro.md).
