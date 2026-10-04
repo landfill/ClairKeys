@@ -17,7 +17,7 @@ Last updated: 2026-10-03 KST
 
 - #213(L-4): L-4a 음높이는 [PR220](reviews/PR-220.md) 병합(`5d54bec`, 사용자의 사전 병합 허용 — 그 허용은 PR220 하나였고 소진됐다).
   L-4b 길이·박자는 L-5 PR 뒤에 `codex/learn-4b-reading-rhythm`에서 시작하고 그때 `reading`의 `available`을 켠다. 새 학습 페이지 E2E는 PR 전에 Firefox로도 돌린다.
-- #213 L-4b: [PR223](reviews/PR-223.md)에 CI 실패 수정 `bb23f55`를 push했다(소리 시작 대기 상한 4초 + 벽시계 진행, 테스트 단언 2건 완화). CI 재확인 → 병합 승인 요청.
+- #213 L-4b: [PR223](reviews/PR-223.md)에 CI 실패 수정 `bb23f55`를 push했다(소리 시작 대기 상한 4초 + 벽시계 진행, 테스트 단언 2건 완화). CI 전부 PASS, thread 0, 병합 승인 대기.
   임시 워크트리 `<세션 scratchpad>/l4b-wt`(브랜치 `l4b-fix-local`)는 PR 병합 뒤 정리한다.
 - #215 L-6(마지막 단계): 브랜치 `codex/learn-6-song-intro` `8b2670c`(미푸시). 구현·로컬 리뷰 반영·로컬 검증 완료, [검증](validation/2026-10-04-learn-6-song-intro.md).
   남은 것: PR223 병합 뒤 main 병합과 재검증 → PR 생성(사용자 승인) → CI·리뷰 → 병합 승인. 병합되면 #208의 모든 단계가 끝난다(#208 종료 여부는 사용자에게 확인).
