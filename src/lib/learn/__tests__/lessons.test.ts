@@ -5,7 +5,7 @@ describe('learn lessons', () => {
     expect(LEARN_LESSONS.map(({ id, title, href, available }) => [id, title, href, available])).toEqual([
       ['keyboard', '건반', '/learn/keyboard', true],
       ['reading', '악보 읽기', '/learn/reading', false],
-      ['hands', '손', '/learn/hands', false],
+      ['hands', '손', '/learn/hands', true],
       ['practice', '연습 방법', '/learn/practice', true],
     ])
   })
@@ -18,12 +18,12 @@ describe('learn lessons', () => {
 
   it('links forward to published practice while skipping unavailable lessons', () => {
     expect(getLessonNavigation('hands')).toEqual({ previous: LEARN_LESSONS[0], next: LEARN_LESSONS[3] })
-    expect(getLessonNavigation('practice')).toEqual({ previous: LEARN_LESSONS[0], next: undefined })
+    expect(getLessonNavigation('practice')).toEqual({ previous: LEARN_LESSONS[2], next: undefined })
   })
 
   it('uses the shared published keyboard as the previous lesson', () => {
-    expect(getLessonNavigation('keyboard')).toEqual({ previous: undefined, next: LEARN_LESSONS[3] })
-    expect(getLessonNavigation('reading')).toEqual({ previous: LEARN_LESSONS[0], next: LEARN_LESSONS[3] })
+    expect(getLessonNavigation('keyboard')).toEqual({ previous: undefined, next: LEARN_LESSONS[2] })
+    expect(getLessonNavigation('reading')).toEqual({ previous: LEARN_LESSONS[0], next: LEARN_LESSONS[2] })
   })
 
   it('skips unavailable lessons in both directions and respects the boundaries', () => {
