@@ -81,7 +81,7 @@ OCR은 별도 서비스가 아니라 같은 Audiveris 실행의 `TEXTS` 단계�
 | PWA 설치 프롬프트 | `src/components/pwa/PWAInstallPrompt.tsx` | 마운트되지 않는다 |
 | 푸시 알림 | `src/components/pwa/PushNotifications.tsx`, `/api/notifications/*` | 컴포넌트가 마운트되지 않는다 |
 | Tone.js 기반 오디오 | `src/services/audioService.ts`, `src/lib/audio/piano.ts` | `useAudio` → `PianoKeyboard` 사슬 끝이 미마운트라 재생 경로에 없다 |
-| `AnimationPlayer` | `src/components/animation/AnimationPlayer.tsx` | `/sheet/[id]`는 `FallingNotesPlayer`를 쓴다 |
+| `AnimationEngine` | `src/services/animationEngine.ts`, `src/hooks/useAnimationEngine.ts` | 어떤 컴포넌트도 import하지 않는다. `/sheet/[id]`는 `FallingNotesPlayer`와 `useFallingNotesPlayer`를 쓴다 |
 
 service worker(`public/sw.js`)는 `layout.tsx`에서 등록되어 정적 파일·피아노 샘플 캐싱을 수행한다.
 `/offline` 페이지도 존재한다. 다만 오프라인 상태에서 어느 범위까지 사용 가능한지는 검증된 적이 없다.
