@@ -1,13 +1,14 @@
 # Current Handoff
 
-Last updated: 2026-10-03 KST
+Last updated: 2026-10-04 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
 
-**이슈 [#222](https://github.com/landfill/ClairKeys/issues/222) — [PR230](reviews/PR-230.md) 병합(2026-10-04), Post-merge checks의 E2E 재시도 수 확인 대기.**
-원인과 수정은 [검증](validation/2026-10-04-issue-222-console-quiet-flake.md). #208 초보자 학습 영역은 2026-10-04에 종료했다([phase](phases/LEARN-beginner-learning.md) DONE).
+**이슈 [#229](https://github.com/landfill/ClairKeys/issues/229) 미사용 `AnimationPlayer` 정리 — 브랜치 `codex/issue-229-unused-animation-player`에 로컬 커밋 `36b4efa`(미푸시), PR 생성 승인 대기.**
+삭제 근거와 로컬 검증은 [검증](validation/2026-10-04-issue-229-unused-animation-player.md).
+이슈 [#222](https://github.com/landfill/ClairKeys/issues/222)는 [PR230](reviews/PR-230.md) 병합(2026-10-04) 뒤 Post-merge checks의 E2E 재시도 수 확인 대기. 원인과 수정은 [검증](validation/2026-10-04-issue-222-console-quiet-flake.md). #208 초보자 학습 영역은 2026-10-04에 종료했다([phase](phases/LEARN-beginner-learning.md) DONE).
 
 최근 완료(상세는 각 리뷰 로그): #222 PR230, LEARN L-6 PR224, L-4b PR223, L-5 PR221, L-4a PR220, L-3 PR219, L-2 PR218, L-1 PR216(D-094), 감사 게이트 PR217(D-095), CI 신뢰성 PR206·207(Post-merge PASS), #188 콘솔 로그 PR205(D-093), #187 탐색 API 지연 PR203·204(D-092, 이슈 종료), #197 탐색 한 화면 PR202(D-091), #186 빠르기 표시 위치 PR201(D-090), #185 첫 재생 샘플 로딩 PR200(D-089), 작업 규약 중복 정리 PR199(D-088), CI 중복 실행 제거 PR198(D-087), 운영 사이트 점검 후속 PR189·196·190·193·191·192·194·195(2026-09-27~28, D-080~D-086,
 [validation](validation/) `2026-09-27-*`), #177 PR183·PR184(2026-09-22), UI 일관성 PR182, #178 PR179~181(D-076·D-077),
@@ -15,12 +16,14 @@ Last updated: 2026-10-03 KST
 
 ## Next action
 
+- #229: 사용자 승인 후 브랜치를 push하고 PR을 만든다(`Closes #229`). 6개 브라우저 E2E와 production build는 PR CI가 맡는다.
 - #222: 병합 커밋 `166ad3f`의 Post-merge checks에서 E2E 재시도가 0건인지 확인하고(PR CI에 이은 두 번째 표본) 결과를 PR230 리뷰 로그와 이슈 코멘트에 남긴다.
 - 그 밖의 열린 후보(모두 GitHub 이슈, 미착수):
   [#225](https://github.com/landfill/ClairKeys/issues/225) 용어 사전, [#226](https://github.com/landfill/ClairKeys/issues/226) 연습 진도 페이지(범위 결정 필요),
   [#227](https://github.com/landfill/ClairKeys/issues/227) 첫 곡 코스(선행: OMR을 거치지 않는 입력 경로),
-  [#228](https://github.com/landfill/ClairKeys/issues/228) 곡 소개에 검증된 박자·조표, [#229](https://github.com/landfill/ClairKeys/issues/229) 쓰이지 않는 `AnimationPlayer`·`PracticeGuideControls` 정리,
-  [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측.
+  [#228](https://github.com/landfill/ClairKeys/issues/228) 곡 소개에 검증된 박자·조표.
+- [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
+  재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
 - LEARN이 남긴 제약: 터치 재생 전 요소 수 합계가 기준과 같다(27). 재생 화면에 요소를 더하려면 다른 것을 빼야 한다(D-094 6항, `e2e/playback-element-count.spec.ts`).
   실기기 터치·회전, 실제 MIDI, 청취, 스크린리더, 운영의 비공개 악보는 LEARN 전 단계에서 미검증이다(각 검증 기록의 Gaps).
 - 워커 운영 메모(LEARN 트랙에서 쓴 방식): 구현 `codex --model gpt-6.1-sol -s workspace-write -a never`, 리뷰 `codex --model gpt-6-astra -c model_reasoning_effort="high" -s read-only -a never`를
@@ -31,7 +34,8 @@ Last updated: 2026-10-03 KST
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
 - 후속 후보(#187 밖): cold 요청의 서버 계측 밖 기동 시간 약 2.1s, 홈 로드 때 나가는 `/api/auth/signin?callbackUrl=%2Fupload`.
-- 추천 다음 작업 [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측(D-093에서 구조화 로그를 여기로 넘겼다).
+- 후속 후보(#229 밖, 이슈 미등록): `src/services/animationEngine.ts`·`src/hooks/useAnimationEngine.ts`는 #229 뒤 자기 테스트에서만 참조되고,
+  `src/components/ui/LazyComponent.tsx`는 import하는 곳이 없다([검증](validation/2026-10-04-issue-229-unused-animation-player.md) Gaps).
 - 사용자 판단 필요: OAuth client secret이 과거 Vercel 로그에 남았을 수 있다(`/api/categories` POST가 호출된 경우, 코드는 2025-08-05부터).
   secret 교체 여부는 사용자가 정한다.
 - 사용자 결정 대기: 홈 샘플을 실제 재생기로 바꿀지(2026-08-30 정적 예시 결정과 충돌해 보류).
@@ -68,7 +72,7 @@ Last updated: 2026-10-03 KST
 |---|---|
 | OMR 인식 품질 #134 | [phase](phases/ISSUE-134-recognition-quality.md), 배포 이력 `validation/2026-09-1*-d06*-deployment.md`·`2026-09-20-d073-*` |
 | OMR page/scale | [OMR-Q2](phases/OMR-Q2-page-scale.md): 400dpi 한 입력 개선만 입증. 정상 악보·fallback 검증 전 전역 정책 도입 금지 |
-| OMR 운영 관측 | [#121](https://github.com/landfill/ClairKeys/issues/121) OPEN, 미착수 |
+| OMR 운영 관측 | [#121](https://github.com/landfill/ClairKeys/issues/121) OPEN, 미착수, 사용자 보류(2026-10-04). D-093이 구조화 로그를 여기로 넘겼다 |
 | 운지 #130 | [phase](phases/ISSUE-130-fingering-corpus-and-reach.md): 사용자 현재 상태 수용으로 종료; 추가 모델 작업 NOT_PLANNED |
 | 영속 OMR 큐 | [P1-B](phases/P1-B-durable-omr.md), [로드맵](ROADMAP.md): NOT_STARTED |
 | UI #146 완료 한계 | [PR158](reviews/PR-158.md): 실기기 터치·가로 화면·브라우저 zoom·스크린리더·대비 계측·실제 로그인 미검증 |
