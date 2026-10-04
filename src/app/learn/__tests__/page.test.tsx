@@ -28,7 +28,7 @@ it('shows unavailable fixture lessons as 준비 중 without links', () => {
   expect(items).toHaveLength(4)
   expect(within(items[0]).getByRole('link', { name: '건반' })).toHaveAttribute('href', '/learn/keyboard')
   expect(within(items[3]).getByRole('link', { name: '연습 방법' })).toHaveAttribute('href', '/learn/practice')
-  expect(screen.getAllByRole('link')).toHaveLength(3)
+  expect(within(screen.getByRole('list', { name: '학습 단계' })).getAllByRole('link')).toHaveLength(3)
   expect(screen.getAllByText('준비 중')).toHaveLength(1)
   expect(within(items[2]).getByRole('link', { name: '손' })).toHaveAttribute('href', '/learn/hands')
   items.slice(1, 2).forEach(item => {
@@ -43,6 +43,6 @@ it('links all four published lessons without 준비 중', () => {
   expect(screen.getByRole('link', { name: '악보 읽기' })).toHaveAttribute('href', '/learn/reading')
   expect(screen.getByRole('link', { name: '연습 방법' })).toHaveAttribute('href', '/learn/practice')
   expect(screen.getByRole('link', { name: '손' })).toHaveAttribute('href', '/learn/hands')
-  expect(screen.getAllByRole('link')).toHaveLength(4)
+  expect(within(screen.getByRole('list', { name: '학습 단계' })).getAllByRole('link')).toHaveLength(4)
   expect(screen.queryAllByText('준비 중')).toHaveLength(0)
 })
