@@ -15,8 +15,10 @@ Last updated: 2026-10-08 KST
 
 ## Next action
 
-- #236 1단계(`codex/learn-236-home-cards`)부터 진행한다. 단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
-  지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `stage<N>-brief.md`, `stage<N>-review-brief.md`, `progress.md`).
+- #236 1단계(`codex/learn-236-home-cards`)는 구현·로컬 검증·로컬 리뷰를 마쳤다([검증](validation/2026-10-08-learn-236-stage1-home-cards.md)). [PR237](reviews/PR-237.md)의 CI·리뷰를 확인하고 사용자 병합 승인을 기다린다.
+- **Blocker**: 필수 검사 `Security Audit`이 새 권고(`sharp`·`source-map-js` high) 때문에 main과 모든 PR에서 실패한다([#238](https://github.com/landfill/ClairKeys/issues/238)).
+  수정은 [PR239](reviews/PR-239.md)에 있다([검증](validation/2026-10-09-issue-238-audit-advisories.md)). 사용자 병합 승인을 기다린다. `next` moderate 권고는 올리지 않고 남겼다.
+  순서: PR239 병합 → PR237 브랜치에 main을 합쳐 검사 재실행 → PR237 병합 승인 요청.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
   재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
@@ -30,7 +32,10 @@ Last updated: 2026-10-08 KST
   커밋별 구현 모델은 `reviews/PR-<n>.md`에 남기고, Gemini Flash가 구현한 커밋은 리뷰 지시문에 밝힌다.
   리뷰 지시문 끝에 "지적만 35줄 이내로 다시 출력"을 넣는다(터미널은 마지막 화면만 읽힌다). 브랜치를 바꾼 뒤 `.next/types`를 지운다.
   macOS WebKit은 Tab 포커스 단언이 설정 탓에 실패한다(CI Linux는 통과).
-  `agy`는 이 저장소에서 처음 쓴다. 권한 요청 방식·파일 쓰기·`.git` 쓰기·포트 사용 가능 여부는 첫 실행에서 확인해 여기에 적는다(미확인).
+  `agy` 첫 실행 관찰(1.3.1, 2026-10-08): `--mode accept-edits`에서 파일 쓰기는 묻지 않고 되지만 **셸 명령은 읽기 명령(`ls`·`cat`·`grep`)까지 매번 승인을 묻는다**
+  (1 실행 / 2·3 접두사 단위 항상 허용 / 4 취소). 오케스트레이터가 터미널을 읽어 명령을 확인하고 Enter로 승인해야 진행된다. 승인을 기다리는 동안 워커는 멈춰 있다.
+  `npx jest`·`npx tsc`·`npx eslint`는 승인 뒤 정상 실행됐다. `.git` 쓰기와 포트 사용은 지시문에서 금지해 시도하지 않았다(미확인).
+  로컬 E2E는 `NEXTAUTH_SECRET=test-secret NEXTAUTH_URL=http://localhost:3000`으로 `npm start`를 먼저 띄워야 한다(없으면 Playwright webServer가 120초 뒤 시간 초과).
 - #185는 PR200 본문의 `Closes #185`로 병합 시 자동 종료됐다. 검증 근거 코멘트는 아직 달지 않았다(사용자 결정).
 - 후속 후보: 데모 출처 경고(`DemoProvenanceNotice`)도 재생 중 `fixed top-2`라 회전 화면에서 같은 방식으로 레인을 가릴 수 있다(데모 악보만).
 - 후속 후보(#187 밖): cold 요청의 서버 계측 밖 기동 시간 약 2.1s, 홈 로드 때 나가는 `/api/auth/signin?callbackUrl=%2Fupload`.
