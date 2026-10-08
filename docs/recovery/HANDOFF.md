@@ -15,7 +15,9 @@ Last updated: 2026-10-08 KST
 
 ## Next action
 
-- #236 1단계(`codex/learn-236-home-cards`)는 구현·로컬 검증·로컬 리뷰를 마쳤다([검증](validation/2026-10-08-learn-236-stage1-home-cards.md)). [PR237](reviews/PR-237.md)의 CI·리뷰를 확인하고 사용자 병합 승인을 기다린다. 단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
+- #236 1단계(`codex/learn-236-home-cards`)는 구현·로컬 검증·로컬 리뷰를 마쳤다([검증](validation/2026-10-08-learn-236-stage1-home-cards.md)). [PR237](reviews/PR-237.md)의 CI·리뷰를 확인하고 사용자 병합 승인을 기다린다.
+- **Blocker**: 필수 검사 `Security Audit`이 새 권고(`sharp`·`source-map-js` high) 때문에 main과 모든 PR에서 실패한다([#238](https://github.com/landfill/ClairKeys/issues/238), 2026-10-08 등록, 미착수).
+  #238이 해결되기 전에는 #236 단계 PR을 필수 검사 기준으로 병합할 수 없다. #238의 "구현 전 결정"(`next` 15.5.27 동시 상향 여부)은 사용자가 정한다. 단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `stage<N>-brief.md`, `stage<N>-review-brief.md`, `progress.md`).
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
