@@ -50,10 +50,11 @@ Claude는 오케스트레이션·검증·기록을 맡는다(사용자 지시 20
 | 단계 | 상태 | 근거 |
 |---|---|---|
 | 1 | DONE | [PR237](../reviews/PR-237.md) 병합 `cdfdb7d`, [검증·계측](../validation/2026-10-08-learn-236-stage1-home-cards.md) |
-| 2 | NOT_STARTED | |
+| 2 | IN_PROGRESS | 브랜치 `codex/learn-236-lesson-layout` |
 | 3 | NOT_STARTED | |
 | 4 | NOT_STARTED | |
 
 - 2026-10-08: 결정 4개 확정, 1단계 착수.
 - 2026-10-09: 필수 검사 `Security Audit`이 새 권고로 막혀 #238을 먼저 처리했다([PR239](../reviews/PR-239.md) 병합 `0374a2e`). 그 뒤 1단계 PR237 병합(`cdfdb7d`).
   1단계에서 홈 문서 높이가 늘었다(1280×800 1111→1484px, 390×844 1316→2306px). 완료 조건에 홈 길이 기준은 없다.
+- 2026-10-09: 1단계 병합 커밋의 Post-merge checks 성공. 완료 조건에서 학습용 피아노의 검은 건반 폭을 예외로 뒀다(사용자 결정, 이슈 본문 반영). 2단계 착수.

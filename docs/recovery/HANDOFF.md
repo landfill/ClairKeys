@@ -15,7 +15,7 @@ Last updated: 2026-10-08 KST
 
 ## Next action
 
-- #236 1단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [phase 진행](phases/LEARN-236-layout.md)). 병합 커밋의 Post-merge checks를 확인한 뒤 2단계(`codex/learn-236-lesson-layout`, 이슈 D)를 시작한다.
+- #236 1단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [phase 진행](phases/LEARN-236-layout.md)). Post-merge checks도 성공했다. 2단계(`codex/learn-236-lesson-layout`, 이슈 D)를 진행 중이다(지시문 `stage2-brief.md`).
   단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
   완료 조건 변경(사용자 결정 2026-10-09, 이슈 본문 반영): "링크·버튼 44×44px"에서 학습용 피아노의 **검은 건반 폭**(26×113px)은 예외다. 건반의 크기·배치는 바꾸지 않는다. 높이 기준은 유지한다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `stage<N>-brief.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
