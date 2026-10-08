@@ -15,9 +15,10 @@ Last updated: 2026-10-08 KST
 
 ## Next action
 
-- #236 1단계(`codex/learn-236-home-cards`)는 구현·로컬 검증·로컬 리뷰를 마쳤다([검증](validation/2026-10-08-learn-236-stage1-home-cards.md)). [PR237](reviews/PR-237.md)의 CI·리뷰를 확인하고 사용자 병합 승인을 기다린다.
-- `Security Audit` blocker는 해소됐다: #238 종료, [PR239](reviews/PR-239.md) 병합(`0374a2e`). `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
-  PR237 브랜치에 main을 합쳤다(`6a7d991`). 새 head의 CI가 통과하면 사용자에게 PR237 병합 승인을 요청한다.
+- #236 1단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [phase 진행](phases/LEARN-236-layout.md)). 병합 커밋의 Post-merge checks를 확인한 뒤 2단계(`codex/learn-236-lesson-layout`, 이슈 D)를 시작한다.
+  단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
+  지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `stage<N>-brief.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
+- #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
 - 후속 후보(이슈 미등록): PR E2E job이 제한 30분에 근접했다(29m30s). PR239 1차 실행은 apt 미러 지연으로 테스트 시작 전에 27분을 써서 취소됐다([PR239 로그](reviews/PR-239.md)).
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
