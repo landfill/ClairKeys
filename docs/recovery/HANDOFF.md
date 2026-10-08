@@ -17,6 +17,7 @@ Last updated: 2026-10-08 KST
 
 - #236 1단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [phase 진행](phases/LEARN-236-layout.md)). 병합 커밋의 Post-merge checks를 확인한 뒤 2단계(`codex/learn-236-lesson-layout`, 이슈 D)를 시작한다.
   단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
+  완료 조건 변경(사용자 결정 2026-10-09, 이슈 본문 반영): "링크·버튼 44×44px"에서 학습용 피아노의 **검은 건반 폭**(26×113px)은 예외다. 건반의 크기·배치는 바꾸지 않는다. 높이 기준은 유지한다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `stage<N>-brief.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
 - 후속 후보(이슈 미등록): PR E2E job이 제한 30분에 근접했다(29m30s). PR239 1차 실행은 apt 미러 지연으로 테스트 시작 전에 27분을 써서 취소됐다([PR239 로그](reviews/PR-239.md)).
