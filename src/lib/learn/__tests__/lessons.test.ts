@@ -10,6 +10,15 @@ describe('learn lessons', () => {
     ])
   })
 
+  it('describes what every lesson covers with topics and an activity', () => {
+    for (const lesson of LEARN_LESSONS) {
+      expect(lesson.topics.length).toBeGreaterThan(0)
+      lesson.topics.forEach(topic => expect(topic.trim()).not.toBe(''))
+      expect(new Set(lesson.topics).size).toBe(lesson.topics.length)
+      expect(lesson.activity.trim()).not.toBe('')
+    }
+  })
+
   it('offers no neighbours while all lessons are unavailable', () => {
     for (const lesson of LEARN_LESSONS) {
       expect(getLessonNavigation(lesson.id, LEARN_LESSONS.map(item => ({ ...item, available: false })))).toEqual({ previous: undefined, next: undefined })
