@@ -10,12 +10,55 @@ it('uses one lesson heading and presents the six real practice topics', () => {
   expect(metadata.description).toBeTruthy()
   expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
   expect(screen.getByRole('heading', { level: 1, name: '연습 방법' })).toBeInTheDocument()
-  expect(lesson.getAllByRole('heading', { level: 2 }).map(node => node.textContent)).toEqual([
+
+  // Breadcrumbs & steps
+  const breadcrumbs = screen.getByRole('navigation', { name: '현재 위치' })
+  expect(within(breadcrumbs).getByRole('link', { name: '배우기' })).toHaveAttribute('href', '/learn')
+  expect(within(breadcrumbs).getByText('연습 방법')).toHaveAttribute('aria-current', 'page')
+  expect(screen.getByText('4단계 중 4단계')).toBeInTheDocument()
+
+  const expectedHeadings = [
     '느리게 시작', '한 손씩', 'A-B 구간 반복', '기다리기 모드', '메트로놈', '키보드 단축키',
-  ])
-  expect(lesson.getByRole('link', { name: '이전 레슨: 손' })).toHaveAttribute('href', '/learn/hands')
-  expect(lesson.queryByRole('link', { name: /다음 레슨/ })).toBeNull()
-  expect(lesson.getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
+  ]
+  const expectedIds = [
+    'slow-start', 'one-hand', 'ab-loop', 'wait-mode', 'metronome', 'keyboard-shortcuts',
+  ]
+
+  const h2s = lesson.getAllByRole('heading', { level: 2 })
+  expect(h2s.map(node => node.textContent)).toEqual(expectedHeadings)
+  expect(h2s.map(node => node.getAttribute('id'))).toEqual(expectedIds)
+
+  // TOC assertions: 1:1 match with h2s
+  const toc = within(document.querySelector('aside')!).getByRole('navigation', { name: '이 레슨의 내용' })
+  const tocLinks = within(toc).getAllByRole('link')
+  expect(tocLinks).toHaveLength(expectedHeadings.length)
+  expect(tocLinks.map(a => a.textContent)).toEqual(expectedHeadings)
+  expect(tocLinks.map(a => a.getAttribute('href'))).toEqual(expectedIds.map(id => `#${id}`))
+
+  // Section summaries inside each section
+  const expectedSummaries = [
+    '재생 전 설정 · 조작 바 › 속도 메뉴',
+    '재생 전 설정 › 연습할 손',
+    '재생 전 설정 · 조작 바 › A-B 구간 반복',
+    '재생 전 설정 › 기다리기 모드',
+    '재생 전 설정 › 메트로놈',
+    '재생 화면 › 키보드 단축키',
+  ]
+  expectedIds.forEach((id, index) => {
+    const section = document.getElementById(id)?.closest('section')
+    expect(section).toBeTruthy()
+    expect(section).toHaveTextContent(expectedSummaries[index])
+  })
+
+  // Body links
+  expect(lesson.getByRole('link', { name: '건반 레슨' })).toHaveAttribute('href', '/learn/keyboard')
+
+  // Lesson nav links
+  const nav = screen.getByRole('navigation', { name: '레슨 이동' })
+  expect(within(nav).getByRole('link', { name: '이전 레슨: 손' })).toHaveAttribute('href', '/learn/hands')
+  expect(within(nav).queryByRole('link', { name: /다음 레슨/ })).toBeNull()
+  expect(within(nav).getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
+
   expect(screen.getByText(/노트의 아랫변이 건반 위 선에 닿을 때/)).toBeInTheDocument()
   const table = lesson.getByRole('table', { name: '재생 화면 키보드 단축키' })
   expect(within(table).getAllByRole('row')).toHaveLength(4)

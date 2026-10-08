@@ -34,7 +34,7 @@ export default function ReadingExplorer() {
   }
   return (
     <div className="mt-4 space-y-4" data-testid="reading-explorer">
-      <p className="text-sm text-ink-muted">도(C3)부터 도(C5)까지 흰 건반 음을 골라 보세요. 가운데 도보다 낮은 음은 낮은음자리표로, 가운데 도부터는 높은음자리표로 보여 줘요. 이 예시에서는 흰 건반 음만 골라요.</p>
+      <p data-lesson-note className="text-sm text-ink-muted">도(C3)부터 도(C5)까지 흰 건반 음을 골라 보세요. 가운데 도보다 낮은 음은 낮은음자리표로, 가운데 도부터는 높은음자리표로 보여 줘요. 이 예시에서는 흰 건반 음만 골라요.</p>
       <div role="group" aria-label="음 선택" className="flex flex-wrap gap-2">
         {whiteMidis.map(midi => {
           const item = midiToSolfege(midi)
