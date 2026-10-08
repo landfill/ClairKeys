@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-10-05 KST
+Last updated: 2026-10-08 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
@@ -14,6 +14,8 @@ PR 근거: [PR232](reviews/PR-232.md) · [PR233](reviews/PR-233.md) · [PR234](r
 ## Next action
 
 - 진행 중인 구현 없음. 다음 작업은 사용자가 선택한다. #121은 아래 보류 조건을 유지한다.
+- [#236](https://github.com/landfill/ClairKeys/issues/236) 배우기 영역 화면 구성 개편안을 등록했다(2026-10-08, 미착수). 운영 계측·개편안·단계·완료 조건의 원본은 이슈 본문이다.
+  착수 전에 이슈의 "구현 전 결정" 4개(악보 읽기 2단계 분리, 용어 사전 찾기 도입, 옮겨 가는 앵커, 본문 글자 크기)를 사용자가 확정한다.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
   재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
