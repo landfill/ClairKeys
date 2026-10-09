@@ -63,7 +63,7 @@ export default function GlossaryExplorer({ groups }: GlossaryExplorerProps) {
           <div
             role="group"
             aria-label="용어 분류"
-            className="flex gap-2 overflow-x-auto whitespace-nowrap py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex -mx-1 gap-2 overflow-x-auto whitespace-nowrap px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             <button
               type="button"

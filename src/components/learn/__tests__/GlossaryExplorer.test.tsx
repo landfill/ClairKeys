@@ -65,10 +65,10 @@ describe('GlossaryExplorer', () => {
     // Term not matching is gone
     expect(document.getElementById('term-middle-c')).toBeNull()
 
-    expect(localStorage.setItem).not.toHaveBeenCalled()
+    expect(Storage.prototype.setItem).not.toHaveBeenCalled()
   })
 
-  it('switches category chips and filters terms accordingly', async () => {
+  it('switches category chips and filters terms accordingly without saving to storage', async () => {
     const user = userEvent.setup()
     render(<GlossaryExplorer groups={GLOSSARY_GROUPS} />)
 
@@ -83,6 +83,7 @@ describe('GlossaryExplorer', () => {
     expect(screen.getByRole('status')).toHaveTextContent('용어 6개')
     expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(1)
     expect(screen.getByRole('heading', { level: 2, name: '재생과 연습' })).toBeInTheDocument()
+    expect(Storage.prototype.setItem).not.toHaveBeenCalled()
   })
 
   it('filters by category chip and search query together', async () => {
@@ -100,6 +101,7 @@ describe('GlossaryExplorer', () => {
     expect(document.getElementById('term-metronome')).toBeInTheDocument()
     expect(document.getElementById('term-count-in')).toBeInTheDocument()
     expect(document.getElementById('term-time-signature')).toBeNull()
+    expect(Storage.prototype.setItem).not.toHaveBeenCalled()
   })
 
   it('shows empty state message and hides group headings when 0 terms match', async () => {

@@ -1,4 +1,28 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
+
+async function clickAtCenter(page: Page, locator: Locator) {
+  const box = await locator.boundingBox()
+  expect(box, '클릭 대상 요소의 boundingBox가 있어야 함').toBeTruthy()
+  if (!box) return
+
+  const cx = box.x + box.width / 2
+  const cy = box.y + box.height / 2
+
+  const hitCheck = await locator.evaluate(
+    (el, { x, y }) => {
+      const inBounds = x >= 0 && x < window.innerWidth && y >= 0 && y < window.innerHeight
+      const atPoint = document.elementFromPoint(x, y)
+      const hitsTarget = !!atPoint && (atPoint === el || el.contains(atPoint))
+      return { inBounds, hitsTarget, innerWidth: window.innerWidth, innerHeight: window.innerHeight }
+    },
+    { x: cx, y: cy }
+  )
+
+  expect(hitCheck.inBounds, `중심 좌표 (${cx}, ${cy})가 뷰포트 (0..${hitCheck.innerWidth}, 0..${hitCheck.innerHeight}) 밖임`).toBe(true)
+  expect(hitCheck.hitsTarget, `중심 좌표 (${cx}, ${cy})에서 대상 요소 또는 자손이 hit-test되지 않음`).toBe(true)
+
+  await page.mouse.click(cx, cy)
+}
 
 test('opens a public glossary from the map and follows a term to its lesson section', async ({ page }) => {
   const errors: string[] = []
@@ -84,18 +108,6 @@ test('finds a term within the first screen from two typed characters', async ({ 
       await searchInput.fill('박자')
       await expect(page.getByRole('status')).toHaveText('용어 4개')
 
-      const stateWhileFiltered = await page.evaluate(() => {
-        const local = Object.entries(localStorage).flat().join(' ')
-        const session = Object.entries(sessionStorage).flat().join(' ')
-        const all = `${local} ${session} ${document.cookie} ${location.search} ${location.hash}`
-        return {
-          search: location.search,
-          hasTerm: all.includes('박자') || all.includes(encodeURIComponent('박자')),
-        }
-      })
-      expect(stateWhileFiltered.search).toBe('')
-      expect(stateWhileFiltered.hasTerm).toBe(false)
-
       const scrollY = await page.evaluate(() => window.scrollY)
       expect(scrollY).toBe(0)
 
@@ -109,8 +121,44 @@ test('finds a term within the first screen from two typed characters', async ({ 
       await searchInput.fill('')
       await expect(page.getByRole('status')).toHaveText('용어 25개')
 
+      // 입력을 '박자'로 다시 채우고 '재생과 연습' 칩 클릭
+      await searchInput.fill('박자')
+      const practiceChip = page.getByRole('group', { name: '용어 분류' }).getByRole('button', { name: '재생과 연습' })
+      await practiceChip.scrollIntoViewIfNeeded()
+      await clickAtCenter(page, practiceChip)
+
+      await expect(page.getByRole('status')).toHaveText('용어 2개')
+      await expect(practiceChip).toHaveAttribute('aria-pressed', 'true')
+      await expect(page.locator('#term-metronome')).toBeVisible()
+      await expect(page.locator('#term-count-in')).toBeVisible()
+
+      // 필터가 적용된 상태에서 저장소 단언
+      const stateWhileFiltered = await page.evaluate(() => {
+        const localEntries = Object.entries(localStorage)
+        const sessionEntries = Object.entries(sessionStorage)
+        const local = localEntries.flat().join(' ')
+        const session = sessionEntries.flat().join(' ')
+        const all = `${local} ${session} ${document.cookie} ${location.search} ${location.hash}`
+        const localKeys = Object.keys(localStorage)
+        const sessionKeys = Object.keys(sessionStorage)
+        return {
+          search: location.search,
+          hasTerm: all.includes('박자') || all.includes(encodeURIComponent('박자')),
+          hasGlossaryKey: [...localKeys, ...sessionKeys].some(k => k.toLowerCase().includes('glossary')),
+        }
+      })
+      expect(stateWhileFiltered.search).toBe('')
+      expect(stateWhileFiltered.hasTerm).toBe(false)
+      expect(stateWhileFiltered.hasGlossaryKey).toBe(false)
+
+      // 필터가 걸린 채로 새로고침 후 초기화 확인
       await page.reload()
-      await expect(page.getByRole('searchbox', { name: '용어 찾기' })).toHaveValue('')
+      const searchInputAfterReload = page.getByRole('searchbox', { name: '용어 찾기' })
+      await expect(searchInputAfterReload).toHaveValue('')
+      const allChip = page.getByRole('group', { name: '용어 분류' }).getByRole('button', { name: '전체' })
+      const practiceChipAfterReload = page.getByRole('group', { name: '용어 분류' }).getByRole('button', { name: '재생과 연습' })
+      await expect(allChip).toHaveAttribute('aria-pressed', 'true')
+      await expect(practiceChipAfterReload).toHaveAttribute('aria-pressed', 'false')
       await expect(page.getByRole('status')).toHaveText('용어 25개')
     })
   }
