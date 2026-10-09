@@ -20,11 +20,11 @@ Last updated: 2026-10-09 KST
   4단계(이슈 C: 용어 사전 찾기·필터·조밀한 배치, 레슨 본문의 용어 링크)는 최신 main의 `codex/learn-236-glossary`에서 한다. 구현 지시문 `stage4-brief.md`는 작성돼 있다(3단계 브랜치 코드를 보고 썼다. 착수 전에 main과 어긋난 곳이 없는지 훑어본다).
   4단계 PR에는 `DECISIONS.md` 신규 결정(용어 사전에 화면 안 찾기 입력, #225 범위의 "별도 검색 없음"과 달라짐)과 `phases/LEARN-followups.md` 수정을 함께 넣는다. 4단계 PR의 병합은 새로 승인받는다.
   4단계가 병합되면 이슈 #236의 완료 조건을 항목별로 대조한 기록을 `validation/`에 남기고 이슈 종료 여부를 사용자에게 묻는다.
-  기록 시점에 PR243·PR241 병합 커밋의 Post-merge checks가 실행·대기 중이었다. 결과는 각 리뷰 로그와 GitHub live state로 확인한다.
+  PR243·PR241 병합 커밋의 Post-merge checks는 모두 성공했다(E2E 33분 39초, 35분 28초).
   단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
   완료 조건 변경(사용자 결정 2026-10-09, 이슈 본문 반영): "링크·버튼 44×44px"에서 학습용 피아노의 **검은 건반 폭**(26×113px)은 예외다. 건반의 크기·배치는 바꾸지 않는다. 높이 기준은 유지한다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `next-session-prompt.md`, `stage<N>-brief.md`, `stage<N>-fix<M>.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
-- E2E job 제한은 45분이다([#242](https://github.com/landfill/ClairKeys/issues/242) 종료, [PR243](reviews/PR-243.md) `2f7d9ac`). 스위트는 1269개(프로젝트당 253개 × 6, 한 worker)이고 최근 실행은 28~33분이다. 4단계가 더 늘린다.
+- E2E job 제한은 45분이다([#242](https://github.com/landfill/ClairKeys/issues/242) 종료, [PR243](reviews/PR-243.md) `2f7d9ac`). 스위트는 1269개(프로젝트당 253개 × 6, 한 worker)이고 최근 실행은 29~35분이다. 4단계가 더 늘린다.
   45분에 가까워지면 제한을 다시 올리지 말고 프로젝트별 matrix로 나눈다(후속 후보, 이슈 미등록). 취소된 실행은 실패한 테스트 이름을 남기지 않는다. 점 리포터의 순번을 `npx playwright test --list --project=chromium`과 대조해 찾는다.
   라우트나 앵커를 옮긴 뒤에는 변경 영역 spec만이 아니라 **전체 E2E를 로컬에서 Chromium·Firefox로** 돌린다(약 2분, 5 workers). PR241에서 범위 밖 spec 하나를 놓쳐 CI에서 실패했다.
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
