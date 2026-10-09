@@ -6,21 +6,19 @@ Last updated: 2026-10-09 KST
 
 ## Current phase
 
-**[#236](https://github.com/landfill/ClairKeys/issues/236) 배우기 영역 화면 구성 개편 진행 중(2026-10-08 착수).** 계측·개편안·단계·완료 조건·비목표의 원본은 이슈 본문이다.
-4단계, 단계마다 독립 PR이다: 1 홈 카드·세 구역(A) → 2 레슨 레이아웃(D) → 3 악보 읽기 분리·전환형 패널(B) → 4 용어 사전 찾기·필터(C).
-"구현 전 결정" 4개는 사용자가 모두 제안 기본값으로 확정했다(2026-10-08): 악보 읽기를 `/learn/reading`·`/learn/reading/rhythm`으로 분리(단계 지도 5단계),
-용어 사전에 화면 안 찾기 입력, 옮겨 가는 앵커 4개는 저장소 안 링크만 수정, 레슨 본문 16px.
-1·2는 기존 문서와 달라지므로 해당 단계 PR(3·4)에서 `DECISIONS.md` 신규 결정과 phase 문서를 함께 고친다.
-직전 완료 작업(#225~#228 후속): [완료 대조](validation/2026-10-04-learn-followups-completion-audit.md) · [후속 phase](phases/LEARN-followups.md).
+**진행 중인 작업 없음.** [#236](https://github.com/landfill/ClairKeys/issues/236) 배우기 영역 화면 구성 개편은 다섯 단계가 모두 병합되고 이슈가 종료됐다(2026-10-09).
+[완료 조건 대조](validation/2026-10-09-learn-236-completion-audit.md) · [phase](phases/LEARN-236-layout.md) · D-099·D-100.
+다음 작업은 사용자가 정한다. 앞으로 할 작업은 GitHub 이슈로 먼저 등록한다.
 
 ## Next action
 
-- **#236은 다섯 단계가 모두 병합됐다**([PR237](reviews/PR-237.md) `cdfdb7d`, [PR240](reviews/PR-240.md) `abb7cd0`, [PR241](reviews/PR-241.md) `3925182`, [PR244](reviews/PR-244.md) `edb4609`, 후속 [PR245](reviews/PR-245.md) `21dfd70`, [phase 진행](phases/LEARN-236-layout.md), D-099·D-100). 브랜치와 워커 터미널은 정리했다.
-  [완료 조건 대조](validation/2026-10-09-learn-236-completion-audit.md): 9개 충족. 사용자 결정(2026-10-09)으로 재생기 안 조작은 예외로 이슈 본문에 적었고, 문장 안 링크의 실제로 눌리는 높이(상자 49px, 문단 중간 줄에서 약 37px)는 한계로 기록했다.
-  **남은 일**: PR245 병합 커밋의 Post-merge checks([run 37937911550](https://github.com/landfill/ClairKeys/actions/runs/37937911550)) 확인 → 이슈 #236 종료(사용자 지시) → phase Status DONE. E2E가 45분 제한으로 취소되면 한 번만 재실행한다.
-  완료 조건 변경(사용자 결정 2026-10-09, 이슈 본문 반영): "링크·버튼 44×44px"에서 학습용 피아노의 **검은 건반 폭**(26×113px)은 예외다. 건반의 크기·배치는 바꾸지 않는다. 높이 기준은 유지한다.
+- #236이 남긴 것(근거는 [완료 조건 대조](validation/2026-10-09-learn-236-completion-audit.md)):
+  44px 조건의 예외는 학습용 피아노의 검은 건반 폭과 곡 페이지의 **재생기 안 조작**(`연습 방법과 단축키 보기`, `손가락 번호 보기`, `악보 보기`, 양손 곡의 손 선택 버튼)이다. 재생 화면을 고칠 수 있는 작업에서 다룰 후보다(이슈 미등록).
+  **문장 안 링크의 44px는 상자 기준이다.** inline 링크의 세로 패딩은 이웃 줄과 겹치고 겹친 곳은 뒤의 글자가 잡힌다. 문단 중간 줄의 링크는 실제로 잡히는 높이가 약 37px, 좌우로 넓힌 두 글자 용어의 폭은 약 35px다. 사용자가 한계로 기록하고 닫기로 했다(2026-10-09).
+  줄 높이가 20px인 문단(`text-sm`)에는 이 방식을 쓰지 않는다. 앞 링크의 글자를 덮어 다른 링크가 열린다(PR245에서 `inline-block`으로 고침). 링크 크기를 확인할 때는 상자만 재지 말고 글자 가운데에서 `elementFromPoint`가 그 링크를 돌려주는지 본다.
+  `/learn/reading` 390×844는 높이 기준(4220px)까지 110px 여유뿐이다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `next-session-prompt.md`, `stage<N>-brief.md`, `stage<N>-fix<M>.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
-- E2E job 제한은 45분이다([#242](https://github.com/landfill/ClairKeys/issues/242) 종료, [PR243](reviews/PR-243.md) `2f7d9ac`). 스위트는 1269개(프로젝트당 253개 × 6, 한 worker)이고 최근 실행은 29~35분이다. 4단계가 더 늘린다.
+- E2E job 제한은 45분이다([#242](https://github.com/landfill/ClairKeys/issues/242) 종료, [PR243](reviews/PR-243.md) `2f7d9ac`). 스위트는 1284개(프로젝트당 214개 × 6, 한 worker)이고 2026-10-09의 실행은 31~36분이었다. **PR244 병합 커밋의 Post-merge E2E는 45분 제한으로 한 번 취소됐고 재실행에서 통과했다.**
   45분에 가까워지면 제한을 다시 올리지 말고 프로젝트별 matrix로 나눈다(후속 후보, 이슈 미등록). 취소된 실행은 실패한 테스트 이름을 남기지 않는다. 점 리포터의 순번을 `npx playwright test --list --project=chromium`과 대조해 찾는다.
   라우트나 앵커를 옮긴 뒤에는 변경 영역 spec만이 아니라 **전체 E2E를 로컬에서 Chromium·Firefox로** 돌린다(약 2분, 5 workers). PR241에서 범위 밖 spec 하나를 놓쳐 CI에서 실패했다.
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
