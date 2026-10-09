@@ -31,7 +31,7 @@ export default function PracticePage() {
         <LessonSection section={PRACTICE_SECTIONS[0]}>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">노트의 아랫변이 건반 위 선에 닿을 때 건반을 눌러요. 처음에는 속도를 늦춰 따라가요. 재생 전에는 속도 메뉴에서, 재생 중에는 압축된 조작 바의 재생 속도 메뉴에서 바꿀 수 있어요.</p>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">0.25배부터 2배까지 고를 수 있어요. 느린 속도로 익힌 다음 조금씩 빠르게 연습해 보세요.</p>
-          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">재생 전에 건반에 계이름 표시를 켜면 흰 건반 아래에 도·레·미·파·솔·라·시가 나타나고 가운데 도가 강조돼요. 좁은 화면에서는 도만 보이고, 도 글자도 들어가지 않으면 가운데 도의 두 줄 표식만 남아요. 재생 중에는 정지한 뒤 설정을 바꿀 수 있어요. 이름과 위치는 <Link href="/learn/keyboard" className="inline rounded-sm py-3 text-accent hover:underline">건반 레슨</Link>에서 익혀 보세요.</p>
+          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">재생 전에 건반에 계이름 표시를 켜면 흰 건반 아래에 도·레·미·파·솔·라·시가 나타나고 가운데 도가 강조돼요. 좁은 화면에서는 도만 보이고, 도 글자도 들어가지 않으면 가운데 도의 두 줄 표식만 남아요. 재생 중에는 정지한 뒤 설정을 바꿀 수 있어요. 이름과 위치는 <Link href="/learn/keyboard" className="inline rounded-sm py-3.5 text-accent hover:underline">건반 레슨</Link>에서 익혀 보세요.</p>
         </LessonSection>
 
         <LessonSection section={PRACTICE_SECTIONS[1]}>

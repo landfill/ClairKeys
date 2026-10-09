@@ -73,7 +73,7 @@ export default function ReadingPage() {
           </LessonSection>
 
           <LessonSection section={READING_SECTIONS[4]}>
-            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">음 선택 버튼이나 흰 건반을 누르면 같은 음의 악보와 위치, 계이름을 확인할 수 있어요. 소리는 들어 보기 버튼으로 확인해요. 건반 이름과 위치는 <Link href="/learn/keyboard" className="inline rounded-sm py-3 text-accent hover:underline">건반 레슨</Link>에서도 익힐 수 있어요.</p>
+            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">음 선택 버튼이나 흰 건반을 누르면 같은 음의 악보와 위치, 계이름을 확인할 수 있어요. 소리는 들어 보기 버튼으로 확인해요. 건반 이름과 위치는 <Link href="/learn/keyboard" className="inline rounded-sm py-3.5 text-accent hover:underline">건반 레슨</Link>에서도 익힐 수 있어요.</p>
             <ReadingExplorer />
           </LessonSection>
 
@@ -110,7 +110,7 @@ export default function ReadingPage() {
             <RhythmExamples ids={['meter-four', 'meter-three', 'meter-six']} />
           </LessonSection>
 
-          <p className="text-base text-ink leading-relaxed max-w-[45rem]">손가락 번호는 <Link href="/learn/hands" className="inline rounded-sm py-3 text-accent hover:underline">손 레슨</Link>에서, 연습 방법은 <Link href="/learn/practice" className="inline rounded-sm py-3 text-accent hover:underline">연습 방법 레슨</Link>에서 익혀 봐요.</p>
+          <p className="text-base text-ink leading-relaxed max-w-[45rem]">손가락 번호는 <Link href="/learn/hands" className="inline rounded-sm py-3.5 text-accent hover:underline">손 레슨</Link>에서, 연습 방법은 <Link href="/learn/practice" className="inline rounded-sm py-3.5 text-accent hover:underline">연습 방법 레슨</Link>에서 익혀 봐요.</p>
         </div>
       </ReadingAudioProvider>
     </LessonLayout>

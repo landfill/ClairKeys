@@ -626,6 +626,46 @@ test.describe('레슨 공통 레이아웃', () => {
     }
   })
 
+  for (const path of ['/learn/reading', '/learn/hands', '/learn/practice']) {
+    for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
+      test(`콘텐츠 영역이 좁은 글꼴에서도 문장 안 링크 높이가 44px 이상임: ${path} (${viewport.width}x${viewport.height})`, async ({ page }) => {
+        await page.setViewportSize(viewport)
+        await page.goto(path)
+        await page.addStyleTag({
+          content: "[data-lesson-prose] p a { font-family: Arial, 'Liberation Sans', Helvetica, sans-serif !important; }",
+        })
+
+        const linkData = await page.evaluate(() => {
+          const inlineLinks = Array.from(document.querySelectorAll('[data-lesson-prose] p a[href]'))
+          return inlineLinks.map(link => {
+            const style = window.getComputedStyle(link)
+            const rects = Array.from(link.getClientRects()).map(r => ({
+              height: r.height,
+              width: r.width,
+            }))
+            return {
+              text: link.textContent ?? '',
+              fontSize: style.fontSize,
+              rects,
+            }
+          })
+        })
+
+        expect(linkData.length, `${path}에서 문장 안 링크가 1개 이상이어야 함`).toBeGreaterThan(0)
+        for (const link of linkData) {
+          expect(link.fontSize, `링크 "${link.text}"의 computed font-size가 16px이어야 함`).toBe('16px')
+          expect(link.rects.length, `링크 "${link.text}"의 client rects가 1개 이상이어야 함`).toBeGreaterThan(0)
+          for (const rect of link.rects) {
+            expect(
+              rect.height,
+              `링크 "${link.text}"의 높이(${rect.height}px)가 44 - 0.01 이상이어야 함`
+            ).toBeGreaterThanOrEqual(44 - 0.01)
+          }
+        }
+      })
+    }
+  }
+
   test('이전·다음 링크 배치 및 접근 가능한 이름 검증', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await page.goto('/learn/reading')
