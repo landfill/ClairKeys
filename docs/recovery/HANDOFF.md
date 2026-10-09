@@ -15,12 +15,11 @@ Last updated: 2026-10-09 KST
 
 ## Next action
 
-- #236 1·2·3단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [PR240](reviews/PR-240.md) `abb7cd0`, [PR241](reviews/PR-241.md) `3925182`, [phase 진행](phases/LEARN-236-layout.md), D-099).
-  **4단계(이슈 C)는 [PR244](reviews/PR-244.md)로 올렸고 병합 승인 대기다(2026-10-09, 브랜치 `codex/learn-236-glossary`).** CI·GitHub 리뷰 결과와 처리는 리뷰 로그에 적는다. [검증·계측](validation/2026-10-09-learn-236-stage4-glossary.md), D-100.
-  4단계 PR의 병합은 새로 승인받는다(사용자 결정). 병합 뒤에는 Post-merge checks 확인 → 브랜치 정리 →
-  이슈 #236의 완료 조건을 항목별로 대조한 기록을 `validation/`에 남기고 이슈 종료 여부를 사용자에게 묻는다.
-  PR243·PR241 병합 커밋의 Post-merge checks는 모두 성공했다(E2E 33분 39초, 35분 28초).
-  단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
+- **#236의 네 단계가 모두 병합됐다**([PR237](reviews/PR-237.md) `cdfdb7d`, [PR240](reviews/PR-240.md) `abb7cd0`, [PR241](reviews/PR-241.md) `3925182`, [PR244](reviews/PR-244.md) `edb4609`, [phase 진행](phases/LEARN-236-layout.md), D-099·D-100). 브랜치와 워커 터미널은 정리했다.
+  **사용자 결정 대기**: [완료 조건 대조](validation/2026-10-09-learn-236-completion-audit.md)에서 9개 중 8개 충족, 1개 부분 충족이다.
+  "`/learn` 아래 모든 페이지의 링크·버튼 44×44px"가 네 단계가 다루지 않은 첫 곡 코스 두 페이지(`/learn/course`, `/learn/course/<곡>`)에서 충족되지 않는다(높이 18~20px 글 링크, 재생기 안 `악보 보기` 40×40).
+  선택지: 후속 단계로 재생기 밖 링크를 고친다 / 코스 페이지를 예외로 이슈 본문에 적는다 / 별도 이슈로 넘긴다. 이슈 #236의 종료도 사용자가 정한다. 지시 전에는 코드를 고치지 않는다.
+  PR244 병합 커밋의 Post-merge checks 결과는 [PR244 리뷰 로그](reviews/PR-244.md)에서 확인한다.
   완료 조건 변경(사용자 결정 2026-10-09, 이슈 본문 반영): "링크·버튼 44×44px"에서 학습용 피아노의 **검은 건반 폭**(26×113px)은 예외다. 건반의 크기·배치는 바꾸지 않는다. 높이 기준은 유지한다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `next-session-prompt.md`, `stage<N>-brief.md`, `stage<N>-fix<M>.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
 - E2E job 제한은 45분이다([#242](https://github.com/landfill/ClairKeys/issues/242) 종료, [PR243](reviews/PR-243.md) `2f7d9ac`). 스위트는 1269개(프로젝트당 253개 × 6, 한 worker)이고 최근 실행은 29~35분이다. 4단계가 더 늘린다.

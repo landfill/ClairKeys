@@ -53,7 +53,7 @@ Claude는 오케스트레이션·검증·기록을 맡는다(사용자 지시 20
 | 1 | DONE | [PR237](../reviews/PR-237.md) 병합 `cdfdb7d`, [검증·계측](../validation/2026-10-08-learn-236-stage1-home-cards.md) |
 | 2 | DONE | [PR240](../reviews/PR-240.md) 병합 `abb7cd0`, [검증·계측](../validation/2026-10-09-learn-236-stage2-lesson-layout.md) |
 | 3 | DONE | [PR241](../reviews/PR-241.md) 병합 `3925182`, [검증·계측](../validation/2026-10-09-learn-236-stage3-reading-split.md) |
-| 4 | IN_REVIEW | [PR244](../reviews/PR-244.md), [검증·계측](../validation/2026-10-09-learn-236-stage4-glossary.md) |
+| 4 | DONE | [PR244](../reviews/PR-244.md) 병합 `edb4609`, [검증·계측](../validation/2026-10-09-learn-236-stage4-glossary.md) |
 
 - 2026-10-08: 결정 4개 확정, 1단계 착수.
 - 2026-10-09: 필수 검사 `Security Audit`이 새 권고로 막혀 #238을 먼저 처리했다([PR239](../reviews/PR-239.md) 병합 `0374a2e`). 그 뒤 1단계 PR237 병합(`cdfdb7d`).
@@ -63,3 +63,4 @@ Claude는 오케스트레이션·검증·기록을 맡는다(사용자 지시 20
 - 2026-10-09: 3단계 PR241 생성. 두 페이지 높이 2803 / 4110px, 2867 / 3694px(1280×800 / 390×844)로 완료 조건 충족. 구현 중 `/learn/reading` 390×844가 4488px로 넘어 음표 하나짜리 그림 두 쌍을 좁은 화면에서도 2열로 놓았다. 병합 승인 대기.
 - 2026-10-09: PR E2E가 30분 제한에 걸려 #242를 먼저 처리했다([PR243](../reviews/PR-243.md) 병합 `2f7d9ac`, 제한 45분). 그 뒤 3단계 PR241 병합(`3925182`). PR241의 첫 CI에서는 취소에 가려진 실제 실패 2건(옛 앵커 주소를 단언한 `song-provenance.spec.ts`)이 있었고 고쳤다. 4단계는 사용자 지시 대기.
 - 2026-10-09: 사용자 지시로 4단계 착수(구현 Gemini 3.8 Flash). PR244 생성. 용어 사전 4174 → 2265px(1280×800), 4948 → 3731px(390×844)로 완료 조건 충족. 첫 구현은 2518px였고 위에 붙는 영역(185px)이 해시로 들어온 항목을 가려 줄였다(145px). 병합 승인 대기.
+- 2026-10-09: 4단계 PR244 병합(`edb4609`). [완료 조건 대조](../validation/2026-10-09-learn-236-completion-audit.md): 9개 중 8개 충족. "`/learn` 아래 모든 페이지의 링크·버튼 44px"는 네 단계가 다루지 않은 첫 곡 코스 두 페이지(`/learn/course`, `/learn/course/<곡>`)에 높이 44px 미만 링크가 남아 부분 충족이다. 후속 처리와 이슈 종료는 사용자 결정 대기. Status는 그 결정까지 IN_PROGRESS로 둔다.
