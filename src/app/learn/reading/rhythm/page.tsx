@@ -3,6 +3,7 @@ import Link from 'next/link'
 import LessonLayout from '@/components/learn/LessonLayout'
 import LessonSection, { type LessonSectionItem } from '@/components/learn/LessonSection'
 import RhythmExamplePanel, { type RhythmPanelItem } from '@/components/learn/RhythmExamplePanel'
+import GlossaryTermLink from '@/components/learn/GlossaryTermLink'
 import { ReadingAudioProvider } from '@/components/learn/ReadingAudio'
 
 export const metadata: Metadata = {
@@ -48,14 +49,14 @@ export default function ReadingRhythmPage() {
       <ReadingAudioProvider>
         <div className="space-y-8">
           <LessonSection section={RHYTHM_SECTIONS[0]}>
-            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">길이는 4분음표를 한 박으로 놓고 비교해요. 온음표는 4박, 2분음표는 2박, 4분음표는 1박, 8분음표는 반 박이에요.</p>
+            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">길이는 <GlossaryTermLink term="quarter-note">4분음표</GlossaryTermLink>를 한 박으로 놓고 비교해요. <GlossaryTermLink term="whole-note">온음표</GlossaryTermLink>는 4박, <GlossaryTermLink term="half-note">2분음표</GlossaryTermLink>는 2박, 4분음표는 1박, <GlossaryTermLink term="eighth-note">8분음표</GlossaryTermLink>는 반 박이에요.</p>
             <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">온음표는 빈 머리만 있고, 2분음표는 빈 머리에 기둥이 있어요. 4분음표는 찬 머리에 기둥이 있고, 8분음표는 찬 머리와 기둥에 꼬리 하나가 붙어요. 이어지는 8분음표는 꼬리 대신 굵은 가로줄로 서로 이어 그리기도 해요.</p>
             <p data-lesson-note className="mt-2 text-sm text-ink-muted max-w-[45rem]">리듬 예시 소리는 4분음표 기준으로 분당 80번의 빠르기예요. 음높이는 같은 솔(G4)을 써서 길이에 집중할 수 있어요.</p>
             <RhythmExamplePanel label="음표 길이 비교" items={NOTE_LENGTH_ITEMS} />
           </LessonSection>
 
           <LessonSection section={RHYTHM_SECTIONS[1]}>
-            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">쉼표는 같은 이름의 음표와 같은 길이만큼 쉬는 표시예요. 아래 4분의 4박자 예시에서 온쉼표는 4박, 2분쉼표는 2박, 4분쉼표는 1박, 8분쉼표는 반 박을 쉬어요.</p>
+            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">쉼표는 같은 이름의 음표와 같은 길이만큼 쉬는 표시예요. 아래 4분의 4박자 예시에서 <GlossaryTermLink term="rests">온쉼표</GlossaryTermLink>는 4박, 2분쉼표는 2박, 4분쉼표는 1박, 8분쉼표는 반 박을 쉬어요.</p>
             <p data-lesson-note className="mt-2 text-sm text-ink-muted max-w-[45rem]">쉼표 들어 보기는 소리 없이 정해진 시간만큼 지나가요. 버튼 아래의 재생 차례 글로 진행을 확인할 수 있어요.</p>
             <RhythmExamplePanel label="쉼표 예시" items={REST_LENGTH_ITEMS} />
           </LessonSection>
@@ -66,7 +67,7 @@ export default function ReadingRhythmPage() {
           </LessonSection>
 
           <LessonSection section={RHYTHM_SECTIONS[3]}>
-            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">세로줄(마디줄)로 나눈 한 구간이 마디예요. 박자표의 아래 숫자는 세는 기준 음표를 가리키고, 위 숫자는 그 음표 몇 개의 길이가 한 마디에 들어가는지 알려 줘요. 아래 숫자 4는 4분음표, 8은 8분음표를 가리켜요.</p>
+            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]"><GlossaryTermLink term="barline">세로줄</GlossaryTermLink>(마디줄)로 나눈 한 구간이 <GlossaryTermLink term="measure">마디</GlossaryTermLink>예요. <GlossaryTermLink term="time-signature">박자표</GlossaryTermLink>의 아래 숫자는 세는 기준 음표를 가리키고, 위 숫자는 그 음표 몇 개의 길이가 한 마디에 들어가는지 알려 줘요. 아래 숫자 4는 4분음표, 8은 8분음표를 가리켜요.</p>
             <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">4분의 4박자는 4분음표를 한 박으로 네 박, 4분의 3박자는 세 박을 세요. 그림에서는 한 박의 8분음표 두 개를 묶었어요.</p>
             <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">8분의 6박자는 한 마디에 8분음표 여섯 개가 들어가요. 셋씩 두 묶음으로 세요. 전체 길이는 4분음표 세 개와 같아요.</p>
             <p data-lesson-note className="mt-2 text-sm text-ink-muted max-w-[45rem]">들어 보기에서는 각 묶음의 첫 음을 조금 세게 내서, 4분의 3박자는 둘씩 세 묶음으로, 8분의 6박자는 셋씩 두 묶음으로 들려요.</p>

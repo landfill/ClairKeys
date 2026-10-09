@@ -62,4 +62,15 @@ it('opens the published lesson with one h1 with pitch topics and 5 sections', ()
   expect(within(nav).getByRole('link', { name: '이전 레슨: 건반' })).toHaveAttribute('href', '/learn/keyboard')
   expect(within(nav).getByRole('link', { name: '다음 레슨: 악보 읽기 2' })).toHaveAttribute('href', '/learn/reading/rhythm')
   expect(within(nav).queryByRole('link', { name: '다음 레슨: 손' })).toBeNull()
+
+  // Glossary term links
+  const glossaryLinks = document.querySelectorAll<HTMLAnchorElement>('a[href^="/learn/glossary#term-"]')
+  expect(Array.from(glossaryLinks).map(a => a.getAttribute('href'))).toEqual([
+    '/learn/glossary#term-staff',
+    '/learn/glossary#term-treble-clef',
+    '/learn/glossary#term-bass-clef',
+    '/learn/glossary#term-ledger-line',
+    '/learn/glossary#term-middle-c',
+    '/learn/glossary#term-grand-staff',
+  ])
 })

@@ -78,4 +78,17 @@ it('opens the published rhythm lesson with one h1, 4 sections and 4 panels', () 
   expect(within(nav).getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
   expect(within(nav).getByRole('link', { name: '이전 레슨: 악보 읽기 1' })).toHaveAttribute('href', '/learn/reading')
   expect(within(nav).getByRole('link', { name: '다음 레슨: 손' })).toHaveAttribute('href', '/learn/hands')
+
+  // Glossary term links
+  const glossaryLinks = document.querySelectorAll<HTMLAnchorElement>('a[href^="/learn/glossary#term-"]')
+  expect(Array.from(glossaryLinks).map(a => a.getAttribute('href'))).toEqual([
+    '/learn/glossary#term-quarter-note',
+    '/learn/glossary#term-whole-note',
+    '/learn/glossary#term-half-note',
+    '/learn/glossary#term-eighth-note',
+    '/learn/glossary#term-rests',
+    '/learn/glossary#term-barline',
+    '/learn/glossary#term-measure',
+    '/learn/glossary#term-time-signature',
+  ])
 })

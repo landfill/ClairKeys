@@ -65,6 +65,16 @@ it('uses one lesson heading and presents the six real practice topics', () => {
   expect(table).toHaveTextContent(`←${SEEK_STEP_SEC}초 뒤로 이동`)
   expect(table).toHaveTextContent(`→${SEEK_STEP_SEC}초 앞으로 이동`)
   expect(screen.getByText(/물리 키보드가 없으면 화면의 재생/)).toBeInTheDocument()
+
+  // Glossary term links
+  const glossaryLinks = document.querySelectorAll<HTMLAnchorElement>('a[href^="/learn/glossary#term-"]')
+  expect(Array.from(glossaryLinks).map(a => a.getAttribute('href'))).toEqual([
+    '/learn/glossary#term-playback-speed',
+    '/learn/glossary#term-wait-mode',
+    '/learn/glossary#term-ab-loop',
+    '/learn/glossary#term-metronome',
+    '/learn/glossary#term-count-in',
+  ])
 })
 
 
