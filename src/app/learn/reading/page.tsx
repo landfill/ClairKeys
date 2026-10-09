@@ -22,7 +22,7 @@ const READING_SECTIONS: LessonSectionItem[] = [
 
 function Examples({ ids, alwaysPair }: { ids: readonly string[]; alwaysPair?: boolean }) {
   return (
-    <div className={`mt-4 grid gap-5 ${alwaysPair ? 'grid-cols-2 gap-3 md:gap-5' : 'md:grid-cols-2'}`}>
+    <div className={`mt-4 grid ${alwaysPair ? 'grid-cols-2 gap-3 md:gap-5' : 'gap-5 md:grid-cols-2'}`}>
       {READING_EXAMPLES.filter(example => ids.includes(example.id)).map(example => (
         <div key={example.id} className="min-w-0">
           <p data-lesson-note className="mb-2 text-sm font-semibold text-ink">{example.title}</p>

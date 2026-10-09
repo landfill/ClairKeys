@@ -91,6 +91,16 @@ test('verifies each of the four rhythm panels switches aria-pressed, drawing and
       await expect(figure).toHaveAttribute('aria-label', `${buttonName} 예시`)
       await expect(figure.locator('svg')).toHaveCount(1)
 
+      // Time signature assertions from old spec
+      const time = figure.locator('svg g.vf-timesignature')
+      await expect(time).toHaveCount(1)
+      await expect(time.locator('path')).toHaveCount(2)
+      const digits = await time.locator('path').evaluateAll(nodes => nodes.map(node => {
+        const rect = node.getBoundingClientRect()
+        return { width: rect.width, height: rect.height }
+      }))
+      expect(digits.every(digit => digit.width > 0 && digit.height > 0)).toBe(true)
+
       // Listen button updates
       const listenBtn = panelContainer.getByRole('button', { name: `${buttonName} 들어 보기`, exact: true })
       await expect(listenBtn).toBeVisible()
@@ -145,6 +155,70 @@ for (const width of [1280, 390, 320]) {
         }
       }
     }
+
+    // 들어 보기를 눌러 리듬 재생 차례가 보이는 동안 패널 높이 = 누르기 전 높이(±1px)
+    const rhythmGroup = page.getByRole('group', { name: '박자표 예시', exact: true })
+    const rhythmPanel = rhythmGroup.locator('..')
+
+    // 직전 루프에서 마지막 예시(8분의 6박자)가 선택된 채 끝났으므로 첫 예시(4분의 4박자)를 다시 선택한다
+    const meterFourBtn = rhythmGroup.getByRole('button', { name: /4분의 4박자/ })
+    await meterFourBtn.click()
+    await expect(meterFourBtn).toHaveAttribute('aria-pressed', 'true')
+    await expect(rhythmPanel.locator('figure [role="img"][aria-busy="true"]')).toHaveCount(0)
+
+    const beforePlayBox = await rhythmPanel.boundingBox()
+    expect(beforePlayBox).toBeTruthy()
+    const beforePlayDocHeight = await page.evaluate(() => document.documentElement.scrollHeight)
+
+    const listenBtn = rhythmPanel.getByRole('button', { name: '4분의 4박자 들어 보기', exact: true })
+    await listenBtn.click()
+    const progress = rhythmPanel.getByRole('status', { name: '리듬 재생 차례', exact: true })
+    await expect(progress).toBeVisible({ timeout: 12000 })
+
+    const playingBox = await rhythmPanel.boundingBox()
+    expect(playingBox).toBeTruthy()
+    expect(Math.abs(playingBox!.height - beforePlayBox!.height)).toBeLessThanOrEqual(1.0)
+
+    // 그 상태에서 다른 예시로 바꾼 뒤의 패널 높이 = 같은 값(±1px), 문서 높이도 같다
+    const switchBtn = rhythmGroup.getByRole('button', { name: /4분의 3박자/ })
+    await switchBtn.click()
+    await expect(switchBtn).toHaveAttribute('aria-pressed', 'true')
+    await expect(rhythmPanel.locator('figure [role="img"][aria-busy="true"]')).toHaveCount(0)
+
+    const switchedBox = await rhythmPanel.boundingBox()
+    expect(switchedBox).toBeTruthy()
+    expect(Math.abs(switchedBox!.height - beforePlayBox!.height)).toBeLessThanOrEqual(1.0)
+    const switchedDocHeight = await page.evaluate(() => document.documentElement.scrollHeight)
+    expect(Math.abs(switchedDocHeight - beforePlayDocHeight)).toBeLessThanOrEqual(1.0)
+  })
+}
+
+for (const width of [1280, 390, 320]) {
+  test(`keeps panel height stable when audio initialization fails at ${width}px`, async ({ page }) => {
+    await prepare(page)
+    await page.addInitScript(() => {
+      const unavailable = class { constructor() { throw new Error('isolated audio failure') } }
+      Object.defineProperty(window, 'AudioContext', { configurable: true, value: unavailable })
+      Object.defineProperty(window, 'webkitAudioContext', { configurable: true, value: unavailable })
+    })
+    await page.setViewportSize({ width, height: width === 320 ? 568 : 844 })
+    await page.goto('/learn/reading/rhythm')
+    await page.evaluate(() => document.fonts.ready)
+
+    const group = page.getByRole('group', { name: '음표 길이 비교', exact: true })
+    const panel = group.locator('..')
+    await expect(panel.locator('figure [role="img"][aria-busy="true"]')).toHaveCount(0)
+    const beforeBox = await panel.boundingBox()
+    expect(beforeBox).toBeTruthy()
+
+    const button = panel.getByRole('button', { name: '온음표 들어 보기', exact: true })
+    await button.click()
+    const notice = panel.getByRole('status').filter({ hasText: '소리를 재생하지 못했어요' })
+    await expect(notice).toBeVisible()
+
+    const afterBox = await panel.boundingBox()
+    expect(afterBox).toBeTruthy()
+    expect(Math.abs(afterBox!.height - beforeBox!.height)).toBeLessThanOrEqual(1.0)
   })
 }
 
@@ -170,6 +244,10 @@ test('does not leave previous example rhythm turn progress under new button when
   await meterFourBtn.click()
 
   // The new button area must NOT show the previous progress
+  await expect(panel.getByRole('status', { name: '리듬 재생 차례', exact: true })).toHaveCount(0)
+
+  // Verify that playback schedule was cancelled and progress does not reappear
+  await page.waitForTimeout(1500)
   await expect(panel.getByRole('status', { name: '리듬 재생 차례', exact: true })).toHaveCount(0)
 })
 
@@ -276,6 +354,62 @@ for (const width of [1280, 320, 390]) {
         expect(item.musicFitsSvg).toBe(true)
         expect(item.musicInset).toBeGreaterThanOrEqual(2)
       })
+
+      const remainingExamples = [
+        { panelLabel: '음표 길이 비교', panelIndex: 0, buttonName: '2분음표', expectedId: 'note-half' },
+        { panelLabel: '음표 길이 비교', panelIndex: 0, buttonName: '4분음표', expectedId: 'note-quarter' },
+        { panelLabel: '음표 길이 비교', panelIndex: 0, buttonName: '8분음표', expectedId: 'note-eighth' },
+        { panelLabel: '쉼표 예시', panelIndex: 1, buttonName: '2분쉼표', expectedId: 'rest-half' },
+        { panelLabel: '쉼표 예시', panelIndex: 1, buttonName: '4분쉼표', expectedId: 'rest-quarter' },
+        { panelLabel: '쉼표 예시', panelIndex: 1, buttonName: '8분쉼표', expectedId: 'rest-eighth' },
+        { panelLabel: '점음표 예시', panelIndex: 2, buttonName: '점4분음표', expectedId: 'note-dotted-quarter' },
+        { panelLabel: '박자표 예시', panelIndex: 3, buttonName: '4분의 3박자', expectedId: 'meter-three' },
+        { panelLabel: '박자표 예시', panelIndex: 3, buttonName: '8분의 6박자', expectedId: 'meter-six' },
+      ]
+
+      for (const item of remainingExamples) {
+        const group = page.getByRole('group', { name: item.panelLabel, exact: true })
+        const panelContainer = group.locator('..')
+        const btn = group.getByRole('button', { name: new RegExp(`^${item.buttonName}`) })
+
+        const frameBefore = await panelContainer.locator('figure [role="img"]').evaluate(node => {
+          const rect = node.getBoundingClientRect()
+          return { top: rect.top + window.scrollY, width: rect.width, height: rect.height }
+        })
+
+        await btn.click()
+
+        const fig = panelContainer.locator(`figure[data-example="${item.expectedId}"]`)
+        await expect(fig.locator('svg')).toHaveCount(1)
+        await expect(fig.locator('[role="img"][aria-busy="true"]')).toHaveCount(0)
+
+        const geom = await fig.evaluate(node => {
+          const box = node.querySelector('[role="img"]')!.getBoundingClientRect()
+          const svg = node.querySelector('svg')!
+          const rect = svg.getBoundingClientRect()
+          const music = [...svg.querySelectorAll('g.staffline')].map(g => g.getBoundingClientRect())
+          return {
+            frame: { top: box.top + window.scrollY, width: box.width, height: box.height },
+            inside: rect.left >= box.left && rect.right <= box.right && rect.top >= box.top && rect.bottom <= box.bottom,
+            heightRatio: rect.height / box.height,
+            horizontalBalance: Math.abs((rect.left - box.left) - (box.right - rect.right)),
+            verticalBalance: Math.abs((rect.top - box.top) - (box.bottom - rect.bottom)),
+            musicInset: music.length ? Math.min(...music.flatMap(b => [b.left - rect.left, rect.right - b.right, b.top - rect.top, rect.bottom - b.bottom])) : 0,
+            musicFitsSvg: music.length > 0 && music.every(b => b.left >= rect.left - 1 && b.right <= rect.right + 1 && b.top >= rect.top - 1 && b.bottom <= rect.bottom + 1),
+          }
+        })
+
+        expect(Math.abs(geom.frame.top - frameBefore.top)).toBeLessThanOrEqual(1.0)
+        expect(Math.abs(geom.frame.width - frameBefore.width)).toBeLessThanOrEqual(1.0)
+        expect(Math.abs(geom.frame.height - frameBefore.height)).toBeLessThanOrEqual(1.0)
+
+        expect(geom.inside).toBe(true)
+        expect(geom.heightRatio).toBeGreaterThanOrEqual(width === 1280 ? 0.75 : 0.4)
+        expect(geom.horizontalBalance).toBeLessThanOrEqual(2)
+        expect(geom.verticalBalance).toBeLessThanOrEqual(2)
+        expect(geom.musicFitsSvg).toBe(true)
+        expect(geom.musicInset).toBeGreaterThanOrEqual(2)
+      }
     } finally { release(); await page.unrouteAll({ behavior: 'ignoreErrors' }) }
   })
 }
@@ -350,7 +484,11 @@ test('shows audio initialization failure directly below 점4분음표 들어 보
   const notice = button.locator('..').getByRole('status').filter({ hasText: '소리를 재생하지 못했어요' })
   await expect(notice).toContainText('소리를 재생하지 못했어요')
   await expect(notice).toBeInViewport({ ratio: 0.95 })
-  await expect(page.getByText('소리를 재생하지 못했어요', { exact: false })).toHaveCount(1)
+  await expect(page.getByRole('status').filter({ hasText: '소리를 재생하지 못했어요' })).toHaveCount(1)
+  const hiddenTemplates = page.locator('[aria-hidden="true"]', { hasText: '소리를 재생하지 못했어요' })
+  await expect(hiddenTemplates).toHaveCount(4)
+  const roles = await hiddenTemplates.evaluateAll(nodes => nodes.map(node => node.getAttribute('role')))
+  expect(roles.every(role => role === null)).toBe(true)
   const buttonBox = await button.boundingBox()
   const noticeBox = await notice.boundingBox()
   expect(buttonBox).not.toBeNull()

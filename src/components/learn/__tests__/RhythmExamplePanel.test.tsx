@@ -1,5 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import RhythmExamplePanel from '../RhythmExamplePanel'
 import { ReadingAudioProvider } from '../ReadingAudio'
 
@@ -14,6 +13,16 @@ jest.mock('opensheetmusicdisplay', () => ({
   })),
 }))
 
+const playNoteNow = jest.fn().mockResolvedValue(true)
+const startAudio = jest.fn().mockResolvedValue(true)
+const stopAudio = jest.fn()
+const stopTappedNotes = jest.fn()
+const setVolume = jest.fn()
+const getCurrentTime = jest.fn().mockReturnValue(0)
+jest.mock('@/hooks/useFallingNotesAudio', () => ({
+  useFallingNotesAudio: () => ({ playNoteNow, startAudio, stopAudio, stopTappedNotes, setVolume, getCurrentTime }),
+}))
+
 beforeEach(() => {
   load.mockReset().mockResolvedValue(undefined)
   draw.mockReset().mockImplementation((container: HTMLElement) => {
@@ -25,6 +34,17 @@ beforeEach(() => {
     container.appendChild(svg)
   })
   clear.mockClear()
+  playNoteNow.mockReset().mockResolvedValue(true)
+  startAudio.mockReset().mockResolvedValue(true)
+  stopAudio.mockReset()
+  stopTappedNotes.mockReset()
+  setVolume.mockReset()
+  getCurrentTime.mockReset().mockReturnValue(0)
+  jest.useFakeTimers()
+})
+
+afterEach(() => {
+  jest.useRealTimers()
 })
 
 const NOTE_ITEMS = [
@@ -67,7 +87,6 @@ describe('RhythmExamplePanel', () => {
   })
 
   it('switches aria-pressed, score drawing and listen button upon clicking another button', async () => {
-    const user = userEvent.setup()
     render(
       <ReadingAudioProvider>
         <RhythmExamplePanel label="음표 길이 비교" items={NOTE_ITEMS} />
@@ -77,7 +96,9 @@ describe('RhythmExamplePanel', () => {
     await screen.findByRole('img')
 
     const halfButton = screen.getByRole('button', { name: '2분음표, 2박' })
-    await user.click(halfButton)
+    await act(async () => {
+      fireEvent.click(halfButton)
+    })
 
     expect(halfButton).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: '온음표, 4박' })).toHaveAttribute('aria-pressed', 'false')
@@ -141,5 +162,30 @@ describe('RhythmExamplePanel', () => {
     const visibleSpans = figure.querySelectorAll('figcaption > span:not([aria-hidden])')
     expect(visibleSpans).toHaveLength(1)
     expect(visibleSpans[0]).toHaveTextContent(/온음표/)
+  })
+
+  it('calls stopAudio when switching examples during playback', async () => {
+    render(
+      <ReadingAudioProvider>
+        <RhythmExamplePanel label="음표 길이 비교" items={NOTE_ITEMS} />
+      </ReadingAudioProvider>
+    )
+
+    await screen.findByRole('img')
+    const listenBtn = screen.getByRole('button', { name: '온음표 들어 보기' })
+    await act(async () => {
+      fireEvent.click(listenBtn)
+    })
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(50)
+    })
+
+    stopAudio.mockClear()
+    const halfBtn = screen.getByRole('button', { name: '2분음표, 2박' })
+    await act(async () => {
+      fireEvent.click(halfBtn)
+    })
+
+    expect(stopAudio).toHaveBeenCalled()
   })
 })

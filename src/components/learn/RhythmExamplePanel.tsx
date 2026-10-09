@@ -64,6 +64,7 @@ export default function RhythmExamplePanel({ label, items }: RhythmExamplePanelP
           key={selectedExample.id}
           rhythm={selectedExample}
           label={`${selectedExample.title} 들어 보기`}
+          reserveStatus
         />
       </div>
     </div>
