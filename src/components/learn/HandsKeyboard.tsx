@@ -56,9 +56,9 @@ export default function HandsKeyboard() {
     <div className="mt-4 space-y-4">
       <div role="group" aria-label="연습할 손" className="flex gap-2">
         {(['right', 'left'] as const).map(value => <Button key={value} variant={hand === value ? 'primary' : 'outline'}
-          className="border border-rule" aria-pressed={hand === value} onClick={() => { setHand(value); setSelected(null) }}>{HAND_NAMES[value]}</Button>)}
+          className="min-h-11 border border-rule" aria-pressed={hand === value} onClick={() => { setHand(value); setSelected(null) }}>{HAND_NAMES[value]}</Button>)}
       </div>
-      <p className="text-sm text-ink-muted">번호가 있는 다섯 건반을 클릭하거나 터치해 보세요. 키보드에서는 Tab으로 이동한 뒤 Enter 또는 Space로 눌러요.</p>
+      <p data-lesson-note className="text-sm text-ink-muted max-w-[45rem]">번호가 있는 다섯 건반을 클릭하거나 터치해 보세요. 키보드에서는 Tab으로 이동한 뒤 Enter 또는 Space로 눌러요.</p>
       <div ref={keyboardRegion} role="region" aria-label="다섯 손가락 자리 건반 (좌우 스크롤)" tabIndex={0} className="max-w-full overflow-x-auto rounded border border-rule">
         <div className="h-44" style={{ width: layout.totalWidth }}>
           <SimplePianoKeyboard layout={layout} learningKeys={learningKeys} activeKeys={new Set(selected === null ? [] : [selected])} onKeyPress={press} />

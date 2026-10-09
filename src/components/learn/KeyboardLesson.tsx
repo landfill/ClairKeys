@@ -61,14 +61,16 @@ export default function KeyboardLesson({ random = Math.random }: { random?: () =
 
   return (
     <div className="space-y-6">
-      <section aria-labelledby="keyboard-heading">
+      <section aria-labelledby="keyboard-heading" data-lesson-section>
         <h2 id="keyboard-heading" className="text-lg font-semibold text-ink">건반의 이름과 위치</h2>
-        <p className="mt-2 text-sm text-ink-muted">검은 건반은 2개와 3개씩 묶여 반복돼요. 2개 묶음의 바로 왼쪽 흰 건반이 도예요. 가운데 도는 C4예요. 아래 건반에 표시되어 있어요.</p>
-        <p className="mt-2 text-sm text-ink-muted">3옥타브의 도(C3)부터 5옥타브의 도(C5)까지 보여 줘요. 건반을 클릭하거나 터치해 보세요. 키보드에서는 Tab으로 이동한 뒤 Enter 또는 Space로 누를 수 있어요. 좁은 화면에서는 건반 영역을 좌우로 스크롤할 수 있어요.</p>
+        <div data-lesson-prose>
+          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">검은 건반은 2개와 3개씩 묶여 반복돼요. 2개 묶음의 바로 왼쪽 흰 건반이 도예요. 가운데 도는 C4예요. 아래 건반에 표시되어 있어요.</p>
+          <p className="mt-2 text-sm text-ink-muted max-w-[45rem]" data-lesson-note>3옥타브의 도(C3)부터 5옥타브의 도(C5)까지 보여 줘요. 건반을 클릭하거나 터치해 보세요. 키보드에서는 Tab으로 이동한 뒤 Enter 또는 Space로 누를 수 있어요. 좁은 화면에서는 건반 영역을 좌우로 스크롤할 수 있어요.</p>
+        </div>
         <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
           <label className="flex items-center gap-2"><input type="checkbox" checked={sound} onChange={event => setSound(event.target.checked)} />소리 켜기</label>
-          <Button variant="outline" onClick={() => { void midi.request() }} disabled={midiStatus === null || midiStatus === 'unsupported' || midiStatus === 'requesting'}>MIDI 연결</Button>
-          <p className="text-ink-muted">{midiStatus === null ? 'MIDI 지원 여부를 확인하고 있어요.' : midiStatus === 'unsupported' ? '이 브라우저는 MIDI를 지원하지 않아요.' : midiStatus === 'denied' ? 'MIDI 권한을 허용하면 연결할 수 있어요.' : midiStatus === 'ready' ? (midi.devices.length ? `${midi.devices.join(', ')}에 연결되어 있어요.` : 'MIDI 장치를 연결해 주세요.') : midiStatus === 'requesting' ? 'MIDI를 연결하고 있어요.' : 'MIDI 피아노도 연결할 수 있어요.'}</p>
+          <Button variant="outline" className="min-h-11" onClick={() => { void midi.request() }} disabled={midiStatus === null || midiStatus === 'unsupported' || midiStatus === 'requesting'}>MIDI 연결</Button>
+          <p className="text-sm text-ink-muted">{midiStatus === null ? 'MIDI 지원 여부를 확인하고 있어요.' : midiStatus === 'unsupported' ? '이 브라우저는 MIDI를 지원하지 않아요.' : midiStatus === 'denied' ? 'MIDI 권한을 허용하면 연결할 수 있어요.' : midiStatus === 'ready' ? (midi.devices.length ? `${midi.devices.join(', ')}에 연결되어 있어요.` : 'MIDI 장치를 연결해 주세요.') : midiStatus === 'requesting' ? 'MIDI를 연결하고 있어요.' : 'MIDI 피아노도 연결할 수 있어요.'}</p>
         </div>
         <div ref={keyboardRegion} role="region" aria-label="학습 건반 (좌우 스크롤)" tabIndex={0} className="mt-4 max-w-full overflow-x-auto rounded border border-rule">
           <div style={{ width: layout.totalWidth }}>
@@ -89,10 +91,12 @@ export default function KeyboardLesson({ random = Math.random }: { random?: () =
         </p>
         {audioFailed && <p className="mt-2 text-sm text-ink-muted">소리를 재생하지 못했어요. 건반 이름과 도 찾기는 계속 사용할 수 있어요.</p>}
       </section>
-      <section aria-labelledby="practice-heading" className="border-t border-rule pt-6">
+      <section aria-labelledby="practice-heading" data-lesson-section className="border-t border-rule pt-6">
         <h2 id="practice-heading" className="text-lg font-semibold text-ink">도 찾기</h2>
-        <p className="mt-2 text-sm text-ink-muted">문제에 나온 옥타브의 도를 찾아 눌러 보세요. 건반의 왼쪽 끝 도는 3옥타브, 가운데 도는 4옥타브, 오른쪽 끝 도는 5옥타브예요. 좁은 화면에서는 좌우로 스크롤해 찾아보세요.</p>
-        <Button className="mt-3" onClick={() => { setTarget(chooseDoTarget(VISIBLE_RANGE, random, target)); setResult(null) }}>{target === null ? '도 찾기 시작' : '새 문제'}</Button>
+        <div data-lesson-prose>
+          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">문제에 나온 옥타브의 도를 찾아 눌러 보세요. 건반의 왼쪽 끝 도는 3옥타브, 가운데 도는 4옥타브, 오른쪽 끝 도는 5옥타브예요. 좁은 화면에서는 좌우로 스크롤해 찾아보세요.</p>
+        </div>
+        <Button className="mt-3 min-h-11" onClick={() => { setTarget(chooseDoTarget(VISIBLE_RANGE, random, target)); setResult(null) }}>{target === null ? '도 찾기 시작' : '새 문제'}</Button>
         {target !== null && <p className="mt-3 text-ink" data-testid="do-target">{midiToSolfege(target).octave}옥타브의 도를 눌러 보세요.</p>}
         <p role="status" aria-label="연습 결과" aria-live="polite" aria-atomic="true" className="mt-2 text-ink">
           <span key={pressCount}>{result === 'correct' ? '맞음! 요청한 옥타브의 도를 찾았어요.' : result === 'retry' ? '다시 찾아보세요. 검은 건반 2개 묶음의 왼쪽을 확인해요.' : target !== null ? '도를 골라 주세요.' : ''}</span>
