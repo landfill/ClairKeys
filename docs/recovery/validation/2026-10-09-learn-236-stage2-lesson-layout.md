@@ -76,6 +76,20 @@ Environment: macOS, production 빌드(`npm run build` 뒤 `npm start`), `NEXTAUT
 - 화면 확인: 옆 목차 첫 링크에 포커스를 준 캡처(1280×800, 1024×400, 3배율)에서 수정 전에는 윤곽선의 왼쪽 변이 없었고 수정 후에는 네 변이 모두 보인다. 링크의 left/right(1280: 992/1248, 1024: 736/992)는 수정 전후가 같다.
 - 하지 않은 것: WebKit·모바일 프로젝트(CI가 맡는다). 낮은 뷰포트에서 현재 섹션 표시가 목차 안 스크롤 밖에 있을 때 자동으로 따라 스크롤하지는 않는다(리뷰 지적 범위 밖, 후속 후보).
 
+## GitHub 재리뷰 수정 (`419e453`, 2026-10-09)
+
+[PR240](../reviews/PR-240.md) R4. 구현은 Gemini 3.8 Flash, 검증은 오케스트레이터.
+
+| 순서 | 명령 | 결과 |
+|---|---|---|
+| 수정 전 재현 | `3a3515a` 빌드 + `npx playwright test e2e/learn-lesson-layout.spec.ts --project=chromium --project=firefox -g "좁은 글꼴"` | 12건 FAIL: 링크에 Arial을 강제하면 높이 Chromium 43px, Firefox 41px |
+| 수정 후 | 전체 Jest(CI venv) | 163 suites, 1616 tests PASS |
+| 수정 후 | `npx tsc --noEmit --incremental false`, `npm run lint`, `npm run build` | PASS |
+| 수정 후 | `npx playwright test e2e/learn-*.spec.ts --project=chromium --project=firefox` | 208 passed |
+
+- 근거: 인라인 상자 높이 = 글꼴 콘텐츠 영역 + 세로 padding. 수정 전 측정에서 콘텐츠 영역은 17px(Firefox)·19px(Chromium)였다. padding 28px이면 콘텐츠 영역이 16px(글자 크기) 이상인 글꼴에서 44px 이상이다.
+- 하지 않은 것: 문서 높이 재계측(인라인 padding은 줄 상자를 바꾸지 않고, 줄 높이 불변은 기존 E2E가 단언한다). 리뷰어 환경의 실제 글꼴로는 재현하지 않았다(Arial 강제로 같은 조건을 만들었다).
+
 ## Baseline comparison
 
 - Fixed failures: 없음(기존 실패 없음).
