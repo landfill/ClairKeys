@@ -82,10 +82,10 @@ describe('post-merge workflow', () => {
   })
 
   // The only E2E evidence for the merged tree; a hang must not hold it for the
-  // 360-minute default (normal runs take 16-19 minutes).
+  // 360-minute default (runs take 25-30 minutes (about 1270 tests across six browser projects, one worker)).
   it('caps the E2E job well below the 360-minute default', () => {
     const e2e = workflow.split(/^  e2e:\s*$/m)[1].split(/^  [a-z-]+:\s*$/m)[0]
-    expect(e2e).toMatch(/^ {4}timeout-minutes: 30$/m)
+    expect(e2e).toMatch(/^ {4}timeout-minutes: 45$/m)
   })
 
   it('is the only workflow that runs on a push to main', () => {
