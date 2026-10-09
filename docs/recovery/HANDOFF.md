@@ -15,7 +15,7 @@ Last updated: 2026-10-08 KST
 
 ## Next action
 
-- #236 1단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [phase 진행](phases/LEARN-236-layout.md)). Post-merge checks도 성공했다. 2단계(`codex/learn-236-lesson-layout`, 이슈 D)를 진행 중이다(지시문 `stage2-brief.md`).
+- #236 1단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [phase 진행](phases/LEARN-236-layout.md)). Post-merge checks도 성공했다. 2단계(`codex/learn-236-lesson-layout`, 이슈 D)는 구현·로컬 검증·로컬 리뷰 2회를 마치고 [PR240](reviews/PR-240.md)을 열었다([검증](validation/2026-10-09-learn-236-stage2-lesson-layout.md)). CI·리뷰 확인 뒤 사용자 병합 승인을 기다린다.
   단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
   완료 조건 변경(사용자 결정 2026-10-09, 이슈 본문 반영): "링크·버튼 44×44px"에서 학습용 피아노의 **검은 건반 폭**(26×113px)은 예외다. 건반의 크기·배치는 바꾸지 않는다. 높이 기준은 유지한다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `stage<N>-brief.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
@@ -34,6 +34,8 @@ Last updated: 2026-10-08 KST
   커밋별 구현 모델은 `reviews/PR-<n>.md`에 남기고, Gemini Flash가 구현한 커밋은 리뷰 지시문에 밝힌다.
   리뷰 지시문 끝에 "지적만 35줄 이내로 다시 출력"을 넣는다(터미널은 마지막 화면만 읽힌다). 브랜치를 바꾼 뒤 `.next/types`를 지운다.
   macOS WebKit은 Tab 포커스 단언이 설정 탓에 실패한다(CI Linux는 통과).
+  **Opus 주간 한도 소진(2026-10-09 08:40경, 초기화까지 158시간 표시).** 그때까지 구현은 `gemini-3.8-flash-high`만 가능하다. Gemini Flash는 셸 명령 승인을 묻지 않고 실행했고, 2단계에서 검증으로 여러 번 되돌려 보내야 했다(추측한 값, 틀린 선택자). 지시문에 "추측하지 말고 코드에서 값을 읽어라"와 정확한 파일·줄을 적는다.
+  Playwright `locator.click()`은 Firefox에서 해시 진입 뒤 sticky 요소를 누를 때 스크롤을 움직인다. sticky 목차는 좌표 클릭(`clickAtCenter`)으로 누른다.
   `agy` 첫 실행 관찰(1.3.1, 2026-10-08): `--mode accept-edits`에서 파일 쓰기는 묻지 않고 되지만 **셸 명령은 읽기 명령(`ls`·`cat`·`grep`)까지 매번 승인을 묻는다**
   (1 실행 / 2·3 접두사 단위 항상 허용 / 4 취소). 오케스트레이터가 터미널을 읽어 명령을 확인하고 Enter로 승인해야 진행된다. 승인을 기다리는 동안 워커는 멈춰 있다.
   `npx jest`·`npx tsc`·`npx eslint`는 승인 뒤 정상 실행됐다. `.git` 쓰기와 포트 사용은 지시문에서 금지해 시도하지 않았다(미확인).
