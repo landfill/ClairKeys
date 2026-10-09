@@ -17,7 +17,10 @@ Last updated: 2026-10-09 KST
 
 - #236 1·2단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [PR240](reviews/PR-240.md) `abb7cd0`, [phase 진행](phases/LEARN-236-layout.md)). **3단계(이슈 B: 악보 읽기 분리 + 전환형 예시 패널)는 [PR241](reviews/PR-241.md)로 열려 있고 병합 승인을 기다린다**([검증·계측](validation/2026-10-09-learn-236-stage3-reading-split.md), D-099).
   CI와 GitHub 리뷰 결과는 리뷰 로그와 GitHub live state로 확인한다. actionable 지적은 Gemini Flash 워커에게 맡겨 수정·검증·회신·resolve한다.
-  **사용자가 승인한 것은 PR240 병합과 3단계 진행까지다. PR241 병합은 새로 승인받는다.** 병합되면 Post-merge 확인·브랜치 정리 뒤 4단계(이슈 C: 용어 사전 찾기·필터·조밀한 배치, 레슨 본문의 용어 링크)를 최신 main에서 시작한다. 4단계 지시문은 아직 없다.
+  **사용자가 PR241을 CI 통과 시 병합하고 4단계를 진행하도록 승인했다(2026-10-09). 이 승인은 PR241에만 해당하고, 4단계 PR의 병합은 새로 승인받는다.**
+  기록 시점(2026-10-09 16:15 KST)에 PR241은 E2E만 실행 중이었고 GitHub Codex 리뷰는 지적 없이 끝났다(미해결 스레드 0). **다음 세션은 `local-test-data/results/learn-236/next-session-prompt.md`를 읽고 이어간다.**
+  병합되면 Post-merge 확인·브랜치 정리 뒤 4단계(이슈 C: 용어 사전 찾기·필터·조밀한 배치, 레슨 본문의 용어 링크)를 최신 main의 `codex/learn-236-glossary`에서 시작한다. 4단계 지시문 `stage4-brief.md`는 작성돼 있다(미착수).
+  4단계 PR에는 `DECISIONS.md` 신규 결정(용어 사전에 화면 안 찾기 입력, #225 범위의 "별도 검색 없음"과 달라짐)과 `phases/LEARN-followups.md` 수정을 함께 넣는다.
   단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
 - **PR E2E가 30분 제한을 넘기 시작했다.** PR240 마지막 head는 1124개 테스트로 3회 중 2회 취소됐고 재실행에서 29분 3초로 통과했다([PR240 로그](reviews/PR-240.md)). PR241은 E2E를 더 늘렸다.
   취소되면 `gh run rerun <run> --failed`로 한 번 재실행하고, 다시 취소되면 멈추고 사용자에게 보고한다. 제한 상향·프로젝트별 분할은 워크플로 변경이라 별도 이슈·PR·승인이 필요하다(이슈 미등록).
