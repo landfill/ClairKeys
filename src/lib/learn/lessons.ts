@@ -16,8 +16,12 @@ export const LEARN_LESSONS: LearnLesson[] = [
     topics: ['건반 이름', '검은 건반 묶음', '가운데 도', '옥타브'], activity: '건반 눌러 보기, 도 찾기 문제',
   },
   {
-    id: 'reading', title: '악보 읽기', href: '/learn/reading', description: '악보가 나타내는 음높이와 길이, 박자를 알아봐요.', available: true,
-    topics: ['오선', '음자리표', '가운데 도', '음표 길이', '쉼표', '박자표'], activity: '악보 예시 듣기, 오선과 건반 연결하기',
+    id: 'reading', title: '악보 읽기 1', href: '/learn/reading', description: '악보가 나타내는 음높이를 알아봐요.', available: true,
+    topics: ['오선', '음자리표', '가운데 도'], activity: '악보 예시 듣기, 오선과 건반 연결하기',
+  },
+  {
+    id: 'reading-rhythm', title: '악보 읽기 2', href: '/learn/reading/rhythm', description: '악보가 나타내는 음의 길이와 박자를 알아봐요.', available: true,
+    topics: ['음표 길이', '쉼표', '점음표', '박자표'], activity: '리듬 예시를 골라 듣기',
   },
   {
     id: 'hands', title: '손', href: '/learn/hands', description: '손 자세와 손가락 번호를 익혀요.', available: true,

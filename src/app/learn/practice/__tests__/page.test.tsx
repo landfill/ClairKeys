@@ -15,7 +15,7 @@ it('uses one lesson heading and presents the six real practice topics', () => {
   const breadcrumbs = screen.getByRole('navigation', { name: '현재 위치' })
   expect(within(breadcrumbs).getByRole('link', { name: '배우기' })).toHaveAttribute('href', '/learn')
   expect(within(breadcrumbs).getByText('연습 방법')).toHaveAttribute('aria-current', 'page')
-  expect(screen.getByText('4단계 중 4단계')).toBeInTheDocument()
+  expect(screen.getByText('5단계 중 5단계')).toBeInTheDocument()
 
   const expectedHeadings = [
     '느리게 시작', '한 손씩', 'A-B 구간 반복', '기다리기 모드', '메트로놈', '키보드 단축키',

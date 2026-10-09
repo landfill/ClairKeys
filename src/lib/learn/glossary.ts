@@ -6,6 +6,7 @@ export interface GlossaryGroup {
 }
 
 const reading = '/learn/reading'
+const rhythm = '/learn/reading/rhythm'
 const practice = '/learn/practice'
 const hands = '/learn/hands'
 
@@ -24,15 +25,15 @@ export const GLOSSARY_GROUPS: GlossaryGroup[] = [
   },
   {
     id: 'rhythm', title: '음표와 박자', terms: [
-      { name: '온음표', definition: '4분음표를 한 박으로 놓으면 네 박 길이예요. 빈 머리만 있어요.', href: `${reading}#note-lengths` },
-      { name: '2분음표', definition: '4분음표를 한 박으로 놓으면 두 박 길이예요. 빈 머리에 기둥이 있어요.', href: `${reading}#note-lengths` },
-      { name: '4분음표', definition: '4분음표를 한 박으로 놓으면 한 박 길이예요. 찬 머리에 기둥이 있어요.', href: `${reading}#note-lengths` },
-      { name: '8분음표', definition: '4분음표를 한 박으로 놓으면 반 박 길이예요. 찬 머리와 기둥에 꼬리 하나가 있고, 이어서 그릴 때는 굵은 가로줄로 묶기도 해요.', href: `${reading}#note-lengths` },
-      { name: '온쉼표·2분쉼표·4분쉼표·8분쉼표', definition: '쉼표는 소리를 내지 않고 쉬는 길이를 나타내요. 기본 길이를 비교하면 각각 같은 이름의 음표와 길이가 같아요.', href: `${reading}#rest-lengths` },
-      { name: '점음표', definition: '음표 오른쪽의 점 하나는 원래 길이의 절반을 더해요. 점2분음표는 4분음표 세 개, 점4분음표는 4분음표 한 개 반의 길이예요.', href: `${reading}#dotted-lengths` },
-      { name: '박자표', definition: '아래 숫자는 길이의 기준이 되는 음표를, 위 숫자는 그 음표 몇 개의 길이가 한 마디에 들어가는지 알려 줘요.', href: `${reading}#meters` },
-      { name: '마디', definition: '악보에서 세로줄로 나누어 놓은 구간이에요. 박자표는 한 마디에 들어가는 기본 길이를 알려 줘요.', href: `${reading}#meters` },
-      { name: '세로줄', definition: '악보를 마디로 나누는 세로선이에요.', href: `${reading}#meters` },
+      { name: '온음표', definition: '4분음표를 한 박으로 놓으면 네 박 길이예요. 빈 머리만 있어요.', href: `${rhythm}#note-lengths` },
+      { name: '2분음표', definition: '4분음표를 한 박으로 놓으면 두 박 길이예요. 빈 머리에 기둥이 있어요.', href: `${rhythm}#note-lengths` },
+      { name: '4분음표', definition: '4분음표를 한 박으로 놓으면 한 박 길이예요. 찬 머리에 기둥이 있어요.', href: `${rhythm}#note-lengths` },
+      { name: '8분음표', definition: '4분음표를 한 박으로 놓으면 반 박 길이예요. 찬 머리와 기둥에 꼬리 하나가 있고, 이어서 그릴 때는 굵은 가로줄로 묶기도 해요.', href: `${rhythm}#note-lengths` },
+      { name: '온쉼표·2분쉼표·4분쉼표·8분쉼표', definition: '쉼표는 소리를 내지 않고 쉬는 길이를 나타내요. 기본 길이를 비교하면 각각 같은 이름의 음표와 길이가 같아요.', href: `${rhythm}#rest-lengths` },
+      { name: '점음표', definition: '음표 오른쪽의 점 하나는 원래 길이의 절반을 더해요. 점2분음표는 4분음표 세 개, 점4분음표는 4분음표 한 개 반의 길이예요.', href: `${rhythm}#dotted-lengths` },
+      { name: '박자표', definition: '아래 숫자는 길이의 기준이 되는 음표를, 위 숫자는 그 음표 몇 개의 길이가 한 마디에 들어가는지 알려 줘요.', href: `${rhythm}#meters` },
+      { name: '마디', definition: '악보에서 세로줄로 나누어 놓은 구간이에요. 박자표는 한 마디에 들어가는 기본 길이를 알려 줘요.', href: `${rhythm}#meters` },
+      { name: '세로줄', definition: '악보를 마디로 나누는 세로선이에요.', href: `${rhythm}#meters` },
     ],
   },
   {

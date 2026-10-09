@@ -35,7 +35,7 @@ test('introduces a public song outside playback and links to a lesson without co
   await expect(area).toContainText('양손')
   await expect(area).toContainText('♩=80 (악보에서 읽음)')
   await expect(area.locator('dt').filter({ hasText: /^박자$/ })).toHaveCount(0)
-  await expect(area.locator('a[href="/learn/reading#meters"]')).toHaveCount(0)
+  await expect(area.locator('a[href="/learn/reading/rhythm#meters"]')).toHaveCount(0)
   await expect(area).not.toContainText(/4\/4|장조|단조|음표 종류|쉼표 종류/)
   await expect(page.getByText('재생 시간', { exact: true })).toHaveCount(1)
   const player = page.locator('main [data-testid="playback-box"]').locator('xpath=../..')

@@ -121,6 +121,6 @@ test('introduces verified meter and key for all authored course pieces', async (
     await expect(intro).toContainText('4/4')
     await expect(intro).toContainText('샵·플랫 없음')
     await expect(intro.getByText('원본 악보 기준', { exact: true })).toHaveCount(2)
-    await expect(intro.getByRole('link', { name: '악보 읽기에서 박자표 익히기' })).toHaveAttribute('href', '/learn/reading#meters')
+    await expect(intro.getByRole('link', { name: '악보 읽기에서 박자표 익히기' })).toHaveAttribute('href', '/learn/reading/rhythm#meters')
   }
 })

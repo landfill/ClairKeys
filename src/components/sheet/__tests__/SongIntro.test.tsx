@@ -13,7 +13,7 @@ it('shows unknown provenance without inventing meter, major key or notation type
   expect(area.querySelector('dl')).not.toBeNull()
   expect(area.querySelectorAll('dt')).toHaveLength(4)
   expect(screen.queryByText('박자', { selector: 'dt' })).toBeNull()
-  expect(area.querySelector('a[href="/learn/reading#meters"]')).toBeNull()
+  expect(area.querySelector('a[href="/learn/reading/rhythm#meters"]')).toBeNull()
   expect(area).toHaveTextContent('확인된 빠르기 정보가 없어요')
   expect(area).toHaveTextContent('손 구분은 앱이 추정했어요')
   expect(area).not.toHaveTextContent(/4\/4|장조|단조|음표 종류|쉼표 종류/)

@@ -129,7 +129,7 @@ export function ListenButton({ midis, rhythm, label }: ListenButtonProps) {
   }, [failed])
   if (!audio) throw new Error('ReadingAudioProvider is required')
   return <div className="mt-3">
-    <Button variant="outline" onClick={() => { void audio.preview(rhythm ? { rhythm } : { midis: midis! }, buttonId) }}>{label}</Button>
+    <Button variant="outline" className="min-h-11" onClick={() => { void audio.preview(rhythm ? { rhythm } : { midis: midis! }, buttonId) }}>{label}</Button>
     {failed && <p ref={noticeRef} role="status" aria-live="polite" className="mt-2 text-sm text-ink-muted">소리를 재생하지 못했어요. 악보와 글, 건반은 계속 사용할 수 있어요.</p>}
     {audio.preparingButton === buttonId && <p role="status" aria-label="소리 준비 상태" aria-live="polite" className="mt-2 text-sm text-ink-muted">소리를 준비하고 있어요.</p>}
     {current && <p role="status" aria-label="리듬 재생 차례" aria-live="polite" className="mt-2 text-sm text-ink-muted">{current.index + 1}/{current.count} · {current.label}</p>}

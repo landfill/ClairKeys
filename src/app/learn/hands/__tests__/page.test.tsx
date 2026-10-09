@@ -13,7 +13,7 @@ it('presents the four hand topics, metadata and working lesson links', () => {
   const breadcrumbs = screen.getByRole('navigation', { name: '현재 위치' })
   expect(within(breadcrumbs).getByRole('link', { name: '배우기' })).toHaveAttribute('href', '/learn')
   expect(within(breadcrumbs).getByText('손')).toHaveAttribute('aria-current', 'page')
-  expect(screen.getByText('4단계 중 3단계')).toBeInTheDocument()
+  expect(screen.getByText('5단계 중 4단계')).toBeInTheDocument()
 
   const expectedHeadings = ['손가락 번호', '기본 손 모양', '다섯 손가락 자리', '재생 화면과 연결']
   const expectedIds = ['finger-numbers', 'hand-shape', 'five-fingers', 'playback-fingers']
@@ -37,8 +37,8 @@ it('presents the four hand topics, metadata and working lesson links', () => {
 
   // Lesson nav links
   const nav = screen.getByRole('navigation', { name: '레슨 이동' })
-  expect(within(nav).getByRole('link', { name: '이전 레슨: 악보 읽기' })).toHaveAttribute('href', '/learn/reading')
+  expect(within(nav).getByRole('link', { name: '이전 레슨: 악보 읽기 2' })).toHaveAttribute('href', '/learn/reading/rhythm')
   expect(within(nav).getByRole('link', { name: '다음 레슨: 연습 방법' })).toHaveAttribute('href', '/learn/practice')
-  expect(document.querySelectorAll('a[href="/learn/reading"]')).toHaveLength(1)
+  expect(document.querySelectorAll('a[href="/learn/reading/rhythm"]')).toHaveLength(1)
 })
 

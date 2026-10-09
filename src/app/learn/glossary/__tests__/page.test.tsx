@@ -3,10 +3,10 @@ import GlossaryPage from '../page'
 import LearnPage from '../../page'
 import LessonLayout from '@/components/learn/LessonLayout'
 
-it('offers the glossary from the map and lessons without changing the four learning steps', () => {
+it('offers the glossary from the map and lessons without changing the five learning steps', () => {
   const map = render(<LearnPage />)
   expect(screen.getByRole('link', { name: '용어 사전' })).toHaveAttribute('href', '/learn/glossary')
-  expect(within(screen.getByRole('list', { name: '학습 단계' })).getAllByRole('listitem')).toHaveLength(4)
+  expect(within(screen.getByRole('list', { name: '학습 단계' })).getAllByRole('listitem')).toHaveLength(5)
   map.unmount()
   render(<LessonLayout lessonId="keyboard">본문</LessonLayout>)
   expect(screen.getByRole('link', { name: '용어 사전' })).toHaveAttribute('href', '/learn/glossary')
