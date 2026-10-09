@@ -18,14 +18,13 @@ Last updated: 2026-10-09 KST
 - #236 1·2단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [PR240](reviews/PR-240.md) `abb7cd0`, [phase 진행](phases/LEARN-236-layout.md)). **3단계(이슈 B: 악보 읽기 분리 + 전환형 예시 패널)는 [PR241](reviews/PR-241.md)로 열려 있고 병합 승인을 기다린다**([검증·계측](validation/2026-10-09-learn-236-stage3-reading-split.md), D-099).
   CI와 GitHub 리뷰 결과는 리뷰 로그와 GitHub live state로 확인한다. actionable 지적은 Gemini Flash 워커에게 맡겨 수정·검증·회신·resolve한다.
   **사용자가 PR241을 CI 통과 시 병합하고 4단계를 진행하도록 승인했다(2026-10-09). 이 승인은 PR241에만 해당하고, 4단계 PR의 병합은 새로 승인받는다.**
-  기록 시점(2026-10-09 16:15 KST)에 PR241은 E2E만 실행 중이었고 GitHub Codex 리뷰는 지적 없이 끝났다(미해결 스레드 0). **다음 세션은 `local-test-data/results/learn-236/next-session-prompt.md`를 읽고 이어간다.**
+  PR241의 첫 CI는 E2E가 30분 제한으로 취소됐고 그 안에 실제 실패 2건(`song-provenance.spec.ts`가 옛 앵커 주소를 단언)이 있었다. `408f538`로 고치고 전체 E2E를 로컬에서 확인했다([PR241 로그](reviews/PR-241.md)). GitHub Codex 리뷰는 `4f3861c`에 지적 없음. **다음 세션은 `local-test-data/results/learn-236/next-session-prompt.md`를 읽고 이어간다.**
   병합되면 Post-merge 확인·브랜치 정리 뒤 4단계(이슈 C: 용어 사전 찾기·필터·조밀한 배치, 레슨 본문의 용어 링크)를 최신 main의 `codex/learn-236-glossary`에서 시작한다. 4단계 지시문 `stage4-brief.md`는 작성돼 있다(미착수).
   4단계 PR에는 `DECISIONS.md` 신규 결정(용어 사전에 화면 안 찾기 입력, #225 범위의 "별도 검색 없음"과 달라짐)과 `phases/LEARN-followups.md` 수정을 함께 넣는다.
   단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
-- **PR E2E가 30분 제한을 넘기 시작했다.** PR240 마지막 head는 1124개 테스트로 3회 중 2회 취소됐고 재실행에서 29분 3초로 통과했다([PR240 로그](reviews/PR-240.md)). PR241은 E2E를 더 늘렸다.
-  취소되면 `gh run rerun <run> --failed`로 한 번 재실행하고, 다시 취소되면 멈추고 사용자에게 보고한다. 제한 상향·프로젝트별 분할은 워크플로 변경이라 별도 이슈·PR·승인이 필요하다(이슈 미등록).
-  완료 조건 변경(사용자 결정 2026-10-09, 이슈 본문 반영): "링크·버튼 44×44px"에서 학습용 피아노의 **검은 건반 폭**(26×113px)은 예외다. 건반의 크기·배치는 바꾸지 않는다. 높이 기준은 유지한다.
-  지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `stage<N>-brief.md`, `stage<N>-fix<M>.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
+- **Blocker 후보: PR E2E가 30분 제한 안에 끝나지 않는다.** PR241의 스위트는 1269개(프로젝트당 253개 × 6)다. 최근 속도(분당 31~45개)로는 가장 빨라도 테스트 구간만 약 28분이다. PR240 마지막 head(1124개)도 3회 중 2회 취소됐다([PR240](reviews/PR-240.md)·[PR241](reviews/PR-241.md) 로그).
+  `pr-checks.yml`의 `E2E Tests` `timeout-minutes: 30`을 올리거나 프로젝트별로 나누는 것은 워크플로 변경이라 별도 이슈·PR·병합 승인이 필요하다(사용자에게 보고함 2026-10-09, 결정 대기). 결정 전에는 취소되면 `gh run rerun <run> --failed`로 한 번만 재실행하고, 다시 취소되면 병합하지 않는다.
+  라우트나 앵커를 옮긴 뒤에는 변경 영역 spec만이 아니라 **전체 E2E를 로컬에서 Chromium·Firefox로** 돌린다(약 2분, 5 workers).
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
