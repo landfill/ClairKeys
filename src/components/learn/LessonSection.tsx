@@ -19,7 +19,8 @@ export default function LessonSection({
 }: LessonSectionProps) {
   return (
     <section aria-labelledby={section.id} data-lesson-section className={className}>
-      <h2 id={section.id} className="scroll-mt-24 text-lg font-semibold text-ink">
+      {/* tabIndex -1: 목차로 이동한 뒤 포커스를 받는 자리. Tab 순서에는 들어가지 않는다. */}
+      <h2 id={section.id} tabIndex={-1} className="scroll-mt-24 text-lg font-semibold text-ink">
         {section.title}
       </h2>
       {section.summary && (

@@ -80,7 +80,7 @@ export default function LessonLayout({ lessonId, sections, children }: LessonLay
             <nav aria-label="현재 위치" className="flex items-center text-sm">
               <Link
                 href="/learn"
-                className="inline-flex min-h-11 items-center rounded-sm text-accent hover:underline"
+                className="inline-flex min-h-11 min-w-11 items-center rounded-sm text-accent hover:underline"
               >
                 배우기
               </Link>
