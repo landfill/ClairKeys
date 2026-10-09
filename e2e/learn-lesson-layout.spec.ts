@@ -342,6 +342,28 @@ test.describe('레슨 공통 레이아웃', () => {
     })
   }
 
+  test('잘못된 해시(#%)로 들어와도 레슨이 그려지고 페이지 오류가 없음', async ({ page }) => {
+    const pageErrors: Error[] = []
+    const consoleErrors: string[] = []
+    page.on('pageerror', error => pageErrors.push(error))
+    page.on('console', msg => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text())
+    })
+
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await page.goto('/learn/reading#%')
+    await waitForEnhancedToc(page)
+
+    await expect(page.getByRole('heading', { level: 1, name: '악보 읽기' })).toBeVisible()
+
+    const scope = tocScope(page, false)
+    await expect(scope.locator('a[aria-current]')).toHaveCount(1)
+    await expect(scope.locator('a[aria-current]')).toHaveAttribute('href', '#staff-intro')
+
+    expect(pageErrors, `페이지 오류 발생: ${pageErrors.map(e => e.message).join(', ')}`).toEqual([])
+    expect(consoleErrors, `콘솔 오류 발생: ${consoleErrors.join(', ')}`).toEqual([])
+  })
+
   test('스크립트 없이 390x844에서 목차를 열고 항목을 누르면 도착한 제목이 목차에 가려지지 않음', async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } })
     const page = await context.newPage()
@@ -404,6 +426,99 @@ test.describe('레슨 공통 레이아웃', () => {
     await expect(details).toHaveJSProperty('open', false)
     await expect(page.locator('h2#meters')).toBeInViewport()
   })
+
+  test('1024x400에서 옆 목차의 마지막 항목까지 스크롤해 누를 수 있음', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 400 })
+    await page.goto('/learn/reading')
+    await waitForEnhancedToc(page)
+    await scrollToRatio(page, 0.5)
+
+    const nav = tocScope(page, false)
+    await expect(nav).toBeVisible()
+
+    const navBox = await nav.boundingBox()
+    expect(navBox, 'nav의 boundingBox가 있어야 함').toBeTruthy()
+    if (navBox) {
+      expect(navBox.y + navBox.height, '목차가 화면 아래로 넘치지 않아야 함').toBeLessThanOrEqual(400 + 0.5)
+    }
+
+    const heights = await nav.evaluate(el => ({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }))
+    expect(heights.scrollHeight, '안에서 스크롤할 내용이 있어야 함').toBeGreaterThan(heights.clientHeight)
+
+    const lastItem = nav.getByRole('link', { name: '박자표', exact: true })
+
+    const before = await page.evaluate(() => window.scrollY)
+    await nav.evaluate(el => { el.scrollTop = el.scrollHeight })
+    await settle(page)
+    await expect(lastItem).toBeInViewport()
+
+    const after = await page.evaluate(() => window.scrollY)
+    expect(after, '목차 안 스크롤이 페이지를 움직이지 않아야 함').toBe(before)
+
+    await clickAtCenter(page, lastItem)
+    await expect(page).toHaveURL(/#meters$/)
+    await expect(page.locator('h2#meters')).toBeInViewport()
+
+    // 회귀 방지: 1280x800에서는 내부 스크롤이 생기지 않음
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await settle(page)
+    const wideHeights = await nav.evaluate(el => ({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }))
+    expect(wideHeights.scrollHeight, '1280x800에서는 내부 스크롤이 생기지 않아야 함').toBeLessThanOrEqual(wideHeights.clientHeight)
+  })
+
+  for (const size of [{ width: 1280, height: 800 }, { width: 1024, height: 400 }]) {
+    test(`옆 목차 링크의 포커스 윤곽선이 목차 스크롤 영역에 잘리지 않음: ${size.width}x${size.height}`, async ({ page }) => {
+      await page.setViewportSize(size)
+      await page.goto('/learn/reading')
+      await waitForEnhancedToc(page)
+
+      const nav = tocScope(page, false)
+      const targets = [
+        { link: nav.locator('a').first(), isFirst: true, isLast: false },
+        { link: nav.locator('a').last(), isFirst: false, isLast: true },
+      ]
+
+      for (const { link, isFirst, isLast } of targets) {
+        await link.focus()
+        if (isLast) {
+          await settle(page)
+        }
+
+        const metrics = await link.evaluate(el => {
+          const cs = getComputedStyle(el)
+          const reach = parseFloat(cs.outlineWidth) + parseFloat(cs.outlineOffset)
+          const navEl = el.closest('nav')!
+          const r = navEl.getBoundingClientRect()
+          const left = r.left + navEl.clientLeft
+          const top = r.top + navEl.clientTop
+          const right = left + navEl.clientWidth
+          const bottom = top + navEl.clientHeight
+          const b = el.getBoundingClientRect()
+          return {
+            outlineStyle: cs.outlineStyle,
+            reach,
+            room: {
+              left: b.left - left,
+              right: right - b.right,
+              top: b.top - top,
+              bottom: bottom - b.bottom,
+            },
+          }
+        })
+
+        expect(metrics.outlineStyle, '포커스 윤곽선이 실제로 있어야 함').not.toBe('none')
+        expect(metrics.reach, 'reach가 0보다 커야 함').toBeGreaterThan(0)
+        expect(metrics.room.left, '왼쪽 윤곽선 공간이 충분해야 함').toBeGreaterThanOrEqual(metrics.reach - 0.5)
+        expect(metrics.room.right, '오른쪽 윤곽선 공간이 충분해야 함').toBeGreaterThanOrEqual(metrics.reach - 0.5)
+        if (isFirst) {
+          expect(metrics.room.top, '첫 링크 위쪽 윤곽선 공간이 충분해야 함').toBeGreaterThanOrEqual(metrics.reach - 0.5)
+        }
+        if (isLast) {
+          expect(metrics.room.bottom, '마지막 링크 아래쪽 윤곽선 공간이 충분해야 함').toBeGreaterThanOrEqual(metrics.reach - 0.5)
+        }
+      }
+    })
+  }
 
   for (const lesson of LESSONS) {
     for (const viewport of VIEWPORTS) {

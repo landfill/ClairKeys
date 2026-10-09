@@ -90,8 +90,12 @@ export default function LessonToc({ sections, children }: LessonTocProps) {
       })
     }
     const chooseFromHash = () => {
-      const id = decodeURIComponent(window.location.hash.slice(1))
-      if (ids.includes(id)) chosenIdRef.current = id
+      try {
+        const id = decodeURIComponent(window.location.hash.slice(1))
+        if (ids.includes(id)) chosenIdRef.current = id
+      } catch {
+        // 해석할 수 없는 해시는 모르는 섹션으로 취급한다.
+      }
       schedule()
     }
 
@@ -192,7 +196,7 @@ export default function LessonToc({ sections, children }: LessonTocProps) {
       <div className="lg:flex lg:gap-12">
         {children && <div className="min-w-0 flex-1">{children}</div>}
         <aside className="hidden lg:block lg:w-64 lg:shrink-0">
-          <nav aria-label="이 레슨의 내용" className="sticky top-6">
+          <nav aria-label="이 레슨의 내용" className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto -mx-1 px-1 pb-1">
             <p className="text-sm font-semibold text-ink">이 레슨의 내용</p>
             <ol className="mt-3 space-y-1 border-l-2 border-rule">
               {sections.map((sec) => (

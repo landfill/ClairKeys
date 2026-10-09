@@ -208,6 +208,15 @@ describe('LessonToc', () => {
     expect(asideLink('섹션 2')).toHaveAttribute('aria-current', 'location')
   })
 
+  it.each(['/#%', '/#%E0%A4%A'])('does not crash on malformed URL hash %s and falls back to scroll position', (path) => {
+    window.history.replaceState(null, '', path)
+    expect(() => {
+      render(<LessonToc sections={sections}>{headings}</LessonToc>)
+      flushFrames()
+    }).not.toThrow()
+    expect(asideLink('섹션 1')).toHaveAttribute('aria-current', 'location')
+  })
+
   it('closes the narrow-screen list on item selection and moves focus to the arrived heading', () => {
     const { container } = render(<LessonToc sections={sections}>{headings}</LessonToc>)
     const details = container.querySelector('details')!
