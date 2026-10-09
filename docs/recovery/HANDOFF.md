@@ -16,10 +16,12 @@ Last updated: 2026-10-09 KST
 ## Next action
 
 - **#236의 네 단계가 모두 병합됐다**([PR237](reviews/PR-237.md) `cdfdb7d`, [PR240](reviews/PR-240.md) `abb7cd0`, [PR241](reviews/PR-241.md) `3925182`, [PR244](reviews/PR-244.md) `edb4609`, [phase 진행](phases/LEARN-236-layout.md), D-099·D-100). 브랜치와 워커 터미널은 정리했다.
-  **사용자 결정 대기**: [완료 조건 대조](validation/2026-10-09-learn-236-completion-audit.md)에서 9개 중 8개 충족, 1개 부분 충족이다.
-  "`/learn` 아래 모든 페이지의 링크·버튼 44×44px"가 네 단계가 다루지 않은 첫 곡 코스 두 페이지(`/learn/course`, `/learn/course/<곡>`)에서 충족되지 않는다(높이 18~20px 글 링크, 재생기 안 `악보 보기` 40×40).
-  선택지: 후속 단계로 재생기 밖 링크를 고친다 / 코스 페이지를 예외로 이슈 본문에 적는다 / 별도 이슈로 넘긴다. 이슈 #236의 종료도 사용자가 정한다. 지시 전에는 코드를 고치지 않는다.
-  PR244 병합 커밋의 Post-merge checks 결과는 [PR244 리뷰 로그](reviews/PR-244.md)에서 확인한다.
+  [완료 조건 대조](validation/2026-10-09-learn-236-completion-audit.md)에서 "`/learn` 아래 모든 페이지 44×44px"가 첫 곡 코스 두 페이지에서 미달이었다. 사용자가 "후속 PR로 고치고 끝나면 이슈 종료해"로 지시했다(2026-10-09).
+  **후속 5단계는 [PR245](reviews/PR-245.md)로 올렸고 병합 승인 대기다**(브랜치 `codex/learn-236-course-links`, [검증·계측](validation/2026-10-09-learn-236-stage5-course-links.md)). 병합되면 Post-merge checks 확인 → 브랜치 정리 → 완료 조건 대조 기록 갱신 → 이슈 #236 종료.
+  **사용자에게 물을 것 두 가지**(답 전에는 이슈 본문·코드를 고치지 않는다):
+  (1) 재생기 안에 남은 44px 미만(`연습 방법과 단축키 보기`, `손가락 번호 보기`, `악보 보기` 40×40, 양손 곡의 손 선택 버튼)을 완료 조건의 예외로 이슈 본문에 적을지.
+  (2) 2·4단계의 문장 안 링크는 상자로는 49px이지만 문단 중간 줄에서는 실제로 잡히는 높이가 약 37px다(패딩이 이웃 줄과 겹치는 곳은 뒤의 글자가 잡힌다. 다른 링크가 대신 잡히지는 않는다). 상자 기준을 받아들일지, 따로 고칠지.
+  PR244 병합 커밋의 Post-merge E2E는 45분 제한으로 취소돼 한 번 재실행했다([PR244 리뷰 로그](reviews/PR-244.md)). 다시 취소되면 멈추고 보고한다. 스위트가 1284개로 늘어 제한에 닿기 시작했다(아래 E2E 항목의 matrix 분할 후보).
   완료 조건 변경(사용자 결정 2026-10-09, 이슈 본문 반영): "링크·버튼 44×44px"에서 학습용 피아노의 **검은 건반 폭**(26×113px)은 예외다. 건반의 크기·배치는 바꾸지 않는다. 높이 기준은 유지한다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `next-session-prompt.md`, `stage<N>-brief.md`, `stage<N>-fix<M>.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
 - E2E job 제한은 45분이다([#242](https://github.com/landfill/ClairKeys/issues/242) 종료, [PR243](reviews/PR-243.md) `2f7d9ac`). 스위트는 1269개(프로젝트당 253개 × 6, 한 worker)이고 최근 실행은 29~35분이다. 4단계가 더 늘린다.
