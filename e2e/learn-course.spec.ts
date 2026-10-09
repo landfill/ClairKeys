@@ -84,6 +84,35 @@ test('the course and player fit 320px and allow moving to the next piece', async
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     const width = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
     expect(width.scroll).toBeLessThanOrEqual(width.client + 1)
+    await test.step('재생기 밖 링크의 높이가 44px 이상', async () => {
+      if (path !== '/learn/course') {
+        await expect(page.getByRole('heading', { name: '이 곡 소개' })).toBeVisible()
+      }
+      await expect.poll(async () => {
+        return page.evaluate(() => {
+          const main = document.querySelector('main')
+          if (!main) return []
+          const playbackBox = main.querySelector('[data-testid="playback-box"]')
+          const playerRoot = playbackBox?.parentElement?.parentElement ?? null
+          const links = Array.from(main.querySelectorAll<HTMLAnchorElement>('a[href]'))
+          const shortLinks: string[] = []
+          for (const link of links) {
+            if (playerRoot && playerRoot.contains(link)) continue
+            const rect = link.getBoundingClientRect()
+            if (rect.width === 0 && rect.height === 0) continue
+            const style = window.getComputedStyle(link)
+            if (style.display === 'none' || style.visibility === 'hidden') continue
+            if (rect.height < 44) {
+              const text = (link.textContent || '').trim().replace(/\s+/g, ' ')
+              const w = Math.round(rect.width * 100) / 100
+              const h = Math.round(rect.height * 100) / 100
+              shortLinks.push(`${text} ${w}×${h}`)
+            }
+          }
+          return shortLinks
+        })
+      }).toEqual([])
+    })
   }
   await page.getByRole('link', { name: '다음 곡: 두 손 인사' }).click()
   await expect(page.getByRole('heading', { level: 1, name: '두 손 인사' })).toBeVisible()
