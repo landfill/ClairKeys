@@ -19,12 +19,12 @@ Last updated: 2026-10-09 KST
   CI와 GitHub 리뷰 결과는 리뷰 로그와 GitHub live state로 확인한다. actionable 지적은 Gemini Flash 워커에게 맡겨 수정·검증·회신·resolve한다.
   **사용자가 PR241을 CI 통과 시 병합하고 4단계를 진행하도록 승인했다(2026-10-09). 이 승인은 PR241에만 해당하고, 4단계 PR의 병합은 새로 승인받는다.**
   PR241의 첫 CI는 E2E가 30분 제한으로 취소됐고 그 안에 실제 실패 2건(`song-provenance.spec.ts`가 옛 앵커 주소를 단언)이 있었다. `408f538`로 고치고 전체 E2E를 로컬에서 확인했다([PR241 로그](reviews/PR-241.md)). GitHub Codex 리뷰는 `4f3861c`에 지적 없음. **다음 세션은 `local-test-data/results/learn-236/next-session-prompt.md`를 읽고 이어간다.**
-  병합되면 Post-merge 확인·브랜치 정리 뒤 4단계(이슈 C: 용어 사전 찾기·필터·조밀한 배치, 레슨 본문의 용어 링크)를 최신 main의 `codex/learn-236-glossary`에서 시작한다. 4단계 지시문 `stage4-brief.md`는 작성돼 있다(미착수).
+  PR241이 병합되면 Post-merge 확인·브랜치 정리·기록 갱신까지 하고 **멈춘다**. 4단계(이슈 C: 용어 사전 찾기·필터·조밀한 배치, 레슨 본문의 용어 링크)는 사용자가 지시하면 최신 main의 `codex/learn-236-glossary`에서 시작한다. 지시문 `stage4-brief.md`는 작성돼 있다(미착수).
   4단계 PR에는 `DECISIONS.md` 신규 결정(용어 사전에 화면 안 찾기 입력, #225 범위의 "별도 검색 없음"과 달라짐)과 `phases/LEARN-followups.md` 수정을 함께 넣는다.
   단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
 - **Blocker: PR E2E가 30분 제한 안에 끝나지 않는다([#242](https://github.com/landfill/ClairKeys/issues/242)).** PR241의 스위트는 1269개(프로젝트당 253개 × 6)이고 최근 속도(분당 31~45개)로는 가장 빨라도 테스트 구간만 약 28분이다.
-  사용자가 제한을 45분으로 올리기로 정했다(2026-10-09). [PR243](reviews/PR-243.md)(`codex/ci-e2e-timeout`)이 두 워크플로의 E2E 제한과 `src/ci` 테스트를 고친다. **PR243 병합은 따로 승인받는다.**
-  순서: PR243 CI·리뷰 확인 → 사용자 승인 → 병합 → PR241 브랜치에 main을 합쳐(새 제한이 적용되게) 검증·push → PR241 CI 통과 → PR241 병합(이미 승인됨) → 4단계.
+  사용자가 제한을 45분으로 올리기로 정했다(2026-10-09). [PR243](reviews/PR-243.md)(`codex/ci-e2e-timeout`)이 두 워크플로의 E2E 제한과 `src/ci` 테스트를 고친다. **사용자가 PR243을 CI 통과 시 병합하도록 승인했다(2026-10-09: "243 CI 통과하면 병합하고 241 병합 후 대기").**
+  순서: PR243 CI·리뷰 확인 → 사용자 승인 → 병합 → PR241 브랜치에 main을 합쳐(새 제한이 적용되게) 검증·push → PR241 CI 통과 → PR241 병합(이미 승인됨) → **대기**. 4단계는 사용자가 다시 지시할 때 시작한다(최신 지시가 앞의 "4단계 진행"을 대체한다).
   PR243이 병합되기 전에는 PR241의 E2E가 취소돼도 재실행을 반복하지 않는다.
   라우트나 앵커를 옮긴 뒤에는 변경 영역 spec만이 아니라 **전체 E2E를 로컬에서 Chromium·Firefox로** 돌린다(약 2분, 5 workers).
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
