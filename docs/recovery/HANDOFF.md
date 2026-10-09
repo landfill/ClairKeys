@@ -22,8 +22,10 @@ Last updated: 2026-10-09 KST
   병합되면 Post-merge 확인·브랜치 정리 뒤 4단계(이슈 C: 용어 사전 찾기·필터·조밀한 배치, 레슨 본문의 용어 링크)를 최신 main의 `codex/learn-236-glossary`에서 시작한다. 4단계 지시문 `stage4-brief.md`는 작성돼 있다(미착수).
   4단계 PR에는 `DECISIONS.md` 신규 결정(용어 사전에 화면 안 찾기 입력, #225 범위의 "별도 검색 없음"과 달라짐)과 `phases/LEARN-followups.md` 수정을 함께 넣는다.
   단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
-- **Blocker 후보: PR E2E가 30분 제한 안에 끝나지 않는다.** PR241의 스위트는 1269개(프로젝트당 253개 × 6)다. 최근 속도(분당 31~45개)로는 가장 빨라도 테스트 구간만 약 28분이다. PR240 마지막 head(1124개)도 3회 중 2회 취소됐다([PR240](reviews/PR-240.md)·[PR241](reviews/PR-241.md) 로그).
-  `pr-checks.yml`의 `E2E Tests` `timeout-minutes: 30`을 올리거나 프로젝트별로 나누는 것은 워크플로 변경이라 별도 이슈·PR·병합 승인이 필요하다(사용자에게 보고함 2026-10-09, 결정 대기). 결정 전에는 취소되면 `gh run rerun <run> --failed`로 한 번만 재실행하고, 다시 취소되면 병합하지 않는다.
+- **Blocker: PR E2E가 30분 제한 안에 끝나지 않는다([#242](https://github.com/landfill/ClairKeys/issues/242)).** PR241의 스위트는 1269개(프로젝트당 253개 × 6)이고 최근 속도(분당 31~45개)로는 가장 빨라도 테스트 구간만 약 28분이다.
+  사용자가 제한을 45분으로 올리기로 정했다(2026-10-09). [PR243](reviews/PR-243.md)(`codex/ci-e2e-timeout`)이 두 워크플로의 E2E 제한과 `src/ci` 테스트를 고친다. **PR243 병합은 따로 승인받는다.**
+  순서: PR243 CI·리뷰 확인 → 사용자 승인 → 병합 → PR241 브랜치에 main을 합쳐(새 제한이 적용되게) 검증·push → PR241 CI 통과 → PR241 병합(이미 승인됨) → 4단계.
+  PR243이 병합되기 전에는 PR241의 E2E가 취소돼도 재실행을 반복하지 않는다.
   라우트나 앵커를 옮긴 뒤에는 변경 영역 spec만이 아니라 **전체 E2E를 로컬에서 Chromium·Firefox로** 돌린다(약 2분, 5 workers).
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
