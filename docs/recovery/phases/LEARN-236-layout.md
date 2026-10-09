@@ -52,7 +52,7 @@ Claude는 오케스트레이션·검증·기록을 맡는다(사용자 지시 20
 |---|---|---|
 | 1 | DONE | [PR237](../reviews/PR-237.md) 병합 `cdfdb7d`, [검증·계측](../validation/2026-10-08-learn-236-stage1-home-cards.md) |
 | 2 | DONE | [PR240](../reviews/PR-240.md) 병합 `abb7cd0`, [검증·계측](../validation/2026-10-09-learn-236-stage2-lesson-layout.md) |
-| 3 | IN_REVIEW | [PR241](../reviews/PR-241.md), [검증·계측](../validation/2026-10-09-learn-236-stage3-reading-split.md) |
+| 3 | DONE | [PR241](../reviews/PR-241.md) 병합 `3925182`, [검증·계측](../validation/2026-10-09-learn-236-stage3-reading-split.md) |
 | 4 | NOT_STARTED | |
 
 - 2026-10-08: 결정 4개 확정, 1단계 착수.
@@ -61,3 +61,4 @@ Claude는 오케스트레이션·검증·기록을 맡는다(사용자 지시 20
 - 2026-10-09: 1단계 병합 커밋의 Post-merge checks 성공. 완료 조건에서 학습용 피아노의 검은 건반 폭을 예외로 뒀다(사용자 결정, 이슈 본문 반영). 2단계 착수.
 - 2026-10-09: 2단계 PR240 병합(`abb7cd0`). GitHub 리뷰 P2 3건과 그 수정이 만든 포커스 윤곽선 잘림을 고친 뒤였다. PR E2E가 30분 제한에 두 번 걸려 재실행으로 통과했다(29분 3초). 3단계 착수(구현 Gemini 3.8 Flash).
 - 2026-10-09: 3단계 PR241 생성. 두 페이지 높이 2803 / 4110px, 2867 / 3694px(1280×800 / 390×844)로 완료 조건 충족. 구현 중 `/learn/reading` 390×844가 4488px로 넘어 음표 하나짜리 그림 두 쌍을 좁은 화면에서도 2열로 놓았다. 병합 승인 대기.
+- 2026-10-09: PR E2E가 30분 제한에 걸려 #242를 먼저 처리했다([PR243](../reviews/PR-243.md) 병합 `2f7d9ac`, 제한 45분). 그 뒤 3단계 PR241 병합(`3925182`). PR241의 첫 CI에서는 취소에 가려진 실제 실패 2건(옛 앵커 주소를 단언한 `song-provenance.spec.ts`)이 있었고 고쳤다. 4단계는 사용자 지시 대기.
