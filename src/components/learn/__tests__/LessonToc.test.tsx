@@ -187,13 +187,16 @@ describe('LessonToc', () => {
     scrollTo({ 'sec-1': -2400, 'sec-2': -1400, 'sec-3': 300, 'sec-4': 600 })
     expect(asideLink('섹션 3')).toHaveAttribute('aria-current', 'location')
 
-    // 고른 제목이 화면 밖으로 나가면 고른 상태가 풀리고, 다시 문서 끝에 오면 마지막 섹션이다.
+    // 위로 스크롤하면 고른 제목(700)이 화면 안에 남아 있어도 문서 끝이 아니므로 선택이 풀린다.
     setScrollHeight(5000)
-    scrollTo({ 'sec-1': -1000, 'sec-2': 0, 'sec-3': 1700, 'sec-4': 2000 })
+    scrollTo({ 'sec-1': -1000, 'sec-2': 0, 'sec-3': 700, 'sec-4': 1000 })
     expect(asideLink('섹션 2')).toHaveAttribute('aria-current', 'location')
+
+    // 다시 문서 끝에 오면 C(섹션 3)가 되살아나지 않고 마지막 섹션(섹션 4)이 현재 섹션이다.
     setScrollHeight(window.innerHeight + window.scrollY)
     scrollTo({ 'sec-1': -2400, 'sec-2': -1400, 'sec-3': 300, 'sec-4': 600 })
     expect(asideLink('섹션 4')).toHaveAttribute('aria-current', 'location')
+    expect(asideLink('섹션 3')).not.toHaveAttribute('aria-current')
   })
 
   it('starts on the section in the URL hash', () => {
@@ -260,6 +263,38 @@ describe('LessonToc', () => {
       })
       expect(error).not.toHaveBeenCalled()
       expect(container.querySelector('details')).toHaveAttribute('data-enhanced')
+    } finally {
+      await act(async () => { root?.unmount() })
+      container.remove()
+      error.mockRestore()
+    }
+  })
+
+  it('defers enhancement when mounted open and enhances upon closing', async () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const container = document.createElement('div')
+    let root: Root | undefined
+    try {
+      const html = renderToString(<LessonToc sections={sections}>{headings}</LessonToc>)
+      container.innerHTML = html
+      document.body.appendChild(container)
+      const details = container.querySelector('details')!
+      // hydration 전(스크립트 로드 전) 사용자가 목차를 열어 둔 상황 재현
+      details.open = true
+
+      await act(async () => {
+        root = hydrateRoot(container, <LessonToc sections={sections}>{headings}</LessonToc>)
+      })
+      expect(error).not.toHaveBeenCalled()
+      // 열려 있는 동안에는 enhancement를 미룬다
+      expect(details).not.toHaveAttribute('data-enhanced')
+
+      // 목차를 닫으면 enhancement가 붙는다
+      act(() => {
+        details.open = false
+        details.dispatchEvent(new Event('toggle'))
+      })
+      expect(details).toHaveAttribute('data-enhanced')
     } finally {
       await act(async () => { root?.unmount() })
       container.remove()

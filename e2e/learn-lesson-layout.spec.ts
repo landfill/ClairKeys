@@ -98,15 +98,28 @@ async function coveringStickyBottom(heading: Locator) {
  * Firefox + Playwright에서 sticky 요소에 locator.click()을 쓰면,
  * 클릭 전 요소를 화면에 들이는 과정에서 sticky 요소의 원래(문서 흐름 안) 위치를 향해
  * 스크롤이 잘못 튀는 부작용이 발생한다.
- * 이를 방지하기 위해 요소 상자가 뷰포트 안에 있음을 확인하고 중심 좌표를 직접 마우스로 클릭한다.
+ * 이를 방지하기 위해 상자의 중심 좌표가 뷰포트 안인지 단언하고,
+ * 그 좌표에서 document.elementFromPoint가 대상 요소이거나 그 자손인지 단언한 뒤 누른다.
  */
 async function clickAtCenter(page: Page, locator: Locator) {
-  await expect(locator).toBeInViewport()
   const box = await locator.boundingBox()
   expect(box, '클릭 대상 요소의 boundingBox가 있어야 함').toBeTruthy()
-  if (box) {
-    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
-  }
+  if (!box) return
+
+  const cx = box.x + box.width / 2
+  const cy = box.y + box.height / 2
+
+  const hitCheck = await locator.evaluate((el, { x, y }) => {
+    const inBounds = x >= 0 && x < window.innerWidth && y >= 0 && y < window.innerHeight
+    const atPoint = document.elementFromPoint(x, y)
+    const hitsTarget = !!atPoint && (atPoint === el || el.contains(atPoint))
+    return { inBounds, hitsTarget, innerWidth: window.innerWidth, innerHeight: window.innerHeight }
+  }, { x: cx, y: cy })
+
+  expect(hitCheck.inBounds, `중심 좌표 (${cx}, ${cy})가 뷰포트 (0..${hitCheck.innerWidth}, 0..${hitCheck.innerHeight}) 밖임`).toBe(true)
+  expect(hitCheck.hitsTarget, `중심 좌표 (${cx}, ${cy})에서 대상 요소 또는 자손이 hit-test되지 않음`).toBe(true)
+
+  await page.mouse.click(cx, cy)
 }
 
 /** 현재 섹션 표시를 단언한다. 목차 안 aria-current는 정확히 1개, 좁은 화면은 summary 글자와 펼친 목록 둘 다 본다. */
@@ -196,10 +209,31 @@ test.describe('레슨 공통 레이아웃', () => {
         for (const position of positions) {
           await test.step(`${position.name}에서 이동`, async () => {
             await scrollToRatio(page, position.ratio)
-            const activeHref = await scope.locator('a[aria-current]').getAttribute('href')
-            const activeIndex = lesson.sections.findIndex(section => `#${section.id}` === activeHref)
-            expect(activeIndex, '스크롤 뒤 현재 섹션이 하나 표시돼야 함').toBeGreaterThanOrEqual(0)
-            if (position.ratio === 1) expect(activeIndex, '맨 아래에서는 마지막 섹션이 현재 섹션').toBe(last)
+
+            let activeIndex = -1
+            if (position.ratio === 1) {
+              await expect(scope.locator('a[aria-current]')).toHaveAttribute('href', `#${lesson.sections[last].id}`)
+              activeIndex = last
+            } else {
+              let lastHref: string | null = null
+              await expect.poll(async () => {
+                const currentLinks = scope.locator('a[aria-current]')
+                const count = await currentLinks.count()
+                if (count !== 1) {
+                  lastHref = null
+                  return null
+                }
+                const href = await currentLinks.getAttribute('href')
+                if (href && href === lastHref) {
+                  activeIndex = lesson.sections.findIndex(section => `#${section.id}` === href)
+                  return href
+                }
+                lastHref = href
+                return null
+              }).not.toBeNull()
+              expect(activeIndex, '스크롤 뒤 현재 섹션이 하나 표시돼야 함').toBeGreaterThanOrEqual(0)
+            }
+
             const target = lesson.sections[position.pick(activeIndex)]
             expect(target.id).not.toBe(lesson.sections[activeIndex].id)
 
@@ -272,6 +306,39 @@ test.describe('레슨 공통 레이아웃', () => {
       await waitForEnhancedToc(page)
       await expect(page.locator('h2#metronome')).toBeInViewport()
       await expectCurrentSection(page, viewport.narrow, { id: 'metronome', title: '메트로놈' })
+    })
+
+    test(`문서 끝에서 고른 섹션이 위로 스크롤 후 다시 문서 끝에 오면 마지막 섹션으로 복귀: ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height })
+      await page.goto('/learn/practice')
+      await waitForEnhancedToc(page)
+
+      // 1. 문서 맨 아래로 스크롤
+      await scrollToRatio(page, 1)
+
+      // 2. 문서 끝에서도 보이는 마지막이 아닌 섹션('메트로놈')을 목차로 고름
+      const scope = tocScope(page, viewport.narrow)
+      if (viewport.narrow) {
+        const summary = page.locator('details summary')
+        await clickAtCenter(page, summary)
+        await clickAtCenter(page, scope.getByRole('link', { name: '메트로놈', exact: true }))
+      } else {
+        await clickAtCenter(page, scope.getByRole('link', { name: '메트로놈', exact: true }))
+      }
+
+      // 3. 고른 항목이 aria-current
+      await expectCurrentSection(page, viewport.narrow, { id: 'metronome', title: '메트로놈' })
+
+      // 4. 위로 충분히 스크롤 -> 다른 섹션이 aria-current
+      await scrollToRatio(page, 0.3)
+      await expect.poll(async () => {
+        const href = await scope.locator('a[aria-current]').getAttribute('href')
+        return href && href !== '#metronome' && href !== '#keyboard-shortcuts'
+      }).toBe(true)
+
+      // 5. 다시 맨 아래로 스크롤 -> 고른 섹션이 되살아나지 않고 마지막 섹션('키보드 단축키')이 aria-current
+      await scrollToRatio(page, 1)
+      await expectCurrentSection(page, viewport.narrow, { id: 'keyboard-shortcuts', title: '키보드 단축키' })
     })
   }
 
@@ -543,7 +610,7 @@ test.describe('레슨 공통 레이아웃', () => {
     }
 
     await page.keyboard.press('Enter')
-    expect(page.url()).toContain('#metronome')
+    await expect(page).toHaveURL(/#metronome$/)
     const metronomeHeading = page.locator('#metronome')
     const headingBox = await metronomeHeading.boundingBox()
     expect(headingBox).toBeTruthy()
@@ -604,7 +671,7 @@ test.describe('레슨 공통 레이아웃', () => {
     }
 
     await page.keyboard.press('Enter')
-    expect(page.url()).toContain('#metronome')
+    await expect(page).toHaveURL(/#metronome$/)
     await expect(details).toHaveJSProperty('open', false)
     // 닫힌 목록 안 링크가 아니라 도착한 섹션 제목에 포커스가 있다.
     await expect(page.locator('h2#metronome')).toBeFocused()

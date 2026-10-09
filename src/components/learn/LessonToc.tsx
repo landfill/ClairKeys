@@ -44,8 +44,21 @@ export default function LessonToc({ sections, children }: LessonTocProps) {
   const idsKey = sections.map(section => section.id).join('\n')
 
   useEffect(() => {
-    // 스크립트가 동작할 때만 좁은 화면 목차를 화면 위에 붙인다. 서버 렌더와 첫 클라이언트 렌더는 표식 없이 같다.
-    setEnhanced(true)
+    const details = detailsRef.current
+    if (!details) return
+    // details가 열려 있는 동안에는 enhancement를 미룬다 (목록이 absolute로 바뀌며 본문이 튀는 것 방지).
+    if (!details.open) {
+      setEnhanced(true)
+      return
+    }
+    const handleToggle = () => {
+      if (!details.open) {
+        setEnhanced(true)
+        details.removeEventListener('toggle', handleToggle)
+      }
+    }
+    details.addEventListener('toggle', handleToggle)
+    return () => details.removeEventListener('toggle', handleToggle)
   }, [])
 
   useEffect(() => {
@@ -54,13 +67,9 @@ export default function LessonToc({ sections, children }: LessonTocProps) {
 
     const update = () => {
       const headings = ids.map(id => document.getElementById(id))
-      const chosenIndex = chosenIdRef.current ? ids.indexOf(chosenIdRef.current) : -1
-      if (chosenIndex >= 0) {
-        const rect = headings[chosenIndex]?.getBoundingClientRect()
-        if (!rect || rect.top < 0 || rect.top > window.innerHeight) chosenIdRef.current = null
-      }
       const tops = headings.map(heading => heading?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY)
       const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
+      if (!atBottom) chosenIdRef.current = null
       const index = getActiveSectionIndex(
         tops,
         ACTIVE_SECTION_BASELINE,
@@ -127,6 +136,7 @@ export default function LessonToc({ sections, children }: LessonTocProps) {
       <details
         ref={detailsRef}
         onKeyDown={handleKeyDown}
+        suppressHydrationWarning
         data-enhanced={enhanced ? '' : undefined}
         className="group z-20 -mx-4 mb-6 border-b border-rule bg-surface data-[enhanced]:sticky data-[enhanced]:top-0 sm:-mx-6 lg:hidden"
       >
