@@ -58,6 +58,24 @@ Environment: macOS, production 빌드(`npm run build` 뒤 `npm start`), `NEXTAUT
 | hydration 전에 목차를 열어 두면 enhancement 순간 본문이 튐 | 로컬 Codex 재리뷰(소스 기준 추론) | 열려 있는 동안 enhancement를 미룸(`6eb4bd1`). Jest로만 고정 |
 | Firefox에서 해시 진입 뒤 목차를 열면 `scrollY`가 400px 움직임 | 오케스트레이터 E2E | **제품 결함이 아님.** `locator.click()`에서만 재현(4~8/8)되고 좌표 클릭·키보드·`details.open = true`에서는 0/8. E2E는 `clickAtCenter`로 누른다 |
 
+## GitHub 리뷰 수정 (`3a3515a`, 2026-10-09)
+
+[PR240](../reviews/PR-240.md) R1·R2와, 그 수정이 만든 포커스 윤곽선 잘림(R3)을 한 커밋으로 고쳤다. 구현은 Gemini 3.8 Flash, 검증은 오케스트레이터.
+
+| 순서 | 명령 | 결과 |
+|---|---|---|
+| 수정 전 재현 | `npx jest src/components/learn`(워커, 구현 전) | 새 테스트 2건 FAIL: `URIError: URI malformed` (`LessonToc.tsx:93`) |
+| 수정 전 재현 | `c176ff0` production 빌드 + `npx playwright test e2e/learn-lesson-layout.spec.ts --project=chromium -g "잘못된 해시\|1024x400"` | 2건 FAIL: 목차 아래 끝 484px > 400.5px / 잘못된 해시에서 `details[data-enhanced]` 0개(레슨이 오류 화면으로 바뀜) |
+| 수정 전 재현 | R1·R2만 고친 빌드 + `-g "포커스 윤곽선"` | 2건 FAIL: 왼쪽 여유 0px < 3.5px (1280×800, 1024×400) |
+| 수정 후 | 전체 Jest(CI venv) | 163 suites, 1616 tests PASS |
+| 수정 후 | `npx tsc --noEmit --incremental false`, `npm run lint` | PASS |
+| 수정 후 | `npm run build` | PASS |
+| 수정 후 | `npx playwright test e2e/learn-*.spec.ts --project=chromium --project=firefox` | 196 passed |
+| 수정 후 | 새 E2E 4건 `--repeat-each 8`, Chromium + Firefox | 64 passed |
+
+- 화면 확인: 옆 목차 첫 링크에 포커스를 준 캡처(1280×800, 1024×400, 3배율)에서 수정 전에는 윤곽선의 왼쪽 변이 없었고 수정 후에는 네 변이 모두 보인다. 링크의 left/right(1280: 992/1248, 1024: 736/992)는 수정 전후가 같다.
+- 하지 않은 것: WebKit·모바일 프로젝트(CI가 맡는다). 낮은 뷰포트에서 현재 섹션 표시가 목차 안 스크롤 밖에 있을 때 자동으로 따라 스크롤하지는 않는다(리뷰 지적 범위 밖, 후속 후보).
+
 ## Baseline comparison
 
 - Fixed failures: 없음(기존 실패 없음).
