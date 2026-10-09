@@ -1,7 +1,8 @@
 import { render, screen, within } from '@testing-library/react'
 import KeyboardPage, { metadata } from '../page'
 
-jest.mock('@/components/learn/KeyboardLesson', () => ({ __esModule: true, default: () => <div>학습 건반</div> }))
+jest.mock('@/hooks/useFallingNotesAudio', () => ({ useFallingNotesAudio: () => ({ playNoteNow: jest.fn() }) }))
+jest.mock('@/hooks/useMidiInput', () => ({ useMidiInput: () => ({ status: 'idle', devices: [], request: jest.fn() }) }))
 
 it('uses the shared lesson shell with one h1 and metadata', () => {
   render(<KeyboardPage />)
@@ -19,10 +20,13 @@ it('uses the shared lesson shell with one h1 and metadata', () => {
   // No TOC since keyboard has fewer than 4 sections
   expect(screen.queryByRole('navigation', { name: '이 레슨의 내용' })).toBeNull()
 
+  // Glossary term links
+  const glossaryLinks = document.querySelectorAll<HTMLAnchorElement>('a[href^="/learn/glossary#term-"]')
+  expect(Array.from(glossaryLinks).map(a => a.getAttribute('href'))).toEqual(['/learn/glossary#term-middle-c'])
+
   // Navigation links
   const nav = screen.getByRole('navigation', { name: '레슨 이동' })
   expect(within(nav).getByRole('link', { name: '단계 지도로 돌아가기' })).toHaveAttribute('href', '/learn')
   expect(within(nav).getByRole('link', { name: '다음 레슨: 악보 읽기 1' })).toHaveAttribute('href', '/learn/reading')
   expect(within(nav).queryByRole('link', { name: /이전 레슨/ })).toBeNull()
 })
-

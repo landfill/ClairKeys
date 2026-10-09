@@ -40,5 +40,13 @@ it('presents the four hand topics, metadata and working lesson links', () => {
   expect(within(nav).getByRole('link', { name: '이전 레슨: 악보 읽기 2' })).toHaveAttribute('href', '/learn/reading/rhythm')
   expect(within(nav).getByRole('link', { name: '다음 레슨: 연습 방법' })).toHaveAttribute('href', '/learn/practice')
   expect(document.querySelectorAll('a[href="/learn/reading/rhythm"]')).toHaveLength(1)
+
+  // Glossary term links
+  const glossaryLinks = document.querySelectorAll<HTMLAnchorElement>('a[href^="/learn/glossary#term-"]')
+  expect(Array.from(glossaryLinks).map(a => a.getAttribute('href'))).toEqual([
+    '/learn/glossary#term-middle-c',
+    '/learn/glossary#term-fingering',
+    '/learn/glossary#term-one-hand-practice',
+  ])
 })
 

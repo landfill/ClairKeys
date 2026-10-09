@@ -8,6 +8,7 @@ import { useMidiInput } from '@/hooks/useMidiInput'
 import { buildKeyLayout, A0_MIDI, C8_MIDI } from '@/utils/pianoLayout'
 import { revealKeyboardKey } from '@/utils/keyboardScroll'
 import { chooseDoTarget, judgeDo, midiToSolfege, VISIBLE_RANGE } from '@/lib/learn/keyboard'
+import GlossaryTermLink from '@/components/learn/GlossaryTermLink'
 
 const layout = buildKeyLayout(44, VISIBLE_RANGE)
 const learningKeys = new Map([...layout.byMidi.keys()].map(midi => {
@@ -64,7 +65,7 @@ export default function KeyboardLesson({ random = Math.random }: { random?: () =
       <section aria-labelledby="keyboard-heading" data-lesson-section>
         <h2 id="keyboard-heading" className="text-lg font-semibold text-ink">건반의 이름과 위치</h2>
         <div data-lesson-prose>
-          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">검은 건반은 2개와 3개씩 묶여 반복돼요. 2개 묶음의 바로 왼쪽 흰 건반이 도예요. 가운데 도는 C4예요. 아래 건반에 표시되어 있어요.</p>
+          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">검은 건반은 2개와 3개씩 묶여 반복돼요. 2개 묶음의 바로 왼쪽 흰 건반이 도예요. <GlossaryTermLink term="middle-c">가운데 도</GlossaryTermLink>는 C4예요. 아래 건반에 표시되어 있어요.</p>
           <p className="mt-2 text-sm text-ink-muted max-w-[45rem]" data-lesson-note>3옥타브의 도(C3)부터 5옥타브의 도(C5)까지 보여 줘요. 건반을 클릭하거나 터치해 보세요. 키보드에서는 Tab으로 이동한 뒤 Enter 또는 Space로 누를 수 있어요. 좁은 화면에서는 건반 영역을 좌우로 스크롤할 수 있어요.</p>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">

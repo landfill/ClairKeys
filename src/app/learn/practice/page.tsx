@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import LessonLayout from '@/components/learn/LessonLayout'
 import LessonSection, { type LessonSectionItem } from '@/components/learn/LessonSection'
+import GlossaryTermLink from '@/components/learn/GlossaryTermLink'
 import { SEEK_STEP_SEC } from '@/utils/playbackShortcuts'
 
 export const metadata: Metadata = {
@@ -29,25 +30,25 @@ export default function PracticePage() {
     <LessonLayout lessonId="practice" sections={PRACTICE_SECTIONS}>
       <div className="space-y-6">
         <LessonSection section={PRACTICE_SECTIONS[0]}>
-          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">노트의 아랫변이 건반 위 선에 닿을 때 건반을 눌러요. 처음에는 속도를 늦춰 따라가요. 재생 전에는 속도 메뉴에서, 재생 중에는 압축된 조작 바의 재생 속도 메뉴에서 바꿀 수 있어요.</p>
+          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">노트의 아랫변이 건반 위 선에 닿을 때 건반을 눌러요. 처음에는 속도를 늦춰 따라가요. 재생 전에는 속도 메뉴에서, 재생 중에는 압축된 조작 바의 <GlossaryTermLink term="playback-speed">재생 속도</GlossaryTermLink> 메뉴에서 바꿀 수 있어요.</p>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">0.25배부터 2배까지 고를 수 있어요. 느린 속도로 익힌 다음 조금씩 빠르게 연습해 보세요.</p>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">재생 전에 건반에 계이름 표시를 켜면 흰 건반 아래에 도·레·미·파·솔·라·시가 나타나고 가운데 도가 강조돼요. 좁은 화면에서는 도만 보이고, 도 글자도 들어가지 않으면 가운데 도의 두 줄 표식만 남아요. 재생 중에는 정지한 뒤 설정을 바꿀 수 있어요. 이름과 위치는 <Link href="/learn/keyboard" className="inline rounded-sm py-3.5 text-accent hover:underline">건반 레슨</Link>에서 익혀 보세요.</p>
         </LessonSection>
 
         <LessonSection section={PRACTICE_SECTIONS[1]}>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">양손 음표가 있는 곡은 재생 전에 연습할 손에서 양손·왼손·오른손을 고를 수 있어요. 한 손을 고르면 다른 손의 노트가 옅어져요.</p>
-          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">다른 손 소리 듣기를 켜면 다른 손의 소리도 함께 들어요. 끄면 연습할 손의 소리만 들어요. 한 손 음표만 있는 곡에는 손 선택이 나오지 않아요. 기다리기 모드에서는 다른 손 소리도 자동으로 나오지 않아요.</p>
+          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">다른 손 소리 듣기를 켜면 다른 손의 소리도 함께 들어요. 끄면 연습할 손의 소리만 들어요. 한 손 음표만 있는 곡에는 손 선택이 나오지 않아요. <GlossaryTermLink term="wait-mode">기다리기 모드</GlossaryTermLink>에서는 다른 손 소리도 자동으로 나오지 않아요.</p>
         </LessonSection>
 
         <LessonSection section={PRACTICE_SECTIONS[2]}>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">어려운 곳은 A와 B로 구간을 정해 반복해요. 재생 위치를 시작 지점에 놓고 A를 누른 뒤, 그보다 뒤의 끝 지점에서 B를 눌러요. A와 B는 누른 시점의 재생 위치로 정해져요.</p>
-          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">재생 전에는 A 시작·B 종료, 재생 중에는 구간 시작 A 설정·구간 끝 B 설정 버튼을 써요. 끝에 도달하면 A로 돌아가요. A-B 구간 반복 초기화 버튼을 누르면 구간 설정을 지워요.</p>
+          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">재생 전에는 A 시작·B 종료, 재생 중에는 구간 시작 A 설정·구간 끝 B 설정 버튼을 써요. 끝에 도달하면 A로 돌아가요. <GlossaryTermLink term="ab-loop">A-B 구간 반복</GlossaryTermLink> 초기화 버튼을 누르면 구간 설정을 지워요.</p>
         </LessonSection>
 
         <LessonSection section={PRACTICE_SECTIONS[3]}>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">재생 전에 기다리기 모드를 켜면 맞는 건반을 누를 때까지 진행이 멈춰요. 화면의 건반을 누르거나 MIDI 피아노 입력을 받을 수 있어요. MIDI 지원 브라우저에서는 모드를 켤 때 연결 권한을 요청해요. MIDI를 지원하지 않는 브라우저에서도 화면 건반은 사용할 수 있어요.</p>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">한 손을 선택했다면 연습할 손의 음표만 기다려요. 같은 시점의 여러 음은 필요한 건반을 모두 눌러야 다음으로 진행해요.</p>
-          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">기다리기 모드에서는 자동 연주 소리, 메트로놈, 준비 박자가 나오지 않아요. 화면에서 누른 건반만 앱이 소리를 내요. MIDI로 누른 음은 앱이 소리를 내지 않으므로 연결한 악기의 자체 소리를 들어요.</p>
+          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">기다리기 모드에서는 자동 연주 소리, <GlossaryTermLink term="metronome">메트로놈</GlossaryTermLink>, <GlossaryTermLink term="count-in">준비 박자</GlossaryTermLink>가 나오지 않아요. 화면에서 누른 건반만 앱이 소리를 내요. MIDI로 누른 음은 앱이 소리를 내지 않으므로 연결한 악기의 자체 소리를 들어요.</p>
         </LessonSection>
 
         <LessonSection section={PRACTICE_SECTIONS[4]}>

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import LessonLayout from '@/components/learn/LessonLayout'
 import LessonSection, { type LessonSectionItem } from '@/components/learn/LessonSection'
 import HandsKeyboard from '@/components/learn/HandsKeyboard'
+import GlossaryTermLink from '@/components/learn/GlossaryTermLink'
 
 export const metadata: Metadata = {
   title: '손 자세와 손가락 번호 | ClairKeys',
@@ -31,7 +32,7 @@ export default function HandsPage() {
         </LessonSection>
 
         <LessonSection section={HANDS_SECTIONS[2]}>
-          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">오른손은 엄지(1)를 가운데 도(C4)에 놓아요. 도·레·미·파·솔(C4~G4)에 1·2·3·4·5를 차례로 놓아요.</p>
+          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">오른손은 엄지(1)를 <GlossaryTermLink term="middle-c">가운데 도</GlossaryTermLink>(C4)에 놓아요. 도·레·미·파·솔(C4~G4)에 1·2·3·4·5를 차례로 놓아요.</p>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">왼손은 새끼손가락(5)을 한 옥타브 아래 도(C3)에 놓아요. 도·레·미·파·솔(C3~G3)에 5·4·3·2·1을 차례로 놓아요.</p>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">이 자리는 다섯 손가락을 익히는 한 가지 연습이에요. 다른 곡에서도 도를 언제나 같은 손가락으로 치는 것은 아니에요. 건반 위치는 <Link href="/learn/keyboard" className="inline rounded-sm py-3.5 text-accent hover:underline">건반 레슨</Link>에서 확인해 보세요.</p>
           <HandsKeyboard />
@@ -39,7 +40,7 @@ export default function HandsPage() {
         </LessonSection>
 
         <LessonSection section={HANDS_SECTIONS[3]}>
-          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">떨어지는 음표에 붙는 숫자도 이 손가락 번호예요. 번호가 있는 음표에 표시되고, 한 손 연습에서 옅게 보이는 다른 손의 음표에는 숫자가 숨겨져요.</p>
+          <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">떨어지는 음표에 붙는 숫자도 이 <GlossaryTermLink term="fingering">손가락 번호</GlossaryTermLink>예요. 번호가 있는 음표에 표시되고, <GlossaryTermLink term="one-hand-practice">한 손 연습</GlossaryTermLink>에서 옅게 보이는 다른 손의 음표에는 숫자가 숨겨져요.</p>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">악보 패널을 켜면 현재 누를 음 중 연습하는 손의 건반에도 손가락 번호가 보여요. 번호가 없는 음에는 숫자가 나오지 않아요.</p>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">숫자는 악보에 적힌 손가락 번호이거나 앱이 계산한 연습 제안 번호예요. 악보 데이터에 유효한 1~5 번호가 있으면 유지하고, 번호가 없으면 자동 제안을 계산해요. 손가락 번호 보기 링크는 원본 번호나 자동 제안이 있는 곡의 재생 전 설정에 있어요.</p>
           <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">한 손씩 연습하거나 속도를 늦추는 방법은 <Link href="/learn/practice" className="inline rounded-sm py-3.5 text-accent hover:underline">연습 방법 레슨</Link>에서 알아봐요.</p>

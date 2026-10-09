@@ -5,6 +5,7 @@ import LessonSection, { type LessonSectionItem } from '@/components/learn/Lesson
 import ReadingExplorer from '@/components/learn/ReadingExplorer'
 import ScoreExample from '@/components/learn/ScoreExample'
 import { ListenButton, ReadingAudioProvider } from '@/components/learn/ReadingAudio'
+import GlossaryTermLink from '@/components/learn/GlossaryTermLink'
 import { READING_EXAMPLES } from '@/lib/learn/reading'
 
 export const metadata: Metadata = {
@@ -40,24 +41,24 @@ export default function ReadingPage() {
       <ReadingAudioProvider>
         <div className="space-y-8">
           <LessonSection section={READING_SECTIONS[0]}>
-            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">오선은 다섯 줄과 그 사이의 네 칸으로 이루어져 있어요. 줄과 칸은 아래에서 위로 세요. 같은 음자리표에서 위로 갈수록 높은 음을 나타내요.</p>
+            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]"><GlossaryTermLink term="staff">오선</GlossaryTermLink>은 다섯 줄과 그 사이의 네 칸으로 이루어져 있어요. 줄과 칸은 아래에서 위로 세요. 같은 음자리표에서 위로 갈수록 높은 음을 나타내요.</p>
           </LessonSection>
 
           <LessonSection section={READING_SECTIONS[1]}>
-            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">높은음자리표(G clef)는 오른손이 주로 읽어요. 둘째 줄이 솔(G4)이어서 G 음자리표라고 해요.</p>
+            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]"><GlossaryTermLink term="treble-clef">높은음자리표</GlossaryTermLink>(G clef)는 오른손이 주로 읽어요. 둘째 줄이 솔(G4)이어서 G 음자리표라고 해요.</p>
             <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">줄의 음은 아래부터 미·솔·시·레·파예요. 칸의 음은 아래부터 파·라·도·미예요.</p>
             <Examples ids={['treble-lines', 'treble-spaces']} />
           </LessonSection>
 
           <LessonSection section={READING_SECTIONS[2]}>
-            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">낮은음자리표(F clef)는 왼손이 주로 읽어요. 넷째 줄이 파(F3)여서 F 음자리표라고 해요.</p>
+            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]"><GlossaryTermLink term="bass-clef">낮은음자리표</GlossaryTermLink>(F clef)는 왼손이 주로 읽어요. 넷째 줄이 파(F3)여서 F 음자리표라고 해요.</p>
             <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">줄의 음은 아래부터 솔·시·레·파·라예요. 칸의 음은 아래부터 라·도·미·솔이에요.</p>
             <Examples ids={['bass-lines', 'bass-spaces']} />
           </LessonSection>
 
           <LessonSection section={READING_SECTIONS[3]}>
-            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">오선 바깥의 음을 적을 때 짧은 덧줄을 써요. 가운데 도는 높은음자리표의 아래 덧줄 하나, 낮은음자리표의 위 덧줄 하나에 적혀요. 두 그림 모두 같은 건반인 가운데 도(C4, MIDI 60)를 나타내요.</p>
-            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">큰보표는 높은음자리표와 낮은음자리표의 두 오선을 함께 읽는 보표예요. 두 오선에서 가운데 도가 같은 음을 나타낸다는 점으로 연결해 읽을 수 있어요.</p>
+            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]">오선 바깥의 음을 적을 때 짧은 <GlossaryTermLink term="ledger-line">덧줄</GlossaryTermLink>을 써요. <GlossaryTermLink term="middle-c">가운데 도</GlossaryTermLink>는 높은음자리표의 아래 덧줄 하나, 낮은음자리표의 위 덧줄 하나에 적혀요. 두 그림 모두 같은 건반인 가운데 도(C4, MIDI 60)를 나타내요.</p>
+            <p className="mt-2 text-base text-ink leading-relaxed max-w-[45rem]"><GlossaryTermLink term="grand-staff">큰보표</GlossaryTermLink>는 높은음자리표와 낮은음자리표의 두 오선을 함께 읽는 보표예요. 두 오선에서 가운데 도가 같은 음을 나타낸다는 점으로 연결해 읽을 수 있어요.</p>
             <Examples ids={['middle-treble', 'middle-bass']} alwaysPair />
           </LessonSection>
 
