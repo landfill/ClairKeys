@@ -158,9 +158,12 @@ it('renders a reserved status grid with aria-hidden template when reserveStatus 
     </ReadingAudioProvider>
   )
   expect(screen.queryAllByRole('status')).toHaveLength(0)
-  const hiddenTemplate = screen.getByText('소리를 재생하지 못했어요. 악보와 글, 건반은 계속 사용할 수 있어요.', { selector: '[aria-hidden="true"]' })
-  expect(hiddenTemplate).toBeInTheDocument()
-  expect(hiddenTemplate).toHaveClass('invisible')
+  const failurePlaceholder = screen.getByText('소리를 재생하지 못했어요. 악보와 글, 건반은 계속 사용할 수 있어요.', { selector: '[aria-hidden="true"]' })
+  const prepPlaceholder = screen.getByText('소리를 준비하고 있어요.', { selector: '[aria-hidden="true"]' })
+  expect(failurePlaceholder).toBeInTheDocument()
+  expect(failurePlaceholder).toHaveClass('invisible', 'row-start-1')
+  expect(prepPlaceholder).toBeInTheDocument()
+  expect(prepPlaceholder).toHaveClass('invisible', 'row-start-2')
 
   rerender(
     <ReadingAudioProvider>
@@ -169,4 +172,31 @@ it('renders a reserved status grid with aria-hidden template when reserveStatus 
   )
   expect(screen.queryAllByRole('status')).toHaveLength(0)
   expect(screen.queryByText('소리를 재생하지 못했어요. 악보와 글, 건반은 계속 사용할 수 있어요.')).toBeNull()
+  expect(screen.queryByText('소리를 준비하고 있어요.')).toBeNull()
+})
+
+it('renders failure notice in row 1 and rhythm turn progress in row 2 when audio fails with reserveStatus', async () => {
+  startAudio.mockResolvedValue(false)
+  const rhythm = RHYTHM_EXAMPLES[0]
+  render(
+    <ReadingAudioProvider>
+      <ListenButton rhythm={rhythm} label="리듬 들어 보기" reserveStatus />
+    </ReadingAudioProvider>
+  )
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '리듬 들어 보기' })) })
+  await act(async () => { await jest.advanceTimersByTimeAsync(50) })
+
+  const statuses = screen.getAllByRole('status')
+  expect(statuses).toHaveLength(2)
+  const failureStatus = statuses.find(s => s.textContent?.includes('소리를 재생하지 못했어요'))!
+  const progressStatus = screen.getByRole('status', { name: '리듬 재생 차례' })
+  expect(failureStatus).toBeInTheDocument()
+  expect(failureStatus).toHaveClass('row-start-1')
+  expect(progressStatus).toHaveClass('row-start-2')
+
+  const hiddenPlaceholders = screen.getAllByText((_, element) => element?.getAttribute('aria-hidden') === 'true')
+  expect(hiddenPlaceholders).toHaveLength(2)
+  for (const placeholder of hiddenPlaceholders) {
+    expect(placeholder).not.toHaveAttribute('role')
+  }
 })

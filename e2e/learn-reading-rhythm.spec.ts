@@ -216,12 +216,22 @@ for (const width of [1280, 390, 320]) {
     const notice = panel.getByRole('status').filter({ hasText: '소리를 재생하지 못했어요' })
     await expect(notice).toBeVisible()
 
+    const progress = panel.getByRole('status', { name: '리듬 재생 차례', exact: true })
+    await expect(progress).toBeVisible({ timeout: 12000 })
+
+    const noticeBox = await notice.boundingBox()
+    const progressBox = await progress.boundingBox()
+    expect(noticeBox).toBeTruthy()
+    expect(progressBox).toBeTruthy()
+    expect(progressBox!.y).toBeGreaterThanOrEqual(noticeBox!.y + noticeBox!.height - 0.5)
+
     const afterBox = await panel.boundingBox()
     expect(afterBox).toBeTruthy()
     expect(Math.abs(afterBox!.height - beforeBox!.height)).toBeLessThanOrEqual(1.0)
   })
 }
 
+// 실제 취소는 Jest 'calls stopAudio when switching examples during playback'가 검사한다
 test('does not leave previous example rhythm turn progress under new button when switching during playback', async ({ page }) => {
   await prepare(page)
   await page.goto('/learn/reading/rhythm')
@@ -244,10 +254,6 @@ test('does not leave previous example rhythm turn progress under new button when
   await meterFourBtn.click()
 
   // The new button area must NOT show the previous progress
-  await expect(panel.getByRole('status', { name: '리듬 재생 차례', exact: true })).toHaveCount(0)
-
-  // Verify that playback schedule was cancelled and progress does not reappear
-  await page.waitForTimeout(1500)
   await expect(panel.getByRole('status', { name: '리듬 재생 차례', exact: true })).toHaveCount(0)
 })
 

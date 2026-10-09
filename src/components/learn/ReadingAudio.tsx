@@ -8,6 +8,7 @@ import { rhythmTimeline, type RhythmExample } from '@/lib/learn/rhythm'
 // 샘플 로딩 상한(2500ms)에 여유를 주되, 오디오 장치가 없어도 글 진행을 시작한다.
 const RHYTHM_AUDIO_START_WAIT_MS = 4000
 const AUDIO_FAILURE_NOTICE = '소리를 재생하지 못했어요. 악보와 글, 건반은 계속 사용할 수 있어요.'
+const AUDIO_PREPARING_NOTICE = '소리를 준비하고 있어요.'
 
 type PreviewRequest = { midis: readonly number[]; rhythm?: never } | { rhythm: RhythmExample; midis?: never }
 type Progress = { buttonId: string; index: number; count: number; label: string }
@@ -159,16 +160,17 @@ export function ListenButton({ midis, rhythm, label, reserveStatus }: ListenButt
   return <div className="mt-3">
     <Button variant="outline" className="min-h-11" onClick={() => { void audio.preview(rhythm ? { rhythm } : { midis: midis! }, buttonId) }}>{label}</Button>
     {reserveStatus ? (
-      <div className="mt-2 grid">
+      <div className="mt-2 grid gap-y-2">
         <span aria-hidden="true" className="invisible select-none col-start-1 row-start-1 text-sm">{AUDIO_FAILURE_NOTICE}</span>
         {failed && <p ref={noticeRef} role="status" aria-live="polite" className="col-start-1 row-start-1 text-sm text-ink-muted">{AUDIO_FAILURE_NOTICE}</p>}
-        {audio.preparingButton === buttonId && <p role="status" aria-label="소리 준비 상태" aria-live="polite" className="col-start-1 row-start-1 text-sm text-ink-muted">소리를 준비하고 있어요.</p>}
-        {current && <p role="status" aria-label="리듬 재생 차례" aria-live="polite" className="col-start-1 row-start-1 text-sm text-ink-muted">{current.index + 1}/{current.count} · {current.label}</p>}
+        <span aria-hidden="true" className="invisible select-none col-start-1 row-start-2 text-sm">{AUDIO_PREPARING_NOTICE}</span>
+        {audio.preparingButton === buttonId && <p role="status" aria-label="소리 준비 상태" aria-live="polite" className="col-start-1 row-start-2 text-sm text-ink-muted">{AUDIO_PREPARING_NOTICE}</p>}
+        {current && <p role="status" aria-label="리듬 재생 차례" aria-live="polite" className="col-start-1 row-start-2 text-sm text-ink-muted">{current.index + 1}/{current.count} · {current.label}</p>}
       </div>
     ) : (
       <>
         {failed && <p ref={noticeRef} role="status" aria-live="polite" className="mt-2 text-sm text-ink-muted">{AUDIO_FAILURE_NOTICE}</p>}
-        {audio.preparingButton === buttonId && <p role="status" aria-label="소리 준비 상태" aria-live="polite" className="mt-2 text-sm text-ink-muted">소리를 준비하고 있어요.</p>}
+        {audio.preparingButton === buttonId && <p role="status" aria-label="소리 준비 상태" aria-live="polite" className="mt-2 text-sm text-ink-muted">{AUDIO_PREPARING_NOTICE}</p>}
         {current && <p role="status" aria-label="리듬 재생 차례" aria-live="polite" className="mt-2 text-sm text-ink-muted">{current.index + 1}/{current.count} · {current.label}</p>}
       </>
     )}
