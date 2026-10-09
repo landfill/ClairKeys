@@ -1,13 +1,26 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { ListenButton, ReadingAudioProvider } from '../ReadingAudio'
+import { RHYTHM_EXAMPLES } from '@/lib/learn/rhythm'
 const playNoteNow = jest.fn().mockResolvedValue(true)
+const startAudio = jest.fn().mockResolvedValue(true)
 const stopAudio = jest.fn()
 const stopTappedNotes = jest.fn()
 const setVolume = jest.fn()
-jest.mock('@/hooks/useFallingNotesAudio', () => ({ useFallingNotesAudio: () => ({ playNoteNow, stopAudio, stopTappedNotes, setVolume }) }))
+const getCurrentTime = jest.fn().mockReturnValue(0)
+jest.mock('@/hooks/useFallingNotesAudio', () => ({
+  useFallingNotesAudio: () => ({ playNoteNow, startAudio, stopAudio, stopTappedNotes, setVolume, getCurrentTime }),
+}))
 beforeAll(() => { Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, writable: true, value: jest.fn() }) })
 afterAll(() => { Reflect.deleteProperty(Element.prototype, 'scrollIntoView') })
-beforeEach(() => { playNoteNow.mockReset().mockResolvedValue(true); jest.useFakeTimers() })
+beforeEach(() => {
+  playNoteNow.mockReset().mockResolvedValue(true)
+  startAudio.mockReset().mockResolvedValue(true)
+  stopAudio.mockReset()
+  stopTappedNotes.mockReset()
+  setVolume.mockReset()
+  getCurrentTime.mockReset().mockReturnValue(0)
+  jest.useFakeTimers()
+})
 afterEach(() => { jest.useRealTimers(); jest.restoreAllMocks() })
 
 it('plays the provided MIDI sequence in order and cancels queued notes on unmount', async () => {
@@ -79,4 +92,111 @@ it('scrolls the newly shown failure notice once with nearest alignment without c
   expect(button).toHaveFocus()
   await act(async () => { await jest.advanceTimersByTimeAsync(1200) })
   expect(scroll).toHaveBeenCalledTimes(1)
+})
+
+it('calls stopAudio and clears progress when the playing ListenButton unmounts', async () => {
+  const rhythm = RHYTHM_EXAMPLES[0]
+  const { unmount } = render(
+    <ReadingAudioProvider>
+      <ListenButton rhythm={rhythm} label="리듬 들어 보기" />
+    </ReadingAudioProvider>
+  )
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '리듬 들어 보기' })) })
+  await act(async () => { await jest.advanceTimersByTimeAsync(50) })
+  expect(screen.getByRole('status', { name: '리듬 재생 차례' })).toBeInTheDocument()
+  stopAudio.mockClear()
+  unmount()
+  expect(stopAudio).toHaveBeenCalled()
+  expect(screen.queryByRole('status', { name: '리듬 재생 차례' })).toBeNull()
+})
+
+it('does not call stopAudio mid-playback when progress changes across multiple notes', async () => {
+  const rhythm = RHYTHM_EXAMPLES[1]
+  let time = 0
+  getCurrentTime.mockImplementation(() => time / 1000)
+  jest.spyOn(performance, 'now').mockImplementation(() => time)
+  render(
+    <ReadingAudioProvider>
+      <ListenButton rhythm={rhythm} label="리듬 들어 보기" />
+    </ReadingAudioProvider>
+  )
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '리듬 들어 보기' })) })
+  time = 50
+  await act(async () => { await jest.advanceTimersByTimeAsync(50) })
+  expect(screen.getByRole('status', { name: '리듬 재생 차례' })).toHaveTextContent('1/')
+  stopAudio.mockClear()
+  time = 1600
+  await act(async () => { await jest.advanceTimersByTimeAsync(1550) })
+  expect(screen.getByRole('status', { name: '리듬 재생 차례' })).toHaveTextContent('2/')
+  expect(stopAudio).not.toHaveBeenCalled()
+})
+
+it('continues playback of button A when a different button B unmounts', async () => {
+  const rhythm = RHYTHM_EXAMPLES[0]
+  function MultiButtons({ showB }: { showB: boolean }) {
+    return (
+      <ReadingAudioProvider>
+        <ListenButton rhythm={rhythm} label="버튼 A" />
+        {showB && <ListenButton midis={[60]} label="버튼 B" />}
+      </ReadingAudioProvider>
+    )
+  }
+  const { rerender } = render(<MultiButtons showB={true} />)
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '버튼 A' })) })
+  await act(async () => { await jest.advanceTimersByTimeAsync(50) })
+  expect(screen.getByRole('status', { name: '리듬 재생 차례' })).toBeInTheDocument()
+  stopAudio.mockClear()
+  rerender(<MultiButtons showB={false} />)
+  expect(stopAudio).not.toHaveBeenCalled()
+  expect(screen.getByRole('status', { name: '리듬 재생 차례' })).toBeInTheDocument()
+})
+
+it('renders a reserved status grid with aria-hidden template when reserveStatus is true and keeps it absent when false', () => {
+  const { rerender } = render(
+    <ReadingAudioProvider>
+      <ListenButton midis={[60]} label="예약 버튼" reserveStatus />
+    </ReadingAudioProvider>
+  )
+  expect(screen.queryAllByRole('status')).toHaveLength(0)
+  const failurePlaceholder = screen.getByText('소리를 재생하지 못했어요. 악보와 글, 건반은 계속 사용할 수 있어요.', { selector: '[aria-hidden="true"]' })
+  const prepPlaceholder = screen.getByText('소리를 준비하고 있어요.', { selector: '[aria-hidden="true"]' })
+  expect(failurePlaceholder).toBeInTheDocument()
+  expect(failurePlaceholder).toHaveClass('invisible', 'row-start-1')
+  expect(prepPlaceholder).toBeInTheDocument()
+  expect(prepPlaceholder).toHaveClass('invisible', 'row-start-2')
+
+  rerender(
+    <ReadingAudioProvider>
+      <ListenButton midis={[60]} label="일반 버튼" />
+    </ReadingAudioProvider>
+  )
+  expect(screen.queryAllByRole('status')).toHaveLength(0)
+  expect(screen.queryByText('소리를 재생하지 못했어요. 악보와 글, 건반은 계속 사용할 수 있어요.')).toBeNull()
+  expect(screen.queryByText('소리를 준비하고 있어요.')).toBeNull()
+})
+
+it('renders failure notice in row 1 and rhythm turn progress in row 2 when audio fails with reserveStatus', async () => {
+  startAudio.mockResolvedValue(false)
+  const rhythm = RHYTHM_EXAMPLES[0]
+  render(
+    <ReadingAudioProvider>
+      <ListenButton rhythm={rhythm} label="리듬 들어 보기" reserveStatus />
+    </ReadingAudioProvider>
+  )
+  await act(async () => { fireEvent.click(screen.getByRole('button', { name: '리듬 들어 보기' })) })
+  await act(async () => { await jest.advanceTimersByTimeAsync(50) })
+
+  const statuses = screen.getAllByRole('status')
+  expect(statuses).toHaveLength(2)
+  const failureStatus = statuses.find(s => s.textContent?.includes('소리를 재생하지 못했어요'))!
+  const progressStatus = screen.getByRole('status', { name: '리듬 재생 차례' })
+  expect(failureStatus).toBeInTheDocument()
+  expect(failureStatus).toHaveClass('row-start-1')
+  expect(progressStatus).toHaveClass('row-start-2')
+
+  const hiddenPlaceholders = screen.getAllByText((_, element) => element?.getAttribute('aria-hidden') === 'true')
+  expect(hiddenPlaceholders).toHaveLength(2)
+  for (const placeholder of hiddenPlaceholders) {
+    expect(placeholder).not.toHaveAttribute('role')
+  }
 })

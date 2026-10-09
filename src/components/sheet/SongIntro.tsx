@@ -43,7 +43,7 @@ export default function SongIntro({ data, scoreUrl }: { data: CanonicalAnimation
       {provenance.meter && <div>
         <dt className="font-medium text-ink-muted">박자</dt>
         <dd className="mt-1 text-ink">{provenance.meter}<p className="mt-1 text-ink-muted">원본 악보 기준</p>
-          <Link href="/learn/reading#meters" className={`mt-2 inline-flex min-h-11 items-center ${linkClass}`}>악보 읽기에서 박자표 익히기</Link>
+          <Link href="/learn/reading/rhythm#meters" className={`mt-2 inline-flex min-h-11 items-center ${linkClass}`}>악보 읽기에서 박자표 익히기</Link>
         </dd>
       </div>}
       {provenance.key && <div>

@@ -37,7 +37,7 @@ test('opens the public hand lesson with clean hydration and mirrored finger numb
   await expect(main.getByRole('heading', { level: 1, name: '손', exact: true })).toBeVisible()
   await expect(main.getByRole('heading', { level: 2 })).toHaveText(['손가락 번호', '기본 손 모양', '다섯 손가락 자리', '재생 화면과 연결'])
   const navigation = page.getByRole('navigation', { name: '레슨 이동', exact: true })
-  await expect(navigation.getByRole('link', { name: '이전 레슨: 악보 읽기', exact: true })).toHaveAttribute('href', '/learn/reading')
+  await expect(navigation.getByRole('link', { name: '이전 레슨: 악보 읽기 2', exact: true })).toHaveAttribute('href', '/learn/reading/rhythm')
   await expect(navigation.getByRole('link', { name: '다음 레슨: 연습 방법', exact: true })).toHaveAttribute('href', '/learn/practice')
   await changeHand(page)
   await page.waitForLoadState('networkidle')

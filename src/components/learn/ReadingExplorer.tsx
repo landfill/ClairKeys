@@ -39,7 +39,7 @@ export default function ReadingExplorer() {
         {whiteMidis.map(midi => {
           const item = midiToSolfege(midi)
           return <Button key={midi} size="sm" variant={midi === selected ? 'primary' : 'outline'}
-            className="border border-rule"
+            className="min-h-11 min-w-11 border border-rule"
             aria-label={`음 선택: ${item.accessibleName}`} aria-pressed={midi === selected} onClick={() => select(midi, true)}>{item.middleC ? '가운데 도' : item.name} {item.octave}</Button>
         })}
       </div>
@@ -53,8 +53,10 @@ export default function ReadingExplorer() {
         {note.middleC ? '가운데 도' : note.name} · {note.octave}옥타브 · {clef === 'G' ? '높은음자리표' : '낮은음자리표'} · {staffPosition(selected, clef).name}
       </p>
       <ListenButton midis={[selected]} label="선택한 음 들어 보기" />
-      <ScoreExample example={example} />
-      {selected === 60 && <ScoreExample example={{ ...example, id: 'selected-middle-bass', clef: 'F' }} />}
+      <div className={selected === 60 ? 'grid grid-cols-2 gap-3' : 'grid'}>
+        <ScoreExample example={example} />
+        {selected === 60 && <ScoreExample example={{ ...example, id: 'selected-middle-bass', clef: 'F' }} />}
+      </div>
     </div>
   )
 }

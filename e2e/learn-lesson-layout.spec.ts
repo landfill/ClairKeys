@@ -1,23 +1,30 @@
 import { test, expect, type Locator, type Page } from '@playwright/test'
 
 const LESSONS = [
-  { path: '/learn/keyboard', title: '건반', step: '4단계 중 1단계', hasToc: false },
-  { path: '/learn/reading', title: '악보 읽기', step: '4단계 중 2단계', hasToc: true },
-  { path: '/learn/hands', title: '손', step: '4단계 중 3단계', hasToc: true },
-  { path: '/learn/practice', title: '연습 방법', step: '4단계 중 4단계', hasToc: true },
+  { path: '/learn/keyboard', title: '건반', step: '5단계 중 1단계', hasToc: false },
+  { path: '/learn/reading', title: '악보 읽기 1', step: '5단계 중 2단계', hasToc: true },
+  { path: '/learn/reading/rhythm', title: '악보 읽기 2', step: '5단계 중 3단계', hasToc: true },
+  { path: '/learn/hands', title: '손', step: '5단계 중 4단계', hasToc: true },
+  { path: '/learn/practice', title: '연습 방법', step: '5단계 중 5단계', hasToc: true },
 ] as const
 
 // 섹션 id와 제목은 용어 사전·곡 소개·다른 레슨이 링크하는 계약이다(바꾸지 않는다).
 const TOC_LESSONS = [
   {
     path: '/learn/reading',
-    title: '악보 읽기',
+    title: '악보 읽기 1',
     sections: [
       { id: 'staff-intro', title: '오선' },
       { id: 'treble-intro', title: '높은음자리표' },
       { id: 'bass-intro', title: '낮은음자리표' },
       { id: 'middle-c-intro', title: '가운데 도' },
       { id: 'pitch-explorer', title: '오선과 건반 연결하기' },
+    ],
+  },
+  {
+    path: '/learn/reading/rhythm',
+    title: '악보 읽기 2',
+    sections: [
       { id: 'note-lengths', title: '음표의 길이' },
       { id: 'rest-lengths', title: '쉼표' },
       { id: 'dotted-lengths', title: '점음표' },
@@ -354,7 +361,7 @@ test.describe('레슨 공통 레이아웃', () => {
     await page.goto('/learn/reading#%')
     await waitForEnhancedToc(page)
 
-    await expect(page.getByRole('heading', { level: 1, name: '악보 읽기' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: '악보 읽기 1' })).toBeVisible()
 
     const scope = tocScope(page, false)
     await expect(scope.locator('a[aria-current]')).toHaveCount(1)
@@ -377,9 +384,9 @@ test.describe('레슨 공통 레이아웃', () => {
       await details.locator('summary').click()
       await expect(details).toHaveAttribute('open', '')
 
-      await page.locator('#mobile-lesson-toc').getByRole('link', { name: '음표의 길이', exact: true }).click()
-      await expect(page).toHaveURL(/#note-lengths$/)
-      const heading = page.locator('h2#note-lengths')
+      await page.locator('#mobile-lesson-toc').getByRole('link', { name: '오선과 건반 연결하기', exact: true }).click()
+      await expect(page).toHaveURL(/#pitch-explorer$/)
+      const heading = page.locator('h2#pitch-explorer')
       await expect(heading).toBeInViewport()
 
       const headingBox = await heading.boundingBox()
@@ -398,7 +405,7 @@ test.describe('레슨 공통 레이아웃', () => {
 
   test('320x568에서 목차를 열면 마지막 항목까지 스크롤해 누를 수 있고 가로 넘침이 없음', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 })
-    await page.goto('/learn/reading')
+    await page.goto('/learn/practice')
     await waitForEnhancedToc(page)
     await scrollToRatio(page, 0.5)
 
@@ -411,7 +418,7 @@ test.describe('레슨 공통 레이아웃', () => {
     expect(listBox).toBeTruthy()
     if (listBox) expect(listBox.y + listBox.height, '열린 목록이 화면 아래로 넘침').toBeLessThanOrEqual(568 + 0.5)
 
-    const lastItem = list.getByRole('link', { name: '박자표', exact: true })
+    const lastItem = list.getByRole('link', { name: '키보드 단축키', exact: true })
     await lastItem.scrollIntoViewIfNeeded()
     await expect(lastItem).toBeInViewport()
 
@@ -422,14 +429,14 @@ test.describe('레슨 공통 레이아웃', () => {
     expect(overflow.scrollWidth, `가로 넘침: ${JSON.stringify(overflow)}`).toBeLessThanOrEqual(overflow.clientWidth + 1)
 
     await clickAtCenter(page, lastItem)
-    await expect(page).toHaveURL(/#meters$/)
+    await expect(page).toHaveURL(/#keyboard-shortcuts$/)
     await expect(details).toHaveJSProperty('open', false)
-    await expect(page.locator('h2#meters')).toBeInViewport()
+    await expect(page.locator('h2#keyboard-shortcuts')).toBeInViewport()
   })
 
-  test('1024x400에서 옆 목차의 마지막 항목까지 스크롤해 누를 수 있음', async ({ page }) => {
-    await page.setViewportSize({ width: 1024, height: 400 })
-    await page.goto('/learn/reading')
+  test('1024x300에서 옆 목차의 마지막 항목까지 스크롤해 누를 수 있음', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 300 })
+    await page.goto('/learn/practice')
     await waitForEnhancedToc(page)
     await scrollToRatio(page, 0.5)
 
@@ -439,13 +446,13 @@ test.describe('레슨 공통 레이아웃', () => {
     const navBox = await nav.boundingBox()
     expect(navBox, 'nav의 boundingBox가 있어야 함').toBeTruthy()
     if (navBox) {
-      expect(navBox.y + navBox.height, '목차가 화면 아래로 넘치지 않아야 함').toBeLessThanOrEqual(400 + 0.5)
+      expect(navBox.y + navBox.height, '목차가 화면 아래로 넘치지 않아야 함').toBeLessThanOrEqual(300 + 0.5)
     }
 
     const heights = await nav.evaluate(el => ({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }))
     expect(heights.scrollHeight, '안에서 스크롤할 내용이 있어야 함').toBeGreaterThan(heights.clientHeight)
 
-    const lastItem = nav.getByRole('link', { name: '박자표', exact: true })
+    const lastItem = nav.getByRole('link', { name: '키보드 단축키', exact: true })
 
     const before = await page.evaluate(() => window.scrollY)
     await nav.evaluate(el => { el.scrollTop = el.scrollHeight })
@@ -456,8 +463,8 @@ test.describe('레슨 공통 레이아웃', () => {
     expect(after, '목차 안 스크롤이 페이지를 움직이지 않아야 함').toBe(before)
 
     await clickAtCenter(page, lastItem)
-    await expect(page).toHaveURL(/#meters$/)
-    await expect(page.locator('h2#meters')).toBeInViewport()
+    await expect(page).toHaveURL(/#keyboard-shortcuts$/)
+    await expect(page.locator('h2#keyboard-shortcuts')).toBeInViewport()
 
     // 회귀 방지: 1280x800에서는 내부 스크롤이 생기지 않음
     await page.setViewportSize({ width: 1280, height: 800 })
@@ -526,19 +533,14 @@ test.describe('레슨 공통 레이아웃', () => {
         await page.setViewportSize({ width: viewport.width, height: viewport.height })
         await page.goto(lesson.path)
 
-        const { violators, exempt } = await page.evaluate(() => {
+        const { violators } = await page.evaluate(() => {
           // 예외 요소들 명시적 제외:
           // 1. 학습용 피아노 건반(button[data-midi]): 검은 건반 폭(26px)이 44px 미만인 것은 확정 예외라 폭만 뺀다. 높이는 검사한다.
           // 2. 문장 안 링크([data-lesson-prose] p a): 문장 줄 안에 있으므로 높이만 검사한다(폭은 글자 길이를 따른다).
-          // 3. reading 페이지의 들어 보기 및 음 선택 버튼 (3단계 전환형 패널 개편 대상, 총 35개): 높이·폭 모두 뺀다.
-          //    - noteSelect (15개): ReadingExplorer C3~C5 흰 건반(48~72) 음 선택 버튼 ([role="group"][aria-label="음 선택"] 내부)
-          //    - listen (20개): 이름이 '들어 보기'로 끝나는 버튼
-          //        * reading.ts 악보 예시 6개 (높은음자리표 줄/칸 2개, 낮은음자리표 줄/칸 2개, 가운데 도 2개)
-          //        * ReadingExplorer 선택한 음 들어 보기 1개
-          //        * rhythm.ts 리듬 예시 13개 (음표 4개, 쉼표 4개, 점음표 2개, 박자표 3개)
+          // 3단계에서 reading의 음 선택 및 들어 보기 버튼이 모두 44px 이상으로 개편되어 예외가 제거됨.
           const elements = Array.from(document.querySelectorAll('main a[href], main button, main summary'))
           const issues: Array<{ tag: string; text: string; height: number; width: number; problem: string }> = []
-          const exemptCounts = { noteSelect: 0, listen: 0, pianoKeyWidth: 0, proseLinkWidth: 0 }
+          const exemptCounts = { pianoKeyWidth: 0, proseLinkWidth: 0 }
 
           for (const el of elements) {
             const rect = el.getBoundingClientRect()
@@ -548,18 +550,6 @@ test.describe('레슨 공통 레이아웃', () => {
             if (style.display === 'none' || style.visibility === 'hidden') continue
 
             const accessibleName = (el.getAttribute('aria-label') || el.textContent || '').trim()
-
-            // 3단계 대상 reading 음 선택 및 들어 보기 버튼 예외 처리
-            const isNoteSelect = !!el.closest('[role="group"][aria-label="음 선택"]')
-            const isAudioPreview = el.tagName === 'BUTTON' && accessibleName.endsWith('들어 보기')
-            if (isNoteSelect) {
-              exemptCounts.noteSelect++
-              continue
-            }
-            if (isAudioPreview) {
-              exemptCounts.listen++
-              continue
-            }
 
             if (rect.height < 43.5) {
               issues.push({ tag: el.tagName, text: accessibleName.slice(0, 30), height: rect.height, width: rect.width, problem: 'height' })
@@ -580,14 +570,6 @@ test.describe('레슨 공통 레이아웃', () => {
           return { violators: issues, exempt: exemptCounts }
         })
 
-        if (lesson.path === '/learn/reading') {
-          expect(exempt.noteSelect).toBe(15)
-          expect(exempt.listen).toBe(20)
-        } else {
-          expect(exempt.noteSelect).toBe(0)
-          expect(exempt.listen).toBe(0)
-        }
-
         expect(violators, `${lesson.path} ${viewport.name}에서 높이 또는 폭이 44px 미만인 인터랙티브 요소 발견`).toEqual([])
       })
     }
@@ -595,7 +577,7 @@ test.describe('레슨 공통 레이아웃', () => {
 
   test('문장 안 링크가 문단의 줄 높이를 늘리지 않고 높이 44px 이상임', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
-    for (const path of ['/learn/reading', '/learn/hands', '/learn/practice']) {
+    for (const path of ['/learn/reading', '/learn/reading/rhythm', '/learn/hands', '/learn/practice']) {
       await test.step(path, async () => {
         await page.goto(path)
         const results = await page.evaluate(() => {
@@ -626,7 +608,7 @@ test.describe('레슨 공통 레이아웃', () => {
     }
   })
 
-  for (const path of ['/learn/reading', '/learn/hands', '/learn/practice']) {
+  for (const path of ['/learn/reading', '/learn/reading/rhythm', '/learn/hands', '/learn/practice']) {
     for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 }]) {
       test(`콘텐츠 영역이 좁은 글꼴에서도 문장 안 링크 높이가 44px 이상임: ${path} (${viewport.width}x${viewport.height})`, async ({ page }) => {
         await page.setViewportSize(viewport)
@@ -671,7 +653,7 @@ test.describe('레슨 공통 레이아웃', () => {
     await page.goto('/learn/reading')
 
     const prevLink = page.getByRole('link', { name: '이전 레슨: 건반', exact: true })
-    const nextLink = page.getByRole('link', { name: '다음 레슨: 손', exact: true })
+    const nextLink = page.getByRole('link', { name: '다음 레슨: 악보 읽기 2', exact: true })
 
     await expect(prevLink).toBeVisible()
     await expect(nextLink).toBeVisible()

@@ -11,7 +11,7 @@ beforeEach(() => { LEARN_LESSONS.forEach(lesson => { lesson.available = true }) 
 
 describe('LessonLayout', () => {
   it.each([
-    { id: 'keyboard', title: '건반', neighbour: '다음 레슨: 악보 읽기', href: '/learn/reading', absent: /이전 레슨/ },
+    { id: 'keyboard', title: '건반', neighbour: '다음 레슨: 악보 읽기 1', href: '/learn/reading', absent: /이전 레슨/ },
     { id: 'practice', title: '연습 방법', neighbour: '이전 레슨: 손', href: '/learn/hands', absent: /다음 레슨/ },
   ])('renders one h1, the body, map and only the published neighbour for $id', ({ id, title, neighbour, href, absent }) => {
     render(<LessonLayout lessonId={id}><h2>음높이</h2></LessonLayout>)
@@ -29,14 +29,14 @@ describe('LessonLayout', () => {
     render(<LessonLayout lessonId="reading">레슨 본문</LessonLayout>)
     const nav = screen.getByRole('navigation', { name: '레슨 이동' })
     expect(within(nav).getByRole('link', { name: '이전 레슨: 건반' })).toHaveAttribute('href', '/learn/keyboard')
-    expect(within(nav).getByRole('link', { name: '다음 레슨: 손' })).toHaveAttribute('href', '/learn/hands')
-    expect(within(nav).queryByRole('link', { name: '다음 레슨: 연습 방법' })).toBeNull()
+    expect(within(nav).getByRole('link', { name: '다음 레슨: 악보 읽기 2' })).toHaveAttribute('href', '/learn/reading/rhythm')
+    expect(within(nav).queryByRole('link', { name: '다음 레슨: 손' })).toBeNull()
   })
 
-  it('links hands back to reading and forward to practice', () => {
+  it('links hands back to reading-rhythm and forward to practice', () => {
     render(<LessonLayout lessonId="hands">본문</LessonLayout>)
     const nav = screen.getByRole('navigation', { name: '레슨 이동' })
-    expect(within(nav).getByRole('link', { name: '이전 레슨: 악보 읽기' })).toHaveAttribute('href', '/learn/reading')
+    expect(within(nav).getByRole('link', { name: '이전 레슨: 악보 읽기 2' })).toHaveAttribute('href', '/learn/reading/rhythm')
     expect(within(nav).getByRole('link', { name: '다음 레슨: 연습 방법' })).toHaveAttribute('href', '/learn/practice')
   })
 
@@ -53,9 +53,9 @@ describe('LessonLayout', () => {
     render(<LessonLayout lessonId="reading">본문</LessonLayout>)
     const breadcrumbs = screen.getByRole('navigation', { name: '현재 위치' })
     expect(within(breadcrumbs).getByRole('link', { name: '배우기' })).toHaveAttribute('href', '/learn')
-    const current = within(breadcrumbs).getByText('악보 읽기')
+    const current = within(breadcrumbs).getByText('악보 읽기 1')
     expect(current).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByText('4단계 중 2단계')).toBeInTheDocument()
+    expect(screen.getByText('5단계 중 2단계')).toBeInTheDocument()
     expect(screen.getByText(/해 보기 · 악보 예시 듣기, 오선과 건반 연결하기/)).toBeInTheDocument()
   })
 
@@ -71,7 +71,7 @@ describe('LessonLayout', () => {
     })
     try {
       render(<LessonLayout lessonId="reading">본문</LessonLayout>)
-      expect(screen.getByText('5단계 중 2단계')).toBeInTheDocument()
+      expect(screen.getByText('6단계 중 2단계')).toBeInTheDocument()
     } finally {
       LEARN_LESSONS.pop()
     }

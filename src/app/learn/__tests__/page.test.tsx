@@ -14,7 +14,7 @@ jest.mock('@/lib/learn/course', () => {
 })
 
 const originalPieces = [...COURSE_PIECES]
-const CARD_TITLES = ['건반', '악보 읽기', '손', '연습 방법', '첫 곡 코스', '용어 사전', '내 연습 기록']
+const CARD_TITLES = ['건반', '악보 읽기 1', '악보 읽기 2', '손', '연습 방법', '첫 곡 코스', '용어 사전', '내 연습 기록']
 const cardOf = (title: string) => screen.getByRole('heading', { level: 3, name: title }).closest('[data-learn-card]') as HTMLElement
 
 beforeEach(() => {
@@ -30,7 +30,7 @@ it('has metadata, one h1, three section h2s and card h3s in order', () => {
   expect(screen.getByRole('heading', { level: 1, name: '배우기' })).toBeInTheDocument()
   expect(screen.getAllByRole('heading', { level: 2 }).map(heading => heading.textContent)).toEqual(['기초 레슨', '쳐 보기', '찾아보기'])
   expect(screen.getAllByRole('heading', { level: 3 }).map(heading => heading.textContent)).toEqual(CARD_TITLES)
-  expect(screen.getAllByRole('heading')).toHaveLength(11)
+  expect(screen.getAllByRole('heading')).toHaveLength(12)
   for (const name of ['기초 레슨', '쳐 보기', '찾아보기']) {
     expect(screen.getByRole('region', { name }).tagName).toBe('SECTION')
   }
@@ -45,7 +45,7 @@ it('links every card from its exact title with one link per card', () => {
     expect(within(card).getAllByRole('link')).toHaveLength(1)
     expect(within(card).getByRole('link', { name: title })).toBeInTheDocument()
   }
-  expect(document.querySelectorAll('[data-learn-card]')).toHaveLength(7)
+  expect(document.querySelectorAll('[data-learn-card]')).toHaveLength(8)
 })
 
 it('places lessons, the course and the reference cards in their sections', () => {
@@ -53,11 +53,11 @@ it('places lessons, the course and the reference cards in their sections', () =>
   const basics = screen.getByRole('region', { name: '기초 레슨' })
   const map = within(basics).getByRole('list', { name: '학습 단계' })
   expect(map.tagName).toBe('OL')
-  expect(within(map).getAllByRole('listitem')).toHaveLength(4)
+  expect(within(map).getAllByRole('listitem')).toHaveLength(5)
   expect(within(map).getAllByRole('link').map(link => link.getAttribute('href'))).toEqual([
-    '/learn/keyboard', '/learn/reading', '/learn/hands', '/learn/practice',
+    '/learn/keyboard', '/learn/reading', '/learn/reading/rhythm', '/learn/hands', '/learn/practice',
   ])
-  expect(within(map).getAllByText(/^\d단계$/).map(step => step.textContent)).toEqual(['1단계', '2단계', '3단계', '4단계'])
+  expect(within(map).getAllByText(/^\d단계$/).map(step => step.textContent)).toEqual(['1단계', '2단계', '3단계', '4단계', '5단계'])
   const play = screen.getByRole('region', { name: '쳐 보기' })
   expect(within(play).getAllByRole('link')).toHaveLength(1)
   expect(within(play).getByRole('link', { name: '첫 곡 코스' })).toHaveAttribute('href', '/learn/course')
@@ -103,26 +103,27 @@ it('shows unavailable fixture lessons as 준비 중 without links', () => {
   LEARN_LESSONS[1].available = false
   render(<LearnPage />)
   const items = within(screen.getByRole('list', { name: '학습 단계' })).getAllByRole('listitem')
-  expect(items).toHaveLength(4)
+  expect(items).toHaveLength(5)
   expect(within(items[0]).getByRole('link', { name: '건반' })).toHaveAttribute('href', '/learn/keyboard')
-  expect(within(items[3]).getByRole('link', { name: '연습 방법' })).toHaveAttribute('href', '/learn/practice')
-  expect(within(screen.getByRole('list', { name: '학습 단계' })).getAllByRole('link')).toHaveLength(3)
+  expect(within(items[4]).getByRole('link', { name: '연습 방법' })).toHaveAttribute('href', '/learn/practice')
+  expect(within(screen.getByRole('list', { name: '학습 단계' })).getAllByRole('link')).toHaveLength(4)
   expect(screen.getAllByText('준비 중')).toHaveLength(1)
-  expect(within(items[2]).getByRole('link', { name: '손' })).toHaveAttribute('href', '/learn/hands')
+  expect(within(items[3]).getByRole('link', { name: '손' })).toHaveAttribute('href', '/learn/hands')
   items.slice(1, 2).forEach(item => {
-    expect(within(item).getByRole('heading', { level: 3, name: '악보 읽기' })).toBeInTheDocument()
+    expect(within(item).getByRole('heading', { level: 3, name: '악보 읽기 1' })).toBeInTheDocument()
     expect(within(item).getByText('준비 중')).toBeInTheDocument()
     expect(within(item).queryByRole('link')).toBeNull()
     expect(within(item).queryByText(/시작하기/)).toBeNull()
   })
 })
 
-it('links all four published lessons without 준비 중', () => {
+it('links all five published lessons without 준비 중', () => {
   render(<LearnPage />)
   expect(screen.getByRole('link', { name: '건반' })).toHaveAttribute('href', '/learn/keyboard')
-  expect(screen.getByRole('link', { name: '악보 읽기' })).toHaveAttribute('href', '/learn/reading')
-  expect(screen.getByRole('link', { name: '연습 방법' })).toHaveAttribute('href', '/learn/practice')
+  expect(screen.getByRole('link', { name: '악보 읽기 1' })).toHaveAttribute('href', '/learn/reading')
+  expect(screen.getByRole('link', { name: '악보 읽기 2' })).toHaveAttribute('href', '/learn/reading/rhythm')
   expect(screen.getByRole('link', { name: '손' })).toHaveAttribute('href', '/learn/hands')
-  expect(within(screen.getByRole('list', { name: '학습 단계' })).getAllByRole('link')).toHaveLength(4)
+  expect(screen.getByRole('link', { name: '연습 방법' })).toHaveAttribute('href', '/learn/practice')
+  expect(within(screen.getByRole('list', { name: '학습 단계' })).getAllByRole('link')).toHaveLength(5)
   expect(screen.queryAllByText('준비 중')).toHaveLength(0)
 })

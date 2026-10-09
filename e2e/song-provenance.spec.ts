@@ -27,7 +27,8 @@ for (const version of ['1.0', '1.1']) {
     expect(count()).toBe(1)
     await intro(page).screenshot({ path: testInfo.outputPath('song-provenance.png') })
     await intro(page).getByRole('link', { name: '악보 읽기에서 박자표 익히기' }).click()
-    await expect(page).toHaveURL(/\/learn\/reading#meters$/)
+    await expect(page).toHaveURL(/\/learn\/reading\/rhythm#meters$/)
+    await expect(page.locator('h2#meters')).toBeInViewport()
   })
 }
 for (const mode of ['missing', 'absent-in-xml', 'failure'] as const) {

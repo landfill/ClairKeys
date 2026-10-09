@@ -3454,3 +3454,16 @@
 - Scope-risk: moderate
 - Directive: completedPercentage는 최대 재생 위치다. 정답률·숙련도·완료율로 이름을 바꾸지 않는다. 타인의 비공개 악보를 기록 목록에서 노출하지 않는다.
 - Related: #226, phases/LEARN-practice-history.md, D-085
+
+## D-099: 악보 읽기 레슨을 음높이와 길이·박자 두 페이지로 나눈다
+
+- Date: 2026-10-09
+- Context: #236의 운영 계측에서 `/learn/reading`은 1280×800에서 약 8000px(10화면), 390×844에서 약 9360px(11화면)로 다른 레슨의 4~5배였다. 음높이와 길이·박자는 L-4a·L-4b로 따로 만든 두 주제가 한 페이지에 이어 붙어 있었다. 사용자가 이슈의 "구현 전 결정" 1번을 제안 기본값으로 확정했다(2026-10-08).
+- Decision: `/learn/reading`은 `악보 읽기 1`(음높이: 오선, 높은음자리표, 낮은음자리표, 가운데 도, 오선과 건반 연결하기), `/learn/reading/rhythm`은 `악보 읽기 2`(길이와 박자: 음표의 길이, 쉼표, 점음표, 박자표)다. 단계 지도는 건반 → 악보 읽기 1 → 악보 읽기 2 → 손 → 연습 방법의 5단계다. 섹션 id는 그대로 두고 네 개(`note-lengths`, `rest-lengths`, `dotted-lengths`, `meters`)만 새 경로로 옮긴다. 저장소 안의 링크(용어 사전, 곡 소개)만 고치고 옛 해시 주소는 처리하지 않는다. 악보 읽기 2에서 같은 종류의 예시는 선택 버튼으로 그림 하나를 바꾸는 패널로 묶고, `음표 길이 비교` 표의 이름·박 수는 그 선택 버튼이 된다. 문장·예시 데이터·소리는 바꾸지 않는다.
+- Rejected: 한 URL 안에서 탭으로 전환 | 섹션 앵커가 탭 상태에 묶여 용어 사전·곡 소개에서 들어오는 링크가 닿지 않을 수 있고, 단계 지도에서 두 주제가 한 단계로 남는다.
+- Rejected: 접기(accordion) | 예시를 비교하려면 여러 번 눌러야 하고 훑어보기가 안 된다.
+- Rejected: 옛 해시 주소(`/learn/reading#meters` 등) 리다이렉트 | 해시는 서버에 전달되지 않아 클라이언트 스크립트가 필요하다. 공개된 지 며칠 된 주소이고 저장소 안 링크는 모두 고친다(사용자 결정 3번).
+- Confidence: high
+- Scope-risk: moderate
+- Directive: 섹션 id는 용어 사전과 곡 소개가 링크하는 계약이다. 섹션을 옮기거나 이름을 바꾸면 `src/lib/learn/glossary.ts`와 `src/components/sheet/SongIntro.tsx`의 링크, `e2e/learn-glossary.spec.ts`를 함께 맞춘다.
+- Related: #236, phases/LEARN-236-layout.md, phases/LEARN-beginner-learning.md, D-094

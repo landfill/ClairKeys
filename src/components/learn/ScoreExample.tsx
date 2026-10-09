@@ -5,7 +5,13 @@ import type { OpenSheetMusicDisplay } from 'opensheetmusicdisplay'
 import { describeRhythm, rhythmMusicXml, type RhythmExample } from '@/lib/learn/rhythm'
 import { describeExample, exampleMusicXml, type ReadingExample } from '@/lib/learn/reading'
 
-export default function ScoreExample({ example }: { example: ReadingExample | RhythmExample }) {
+export default function ScoreExample({
+  example,
+  panelExamples,
+}: {
+  example: ReadingExample | RhythmExample
+  panelExamples?: readonly (ReadingExample | RhythmExample)[]
+}) {
   const captionId = useId()
   const host = useRef<HTMLDivElement>(null)
   const frameRef = useRef<HTMLDivElement>(null)
@@ -133,7 +139,26 @@ export default function ScoreExample({ example }: { example: ReadingExample | Rh
         <div ref={host} aria-hidden="true" data-testid="score-example-svg" className="shrink-0 text-ink" />
         {status !== 'ready' && <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center px-4 text-center text-sm text-ink-muted">{status === 'failed' ? '악보 그림을 불러오지 못했어요. 아래 설명을 확인해 주세요.' : '악보 그림을 준비하고 있어요.'}</span>}
       </div>
-      <figcaption id={captionId} className="mt-2 text-sm text-ink-muted">{description}</figcaption>
+      <figcaption id={captionId} className={`mt-2 text-sm text-ink-muted ${panelExamples && panelExamples.length > 1 ? 'grid' : ''}`}>
+        {panelExamples && panelExamples.length > 1 ? (
+          panelExamples.map(item => {
+            const isCurrent = item.id === example.id
+            const itemRhythm = 'meter' in item
+            const itemDesc = itemRhythm ? describeRhythm(item) : describeExample(item)
+            return (
+              <span
+                key={item.id}
+                className={`col-start-1 row-start-1 ${isCurrent ? 'visible' : 'invisible select-none'}`}
+                aria-hidden={!isCurrent ? 'true' : undefined}
+              >
+                {itemDesc}
+              </span>
+            )
+          })
+        ) : (
+          description
+        )}
+      </figcaption>
     </figure>
   )
 }

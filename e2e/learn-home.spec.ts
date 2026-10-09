@@ -8,10 +8,11 @@ test('opens the public learning map without a sign-in redirect', async ({ page }
   await expect(page.getByRole('heading', { level: 1, name: '배우기' })).toBeVisible()
   await expect(page).toHaveTitle(/배우기/)
   const map = page.getByRole('list', { name: '학습 단계' })
-  await expect(map.getByRole('listitem')).toHaveCount(4)
-  await expect(map.getByRole('link')).toHaveCount(4)
+  await expect(map.getByRole('listitem')).toHaveCount(5)
+  await expect(map.getByRole('link')).toHaveCount(5)
   await expect(map.getByRole('link', { name: '건반' })).toHaveAttribute('href', '/learn/keyboard')
-  await expect(map.getByRole('link', { name: '악보 읽기', exact: true })).toHaveAttribute('href', '/learn/reading')
+  await expect(map.getByRole('link', { name: '악보 읽기 1', exact: true })).toHaveAttribute('href', '/learn/reading')
+  await expect(map.getByRole('link', { name: '악보 읽기 2', exact: true })).toHaveAttribute('href', '/learn/reading/rhythm')
   await expect(map.getByRole('link', { name: '손' })).toHaveAttribute('href', '/learn/hands')
   await expect(map.getByRole('link', { name: '연습 방법' })).toHaveAttribute('href', '/learn/practice')
   await expect(page.getByText('준비 중', { exact: true })).toHaveCount(0)
@@ -19,9 +20,13 @@ test('opens the public learning map without a sign-in redirect', async ({ page }
   await expect(page).toHaveURL(/\/learn\/keyboard$/)
   await expect(page.getByRole('heading', { level: 1, name: '건반' })).toBeVisible()
   await page.getByRole('link', { name: '단계 지도로 돌아가기' }).click()
-  await map.getByRole('link', { name: '악보 읽기', exact: true }).click()
+  await map.getByRole('link', { name: '악보 읽기 1', exact: true }).click()
   await expect(page).toHaveURL(/\/learn\/reading$/)
-  await expect(page.getByRole('heading', { level: 1, name: '악보 읽기', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: '악보 읽기 1', exact: true })).toBeVisible()
+  await page.getByRole('link', { name: '단계 지도로 돌아가기' }).click()
+  await map.getByRole('link', { name: '악보 읽기 2', exact: true }).click()
+  await expect(page).toHaveURL(/\/learn\/reading\/rhythm$/)
+  await expect(page.getByRole('heading', { level: 1, name: '악보 읽기 2', exact: true })).toBeVisible()
   await page.getByRole('link', { name: '단계 지도로 돌아가기' }).click()
   await map.getByRole('link', { name: '손' }).click()
   await expect(page).toHaveURL(/\/learn\/hands$/)
@@ -76,14 +81,14 @@ test('opens learning from the mobile menu and fits 320 CSS pixels', async ({ pag
   expect(overflow.bodyWidth).toBeLessThanOrEqual(overflow.clientWidth + 1)
 })
 
-const CARD_TITLES = ['건반', '악보 읽기', '손', '연습 방법', '첫 곡 코스', '용어 사전', '내 연습 기록']
+const CARD_TITLES = ['건반', '악보 읽기 1', '악보 읽기 2', '손', '연습 방법', '첫 곡 코스', '용어 사전', '내 연습 기록']
 const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
-test('makes the whole area of all seven cards hit their own link', async ({ page }) => {
+test('makes the whole area of all eight cards hit their own link', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 })
   await page.goto('/learn')
   const cards = page.locator('[data-learn-card]')
-  await expect(cards).toHaveCount(7)
+  await expect(cards).toHaveCount(8)
   for (const [index, title] of CARD_TITLES.entries()) {
     const card = cards.nth(index)
     await expect(card.getByRole('heading', { level: 3, name: title, exact: true })).toBeVisible()
@@ -128,8 +133,8 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
     await page.setViewportSize(viewport)
     await page.goto('/learn')
     const cards = page.locator('[data-learn-card]')
-    await expect(cards).toHaveCount(7)
-    for (let index = 0; index < 7; index += 1) {
+    await expect(cards).toHaveCount(8)
+    for (let index = 0; index < 8; index += 1) {
       await expect(cards.nth(index).locator(FOCUSABLE), `${CARD_TITLES[index]} 카드의 포커스 가능한 요소`).toHaveCount(1)
     }
     // WebKit은 macOS 설정에 따라 링크를 Tab 순서에서 제외한다(위 Tab·Enter 테스트와 같은 계약).
@@ -145,7 +150,7 @@ for (const viewport of [{ width: 1280, height: 800 }, { width: 390, height: 844 
       if (stop >= 0) stops.push(stop)
       else if (stops.length > 0) break
     }
-    expect(stops).toEqual([0, 1, 2, 3, 4, 5, 6])
+    expect(stops).toEqual([0, 1, 2, 3, 4, 5, 6, 7])
   })
 }
 
