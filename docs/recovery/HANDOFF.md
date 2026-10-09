@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-10-08 KST
+Last updated: 2026-10-09 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
@@ -15,14 +15,15 @@ Last updated: 2026-10-08 KST
 
 ## Next action
 
-- #236 1단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [phase 진행](phases/LEARN-236-layout.md)). Post-merge checks도 성공했다. 2단계(`codex/learn-236-lesson-layout`, 이슈 D)는 구현·로컬 검증·로컬 리뷰 2회를 마치고 [PR240](reviews/PR-240.md)을 열었다([검증](validation/2026-10-09-learn-236-stage2-lesson-layout.md)). **다음 세션은 `local-test-data/results/learn-236/next-session-prompt.md`를 읽고 이어간다.**
-  PR240에는 GitHub Codex 리뷰의 미해결 P2 2건(잘못된 해시에서 `decodeURIComponent` 예외, 낮은 뷰포트에서 옆 목차가 화면보다 김)이 있다. 처리 전에는 병합하지 않는다.
-  사용자는 PR240을 CI 통과 시 병합하고 3단계를 Gemini Flash로 진행하도록 승인했다(2026-10-09). 3단계 지시문 `stage3-brief.md`는 작성돼 있다(브랜치 `codex/learn-236-reading-split`, 미착수).
+- #236 1·2단계는 병합됐다([PR237](reviews/PR-237.md) `cdfdb7d`, [PR240](reviews/PR-240.md) `abb7cd0`, [phase 진행](phases/LEARN-236-layout.md)). **3단계(`codex/learn-236-reading-split`, 이슈 B: 악보 읽기 분리 + 전환형 예시 패널)를 진행 중이다.**
+  구현 지시문은 `local-test-data/results/learn-236/stage3-brief.md`다. `DECISIONS.md` 신규 결정(악보 읽기 2단계 분리, 단계 지도 5단계)과 `phases/LEARN-beginner-learning.md`의 단계 순서 수정은 오케스트레이터가 같은 PR에 넣는다.
+  3단계 완료 조건: 나눈 두 페이지 각각 1280×800에서 3200px 이하, 390×844에서 4220px 이하. PR을 만들고 CI·리뷰를 확인한 뒤 **멈추고 병합 승인을 받는다**(사용자가 승인한 것은 PR240 병합과 3단계 진행까지다).
   단계별 PR은 사용자 승인 뒤에만 병합하고, 병합되지 않은 브랜치 위에 다음 단계를 쌓지 않는다.
+- **PR E2E가 30분 제한을 넘기 시작했다.** PR240 마지막 head는 1124개 테스트로 3회 중 2회 취소됐고 재실행에서 29분 3초로 통과했다([PR240 로그](reviews/PR-240.md)). 3단계는 E2E를 더 늘린다.
+  취소되면 `gh run rerun <run> --failed`로 한 번 재실행하고, 다시 취소되면 멈추고 사용자에게 보고한다. 제한 상향·프로젝트별 분할은 워크플로 변경이라 별도 이슈·PR·승인이 필요하다(이슈 미등록).
   완료 조건 변경(사용자 결정 2026-10-09, 이슈 본문 반영): "링크·버튼 44×44px"에서 학습용 피아노의 **검은 건반 폭**(26×113px)은 예외다. 건반의 크기·배치는 바꾸지 않는다. 높이 기준은 유지한다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `stage<N>-brief.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
-- 후속 후보(이슈 미등록): PR E2E job이 제한 30분에 근접했다(29m30s). PR239 1차 실행은 apt 미러 지연으로 테스트 시작 전에 27분을 써서 취소됐다([PR239 로그](reviews/PR-239.md)).
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
   재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
@@ -37,6 +38,7 @@ Last updated: 2026-10-08 KST
   리뷰 지시문 끝에 "지적만 35줄 이내로 다시 출력"을 넣는다(터미널은 마지막 화면만 읽힌다). 브랜치를 바꾼 뒤 `.next/types`를 지운다.
   macOS WebKit은 Tab 포커스 단언이 설정 탓에 실패한다(CI Linux는 통과).
   **Opus 주간 한도 소진(2026-10-09 08:40경, 초기화까지 158시간 표시).** 그때까지 구현은 `gemini-3.8-flash-high`만 가능하다. Gemini Flash는 셸 명령 승인을 묻지 않고 실행했고, 2단계에서 검증으로 여러 번 되돌려 보내야 했다(추측한 값, 틀린 선택자). 지시문에 "추측하지 말고 코드에서 값을 읽어라"와 정확한 파일·줄을 적는다.
+  Gemini Flash는 지시문에 없는 `git fetch`(AGENTS의 세션 시작 절차)를 스스로 시도한 적이 있다. 승인 요청을 읽고 거절한 뒤 지시문만 따르게 한다.
   Playwright `locator.click()`은 Firefox에서 해시 진입 뒤 sticky 요소를 누를 때 스크롤을 움직인다. sticky 목차는 좌표 클릭(`clickAtCenter`)으로 누른다.
   `agy` 첫 실행 관찰(1.3.1, 2026-10-08): `--mode accept-edits`에서 파일 쓰기는 묻지 않고 되지만 **셸 명령은 읽기 명령(`ls`·`cat`·`grep`)까지 매번 승인을 묻는다**
   (1 실행 / 2·3 접두사 단위 항상 허용 / 4 취소). 오케스트레이터가 터미널을 읽어 명령을 확인하고 Enter로 승인해야 진행된다. 승인을 기다리는 동안 워커는 멈춰 있다.
