@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { COURSE_PIECES } from '../src/lib/learn/course'
 
 
 // Observe native startup without replacing its clock or claiming playback on a
@@ -75,6 +76,60 @@ test('every course piece has public original and score assets; unknown pieces re
   expect((await request.get('/learn/course/missing')).status()).toBe(404)
 })
 
+async function measureOutsideLinks(page: Page) {
+  return page.evaluate(() => {
+    const main = document.querySelector('main')
+    if (!main) throw new Error('main 없음')
+    const playbackBox = main.querySelector('[data-testid="playback-box"]')
+    const playerRoot = playbackBox?.parentElement?.parentElement ?? null
+    const links = Array.from(main.querySelectorAll<HTMLAnchorElement>('a[href]'))
+    const visibleLinks = links.filter(link => {
+      if (playerRoot && playerRoot.contains(link)) return false
+      const rect = link.getBoundingClientRect()
+      if (rect.width === 0 && rect.height === 0) return false
+      const style = window.getComputedStyle(link)
+      return style.display !== 'none' && style.visibility !== 'hidden'
+    })
+
+    const checked: string[] = []
+    const short: string[] = []
+    const stolen: string[] = []
+
+    for (const link of visibleLinks) {
+      const text = (link.textContent || '').trim().replace(/\s+/g, ' ')
+      checked.push(text)
+
+      const rect = link.getBoundingClientRect()
+      if (rect.height < 44) {
+        const w = Math.round(rect.width * 100) / 100
+        const h = Math.round(rect.height * 100) / 100
+        short.push(`${text} ${w}×${h}`)
+      }
+
+      let clientRects = Array.from(link.getClientRects())
+      const isOutside = clientRects.some(r => r.top < 0 || r.bottom > window.innerHeight || r.left < 0 || r.right > window.innerWidth)
+      if (isOutside) {
+        link.scrollIntoView({ block: 'center' })
+        clientRects = Array.from(link.getClientRects())
+      }
+
+      for (const r of clientRects) {
+        if (r.width <= 2) continue
+        const cx = Math.round(r.left + r.width / 2)
+        const cy = Math.round(r.top + r.height / 2)
+        const hit = document.elementFromPoint(cx, cy)
+        if (!hit || (!link.contains(hit) && hit !== link)) {
+          const tag = hit ? hit.tagName.toLowerCase() : 'null'
+          const hitText = hit ? (hit.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 10) : ''
+          stolen.push(`${text} @${cx},${cy} -> ${tag}:${hitText}`)
+        }
+      }
+    }
+
+    return { checked, short, stolen }
+  })
+}
+
 test('the course and player fit 320px and allow moving to the next piece', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 })
   await page.goto('/learn/course')
@@ -88,30 +143,20 @@ test('the course and player fit 320px and allow moving to the next piece', async
       if (path !== '/learn/course') {
         await expect(page.getByRole('heading', { name: '이 곡 소개' })).toBeVisible()
       }
-      await expect.poll(async () => {
-        return page.evaluate(() => {
-          const main = document.querySelector('main')
-          if (!main) return []
-          const playbackBox = main.querySelector('[data-testid="playback-box"]')
-          const playerRoot = playbackBox?.parentElement?.parentElement ?? null
-          const links = Array.from(main.querySelectorAll<HTMLAnchorElement>('a[href]'))
-          const shortLinks: string[] = []
-          for (const link of links) {
-            if (playerRoot && playerRoot.contains(link)) continue
-            const rect = link.getBoundingClientRect()
-            if (rect.width === 0 && rect.height === 0) continue
-            const style = window.getComputedStyle(link)
-            if (style.display === 'none' || style.visibility === 'hidden') continue
-            if (rect.height < 44) {
-              const text = (link.textContent || '').trim().replace(/\s+/g, ' ')
-              const w = Math.round(rect.width * 100) / 100
-              const h = Math.round(rect.height * 100) / 100
-              shortLinks.push(`${text} ${w}×${h}`)
-            }
-          }
-          return shortLinks
-        })
-      }).toEqual([])
+      await expect.poll(async () => (await measureOutsideLinks(page)).short).toEqual([])
+      await expect.poll(async () => (await measureOutsideLinks(page)).stolen).toEqual([])
+      const { checked } = await measureOutsideLinks(page)
+      if (path === '/learn/course') {
+        expect(checked).toHaveLength(6)
+        for (const title of ['다섯 손가락 자리', '느리게 재생하거나 구간을 반복하는 방법', '단계 지도로 돌아가기', ...COURSE_PIECES.map(p => p.title)]) {
+          expect(checked).toContain(title)
+        }
+      } else {
+        for (const title of ['건반 레슨에서 음역 익히기', '악보 읽기에서 음높이 연결하기', '손 레슨에서 손가락 번호 익히기', '연습 방법에서 빠르기와 연습 알아보기', '첫 곡 코스로 돌아가기']) {
+          expect(checked).toContain(title)
+        }
+        expect(checked).not.toContain('연습 방법과 단축키 보기')
+      }
     })
   }
   await page.getByRole('link', { name: '다음 곡: 두 손 인사' }).click()
