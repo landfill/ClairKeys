@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { renderToString } from 'react-dom/server.node'
 import { hydrateRoot } from 'react-dom/client'
 import { act } from '@testing-library/react'
@@ -23,6 +23,12 @@ it('provides short summaries and named lesson links with no duplicated duration'
   expect(screen.getByText('양손')).toBeInTheDocument()
   expect(screen.getByText('♩=80 (악보에서 읽음)')).toBeInTheDocument()
   for (const [name, href] of [['건반 레슨에서 음역 익히기', '/learn/keyboard'], ['악보 읽기에서 음높이 연결하기', '/learn/reading#pitch-explorer'], ['손 레슨에서 손가락 번호 익히기', '/learn/hands'], ['연습 방법에서 빠르기와 연습 알아보기', '/learn/practice']]) expect(screen.getByRole('link', { name })).toHaveAttribute('href', href)
+  const section = screen.getByRole('region', { name: '이 곡 소개' })
+  const links = within(section).getAllByRole('link')
+  expect(links).toHaveLength(4)
+  for (const link of links) {
+    expect(link).toHaveClass('min-h-11', 'inline-flex')
+  }
   expect(screen.getAllByText('0분 10초')).toHaveLength(1)
 })
 it('keeps an empty song readable', () => {
