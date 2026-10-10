@@ -11,6 +11,11 @@
 # This is the only workflow that runs on a push to `main` (test.yml used to run the same
 # gates a second time). Status records under docs/ are committed straight to `main` after
 # every unit of work; they change no code, so they run nothing (D-087).
+#
+# When a merge commit is proven to differ only in documents from a pull request head
+# that already passed PR Checks, Lint, Run Tests, and E2E Tests are skipped (D-101).
+# Security Audit always runs. A re-run repeats the same decision; to run every check
+# on a merge commit, trigger this workflow manually via workflow_dispatch.
 name: Post-merge checks
 
 on:
@@ -27,9 +32,39 @@ env:
   NEXTAUTH_URL: http://localhost:3000
 
 jobs:
+  # A merge commit usually differs from the pull request head it merged only in
+  # status records committed to main in between. That head already passed these
+  # same checks, so they run again only when this cannot be proven (D-101). An
+  # empty output, a failed step or a cancelled job all mean "run everything".
+  verified:
+    name: Detect verified merge
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      issues: read
+      pull-requests: read
+    outputs:
+      skip: ${{ steps.decide.outputs.skip }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Full history: the script walks main back to where the pull request branch last met it.
+          fetch-depth: 0
+
+      - name: Decide whether this code was already verified
+        id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: sh scripts/post-merge-verified.sh
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    needs: verified
+    if: ${{ !cancelled() && needs.verified.outputs.skip != 'true' }}
 
     steps:
       - name: Checkout code
@@ -56,6 +91,8 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    needs: verified
+    if: ${{ !cancelled() && needs.verified.outputs.skip != 'true' }}
 
     services:
       postgres:
@@ -103,12 +140,14 @@ jobs:
         run: npm test
 
   # Branch protection is not strict, so a PR can merge on checks run against an older
-  # main. This run is the only E2E evidence for the tree that was actually merged.
-  # Playwright's webServer runs `npm run build && npm start` on CI, so this job also
-  # builds the merge commit; there is no separate build job or build step.
+  # main. When code differs from the PR head, this run is the only E2E evidence for
+  # the tree that was actually merged. Playwright's webServer runs `npm run build && npm start`
+  # on CI, so this job also builds the merge commit; there is no separate build job or build step.
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
+    needs: verified
+    if: ${{ !cancelled() && needs.verified.outputs.skip != 'true' }}
     # Runs take 25-30 minutes (about 1270 tests, six browser projects, one worker); a hang would otherwise hold the runner for 360.
     timeout-minutes: 45
 
@@ -160,6 +199,8 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
+  # Security audit always runs because dependency audit results change over time
+  # with new advisories even when the application code remains identical.
   security:
     name: Security Audit
     runs-on: ubuntu-latest

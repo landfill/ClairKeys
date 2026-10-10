@@ -67,6 +67,10 @@
    ```
 
 2. main을 fast-forward하고 병합 커밋의 `Post-merge checks` 결과를 확인한다. 로컬 전체 재검증은 하지 않는다.
+   `Detect verified merge` job이 success이고 실행 요약에 PR 번호·head·근거 링크가 있을 때만 검증된 생략이다(D-101).
+   `Lint`·`Run Tests`·`E2E Tests`가 skipped라는 것만으로 판단하지 않는다(실행을 취소해도 skipped로 보인다).
+   리뷰 로그에 "Post-merge: 건너뜀(코드가 PR head `<sha>`와 같음), 근거 PR Checks `<실행 링크>`"로 적는다. 근거 링크는 실행 요약에 있다.
+   병합 커밋을 강제로 전부 검증하려면 `gh workflow run deploy.yml --ref main`을 쓴다(재실행은 같은 판정으로 다시 건너뛴다).
 3. `git fetch --prune origin` 후 로컬·원격 tip이 main에 포함됐는지 `git rev-list --count main..<tip>`으로 확인한다.
 4. 사용자 미커밋 변경 또는 고유 커밋이 있으면 두 브랜치를 보존하고 HANDOFF에 blocker를 기록한다.
 5. 모두 포함되면 `git push origin --delete <branch>` → main 이동 → `git branch -d <branch>` 순서로 정리한다.

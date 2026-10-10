@@ -65,5 +65,6 @@ npx playwright test application-smoke.spec.ts
 영원히 대기 상태가 되므로 브랜치 보호 설정도 함께 바꿔야 한다.
 
 `.github/workflows/deploy.yml`(Post-merge checks)은 `main` push에서 Lint·Run Tests·E2E Tests·Security Audit을
-한 번씩 실행한다. `docs/`·`*.md`만 바꾼 push(상태 기록)는 실행하지 않는다. 배포는 하지 않으며 Vercel Git 연동이
+한 번씩 실행한다. `docs/`·`*.md`만 바꾼 push(상태 기록)는 실행하지 않는다. 병합 커밋의 코드가 PR에서 통과한 head와
+같으면(`scripts/post-merge-verified.sh`) Lint·Run Tests·E2E Tests를 건너뛰고 Security Audit만 돈다(D-101). 배포는 하지 않으며 Vercel Git 연동이
 담당한다 — 자세한 내용은 [deployment.md](deployment.md).
