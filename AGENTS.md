@@ -28,6 +28,8 @@
     `docs/`·`*.md`만 바꾼 변경은 편집 문서의 링크 확인으로 충분하다(CI도 `Lint`만 돈다). 그래도 결과는 validation에 남긴다.
   - 로컬 Playwright는 변경 영역 spec을 필요한 브라우저로만 돌린다. 6개 브라우저 전체 E2E와 production build는 PR CI가 맡는다.
   - CI가 통과시킨 커밋을 로컬에서 다시 전체 검증하지 않는다. 병합 후 main은 병합 커밋의 `Post-merge checks` 결과로 확인한다.
+    병합 커밋의 코드가 PR에서 통과한 head와 같으면 이 실행은 Lint·단위 테스트·E2E를 건너뛴다(D-101).
+    그때의 근거는 그 head의 PR Checks 실행이며, 건너뛴 실행을 병합 후 E2E 통과로 기록하지 않는다.
   - CI가 대신할 수 없는 확인(preview·운영 화면, 실기기, OMR VM, 운영 DB)은 그대로 수행하고 기록한다.
 - 스펙·phase와 달라야 한다면 관련 phase와 `docs/recovery/DECISIONS.md`에 이유를 먼저 기록한 뒤 구현한다.
 - 모든 커밋은 Lore 형식을 따른다. Lore에 정의된 trailer key만 허용하며 `Co-Authored-By:`·`Claude-Session:` 등 에이전트 서명을 넣지 않는다.
