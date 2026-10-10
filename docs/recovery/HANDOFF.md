@@ -6,7 +6,12 @@ Last updated: 2026-10-10 KST
 
 ## Current phase
 
-**진행 중인 작업 없음.** [#236](https://github.com/landfill/ClairKeys/issues/236) 배우기 영역 화면 구성 개편은 다섯 단계가 모두 병합되고 이슈가 종료됐다(2026-10-09).
+**[#250](https://github.com/landfill/ClairKeys/issues/250) 코드가 같은 병합의 Post-merge 검사 생략 — 구현·로컬 검증 완료, PR 생성 승인 대기.**
+브랜치 `codex/ci-250-postmerge-skip`(`a30520e` 구현, `d5748f4` 규약 문서, 푸시됨). [phase](phases/CI-250-postmerge-skip.md)(브랜치에 있다) · [검증](validation/2026-10-10-ci-250-postmerge-skip.md) · D-101(브랜치).
+병합 뒤 확인할 것: 이 PR의 병합 커밋에서 `Detect verified merge`가 건너뛰기를 판정하는지, `gh workflow run deploy.yml --ref main`이 전부 도는지(phase 완료 조건).
+지시문·보고는 git 제외 `local-test-data/results/ci-250/`(`impl-brief.md`, `impl-fix1~6.md`, `impl-report.md`, `review-brief.md`, `review-brief2.md`).
+
+그 전 작업: [#236](https://github.com/landfill/ClairKeys/issues/236) 배우기 영역 화면 구성 개편은 다섯 단계가 모두 병합되고 이슈가 종료됐다(2026-10-09).
 [완료 조건 대조](validation/2026-10-09-learn-236-completion-audit.md) · [phase](phases/LEARN-236-layout.md) · D-099·D-100.
 다음 작업은 사용자가 정한다. 앞으로 할 작업은 GitHub 이슈로 먼저 등록한다.
 
@@ -28,7 +33,7 @@ Last updated: 2026-10-10 KST
 - E2E job 제한은 45분이다([#242](https://github.com/landfill/ClairKeys/issues/242) 종료, [PR243](reviews/PR-243.md) `2f7d9ac`). 스위트는 1284개(프로젝트당 214개 × 6, 한 worker)이고 2026-10-09의 실행은 31~36분이었다. **PR244 병합 커밋의 Post-merge E2E는 45분 제한으로 한 번 취소됐고 재실행에서 통과했다.**
   제한을 다시 올리지 말고 병렬로 돌린다: [#246](https://github.com/landfill/ClairKeys/issues/246)(2026-10-09 등록, 미착수. 이슈 등록만으로 PR을 만들지 않는다).
   2026-10-10 사용자 지시로 범위를 넓혔다: 먼저 CI `workers`를 2·4로 올린 실측을 하고, 그것으로 충분하면 job을 나누지 않는다(이슈의 결정 4). job을 나눌 때만 결정 1~3(필수 검사 이름, 묶는 단위, 빌드 공유)을 정한다.
-  [#250](https://github.com/landfill/ClairKeys/issues/250) 등록(2026-10-10, 미착수): 병합 커밋의 코드가 PR에서 통과한 head와 같으면 Post-merge 검사를 건너뛴다. 최근 병합 14건 중 12건이 문서만 달랐다. D-087 3·4항과 AGENTS·WORKFLOW의 병합 후 확인 문구를 같은 PR에서 고쳐야 한다.
+  Post-merge 재실행 생략은 #250으로 진행 중이다(위 Current phase).
   단계별 PR을 이슈 통합 브랜치에 묶어 main에는 한 번만 병합하는 안은 등록하지 않았다(사용자 미결정, AGENTS "한 PR에는 하나의 단계" 변경 필요). 취소된 실행은 실패한 테스트 이름을 남기지 않는다. 점 리포터의 순번을 `npx playwright test --list --project=chromium`과 대조해 찾는다.
   라우트나 앵커를 옮긴 뒤에는 변경 영역 spec만이 아니라 **전체 E2E를 로컬에서 Chromium·Firefox로** 돌린다(약 2분, 5 workers). PR241에서 범위 밖 spec 하나를 놓쳐 CI에서 실패했다.
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
@@ -37,6 +42,9 @@ Last updated: 2026-10-10 KST
   재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
 - LEARN이 남긴 제약: 터치 재생 전 요소 수 합계가 기준과 같다(27). 재생 화면에 요소를 더하려면 다른 것을 빼야 한다(D-094 6항, `e2e/playback-element-count.spec.ts`).
   실기기 터치·회전, 실제 MIDI, 청취, 스크린리더는 미검증이다. 운영 비공개 원본 보호의 후속 읽기 확인은 아래 근거를 따른다.
+- 워커 운영 메모 추가(#250, 2026-10-10): `agy` 1.3.3은 여러 줄 셸 명령의 승인 창에 앞부분만 보여 준다(`⋯ (N lines hidden)`). 지시문에 "셸에서 실험하지 않는다"를 넣고 검증 명령만 돌리게 하면 승인이 줄어든다.
+  Gemini Flash가 쓴 테스트는 통과해도 의도한 조건을 지키지 않을 수 있다(#250에서 3건). 조건을 하나씩 무력화해 테스트가 실패하는지 본다.
+  Codex 주간 한도 8% 남음(2026-10-10 22:29). Codex가 `gpt-6-luna` 전환을 제안하면 받지 않는다.
 - 워커 운영 메모(#236, 사용자 지시 2026-10-08): 구현은 Antigravity CLI `agy --model claude-opus-5-5-high --mode accept-edits`
   (한도에 가까우면 `agy --model gemini-3.8-flash-high --mode accept-edits`, 이 두 모델 밖의 전환 제안은 받지 않는다),
   리뷰는 `codex --model gpt-6.1-sol -c model_reasoning_effort="high" -s read-only -a never`. 둘 다 Orca 새 터미널에 대화형으로 띄우고 쓰지 않으면 닫는다.
