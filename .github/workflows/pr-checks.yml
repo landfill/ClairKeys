@@ -1,5 +1,10 @@
 name: PR Checks
 
+# The post-merge workflow skips checks this run already passed, and has to know
+# which pull request and base branch a run verified; after the merge the run
+# no longer lists its pull request, so the title carries both (D-101).
+run-name: PR Checks for #${{ github.event.pull_request.number }} into ${{ github.event.pull_request.base.ref }}
+
 on:
   pull_request:
     branches: [ main, develop ]
