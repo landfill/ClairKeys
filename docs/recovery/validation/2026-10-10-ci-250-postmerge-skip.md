@@ -88,6 +88,7 @@ PR251의 첫 PR Checks 실행 제목이 `PR Checks for`였다. `run-name` 값에
 | 병합 커밋 `200d7a1`의 Post-merge [run 38101231066](https://github.com/landfill/ClairKeys/actions/runs/38101231066) | `Detect verified merge` success(8초), 로그 `Skipping: pull request #251 head 579f3db… only in documents.` Lint·Run Tests·E2E Tests skipped, Security Audit success. 전체 38초 |
 | 판정 job의 토큰 권한 | 네 API 호출(`commits/<sha>/pulls`, `issues/<n>/events`, `actions/runs`, `actions/runs/<id>/jobs`)이 모두 됐다(건너뛰기 판정까지 도달) |
 | 병합 직후 `commits/<sha>/pulls` | 병합된 PR을 바로 돌려줬다(push 4초 뒤 시작한 job에서) |
+| 수동 실행 `gh workflow run deploy.yml --ref main` [run 38101296805](https://github.com/landfill/ClairKeys/actions/runs/38101296805) (`200d7a1`, 같은 커밋) | 판정 로그 `Running all checks: event 'workflow_dispatch' is not push.` Lint(0.6분)·Run Tests(1.4분)·E2E Tests(34.9분)·Security Audit 모두 success. 병합 커밋 `200d7a1`의 전체 검사는 이 실행이 근거다 |
 | 브랜치가 갈라진 뒤 main에 문서 커밋 2개(`5a18885`, `089ea83`)가 있었다 | 문서 차이는 판정에 걸리지 않았다 |
 
 이전 병합들의 Post-merge는 25~36분이었다(2026-10-09의 다섯 실행).
@@ -96,5 +97,4 @@ PR251의 첫 PR Checks 실행 제목이 `PR Checks for`였다. `run-name` 값에
 
 - 실제 실행에서 코드가 **다른** 병합이 전부 도는 것은 아직 관측하지 못했다(그런 병합이 생겨야 한다). 테스트와 #241·#234에 대한 읽기 전용 실행으로만 확인했다.
 - 마지막 수정(실행 제목 대조)은 로컬 재리뷰를 받지 않았다. Codex 주간 한도가 8% 남아 PR의 자동 리뷰에 맡겼다.
-- `workflow_dispatch`의 전체 실행은 [run 38101296805](https://github.com/landfill/ClairKeys/actions/runs/38101296805)로 확인 중이다(이 기록을 쓸 때 진행 중).
 - 구현 워커의 셸 명령은 허용 목록으로 걸러 자동 승인했다. 여러 줄 명령은 터미널이 앞부분만 보여 줘서 첫 단어(`jq`)만 보고 승인한 것이 7건 있다. 가려진 `python3` 명령 1건은 거절했다.
