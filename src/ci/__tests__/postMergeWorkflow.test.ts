@@ -108,4 +108,80 @@ describe('post-merge workflow', () => {
       expect(declaredJobs).toContain(needed)
     }
   })
+
+  // Verifies the verified job configuration to ensure it uses the detection script with depth 0.
+  it('detects verified merges using fetch-depth 0 and outputs skip', () => {
+    const verified = workflow.split(/^  verified:\s*$/m)[1].split(/^  [a-z-]+:\s*$/m)[0]
+    expect(verified).toContain('fetch-depth: 0')
+    expect(verified).toContain('run: sh scripts/post-merge-verified.sh')
+    expect(verified).toContain('skip: ${{ steps.decide.outputs.skip }}')
+  })
+
+  // Permissions for verified job must be strictly read-only for actions, contents, issues, and pull-requests.
+  it('grants verified job only the required read permissions with no write permissions', () => {
+    const verified = workflow.split(/^  verified:\s*$/m)[1].split(/^  [a-z-]+:\s*$/m)[0]
+    expect(verified).toContain('actions: read')
+    expect(verified).toContain('contents: read')
+    expect(verified).toContain('issues: read')
+    expect(verified).toContain('pull-requests: read')
+    expect(verified).not.toContain('write')
+  })
+
+  // Gates lint, test, and e2e on the verified job output unless cancelled.
+  it('gates lint, test, and e2e on the verified job', () => {
+    for (const job of ['lint', 'test', 'e2e']) {
+      const block = workflow.split(new RegExp(`^  ${job}:\\s*$`, 'm'))[1].split(/^  [a-z-]+:\s*$/m)[0]
+      expect(block).toContain('    needs: verified\n')
+      expect(block).toContain("    if: ${{ !cancelled() && needs.verified.outputs.skip != 'true' }}\n")
+    }
+  })
+
+  // Security audit must always run because npm audit is date-sensitive and independent of code equality.
+  it('leaves security audit unconditional with no needs or if gate', () => {
+    const security = workflow.split(/^  security:\s*$/m)[1]
+    expect(security).not.toContain('needs:')
+    expect(security).not.toContain('if:')
+  })
+
+  // Ensures failure in the verification step does not cause checks to be skipped.
+  it('references needs.verified only in the inverted skip check across the workflow', () => {
+    const lines = workflow
+      .split('\n')
+      .filter((line) => line.includes('needs.verified'))
+    expect(lines).toHaveLength(3)
+    for (const line of lines) {
+      expect(line).toBe("    if: ${{ !cancelled() && needs.verified.outputs.skip != 'true' }}")
+    }
+  })
+
+  // Keeps doc exclusion paths aligned across deploy.yml, pr-checks.yml, and post-merge-verified.sh.
+  it('aligns document exclusion paths between script and pr-checks', () => {
+    const script = readFileSync(join(process.cwd(), 'scripts/post-merge-verified.sh'), 'utf8')
+    const prChecks = readFileSync(join(process.cwd(), '.github/workflows/pr-checks.yml'), 'utf8')
+
+    expect(script).toContain("':(exclude)docs'")
+    expect(script).toContain("':(exclude,glob)**/*.md'")
+    expect(prChecks).toContain("- '!docs/**'")
+    expect(prChecks).toContain("- '!**/*.md'")
+  })
+
+  // Ensures the detection script checks exactly the names defined as jobs in pr-checks.yml.
+  it('checks the four required PR check job names defined in pr-checks.yml', () => {
+    const script = readFileSync(join(process.cwd(), 'scripts/post-merge-verified.sh'), 'utf8')
+    const prChecks = readFileSync(join(process.cwd(), '.github/workflows/pr-checks.yml'), 'utf8')
+
+    const requiredNames = ['Lint', 'Run Tests', 'E2E Tests', 'Security Audit']
+    for (const name of requiredNames) {
+      expect(script).toContain(name)
+      expect(prChecks).toContain(`    name: ${name}`)
+    }
+  })
+
+  // Verifies that the detection script targets pr-checks.yml directly and avoids check-runs API.
+  it('targets pr-checks.yml directly and avoids check-runs API', () => {
+    const script = readFileSync(join(process.cwd(), 'scripts/post-merge-verified.sh'), 'utf8')
+    expect(script).toContain('.github/workflows/pr-checks.yml')
+    expect(existsSync(join(process.cwd(), '.github/workflows/pr-checks.yml'))).toBe(true)
+    expect(script).not.toContain('check-runs')
+  })
 })

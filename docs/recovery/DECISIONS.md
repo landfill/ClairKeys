@@ -3481,3 +3481,44 @@
 - Scope-risk: narrow
 - Directive: 용어 id(`src/lib/learn/glossary.ts`)는 레슨 본문 링크가 가리키는 계약이다. 용어를 빼거나 id를 바꾸면 `GlossaryTermLink`를 쓰는 레슨과 `e2e/learn-glossary.spec.ts`를 함께 맞춘다. 찾기 상태를 저장하거나 주소에 싣지 않는다.
 - Related: #236, #225, phases/LEARN-236-layout.md, phases/LEARN-followups.md, D-099
+
+## D-101: 병합된 코드가 PR에서 통과한 head와 같으면 Post-merge 검사를 다시 돌리지 않는다
+
+- Date: 2026-10-10
+- Status: Accepted by the user on 2026-10-10 (issue #250); merge pending
+- Context: D-087은 병합 커밋마다 Post-merge 검사를 한 번 돌리게 했다(3항 "병합 커밋마다 근거가 필요하다", 4항 "병합된 트리의
+  E2E는 여기서 한 번 돈다"). 상태 기록을 main에 직접 커밋하므로 병합 커밋의 트리는 PR head와 항상 다르지만, 최근 병합 14건 중
+  12건은 `docs/**`·`**/*.md`에서만 달랐다. 그 12건은 PR에서 통과한 것과 같은 코드를 약 30분 들여 다시 검증했다.
+- Decision:
+  1. `deploy.yml`의 판정 job이 아래를 모두 증명하면 Lint·Run Tests·E2E Tests를 건너뛴다. 이 경우 병합된 코드의 근거는
+     그 head의 PR Checks 실행이다. D-087 3·4항을 이렇게 고친다.
+     - 이 push는 base가 `main`인 PR의 병합 커밋이고, 둘째 부모가 그 PR의 head다.
+     - 그 PR의 base가 한 번도 바뀌지 않았다.
+     - 브랜치가 main과 마지막으로 만난 뒤 main의 first-parent 커밋 중 `docs/**`·`**/*.md` 밖을 건드린 것이 없다.
+     - 병합 커밋과 head 사이에 `docs/**`·`**/*.md` 밖의 차이가 없다.
+     - 그 head에서 돈 `pr-checks.yml`의 `pull_request` 실행이 하나 이상 있고, 전부 이 PR이 main을 base로 돈 실행이며
+       (실행 제목 `PR Checks for #<n> into main`), 전부 success이고, 실행마다 `Lint`·`Run Tests`·`E2E Tests`·
+       `Security Audit` job이 success다.
+     PR 검사는 head가 아니라 head와 그때의 base를 합친 트리를 검증한다. 그래서 코드가 같다는 것만으로는 부족하고,
+     base가 계속 main이었고 그 사이 main의 코드가 움직이지 않았다는 것까지 본다(리뷰 P1).
+  2. 증명하지 못하면 전부 돌린다. 판정 job의 실패·취소·빈 출력, API 오류, PR을 거치지 않은 push, 수동 실행, squash 병합,
+     같은 이름의 검사가 하나라도 success가 아닌 경우가 모두 여기에 든다.
+  3. Security Audit은 건너뛰지 않는다. 코드가 같아도 권고 DB에 따라 결과가 달라진다.
+  4. "문서"의 정의는 `pr-checks.yml`의 변경 감지, `deploy.yml`의 `paths-ignore`, 판정 스크립트 세 곳이 같다.
+  5. PR head는 API로 찾고 코드 비교는 전체 이력을 받은 checkout의 `git diff`·`git log`로 한다. 검사 결과는 이름만 보는
+     check-runs가 아니라 워크플로 경로와 이벤트로 거른 Actions 실행과 그 job에서 읽는다.
+  6. `pr-checks.yml`은 `run-name`으로 실행 제목에 PR 번호와 base를 싣는다. 병합 뒤에는 실행 객체가 PR을 알려 주지 않아
+     (`pull_requests`가 빈 배열) 같은 head의 다른 PR 실행과 구분할 방법이 제목뿐이다(재리뷰 P1).
+- Rejected: 네 job을 모두 건너뛰기(이슈의 제안 기본값) | `npm audit`는 날짜에 따라 달라져 PR 실행이 병합 시점의 근거가 되지 못한다. 2분이라 대기에도 영향이 없다.
+- Rejected: compare API로 파일 목록 비교 | 300개에서 잘려 그 뒤의 코드 변경을 놓칠 수 있다.
+- Rejected: 브랜치 보호를 strict로 바꿔 PR이 항상 최신 main을 검증하게 하기 | 상태 기록이 main에 자주 들어가 PR마다 재실행이 늘어난다.
+- Rejected: 병합 커밋의 둘째 부모만으로 head 정하기 | 로컬에서 만든 병합 커밋을 PR 병합으로 오인한다. API가 준 head와 둘째 부모가 같은지는 확인한다.
+- Rejected: `commits/<head>/check-runs`에서 네 이름의 성공 확인 | 같은 head의 다른 워크플로·다른 PR의 성공이 섞이고 기본 `filter=latest`가 실패한 실행을 가릴 수 있다(리뷰 P1).
+- Rejected: head와 병합 커밋의 코드 비교만으로 판정 | base가 바뀐 PR이나 main에서 되돌려진 변경이 있으면 검증된 트리와 병합된 트리가 다르다(리뷰 P1).
+- Confidence: medium
+- Scope-risk: moderate
+- Reversibility: clean
+- Directive: 건너뛴 실행을 병합 후 E2E 통과로 기록하지 마라. 리뷰 로그에 "건너뜀"과 근거 PR Checks 실행을 적는다.
+  판정 조건을 바꿀 때는 "확신이 없으면 전부 돌린다" 방향을 지키고 `src/ci/__tests__/postMergeVerified.test.ts`에 경우를 먼저 더한다.
+  병합 커밋을 강제로 전부 검증하려면 재실행이 아니라 `workflow_dispatch`를 쓴다. 앱이 읽는 `.md` 파일을 만들면 세 곳의 경로 정의를 함께 고친다(D-087 Directive).
+- Related: #250, phases/CI-250-postmerge-skip.md, D-087, D-088, #246
