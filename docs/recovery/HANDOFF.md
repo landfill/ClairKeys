@@ -6,7 +6,12 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**진행 중인 작업 없음.** [#250](https://github.com/landfill/ClairKeys/issues/250) 코드가 같은 병합의 Post-merge 검사 생략은 [PR251](reviews/PR-251.md) `200d7a1`로 병합됐다(2026-10-11).
+**[#246](https://github.com/landfill/ClairKeys/issues/246) E2E 병렬화 — 0단계(workers 실측) 진행 중.** 사용자 지시(2026-10-11): 구현은 Codex 워커를 Orca 터미널에 띄우고, 워크트리 없이 브랜치로만 작업한다.
+브랜치 `codex/ci-246-e2e-parallel`: `PLAYWRIGHT_WORKERS`로 CI worker 수를 정하게 한 커밋과, 그 브랜치의 push에서만 도는 **임시 측정 워크플로** `e2e-measure.yml`(workers 2·4 × 3회, [run 38119875545](https://github.com/landfill/ClairKeys/actions/runs/38119875545)).
+측정 워크플로는 main에 병합하지 않는다. PR을 만들기 전에 지운다. 측정 뒤 이슈의 결정 4(workers만으로 충분한가)를 정한다.
+지시문·보고는 git 제외 `local-test-data/results/ci-246/`. 구현 워커: `codex --model gpt-6.1-sol -c model_reasoning_effort="high" -s workspace-write -a never`.
+
+그 전 작업: [#250](https://github.com/landfill/ClairKeys/issues/250) 코드가 같은 병합의 Post-merge 검사 생략은 [PR251](reviews/PR-251.md) `200d7a1`로 병합됐다(2026-10-11).
 [phase](phases/CI-250-postmerge-skip.md) · [검증](validation/2026-10-10-ci-250-postmerge-skip.md) · D-101.
 수동 실행 38101296805이 같은 커밋에서 전부 돌아 통과했다. 남은 관측 하나: 코드가 다른 병합(브랜치가 갈라진 뒤 main에 코드가 들어온 경우)이 실제로 전부 도는지. 그런 병합이 생기면 판정 로그의 `Running all checks:` 줄을 검증 기록에 더한다.
 **병합 후 확인이 바뀌었다(D-101):** 병합 커밋의 코드가 PR head와 같으면 Post-merge는 Lint·단위 테스트·E2E를 건너뛴다. `Detect verified merge`가 success이고 로그에 `Skipping:`이 있을 때만 검증된 생략이다. 리뷰 로그에는 "건너뜀"과 근거 PR Checks 실행을 적는다(WORKFLOW §4).
