@@ -67,9 +67,14 @@ export default function LessonToc({ sections, children }: LessonTocProps) {
 
     const update = () => {
       const headings = ids.map(id => document.getElementById(id))
-      const tops = headings.map(heading => heading?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY)
+      const rects = headings.map(heading => heading?.getBoundingClientRect())
+      const tops = rects.map(rect => rect?.top ?? Number.POSITIVE_INFINITY)
       const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
-      if (!atBottom) chosenIdRef.current = null
+      const chosenRect = chosenIdRef.current ? rects[ids.indexOf(chosenIdRef.current)] : undefined
+      // 늦은 hashchange나 같은 프레임 안의 스크롤에서도 화면 밖의 선택을 되살리지 않는다.
+      if (!atBottom || !chosenRect || chosenRect.bottom <= 0 || chosenRect.top >= window.innerHeight) {
+        chosenIdRef.current = null
+      }
       const index = getActiveSectionIndex(
         tops,
         ACTIVE_SECTION_BASELINE,

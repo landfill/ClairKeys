@@ -208,6 +208,40 @@ describe('LessonToc', () => {
     expect(asideLink('섹션 2')).toHaveAttribute('aria-current', 'location')
   })
 
+  it.each(['before', 'after'])('does not retain an offscreen anchor when hashchange arrives %s the jump to the document end', (hashTiming) => {
+    render(<LessonToc sections={sections}>{headings}</LessonToc>)
+    flushFrames()
+    scrollTo({ 'sec-1': -1500, 'sec-2': -500, 'sec-3': 100, 'sec-4': 1100 })
+    expect(asideLink('섹션 3')).toHaveAttribute('aria-current', 'location')
+
+    fireEvent.click(asideLink('섹션 1'))
+    window.history.replaceState(null, '', '/#sec-1')
+    // Native anchor navigation reaches the first heading. Its scroll update and
+    // the subsequent jump can share one RAF, so no non-bottom update clears the choice.
+    tops = { 'sec-1': 96, 'sec-2': 1096, 'sec-3': 2096, 'sec-4': 3096 }
+    fireEvent.scroll(window)
+    if (hashTiming === 'before') fireEvent(window, new Event('hashchange'))
+    else {
+      flushFrames()
+      expect(asideLink('섹션 1')).toHaveAttribute('aria-current', 'location')
+    }
+
+    setScrollHeight(window.innerHeight + window.scrollY)
+    scrollTo({ 'sec-1': -2500, 'sec-2': -1500, 'sec-3': -500, 'sec-4': 500 })
+    if (hashTiming === 'after') {
+      expect(asideLink('섹션 4')).toHaveAttribute('aria-current', 'location')
+      // The URL still names the first heading even though the reader moved on.
+      fireEvent(window, new Event('hashchange'))
+      flushFrames()
+    }
+
+    expect(document.querySelector('aside a[aria-current]')).toHaveAttribute('href', '#sec-4')
+    expect(asideLink('섹션 4')).toHaveAttribute('aria-current', 'location')
+    expect(mobileLink('섹션 4')).toHaveAttribute('aria-current', 'location')
+    expect(document.querySelector('summary')).toHaveTextContent('섹션 4')
+    expect(asideLink('섹션 1')).not.toHaveAttribute('aria-current')
+  })
+
   it.each(['/#%', '/#%E0%A4%A'])('does not crash on malformed URL hash %s and falls back to scroll position', (path) => {
     window.history.replaceState(null, '', path)
     expect(() => {
