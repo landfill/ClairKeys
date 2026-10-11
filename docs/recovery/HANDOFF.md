@@ -6,7 +6,7 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**#253·#254 처리 중**(사용자 지시 2026-10-11). #253은 화면 밖의 앵커 선택이 문서 끝에서 남거나 늦은 hashchange로 되살아나는 제품 결함을 재현·수정했다. [phase](phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md). #254는 macOS 기본·부하 반복에서 미재현이며 Linux CI 계측이 다음 행동이다. 각각 별도 PR, 병합 승인은 아직 없다.
+**#253·#254 처리 중**(사용자 지시 2026-10-11). #253은 화면 밖의 앵커 선택이 문서 끝에서 남거나 늦은 hashchange로 되살아나는 제품 결함을 재현·수정했다. [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-253-lesson-toc/docs/recovery/phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 리뷰·CI](reviews/PR-255.md). #254는 macOS 기본·부하 반복에서 미재현이며 Linux CI 계측이 다음 행동이다. 각각 별도 PR, 병합 승인은 아직 없다.
 
 [#246](https://github.com/landfill/ClairKeys/issues/246) CI의 E2E를 worker 2개로 돌리는 변경은 [PR252](reviews/PR-252.md) `988824d`로 병합됐다(2026-10-11).
 [phase](phases/CI-246-e2e-parallel.md) · [실측·검증](validation/2026-10-11-ci-246-e2e-workers.md) · D-102. E2E job은 31~36분에서 19~25분이 됐다(worker 2개의 네 실행, 실패 0). worker 4개는 WebKit 계열에서 실패해 쓰지 않는다.
