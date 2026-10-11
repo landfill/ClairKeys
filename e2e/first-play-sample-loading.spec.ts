@@ -81,6 +81,7 @@ const viewports = [
 for (const viewport of viewports) {
   test(`fetches the samples before 재생 and shows the wait on ${viewport.name}`, async ({ page, browserName }) => {
     const { release, sampleRequests } = await serveFixture(page)
+    await page.clock.install({ time: new Date('2026-10-11T00:00:00Z') })
     await page.setViewportSize({ width: viewport.width, height: viewport.height })
     await page.goto('/sheet/1')
 
@@ -89,14 +90,27 @@ for (const viewport of viewports) {
     // Prefetch starts once the page is idle, before any click.
     await expect.poll(() => sampleRequests.length, { timeout: 10000 }).toBeGreaterThan(0)
 
+    // Held responses alone cannot hold the bounded sample wait on a slow host.
+    // Let prefetch run, then freeze its deadline before the play click.
+    await page.clock.pauseAt(new Date('2026-10-11T01:00:00Z'))
     await play.click()
 
     // Held samples keep the start waiting (up to SAMPLE_LOAD_WAIT_MS): the
     // pressed button and the note area both say so. A browser whose audio
     // cannot start never reaches that wait; as in playback-session-transition,
     // only headless Firefox on a runner without audio output has done that.
-    const waited = await expect(play)
-      .toHaveAttribute('aria-busy', 'true', { timeout: 5000 })
+    // aria-busy follows the 200ms loading indicator. Tick only once the bank
+    // wait disables the button, allowing an asynchronously registered timer
+    // to appear on the next poll; cap ticks below the 2500ms sample deadline.
+    let indicatorTimeMs = 0
+    const waited = await expect.poll(async () => {
+      if (await play.isDisabled() && indicatorTimeMs < 1000) {
+        await page.clock.runFor(250)
+        indicatorTimeMs += 250
+      }
+      return play.getAttribute('aria-busy')
+    }, { timeout: 5000 })
+      .toBe('true')
       .then(() => true, () => false)
     if (!waited) {
       expect(browserName, 'the start never waited for the samples in a browser that can play audio').toBe('firefox')
@@ -109,6 +123,7 @@ for (const viewport of viewports) {
     if (viewport.noteAreaOnScreen) await expect(page.getByTestId('sample-loading')).toBeInViewport()
 
     release()
+    await page.clock.resume()
 
     const started = await page
       .getByTestId('compact-playback-bar')

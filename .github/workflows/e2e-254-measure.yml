@@ -40,8 +40,8 @@ jobs:
       - run: npx prisma generate
       - run: npx prisma db push
       - run: npx playwright install --with-deps webkit
-      - name: Repeat original test and collect geometry without retries
-        run: npx playwright test e2e/first-play-sample-loading.spec.ts e2e/sample-wait-diagnostic.spec.ts --project=webkit --project='Mobile Safari' --repeat-each=10 --retries=0 --trace=on --reporter=line,json
+      - name: Repeat corrected sample wait test without retries
+        run: npx playwright test e2e/first-play-sample-loading.spec.ts --project=webkit --project='Mobile Safari' --repeat-each=10 --retries=0 --trace=on --reporter=line,json
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: e2e-results.json
       - uses: actions/upload-artifact@v4
