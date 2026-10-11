@@ -6,7 +6,7 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**루트 README 현행화 #257 진행 중**(사용자 요청 2026-10-11). [이슈](https://github.com/landfill/ClairKeys/issues/257) · [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/doc-readme-current/docs/recovery/phases/DOC-257-readme.md). 루트 README만 현재 기능·변환/저장 흐름·설정·한계·개발 절차와 대조해 고친다. 제품 코드·DB·설정은 바꾸지 않는다. 문서 전용 검증·PR CI·리뷰 후 대상 PR 병합 승인이 필요하다.
+**루트 README 현행화 #257 반영 완료, 브랜치 정리 중**(2026-10-11). 사용자 추가 지시로 PR 없이 `dcf6585`를 main에 직접 push했다. [phase](phases/DOC-257-readme.md) · [코드 대조·검증·리뷰·직접 반영](validation/2026-10-11-doc-257-readme.md). 제품 코드·DB·설정은 바꾸지 않았다. #257은 종료했으며 직접 문서 push의 CI는 실행되지 않았다.
 
 ## Next action
 
