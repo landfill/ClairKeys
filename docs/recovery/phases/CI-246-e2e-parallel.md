@@ -1,6 +1,6 @@
 # CI의 E2E를 worker 2개로 병렬 실행 (#246)
 
-Status: IN_PROGRESS
+Status: DONE
 Date: 2026-10-11
 
 ## Objective
@@ -48,3 +48,7 @@ job을 나누지 않고 CI의 worker를 2로 올린다(이슈 결정 4의 가). 
 ## Progress
 
 - 2026-10-11: 0단계 구현(Codex `gpt-6.1-sol`)·측정, 1단계 구현(같은 워커). 로컬 리뷰는 하지 않았다.
+- 2026-10-11: [PR252](../reviews/PR-252.md) 병합(`988824d`). PR의 E2E는 worker 2개로 19.2분, 실패 0. 완료 조건 대조: PR CI의 worker 2개와 시간(충족),
+  필수 검사와 문서 전용 건너뛰기 불변(충족), `src/ci` 고정과 전체 Jest(충족). **Post-merge의 E2E가 worker 2개로 도는 것은 관측하지 못했다**(이 병합은 건너뛰었다).
+  위 "알려진 한계"의 "worker 1개에서도 그런지는 기록이 없다"는 부정확했다. job 로그에 재시도 통과 목록이 있고, 기준선은 검증 기록에 더했다.
+  후속 후보가 하나 더 생겼다: `e2e/learn-lesson-layout.spec.ts:200`(목차 항목으로 다른 섹션에 도달)이 Chromium 계열에서 worker 수와 무관하게 자주 재시도된다.
