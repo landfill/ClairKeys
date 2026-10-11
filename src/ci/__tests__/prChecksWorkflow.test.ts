@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const yaml = require('js-yaml')
+
 const GATE = "if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}"
 
 describe('PR summary workflow', () => {
@@ -89,13 +92,15 @@ describe('PR summary workflow', () => {
 
   // The run name format and the post-merge script's expectation must stay in sync;
   // if they drift, post-merge checks will not be skipped, but will never incorrectly skip.
+  // unquoted, YAML reads ` #` as the start of a comment and the title loses the number and base.
   it('names runs with PR number and base branch so post-merge verification can match them', () => {
     const postMergeScript = readFileSync(
       join(process.cwd(), 'scripts/post-merge-verified.sh'),
       'utf8'
     )
-    expect(workflow).toContain(
-      'run-name: PR Checks for #${{ github.event.pull_request.number }} into ${{ github.event.pull_request.base.ref }}'
+    const parsed = yaml.load(workflow) as Record<string, unknown>
+    expect(parsed['run-name']).toBe(
+      'PR Checks for #${{ github.event.pull_request.number }} into ${{ github.event.pull_request.base.ref }}'
     )
     expect(postMergeScript).toContain(
       'expected_title="PR Checks for #$pr_number into main"'
