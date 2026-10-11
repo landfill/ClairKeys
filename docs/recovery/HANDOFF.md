@@ -6,11 +6,10 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**#253 완료, #254 병합 후 확인·정리 진행 중**(사용자 2026-10-11: 두 PR 병합·브랜치 정리 승인). 두 PR은 승인된 head로 병합되고 이슈도 종료됐다. #253: [phase](phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 병합·Post-merge·정리](reviews/PR-255.md). #254: [phase](phases/E2E-254-sample-wait.md) · [진단·검증](validation/2026-10-11-e2e-254-sample-wait.md) · [PR256 병합·Post-merge](reviews/PR-256.md). #256의 합쳐진 코드 전체 검사와 브랜치 정리가 남았다.
+**진행 중인 작업 없음. #253·#254 완료**(2026-10-11 사용자 승인 병합). 두 이슈는 종료됐고 관련 원격·로컬 브랜치도 정리했다. #253: [phase](phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 병합·검증된 생략·정리](reviews/PR-255.md). #254: [phase](phases/E2E-254-sample-wait.md) · [진단·검증](validation/2026-10-11-e2e-254-sample-wait.md) · [PR256 병합·합쳐진 코드 전체 검사·정리](reviews/PR-256.md). 다음 작업은 사용자가 정한다.
 
 ## Next action
 
-- Post-merge 판정과 결과·이슈 종료·브랜치 포함 여부를 확인한 다음 승인된 두 작업 브랜치를 정리한다. 두 번째 병합은 다른 수정이 들어온 코드에 대한 D-101 전체 검사 관측 후보이기도 하다.
 - 로그인 사용자 개인화 1단계를 이슈 세 개로 등록했다(2026-10-10, 모두 미착수. 이슈 등록만으로 PR을 만들지 않는다):
   [#247](https://github.com/landfill/ClairKeys/issues/247) 홈·내 악보의 최근 연습한 곡,
   [#248](https://github.com/landfill/ClairKeys/issues/248) 곡별 속도·손 선택·반복 구간의 기기 저장,
@@ -25,7 +24,7 @@ Last updated: 2026-10-11 KST
   `/learn/reading` 390×844는 높이 기준(4220px)까지 110px 여유뿐이다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `next-session-prompt.md`, `stage<N>-brief.md`, `stage<N>-fix<M>.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
 - CI 제약: E2E worker 2·제한 45분 유지(D-102, [PR252](reviews/PR-252.md)). worker 4의 전역 도입은 측정 실패 때문에 하지 않는다.
-  남은 관측은 `deploy.yml`의 worker 2 실제 실행과, 코드가 다른 병합의 D-101 `Running all checks:` 판정이다.
+  `deploy.yml`의 worker 2 실제 실행과 코드가 다른 병합의 D-101 전체 검사 관측을 [PR256](reviews/PR-256.md)에서 확인했다.
   코드가 PR head와 같으면 `Detect verified merge` 성공·`Skipping:` 근거를 확인하고 리뷰 기록에 생략과 근거 PR Checks를 적는다([WORKFLOW §4](WORKFLOW.md#4-승인-후-병합과-정리)).
   라우트나 앵커를 옮긴 뒤에는 변경 영역 spec만이 아니라 **전체 E2E를 로컬에서 Chromium·Firefox로** 돌린다(약 2분, 5 workers). PR241에서 범위 밖 spec 하나를 놓쳐 CI에서 실패했다.
 - 범위 밖 flaky 후속 후보와 한계: [PR255](reviews/PR-255.md), [PR256](reviews/PR-256.md), [#254 검증](validation/2026-10-11-e2e-254-sample-wait.md). 원인 확인 없이 별도 제품 결함으로 단정하지 않는다.
