@@ -1,6 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const yaml = require('js-yaml')
+
+interface Workflow {
+  jobs: Record<string, { steps: { run?: string; env?: { PLAYWRIGHT_WORKERS?: string | number } }[] }>
+}
+
 /**
  * Guards the removal made for issue #28.
  *
@@ -82,10 +89,37 @@ describe('post-merge workflow', () => {
   })
 
   // The only E2E evidence for the merged tree; a hang must not hold it for the
-  // 360-minute default (runs take 25-30 minutes (about 1270 tests across six browser projects, one worker)).
+  // 360-minute default (runs take 20-25 minutes (about 1280 tests across six browser projects, two workers)).
   it('caps the E2E job well below the 360-minute default', () => {
     const e2e = workflow.split(/^  e2e:\s*$/m)[1].split(/^  [a-z-]+:\s*$/m)[0]
     expect(e2e).toMatch(/^ {4}timeout-minutes: 45$/m)
+  })
+
+  // Four workers failed in WebKit projects; change this only after repeated
+  // runner measurements of the same tree (#246, D-102).
+  it('runs exactly one E2E test step with two workers', () => {
+    const parsed = yaml.load(workflow) as Workflow
+    const steps = parsed.jobs.e2e.steps.filter((step) => step.run === 'npm run test:e2e')
+    expect(steps).toHaveLength(1)
+    expect(Number(steps[0].env?.PLAYWRIGHT_WORKERS)).toBe(2)
+  })
+
+  // Post-merge checks must use the worker count validated by PR Checks.
+  it('uses the same E2E worker count as PR Checks', () => {
+    const prChecks = yaml.load(readFileSync(
+      join(process.cwd(), '.github/workflows/pr-checks.yml'),
+      'utf8'
+    )) as Workflow
+    const postMerge = yaml.load(workflow) as Workflow
+    const prStep = prChecks.jobs['test-e2e'].steps.find((step) => step.run === 'npm run test:e2e')
+    const postMergeStep = postMerge.jobs.e2e.steps.find((step) => step.run === 'npm run test:e2e')
+    expect(prStep?.env?.PLAYWRIGHT_WORKERS).toBeDefined()
+    expect(Number(postMergeStep?.env?.PLAYWRIGHT_WORKERS)).toBe(Number(prStep?.env?.PLAYWRIGHT_WORKERS))
+  })
+
+  // The temporary measurement workflow must not remain on main.
+  it('removes the temporary E2E measurement workflow', () => {
+    expect(existsSync(join(process.cwd(), '.github/workflows/e2e-measure.yml'))).toBe(false)
   })
 
   it('is the only workflow that runs on a push to main', () => {

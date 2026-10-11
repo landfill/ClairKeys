@@ -12,7 +12,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Default to one worker on CI unless a positive integer override is set. */
+  /* One worker on CI unless PLAYWRIGHT_WORKERS says otherwise; the workflows set it (see D-102). Local runs use Playwright's default. */
   workers: ciWorkers({ CI: process.env.CI, PLAYWRIGHT_WORKERS: process.env.PLAYWRIGHT_WORKERS }),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',

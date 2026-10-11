@@ -148,7 +148,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: verified
     if: ${{ !cancelled() && needs.verified.outputs.skip != 'true' }}
-    # Runs take 25-30 minutes (about 1270 tests, six browser projects, one worker); a hang would otherwise hold the runner for 360.
+    # Runs take 20-25 minutes (about 1280 tests, six browser projects, two workers); a hang would otherwise hold the runner for 360.
     timeout-minutes: 45
 
     services:
@@ -188,7 +188,11 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      # Two workers: three runs each on a 4-vCPU runner finished without failures at two,
+      # while four failed twice in the WebKit projects (#246, D-102).
       - name: Run E2E tests
+        env:
+          PLAYWRIGHT_WORKERS: 2
         run: npm run test:e2e
 
       - name: Upload Playwright report
