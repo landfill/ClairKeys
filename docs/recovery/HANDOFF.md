@@ -6,10 +6,11 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**#253·#254 처리 중**(사용자 지시 2026-10-11). #253의 화면 밖 앵커 선택 결함은 수정·검증·PR CI·리뷰 확인을 마쳤다. [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-253-lesson-toc/docs/recovery/phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 리뷰·CI](reviews/PR-255.md). #254는 Linux에서 준비 화면의 2500ms 종료와 테스트 단언의 시간 경쟁을 재현했고, 테스트 시계 제어로 수정했다. [PR256 리뷰·CI](reviews/PR-256.md)의 최신 결과 확인이 다음 행동이다. [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-254-sample-wait/docs/recovery/phases/E2E-254-sample-wait.md) · [진단·검증](validation/2026-10-11-e2e-254-sample-wait.md). 병합 승인은 아직 없다.
+**#253·#254는 구현·검증·PR CI·리뷰 확인을 마쳤고 병합 승인이 필요하다**(사용자 착수 지시 2026-10-11, 대상 PR에 대한 병합 승인 없음). #253의 화면 밖 앵커 선택 결함: [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-253-lesson-toc/docs/recovery/phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 리뷰·CI](reviews/PR-255.md). #254의 준비 화면 종료와 테스트 단언 시간 경쟁: [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-254-sample-wait/docs/recovery/phases/E2E-254-sample-wait.md) · [진단·검증](validation/2026-10-11-e2e-254-sample-wait.md) · [PR256 리뷰·CI](reviews/PR-256.md). 이슈·phase를 DONE으로 표시하지 않았다.
 
 ## Next action
 
+- 대상 PR의 사용자 승인 후 최신 head의 CI·리뷰·병합 가능 상태를 다시 확인하고 하나씩 병합한다. Post-merge 판정과 결과·이슈 종료·브랜치 포함 여부를 확인한 다음 정리한다. 두 PR은 각각 최신 main에서 시작했으므로 두 번째 병합은 다른 수정이 들어온 코드에 대한 D-101 전체 검사 관측 후보이기도 하다.
 - 로그인 사용자 개인화 1단계를 이슈 세 개로 등록했다(2026-10-10, 모두 미착수. 이슈 등록만으로 PR을 만들지 않는다):
   [#247](https://github.com/landfill/ClairKeys/issues/247) 홈·내 악보의 최근 연습한 곡,
   [#248](https://github.com/landfill/ClairKeys/issues/248) 곡별 속도·손 선택·반복 구간의 기기 저장,
@@ -27,7 +28,7 @@ Last updated: 2026-10-11 KST
   남은 관측은 `deploy.yml`의 worker 2 실제 실행과, 코드가 다른 병합의 D-101 `Running all checks:` 판정이다.
   코드가 PR head와 같으면 `Detect verified merge` 성공·`Skipping:` 근거를 확인하고 리뷰 기록에 생략과 근거 PR Checks를 적는다([WORKFLOW §4](WORKFLOW.md#4-승인-후-병합과-정리)).
   라우트나 앵커를 옮긴 뒤에는 변경 영역 spec만이 아니라 **전체 E2E를 로컬에서 Chromium·Firefox로** 돌린다(약 2분, 5 workers). PR241에서 범위 밖 spec 하나를 놓쳐 CI에서 실패했다.
-- 범위 밖 flaky 후속 후보와 한계: [PR255](reviews/PR-255.md), [#254 검증](validation/2026-10-11-e2e-254-sample-wait.md). 원인 확인 없이 별도 제품 결함으로 단정하지 않는다.
+- 범위 밖 flaky 후속 후보와 한계: [PR255](reviews/PR-255.md), [PR256](reviews/PR-256.md), [#254 검증](validation/2026-10-11-e2e-254-sample-wait.md). 원인 확인 없이 별도 제품 결함으로 단정하지 않는다.
 - 현재 구현 워커 지시(사용자 2026-10-11): Codex `codex --model gpt-6.1-sol -c model_reasoning_effort="high" -s workspace-write -a never`, 워크트리 없이 브랜치만. 구현 워커는 한 번에 하나다. 이번 결과는 각 PR 리뷰·검증 기록에 있다.
 
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
