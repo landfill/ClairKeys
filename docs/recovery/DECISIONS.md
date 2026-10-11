@@ -3522,3 +3522,22 @@
   판정 조건을 바꿀 때는 "확신이 없으면 전부 돌린다" 방향을 지키고 `src/ci/__tests__/postMergeVerified.test.ts`에 경우를 먼저 더한다.
   병합 커밋을 강제로 전부 검증하려면 재실행이 아니라 `workflow_dispatch`를 쓴다. 앱이 읽는 `.md` 파일을 만들면 세 곳의 경로 정의를 함께 고친다(D-087 Directive).
 - Related: #250, phases/CI-250-postmerge-skip.md, D-087, D-088, #246
+
+## D-102: CI의 E2E는 job을 나누지 않고 Playwright worker 2개로 돌린다
+
+- Date: 2026-10-11
+- Status: Accepted (issue #246의 결정 4, 사용자가 2026-10-10에 "workers 실측을 먼저"로 범위를 정함); merge pending
+- Context: E2E job은 worker 1개로 31~36분이 걸려 45분 제한에 닿았다. 이슈는 브라우저 프로젝트별 job 분리를 제안했지만,
+  분리는 job마다 준비와 빌드를 되풀이하고 필수 검사 이름을 집계 job으로 지켜야 한다. 4 vCPU 러너에서 같은 트리를 값마다 3번 돌렸다.
+- Decision:
+  1. `pr-checks.yml`과 `deploy.yml`의 E2E 단계가 `PLAYWRIGHT_WORKERS: 2`를 준다. 두 값은 같아야 한다.
+  2. `playwright.config.ts`는 CI에서 `PLAYWRIGHT_WORKERS`가 양의 정수일 때만 그 값을 쓰고, 아니면 1이다. 로컬은 Playwright 기본값이다.
+  3. 제한 45분, job 이름, 브라우저 프로젝트, 테스트 수는 그대로다.
+- Rejected: worker 4개 | 세 번 중 두 번 실패했다(6건, 5건). 실패는 모두 WebKit 계열의 재생·샘플 로딩·레이아웃 계측이었다.
+- Rejected: 프로젝트별 job 분리(이번에는) | worker 2개가 세 번 모두 실패 없이 20~25분에 끝나 이슈가 정한 기준(제한의 절반 안팎)을 채웠다. 구조 변경 없이 얻을 수 있는 만큼 먼저 얻는다.
+- Confidence: medium
+- Scope-risk: narrow
+- Reversibility: clean
+- Directive: worker 수를 바꾸려면 러너에서 같은 트리를 여러 번 돌려 실패와 재시도 통과를 본 뒤에 바꾼다. 한 번의 통과로 올리지 않는다.
+  측정에는 JSON 리포터가 필요하다(html 리포터는 재시도로 통과한 테스트를 남기지 않는다).
+- Related: #246, phases/CI-246-e2e-parallel.md, D-087, D-088, D-101

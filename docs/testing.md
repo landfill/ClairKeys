@@ -61,6 +61,9 @@ npx playwright test application-smoke.spec.ts
 | Build Check | `prisma generate` + `npm run build` |
 | All Checks Complete | 위 job이 모두 success 또는 skipped인지 확인(cancelled도 실패) |
 
+CI의 E2E는 Playwright worker 2개로 돈다(`PLAYWRIGHT_WORKERS: 2`, 두 워크플로가 같다). 4 vCPU 러너에서 2개는 세 번 모두 실패 없이
+20~25분에 끝났고, 4개는 세 번 중 두 번 WebKit 프로젝트에서 실패했다(D-102). 로컬 실행은 Playwright 기본값을 쓴다.
+
 브랜치 보호의 필수 검사는 `Lint`·`Run Tests`·`E2E Tests`·`Security Audit`이다. job 이름을 바꾸면 필수 검사가
 영원히 대기 상태가 되므로 브랜치 보호 설정도 함께 바꿔야 한다.
 
