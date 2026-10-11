@@ -6,11 +6,11 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**#253·#254는 구현·검증·PR CI·리뷰 확인을 마쳤고 병합 승인이 필요하다**(사용자 착수 지시 2026-10-11, 대상 PR에 대한 병합 승인 없음). #253의 화면 밖 앵커 선택 결함: [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-253-lesson-toc/docs/recovery/phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 리뷰·CI](reviews/PR-255.md). #254의 준비 화면 종료와 테스트 단언 시간 경쟁: [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-254-sample-wait/docs/recovery/phases/E2E-254-sample-wait.md) · [진단·검증](validation/2026-10-11-e2e-254-sample-wait.md) · [PR256 리뷰·CI](reviews/PR-256.md). 이슈·phase를 DONE으로 표시하지 않았다.
+**#253·#254 병합 후 확인·정리 진행 중**(사용자 2026-10-11: 두 PR 병합·브랜치 정리 승인). #253은 승인된 head로 병합되고 이슈가 종료됐다. [phase](phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 병합·Post-merge](reviews/PR-255.md). #254는 최신 상태 재확인 후 병합한다. [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-254-sample-wait/docs/recovery/phases/E2E-254-sample-wait.md) · [진단·검증](validation/2026-10-11-e2e-254-sample-wait.md) · [PR256](reviews/PR-256.md).
 
 ## Next action
 
-- 대상 PR의 사용자 승인 후 최신 head의 CI·리뷰·병합 가능 상태를 다시 확인하고 하나씩 병합한다. Post-merge 판정과 결과·이슈 종료·브랜치 포함 여부를 확인한 다음 정리한다. 두 PR은 각각 최신 main에서 시작했으므로 두 번째 병합은 다른 수정이 들어온 코드에 대한 D-101 전체 검사 관측 후보이기도 하다.
+- Post-merge 판정과 결과·이슈 종료·브랜치 포함 여부를 확인한 다음 승인된 두 작업 브랜치를 정리한다. 두 번째 병합은 다른 수정이 들어온 코드에 대한 D-101 전체 검사 관측 후보이기도 하다.
 - 로그인 사용자 개인화 1단계를 이슈 세 개로 등록했다(2026-10-10, 모두 미착수. 이슈 등록만으로 PR을 만들지 않는다):
   [#247](https://github.com/landfill/ClairKeys/issues/247) 홈·내 악보의 최근 연습한 곡,
   [#248](https://github.com/landfill/ClairKeys/issues/248) 곡별 속도·손 선택·반복 구간의 기기 저장,
