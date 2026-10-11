@@ -6,7 +6,7 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**진행 중인 작업 없음. #253·#254 완료**(2026-10-11 사용자 승인 병합). 두 이슈는 종료됐고 관련 원격·로컬 브랜치도 정리했다. #253: [phase](phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 병합·검증된 생략·정리](reviews/PR-255.md). #254: [phase](phases/E2E-254-sample-wait.md) · [진단·검증](validation/2026-10-11-e2e-254-sample-wait.md) · [PR256 병합·합쳐진 코드 전체 검사·정리](reviews/PR-256.md). 다음 작업은 사용자가 정한다.
+**루트 README 현행화 #257 진행 중**(사용자 요청 2026-10-11). [이슈](https://github.com/landfill/ClairKeys/issues/257) · [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/doc-readme-current/docs/recovery/phases/DOC-257-readme.md). 루트 README만 현재 기능·변환/저장 흐름·설정·한계·개발 절차와 대조해 고친다. 제품 코드·DB·설정은 바꾸지 않는다. 문서 전용 검증·PR CI·리뷰 후 대상 PR 병합 승인이 필요하다.
 
 ## Next action
 
