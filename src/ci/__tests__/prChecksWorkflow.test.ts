@@ -4,6 +4,10 @@ import { join } from 'node:path'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const yaml = require('js-yaml')
 
+interface Workflow {
+  jobs: Record<string, { steps: { run?: string; env?: { PLAYWRIGHT_WORKERS?: string | number } }[] }>
+}
+
 const GATE = "if: ${{ !cancelled() && needs.changes.outputs.code != 'false' }}"
 
 describe('PR summary workflow', () => {
@@ -54,11 +58,20 @@ describe('PR summary workflow', () => {
     expect(e2e).not.toContain('run: npm run build')
   })
 
-  // E2E takes 25-30 minutes (about 1270 tests across six browser projects, one worker). Without a cap a hung webServer or browser
+  // E2E takes 20-25 minutes (about 1280 tests across six browser projects, two workers). Without a cap a hung webServer or browser
   // holds the runner for GitHub's default 360 minutes before the PR sees a result.
   it('caps the E2E job well below the 360-minute default', () => {
     const e2e = workflow.split(/^  test-e2e:\s*$/m)[1].split(/^  [a-z-]+:\s*$/m)[0]
     expect(e2e).toMatch(/^ {4}timeout-minutes: 45$/m)
+  })
+
+  // Four workers failed in WebKit projects; change this only after repeated
+  // runner measurements of the same tree (#246, D-102).
+  it('runs exactly one E2E test step with two workers', () => {
+    const parsed = yaml.load(workflow) as Workflow
+    const steps = parsed.jobs['test-e2e'].steps.filter((step) => step.run === 'npm run test:e2e')
+    expect(steps).toHaveLength(1)
+    expect(Number(steps[0].env?.PLAYWRIGHT_WORKERS)).toBe(2)
   })
 
   // Branch protection requires these contexts by job name. Renaming a job leaves
