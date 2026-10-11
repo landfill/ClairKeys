@@ -6,7 +6,9 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**진행 중인 작업 없음.** [#246](https://github.com/landfill/ClairKeys/issues/246) CI의 E2E를 worker 2개로 돌리는 변경은 [PR252](reviews/PR-252.md) `988824d`로 병합됐다(2026-10-11).
+**#253·#254 처리 중**(사용자 지시 2026-10-11). #253은 화면 밖의 앵커 선택이 문서 끝에서 남거나 늦은 hashchange로 되살아나는 제품 결함을 재현·수정했다. [phase](phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md). #254는 macOS 기본·부하 반복에서 미재현이며 Linux CI 계측이 다음 행동이다. 각각 별도 PR, 병합 승인은 아직 없다.
+
+[#246](https://github.com/landfill/ClairKeys/issues/246) CI의 E2E를 worker 2개로 돌리는 변경은 [PR252](reviews/PR-252.md) `988824d`로 병합됐다(2026-10-11).
 [phase](phases/CI-246-e2e-parallel.md) · [실측·검증](validation/2026-10-11-ci-246-e2e-workers.md) · D-102. E2E job은 31~36분에서 19~25분이 됐다(worker 2개의 네 실행, 실패 0). worker 4개는 WebKit 계열에서 실패해 쓰지 않는다.
 남은 관측: `deploy.yml`의 E2E가 worker 2개로 도는 것(코드가 다른 병합이나 수동 실행에서), D-101의 "코드가 다른 병합은 전부 돈다".
 흔들리는 테스트 두 건을 이슈로 등록했다(2026-10-11, 미착수. 이슈 등록만으로 PR을 만들지 않는다): [#253](https://github.com/landfill/ClairKeys/issues/253) `e2e/learn-lesson-layout.spec.ts:200` 목차 테스트가 Chromium 계열에서 거의 매 실행 재시도로 통과(worker 수 무관), [#254](https://github.com/landfill/ClairKeys/issues/254) `Mobile Safari`의 `first-play-sample-loading` "…on desktop"이 worker 2개에서 두 번 재시도.
@@ -40,9 +42,9 @@ Last updated: 2026-10-11 KST
   `/learn/reading` 390×844는 높이 기준(4220px)까지 110px 여유뿐이다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `next-session-prompt.md`, `stage<N>-brief.md`, `stage<N>-fix<M>.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
 - E2E job 제한은 45분이다([#242](https://github.com/landfill/ClairKeys/issues/242) 종료, [PR243](reviews/PR-243.md) `2f7d9ac`). 스위트는 1284개(프로젝트당 214개 × 6, 한 worker)이고 2026-10-09의 실행은 31~36분이었다. **PR244 병합 커밋의 Post-merge E2E는 45분 제한으로 한 번 취소됐고 재실행에서 통과했다.**
-  제한을 다시 올리지 말고 병렬로 돌린다: [#246](https://github.com/landfill/ClairKeys/issues/246)(2026-10-09 등록, 미착수. 이슈 등록만으로 PR을 만들지 않는다).
+  #246은 PR252로 병합됐다. 실측 근거는 위 Current phase의 링크를 따른다.
   2026-10-10 사용자 지시로 범위를 넓혔다: 먼저 CI `workers`를 2·4로 올린 실측을 하고, 그것으로 충분하면 job을 나누지 않는다(이슈의 결정 4). job을 나눌 때만 결정 1~3(필수 검사 이름, 묶는 단위, 빌드 공유)을 정한다.
-  Post-merge 재실행 생략은 #250으로 진행 중이다(위 Current phase).
+  Post-merge 재실행 생략 #250도 PR251로 병합됐다(위 Current phase).
   단계별 PR을 이슈 통합 브랜치에 묶어 main에는 한 번만 병합하는 안은 등록하지 않았다(사용자 미결정, AGENTS "한 PR에는 하나의 단계" 변경 필요). 취소된 실행은 실패한 테스트 이름을 남기지 않는다. 점 리포터의 순번을 `npx playwright test --list --project=chromium`과 대조해 찾는다.
   라우트나 앵커를 옮긴 뒤에는 변경 영역 spec만이 아니라 **전체 E2E를 로컬에서 Chromium·Firefox로** 돌린다(약 2분, 5 workers). PR241에서 범위 밖 spec 하나를 놓쳐 CI에서 실패했다.
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
