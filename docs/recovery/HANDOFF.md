@@ -9,7 +9,8 @@ Last updated: 2026-10-11 KST
 **진행 중인 작업 없음.** [#246](https://github.com/landfill/ClairKeys/issues/246) CI의 E2E를 worker 2개로 돌리는 변경은 [PR252](reviews/PR-252.md) `988824d`로 병합됐다(2026-10-11).
 [phase](phases/CI-246-e2e-parallel.md) · [실측·검증](validation/2026-10-11-ci-246-e2e-workers.md) · D-102. E2E job은 31~36분에서 19~25분이 됐다(worker 2개의 네 실행, 실패 0). worker 4개는 WebKit 계열에서 실패해 쓰지 않는다.
 남은 관측: `deploy.yml`의 E2E가 worker 2개로 도는 것(코드가 다른 병합이나 수동 실행에서), D-101의 "코드가 다른 병합은 전부 돈다".
-후속 후보(이슈 미등록): `e2e/learn-lesson-layout.spec.ts:200` "목차 항목으로 다른 섹션에 도달"이 Chromium 계열에서 거의 매 실행 재시도로 통과한다(worker 수 무관). `Mobile Safari`의 `first-play-sample-loading` "…on desktop"도 worker 2개에서 두 번 재시도됐다.
+흔들리는 테스트 두 건을 이슈로 등록했다(2026-10-11, 미착수. 이슈 등록만으로 PR을 만들지 않는다): [#253](https://github.com/landfill/ClairKeys/issues/253) `e2e/learn-lesson-layout.spec.ts:200` 목차 테스트가 Chromium 계열에서 거의 매 실행 재시도로 통과(worker 수 무관), [#254](https://github.com/landfill/ClairKeys/issues/254) `Mobile Safari`의 `first-play-sample-loading` "…on desktop"이 worker 2개에서 두 번 재시도.
+둘 다 제품 결함인지 테스트 결함인지 먼저 가린다. 측정 artifact(`e2e-results.json`)는 2026-10-18까지 남는다.
 재시도로 통과한 테스트는 E2E job 로그 끝의 `N flaky` 아래에 이름이 남는다.
 구현 워커 메모: Codex `codex --model gpt-6.1-sol -c model_reasoning_effort="high" -s workspace-write -a never`는 승인 요청 없이 3분대에 끝났다(사용자 지시 2026-10-11: 구현은 Codex 워커, 워크트리 없이 브랜치만).
 
