@@ -6,10 +6,10 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**[#246](https://github.com/landfill/ClairKeys/issues/246) E2E 병렬화 — 0단계(workers 실측) 진행 중.** 사용자 지시(2026-10-11): 구현은 Codex 워커를 Orca 터미널에 띄우고, 워크트리 없이 브랜치로만 작업한다.
-브랜치 `codex/ci-246-e2e-parallel`: `PLAYWRIGHT_WORKERS`로 CI worker 수를 정하게 한 커밋과, 그 브랜치의 push에서만 도는 **임시 측정 워크플로** `e2e-measure.yml`(workers 2·4 × 3회, [run 38119875545](https://github.com/landfill/ClairKeys/actions/runs/38119875545)).
-측정 워크플로는 main에 병합하지 않는다. PR을 만들기 전에 지운다. 측정 뒤 이슈의 결정 4(workers만으로 충분한가)를 정한다.
-지시문·보고는 git 제외 `local-test-data/results/ci-246/`. 구현 워커: `codex --model gpt-6.1-sol -c model_reasoning_effort="high" -s workspace-write -a never`.
+**[#246](https://github.com/landfill/ClairKeys/issues/246) CI의 E2E를 worker 2개로 — 구현·실측·로컬 검증 완료, PR 생성 승인 대기.** 사용자 지시(2026-10-11): 구현은 Codex 워커를 Orca 터미널에 띄우고, 워크트리 없이 브랜치로만 작업한다.
+브랜치 `codex/ci-246-e2e-parallel`(푸시됨, 임시 측정 워크플로는 지웠다). [검증·실측](validation/2026-10-11-ci-246-e2e-workers.md) · phase와 D-102는 브랜치에 있다.
+실측(4 vCPU 러너, 값마다 3회): worker 2개는 job 20~25분에 실패 0, 4개는 두 번 실패(WebKit 계열). job은 나누지 않는다.
+지시문·보고는 git 제외 `local-test-data/results/ci-246/`. 구현 워커: `codex --model gpt-6.1-sol -c model_reasoning_effort="high" -s workspace-write -a never`(승인 요청 없이 3분대에 끝났다).
 
 그 전 작업: [#250](https://github.com/landfill/ClairKeys/issues/250) 코드가 같은 병합의 Post-merge 검사 생략은 [PR251](reviews/PR-251.md) `200d7a1`로 병합됐다(2026-10-11).
 [phase](phases/CI-250-postmerge-skip.md) · [검증](validation/2026-10-10-ci-250-postmerge-skip.md) · D-101.
