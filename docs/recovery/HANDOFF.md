@@ -8,24 +8,6 @@ Last updated: 2026-10-11 KST
 
 **#253·#254 처리 중**(사용자 지시 2026-10-11). #253의 화면 밖 앵커 선택 결함은 수정·검증·PR CI·리뷰 확인을 마쳤다. [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-253-lesson-toc/docs/recovery/phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 리뷰·CI](reviews/PR-255.md). #254는 Linux에서 준비 화면의 2500ms 종료와 테스트 단언의 시간 경쟁을 재현했고, 테스트 시계 제어로 수정했다. [PR256 리뷰·CI](reviews/PR-256.md)의 최신 결과 확인이 다음 행동이다. [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-254-sample-wait/docs/recovery/phases/E2E-254-sample-wait.md) · [진단·검증](validation/2026-10-11-e2e-254-sample-wait.md). 병합 승인은 아직 없다.
 
-[#246](https://github.com/landfill/ClairKeys/issues/246) CI의 E2E를 worker 2개로 돌리는 변경은 [PR252](reviews/PR-252.md) `988824d`로 병합됐다(2026-10-11).
-[phase](phases/CI-246-e2e-parallel.md) · [실측·검증](validation/2026-10-11-ci-246-e2e-workers.md) · D-102. E2E job은 31~36분에서 19~25분이 됐다(worker 2개의 네 실행, 실패 0). worker 4개는 WebKit 계열에서 실패해 쓰지 않는다.
-남은 관측: `deploy.yml`의 E2E가 worker 2개로 도는 것(코드가 다른 병합이나 수동 실행에서), D-101의 "코드가 다른 병합은 전부 돈다".
-흔들리는 테스트 두 건을 이슈로 등록했다(2026-10-11, 미착수. 이슈 등록만으로 PR을 만들지 않는다): [#253](https://github.com/landfill/ClairKeys/issues/253) `e2e/learn-lesson-layout.spec.ts:200` 목차 테스트가 Chromium 계열에서 거의 매 실행 재시도로 통과(worker 수 무관), [#254](https://github.com/landfill/ClairKeys/issues/254) `Mobile Safari`의 `first-play-sample-loading` "…on desktop"이 worker 2개에서 두 번 재시도.
-둘 다 제품 결함인지 테스트 결함인지 먼저 가린다. 측정 artifact(`e2e-results.json`)는 2026-10-18까지 남는다.
-재시도로 통과한 테스트는 E2E job 로그 끝의 `N flaky` 아래에 이름이 남는다.
-구현 워커 메모: Codex `codex --model gpt-6.1-sol -c model_reasoning_effort="high" -s workspace-write -a never`는 승인 요청 없이 3분대에 끝났다(사용자 지시 2026-10-11: 구현은 Codex 워커, 워크트리 없이 브랜치만).
-
-그 전 작업: [#250](https://github.com/landfill/ClairKeys/issues/250) 코드가 같은 병합의 Post-merge 검사 생략은 [PR251](reviews/PR-251.md) `200d7a1`로 병합됐다(2026-10-11).
-[phase](phases/CI-250-postmerge-skip.md) · [검증](validation/2026-10-10-ci-250-postmerge-skip.md) · D-101.
-수동 실행 38101296805이 같은 커밋에서 전부 돌아 통과했다. 남은 관측 하나: 코드가 다른 병합(브랜치가 갈라진 뒤 main에 코드가 들어온 경우)이 실제로 전부 도는지. 그런 병합이 생기면 판정 로그의 `Running all checks:` 줄을 검증 기록에 더한다.
-**병합 후 확인이 바뀌었다(D-101):** 병합 커밋의 코드가 PR head와 같으면 Post-merge는 Lint·단위 테스트·E2E를 건너뛴다. `Detect verified merge`가 success이고 로그에 `Skipping:`이 있을 때만 검증된 생략이다. 리뷰 로그에는 "건너뜀"과 근거 PR Checks 실행을 적는다(WORKFLOW §4).
-이 변경 전에 PR 검사를 돈 head는 실행 제목이 없어 병합 시 전부 돈다.
-
-그 전 작업: [#236](https://github.com/landfill/ClairKeys/issues/236) 배우기 영역 화면 구성 개편은 다섯 단계가 모두 병합되고 이슈가 종료됐다(2026-10-09).
-[완료 조건 대조](validation/2026-10-09-learn-236-completion-audit.md) · [phase](phases/LEARN-236-layout.md) · D-099·D-100.
-다음 작업은 사용자가 정한다. 앞으로 할 작업은 GitHub 이슈로 먼저 등록한다.
-
 ## Next action
 
 - 로그인 사용자 개인화 1단계를 이슈 세 개로 등록했다(2026-10-10, 모두 미착수. 이슈 등록만으로 PR을 만들지 않는다):
@@ -41,12 +23,13 @@ Last updated: 2026-10-11 KST
   줄 높이가 20px인 문단(`text-sm`)에는 이 방식을 쓰지 않는다. 앞 링크의 글자를 덮어 다른 링크가 열린다(PR245에서 `inline-block`으로 고침). 링크 크기를 확인할 때는 상자만 재지 말고 글자 가운데에서 `elementFromPoint`가 그 링크를 돌려주는지 본다.
   `/learn/reading` 390×844는 높이 기준(4220px)까지 110px 여유뿐이다.
   지시문·진행 메모는 git 제외 `local-test-data/results/learn-236/`(`orchestrator-prompt.md`, `next-session-prompt.md`, `stage<N>-brief.md`, `stage<N>-fix<M>.md`, `stage<N>-review-brief.md`, `progress.md`, 계측 `measure.mjs`).
-- E2E job 제한은 45분이다([#242](https://github.com/landfill/ClairKeys/issues/242) 종료, [PR243](reviews/PR-243.md) `2f7d9ac`). 스위트는 1284개(프로젝트당 214개 × 6, 한 worker)이고 2026-10-09의 실행은 31~36분이었다. **PR244 병합 커밋의 Post-merge E2E는 45분 제한으로 한 번 취소됐고 재실행에서 통과했다.**
-  #246은 PR252로 병합됐다. 실측 근거는 위 Current phase의 링크를 따른다.
-  2026-10-10 사용자 지시로 범위를 넓혔다: 먼저 CI `workers`를 2·4로 올린 실측을 하고, 그것으로 충분하면 job을 나누지 않는다(이슈의 결정 4). job을 나눌 때만 결정 1~3(필수 검사 이름, 묶는 단위, 빌드 공유)을 정한다.
-  Post-merge 재실행 생략 #250도 PR251로 병합됐다(위 Current phase).
-  단계별 PR을 이슈 통합 브랜치에 묶어 main에는 한 번만 병합하는 안은 등록하지 않았다(사용자 미결정, AGENTS "한 PR에는 하나의 단계" 변경 필요). 취소된 실행은 실패한 테스트 이름을 남기지 않는다. 점 리포터의 순번을 `npx playwright test --list --project=chromium`과 대조해 찾는다.
+- CI 제약: E2E worker 2·제한 45분 유지(D-102, [PR252](reviews/PR-252.md)). worker 4의 전역 도입은 측정 실패 때문에 하지 않는다.
+  남은 관측은 `deploy.yml`의 worker 2 실제 실행과, 코드가 다른 병합의 D-101 `Running all checks:` 판정이다.
+  코드가 PR head와 같으면 `Detect verified merge` 성공·`Skipping:` 근거를 확인하고 리뷰 기록에 생략과 근거 PR Checks를 적는다([WORKFLOW §4](WORKFLOW.md#4-승인-후-병합과-정리)).
   라우트나 앵커를 옮긴 뒤에는 변경 영역 spec만이 아니라 **전체 E2E를 로컬에서 Chromium·Firefox로** 돌린다(약 2분, 5 workers). PR241에서 범위 밖 spec 하나를 놓쳐 CI에서 실패했다.
+- 범위 밖 flaky 후속 후보와 한계: [PR255](reviews/PR-255.md), [#254 검증](validation/2026-10-11-e2e-254-sample-wait.md). 원인 확인 없이 별도 제품 결함으로 단정하지 않는다.
+- 현재 구현 워커 지시(사용자 2026-10-11): Codex `codex --model gpt-6.1-sol -c model_reasoning_effort="high" -s workspace-write -a never`, 워크트리 없이 브랜치만. 구현 워커는 한 번에 하나다. 이번 결과는 각 PR 리뷰·검증 기록에 있다.
+
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 올리지 않고 남겼다(15.5.27이 고정 버전 밖).
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
