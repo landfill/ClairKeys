@@ -1,0 +1,105 @@
+# Temporary measurement workflow for issue #246; do not merge into main.
+name: E2E worker measurement
+
+on:
+  push:
+    branches: [ 'codex/ci-246-e2e-parallel' ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    name: "E2E workers=${{ matrix.workers }} trial ${{ matrix.trial }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        workers: [2, 4]
+        trial: [1, 2, 3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: clairkeys_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/clairkeys_test
+      NEXTAUTH_SECRET: test-secret
+      NEXTAUTH_URL: http://localhost:3000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run database migrations
+        run: npx prisma db push
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Record runner specifications
+        run: |
+          {
+            echo 'CPU count (nproc):'
+            nproc
+            echo 'Memory (free -m):'
+            free -m
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Run E2E tests
+        id: e2e
+        continue-on-error: true
+        env:
+          PLAYWRIGHT_WORKERS: ${{ matrix.workers }}
+          PLAYWRIGHT_JSON_OUTPUT_NAME: e2e-results.json
+        run: npx playwright test --reporter=line,json
+
+      - name: Summarize E2E results
+        if: always()
+        run: |
+          if [ ! -f e2e-results.json ]; then
+            echo 'no results file' | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          jq -r '.stats | "expected: \(.expected)", "unexpected: \(.unexpected)", "flaky: \(.flaky)", "skipped: \(.skipped)"' e2e-results.json | tee -a "$GITHUB_STEP_SUMMARY"
+          jq -r '.stats.duration / 60000' e2e-results.json | LC_ALL=C awk '{ printf "duration (minutes): %.1f\n", $1 }' | tee -a "$GITHUB_STEP_SUMMARY"
+          echo 'Flaky and unexpected tests (status, project, file, title):' | tee -a "$GITHUB_STEP_SUMMARY"
+          jq -r '[.. | objects | select(has("specs")) | .specs[] | . as $s | .tests[] | select(.status == "flaky" or .status == "unexpected") | "\(.status)\t\(.projectName)\t\($s.file)\t\($s.title)"] | .[]' e2e-results.json | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload E2E results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-measure-w${{ matrix.workers }}-t${{ matrix.trial }}
+          path: e2e-results.json
+          retention-days: 7
+
+      - name: Fail job if E2E tests failed
+        if: steps.e2e.outcome == 'failure'
+        run: exit 1
