@@ -6,7 +6,7 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**#253·#254 병합 후 확인·정리 진행 중**(사용자 2026-10-11: 두 PR 병합·브랜치 정리 승인). #253은 승인된 head로 병합되고 이슈가 종료됐다. [phase](phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 병합·Post-merge](reviews/PR-255.md). #254는 최신 상태 재확인 후 병합한다. [phase(작업 브랜치)](https://github.com/landfill/ClairKeys/blob/codex/e2e-254-sample-wait/docs/recovery/phases/E2E-254-sample-wait.md) · [진단·검증](validation/2026-10-11-e2e-254-sample-wait.md) · [PR256](reviews/PR-256.md).
+**#253·#254 병합 후 확인·정리 진행 중**(사용자 2026-10-11: 두 PR 병합·브랜치 정리 승인). 두 PR은 승인된 head로 병합되고 이슈도 종료됐다. #253: [phase](phases/E2E-253-lesson-toc.md) · [검증](validation/2026-10-11-e2e-253-lesson-toc.md) · [PR255 병합·Post-merge](reviews/PR-255.md). #254: [phase](phases/E2E-254-sample-wait.md) · [진단·검증](validation/2026-10-11-e2e-254-sample-wait.md) · [PR256 병합·Post-merge](reviews/PR-256.md). #255의 검증된 생략 확인은 끝났고, #256 Post-merge와 브랜치 정리가 남았다.
 
 ## Next action
 

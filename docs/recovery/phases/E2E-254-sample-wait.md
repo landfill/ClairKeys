@@ -1,6 +1,6 @@
 # Mobile Safari 샘플 대기 화면 재시도 원인 제거 (#254)
 
-Status: IN_PROGRESS
+Status: IN_REVIEW
 Date: 2026-10-11
 
 ## Objective
@@ -24,3 +24,4 @@ worker 2개의 Linux CI에서 샘플 대기 중 재생 버튼의 viewport 단언
 ## Progress
 
 - 2026-10-11: 사용자 착수 지시. macOS Mobile Safari 기본 반복 5회와 worker 4 반복 20회는 모두 통과했다. Linux CI 계측을 진행한다.
+- 2026-10-11: [검증](../validation/2026-10-11-e2e-254-sample-wait.md)·[PR256](../reviews/PR-256.md) CI와 리뷰를 확인하고 사용자 승인으로 병합했다. Post-merge 확인과 브랜치 정리는 진행 중이며 완료 후 DONE으로 갱신한다.
