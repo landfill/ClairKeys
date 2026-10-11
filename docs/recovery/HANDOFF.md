@@ -6,10 +6,11 @@ Last updated: 2026-10-11 KST
 
 ## Current phase
 
-**[#250](https://github.com/landfill/ClairKeys/issues/250) 코드가 같은 병합의 Post-merge 검사 생략 — [PR251](reviews/PR-251.md) OPEN, 병합 승인 대기.**
-브랜치 `codex/ci-250-postmerge-skip`. [phase](phases/CI-250-postmerge-skip.md)(브랜치에 있다) · [검증](validation/2026-10-10-ci-250-postmerge-skip.md) · D-101(브랜치).
-병합 뒤 확인할 것: 이 PR의 병합 커밋에서 `Detect verified merge`가 건너뛰기를 판정하는지, `gh workflow run deploy.yml --ref main`이 전부 도는지(phase 완료 조건).
-지시문·보고는 git 제외 `local-test-data/results/ci-250/`(`impl-brief.md`, `impl-fix1~6.md`, `impl-report.md`, `review-brief.md`, `review-brief2.md`).
+**진행 중인 작업 없음.** [#250](https://github.com/landfill/ClairKeys/issues/250) 코드가 같은 병합의 Post-merge 검사 생략은 [PR251](reviews/PR-251.md) `200d7a1`로 병합됐다(2026-10-11).
+[phase](phases/CI-250-postmerge-skip.md) · [검증](validation/2026-10-10-ci-250-postmerge-skip.md) · D-101.
+남은 확인: 수동 실행 [38101296805](https://github.com/landfill/ClairKeys/actions/runs/38101296805)이 전부 도는지(결과를 검증 기록에 적고 phase를 DONE으로 바꾼다), 코드가 다른 병합이 실제로 전부 도는지(그런 병합이 생길 때 관측).
+**병합 후 확인이 바뀌었다(D-101):** 병합 커밋의 코드가 PR head와 같으면 Post-merge는 Lint·단위 테스트·E2E를 건너뛴다. `Detect verified merge`가 success이고 로그에 `Skipping:`이 있을 때만 검증된 생략이다. 리뷰 로그에는 "건너뜀"과 근거 PR Checks 실행을 적는다(WORKFLOW §4).
+이 변경 전에 PR 검사를 돈 head는 실행 제목이 없어 병합 시 전부 돈다.
 
 그 전 작업: [#236](https://github.com/landfill/ClairKeys/issues/236) 배우기 영역 화면 구성 개편은 다섯 단계가 모두 병합되고 이슈가 종료됐다(2026-10-09).
 [완료 조건 대조](validation/2026-10-09-learn-236-completion-audit.md) · [phase](phases/LEARN-236-layout.md) · D-099·D-100.
