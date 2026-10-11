@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
+import { ciWorkers } from './src/ci/playwrightWorkers'
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -11,8 +12,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Default to one worker on CI unless a positive integer override is set. */
+  workers: ciWorkers({ CI: process.env.CI, PLAYWRIGHT_WORKERS: process.env.PLAYWRIGHT_WORKERS }),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
