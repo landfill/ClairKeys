@@ -1,7 +1,7 @@
 # #250 코드가 같은 병합의 Post-merge 검사 생략 — 로컬 검증
 
 Date: 2026-10-10
-Branch: `codex/ci-250-postmerge-skip` (`a30520e` 구현, `d5748f4` 규약 문서)
+Branch: `codex/ci-250-postmerge-skip` (`a30520e` 구현, `d5748f4` 규약 문서, `579f3db` 실행 제목 수정) · [PR251 리뷰 로그](../reviews/PR-251.md)
 Phase: [CI-250](../phases/CI-250-postmerge-skip.md) · 결정 D-101 · 이슈 [#250](https://github.com/landfill/ClairKeys/issues/250)
 
 ## 근거 실측 (구현 전)
@@ -68,6 +68,17 @@ Phase: [CI-250](../phases/CI-250-postmerge-skip.md) · 결정 D-101 · 이슈 [#
 | 1 | P2: 서브모듈 `ignore=all`이 gitlink 차이를 가린다 | `git diff`에 `--ignore-submodules=none`, 테스트 3개 |
 | 1 | P2: WORKFLOW 문구가 취소로 인한 skipped를 검증된 생략으로 적게 한다 | 판정 job 성공과 요약의 근거 링크가 있을 때만으로 고침 |
 | 2 | P1: 실행을 대상 PR에 묶지 않아 같은 head의 다른 PR 실행만으로 건너뛴다 | `pr-checks.yml`에 `run-name`, 스크립트가 제목을 정확히 대조 |
+
+## PR의 첫 실행에서 드러난 결함 (2026-10-11)
+
+PR251의 첫 PR Checks 실행 제목이 `PR Checks for`였다. `run-name` 값에 따옴표가 없어 YAML이 ` #` 뒤를 주석으로 읽었다.
+로컬 검증은 이것을 잡지 못했다: 테스트가 줄의 글자를 대조했고, 워크플로를 YAML로 파싱해 보지 않았다. GitHub의 Codex 리뷰도 같은 지적을 했다(PR251 G1).
+
+| 확인 | 결과 |
+|---|---|
+| 테스트를 `js-yaml` 파싱으로 바꾼 뒤, 수정 전 | FAIL, 받은 값 `"PR Checks for"` |
+| 값을 따옴표로 감싼 뒤 `npx jest` 전체 (`579f3db`의 트리) | PASS, 170 suites, 1716 tests. `tsc` 0, lint 통과 |
+| `579f3db`의 실행 제목 (`gh run list --branch codex/ci-250-postmerge-skip`) | `PR Checks for #251 into main` |
 
 ## 미검증
 

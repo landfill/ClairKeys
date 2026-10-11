@@ -1,13 +1,13 @@
 # Current Handoff
 
-Last updated: 2026-10-10 KST
+Last updated: 2026-10-11 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
 
-**[#250](https://github.com/landfill/ClairKeys/issues/250) 코드가 같은 병합의 Post-merge 검사 생략 — 구현·로컬 검증 완료, PR 생성 승인 대기.**
-브랜치 `codex/ci-250-postmerge-skip`(`a30520e` 구현, `d5748f4` 규약 문서, 푸시됨). [phase](phases/CI-250-postmerge-skip.md)(브랜치에 있다) · [검증](validation/2026-10-10-ci-250-postmerge-skip.md) · D-101(브랜치).
+**[#250](https://github.com/landfill/ClairKeys/issues/250) 코드가 같은 병합의 Post-merge 검사 생략 — [PR251](reviews/PR-251.md) OPEN, 병합 승인 대기.**
+브랜치 `codex/ci-250-postmerge-skip`. [phase](phases/CI-250-postmerge-skip.md)(브랜치에 있다) · [검증](validation/2026-10-10-ci-250-postmerge-skip.md) · D-101(브랜치).
 병합 뒤 확인할 것: 이 PR의 병합 커밋에서 `Detect verified merge`가 건너뛰기를 판정하는지, `gh workflow run deploy.yml --ref main`이 전부 도는지(phase 완료 조건).
 지시문·보고는 git 제외 `local-test-data/results/ci-250/`(`impl-brief.md`, `impl-fix1~6.md`, `impl-report.md`, `review-brief.md`, `review-brief2.md`).
 
