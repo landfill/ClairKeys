@@ -1,12 +1,12 @@
 # Current Handoff
 
-Last updated: 2026-10-11 KST
+Last updated: 2026-10-17 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
 
-**진행 중인 작업 없음. 루트 README 현행화 #257 완료**(2026-10-11). 사용자 지시로 PR 없이 `dcf6585`를 main에 직접 push했고 이슈 종료·원격/로컬 브랜치 정리도 완료했다. [phase](phases/DOC-257-readme.md) · [코드 대조·검증·리뷰·직접 반영](validation/2026-10-11-doc-257-readme.md). 문서 전용 검증을 수행했으며 CI는 실행되지 않았다. 다음 작업은 사용자가 정한다.
+**최근 업로드 3곡 박자 원인 조사 완료**(2026-10-17). 운영 DB·저장 XML/JSON·실행 컨테이너·로컬 보관 원본을 대조했다. 처리 엔진은 동일하며 곡별 OMR 리듬 오류, 빠르기 지정 차이, 기존 Swing 미지원이 겹친다. 제품·운영 데이터 수정은 하지 않았다. [조사·검증 원본](validation/2026-10-17-recent-upload-rhythm-investigation.md). 다음 수정 범위는 사용자가 정한다.
 
 ## Next action
 
