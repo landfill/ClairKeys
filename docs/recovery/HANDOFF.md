@@ -6,7 +6,7 @@ Last updated: 2026-10-17 KST
 
 ## Current phase
 
-**최근 업로드 3곡 박자 원인 조사 완료**(2026-10-17). 운영 DB·저장 XML/JSON·실행 컨테이너·로컬 보관 원본을 대조했다. 처리 엔진은 동일하며 곡별 OMR 리듬 오류, 빠르기 지정 차이, 기존 Swing 미지원이 겹친다. 제품·운영 데이터 수정은 하지 않았다. [조사·검증 원본](validation/2026-10-17-recent-upload-rhythm-investigation.md). 다음 수정 범위는 사용자가 정한다.
+**3곡 수동 BPM 재업로드 완료, 기존 악보 영구 삭제 확인 대기**(2026-10-17). 사용자 지시로 원곡 BPM을 조사하고 새 103·104·105를 64.5·129·116 BPM으로 업로드해 completed/user를 확인했다. 새 악보는 비공개다. 기존 100·101·102와 연결 연습 기록 2건은 영구 삭제 직전 브라우저 도구 규칙의 사용자 확인을 기다리며 보존 중이다. [실행·근거·후속 상태](validation/2026-10-17-manual-tempo-reupload.md) · [기존 박자 원인 조사](validation/2026-10-17-recent-upload-rhythm-investigation.md).
 
 ## Next action
 
