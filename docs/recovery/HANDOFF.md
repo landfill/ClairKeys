@@ -6,7 +6,7 @@ Last updated: 2026-10-17 KST
 
 ## Current phase
 
-**3곡 수동 BPM 재업로드 완료, 기존 악보 영구 삭제 확인 대기**(2026-10-17). 사용자 지시로 원곡 BPM을 조사하고 새 103·104·105를 64.5·129·116 BPM으로 업로드해 completed/user를 확인했다. 새 악보는 비공개다. 기존 100·101·102와 연결 연습 기록 2건은 영구 삭제 직전 브라우저 도구 규칙의 사용자 확인을 기다리며 보존 중이다. [실행·근거·후속 상태](validation/2026-10-17-manual-tempo-reupload.md) · [기존 박자 원인 조사](validation/2026-10-17-recent-upload-rhythm-investigation.md).
+**3곡 수동 BPM 교체 완료**(2026-10-17). 새 103·104·105는 비공개·completed/user, 64.5·129·116 BPM이다. 사용자 영구 삭제 승인 후 기존 100·101·102와 연결 연습 기록 2건을 삭제했고 DB·목록에서 확인했다. 빠르기 교체는 기존 OMR 리듬 오류·Swing 미지원을 해결하지 않는다. [실행·근거·한계](validation/2026-10-17-manual-tempo-reupload.md) · [기존 박자 원인 조사](validation/2026-10-17-recent-upload-rhythm-investigation.md). 진행 중인 작업 없음.
 
 ## Next action
 
