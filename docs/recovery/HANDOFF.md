@@ -1,12 +1,14 @@
 # Current Handoff
 
-Last updated: 2026-10-17 KST
+Last updated: 2026-10-18 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
 
 **3곡 수동 BPM 교체 완료**(2026-10-17). 새 103·104·105는 비공개·completed/user, 64.5·129·116 BPM이다. 사용자 영구 삭제 승인 후 기존 100·101·102와 연결 연습 기록 2건을 삭제했고 DB·목록에서 확인했다. 빠르기 교체는 기존 OMR 리듬 오류·Swing 미지원을 해결하지 않는다. [실행·근거·한계](validation/2026-10-17-manual-tempo-reupload.md) · [기존 박자 원인 조사](validation/2026-10-17-recent-upload-rhythm-investigation.md). 진행 중인 작업 없음.
+
+2026-10-18 운영 동기화 확인: 웹·VM 실행 코드는 최신 main과 일치한다. 웹 이후 차이는 문서뿐, VM 이후 차이는 테스트 3개뿐이며 실행 Python 16개 해시가 일치한다. 전체 SHA 일치와는 구분한다. [확인 근거·한계](validation/2026-10-18-deployment-code-sync.md).
 
 ## Next action
 
