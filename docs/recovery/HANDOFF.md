@@ -1,10 +1,13 @@
 # Current Handoff
 
-Last updated: 2026-10-18 KST
+Last updated: 2026-10-21 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
+
+**AI 문구 제거 PR 리뷰 중**(2026-10-21). 홈 2단계·페이지 metadata·PWA manifest의 사실과 다른 AI 표현을 OMR 엔진·건반 애니메이션 기준 문구로 바꿨다. 병합은 사용자 승인 대기. [리뷰 로그](reviews/PR-258.md) · [검증](validation/2026-10-21-copy-remove-ai-claim.md).
+로컬 Windows 전체 Jest는 12개 묶음이 환경 때문에 main에서도 똑같이 실패한다(CRLF·`c:` ESM URL·`python3`). Linux CI로 판정한다.
 
 **3곡 수동 BPM 교체 완료**(2026-10-17). 새 103·104·105는 비공개·completed/user, 64.5·129·116 BPM이다. 사용자 영구 삭제 승인 후 기존 100·101·102와 연결 연습 기록 2건을 삭제했고 DB·목록에서 확인했다. 빠르기 교체는 기존 OMR 리듬 오류·Swing 미지원을 해결하지 않는다. [실행·근거·한계](validation/2026-10-17-manual-tempo-reupload.md) · [기존 박자 원인 조사](validation/2026-10-17-recent-upload-rhythm-investigation.md). 진행 중인 작업 없음.
 
