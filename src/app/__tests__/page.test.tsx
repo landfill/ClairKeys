@@ -43,6 +43,12 @@ describe('Home — 로그인 전 가치 전달 (DS-2)', () => {
     expect(screen.getByRole('heading', { name: '어떻게 되나요' })).toBeInTheDocument()
     expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(3)
   })
+
+  it('credits the score recognition engine, not AI, for reading notes', () => {
+    const { container } = render(<Home />)
+    expect(screen.getByRole('heading', { level: 3, name: '악보 인식 엔진이 음표를 읽습니다' })).toBeInTheDocument()
+    expect(container.textContent).not.toMatch(/\bAI\b/)
+  })
 })
 
 describe('Home — 접근성 가드', () => {

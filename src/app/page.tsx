@@ -6,7 +6,7 @@ import { MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
 
 const STEPS = [
   { step: '1', title: 'PDF 악보를 올립니다', body: '가지고 있는 악보 파일을 그대로.' },
-  { step: '2', title: 'AI가 음표를 읽습니다', body: '1~3분. 페이지를 닫아도 됩니다.' },
+  { step: '2', title: '악보 인식 엔진이 음표를 읽습니다', body: '1~3분. 페이지를 닫아도 됩니다.' },
   { step: '3', title: '보면서 연습합니다', body: '속도를 늦춰 따라갈 수 있습니다.' },
 ]
 

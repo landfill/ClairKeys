@@ -23,8 +23,8 @@ export const viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "ClairKeys - AI 피아노 학습 앱",
-  description: "PDF 악보를 업로드하여 피아노 애니메이션으로 학습하는 AI 기반 피아노 앱",
+  title: "ClairKeys - 따라 치는 건반 애니메이션",
+  description: "PDF 악보를 올리면 떨어지는 노트와 건반 애니메이션으로 바꿔, 보면서 따라 칠 수 있게 해 주는 피아노 연습 앱",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

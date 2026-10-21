@@ -1,5 +1,6 @@
 import React from 'react'
-import RootLayout, { viewport } from '../layout'
+import RootLayout, { metadata, viewport } from '../layout'
+import manifest from '../../../public/manifest.json'
 import MainLayout from '@/components/layout/MainLayout'
 
 jest.mock('next/font/google', () => ({
@@ -65,5 +66,21 @@ describe('RootLayout accessibility contract', () => {
     }
 
     expect(countMainLandmarks(tree)).toBe(1)
+  })
+})
+
+describe('Product description claims', () => {
+  // 악보 변환은 Audiveris OMR 엔진이 한다. 서비스에 AI 기능이 없으므로 AI를 내세우지 않는다.
+  it('does not advertise AI in page metadata or the PWA manifest', () => {
+    const texts = [metadata.title, metadata.description, manifest.name, manifest.description]
+    for (const text of texts) {
+      expect(String(text)).not.toMatch(/\bAI\b/)
+    }
+  })
+
+  it('names the app by its keyboard animation and keeps metadata and manifest in sync', () => {
+    expect(metadata.title).toBe('ClairKeys - 따라 치는 건반 애니메이션')
+    expect(manifest.name).toBe(metadata.title)
+    expect(manifest.description).toBe(metadata.description)
   })
 })
