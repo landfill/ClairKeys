@@ -1,6 +1,6 @@
 # Current Handoff
 
-Last updated: 2026-10-21 KST
+Last updated: 2026-10-25 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
@@ -9,7 +9,7 @@ Last updated: 2026-10-21 KST
 **AI 문구 제거 병합 완료**(2026-10-21, PR258 → `e55a495`). 홈 2단계·페이지 metadata·PWA manifest의 사실과 다른 AI 표현을 OMR 엔진·건반 애니메이션 기준 문구로 바꿨다. Post-merge는 검증된 생략, 브랜치 정리 완료. 진행 중인 작업 없음. [리뷰 로그](reviews/PR-258.md) · [검증](validation/2026-10-21-copy-remove-ai-claim.md).
 로컬 Windows 전체 Jest는 12개 묶음이 환경 때문에 main에서도 똑같이 실패한다(CRLF·`c:` ESM URL·`python3`). Linux CI로 판정한다.
 
-**3곡 수동 BPM 교체 완료**(2026-10-17). 새 103·104·105는 비공개·completed/user, 64.5·129·116 BPM이다. 사용자 영구 삭제 승인 후 기존 100·101·102와 연결 연습 기록 2건을 삭제했고 DB·목록에서 확인했다. 빠르기 교체는 기존 OMR 리듬 오류·Swing 미지원을 해결하지 않는다. [실행·근거·한계](validation/2026-10-17-manual-tempo-reupload.md) · [기존 박자 원인 조사](validation/2026-10-17-recent-upload-rhythm-investigation.md). 진행 중인 작업 없음.
+**토토로 단독 재업로드 완료**(2026-10-25). 사용자 요청으로 기존 104를 원본 PDF에서 새 106으로 교체했다. 비공개·애니메이션·수동 129 BPM을 유지했고 변환 완료 후 104 삭제·다른 여섯 곡 보존을 목록에서 확인했다. 새 결과의 1마디 리듬 경고는 남아 있다. [실행·검증·한계](validation/2026-10-25-totoro-reupload.md). 이전 세 곡의 빠르기 지정·박자 조사는 [10월 17일 기록](validation/2026-10-17-manual-tempo-reupload.md)에 있다. 진행 중인 작업 없음.
 
 2026-10-18 운영 동기화 확인: 웹·VM 실행 코드는 최신 main과 일치한다. 웹 이후 차이는 문서뿐, VM 이후 차이는 테스트 3개뿐이며 실행 Python 16개 해시가 일치한다. 전체 SHA 일치와는 구분한다. [확인 근거·한계](validation/2026-10-18-deployment-code-sync.md).
 
