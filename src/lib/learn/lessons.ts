@@ -29,7 +29,7 @@ export const LEARN_LESSONS: LearnLesson[] = [
   },
   {
     id: 'practice', title: '연습 방법', href: '/learn/practice', description: '한 부분씩 나누어 천천히 연습하는 방법을 알아봐요.', available: true,
-    topics: ['느린 속도', '한 손 연습', 'A-B 구간 반복', '기다리기 모드', '메트로놈', '단축키'], activity: '재생 화면의 연습 설정과 단축키 알아보기',
+    topics: ['재생 화면', '느린 속도', '한 손 연습', 'A-B 구간 반복', '기다리기 모드', '메트로놈', '단축키'], activity: '재생 화면 그림의 번호를 눌러 버튼과 설정 알아보기',
   },
 ]
 
