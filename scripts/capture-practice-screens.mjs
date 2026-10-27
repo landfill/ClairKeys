@@ -20,8 +20,10 @@ import { createHash } from 'node:crypto'
 import { readFile, readdir, rm, writeFile, mkdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
+// fileURLToPath, not URL.pathname: the latter keeps %20 and gives /C:/... on Windows.
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const baseArg = process.argv.indexOf('--base')
 const base = baseArg > 0 ? process.argv[baseArg + 1] : 'http://localhost:3000'
 const imageDir = path.join(root, 'public/learn/practice')
