@@ -14,7 +14,7 @@ Last updated: 2026-10-27 KST
 ## Next action
 
 - PR259: CI·리뷰 지적을 확인하고 대응한다. 병합은 사용자가 이 PR을 명시적으로 승인한 뒤에만 한다.
-- [PR260](https://github.com/landfill/ClairKeys/pull/260)(2026-10-27): 운영 의존성 감사가 main에서 31건으로 실패해 모든 PR의 `Security Audit`이 막혔다. `next` 15.5.28, `jimp`를 개발 의존성으로(D-095), `undici` 하한. 병합 전까지 다른 PR의 `Security Audit` 실패는 이 원인이다. [리뷰 로그](reviews/PR-260.md) · [검증](validation/2026-10-27-deps-audit-next-15-5-28.md).
+- [PR260](https://github.com/landfill/ClairKeys/pull/260) 병합(2026-10-27, `39af02d`): `next` 15.5.28, `jimp` 개발 의존성(D-095), `undici` 하한으로 운영 의존성 감사를 복구했다. Post-merge는 검증된 생략. 브랜치 `codex/deps-audit-2026-10`(로컬·원격, 모두 main에 포함)은 세션 권한으로 지우지 못해 남아 있다. [리뷰 로그](reviews/PR-260.md) · [검증](validation/2026-10-27-deps-audit-next-15-5-28.md).
 - 로그인 사용자 개인화 1단계를 이슈 세 개로 등록했다(2026-10-10, 모두 미착수. 이슈 등록만으로 PR을 만들지 않는다):
   [#247](https://github.com/landfill/ClairKeys/issues/247) 홈·내 악보의 최근 연습한 곡,
   [#248](https://github.com/landfill/ClairKeys/issues/248) 곡별 속도·손 선택·반복 구간의 기기 저장,
@@ -35,7 +35,7 @@ Last updated: 2026-10-27 KST
 - 범위 밖 flaky 후속 후보와 한계: [PR255](reviews/PR-255.md), [PR256](reviews/PR-256.md), [#254 검증](validation/2026-10-11-e2e-254-sample-wait.md). 원인 확인 없이 별도 제품 결함으로 단정하지 않는다.
 - 현재 구현 워커 지시(사용자 2026-10-11): Codex `codex --model gpt-6.1-sol -c model_reasoning_effort="high" -s workspace-write -a never`, 워크트리 없이 브랜치만. 구현 워커는 한 번에 하나다. 이번 결과는 각 PR 리뷰·검증 기록에 있다.
 
-- #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 그때 올리지 않았고, critical이 더해져 PR260에서 15.5.28로 올린다.
+- #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 그때 올리지 않았고, critical이 더해져 PR260에서 15.5.28로 올렸다.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
   재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
