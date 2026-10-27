@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useId, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { spotAnchor, type PlaybackScreen, type ScreenVariant } from '@/lib/learn/practiceScreens'
 
 /**
@@ -13,6 +13,9 @@ import { spotAnchor, type PlaybackScreen, type ScreenVariant } from '@/lib/learn
  * 화면 폭이 아니라 본문 폭(container query)으로 고르는 이유: 1024px부터 목차가 옆에 붙어 본문이 다시 좁아진다.
  * 768px보다 좁은 본문에 데스크톱 캡처를 넣으면 글자가 10px 아래로 줄어 읽기 어렵다.
  * 같은 번호가 두 그림에서 같은 조작을 가리킨다. 숨겨진 쪽 그림은 `display: none`이라 지연 로딩으로 내려받지 않는다.
+ *
+ * `displayWidth`가 있는 그림(휴대폰의 가로 재생 화면)은 그 폭으로 그리고 옆으로 밀어 보게 한다.
+ * 본문 폭에 맞춰 줄이면 글자가 5px대가 되고 번호표끼리 겹친다. 번호를 고르면 그 번호가 보이도록 옆으로 옮긴다.
  */
 const VARIANTS: { variant: ScreenVariant; className: string; sizes: string }[] = [
   { variant: 'mobile', className: 'mx-auto max-w-[390px] @min-[768px]:hidden', sizes: '390px' },
@@ -30,6 +33,19 @@ export default function PlaybackScreenGuide({ screen }: { screen: PlaybackScreen
   const spot = screen.spots[active]
   const total = screen.spots.length
   const pictureRefs = useRef<Partial<Record<ScreenVariant, HTMLDivElement | null>>>({})
+
+  useEffect(() => {
+    for (const picture of Object.values(pictureRefs.current)) {
+      const scroller = picture?.querySelector<HTMLElement>('[data-screen-scroller]')
+      const badge = scroller?.querySelector<HTMLElement>(`[data-screen-badge="${screen.spots[active].id}"]`)
+      // 숨겨진 그림(폭 0)이나 넘치지 않는 그림은 건드리지 않는다. 세로 스크롤은 하지 않는다.
+      if (!scroller || !badge || scroller.clientWidth === 0 || scroller.scrollWidth <= scroller.clientWidth) continue
+      const view = scroller.getBoundingClientRect()
+      const mark = badge.getBoundingClientRect()
+      if (mark.left >= view.left && mark.right <= view.right) continue
+      scroller.scrollBy?.({ left: mark.left + mark.width / 2 - (view.left + view.width / 2), behavior: 'smooth' })
+    }
+  }, [active, screen.spots])
 
   /**
    * 번호표는 Tab 한 번으로 들어가고(고른 번호만 tabIndex 0) 방향키로 옮긴다. 번호표마다 Tab을 받으면
@@ -71,15 +87,19 @@ export default function PlaybackScreenGuide({ screen }: { screen: PlaybackScreen
           const focusable = focusableIn(variant)
           return (
             <div key={variant} data-variant={variant} className={className} ref={node => { pictureRefs.current[variant] = node }}>
-              {/* 번호표가 그림 가장자리 밖으로 반쯤 나가도 잘리지 않도록 여백을 둔다. */}
-              <div className="rounded-xl border border-rule bg-surface-muted p-3">
-                <div className="relative">
+              {/* 번호표가 그림 가장자리 밖으로 반쯤 나가도 잘리지 않도록 여백을 둔다. 옆으로 미는 그림은 여백까지 스크롤 안에 둔다. */}
+              <div className={`rounded-xl border border-rule bg-surface-muted ${shot.displayWidth ? '' : 'p-3'}`}>
+                <div
+                  data-screen-scroller={shot.displayWidth ? '' : undefined}
+                  className={shot.displayWidth ? 'overflow-x-auto p-3' : undefined}
+                >
+                <div className="relative" style={shot.displayWidth ? { width: shot.displayWidth } : undefined}>
                   <Image
                     src={shot.src}
                     alt={screen.alt}
                     width={shot.width}
                     height={shot.height}
-                    sizes={sizes}
+                    sizes={shot.displayWidth ? `${shot.displayWidth}px` : sizes}
                     className="block h-auto w-full rounded-md"
                   />
                   {rects.map(([left, top, width, height], index) => (
@@ -124,7 +144,11 @@ export default function PlaybackScreenGuide({ screen }: { screen: PlaybackScreen
                     )
                   })}
                 </div>
+                </div>
               </div>
+              {shot.displayWidth && screen.scrollNote && (
+                <p data-lesson-note className="mt-2 text-sm text-ink-muted">{screen.scrollNote}</p>
+              )}
             </div>
           )
         })}

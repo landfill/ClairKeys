@@ -52,7 +52,8 @@ describe('playback screen tour data', () => {
     for (const screen of PLAYBACK_SCREENS) {
       for (const variant of ['mobile', 'desktop'] as const) {
         const shot = screen.shots[variant]
-        const scale = NARROWEST[variant] / shot.width
+        // 옆으로 미는 그림은 본문 폭과 상관없이 displayWidth로 그린다.
+        const scale = (shot.displayWidth ?? NARROWEST[variant]) / shot.width
         const points = screen.spots
           .filter(spot => shot.hotspots[spot.id])
           .map(spot => {

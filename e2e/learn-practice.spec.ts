@@ -71,6 +71,31 @@ for (const { width, variant, hidden } of [
   })
 }
 
+test('lets a phone reader slide the landscape playing capture to the picked control', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/learn/practice')
+  const picture = page.locator('[data-screen-guide="playing"] [data-variant="mobile"]')
+  const scroller = picture.locator('[data-screen-scroller]')
+  await scroller.scrollIntoViewIfNeeded()
+  await expect(picture.getByText('휴대폰에서는 재생하면 화면이 가로로 바뀌어서')).toBeVisible()
+  const widths = await scroller.evaluate(element => ({ scroll: element.scrollWidth, client: element.clientWidth }))
+  expect(widths.scroll).toBeGreaterThan(widths.client)
+
+  // 다음을 눌러 오른쪽 끝의 음량(6번)까지 가면 그림이 그 번호가 보이도록 옆으로 움직인다.
+  const next = page.locator('[data-screen-guide="playing"]').getByRole('button', { name: '다음 →' })
+  for (let i = 0; i < 5; i++) await next.click()
+  const volume = picture.getByRole('button', { name: /^6\. 음량$/ })
+  await expect(volume).toHaveAttribute('aria-pressed', 'true')
+  await expect.poll(() => scroller.evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
+  await expect.poll(async () => {
+    const [view, mark] = await Promise.all([scroller.boundingBox(), volume.boundingBox()])
+    return Boolean(view && mark && mark.x >= view.x && mark.x + mark.width <= view.x + view.width)
+  }).toBe(true)
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+  expect(overflow).toBeLessThanOrEqual(1)
+})
+
 test('opens practice help from the playback setup screen in the same tab', async ({ page }) => {
   await page.addInitScript(() => {
     if ('serviceWorker' in navigator) {

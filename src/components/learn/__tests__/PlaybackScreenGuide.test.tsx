@@ -94,3 +94,17 @@ it('keeps the phone picture reachable by Tab while a desktop-only control is exp
   fireEvent.keyDown(mobileBadges.at(-1)!, { key: 'ArrowLeft' })
   expect(mobileBadges.at(-2)).toHaveFocus()
 })
+
+it('draws the phone landscape playing capture at its own width inside a sideways scroller', () => {
+  const playing = PLAYBACK_SCREENS.find(item => item.id === 'playing')!
+  expect(playing.shots.mobile.displayWidth).toBeGreaterThan(390)
+  render(<PlaybackScreenGuide screen={playing} />)
+  const mobile = variantOf('mobile')
+  const scroller = mobile.querySelector<HTMLElement>('[data-screen-scroller]')!
+  expect(scroller).toBeInTheDocument()
+  expect((scroller.firstElementChild as HTMLElement).style.width).toBe(`${playing.shots.mobile.displayWidth}px`)
+  expect(within(mobile).getByText(playing.scrollNote!)).toHaveAttribute('data-lesson-note')
+  // 데스크톱 그림은 본문 폭에 맞춰 그리고 옆으로 밀지 않는다.
+  expect(variantOf('desktop').querySelector('[data-screen-scroller]')).toBeNull()
+  expect(within(variantOf('desktop')).queryByText(playing.scrollNote!)).toBeNull()
+})

@@ -35,9 +35,17 @@ const PAD = 16
  */
 const PLAYING_HEADROOM = 36
 
+/**
+ * Phones are captured as a touch device (coarse pointer), because the player
+ * lays out differently for one: during playback a phone held upright turns the
+ * player to landscape (usePlaybackOrientation), and the two-row compact bar is
+ * for narrow mouse windows only. The playing capture is therefore the 844x390
+ * landscape screen a phone actually shows. `displayWidth` tells the lesson to
+ * draw that wide picture at a readable width and let it scroll sideways.
+ */
 const VIEWPORTS = {
-  mobile: { setup: { width: 390, height: 844 }, playing: { width: 390, height: 700 } },
-  desktop: { setup: { width: 1024, height: 800 }, playing: { width: 1024, height: 680 } },
+  mobile: { touch: true, setup: { width: 390, height: 844 }, playing: { width: 844, height: 390 }, playingDisplayWidth: 640 },
+  desktop: { touch: false, setup: { width: 1024, height: 800 }, playing: { width: 1024, height: 680 } },
 }
 
 /** Locators per hotspot id. Several locators are joined into one box. */
@@ -162,8 +170,8 @@ function clipAround(boxes, viewportWidth, { fullWidth = false, maxBottom = Infin
   return { x, y, width: right - x, height: bottom - y }
 }
 
-async function openPlayer(browser, viewport) {
-  const page = await browser.newPage({ viewport, deviceScaleFactor: SCALE, hasTouch: false })
+async function openPlayer(browser, viewport, touch) {
+  const page = await browser.newPage({ viewport, deviceScaleFactor: SCALE, hasTouch: touch, isMobile: touch })
   await page.addInitScript(() => {
     // Remembered player preferences would leak into the picture.
     try { localStorage.clear() } catch { /* storage disabled */ }
@@ -200,14 +208,14 @@ async function main() {
     for (const variant of ['mobile', 'desktop']) {
       const sizes = VIEWPORTS[variant]
 
-      const setupPage = await openPlayer(browser, sizes.setup)
+      const setupPage = await openPlayer(browser, sizes.setup, sizes.touch)
       const setupSpots = await locate(setupPage, SETUP_SPOTS, variant)
       const box = await setupPage.getByTestId('playback-box').boundingBox()
       const setupClip = clipAround(Object.values(setupSpots).flat(), sizes.setup.width, { maxBottom: box ? box.y - 1 : Infinity })
       result.setup[variant] = await save(setupPage, `setup-${variant}`, setupClip, setupSpots)
       await setupPage.close()
 
-      const playPage = await openPlayer(browser, sizes.playing)
+      const playPage = await openPlayer(browser, sizes.playing, sizes.touch)
       await playPage.getByTestId('playback-play').click()
       await playPage.getByTestId('compact-playback-bar').waitFor()
       // Let the first notes reach the keys, then hold the frame still.
@@ -220,6 +228,7 @@ async function main() {
       const playSpots = await locate(playPage, PLAYING_SPOTS, variant)
       const playClip = clipAround(Object.values(playSpots).flat(), sizes.playing.width, { fullWidth: true })
       result.playing[variant] = await save(playPage, `playing-${variant}`, playClip, playSpots, PLAYING_HEADROOM)
+      if (sizes.playingDisplayWidth) result.playing[variant].displayWidth = sizes.playingDisplayWidth
       await playPage.close()
     }
   } finally {

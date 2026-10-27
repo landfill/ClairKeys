@@ -18,6 +18,8 @@ export interface ScreenShot {
   width: number
   height: number
   hotspots: Record<string, ScreenRect[]>
+  /** 이 폭(CSS px)으로 그리고 옆으로 밀어 보게 한다. 휴대폰의 가로 재생 화면처럼 넓은 그림에만 있다. */
+  displayWidth?: number
 }
 
 export type ScreenVariant = 'mobile' | 'desktop'
@@ -47,6 +49,8 @@ export interface PlaybackScreen {
   title: string
   intro: string
   alt: string
+  /** 옆으로 미는 그림 아래에 붙는 안내. */
+  scrollNote?: string
   spots: ScreenSpot[]
   shots: Record<ScreenVariant, ScreenShot>
 }
@@ -138,6 +142,7 @@ export const PLAYBACK_SCREENS: PlaybackScreen[] = [
     id: 'playing',
     title: '재생 중 화면',
     intro: '재생하면 노트가 화면을 넓게 쓰도록 조작이 맨 위 한 줄로 모여요. 일시정지해도 이 화면에 머물러요.',
+    scrollNote: '휴대폰에서는 재생하면 화면이 가로로 바뀌어서, 이 그림도 가로 화면이에요. 그림을 옆으로 밀면 오른쪽 조작도 보여요.',
     alt: '재생 중 화면. 맨 위 한 줄에 재생·일시정지, A·B·초기화, 정지 버튼, 재생 위치 막대, 속도 메뉴, 음량 막대가 있고, 그 아래에 빠르기 표시, 떨어지는 노트와 피아노 건반이 있어요.',
     shots: shots.playing,
     spots: [
@@ -162,7 +167,7 @@ export const PLAYBACK_SCREENS: PlaybackScreen[] = [
         id: 'progress', label: '재생 위치',
         description: `막대를 눌러 위치를 옮겨요. 키보드에서는 ←·→ 키로 ${SEEK_STEP_SEC}초씩 움직여요. 넓은 화면에서는 왼쪽에 지금 시간과 곡 길이가 나와요.`,
         more: section('keyboard-shortcuts', '키보드 단축키'),
-        anchor: { mobile: 'end', desktop: 'above' },
+        anchor: 'above',
       },
       {
         id: 'speed', label: '재생 속도',
