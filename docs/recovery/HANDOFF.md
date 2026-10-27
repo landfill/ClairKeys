@@ -13,7 +13,7 @@ Last updated: 2026-10-27 KST
 
 ## Next action
 
-- 병합된 브랜치 `claude/sleepy-mccarthy-d3uoyb`(PR259)와 `codex/deps-audit-2026-10`(PR260)은 로컬·원격 모두 main에 포함됐지만 클라우드 세션의 권한 검사가 삭제를 막아 남아 있다. 사용자가 지운다.
+- 병합된 원격 브랜치 `claude/sleepy-mccarthy-d3uoyb`(PR259)와 `codex/deps-audit-2026-10`(PR260)이 남아 있다(둘 다 main에 포함, 고유 커밋 0). 사용자 지시(2026-10-27)로 지우려 했으나 클라우드 세션의 `git push --delete`가 HTTP 403으로 거부됐다(main push는 됨). GitHub에서 PR의 Delete branch로 지운다. 로컬 브랜치는 지웠다.
 - [PR260](https://github.com/landfill/ClairKeys/pull/260) 병합(2026-10-27, `39af02d`): `next` 15.5.28, `jimp` 개발 의존성(D-095), `undici` 하한으로 운영 의존성 감사를 복구했다. Post-merge는 검증된 생략. [리뷰 로그](reviews/PR-260.md) · [검증](validation/2026-10-27-deps-audit-next-15-5-28.md).
 - 로그인 사용자 개인화 1단계를 이슈 세 개로 등록했다(2026-10-10, 모두 미착수. 이슈 등록만으로 PR을 만들지 않는다):
   [#247](https://github.com/landfill/ClairKeys/issues/247) 홈·내 악보의 최근 연습한 곡,
