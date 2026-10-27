@@ -6,15 +6,15 @@ Last updated: 2026-10-27 KST
 
 ## Current phase
 
-**연습 방법 레슨 재생 화면 둘러보기**(2026-10-27, [PR259](https://github.com/landfill/ClairKeys/pull/259)). 사용자 요청으로 `/learn/practice` 맨 앞에 실제 재생 화면 캡처와 번호별 설명을 더했다. 재생 화면은 그대로다(D-094). 캡처·위치는 스크립트가 만든다(D-103). PR 상태는 리뷰 로그와 GitHub에서 확인한다. [리뷰 로그](reviews/PR-259.md) · [검증](validation/2026-10-27-learn-practice-screen-tour.md).
+**연습 방법 레슨 재생 화면 둘러보기 병합 완료**(2026-10-27, [PR259](https://github.com/landfill/ClairKeys/pull/259) → `61b04ab`). `/learn/practice` 맨 앞에 실제 재생 화면 캡처와 번호별 설명을 더했다. 재생 화면은 그대로다(D-094). 캡처·위치는 스크립트가 만든다(D-103). Post-merge는 검증된 생략. 진행 중인 작업 없음. [리뷰 로그](reviews/PR-259.md) · [검증](validation/2026-10-27-learn-practice-screen-tour.md).
 로컬 Windows 전체 Jest는 12개 묶음이 환경 때문에 main에서도 똑같이 실패한다(CRLF·`c:` ESM URL·`python3`). Linux CI로 판정한다([근거](validation/2026-10-21-copy-remove-ai-claim.md)).
 
 2026-10-18 운영 동기화 확인: 웹·VM 실행 코드는 최신 main과 일치한다. 웹 이후 차이는 문서뿐, VM 이후 차이는 테스트 3개뿐이며 실행 Python 16개 해시가 일치한다. 전체 SHA 일치와는 구분한다. [확인 근거·한계](validation/2026-10-18-deployment-code-sync.md).
 
 ## Next action
 
-- PR259: CI·리뷰 지적을 확인하고 대응한다. 병합은 사용자가 이 PR을 명시적으로 승인한 뒤에만 한다.
-- [PR260](https://github.com/landfill/ClairKeys/pull/260) 병합(2026-10-27, `39af02d`): `next` 15.5.28, `jimp` 개발 의존성(D-095), `undici` 하한으로 운영 의존성 감사를 복구했다. Post-merge는 검증된 생략. 브랜치 `codex/deps-audit-2026-10`(로컬·원격, 모두 main에 포함)은 세션 권한으로 지우지 못해 남아 있다. [리뷰 로그](reviews/PR-260.md) · [검증](validation/2026-10-27-deps-audit-next-15-5-28.md).
+- 병합된 브랜치 `claude/sleepy-mccarthy-d3uoyb`(PR259)와 `codex/deps-audit-2026-10`(PR260)은 로컬·원격 모두 main에 포함됐지만 클라우드 세션의 권한 검사가 삭제를 막아 남아 있다. 사용자가 지운다.
+- [PR260](https://github.com/landfill/ClairKeys/pull/260) 병합(2026-10-27, `39af02d`): `next` 15.5.28, `jimp` 개발 의존성(D-095), `undici` 하한으로 운영 의존성 감사를 복구했다. Post-merge는 검증된 생략. [리뷰 로그](reviews/PR-260.md) · [검증](validation/2026-10-27-deps-audit-next-15-5-28.md).
 - 로그인 사용자 개인화 1단계를 이슈 세 개로 등록했다(2026-10-10, 모두 미착수. 이슈 등록만으로 PR을 만들지 않는다):
   [#247](https://github.com/landfill/ClairKeys/issues/247) 홈·내 악보의 최근 연습한 곡,
   [#248](https://github.com/landfill/ClairKeys/issues/248) 곡별 속도·손 선택·반복 구간의 기기 저장,
