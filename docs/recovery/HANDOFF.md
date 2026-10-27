@@ -1,20 +1,19 @@
 # Current Handoff
 
-Last updated: 2026-10-25 KST
+Last updated: 2026-10-27 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
 
-**AI 문구 제거 병합 완료**(2026-10-21, PR258 → `e55a495`). 홈 2단계·페이지 metadata·PWA manifest의 사실과 다른 AI 표현을 OMR 엔진·건반 애니메이션 기준 문구로 바꿨다. Post-merge는 검증된 생략, 브랜치 정리 완료. 진행 중인 작업 없음. [리뷰 로그](reviews/PR-258.md) · [검증](validation/2026-10-21-copy-remove-ai-claim.md).
-로컬 Windows 전체 Jest는 12개 묶음이 환경 때문에 main에서도 똑같이 실패한다(CRLF·`c:` ESM URL·`python3`). Linux CI로 판정한다.
-
-**토토로 단독 재업로드 완료**(2026-10-25). 사용자 요청으로 기존 104를 원본 PDF에서 새 106으로 교체했다. 비공개·애니메이션·수동 129 BPM을 유지했고 변환 완료 후 104 삭제·다른 여섯 곡 보존을 목록에서 확인했다. 새 결과의 1마디 리듬 경고는 남아 있다. [실행·검증·한계](validation/2026-10-25-totoro-reupload.md). 이전 세 곡의 빠르기 지정·박자 조사는 [10월 17일 기록](validation/2026-10-17-manual-tempo-reupload.md)에 있다. 진행 중인 작업 없음.
+**연습 방법 레슨 재생 화면 둘러보기**(2026-10-27, [PR259](https://github.com/landfill/ClairKeys/pull/259)). 사용자 요청으로 `/learn/practice` 맨 앞에 실제 재생 화면 캡처와 번호별 설명을 더했다. 재생 화면은 그대로다(D-094). 캡처·위치는 스크립트가 만든다(D-103). PR 상태는 리뷰 로그와 GitHub에서 확인한다. [리뷰 로그](reviews/PR-259.md) · [검증](validation/2026-10-27-learn-practice-screen-tour.md).
+로컬 Windows 전체 Jest는 12개 묶음이 환경 때문에 main에서도 똑같이 실패한다(CRLF·`c:` ESM URL·`python3`). Linux CI로 판정한다([근거](validation/2026-10-21-copy-remove-ai-claim.md)).
 
 2026-10-18 운영 동기화 확인: 웹·VM 실행 코드는 최신 main과 일치한다. 웹 이후 차이는 문서뿐, VM 이후 차이는 테스트 3개뿐이며 실행 Python 16개 해시가 일치한다. 전체 SHA 일치와는 구분한다. [확인 근거·한계](validation/2026-10-18-deployment-code-sync.md).
 
 ## Next action
 
+- PR259: CI·리뷰 지적을 확인하고 대응한다. 병합은 사용자가 이 PR을 명시적으로 승인한 뒤에만 한다.
 - 로그인 사용자 개인화 1단계를 이슈 세 개로 등록했다(2026-10-10, 모두 미착수. 이슈 등록만으로 PR을 만들지 않는다):
   [#247](https://github.com/landfill/ClairKeys/issues/247) 홈·내 악보의 최근 연습한 곡,
   [#248](https://github.com/landfill/ClairKeys/issues/248) 곡별 속도·손 선택·반복 구간의 기기 저장,
@@ -39,6 +38,7 @@ Last updated: 2026-10-25 KST
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
   재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
+- 연습 방법 레슨의 재생 화면 캡처(D-103): 재생 화면의 조작을 더하거나 옮기거나 이름을 바꾸면 production 서버에서 `scripts/capture-practice-screens.mjs`를 다시 돌리고 그림과 JSON을 함께 커밋한다.
 - LEARN이 남긴 제약: 터치 재생 전 요소 수 합계가 기준과 같다(27). 재생 화면에 요소를 더하려면 다른 것을 빼야 한다(D-094 6항, `e2e/playback-element-count.spec.ts`).
   실기기 터치·회전, 실제 MIDI, 청취, 스크린리더는 미검증이다. 운영 비공개 원본 보호의 후속 읽기 확인은 아래 근거를 따른다.
 - 워커 운영 메모 추가(#250, 2026-10-10): `agy` 1.3.3은 여러 줄 셸 명령의 승인 창에 앞부분만 보여 준다(`⋯ (N lines hidden)`). 지시문에 "셸에서 실험하지 않는다"를 넣고 검증 명령만 돌리게 하면 승인이 줄어든다.
