@@ -3,7 +3,7 @@ import PracticePage, { metadata } from '../page'
 import { SEEK_STEP_SEC } from '@/hooks/usePlaybackShortcuts'
 import Footer from '@/components/layout/Footer'
 
-it('uses one lesson heading and presents the six real practice topics', () => {
+it('uses one lesson heading and presents the screen tour and the six real practice topics', () => {
   render(<><main><PracticePage /></main><Footer /></>)
   const lesson = within(screen.getByRole('main'))
   expect(metadata.title).toBeTruthy()
@@ -18,10 +18,10 @@ it('uses one lesson heading and presents the six real practice topics', () => {
   expect(screen.getByText('5단계 중 5단계')).toBeInTheDocument()
 
   const expectedHeadings = [
-    '느리게 시작', '한 손씩', 'A-B 구간 반복', '기다리기 모드', '메트로놈', '키보드 단축키',
+    '재생 화면 둘러보기', '느리게 시작', '한 손씩', 'A-B 구간 반복', '기다리기 모드', '메트로놈', '키보드 단축키',
   ]
   const expectedIds = [
-    'slow-start', 'one-hand', 'ab-loop', 'wait-mode', 'metronome', 'keyboard-shortcuts',
+    'screen-tour', 'slow-start', 'one-hand', 'ab-loop', 'wait-mode', 'metronome', 'keyboard-shortcuts',
   ]
 
   const h2s = lesson.getAllByRole('heading', { level: 2 })
@@ -37,6 +37,7 @@ it('uses one lesson heading and presents the six real practice topics', () => {
 
   // Section summaries inside each section
   const expectedSummaries = [
+    '재생 전 화면 · 재생 중 화면',
     '재생 전 설정 · 조작 바 › 속도 메뉴',
     '재생 전 설정 › 연습할 손',
     '재생 전 설정 · 조작 바 › A-B 구간 반복',
@@ -49,6 +50,12 @@ it('uses one lesson heading and presents the six real practice topics', () => {
     expect(section).toBeTruthy()
     expect(section).toHaveTextContent(expectedSummaries[index])
   })
+
+  // Screen tour: both playback screens, one numbered picture set each
+  const tour = within(screen.getByRole('region', { name: '재생 화면 둘러보기' }))
+  expect(tour.getAllByRole('heading', { level: 3 }).map(node => node.textContent)).toEqual(['재생 전 화면', '재생 중 화면'])
+  expect(tour.getByRole('figure', { name: '재생 전 화면' })).toBeInTheDocument()
+  expect(tour.getByRole('figure', { name: '재생 중 화면' })).toBeInTheDocument()
 
   // Body links
   expect(lesson.getByRole('link', { name: '건반 레슨' })).toHaveAttribute('href', '/learn/keyboard')

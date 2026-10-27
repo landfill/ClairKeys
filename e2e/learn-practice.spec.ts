@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-const topics = ['느리게 시작', '한 손씩', 'A-B 구간 반복', '기다리기 모드', '메트로놈', '키보드 단축키']
+const topics = ['재생 화면 둘러보기', '느리게 시작', '한 손씩', 'A-B 구간 반복', '기다리기 모드', '메트로놈', '키보드 단축키']
 
 for (const width of [320, 1280]) {
   test(`opens the public practice lesson and fits ${width} CSS pixels`, async ({ page }) => {
@@ -25,6 +25,76 @@ for (const width of [320, 1280]) {
     expect(overflow.bodyWidth).toBeLessThanOrEqual(overflow.clientWidth + 1)
   })
 }
+
+for (const { width, variant, hidden } of [
+  { width: 390, variant: 'mobile', hidden: 'desktop' },
+  { width: 1280, variant: 'desktop', hidden: 'mobile' },
+]) {
+  test(`points at playback controls on the ${variant} capture at ${width} CSS pixels`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/learn/practice')
+    const guide = page.locator('[data-screen-guide="setup"]')
+    const picture = guide.locator(`[data-variant="${variant}"]`)
+    await expect(picture).toBeVisible()
+    await expect(guide.locator(`[data-variant="${hidden}"]`)).toBeHidden()
+
+    const image = picture.getByRole('img')
+    await image.scrollIntoViewIfNeeded()
+    await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true)
+
+    // 번호표는 다른 번호표나 강조 상자에 가리지 않고, 누르는 자리가 44px이다.
+    const badges = picture.getByRole('button', { name: /^\d+\. / })
+    const count = await badges.count()
+    expect(count).toBeGreaterThan(8)
+    for (let i = 0; i < count; i++) {
+      const badge = badges.nth(i)
+      await badge.scrollIntoViewIfNeeded()
+      const hit = await badge.evaluate((element: HTMLElement) => {
+        const box = element.getBoundingClientRect()
+        const x = box.left + box.width / 2
+        const y = box.top + box.height / 2
+        const at = (dx: number, dy: number) => document.elementFromPoint(x + dx, y + dy) === element
+        return { center: at(0, 0), reach: at(-21, 0) || at(21, 0) || at(0, -21) || at(0, 21) }
+      })
+      expect(hit, await badge.getAttribute('aria-label') ?? '').toEqual({ center: true, reach: true })
+    }
+
+    await picture.getByRole('button', { name: /^4\. A-B 구간 반복$/ }).click()
+    const caption = guide.locator('figcaption')
+    await expect(caption).toContainText('A 시작은 지금 위치를 구간의 시작으로')
+    await expect(picture.getByTestId('screen-guide-highlight')).toBeVisible()
+    await caption.getByRole('link', { name: '‘A-B 구간 반복’ 설명 보기' }).click()
+    await expect(page).toHaveURL(/#ab-loop$/)
+
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+    expect(overflow).toBeLessThanOrEqual(1)
+  })
+}
+
+test('lets a phone reader slide the landscape playing capture to the picked control', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/learn/practice')
+  const picture = page.locator('[data-screen-guide="playing"] [data-variant="mobile"]')
+  const scroller = picture.locator('[data-screen-scroller]')
+  await scroller.scrollIntoViewIfNeeded()
+  await expect(picture.getByText('휴대폰에서는 재생하면 화면이 가로로 바뀌어서')).toBeVisible()
+  const widths = await scroller.evaluate(element => ({ scroll: element.scrollWidth, client: element.clientWidth }))
+  expect(widths.scroll).toBeGreaterThan(widths.client)
+
+  // 다음을 눌러 오른쪽 끝의 음량(6번)까지 가면 그림이 그 번호가 보이도록 옆으로 움직인다.
+  const next = page.locator('[data-screen-guide="playing"]').getByRole('button', { name: '다음 →' })
+  for (let i = 0; i < 5; i++) await next.click()
+  const volume = picture.getByRole('button', { name: /^6\. 음량$/ })
+  await expect(volume).toHaveAttribute('aria-pressed', 'true')
+  await expect.poll(() => scroller.evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
+  await expect.poll(async () => {
+    const [view, mark] = await Promise.all([scroller.boundingBox(), volume.boundingBox()])
+    return Boolean(view && mark && mark.x >= view.x && mark.x + mark.width <= view.x + view.width)
+  }).toBe(true)
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+  expect(overflow).toBeLessThanOrEqual(1)
+})
 
 test('opens practice help from the playback setup screen in the same tab', async ({ page }) => {
   await page.addInitScript(() => {

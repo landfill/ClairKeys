@@ -45,6 +45,7 @@ const TOC_LESSONS = [
     path: '/learn/practice',
     title: '연습 방법',
     sections: [
+      { id: 'screen-tour', title: '재생 화면 둘러보기' },
       { id: 'slow-start', title: '느리게 시작' },
       { id: 'one-hand', title: '한 손씩' },
       { id: 'ab-loop', title: 'A-B 구간 반복' },
@@ -537,10 +538,12 @@ test.describe('레슨 공통 레이아웃', () => {
           // 예외 요소들 명시적 제외:
           // 1. 학습용 피아노 건반(button[data-midi]): 검은 건반 폭(26px)이 44px 미만인 것은 확정 예외라 폭만 뺀다. 높이는 검사한다.
           // 2. 문장 안 링크([data-lesson-prose] p a): 문장 줄 안에 있으므로 높이만 검사한다(폭은 글자 길이를 따른다).
+          // 3. 재생 화면 그림의 번호표(button[data-screen-badge]): 보이는 원은 28px이고 누르는 자리는 ::before로 44px이다.
+          //    상자로는 잴 수 없어 learn-practice.spec이 elementFromPoint로 22px 밖까지 잡히는지 확인한다(D-103).
           // 3단계에서 reading의 음 선택 및 들어 보기 버튼이 모두 44px 이상으로 개편되어 예외가 제거됨.
           const elements = Array.from(document.querySelectorAll('main a[href], main button, main summary'))
           const issues: Array<{ tag: string; text: string; height: number; width: number; problem: string }> = []
-          const exemptCounts = { pianoKeyWidth: 0, proseLinkWidth: 0 }
+          const exemptCounts = { pianoKeyWidth: 0, proseLinkWidth: 0, screenBadge: 0 }
 
           for (const el of elements) {
             const rect = el.getBoundingClientRect()
@@ -550,6 +553,11 @@ test.describe('레슨 공통 레이아웃', () => {
             if (style.display === 'none' || style.visibility === 'hidden') continue
 
             const accessibleName = (el.getAttribute('aria-label') || el.textContent || '').trim()
+
+            if (el.matches('button[data-screen-badge]')) {
+              exemptCounts.screenBadge++
+              continue
+            }
 
             if (rect.height < 43.5) {
               issues.push({ tag: el.tagName, text: accessibleName.slice(0, 30), height: rect.height, width: rect.width, problem: 'height' })
