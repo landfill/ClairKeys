@@ -22,6 +22,8 @@ function sourceFiles(dir: string): string[] {
 }
 
 const productFiles = sourceFiles(path.join(root, 'src'))
+/** Repository-relative path with `/`, so the expectations hold on Windows checkouts too. */
+const relative = (file: string) => path.relative(root, file).split(path.sep).join('/')
 
 describe('dependency classification for the deployed-only audit gate', () => {
   it('keeps jimp out of the deployed dependencies', () => {
@@ -32,16 +34,16 @@ describe('dependency classification for the deployed-only audit gate', () => {
   it('imports jimp only from the development demo generator', () => {
     const importers = productFiles
       .filter(file => /from ['"]jimp['"]|require\(['"]jimp['"]\)/.test(readFileSync(file, 'utf8')))
-      .map(file => path.relative(root, file))
+      .map(relative)
     expect(importers).toEqual(['src/services/pdfParser.ts'])
   })
 
   it('reaches the demo generator from product code through type imports only', () => {
     const valueImporters = productFiles
-      .filter(file => !file.endsWith(path.join('services', 'pdfParser.ts')))
+      .filter(file => relative(file) !== 'src/services/pdfParser.ts')
       .filter(file => readFileSync(file, 'utf8').split('\n').some(line =>
         /(from|import\()\s*['"](\.\/|@\/services\/|\.\.\/services\/)pdfParser['"]/.test(line) && !/^\s*import type /.test(line)))
-      .map(file => path.relative(root, file))
+      .map(relative)
     expect(valueImporters).toEqual([])
   })
 })
