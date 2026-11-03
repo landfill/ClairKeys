@@ -26,6 +26,21 @@ export default function UserProfile({
   const { data: session, status } = useSession()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const [operator, setOperator] = useState<{ email: string; allowed: boolean } | null>(null)
+  const email = session?.user?.email
+  const isOperator = Boolean(email && operator?.email === email && operator.allowed)
+
+  useEffect(() => {
+    if (!email) return
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 7000)
+    let active = true
+    void fetch('/api/auth/is-admin', { cache: 'no-store', signal: controller.signal })
+      .then(response => response.ok ? response.json() : { isAdmin: false })
+      .then(value => { if (active) setOperator({ email, allowed: value.isAdmin === true }) })
+      .catch(() => { if (active) setOperator({ email, allowed: false }) })
+    return () => { active = false; clearTimeout(timeout); controller.abort() }
+  }, [email])
 
   // The backdrop closes the menu on a click, but a keyboard user has no way to
   // reach it. Escape also has to hand focus back: if it closes while focus is
@@ -73,7 +88,7 @@ export default function UserProfile({
 
   if (!showDropdown) {
     return (
-      <div className={`flex min-w-0 items-center gap-3 ${className}`}>
+      <div className={`flex min-w-0 flex-wrap items-center gap-3 ${className}`}>
         {avatar}
         <span
           data-testid="account-menu-label"
@@ -87,6 +102,7 @@ export default function UserProfile({
           no way to sign out at all.
         */}
         <LogoutButton className="shrink-0 text-sm text-state-error transition-colors hover:brightness-90" />
+        {isOperator && <Link href="/admin/omr" className="min-h-11 py-3 text-sm text-accent">OMR 모니터링</Link>}
       </div>
     )
   }
@@ -184,6 +200,7 @@ export default function UserProfile({
                 {link.label}
               </Link>
             ))}
+            {isOperator && <Link href="/admin/omr" className={ITEM_CLASSES} onClick={() => setIsDropdownOpen(false)}>OMR 모니터링</Link>}
 
             <div className="mt-1 border-t border-rule pt-1">
               <LogoutButton

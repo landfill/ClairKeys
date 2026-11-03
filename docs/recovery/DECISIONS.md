@@ -3569,3 +3569,44 @@
   `practiceScreens.test.ts`가 이름과 캡처의 짝, 그림 파일, 가장 좁은 표시 폭에서 번호표가 겹치지 않는지를 확인한다. 겹치면 그 조작의 `anchor`를 옮긴다.
   재생 화면 자체에는 아무것도 더하지 않는다(D-094).
 - Related: D-094, D-099, #236, phases/LEARN-beginner-learning.md
+
+## D-104: OMR 관측은 기존 서비스의 운영자 전용 읽기 페이지로 파일럿한다
+
+- Date: 2026-11-03
+- Status: Proposed; merge pending
+- Context: #121 보류 중 사용자 요청으로 내부 히든 메뉴 파일럿만 재개한다.
+- Decision:
+  1. `/admin/omr`와 서버 API 각각 기존 세션·ADMIN_EMAILS로 권한을 검사한다. 메뉴 숨김은 권한 검사를 대신하지 않는다.
+  2. 브라우저는 Next.js만 호출한다. Next.js는 고정 OMR origin의 인증된 JSON 스냅샷을 timeout·no-store·응답 allowlist로 읽는다.
+  3. 별도 플랫폼·DB 없이 실행 중 작업과 최근 완료 최대 100건·1시간을 프로세스 메모리에 관측한다.
+     집계는 보존된 작업 기준이며 process 시작 시 초기화된다. Audiveris semaphore 획득 시 실제 대기 종료를 계측한다.
+  4. 자원은 측정 대상을 명시한다. 호스트 메모리·`/data` 파일시스템은 별도 최소 권한 systemd timer가
+     원자적으로 쓰는 작은 JSON을 컨테이너에서 읽기 전용으로 읽는다. 누락·30초 주기 대비 90초 이상 경과는 수집 누락·오래됨으로 표시한다.
+     Podman socket·host PID namespace·privileged·DB 자격증명을 추가하지 않는다.
+  5. 새 원문 로그 수집은 없다. snapshot은 파일명·사용자·callback 주소·원본·예외 원문을 포함하지 않는다.
+     기존 로그 보존 정책 변경과 수신자·경보 경로 선택은 외부 알림 단계에서 결정한다.
+  6. 계측은 기존 변환·결과·callback 계약을 바꾸지 않는다. 계측 실패를 격리하고 새 조회는 작업을 수거하지 않는다.
+     VM 구버전은 미지원으로 표시한다. 호스트 수집기는 선택 활성화이며 승인 전 운영 변경은 하지 않는다.
+     이벤트 기록이 한 번이라도 실패하면 해당 프로세스의 집계는 불완전하므로 재시작까지 계측 조회를 503으로 거절한다.
+     유실 이벤트를 정상 0건으로 추측하지 않으며, 변환·health·기존 status/result는 계속 제공한다.
+- Rejected: 별도 어드민·관측 플랫폼 | 임시 운영 확인 단계에서 운영 복잡도를 늘린다.
+- Confidence: medium
+- Scope-risk: moderate
+- Directive: #121 전체 완료나 영속 큐·외부 경보 구현으로 표현하지 않는다. 병합·운영 배포 승인은 별도다.
+- Related: #121, phases/ISSUE-121-monitor-pilot.md, D-011, D-093
+
+## D-105: Playwright E2E runner는 지원되는 Ubuntu 24.04로 고정한다
+
+- Date: 2026-11-03
+- Status: Proposed in PR261; merge pending
+- Context: PR261 최초 CI의 ubuntu-latest가 Ubuntu 26.04.1을 선택했고,
+  Playwright 1.57.0이 `Cannot install dependencies for ubuntu26.04-x64`로 테스트 전 실패했다.
+  [실패 job](https://github.com/landfill/ClairKeys/actions/runs/41650330533/job/125966544616).
+- Decision: PR과 post-merge의 E2E job만 `ubuntu-24.04`로 고정한다. 나머지 job·브라우저·worker 2·45분 제한은 유지한다.
+  [Playwright 1.57의 공식 플랫폼 판별 소스](https://github.com/microsoft/playwright/blob/v1.57.0/packages/playwright-core/src/server/utils/hostPlatform.ts)에
+  Ubuntu 24.04 지원이 있다. 현재 최신 문서는 26.04도 포함하므로 고정 버전의 지원 여부는 버전별 소스로 판단한다.
+- Rejected: Playwright/전체 runner 일괄 변경 | 이번 파일럿의 필수 검사 실행에 필요한 범위를 넘는다.
+- Confidence: high
+- Scope-risk: narrow
+- Directive: runner OS를 올릴 때 설치 단계와 전체 E2E를 확인한다. 지원 OS로의 고정을 검사 생략으로 표현하지 않는다.
+- Related: PR261, D-102, phases/ISSUE-121-monitor-pilot.md

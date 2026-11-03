@@ -12,6 +12,7 @@ import tempfile
 from time import monotonic
 
 from omr.converter import MusicXMLToClairKeysConverter
+from omr.monitoring import observe
 from omr.meter_retry import accept_meter_retry, prepare_meter_retry, retry_is_eligible
 from omr.time_numeral import classify_time_numeral
 from omr.whole_note_retry import (
@@ -105,6 +106,7 @@ class AudiverisProcessor:
             Path to generated MusicXML file
         """
         async with self._conversion_slots:
+            observe('stage', output_dir.name, 'audiveris')
             return await self._process_pdf_unlocked(pdf_path, output_dir)
 
     async def _process_pdf_unlocked(
