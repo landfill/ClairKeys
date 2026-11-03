@@ -167,6 +167,10 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertIn('no-store', response.headers['cache-control'])
                 self.assertNotIn('file_info', response.text)
+                with mock.patch.object(app.monitor, 'incomplete', True):
+                    unavailable = await client.get('/monitor', headers={'X-ClairKeys-Token': 'test-only'})
+                self.assertEqual(unavailable.status_code, 503)
+                self.assertEqual(unavailable.json(), {'error': 'monitor_unavailable'})
 
     async def test_instrumentation_failure_preserves_fixture_result(self):
         import app
@@ -186,7 +190,10 @@ class RuntimeTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(app.processing_jobs[job_id]['status'], 'completed')
             self.assertEqual(app.processing_jobs[job_id]['animation_data'], payload)
             self.assertEqual(app.processing_jobs[job_id]['score_artifact'], artifact)
+            with self.assertRaisesRegex(RuntimeError, 'monitor_incomplete'):
+                monitor.snapshot()
         finally:
+            monitor.incomplete = False
             app.processing_jobs.pop(job_id, None)
 
     async def test_real_xml_fixture_matches_direct_conversion_with_telemetry(self):

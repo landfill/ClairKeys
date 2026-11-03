@@ -46,6 +46,7 @@ class Monitor:
         self.started_at = utc_now()
         self.active = {}
         self.completed = deque(maxlen=MAX_COMPLETED)
+        self.incomplete = False
         self.host_path = host_path or Path('/run/clairkeys-monitor/host.json')
 
     def update(self, event, job_id, value=None):
@@ -87,6 +88,8 @@ class Monitor:
         self.completed.append(row)
 
     def snapshot(self):
+        if self.incomplete:
+            raise RuntimeError('monitor_incomplete')
         now = self.clock()
         while self.completed and now - self.completed[0]['_finished'] > RETENTION_SECONDS:
             self.completed.popleft()
@@ -116,4 +119,6 @@ def observe(event, job_id, value=None):
     try:
         monitor.update(event, job_id, value)
     except Exception:
-        pass
+        # Lost events make every later count suspect; keep conversion available,
+        # but refuse a misleading snapshot until a new process starts.
+        monitor.incomplete = True

@@ -32,6 +32,9 @@
 - callback `attempts`는 실제 HTTP 시도 횟수, retrying은 재시도 대기, exhausted는 최대 시도 소진이다.
   목적지·설정 거절/영구 HTTP 실패는 failed다. 변환 성공과 전달 성공은 별개다.
 - 모두 메모리 기반이며 프로세스 재시작으로 작업·관측 이력을 잃는다. 새 DB·영속 큐는 없다.
+- 계측 이벤트를 기록하지 못하면 집계가 불완전하므로 `/monitor`는 해당 프로세스의 재시작까지 503을 반환한다.
+  변환·health·기존 status/result는 유지한다. 이를 정상 0건으로 해석하지 않는다.
+  즉시 restart하지 말고 기존 작업을 수거하고 원인을 확인한 뒤 별도 승인과 기존 배포 절차를 따른다.
 - `host`: VM의 MemTotal/MemAvailable와 **/data가 놓인 파일시스템**의 total/free 바이트.
   컨테이너·JVM 수치가 아니다. 아래 호스트 수집기가 없으면 unavailable/null이다.
 - 호스트 파일은 최대 4096 bytes, 90초 이상 오래되면 stale, 깨졌거나 없으면 unavailable.
