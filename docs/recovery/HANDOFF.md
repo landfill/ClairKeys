@@ -7,10 +7,11 @@ Last updated: 2026-11-03 KST
 ## Current phase
 
 **#121 OMR 모니터링 파일럿**(2026-11-03 사용자 구현·PR 요청). 기존 보류는 서비스 내부 운영자 전용 조회 파일럿에 한해 해제했다.
-구현 head `d656fdc`, [PR261](https://github.com/landfill/ClairKeys/pull/261). 진행 상태·CI·리뷰는 [리뷰 원본](reviews/PR-261.md)과 GitHub live state로 확인한다.
-[범위·완료 조건](https://github.com/landfill/ClairKeys/blob/d656fdcee248f0767b34e2fcf7ce9e81ad99b94b/docs/recovery/phases/ISSUE-121-monitor-pilot.md) · [검증](validation/2026-11-03-omr-monitor-pilot.md).
-구현·검증·PR·CI/리뷰 대응 요청 범위 완료. 다음 행동은 PR261에 대한 사용자의 명시적 병합 승인이다.
-운영 배포는 별도 승인 후 수행하며 실제 VM·호스트 수집 검증은 아직 하지 않았다. phase DONE으로 표시하지 않는다.
+[PR261](https://github.com/landfill/ClairKeys/pull/261)은 사용자 승인 후 `fd0e946`으로 병합됐다. 현재 병합 후 확인 중이다.
+진행 상태·CI·정리는 [리뷰 원본](reviews/PR-261.md)과 GitHub live state로 확인한다.
+[범위·완료 조건](phases/ISSUE-121-monitor-pilot.md) · [검증](validation/2026-11-03-omr-monitor-pilot.md).
+다음 행동은 Post-merge checks 확인과 아래 브랜치 정리 조건 해소다.
+운영 배포는 별도 승인 후 수행하며 실제 VM·호스트 수집 검증은 아직 하지 않았다.
 로컬 전체 Jest의 Windows 실패와 main 대조는 검증 원본에 기록한다. Linux CI로 최종 판정한다.
 
 2026-10-18 운영 동기화 확인: 웹·VM 실행 코드는 최신 main과 일치한다. 웹 이후 차이는 문서뿐, VM 이후 차이는 테스트 3개뿐이며 실행 Python 16개 해시가 일치한다. 전체 SHA 일치와는 구분한다. [확인 근거·한계](validation/2026-10-18-deployment-code-sync.md).
@@ -76,6 +77,8 @@ Last updated: 2026-11-03 KST
   (운영 DB 작업), 계정 삭제 시 기록 처리, Prisma `engineType="client"`+adapter-pg로 네이티브 엔진 제거(DB 접근 전반 회귀 검증 필요).
 
 ## Known blockers / constraints
+
+- PR261 정리: 로컬·원격 tip은 main에 모두 포함됐지만 사용자 미추적 `.codex/config.toml`이 있어 두 작업 브랜치를 보존한다(AGENTS/WORKFLOW).
 
 - 루트 README는 사용자 지시(2026-10-11)에 따라 PR 없이 main에 직접 push한다. #257의 적용·검증 근거는 [검증 원본](validation/2026-10-11-doc-257-readme.md)이다. 이 허용을 다른 코드·규약 변경의 직접 push로 확대하지 않는다.
 - 새 PR 병합과 운영 배포는 각각 명시적 승인이 필요하다. 과거 승인을 새 범위로 확대하지 않는다.
