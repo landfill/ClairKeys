@@ -20,6 +20,7 @@ IN_PROGRESS — 2026-11-03 사용자 구현·PR 요청. #121의 보류는 이 �
 2. OMR 단계 계측과 인증된 스냅샷, 최소 권한 호스트 수집기를 구현한다.
 3. 서버 권한 검사·응답 allowlist·운영자 메뉴·모바일 화면과 갱신을 구현한다.
 4. Python·Jest·타입·lint·Playwright·브라우저 확인 후 PR과 CI·리뷰를 처리한다.
+   PR261에서 ubuntu-latest가 26.04로 바뀌어 Playwright 설치가 실패했다. D-105에 따라 두 E2E job만 24.04로 고정한다.
 
 ## Completion criteria
 

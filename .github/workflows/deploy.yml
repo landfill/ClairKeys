@@ -145,7 +145,8 @@ jobs:
   # on CI, so this job also builds the merge commit; there is no separate build job or build step.
   e2e:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    # Keep the browser OS aligned with PR Checks (D-105).
+    runs-on: ubuntu-24.04
     needs: verified
     if: ${{ !cancelled() && needs.verified.outputs.skip != 'true' }}
     # Runs take 20-25 minutes (about 1280 tests, six browser projects, two workers); a hang would otherwise hold the runner for 360.

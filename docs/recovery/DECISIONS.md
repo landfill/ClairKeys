@@ -3592,3 +3592,19 @@
 - Scope-risk: moderate
 - Directive: #121 전체 완료나 영속 큐·외부 경보 구현으로 표현하지 않는다. 병합·운영 배포 승인은 별도다.
 - Related: #121, phases/ISSUE-121-monitor-pilot.md, D-011, D-093
+
+## D-105: Playwright E2E runner는 지원되는 Ubuntu 24.04로 고정한다
+
+- Date: 2026-11-03
+- Status: Proposed in PR261; merge pending
+- Context: PR261 최초 CI의 ubuntu-latest가 Ubuntu 26.04.1을 선택했고,
+  Playwright 1.57.0이 `Cannot install dependencies for ubuntu26.04-x64`로 테스트 전 실패했다.
+  [실패 job](https://github.com/landfill/ClairKeys/actions/runs/41650330533/job/125966544616).
+- Decision: PR과 post-merge의 E2E job만 `ubuntu-24.04`로 고정한다. 나머지 job·브라우저·worker 2·45분 제한은 유지한다.
+  [Playwright 1.57의 공식 플랫폼 판별 소스](https://github.com/microsoft/playwright/blob/v1.57.0/packages/playwright-core/src/server/utils/hostPlatform.ts)에
+  Ubuntu 24.04 지원이 있다. 현재 최신 문서는 26.04도 포함하므로 고정 버전의 지원 여부는 버전별 소스로 판단한다.
+- Rejected: Playwright/전체 runner 일괄 변경 | 이번 파일럿의 필수 검사 실행에 필요한 범위를 넘는다.
+- Confidence: high
+- Scope-risk: narrow
+- Directive: runner OS를 올릴 때 설치 단계와 전체 E2E를 확인한다. 지원 OS로의 고정을 검사 생략으로 표현하지 않는다.
+- Related: PR261, D-102, phases/ISSUE-121-monitor-pilot.md

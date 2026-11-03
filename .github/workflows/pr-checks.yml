@@ -141,7 +141,8 @@ jobs:
 
   test-e2e:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    # Locked Playwright 1.57 cannot install browsers on ubuntu-latest's 26.04.
+    runs-on: ubuntu-24.04
     # Runs take 20-25 minutes (about 1280 tests, six browser projects, two workers); a hang would otherwise hold the runner for 360.
     timeout-minutes: 45
     needs: changes
