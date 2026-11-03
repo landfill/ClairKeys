@@ -9,7 +9,8 @@ Last updated: 2026-11-03 KST
 **#121 OMR 모니터링 파일럿**(2026-11-03 사용자 구현·PR 요청). 기존 보류는 서비스 내부 운영자 전용 조회 파일럿에 한해 해제했다.
 구현 head `d656fdc`, [PR261](https://github.com/landfill/ClairKeys/pull/261). 진행 상태·CI·리뷰는 [리뷰 원본](reviews/PR-261.md)과 GitHub live state로 확인한다.
 [범위·완료 조건](https://github.com/landfill/ClairKeys/blob/d656fdcee248f0767b34e2fcf7ce9e81ad99b94b/docs/recovery/phases/ISSUE-121-monitor-pilot.md) · [검증](validation/2026-11-03-omr-monitor-pilot.md).
-다음 행동은 필수 CI·최신 head 리뷰 대응이다. 병합·운영 배포는 각각 별도 명시적 승인 필요.
+구현·검증·PR·CI/리뷰 대응 요청 범위 완료. 다음 행동은 PR261에 대한 사용자의 명시적 병합 승인이다.
+운영 배포는 별도 승인 후 수행하며 실제 VM·호스트 수집 검증은 아직 하지 않았다. phase DONE으로 표시하지 않는다.
 로컬 전체 Jest의 Windows 실패와 main 대조는 검증 원본에 기록한다. Linux CI로 최종 판정한다.
 
 2026-10-18 운영 동기화 확인: 웹·VM 실행 코드는 최신 main과 일치한다. 웹 이후 차이는 문서뿐, VM 이후 차이는 테스트 3개뿐이며 실행 Python 16개 해시가 일치한다. 전체 SHA 일치와는 구분한다. [확인 근거·한계](validation/2026-10-18-deployment-code-sync.md).
