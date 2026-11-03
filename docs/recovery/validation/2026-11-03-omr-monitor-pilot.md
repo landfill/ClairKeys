@@ -23,7 +23,7 @@
 
 | 명령 | 결과 |
 |---|---|
-| 변경 영역 Jest (운영자 page/API, 계약, 메뉴, 갱신 hook) | 최초 45 tests pass, 이후 세션 오류 fail-closed 회귀 추가. 전체 실행 결과는 아래에 기록 |
+| 변경 영역 Jest (운영자 page/API, 계약, 메뉴, 갱신 hook) | 최초 45 tests pass, 이후 세션 오류 fail-closed 회귀를 포함한 전체 실행에서도 해당 묶음 통과 |
 | `PYTHON_BIN=<venv>/Scripts/python.exe npx jest src/utils/__tests__/converterCorpus.test.ts src/ci/__tests__/omrMonitoring.test.ts --runInBand --silent` | 2 suites / 16 tests pass. 실제 MusicXML corpus→canonical 계약과 Python bridge |
 | 서비스 디렉터리에서 `<venv>/Scripts/python.exe -m unittest tests.test_monitoring tests.test_callback_delivery tests.test_service_contract tests.test_score_artifact` | 65 tests pass. 실제 XML fixture 비교는 `generated_at`만 제외, 음악 데이터·score artifact 동일 |
 | `npx tsc --noEmit --incremental false` | exit 0 |
@@ -38,7 +38,11 @@ E2E의 첫 화면 테스트는 Next route announcer와 제품 alert가 함께 �
 
 - 전체 Jest `PYTHON_BIN=<venv>/Scripts/python.exe npx jest --runInBand --json`: 179 suites 중 171 pass / 8 fail,
   1782 tests 중 1771 pass / 11 fail, 345.308s. 새 운영자 기능과 Python bridge는 통과했다.
-  실패한 8개 묶음을 main 소스의 같은 CRLF 조건으로 대조 중이다. 확정 비교는 종료 후 갱신한다.
+  main 소스 사본의 같은 CRLF 조건에서 실패한 8개 묶음만 실행: **8 suites fail / 11 tests fail / 146 tests pass**, 202.88s.
+  JSON의 실패 테스트 이름 11개를 `Compare-Object`로 대조해 차이 없음을 확인했다.
+  `postMergeVerified`, `pianoSamples`(POSIX fixture script exit 127), `postMergeWorkflow`, `uploadPathInventory`,
+  `prChecksWorkflow`(CRLF 문자열 비교), `nextConfig`(Windows ESM URL), `course`(asset 재생성),
+  `omrRuntimeContract`(wedge fixture Windows 임시파일 잠금)이다. 실패를 제외하거나 설정을 완화하지 않았다.
 - OMR 전체 Python `-m unittest discover -s tests -v`: 변경 브랜치 219 tests 중 errors 28 / skips 22.
   main의 격리 소스 사본(OMR·fixtures·계약 참조 src 포함, 원래 서비스 cwd) 211 tests도 **같은 errors 28 / skips 22**.
   오류 이름 28개를 `Compare-Object`로 대조했으며 차이 없음. 모두 기존 wedge fixture의 Windows NamedTemporaryFile 재열기 PermissionError다.
@@ -66,4 +70,5 @@ E2E의 첫 화면 테스트는 Next route announcer와 제품 alert가 함께 �
 - Linux/Rocky systemd hardening 및 DynamicUser/StateDirectory와 Podman bind mount 실동작.
 - 실제 기기·스크린리더. 장기 이력·경보·synthetic·전체 품질은 비목표다.
 - production build와 전체 브라우저 E2E는 PR CI에서 판정한다.
+- PR CI·최신 head 리뷰 처리 원본은 [PR261 리뷰 기록](../reviews/PR-261.md)에 둔다.
 - [배포·단계적 호환·롤백 런북](https://github.com/landfill/ClairKeys/blob/e770ecd5a631b419c0c14ba411ba06e5557fe5f0/omr-service/deploy/MONITORING.md).
