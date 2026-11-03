@@ -38,6 +38,7 @@ from omr.delivery import (
     validate_callback_url,
 )
 from omr.converter import MusicXMLToClairKeysConverter
+from omr.monitoring import monitor, observe
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -123,6 +124,16 @@ async def root():
         "status": "running"
     }
 
+
+@app.get("/monitor")
+async def get_monitor_snapshot(_: None = Depends(require_shared_secret)):
+    """Operational allowlisted snapshot, never the processing_jobs payload."""
+    try:
+        return JSONResponse(monitor.snapshot(), headers={"Cache-Control": "private, no-store"})
+    except Exception:
+        return JSONResponse({"error": "monitor_unavailable"}, status_code=503,
+                            headers={"Cache-Control": "private, no-store"})
+
 @app.post("/process")
 async def process_pdf(
     background_tasks: BackgroundTasks,
@@ -175,6 +186,7 @@ async def process_pdf(
     }
     
     # Start background processing
+    observe('accepted', job_id)
     background_tasks.add_task(process_pdf_background, job_id, file, title, composer, user_id, tempo, callback_url)
     
     return {
@@ -259,6 +271,7 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
     try:
         safe_callback_url = validate_callback_url(callback_url)
     except CallbackOriginError as error:
+        observe('callback', job_id, 'failed')
         processing_jobs[job_id]["delivery_status"] = "failed"
         logger.error(
             "Completion callback destination rejected for job %s: %s; "
@@ -271,6 +284,7 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
 
     secret = (os.getenv("OMR_SHARED_SECRET") or "").strip()
     if not secret:
+        observe('callback', job_id, 'failed')
         logger.error("Cannot deliver completion for job %s without OMR_SHARED_SECRET", job_id)
         return
 
@@ -278,6 +292,7 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
     processing_jobs[job_id]["delivery_status"] = "pending"
 
     for attempt in range(1, MAX_DELIVERY_ATTEMPTS + 1):
+        observe('callback_attempt', job_id)
         try:
             async with httpx.AsyncClient(
                 timeout=CALLBACK_TIMEOUT_SECONDS,
@@ -289,6 +304,7 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
                     headers={"X-ClairKeys-Token": secret},
                 )
             if 200 <= response.status_code < 300:
+                observe('callback', job_id, 'delivered')
                 processing_jobs[job_id]["delivery_status"] = "delivered"
                 logger.info("Delivered completed job %s", job_id)
                 return
@@ -298,6 +314,7 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
                 response.status_code,
             )
             if not is_retryable_status(response.status_code):
+                observe('callback', job_id, 'failed')
                 # The answer will not change. Say so now, in the log, rather
                 # than after ten minutes of backoff that only look like a
                 # network problem.
@@ -318,6 +335,7 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
             logger.error("Completion callback transport failed for job %s", job_id)
 
         if attempt == MAX_DELIVERY_ATTEMPTS:
+            observe('callback', job_id, 'exhausted')
             processing_jobs[job_id]["delivery_status"] = "failed"
             logger.error(
                 "Giving up completion delivery for job %s after %s attempts; "
@@ -329,6 +347,7 @@ async def notify_completion(callback_url: Optional[str], job_id: str) -> None:
             return
 
         processing_jobs[job_id]["delivery_status"] = "retrying"
+        observe('callback', job_id, 'retrying')
         await asyncio.sleep(delay_seconds)
         delay_seconds = next_backoff_seconds(delay_seconds)
 
@@ -345,6 +364,7 @@ async def process_pdf_background(
     """Background task for processing PDF"""
     try:
         # Update status to processing
+        observe('stage', job_id, 'save_pdf')
         processing_jobs[job_id]["status"] = ProcessingStatus.PROCESSING
         processing_jobs[job_id]["progress"] = 10
         processing_jobs[job_id]["message"] = "Saving uploaded file"
@@ -366,10 +386,12 @@ async def process_pdf_background(
         processing_jobs[job_id]["progress"] = 30
         processing_jobs[job_id]["message"] = "Processing PDF with Audiveris OMR"
         
+        observe('stage', job_id, 'audiveris_wait')
         musicxml_path = await audiveris_processor.process_pdf(pdf_path, temp_dir)
         logger.info(f"Generated MusicXML for job {job_id}: {musicxml_path}")
         
         # Step 2: MusicXML to ClairKeys JSON and score artifact
+        observe('stage', job_id, 'xml_to_json')
         processing_jobs[job_id]["progress"] = 60
         processing_jobs[job_id]["message"] = "Converting to ClairKeys format"
         
@@ -401,8 +423,10 @@ async def process_pdf_background(
         shutil.rmtree(temp_dir, ignore_errors=True)
         
         logger.info(f"Successfully completed job {job_id}")
+        observe('completed', job_id)
 
     except Exception as e:
+        observe('failed', job_id)
         logger.error(f"Error processing job {job_id}: {str(e)}")
         processing_jobs[job_id]["status"] = ProcessingStatus.FAILED
         processing_jobs[job_id]["message"] = f"Processing failed: {str(e)}"
@@ -433,6 +457,7 @@ async def process_pdf_background(
         try:
             await notify_completion(callback_url, job_id)
         except Exception as delivery_error:
+            observe('callback', job_id, 'failed')
             logger.error(
                 "Completion delivery raised for job %s: %s", job_id, delivery_error
             )

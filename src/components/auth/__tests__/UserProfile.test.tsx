@@ -19,9 +19,32 @@ jest.mock('next-auth/react', () => ({
 }))
 
 beforeEach(() => {
+  global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ isAdmin: false }) })
   mockSession.data.user.name = 'BYOUNG KWANG KIM'
   mockSession.data.user.email = 'letthelightsurroundyou@gmail.com'
   mockSession.data.user.image = null
+})
+
+describe('operator monitor discovery', () => {
+  it.each([true, false])('only exposes the monitor link for an operator (%s)', async isAdmin => {
+    jest.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({ isAdmin }) } as Response)
+    await renderProfile()
+    openMenu()
+    expect(screen.queryAllByRole('link', { name: 'OMR 모니터링' })).toHaveLength(isAdmin ? 1 : 0)
+  })
+
+  it('also offers the operator link in the mobile account area', async () => {
+    jest.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({ isAdmin: true }) } as Response)
+    await renderProfile({ showDropdown: false })
+    expect(screen.getByRole('link', { name: 'OMR 모니터링' })).toHaveAttribute('href', '/admin/omr')
+  })
+
+  it('fails closed when the operator request fails', async () => {
+    jest.mocked(fetch).mockRejectedValue(new Error('offline'))
+    await renderProfile()
+    openMenu()
+    expect(screen.queryByRole('link', { name: 'OMR 모니터링' })).not.toBeInTheDocument()
+  })
 })
 
 afterEach(() => {

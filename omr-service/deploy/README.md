@@ -1,5 +1,8 @@
 # Deploying the OMR service on the allocated VM
 
+For the operator-only monitoring pilot, see [MONITORING.md](MONITORING.md).
+It adds an authenticated read-only snapshot and an optional host collector; rollout still requires approval.
+
 Applied 2026-08-23 to `vm-naver-20260820145930` (Rocky Linux 8.8, podman 4.4.1).
 For a fresh OS-only VM allocated by 모두의AI, follow
 [`docs/vm-replacement.md`](../../docs/vm-replacement.md) first. That is the canonical guide for

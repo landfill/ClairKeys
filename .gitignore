@@ -62,6 +62,7 @@ docs/recovery/validation/2026-09-07-ui-audit/*.png
 
 # local agent/hook runtime state
 /.omx/
+/local-test-data/
 
 # Python bytecode cache (omr-service)
 __pycache__/
