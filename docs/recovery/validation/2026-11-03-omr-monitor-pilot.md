@@ -71,4 +71,9 @@ E2E의 첫 화면 테스트는 Next route announcer와 제품 alert가 함께 �
 - 실제 기기·스크린리더. 장기 이력·경보·synthetic·전체 품질은 비목표다.
 - production build와 전체 브라우저 E2E는 PR CI에서 판정한다.
 - PR CI·최신 head 리뷰 처리 원본은 [PR261 리뷰 기록](../reviews/PR-261.md)에 둔다.
+- CI runner 호환 복구와 그 커밋의 로컬 검증은 [별도 검증](2026-11-03-omr-monitor-runner.md)에 둔다.
+- Preview는 Vercel SSO로 302 차단됐다. 연결 도구는 배포/팀 접근 실패, 기존 CLI도 명시한 팀에 접근할 수 없어
+  애플리케이션의 preview 인증 경계는 확인하지 못했다. 보호 설정·팀 권한을 변경하지 않았다.
+- 로컬 서버 종료 로그에서 Windows ARM의 Prisma native engine 비호환 메시지도 확인했다.
+  테스트 JWT의 `databaseUserId`를 사용한 로컬 흐름과 pageerror 0 결과는 위 범위에 한하며, 실제 DB 로그인 검증을 의미하지 않는다.
 - [배포·단계적 호환·롤백 런북](https://github.com/landfill/ClairKeys/blob/e770ecd5a631b419c0c14ba411ba06e5557fe5f0/omr-service/deploy/MONITORING.md).
