@@ -1,19 +1,20 @@
 # Current Handoff
 
-Last updated: 2026-10-27 KST
+Last updated: 2026-11-03 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
 
-**연습 방법 레슨 재생 화면 둘러보기 병합 완료**(2026-10-27, [PR259](https://github.com/landfill/ClairKeys/pull/259) → `61b04ab`). `/learn/practice` 맨 앞에 실제 재생 화면 캡처와 번호별 설명을 더했다. 재생 화면은 그대로다(D-094). 캡처·위치는 스크립트가 만든다(D-103). Post-merge는 검증된 생략. 진행 중인 작업 없음. [리뷰 로그](reviews/PR-259.md) · [검증](validation/2026-10-27-learn-practice-screen-tour.md).
-로컬 Windows 전체 Jest는 12개 묶음이 환경 때문에 main에서도 똑같이 실패한다(CRLF·`c:` ESM URL·`python3`). Linux CI로 판정한다([근거](validation/2026-10-21-copy-remove-ai-claim.md)).
+**#121 OMR 모니터링 파일럿**(2026-11-03 사용자 구현·PR 요청). 기존 보류는 서비스 내부 운영자 전용 조회 파일럿에 한해 해제했다.
+구현 커밋 `e770ecd`를 원격에 push했다. [범위·완료 조건](https://github.com/landfill/ClairKeys/blob/e770ecd5a631b419c0c14ba411ba06e5557fe5f0/docs/recovery/phases/ISSUE-121-monitor-pilot.md) · [검증](validation/2026-11-03-omr-monitor-pilot.md).
+다음 행동은 review-ready PR 생성과 필수 CI·최신 head 리뷰 대응이다. 병합·운영 배포는 각각 별도 명시적 승인 필요.
+로컬 전체 Jest의 Windows 실패와 main 대조는 검증 원본에 기록한다. Linux CI로 최종 판정한다.
 
 2026-10-18 운영 동기화 확인: 웹·VM 실행 코드는 최신 main과 일치한다. 웹 이후 차이는 문서뿐, VM 이후 차이는 테스트 3개뿐이며 실행 Python 16개 해시가 일치한다. 전체 SHA 일치와는 구분한다. [확인 근거·한계](validation/2026-10-18-deployment-code-sync.md).
 
 ## Next action
 
-- [PR260](https://github.com/landfill/ClairKeys/pull/260) 병합(2026-10-27, `39af02d`): `next` 15.5.28, `jimp` 개발 의존성(D-095), `undici` 하한으로 운영 의존성 감사를 복구했다. Post-merge는 검증된 생략. [리뷰 로그](reviews/PR-260.md) · [검증](validation/2026-10-27-deps-audit-next-15-5-28.md).
 - 로그인 사용자 개인화 1단계를 이슈 세 개로 등록했다(2026-10-10, 모두 미착수. 이슈 등록만으로 PR을 만들지 않는다):
   [#247](https://github.com/landfill/ClairKeys/issues/247) 홈·내 악보의 최근 연습한 곡,
   [#248](https://github.com/landfill/ClairKeys/issues/248) 곡별 속도·손 선택·반복 구간의 기기 저장,
@@ -36,8 +37,8 @@ Last updated: 2026-10-27 KST
 
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 그때 올리지 않았고, critical이 더해져 PR260에서 15.5.28로 올렸다.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
-- [#121](https://github.com/landfill/ClairKeys/issues/121) OMR 운영 관측은 사용자가 보류했다(2026-10-04, 다른 이슈 먼저). 재개 지시 전에는 시작하지 않는다.
-  재개 시 이슈 본문의 "구현 전 결정"(수집 도구, `/metrics` 노출, 로그 보존, 경보 수신 경로)을 먼저 정한다.
+- [#121](https://github.com/landfill/ClairKeys/issues/121)은 내부 조회 파일럿만 재개했다(2026-11-03). 별도 플랫폼·장기 통계·외부 경보·영속 큐는 후속 범위다.
+  구현 결정 D-104는 작업 PR에 포함한다. 실제 VM 계측 활성화·검증은 운영 배포 승인 후 수행한다.
 - 연습 방법 레슨의 재생 화면 캡처(D-103): 재생 화면의 조작을 더하거나 옮기거나 이름을 바꾸면 production 서버에서 `scripts/capture-practice-screens.mjs`를 다시 돌리고 그림과 JSON을 함께 커밋한다.
 - LEARN이 남긴 제약: 터치 재생 전 요소 수 합계가 기준과 같다(27). 재생 화면에 요소를 더하려면 다른 것을 빼야 한다(D-094 6항, `e2e/playback-element-count.spec.ts`).
   실기기 터치·회전, 실제 MIDI, 청취, 스크린리더는 미검증이다. 운영 비공개 원본 보호의 후속 읽기 확인은 아래 근거를 따른다.
@@ -101,7 +102,7 @@ Last updated: 2026-10-27 KST
 |---|---|
 | OMR 인식 품질 #134 | [phase](phases/ISSUE-134-recognition-quality.md), 배포 이력 `validation/2026-09-1*-d06*-deployment.md`·`2026-09-20-d073-*` |
 | OMR page/scale | [OMR-Q2](phases/OMR-Q2-page-scale.md): 400dpi 한 입력 개선만 입증. 정상 악보·fallback 검증 전 전역 정책 도입 금지 |
-| OMR 운영 관측 | [#121](https://github.com/landfill/ClairKeys/issues/121) OPEN, 미착수, 사용자 보류(2026-10-04). D-093이 구조화 로그를 여기로 넘겼다 |
+| OMR 운영 관측 | [#121](https://github.com/landfill/ClairKeys/issues/121) 내부 조회 파일럿 진행. 외부 경보 등 전체 이슈는 미완료; 위 Current phase 참조 |
 | 운지 #130 | [phase](phases/ISSUE-130-fingering-corpus-and-reach.md): 사용자 현재 상태 수용으로 종료; 추가 모델 작업 NOT_PLANNED |
 | 영속 OMR 큐 | [P1-B](phases/P1-B-durable-omr.md), [로드맵](ROADMAP.md): NOT_STARTED |
 | UI #146 완료 한계 | [PR158](reviews/PR-158.md): 실기기 터치·가로 화면·브라우저 zoom·스크린리더·대비 계측·실제 로그인 미검증 |
