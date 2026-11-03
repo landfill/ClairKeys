@@ -1,17 +1,16 @@
 # Current Handoff
 
-Last updated: 2026-11-03 KST
+Last updated: 2026-11-04 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
 
-**#121 OMR 모니터링 파일럿**(2026-11-03 사용자 구현·PR 요청). 기존 보류는 서비스 내부 운영자 전용 조회 파일럿에 한해 해제했다.
-[PR261](https://github.com/landfill/ClairKeys/pull/261)은 사용자 승인 후 `fd0e946`으로 병합됐다. 현재 병합 후 확인 중이다.
-진행 상태·CI·정리는 [리뷰 원본](reviews/PR-261.md)과 GitHub live state로 확인한다.
+**#121 OMR 내부 조회 파일럿 병합·후속 확인 완료**. [PR261](https://github.com/landfill/ClairKeys/pull/261)은 사용자 승인 후 `fd0e946`으로 병합됐다.
+2026-11-04 병합 후 확인·브랜치 정리를 마쳤다. CI·정리·웹 자동 반영 근거는 [리뷰 원본](reviews/PR-261.md)에 있다.
 [범위·완료 조건](phases/ISSUE-121-monitor-pilot.md) · [검증](validation/2026-11-03-omr-monitor-pilot.md).
-다음 행동은 Post-merge checks 확인과 아래 브랜치 정리 조건 해소다.
-운영 배포는 별도 승인 후 수행하며 실제 VM·호스트 수집 검증은 아직 하지 않았다.
+다음 행동은 OMR VM 배포·계측 활성화에 대한 별도 승인이다. 실제 VM·호스트 수집 검증은 아직 하지 않았다.
+웹은 기존 Git 연동으로 자동 반영됐고 비로그인 접근 차단만 확인했다([확인 범위·한계](validation/2026-11-04-omr-monitor-production-auth.md)).
 로컬 전체 Jest의 Windows 실패와 main 대조는 검증 원본에 기록한다. Linux CI로 최종 판정한다.
 
 2026-10-18 운영 동기화 확인: 웹·VM 실행 코드는 최신 main과 일치한다. 웹 이후 차이는 문서뿐, VM 이후 차이는 테스트 3개뿐이며 실행 Python 16개 해시가 일치한다. 전체 SHA 일치와는 구분한다. [확인 근거·한계](validation/2026-10-18-deployment-code-sync.md).
@@ -41,7 +40,7 @@ Last updated: 2026-11-03 KST
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 그때 올리지 않았고, critical이 더해져 PR260에서 15.5.28로 올렸다.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121)은 내부 조회 파일럿만 재개했다(2026-11-03). 별도 플랫폼·장기 통계·외부 경보·영속 큐는 후속 범위다.
-  구현 결정 D-104는 작업 PR에 포함한다. 실제 VM 계측 활성화·검증은 운영 배포 승인 후 수행한다.
+  파일럿은 D-104·D-105를 따른다. 실제 VM 계측 활성화·검증은 운영 배포 승인 후 수행한다.
 - 연습 방법 레슨의 재생 화면 캡처(D-103): 재생 화면의 조작을 더하거나 옮기거나 이름을 바꾸면 production 서버에서 `scripts/capture-practice-screens.mjs`를 다시 돌리고 그림과 JSON을 함께 커밋한다.
 - LEARN이 남긴 제약: 터치 재생 전 요소 수 합계가 기준과 같다(27). 재생 화면에 요소를 더하려면 다른 것을 빼야 한다(D-094 6항, `e2e/playback-element-count.spec.ts`).
   실기기 터치·회전, 실제 MIDI, 청취, 스크린리더는 미검증이다. 운영 비공개 원본 보호의 후속 읽기 확인은 아래 근거를 따른다.
@@ -78,7 +77,6 @@ Last updated: 2026-11-03 KST
 
 ## Known blockers / constraints
 
-- PR261 정리: 로컬·원격 tip은 main에 모두 포함됐지만 사용자 미추적 `.codex/config.toml`이 있어 두 작업 브랜치를 보존한다(AGENTS/WORKFLOW).
 
 - 루트 README는 사용자 지시(2026-10-11)에 따라 PR 없이 main에 직접 push한다. #257의 적용·검증 근거는 [검증 원본](validation/2026-10-11-doc-257-readme.md)이다. 이 허용을 다른 코드·규약 변경의 직접 push로 확대하지 않는다.
 - 새 PR 병합과 운영 배포는 각각 명시적 승인이 필요하다. 과거 승인을 새 범위로 확대하지 않는다.
@@ -107,7 +105,7 @@ Last updated: 2026-11-03 KST
 |---|---|
 | OMR 인식 품질 #134 | [phase](phases/ISSUE-134-recognition-quality.md), 배포 이력 `validation/2026-09-1*-d06*-deployment.md`·`2026-09-20-d073-*` |
 | OMR page/scale | [OMR-Q2](phases/OMR-Q2-page-scale.md): 400dpi 한 입력 개선만 입증. 정상 악보·fallback 검증 전 전역 정책 도입 금지 |
-| OMR 운영 관측 | [#121](https://github.com/landfill/ClairKeys/issues/121) 내부 조회 파일럿 진행. 외부 경보 등 전체 이슈는 미완료; 위 Current phase 참조 |
+| OMR 운영 관측 | [#121](https://github.com/landfill/ClairKeys/issues/121) 내부 조회 파일럿 병합 완료, VM 배포 승인 대기. 외부 경보 등 전체 이슈는 미완료; 위 Current phase 참조 |
 | 운지 #130 | [phase](phases/ISSUE-130-fingering-corpus-and-reach.md): 사용자 현재 상태 수용으로 종료; 추가 모델 작업 NOT_PLANNED |
 | 영속 OMR 큐 | [P1-B](phases/P1-B-durable-omr.md), [로드맵](ROADMAP.md): NOT_STARTED |
 | UI #146 완료 한계 | [PR158](reviews/PR-158.md): 실기기 터치·가로 화면·브라우저 zoom·스크린리더·대비 계측·실제 로그인 미검증 |
