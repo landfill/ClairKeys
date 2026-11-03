@@ -9,8 +9,9 @@ Last updated: 2026-11-04 KST
 **#121 OMR 내부 조회 파일럿 병합·후속 확인 완료**. [PR261](https://github.com/landfill/ClairKeys/pull/261)은 사용자 승인 후 `fd0e946`으로 병합됐다.
 2026-11-04 병합 후 확인·브랜치 정리를 마쳤다. CI·정리·웹 자동 반영 근거는 [리뷰 원본](reviews/PR-261.md)에 있다.
 [범위·완료 조건](phases/ISSUE-121-monitor-pilot.md) · [검증](validation/2026-11-03-omr-monitor-pilot.md).
-2026-11-04 사용자가 OMR VM 배포·계측/호스트 수집기 활성화·실제 페이지 검증을 승인했다. 현재 배포 진행 중이다.
-빌드·활성화·게이트·다음 단계는 [배포 검증 원본](validation/2026-11-04-omr-monitor-vm-deployment.md)에 둔다.
+2026-11-04 승인된 VM 배포·호스트 수집기 활성화·서버 검증은 완료했다. **실제 화면 최종 확인은 브라우저 제어 중단으로 남아 있다.**
+다음 행동: Edge 파일 선택 창을 닫고 `/admin/omr`를 전경에 둔 뒤 UI 검증을 재개한다. 새 배포 승인은 필요하지 않다.
+빌드·전환·보존·브라우저 차단·미검증 범위는 [배포 검증 원본](validation/2026-11-04-omr-monitor-vm-deployment.md)에 둔다.
 웹은 기존 Git 연동으로 자동 반영됐고 비로그인 접근 차단만 확인했다([확인 범위·한계](validation/2026-11-04-omr-monitor-production-auth.md)).
 로컬 전체 Jest의 Windows 실패와 main 대조는 검증 원본에 기록한다. Linux CI로 최종 판정한다.
 
@@ -41,7 +42,7 @@ Last updated: 2026-11-04 KST
 - #238(`Security Audit` 실패)은 [PR239](reviews/PR-239.md) `0374a2e`로 해소됐다. `next` 15.5.25의 moderate 권고 2건은 그때 올리지 않았고, critical이 더해져 PR260에서 15.5.28로 올렸다.
 - PR231 Post-merge의 Mobile Safari 내 악보 빈 카드 측정 flaky는 별도 후속 후보([리뷰 로그](reviews/PR-231.md)).
 - [#121](https://github.com/landfill/ClairKeys/issues/121)은 내부 조회 파일럿만 재개했다(2026-11-03). 별도 플랫폼·장기 통계·외부 경보·영속 큐는 후속 범위다.
-  파일럿은 D-104·D-105를 따른다. VM 배포는 2026-11-04 승인되어 진행 중이며 위 검증 원본을 따른다.
+  파일럿은 D-104·D-105를 따른다. VM 배포 후 UI·실제 앱 callback 검증은 위 검증 원본을 따른다.
 - 연습 방법 레슨의 재생 화면 캡처(D-103): 재생 화면의 조작을 더하거나 옮기거나 이름을 바꾸면 production 서버에서 `scripts/capture-practice-screens.mjs`를 다시 돌리고 그림과 JSON을 함께 커밋한다.
 - LEARN이 남긴 제약: 터치 재생 전 요소 수 합계가 기준과 같다(27). 재생 화면에 요소를 더하려면 다른 것을 빼야 한다(D-094 6항, `e2e/playback-element-count.spec.ts`).
   실기기 터치·회전, 실제 MIDI, 청취, 스크린리더는 미검증이다. 운영 비공개 원본 보호의 후속 읽기 확인은 아래 근거를 따른다.
@@ -78,6 +79,8 @@ Last updated: 2026-11-04 KST
 
 ## Known blockers / constraints
 
+- OMR 모니터링 UI 검증: 파일 업로드 확장 권한이 없고 native picker 전환 중 브라우저 URL 판별 실패로 Computer Use가 종료됐다.
+  VM API·수집기는 정상이며, 실제 페이지의 최종 시각 확인은 브라우저 제어 재개 후 수행한다. [상세](validation/2026-11-04-omr-monitor-vm-deployment.md).
 
 - 루트 README는 사용자 지시(2026-10-11)에 따라 PR 없이 main에 직접 push한다. #257의 적용·검증 근거는 [검증 원본](validation/2026-10-11-doc-257-readme.md)이다. 이 허용을 다른 코드·규약 변경의 직접 push로 확대하지 않는다.
 - 새 PR 병합과 운영 배포는 각각 명시적 승인이 필요하다. 과거 승인을 새 범위로 확대하지 않는다.
@@ -106,7 +109,7 @@ Last updated: 2026-11-04 KST
 |---|---|
 | OMR 인식 품질 #134 | [phase](phases/ISSUE-134-recognition-quality.md), 배포 이력 `validation/2026-09-1*-d06*-deployment.md`·`2026-09-20-d073-*` |
 | OMR page/scale | [OMR-Q2](phases/OMR-Q2-page-scale.md): 400dpi 한 입력 개선만 입증. 정상 악보·fallback 검증 전 전역 정책 도입 금지 |
-| OMR 운영 관측 | [#121](https://github.com/landfill/ClairKeys/issues/121) 내부 조회 파일럿 병합 완료, 승인된 VM 배포 진행 중. 외부 경보 등 전체 이슈는 미완료; 위 Current phase 참조 |
+| OMR 운영 관측 | [#121](https://github.com/landfill/ClairKeys/issues/121) VM 배포·서버 검증 완료, 실제 UI 재확인 대기. 외부 경보 등 전체 이슈는 미완료; 위 Current phase 참조 |
 | 운지 #130 | [phase](phases/ISSUE-130-fingering-corpus-and-reach.md): 사용자 현재 상태 수용으로 종료; 추가 모델 작업 NOT_PLANNED |
 | 영속 OMR 큐 | [P1-B](phases/P1-B-durable-omr.md), [로드맵](ROADMAP.md): NOT_STARTED |
 | UI #146 완료 한계 | [PR158](reviews/PR-158.md): 실기기 터치·가로 화면·브라우저 zoom·스크린리더·대비 계측·실제 로그인 미검증 |
