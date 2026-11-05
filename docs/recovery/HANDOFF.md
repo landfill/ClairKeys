@@ -1,10 +1,12 @@
 # Current Handoff
 
-Last updated: 2026-11-04 KST
+Last updated: 2026-11-06 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
+
+2026-11-06 별도 작곡 요청의 산출물과 청취 확인 범위는 [재즈 트리오 악보 검증](validation/2026-11-06-last-word-trio.md)에 기록했다.
 
 **#121 OMR 내부 조회 파일럿 병합·후속 확인 완료**. [PR261](https://github.com/landfill/ClairKeys/pull/261)은 사용자 승인 후 `fd0e946`으로 병합됐다.
 2026-11-04 병합 후 확인·브랜치 정리를 마쳤다. CI·정리·웹 자동 반영 근거는 [리뷰 원본](reviews/PR-261.md)에 있다.
