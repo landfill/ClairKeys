@@ -6,6 +6,10 @@ Last updated: 2026-11-06 KST
 
 ## Current phase
 
+2026-11-06 사용자 요청의 홈 소개 영상 교체: 코드 `e8a5c7f`를 `codex/home-intro-video`에 push했다.
+[범위](https://github.com/landfill/ClairKeys/blob/e8a5c7f6bb96932423fe1b8d83927172532e7183/docs/recovery/phases/HOME-intro-video.md) · [검증 원본](validation/2026-11-06-home-intro-video.md).
+다음 행동: review-ready PR 생성 후 최신 head의 CI·리뷰를 확인한다. 병합·운영 배포는 승인 대기다.
+
 2026-11-06 별도 작곡 요청의 산출물과 청취 확인 범위는 [재즈 트리오 악보 검증](validation/2026-11-06-last-word-trio.md)에 기록했다.
 
 **#121 OMR 내부 조회 파일럿 병합·후속 확인 완료**. [PR261](https://github.com/landfill/ClairKeys/pull/261)은 사용자 승인 후 `fd0e946`으로 병합됐다.
@@ -74,7 +78,7 @@ Last updated: 2026-11-06 KST
   `src/components/ui/LazyComponent.tsx`는 import하는 곳이 없다([검증](validation/2026-10-04-issue-229-unused-animation-player.md) Gaps).
 - 사용자 판단 필요: OAuth client secret이 과거 Vercel 로그에 남았을 수 있다(`/api/categories` POST가 호출된 경우, 코드는 2025-08-05부터).
   secret 교체 여부는 사용자가 정한다.
-- 사용자 결정 대기: 홈 샘플을 실제 재생기로 바꿀지(2026-08-30 정적 예시 결정과 충돌해 보류).
+- 홈 예시는 사용자 제공 소개 영상으로 교체한다(D-106, 위 Current phase). 실제 앱 재생기 복원은 범위 밖이다.
 - 실기기 미검증: 실제 MIDI 피아노·Chrome MIDI 권한 팝업, 로그인 상태 운영 연습 기록 쓰기, 클릭·반주 청취 레벨.
 - 후속 후보: 탐색 인기 순위(D-080), 재생 중(압축 바) 손·메트로놈·기다리기 토글, `PracticeSession` FK CASCADE migration
   (운영 DB 작업), 계정 삭제 시 기록 처리, Prisma `engineType="client"`+adapter-pg로 네이티브 엔진 제거(DB 접근 전반 회귀 검증 필요).
