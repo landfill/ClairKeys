@@ -2,6 +2,8 @@
 
 ## 범위
 
+후속 `68c88f6`의 Safari preload 테스트 계약 보완·추가 검증은 [보완 원본](2026-11-06-home-intro-preload-hint.md)에 있다.
+
 - 기준 main `d5ebd05538db3482b0628122a2805fcfa2ecfed3`, origin/main과 동일함을 fetch로 확인.
 - 작업 브랜치 `codex/home-intro-video`, 코드 커밋 `e8a5c7f6bb96932423fe1b8d83927172532e7183`.
 - 사용자 제공 영상으로 홈의 정적 이미지와 figcaption 전체를 교체한다. D-106·[phase](https://github.com/landfill/ClairKeys/blob/e8a5c7f6bb96932423fe1b8d83927172532e7183/docs/recovery/phases/HOME-intro-video.md).
