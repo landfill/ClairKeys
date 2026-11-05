@@ -6,11 +6,9 @@ Last updated: 2026-11-06 KST
 
 ## Current phase
 
-2026-11-06 사용자 요청의 홈 소개 영상 교체: `codex/home-intro-video`에 구현 `e8a5c7f`·preload 회귀 보완 `68c88f6`을 push했다.
-[범위](https://github.com/landfill/ClairKeys/blob/68c88f6108202efd310c1e2010b1b903d96609d8/docs/recovery/phases/HOME-intro-video.md) · [검증 원본](validation/2026-11-06-home-intro-video.md).
-PR은 [#262](https://github.com/landfill/ClairKeys/pull/262). 최신 CI·리뷰 상태는 [리뷰 원본](reviews/PR-262.md)과 GitHub에서 확인한다.
-다음 행동: PR262 사용자 병합 승인 후 최신 head의 CI·리뷰·병합 가능 상태를 재확인한다. [보완 검증](validation/2026-11-06-home-intro-preload-hint.md).
-병합·운영 배포는 각각 별도 승인이다.
+2026-11-06 홈 소개 영상 교체의 사용자 승인 병합·병합 후 확인·브랜치 정리를 완료했다.
+[범위·완료 상태](phases/HOME-intro-video.md) · [검증](validation/2026-11-06-home-intro-video.md) · [CI·리뷰·병합·정리](reviews/PR-262.md).
+기존 Git 연동의 운영 자동 반영도 읽기 전용으로 확인했다. 실제 운영 화면 재생 확인과 구분한다([확인 범위](validation/2026-11-06-home-intro-video.md#병합-후-운영-자동-반영)).
 
 2026-11-06 별도 작곡 요청의 산출물과 청취 확인 범위는 [재즈 트리오 악보 검증](validation/2026-11-06-last-word-trio.md)에 기록했다.
 
@@ -80,7 +78,7 @@ PR은 [#262](https://github.com/landfill/ClairKeys/pull/262). 최신 CI·리뷰 
   `src/components/ui/LazyComponent.tsx`는 import하는 곳이 없다([검증](validation/2026-10-04-issue-229-unused-animation-player.md) Gaps).
 - 사용자 판단 필요: OAuth client secret이 과거 Vercel 로그에 남았을 수 있다(`/api/categories` POST가 호출된 경우, 코드는 2025-08-05부터).
   secret 교체 여부는 사용자가 정한다.
-- 홈 예시는 사용자 제공 소개 영상으로 교체한다(D-106, 위 Current phase). 실제 앱 재생기 복원은 범위 밖이다.
+- 홈 예시는 사용자 제공 소개 영상으로 교체됐다(D-106, 위 Current phase). 실제 앱 재생기 복원은 범위 밖이다.
 - 실기기 미검증: 실제 MIDI 피아노·Chrome MIDI 권한 팝업, 로그인 상태 운영 연습 기록 쓰기, 클릭·반주 청취 레벨.
 - 후속 후보: 탐색 인기 순위(D-080), 재생 중(압축 바) 손·메트로놈·기다리기 토글, `PracticeSession` FK CASCADE migration
   (운영 DB 작업), 계정 삭제 시 기록 처리, Prisma `engineType="client"`+adapter-pg로 네이티브 엔진 제거(DB 접근 전반 회귀 검증 필요).

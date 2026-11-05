@@ -2,7 +2,12 @@
 
 ## Status
 
-IN_PROGRESS — 2026-11-06 사용자 요청으로 착수.
+DONE — 2026-11-06. PR262 사용자 승인 병합·병합 후 확인·브랜치 정리 완료.
+
+## Progress
+
+- 구현·로컬 검증·CI·리뷰·사용자 승인 병합과 후속 확인을 마쳤다.
+  [CI·리뷰·병합·정리 원본](../reviews/PR-262.md), [검증 원본](../validation/2026-11-06-home-intro-video.md).
 
 ## Objective
 

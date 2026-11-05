@@ -80,3 +80,14 @@ H.264/yuv420p, 1280×720/60fps, 28.000s, AAC 48kHz/stereo/28.000s. 포스터 42,
 - GitHub push의 `Internal Server Error` 후 작업 브랜치는 재시도로 원격 SHA 일치를 확인했다.
   상태 기록 main push는 반복 `fatal error in commit_refs`로 실패했다. Git API로 동일한 tree·author·committer·message를 전송해
   로컬과 동일한 커밋 SHA `e30735f`를 생성한 뒤 `force=false` ref 갱신으로 반영했다. fetch 후 origin/main과 로컬 main의 차이 0.
+
+## 병합 후 운영 자동 반영
+
+- 2026-11-06, 병합 `ad49f06`의 기존 Vercel Git 연동 상태 **success**.
+  [배포 상태](https://vercel.com/landfills-projects/clairkeys/C2bwfLsuphmpLdUbhiiH4aG1nas9).
+- `Invoke-WebRequest https://clairkeys.vercel.app/ -UseBasicParsing`: **HTTP 200**, `/videos/clairkeys-intro.mp4` 포함,
+  기존 `환희의 송가 · 샘플로 만든 정적 예시` 설명 없음.
+- 운영 `/videos/clairkeys-intro.mp4`를 로컬 결과 폴더에 받아 `Get-FileHash -Algorithm SHA256`으로 main의 자산과 비교: **동일**.
+  원본 자산과 운영 응답은 모두 2,238,610 bytes, SHA256 `0ac9faa6b9a798daa7da5a14cafa35b67574c4eb5e1cd2fa4cfe838de8e56dd5`.
+- 읽기 전용 자동 반영 확인이다. 실제 운영 브라우저의 화면·소리 재생, 실기기·스크린리더 확인을 뜻하지 않는다.
+  로컬 실제 미디어 재생 검증은 위 원본 결과를 따른다. 병합 후 로컬 전체 테스트는 반복하지 않았다.
