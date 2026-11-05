@@ -1,9 +1,8 @@
 /**
- * Home static practice example and entry links.
- * The image is a labeled capture of the existing player; this page mounts no
- * live player and starts no audio. Player behavior is tested separately.
+ * Home introduction video and entry links. The app practice engine stays off
+ * the home page; the native video starts only after visitor interaction.
  */
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import Home from '../page'
 import { MAX_UPLOAD_MB } from '@/lib/upload/pdfInspection'
 
@@ -23,11 +22,23 @@ describe('Home — 로그인 전 가치 전달 (DS-2)', () => {
     )
   })
 
-  it('shows a labeled static practice example without mounting a player', () => {
-    render(<Home />)
+  it('replaces the static example and caption with an opt-in introduction video', () => {
+    const { container } = render(<Home />)
     expect(screen.getByTestId('falling-notes-result-area')).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: /낙하 노트와 피아노 건반/ })).toBeInTheDocument()
-    expect(screen.getByText('연습 화면 예시')).toBeInTheDocument()
+    const video = within(screen.getByTestId('falling-notes-result-area')).getByLabelText('ClairKeys 소개 영상')
+    expect(video.tagName).toBe('VIDEO')
+    expect(video).toHaveAttribute('controls')
+    expect(video).toHaveAttribute('playsinline')
+    expect(video).toHaveAttribute('preload', 'none')
+    expect(video).toHaveAttribute('poster', '/videos/clairkeys-intro-poster.jpg')
+    expect(video).not.toHaveAttribute('autoplay')
+    expect(video).not.toHaveAttribute('muted')
+    expect(video).not.toHaveAttribute('loop')
+    expect(video.querySelector('source')).toHaveAttribute('src', '/videos/clairkeys-intro.mp4')
+    expect(video.querySelector('source')).toHaveAttribute('type', 'video/mp4')
+    expect(container.querySelector('figcaption')).not.toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: /낙하 노트와 피아노 건반/ })).not.toBeInTheDocument()
+    expect(screen.queryByText('연습 화면 예시')).not.toBeInTheDocument()
     expect(screen.queryByTestId('falling-notes-player')).not.toBeInTheDocument()
   })
 
