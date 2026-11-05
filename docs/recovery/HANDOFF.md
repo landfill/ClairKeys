@@ -7,9 +7,9 @@ Last updated: 2026-11-06 KST
 ## Current phase
 
 2026-11-06 사용자 요청의 홈 소개 영상 교체: `codex/home-intro-video`에 구현 `e8a5c7f`·preload 회귀 보완 `68c88f6`을 push했다.
-[범위](https://github.com/landfill/ClairKeys/blob/e8a5c7f6bb96932423fe1b8d83927172532e7183/docs/recovery/phases/HOME-intro-video.md) · [검증 원본](validation/2026-11-06-home-intro-video.md).
+[범위](https://github.com/landfill/ClairKeys/blob/68c88f6108202efd310c1e2010b1b903d96609d8/docs/recovery/phases/HOME-intro-video.md) · [검증 원본](validation/2026-11-06-home-intro-video.md).
 PR은 [#262](https://github.com/landfill/ClairKeys/pull/262). 최신 CI·리뷰 상태는 [리뷰 원본](reviews/PR-262.md)과 GitHub에서 확인한다.
-다음 행동: 최신 head `68c88f6`의 전체 E2E 결과를 확인한 뒤 사용자 병합 승인을 기다린다. [보완 검증](validation/2026-11-06-home-intro-preload-hint.md).
+다음 행동: PR262 사용자 병합 승인 후 최신 head의 CI·리뷰·병합 가능 상태를 재확인한다. [보완 검증](validation/2026-11-06-home-intro-preload-hint.md).
 병합·운영 배포는 각각 별도 승인이다.
 
 2026-11-06 별도 작곡 요청의 산출물과 청취 확인 범위는 [재즈 트리오 악보 검증](validation/2026-11-06-last-word-trio.md)에 기록했다.
