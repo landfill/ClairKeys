@@ -24,6 +24,10 @@ H.264/yuv420p, 1280×720/60fps, 28.000s, AAC 48kHz/stereo/28.000s. 포스터 42,
 양쪽 파일을 각각 `ffmpeg -v error -i <file> -map 0:a:0 -c:a copy -f hash -hash sha256 -`로 비교:
 `aafd1ac4523858eded83b3d2f471e60851318bd2ec33836d19ce8f8924125d44`로 동일. 청취 평가와 구분한다.
 
+추가 압축 확인: main에서 코드 커밋의 MP4를 Git blob 그대로 로컬 결과 폴더에 추출한 뒤
+`ffmpeg -i <original> -i <optimized> -filter_complex "[0:v]scale=1280:720:flags=lanczos[ref];[ref][1:v]ssim" -an -f null -` 실행 exit 0.
+전체 1680 frames의 SSIM All **0.995478**. 원본을 같은 720p로 축소한 참조와의 압축 비교이며, 1080p 해상도 보존이나 주관적 화질 평가를 뜻하지 않는다.
+
 ## 회귀 및 로컬 검증
 
 | 명령·확인 | 결과 |
@@ -68,6 +72,8 @@ H.264/yuv420p, 1280×720/60fps, 28.000s, AAC 48kHz/stereo/28.000s. 포스터 42,
 - Aside는 실행 중이지 않아 연결되지 않았고, in-app browser는 localhost 연결 시간 초과였다.
   화면·실제 재생은 로컬 Playwright Chromium에서 검증했다.
 - 실제 iOS/Android, 스크린리더, 주관적 청취, 운영 배포는 미검증.
+- 로컬 dev 서버 종료 로그에 기존 Windows ARM/Prisma native engine 비호환 오류가 있었다.
+  비로그인 홈의 정적 자산·실제 영상 재생 확인 범위이며, 로컬 로그인·DB 기능 검증을 의미하지 않는다.
 - production build·전체 브라우저 E2E·최신 head 리뷰는 PR CI에서 판정한다. 병합·배포는 승인 범위 밖.
 - GitHub push의 `Internal Server Error` 후 작업 브랜치는 재시도로 원격 SHA 일치를 확인했다.
   상태 기록 main push는 반복 `fatal error in commit_refs`로 실패했다. Git API로 동일한 tree·author·committer·message를 전송해
