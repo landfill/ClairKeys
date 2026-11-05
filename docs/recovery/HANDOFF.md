@@ -8,7 +8,8 @@ Last updated: 2026-11-06 KST
 
 2026-11-06 사용자 요청의 홈 소개 영상 교체: 코드 `e8a5c7f`를 `codex/home-intro-video`에 push했다.
 [범위](https://github.com/landfill/ClairKeys/blob/e8a5c7f6bb96932423fe1b8d83927172532e7183/docs/recovery/phases/HOME-intro-video.md) · [검증 원본](validation/2026-11-06-home-intro-video.md).
-다음 행동: review-ready PR 생성 후 최신 head의 CI·리뷰를 확인한다. 병합·운영 배포는 승인 대기다.
+PR은 [#262](https://github.com/landfill/ClairKeys/pull/262). 최신 CI·리뷰 상태는 [리뷰 원본](reviews/PR-262.md)과 GitHub에서 확인한다.
+다음 행동: CI·리뷰 완료 확인 후 사용자 병합 승인을 기다린다. 운영 배포도 별도 승인이다.
 
 2026-11-06 별도 작곡 요청의 산출물과 청취 확인 범위는 [재즈 트리오 악보 검증](validation/2026-11-06-last-word-trio.md)에 기록했다.
 

@@ -52,7 +52,11 @@ H.264/yuv420p, 1280×720/60fps, 28.000s, AAC 48kHz/stereo/28.000s. 포스터 42,
 - 실패 묶음은 `postMergeVerified`, `omrRuntimeContract`, `pianoSamples`, `course`, `uploadPathInventory`, `nextConfig`, `prChecksWorkflow`, `postMergeWorkflow`.
   [PR261 당시 Windows baseline](2026-11-03-omr-monitor-pilot.md#전체-회귀와-baseline-차이)과 파일·실패 11개가 대응한다.
   CRLF 문자열 비교·POSIX 셸 실행·Windows ESM URL·NamedTemporaryFile 재열기 제한이며 영상 구현과 무관한 경로다.
-- 현 main에서 이 8개 묶음만 대조 실행 중이다. 완료 후 실패 이름 차이를 확인한다. 로컬 전체 통과로 표현하지 않는다.
+- 현 main에서 실패한 8개 묶음만 `npx jest --runTestsByPath <8 files> --runInBand --json`으로 대조:
+  **8 suites fail / 12 tests fail / 145 tests pass**, 226.385s. 두 JSON의 실패 이름을 정렬해 `Compare-Object`로 비교:
+  작업 브랜치 실패 **11개 모두 main에서도 실패**, main에만 `passes test_audiveris_runtime.py` 실패 1개 추가.
+  추가 실패는 10ms timeout mock의 `SuccessfulProcess.kill` 부재이며 [PR261 기록](2026-11-03-omr-monitor-pilot.md#전체-회귀와-baseline-차이)에도 같은 시간 의존 경로가 있다.
+  영상 변경의 새 실패 없음. 로컬 전체 통과로 표현하지 않는다.
 
 ## 환경에서 실패한 시도와 한계
 
@@ -65,3 +69,6 @@ H.264/yuv420p, 1280×720/60fps, 28.000s, AAC 48kHz/stereo/28.000s. 포스터 42,
   화면·실제 재생은 로컬 Playwright Chromium에서 검증했다.
 - 실제 iOS/Android, 스크린리더, 주관적 청취, 운영 배포는 미검증.
 - production build·전체 브라우저 E2E·최신 head 리뷰는 PR CI에서 판정한다. 병합·배포는 승인 범위 밖.
+- GitHub push의 `Internal Server Error` 후 작업 브랜치는 재시도로 원격 SHA 일치를 확인했다.
+  상태 기록 main push는 반복 `fatal error in commit_refs`로 실패했다. Git API로 동일한 tree·author·committer·message를 전송해
+  로컬과 동일한 커밋 SHA `e30735f`를 생성한 뒤 `force=false` ref 갱신으로 반영했다. fetch 후 origin/main과 로컬 main의 차이 0.
