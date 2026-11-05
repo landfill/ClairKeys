@@ -3610,3 +3610,15 @@
 - Scope-risk: narrow
 - Directive: runner OS를 올릴 때 설치 단계와 전체 E2E를 확인한다. 지원 OS로의 고정을 검사 생략으로 표현하지 않는다.
 - Related: PR261, D-102, phases/ISSUE-121-monitor-pilot.md
+
+## D-106: 홈의 정적 예시는 수동 재생 소개 영상으로 교체한다
+
+- Date: 2026-11-06
+- Status: Proposed
+- Amends: D-031의 정적 예시 표현. 앱 연습 재생기를 홈에서 제외하는 결정은 유지한다.
+- Context: 사용자가 제공한 28초 유음 MP4로 홈 이미지와 기존 설명 전체를 대체하도록 요청했다.
+- Decision: H.264/yuv420p MP4로 최적화하고 AAC 오디오는 그대로 복사한다. 네이티브 controls·playsInline·preload="none"과 영상에서 추출한 포스터를 제공한다. 자동 재생·반복·기본 음소거는 하지 않는다.
+- Reason: 첫 진입의 전송량과 소리 자동 재생을 피하면서 사용자가 소개를 보고 들을 수 있다. 화면비를 고정해 재생 전후 레이아웃 이동을 막는다.
+- Rejected: 앱 연습 재생기 복원 | 사용자 요청은 제공 영상 교체이며 연습 엔진·DB·오디오 초기화가 필요하지 않다.
+- Directive: 소개 영상을 사용자의 실제 PDF 변환 결과로 표현하지 않는다. 원본 영상은 Downloads에 보존한다.
+- Related: phases/HOME-intro-video.md, D-031
