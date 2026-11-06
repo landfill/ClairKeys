@@ -10,7 +10,8 @@ Last updated: 2026-11-06 KST
 [범위·완료 상태](phases/HOME-intro-video.md) · [검증](validation/2026-11-06-home-intro-video.md) · [CI·리뷰·병합·정리](reviews/PR-262.md).
 기존 Git 연동의 운영 자동 반영도 읽기 전용으로 확인했다. 실제 운영 화면 재생 확인과 구분한다([확인 범위](validation/2026-11-06-home-intro-video.md#병합-후-운영-자동-반영)).
 
-2026-11-06 별도 작곡 요청의 산출물과 청취 확인 범위는 [재즈 트리오 악보 검증](validation/2026-11-06-last-word-trio.md)에 기록했다.
+2026-11-06 별도 240마디 재즈 5중주 작곡·악보·MIDI·오디오 제작을 완료했다. 32마디 독립 드럼 솔로와 지정 교대를 포함한다.
+시스템 전곡 재생은 완료했고, 인간 청취·실연 리허설은 미수행이다. [산출물·검증·한계](validation/2026-11-06-after-the-last-word-quintet.md).
 
 **#121 OMR 내부 조회 파일럿 병합·후속 확인 완료**. [PR261](https://github.com/landfill/ClairKeys/pull/261)은 사용자 승인 후 `fd0e946`으로 병합됐다.
 2026-11-04 병합 후 확인·브랜치 정리를 마쳤다. CI·정리·웹 자동 반영 근거는 [리뷰 원본](reviews/PR-261.md)에 있다.
