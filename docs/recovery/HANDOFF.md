@@ -10,6 +10,9 @@ Last updated: 2026-11-06 KST
 [범위·완료 상태](phases/HOME-intro-video.md) · [검증](validation/2026-11-06-home-intro-video.md) · [CI·리뷰·병합·정리](reviews/PR-262.md).
 기존 Git 연동의 운영 자동 반영도 읽기 전용으로 확인했다. 실제 운영 화면 재생 확인과 구분한다([확인 범위](validation/2026-11-06-home-intro-video.md#병합-후-운영-자동-반영)).
 
+2026-11-06 새 포스터 사양의 단일 HTML을 제작했다. 원곡·4,993개 이벤트를 내장하고, 구간·관절·반응형·연속 재생·종료 회귀를 확인했다.
+[새 로컬 산출물·검증·한계](validation/2026-11-06-after-the-last-word-poster.md). 이번 파일 제작으로 아래 공개 Site 버전을 변경하지는 않았다.
+
 2026-11-06 재즈 5중주 공연 애니메이션을 사용자 요청으로 [공개 배포](https://after-the-last-word-quintet.surroundyou.chatgpt.site)했다.
 익명접속·공개페이지 원곡재생·탐색을 확인했다. [Site identity·공개 검증](validation/2026-11-06-after-the-last-word-public-site.md).
 [원곡 검증](validation/2026-11-06-after-the-last-word-quintet.md) · [전체363초 재생·애니메이션 검증 및 한계](validation/2026-11-06-after-the-last-word-animation.md).
