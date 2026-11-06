@@ -10,9 +10,9 @@ Last updated: 2026-11-06 KST
 [범위·완료 상태](phases/HOME-intro-video.md) · [검증](validation/2026-11-06-home-intro-video.md) · [CI·리뷰·병합·정리](reviews/PR-262.md).
 기존 Git 연동의 운영 자동 반영도 읽기 전용으로 확인했다. 실제 운영 화면 재생 확인과 구분한다([확인 범위](validation/2026-11-06-home-intro-video.md#병합-후-운영-자동-반영)).
 
-2026-11-06 새 포스터 공연을 기존 [공개 ChatGPT Site](https://after-the-last-word-quintet.surroundyou.chatgpt.site)의 버전2로 배포했다.
-익명 접근·원곡 재생·드럼 솔로 탐색을 확인했다. [공개 배포 근거](validation/2026-11-06-after-the-last-word-poster-public.md).
-[작곡 검증](validation/2026-11-06-after-the-last-word-quintet.md) · [포스터 소스·전체 재생·관절·화면 검증과 한계](validation/2026-11-06-after-the-last-word-poster.md).
+2026-11-06 포스터와 컨트롤을 창 높이에 맞추도록 수정하고 기존 [공개 ChatGPT Site](https://after-the-last-word-quintet.surroundyou.chatgpt.site)에 버전3으로 반영했다.
+6개 화면 크기와 실제 공개 화면에서 스크롤 없이 컨트롤이 보이는 것을 확인했다. [수정·검증·배포 근거](validation/2026-11-06-after-the-last-word-viewport.md).
+[작곡 검증](validation/2026-11-06-after-the-last-word-quintet.md) · [포스터·음악·관절 검증](validation/2026-11-06-after-the-last-word-poster.md).
 
 **#121 OMR 내부 조회 파일럿 병합·후속 확인 완료**. [PR261](https://github.com/landfill/ClairKeys/pull/261)은 사용자 승인 후 `fd0e946`으로 병합됐다.
 2026-11-04 병합 후 확인·브랜치 정리를 마쳤다. CI·정리·웹 자동 반영 근거는 [리뷰 원본](reviews/PR-261.md)에 있다.
