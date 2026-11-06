@@ -10,9 +10,9 @@ Last updated: 2026-11-06 KST
 [범위·완료 상태](phases/HOME-intro-video.md) · [검증](validation/2026-11-06-home-intro-video.md) · [CI·리뷰·병합·정리](reviews/PR-262.md).
 기존 Git 연동의 운영 자동 반영도 읽기 전용으로 확인했다. 실제 운영 화면 재생 확인과 구분한다([확인 범위](validation/2026-11-06-home-intro-video.md#병합-후-운영-자동-반영)).
 
-2026-11-06 별도 240마디 재즈 5중주와 원곡·실제 음표를 내장한 단일 HTML 애니메이션을 제작했다.
-브라우저에서1배속 전곡363초 재생·종료를 확인했다. 인간 청취·실연 리허설은 미수행이다.
-[원곡 검증](validation/2026-11-06-after-the-last-word-quintet.md) · [애니메이션·시각·동기화 검증](validation/2026-11-06-after-the-last-word-animation.md).
+2026-11-06 재즈 5중주 공연 애니메이션을 사용자 요청으로 [공개 배포](https://after-the-last-word-quintet.surroundyou.chatgpt.site)했다.
+익명접속·공개페이지 원곡재생·탐색을 확인했다. [Site identity·공개 검증](validation/2026-11-06-after-the-last-word-public-site.md).
+[원곡 검증](validation/2026-11-06-after-the-last-word-quintet.md) · [전체363초 재생·애니메이션 검증 및 한계](validation/2026-11-06-after-the-last-word-animation.md).
 
 **#121 OMR 내부 조회 파일럿 병합·후속 확인 완료**. [PR261](https://github.com/landfill/ClairKeys/pull/261)은 사용자 승인 후 `fd0e946`으로 병합됐다.
 2026-11-04 병합 후 확인·브랜치 정리를 마쳤다. CI·정리·웹 자동 반영 근거는 [리뷰 원본](reviews/PR-261.md)에 있다.
