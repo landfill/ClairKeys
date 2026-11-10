@@ -1,10 +1,14 @@
 # Current Handoff
 
-Last updated: 2026-11-06 KST
+Last updated: 2026-11-10 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
+
+2026-11-10 [#263](https://github.com/landfill/ClairKeys/issues/263) OMR 모니터링 화면을 종합 상태·요약 칸 중심으로 다시 구성했다(D-107은 브랜치에 있다).
+브랜치 `codex/issue-263-omr-monitor-glance` `bd71b1c`, 로컬 검증 완료, **PR 미생성 — 사용자 승인 대기**.
+[검증·미검증 범위](validation/2026-11-10-omr-monitor-glance.md). 다음 행동: 사용자가 화면을 확인하면 PR을 만들고 CI·리뷰를 처리한다.
 
 2026-11-06 홈 소개 영상 교체의 사용자 승인 병합·병합 후 확인·브랜치 정리를 완료했다.
 [범위·완료 상태](phases/HOME-intro-video.md) · [검증](validation/2026-11-06-home-intro-video.md) · [CI·리뷰·병합·정리](reviews/PR-262.md).
