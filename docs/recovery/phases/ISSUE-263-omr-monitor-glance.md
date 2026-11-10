@@ -2,11 +2,13 @@
 
 ## Status
 
-IN PROGRESS — 2026-11-10. 구현 중. PR 생성·병합은 각각 사용자 승인 필요.
+DONE — 2026-11-10. PR264 사용자 승인 병합·병합 후 확인·브랜치 정리 완료. 로그인한 운영 화면 확인은 남아 있다.
 
 ## Progress
 
 - 2026-11-10: [#263](https://github.com/landfill/ClairKeys/issues/263) 등록, `codex/issue-263-omr-monitor-glance` 분기, D-107 기록.
+- 2026-11-10: PR264를 사용자 승인 후 `db1ae21`로 병합하고 브랜치를 정리했다.
+  [CI·리뷰·병합·정리 원본](../reviews/PR-264.md), [검증 원본](../validation/2026-11-10-omr-monitor-glance.md).
 
 ## Objective
 

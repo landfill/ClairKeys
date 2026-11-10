@@ -1,6 +1,6 @@
 # #263 OMR 모니터링 화면 한눈에 보기 검증 — 2026-11-10 KST
 
-Status: 로컬 구현·검증 완료. PR 미생성(사용자 승인 대기). 운영 화면 미확인.
+Status: PR264 병합 완료(`db1ae21`). 로그인한 운영 화면은 미확인.
 
 ## 범위
 
@@ -46,3 +46,16 @@ Playwright fixture 응답으로 캡처했다. 실제 VM 데이터가 아니다.
 - 로그인한 운영 화면에서 실제 VM 데이터로 본 모습(웹 배포 뒤 확인). #121의 "실제 UI 재확인 대기"도 그대로 남아 있다.
 - 장애·확인 불가·실패 작업 행은 Jest 화면 테스트로만 확인했고 브라우저 캡처는 없다.
 - WebKit·Mobile Safari·Firefox keyboard 프로젝트(PR CI가 맡는다), 스크린리더, 실기기.
+
+## 병합 후 운영 확인
+
+2026-11-10 병합 커밋 `db1ae21`의 Vercel 상태 success 뒤 `curl`로 `https://clairkeys.vercel.app`에 쿠키 없이 요청했다(읽기 전용).
+
+| 경로 | 결과 |
+|---|---|
+| `/api/admin/omr` | 401, `cache-control: private, no-store, max-age=0` |
+| `/admin/omr` | 307 |
+
+[2026-11-04 확인](2026-11-04-omr-monitor-production-auth.md)과 같은 비로그인 차단이다. 307의 Location 값은 이번에 읽지 않았다.
+이것은 접근 차단 확인일 뿐이다. 새 화면이 운영에서 실제 VM 데이터로 어떻게 보이는지는 로그인한 운영자가 열어 봐야 하며 아직 하지 않았다.
+CI·리뷰·병합·정리는 [리뷰 원본](../reviews/PR-264.md).
