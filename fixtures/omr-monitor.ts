@@ -9,3 +9,31 @@ export const snapshotFixture = () => ({
   host: { status: 'unavailable', sampled_at: null, memory_total_bytes: null,
     memory_available_bytes: null, data_total_bytes: null, data_free_bytes: null },
 })
+
+export const healthySnapshotFixture = () => {
+  const snapshot = snapshotFixture()
+  const sampledAt = new Date().toISOString()
+  return {
+    ...snapshot,
+    jobs: {
+      ...snapshot.jobs, queued: 0, processing: 1, completed: 3, failed: 0, oldest_wait_seconds: 0,
+      recent: [
+        {
+          id: '11111111-aaaa-bbbb-cccc-222222222222', status: 'processing', stage: 'audiveris',
+          created_at: sampledAt, updated_at: sampledAt, wait_seconds: 2,
+          callback: { status: 'not_started', attempts: 0 },
+        },
+        {
+          id: '33333333-aaaa-bbbb-cccc-444444444444', status: 'completed', stage: 'callback',
+          created_at: sampledAt, updated_at: sampledAt, wait_seconds: 1,
+          callback: { status: 'delivered', attempts: 1 },
+        },
+      ],
+    },
+    host: {
+      status: 'ok', sampled_at: sampledAt,
+      memory_total_bytes: 16 * 1024 ** 3, memory_available_bytes: 12 * 1024 ** 3,
+      data_total_bytes: 100 * 1024 ** 3, data_free_bytes: 75 * 1024 ** 3,
+    },
+  }
+}

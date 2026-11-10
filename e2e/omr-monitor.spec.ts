@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { encode } from 'next-auth/jwt'
-import { snapshotFixture } from '../fixtures/omr-monitor'
+import { healthySnapshotFixture, snapshotFixture } from '../fixtures/omr-monitor'
 
 const operatorEmail = 'omr-pilot-e2e@example.test'
 
@@ -45,6 +45,9 @@ test('operator sees fixture data, partial collection and expired access clearly'
   await expect(page.getByRole('heading', { name: 'OMR 모니터링', exact: true })).toBeVisible()
   await expect(page.getByText('aaaaaaaa', { exact: true })).toBeVisible()
   await expect(page.getByText('호스트 수집기·읽기 전용 마운트 활성화 필요', { exact: false })).toBeVisible()
+  const summary = page.getByRole('region', { name: '종합 상태' })
+  await expect(summary.getByText('주의', { exact: true })).toBeVisible()
+  await expect(summary.getByText('VM 자원을 수집하지 못함')).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: info.outputPath('monitor-fixture.png'), fullPage: true })
   denied = true
@@ -53,6 +56,22 @@ test('operator sees fixture data, partial collection and expired access clearly'
   await page.keyboard.press('Enter')
   await expect(page.getByRole('alert').filter({ hasText: '운영자 권한을 확인할 수 없습니다' })).toBeVisible()
   await expect(page.getByText('aaaaaaaa', { exact: true })).toHaveCount(0)
+})
+
+test('operator sees a healthy server at a glance', async ({ page }, info) => {
+  await signIn(page, true)
+  await page.route('**/api/admin/omr', route => route.fulfill({
+    json: {
+      checkedAt: new Date().toISOString(), webSha: 'b'.repeat(40),
+      health: { status: 'ok', latencyMs: 21 },
+      monitor: { status: 'ok', snapshot: healthySnapshotFixture() },
+    },
+  }))
+  await page.goto('/admin/omr')
+  await expect(page.getByRole('region', { name: '종합 상태' }).getByText('정상', { exact: true })).toBeVisible()
+  await expect(page.getByRole('meter')).toHaveCount(2)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: info.outputPath('monitor-healthy.png'), fullPage: true })
 })
 
 test('operator menu link is reachable on desktop and mobile', async ({ page }, info) => {
