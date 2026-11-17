@@ -1,10 +1,13 @@
 # Current Handoff
 
-Last updated: 2026-11-10 KST
+Last updated: 2026-11-17 KST
 
 현재 상태·다음 행동·제약·근거 링크만 둔다(AGENTS). 2026-09-28 정리 전 본문: `git show 700f540:docs/recovery/HANDOFF.md`.
 
 ## Current phase
+
+2026-11-17 OMR VM 회수 전 읽기 전용 실사 완료. **백업·복원 검증 및 반납은 미실행.**
+다음 행동: VM 밖에 /data를 암호화 보관·검증하고, 반납 직전 변환 접수 중단·미전달 결과 확인·구 주소 해제를 수행한다. [대상·실측·반납 순서](validation/2026-11-17-omr-vm-backup-audit.md).
 
 2026-11-10 [#263](https://github.com/landfill/ClairKeys/issues/263) OMR 모니터링 화면을 종합 상태·요약 칸 중심으로 다시 구성했다(D-107).
 [PR264](https://github.com/landfill/ClairKeys/pull/264)는 사용자 승인 후 `db1ae21`로 병합됐고 병합 후 확인·브랜치 정리를 마쳤다.
